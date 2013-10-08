@@ -57,7 +57,7 @@ public class MyView extends View {
 
     @Override
     public boolean contains(TopLevelItem item) {
-        return item.hasPermission(Job.CONFIGURE);
+        return item.hasPermission(Item.CONFIGURE);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class MyView extends View {
     public Collection<TopLevelItem> getItems() {
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : getOwnerItemGroup().getItems()) {
-            if (item.hasPermission(Job.CONFIGURE)) {
+            if (item.hasPermission(Item.CONFIGURE)) {
                 items.add(item);
             }
         }

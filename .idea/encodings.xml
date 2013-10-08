@@ -7,7 +7,6 @@
     <file url="file://$PROJECT_DIR$/maven-plugin" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/plugins" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/test" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/ui-samples-plugin" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/war" charset="UTF-8" />
   </component>
 </project>

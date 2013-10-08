@@ -272,7 +272,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         new DetachedPlugin("external-monitor-job","1.467.*","1.0"),
         new DetachedPlugin("ldap","1.467.*","1.0"),
         new DetachedPlugin("pam-auth","1.467.*","1.0"),
-        new DetachedPlugin("mailer","1.493.*","1.2")
+        new DetachedPlugin("mailer","1.493.*","1.2"),
+        new DetachedPlugin("matrix-auth","1.535.*","1.0.2")
     );
 
     /**

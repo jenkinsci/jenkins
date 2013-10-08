@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
+import hudson.init.*;
 import hudson.model.LoadStatistics;
 import hudson.model.Messages;
 import hudson.model.Node;
@@ -66,7 +67,6 @@ import hudson.model.ManagementLink;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Project;
-import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -120,8 +120,6 @@ import hudson.cli.CliEntryPoint;
 import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
-import hudson.init.InitMilestone;
-import hudson.init.InitStrategy;
 import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
@@ -281,7 +279,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TreeSet;
@@ -289,6 +286,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -1916,7 +1914,12 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     public String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
         StringBuilder buf = new StringBuilder();
-        buf.append(req.getScheme()+"://");
+        String scheme = req.getScheme();
+        String forwardedScheme = req.getHeader("X-Forwarded-Proto");
+        if (forwardedScheme != null) {
+            scheme = forwardedScheme;
+        }
+        buf.append(scheme+"://");
         buf.append(req.getServerName());
         if(req.getServerPort()!=80)
             buf.append(':').append(req.getServerPort());
@@ -2664,6 +2667,24 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     public void cleanUp() {
         for (ItemListener l : ItemListener.all())
             l.onBeforeShutdown();
+
+        try {
+            final TerminatorFinder tf = new TerminatorFinder(
+                    pluginManager != null ? pluginManager.uberClassLoader : Thread.currentThread().getContextClassLoader());
+            new Reactor(tf).execute(new Executor() {
+                @Override
+                public void execute(Runnable command) {
+                    command.run();
+                }
+            });
+        } catch (InterruptedException e) {
+            LOGGER.log(SEVERE, "Failed to execute termination",e);
+            e.printStackTrace();
+        } catch (ReactorException e) {
+            LOGGER.log(SEVERE, "Failed to execute termination",e);
+        } catch (IOException e) {
+            LOGGER.log(SEVERE, "Failed to execute termination",e);
+        }
 
         Set<Future<?>> pending = new HashSet<Future<?>>();
         terminating = true;

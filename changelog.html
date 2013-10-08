@@ -55,12 +55,60 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.535>What's new in 1.535</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Windows JDK installer failed in a path with spaces.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19447">issue 19447</a>)
+  <li class=bug>
+    Windows JDK installer should not install a public JRE.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8957">issue 8957</a>)
+  <li class='major bug'>
+    After deleting last build, next build of last build is zombie.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19920">issue 19920</a>)
+  <li class='rfe'>
+    Split matrix authorization strategies into an independent plugin.
+  <li class='rfe'>
+    UI Samples plugin fully separated from core. To view samples during plugin development or at any other time, just install from the update center.
+  <li class=bug>
+    View description should be clearly separated from the Jenkins system message.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18633">issue 18633</a>)
+  <li class=bug>
+    SCM polling sometimes broken since 1.527 due to a change in how environment variables are calculated.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19307">issue 19307</a>)
+  <li class=bug>
+    Breadcrumb bar moves away from header when scrolling past end of page on OS X.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19803">issue 19803</a>)
+  <li class='major rfe'>
+    "java -jar jenkins.war" now runs on Jetty8. Command line options are still compatible.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18366">issue 18366</a>)
+  <li class=rfe>
+    "java -jar jenkins.war" gets the "--spdy" option to enable SPDY.
+  <li class=rfe>
+    Expand all/Collapse all functionality for artifact tree view.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/616">pull request 616</a>)
+  <li class=rfe>
+    Visualize queued jobs in view.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/531">pull request 531</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.534>What's new in 1.534</a> (2013/10/07)</h3>
+<ul class=image>
   <li class='major bug'>
     Default crumb issuer configurations saved in older releases did not load as of Jenkins 1.531.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19613">issue 19613</a>)
   <li class='major bug'>
     As of 1.532 download of artifact ZIPs was broken.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19752">issue 19752</a>)
+  <li class='major bug'>
+    Old copies of <code>maven3-agent.jar</code> on slaves were not being reliably updated, leading to errors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19251">issue 19251</a>)
   <li class='rfe'>
     Add option to disable "Remember me on this computer" checkbox in login screen.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15757">issue 15757</a>)
@@ -68,17 +116,12 @@ Upcoming changes</a>
     Added postCheckout method for SCMs
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19740">issue 19740</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.533>What's new in 1.533</a> <!--=DATE=--></h3>
+<h3><a name=v1.533>What's new in 1.533</a> (2013/09/29)</h3>
 <ul class=image>
   <li class=rfe>
     Offer alternate error message for pattern-based project naming strategy.
     (<a href="https://github.com/jenkinsci/jenkins/pull/914">pull request 914</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.532>What's new in 1.532</a> (2013/09/23)</h3>
 <ul class=image>
   <li class='major bug'>

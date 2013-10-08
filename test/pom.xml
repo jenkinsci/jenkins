@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.534-SNAPSHOT</version>
+    <version>1.536-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -64,7 +64,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
+      <version>${maven-plugin.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -80,6 +80,11 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
       <version>1.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <version>1.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
@@ -160,12 +165,6 @@ THE SOFTWARE.
       <groupId>org.codehaus.geb</groupId>
       <artifactId>geb-implicit-assertions</artifactId>
       <version>0.7.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.test</groupId>
-      <artifactId>sample-plexus-component</artifactId>
-      <version>1.0</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 

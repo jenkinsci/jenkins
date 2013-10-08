@@ -350,6 +350,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                     LOGGER.log(Level.FINE, "mismatch on fullName (‘" + fullName + "’ vs. ‘" + prev.getFullName() + "’) for ‘" + id + "’", new Throwable());
                 }
             }
+            if (LOGGER.isLoggable(Level.FINE) && id.equals(fullName) && fullName.matches(".+ _\\S+@\\S+_")) {
+                LOGGER.log(Level.FINE, "[JENKINS-16332] Suspicious fullName being stored: " + fullName, new Throwable());
+            }
         }
         return u;
     }

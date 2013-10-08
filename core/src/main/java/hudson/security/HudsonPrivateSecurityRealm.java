@@ -51,7 +51,6 @@ import org.acegisecurity.providers.encoding.PasswordEncoder;
 import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.tools.ant.taskdefs.email.Mailer;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
@@ -73,7 +72,6 @@ import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -280,9 +278,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private void tryToMakeAdmin(User u) {
         AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
-        if (as instanceof GlobalMatrixAuthorizationStrategy) {
-            GlobalMatrixAuthorizationStrategy ma = (GlobalMatrixAuthorizationStrategy) as;
-            ma.add(Jenkins.ADMINISTER,u.getId());
+        for (PermissionAdder adder : Jenkins.getInstance().getExtensionList(PermissionAdder.class)) {
+            if (adder.add(as, u, Jenkins.ADMINISTER)) {
+                return;
+            }
         }
     }
 

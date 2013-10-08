@@ -120,7 +120,7 @@ public abstract class ItemGroupMixIn {
      * or throws an exception if it fails.
      */
     public synchronized TopLevelItem createTopLevelItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        acl.checkPermission(Job.CREATE);
+        acl.checkPermission(Item.CREATE);
 
         TopLevelItem result;
 
@@ -192,7 +192,7 @@ public abstract class ItemGroupMixIn {
      */
     @SuppressWarnings({"unchecked"})
     public synchronized <T extends TopLevelItem> T copy(T src, String name) throws IOException {
-        acl.checkPermission(Job.CREATE);
+        acl.checkPermission(Item.CREATE);
 
         T result = (T)createProject(src.getDescriptor(),name,false);
 
@@ -216,7 +216,7 @@ public abstract class ItemGroupMixIn {
     }
 
     public synchronized TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
-        acl.checkPermission(Job.CREATE);
+        acl.checkPermission(Item.CREATE);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
         // place it as config.xml
@@ -248,7 +248,7 @@ public abstract class ItemGroupMixIn {
 
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
             throws IOException {
-        acl.checkPermission(Job.CREATE);
+        acl.checkPermission(Item.CREATE);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
         if(parent.getItem(name)!=null)

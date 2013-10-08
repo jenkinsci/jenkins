@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -54,11 +53,6 @@ public class AllView extends View {
     }
     
     @Override
-    public String getDescription() {
-        return Jenkins.getInstance().getDescription();
-    }
-
-    @Override
     public boolean isEditable() {
         return false;
     }
@@ -80,14 +74,6 @@ public class AllView extends View {
     @Override
     public Collection<TopLevelItem> getItems() {
         return (Collection)getOwnerItemGroup().getItems();
-    }
-
-    @Override
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(Jenkins.ADMINISTER);
-
-        Jenkins.getInstance().setSystemMessage(req.getParameter("description"));
-        rsp.sendRedirect(".");
     }
 
     @Override

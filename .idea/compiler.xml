@@ -5,8 +5,6 @@
     <excludeFromCompile>
       <directory url="file://$PROJECT_DIR$/core/target/generated-sources/annotations" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/core/target/generated-test-sources/test-annotations" includeSubdirectories="true" />
-      <directory url="file://$PROJECT_DIR$/ui-samples-plugin/target/generated-sources/annotations" includeSubdirectories="true" />
-      <directory url="file://$PROJECT_DIR$/ui-samples-plugin/target/generated-test-sources/test-annotations" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/cli/target/generated-sources/annotations" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/cli/target/generated-test-sources/test-annotations" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/maven-plugin/target/generated-sources/annotations" includeSubdirectories="true" />
@@ -42,8 +40,6 @@
         <module name="jenkins-core" />
         <module name="jenkins-test-harness" />
         <module name="jenkins-war" />
-        <module name="maven-plugin" />
-        <module name="ui-samples-plugin" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -54,7 +50,6 @@
       <module name="maven-plugin" target="1.6" />
       <module name="plugin" target="1.5" />
       <module name="pom" target="1.6" />
-      <module name="ui-samples-plugin" target="1.6" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

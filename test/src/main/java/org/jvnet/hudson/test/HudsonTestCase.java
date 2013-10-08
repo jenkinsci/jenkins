@@ -57,6 +57,7 @@ import hudson.model.*;
 import hudson.model.Executor;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
+import hudson.os.PosixAPI;
 import hudson.remoting.Which;
 import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
@@ -82,7 +83,6 @@ import hudson.tools.ToolProperty;
 import hudson.util.PersistedList;
 import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
-import hudson.util.jna.GNUCLibrary;
 
 import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
@@ -587,8 +587,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         mvn.unzip(new FilePath(buildDirectory));
         // TODO: switch to tar that preserves file permissions more easily
-        if(!Functions.isWindows())
-            GNUCLibrary.LIBC.chmod(new File(mvnHome, "bin/mvn").getPath(),0755);
+        if(!Functions.isWindows()) {
+            PosixAPI.jnr().chmod(new File(mvnHome, "bin/mvn").getPath(), 0755);
+        }
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
                 mvnHome.getAbsolutePath(), NO_PROPERTIES);
@@ -611,8 +612,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
-            if(!Functions.isWindows())
-                GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
+            if(!Functions.isWindows()) {
+                PosixAPI.jnr().chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
+            }
 
             antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.8.1").getAbsolutePath(),NO_PROPERTIES);
         }
@@ -1976,8 +1978,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         if (!Functions.isWindows()) {
             try {
-                GNUCLibrary.LIBC.unsetenv("MAVEN_OPTS");
-                GNUCLibrary.LIBC.unsetenv("MAVEN_DEBUG_OPTS");
+                PosixAPI.jnr().unsetenv("MAVEN_OPTS");
+                PosixAPI.jnr().unsetenv("MAVEN_DEBUG_OPTS");
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,"Failed to cancel out MAVEN_OPTS",e);
             }

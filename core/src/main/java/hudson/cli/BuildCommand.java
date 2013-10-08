@@ -86,11 +86,8 @@ public class BuildCommand extends CLICommand {
     @Option(name="-v",usage="Prints out the console output of the build. Use with -s")
     public boolean consoleOutput = false;
 
-    @Option(name="-r", usage="Number of times to retry reading of the output log if it does not exists on first attempt. Defaults to 0. Use with -v.")
-    public String retryCntStr = "0";
-
-    // hold parsed retryCnt;
-    private int retryCnt = 0;
+    @Option(name="-r") @Deprecated
+    public int retryCnt = 10;
 
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
@@ -123,8 +120,6 @@ public class BuildCommand extends CLICommand {
 
             a = new ParametersAction(values);
         }
-
-        retryCnt = Integer.parseInt(retryCntStr);
 
         if (checkSCM) {
             if (job.poll(new StreamTaskListener(stdout, getClientCharset())).change == Change.NONE) {
