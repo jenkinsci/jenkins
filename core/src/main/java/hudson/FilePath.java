@@ -392,7 +392,7 @@ public final class FilePath implements Serializable {
      *
      * @param glob
      *      Ant style glob, like "**&#x2F;*.xml". If empty or null, this method
-     *      works like {@link #createZipArchive(OutputStream)}
+     *      works like {@link #createZipArchive(OutputStream)}, inserting a top-level directory into the ZIP.
      *
      * @since 1.315
      */
