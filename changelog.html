@@ -58,6 +58,13 @@ Upcoming changes</a>
   <li class=bug>
     RuntimeException if you try to save a config with a choice parameter that has no choices.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18434">issue 18434</a>)
+  <li class='major bug'>
+    Upgrade Trilead SSH client library to version that does not cause connection loss when
+    there is a lot of logging on the build slave and the performance improvements in
+    ssh-slaves 0.27+ are enabled (
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-18836">issue 18836</a>,
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-18879">issue 18879</a>,
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-19619">issue 19619</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
