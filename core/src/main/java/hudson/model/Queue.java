@@ -920,9 +920,10 @@ public class Queue extends ResourceController implements Saveable {
      * <p>
      * This wakes up one {@link Executor} so that it will maintain a queue.
      */
-    public void scheduleMaintenance() {
+    @WithBridgeMethods(void.class)
+    public Future<?> scheduleMaintenance() {
         // LOGGER.info("Scheduling maintenance");
-        maintainerThread.submit();
+        return maintainerThread.submit();
     }
 
     /**
