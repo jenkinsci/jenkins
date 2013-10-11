@@ -999,7 +999,7 @@ public class Queue extends ResourceController implements Saveable {
         while (!waitingList.isEmpty()) {
             WaitingItem top = peek();
 
-            if (!top.timestamp.before(new GregorianCalendar()))
+            if (top.timestamp.compareTo(new GregorianCalendar())>0)
                 break; // finished moving all ready items from queue
 
             top.leave(this);
