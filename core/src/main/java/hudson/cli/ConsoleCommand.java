@@ -26,7 +26,7 @@ import java.io.PrintStream;
 public class ConsoleCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Retrieves console output of a build";
+        return Messages.ConsoleCommand_ShortDescription();
     }
 
     @Argument(metaVar="JOB",usage="Name of the job",required=true)
