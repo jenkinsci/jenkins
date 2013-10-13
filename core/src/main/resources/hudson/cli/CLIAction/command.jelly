@@ -25,24 +25,19 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout norefresh="true">
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
       <h1>
         <img src="${imagesURL}/48x48/terminal.png" alt="" height="48" width="48"/>
-        ${%Jenkins CLI}
+        Command ${command.name}
       </h1>
-      <p>
-        ${%blurb(rootURL)}
-      </p>
-      <pre style="color: white; background-color:black; padding:1em; font-weight: bold">java -jar <a
-              style="color: white"
-              href="jnlpJars/jenkins-cli.jar">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} help</pre>
-        <h2>${%Available Commands}</h2>
-        <ul>
-          <j:forEach items="${h.getCLICommands()}" var="command">
-            <li><b>${command.getName()}</b>: ${command.getShortDescription()}</li>
-          </j:forEach>
-        </ul>
+      <j:set var="commandArgs" value="${command.name}${command.singleLineSummary}"/>
+      <st:include page="example.jelly"/>
+      <p>${command.longDescription}</p>
+      <j:set var="usage" value="${command.usage}"/>
+      <j:if test="${!empty usage}">
+        <pre>${command.usage}</pre>
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>
