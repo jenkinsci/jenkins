@@ -18,10 +18,10 @@ import java.util.Collections;
  */
 @Extension
 public class SetBuildParameterCommand extends CommandDuringBuild {
-    @Argument(index=0, required=true, usage="Name of the build variable")
+    @Argument(index=0, metaVar="NAME", required=true, usage="Name of the build variable")
     public String name;
 
-    @Argument(index=1,required=true, usage="Value of the build variable")
+    @Argument(index=1, metaVar="VALUE", required=true, usage="Value of the build variable")
     public String value;
 
     @Override

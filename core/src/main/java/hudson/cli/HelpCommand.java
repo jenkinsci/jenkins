@@ -78,11 +78,7 @@ public class HelpCommand extends CLICommand {
     }
 
     private int showCommandDetails() {
-        CLICommand command = null;
-        for (CLICommand c : CLICommand.all())
-            if (c.getName().equalsIgnoreCase(this.command))
-                command = c;
-
+        CLICommand command = CLICommand.clone(this.command);
         if (command == null) {
             stderr.format("No such command %s. Awailable commands are: ", this.command);
             showAllCommands();
