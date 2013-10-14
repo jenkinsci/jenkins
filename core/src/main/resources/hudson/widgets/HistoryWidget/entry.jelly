@@ -37,6 +37,7 @@ THE SOFTWARE.
     <td style="padding-right:0">
       <a class="tip model-link inside" href="${link}">
         <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+        (${build.buildStatusSummary.message})
       </a>
     </td>
     <td class="middle-align">
