@@ -211,7 +211,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.stderr = stderr;
         this.locale = locale;
         registerOptionHandlers();
-        CmdLineParser p = new CmdLineParser(this);
+        CmdLineParser p = getCmdLineParser();
 
         // add options from the authenticator
         SecurityContext sc = SecurityContextHolder.getContext();
@@ -244,6 +244,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } finally {
             sc.setAuthentication(old); // restore
         }
+    }
+
+    /**
+     * Get parser for this command.
+     *
+     * Exposed to be overridden by {@link CLIRegisterer}.
+     * @since TODO
+     */
+    protected CmdLineParser getCmdLineParser() {
+        return new CmdLineParser(this);
     }
     
     public Channel checkChannel() throws AbortException {
@@ -346,7 +356,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     @Restricted(NoExternalUse.class)
     public final String getSingleLineSummary() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        new CmdLineParser(this).printSingleLineUsage(out);
+        getCmdLineParser().printSingleLineUsage(out);
         return out.toString();
     }
 
@@ -357,7 +367,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     @Restricted(NoExternalUse.class)
     public final String getUsage() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        new CmdLineParser(this).printUsage(out);
+        getCmdLineParser().printUsage(out);
         return out.toString();
     }
 

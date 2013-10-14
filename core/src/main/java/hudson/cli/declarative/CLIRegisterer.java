@@ -110,9 +110,48 @@ public class CLIRegisterer extends ExtensionFinder {
                             return name;
                         }
 
+                        @Override
                         public String getShortDescription() {
                             // format by using the right locale
                             return res.format("CLI."+name+".shortDescription");
+                        }
+
+                        @Override
+                        protected CmdLineParser getCmdLineParser() {
+                            return bindMethod(new ArrayList<MethodBinder>());
+                        }
+
+                        private CmdLineParser bindMethod(List<MethodBinder> binders) {
+
+                            registerOptionHandlers();
+                            CmdLineParser parser = new CmdLineParser(null);
+
+                            //  build up the call sequence
+                            Stack<Method> chains = new Stack<Method>();
+                            Method method = m;
+                            while (true) {
+                                chains.push(method);
+                                if (Modifier.isStatic(method.getModifiers()))
+                                    break; // the chain is complete.
+
+                                // the method in question is an instance method, so we need to resolve the instance by using another resolver
+                                Class<?> type = method.getDeclaringClass();
+                                try {
+                                    method = findResolver(type);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException("Unable to find the resolver method annotated with @CLIResolver for "+type, ex);
+                                }
+                                if (method==null) {
+                                    throw new RuntimeException("Unable to find the resolver method annotated with @CLIResolver for "+type);
+                                }
+                            }
+
+                            while (!chains.isEmpty())
+                                binders.add(new MethodBinder(chains.pop(),this,parser));
+
+                            new ClassParser().parse(Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this), parser);
+
+                            return parser;
                         }
 
                         @Override
@@ -121,37 +160,15 @@ public class CLIRegisterer extends ExtensionFinder {
                             this.stderr = stderr;
                             this.locale = locale;
 
-                            registerOptionHandlers();
-                            CmdLineParser parser = new CmdLineParser(null);
+                            List<MethodBinder> binders = new ArrayList<MethodBinder>();
+
+                            CmdLineParser parser = bindMethod(binders);
                             try {
                                 SecurityContext sc = SecurityContextHolder.getContext();
                                 Authentication old = sc.getAuthentication();
                                 try {
-                                    //  build up the call sequence
-                                    Stack<Method> chains = new Stack<Method>();
-                                    Method method = m;
-                                    while (true) {
-                                        chains.push(method);
-                                        if (Modifier.isStatic(method.getModifiers()))
-                                            break; // the chain is complete.
-
-                                        // the method in question is an instance method, so we need to resolve the instance by using another resolver
-                                        Class<?> type = method.getDeclaringClass();
-                                        method = findResolver(type);
-                                        if (method==null) {
-                                            stderr.println("Unable to find the resolver method annotated with @CLIResolver for "+type);
-                                            return 1;
-                                        }
-                                    }
-
-                                    List<MethodBinder> binders = new ArrayList<MethodBinder>();
-
-                                    while (!chains.isEmpty())
-                                        binders.add(new MethodBinder(chains.pop(),this,parser));
-
                                     // authentication
                                     CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
-                                    new ClassParser().parse(authenticator,parser);
 
                                     // fill up all the binders
                                     parser.parseArgument(args);

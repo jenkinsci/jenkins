@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineParser;
 
 /**
  * Show the list of all commands.
@@ -85,7 +84,7 @@ public class HelpCommand extends CLICommand {
             return -1;
         }
 
-        command.printUsage(stderr, new CmdLineParser(command));
+        command.printUsage(stderr, command.getCmdLineParser());
         
         return 0;
     }
