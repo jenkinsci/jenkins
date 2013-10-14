@@ -33,6 +33,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.Jenkins;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -43,9 +45,9 @@ import hudson.remoting.Channel;
 
 /**
  * @author ogondza
- * @since TODO
  */
 @Extension
+@Restricted(NoExternalUse.class)
 public class CLIAction implements RootAction {
 
     private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();

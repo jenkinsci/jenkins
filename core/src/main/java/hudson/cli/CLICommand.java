@@ -351,7 +351,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Get single line summary as a string.
-     * @since TODO
      */
     @Restricted(NoExternalUse.class)
     public final String getSingleLineSummary() {
@@ -362,7 +361,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Get usage as a string.
-     * @since TODO
      */
     @Restricted(NoExternalUse.class)
     public final String getUsage() {
@@ -373,7 +371,6 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Get long description as a string.
-     * @since TODO
      */
     @Restricted(NoExternalUse.class)
     public final String getLongDescription() {
