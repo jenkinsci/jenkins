@@ -31,7 +31,7 @@ THE SOFTWARE.
   <j:set var="transitive" value="${(it.firstTransientBuildKey!=null and (it.adapter.compare(build,it.firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
   <tr class="build-row no-wrap ${transitive}">
     <td>
-      <a href="${link}console"><img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description} &gt; ${%Console Output}" tooltip="${build.iconColor.description} &gt; ${%Console Output}" /></a><st:nbsp/>
+      <a class="build-status-link" href="${link}console"><img class="build-status-icon" width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description} &gt; ${%Console Output}" tooltip="${build.iconColor.description} &gt; ${%Console Output}" /></a><st:nbsp/>
       ${build.displayName}
     </td>
     <td style="padding-right:0">
@@ -51,7 +51,7 @@ THE SOFTWARE.
   </tr>
   <j:if test="${build.building}">
     <j:set target="${it}" property="nextBuildNumberToFetch" value="${build.number}"/>
-    <tr class="transitive"><td></td><td colspan="2" style="padding:0">
+    <tr class="transitive build-progress-bar"><td></td><td colspan="2" style="padding:0">
       <table class="middle-align">
         <tr><td>
           <t:buildProgressBar build="${build}"/>

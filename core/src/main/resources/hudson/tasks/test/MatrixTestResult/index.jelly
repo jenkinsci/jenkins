@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:layout title="Test">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
     <l:main-panel>
-      <h1>Test Result</h1>
+      <h1 class="matrix-test-result-headline page-headline">Test Result</h1>
       <test:bar/>
 
       <table class="pane sortable">
