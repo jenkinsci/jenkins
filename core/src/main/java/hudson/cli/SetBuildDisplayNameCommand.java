@@ -29,6 +29,10 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
     @Override
     protected int run() throws Exception {
         Run<?, ?> run = job.getBuildByNumber(number);
+        if (run == null) {
+            stderr.format("Build #%d does not exist\n", number);
+            return -1;
+        }
         run.checkPermission(Run.UPDATE);
 
         if ("-".equals(displayName)) {
