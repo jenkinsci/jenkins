@@ -25,6 +25,8 @@ package hudson.model;
 
 import hudson.util.IOException2;
 import jenkins.model.Jenkins;
+import jenkins.security.SecureRequester;
+
 import org.dom4j.CharacterData;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -59,6 +61,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  * @see Exported
+ * @see SecureRequester
  */
 public class Api extends AbstractModelObject {
     /**
@@ -155,12 +158,12 @@ public class Api extends AbstractModelObject {
         OutputStream o = rsp.getCompressedOutputStream(req);
         try {
             if (result instanceof CharacterData || result instanceof String || result instanceof Number || result instanceof Boolean) {
-                if (INSECURE) {
+                if (permit(req)) {
                     rsp.setContentType("text/plain;charset=UTF-8");
                     String text = result instanceof CharacterData ? ((CharacterData) result).getText() : result.toString();
                     o.write(text.getBytes("UTF-8"));
                 } else {
-                    rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "primitive XPath result sets forbidden; can use -Dhudson.model.Api.INSECURE=true if you run without security");
+                    rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "primitive XPath result sets forbidden; implement jenkins.security.SecureRequester");
                 }
                 return;
             }
@@ -188,11 +191,11 @@ public class Api extends AbstractModelObject {
      * Exposes the bean as JSON.
      */
     public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        if (INSECURE || req.getParameter("jsonp") == null) {
-        setHeaders(rsp);
+        if (req.getParameter("jsonp") == null || permit(req)) {
+            setHeaders(rsp);
             rsp.serveExposedBean(req,bean, Flavor.JSON);
         } else {
-            rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "jsonp forbidden; can use -Dhudson.model.Api.INSECURE=true if you run without security");
+            rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "jsonp forbidden; implement jenkins.security.SecureRequester");
         }
     }
 
@@ -204,6 +207,15 @@ public class Api extends AbstractModelObject {
         rsp.serveExposedBean(req,bean, Flavor.PYTHON);
     }
 
+    private boolean permit(StaplerRequest req) {
+        for (SecureRequester r : Jenkins.getInstance().getExtensionList(SecureRequester.class)) {
+            if (r.permit(req, bean)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void setHeaders(StaplerResponse rsp) {
         rsp.setHeader("X-Jenkins", Jenkins.VERSION);
         rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
@@ -211,6 +223,5 @@ public class Api extends AbstractModelObject {
 
     private static final Logger LOGGER = Logger.getLogger(Api.class.getName());
     private static final ModelBuilder MODEL_BUILDER = new ModelBuilder();
-    private static final boolean INSECURE = "true".equals(System.getProperty("hudson.model.Api.INSECURE"));
 
 }
