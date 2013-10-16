@@ -11,6 +11,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.net.HttpURLConnection;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.recipes.PresetData;
 
 /**
  *
@@ -97,6 +98,7 @@ public class DefaultCrumbIssuerTest extends HudsonTestCase {
         submit(p.getFormByName("config"));
    }
 
+    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     public void testApiXml() throws Exception {
         WebClient wc = new WebClient();
         assertXPathValue(wc.goToXml("crumbIssuer/api/xml"), "//crumbRequestField", jenkins.getCrumbIssuer().getCrumbRequestField());
@@ -116,6 +118,7 @@ public class DefaultCrumbIssuerTest extends HudsonTestCase {
         wc.assertFails("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", HttpURLConnection.HTTP_FORBIDDEN); // perhaps interpretable as JS number
     }
 
+    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     public void testApiJson() throws Exception {
         WebClient wc = new WebClient();
         String json = wc.goTo("crumbIssuer/api/json", "application/json").getWebResponse().getContentAsString();
