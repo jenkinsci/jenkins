@@ -3326,9 +3326,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                     } else {
                         LOGGER.info("Safe-restart mode cancelled");
                     }
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
-                } catch (IOException e) {
+                } catch (Throwable e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Hudson",e);
                 }
             }
