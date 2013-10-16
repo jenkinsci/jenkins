@@ -150,6 +150,7 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import java.util.concurrent.atomic.AtomicLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -164,21 +165,16 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  */
 @SuppressWarnings("rawtypes")
 public class Functions {
-    private static volatile int globalIota = 0;
-    private int iota;
+    private static final AtomicLong iota = new AtomicLong();
 
     public Functions() {
-        iota = globalIota;
-        // concurrent requests can use the same ID --- we are just trying to
-        // prevent the same user from seeing the same ID repeatedly.
-        globalIota+=1000;
     }
 
     /**
      * Generates an unique ID.
      */
     public String generateId() {
-        return "id"+iota++;
+        return "id" + iota.getAndIncrement();
     }
 
     public static boolean isModel(Object o) {
