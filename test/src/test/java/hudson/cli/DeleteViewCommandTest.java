@@ -60,7 +60,7 @@ public class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView"));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ)
+                .authorizedTo(View.READ, Jenkins.READ)
                 .invokeWithArgs("aView")
         ;
 
@@ -74,7 +74,7 @@ public class DeleteViewCommandTest {
         j.jenkins.addView(new ListView("aView"));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.DELETE, Jenkins.READ)
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("aView")
         ;
 
@@ -87,20 +87,20 @@ public class DeleteViewCommandTest {
     @Test public void deleteViewShouldFailIfViewDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.DELETE, Jenkins.READ)
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("never_created")
         ;
 
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such view 'never_created'"));
+        assertThat(result.stderr(), containsString("No view named never_created inside view Jenkins"));
     }
 
     // ViewGroup.canDelete()
     @Test public void deleteViewShouldFailIfViewGroupDoesNotAllowDeletion() {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.DELETE, Jenkins.READ)
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("All")
         ;
 

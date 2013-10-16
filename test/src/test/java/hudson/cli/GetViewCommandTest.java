@@ -26,9 +26,7 @@ package hudson.cli;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
@@ -94,6 +92,6 @@ public class GetViewCommandTest {
 
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such view 'never_created'"));
+        assertThat(result.stderr(), containsString("No view named never_created inside view Jenkins"));
     }
 }

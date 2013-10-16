@@ -57,7 +57,7 @@ public class UpdateViewCommandTest {
         j.jenkins.addView(new ListView("aView"));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ)
+                .authorizedTo(View.READ, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
                 .invokeWithArgs("aView")
         ;
@@ -72,7 +72,7 @@ public class UpdateViewCommandTest {
         j.jenkins.addView(new ListView("aView"));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.CONFIGURE, Jenkins.READ)
+                .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
                 .invokeWithArgs("aView")
         ;
@@ -91,13 +91,13 @@ public class UpdateViewCommandTest {
     @Test public void updateViewShouldFailIfViewDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(View.CONFIGURE, Jenkins.READ)
+                .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
                 .invokeWithArgs("not_created")
         ;
 
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such view 'not_created'"));
+        assertThat(result.stderr(), containsString("No view named not_created inside view Jenkins"));
     }
 }
