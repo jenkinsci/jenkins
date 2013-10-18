@@ -27,7 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${it.failCount!=0}">
     <h2>${%All Failed Tests}</h2>
-    <table class="pane sortable">
+    <table class="pane sortable bigtable">
       <tr>
         <td class="pane-header">${%Test Name}</td>
         <td class="pane-header" style="width:4em">${%Duration}</td>
@@ -49,7 +49,7 @@ THE SOFTWARE.
 
   <j:if test="${it.totalCount!=0}">
     <h2>${%All Tests}</h2>
-    <table class="pane sortable" id="testresult">
+    <table class="pane sortable bigtable" id="testresult">
       <tr>
         <td class="pane-header">${it.childTitle}</td>
         <td class="pane-header" style="width:5em">${%Duration}</td>

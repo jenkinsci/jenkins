@@ -44,7 +44,7 @@ THE SOFTWARE.
           <a href="../${report.child.project.shortUrl}testReport" class="model-link inside">${report.child.project.name}</a>
         </h3>
 
-        <table class="pane sortable">
+        <table class="pane sortable bigtable">
           <tr>
             <td class="pane-header">Test Name</td>
             <td class="pane-header" style="width:4em">Duration</td>
