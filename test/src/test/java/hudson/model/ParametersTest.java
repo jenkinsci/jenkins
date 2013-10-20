@@ -68,10 +68,10 @@ public class ParametersTest extends HudsonTestCase {
         if (q != null) q.getFuture().get();
         else Thread.sleep(1000);
 
-        assertEquals("newValue", builder.getEnvVars().get("STRING"));
-        assertEquals("true", builder.getEnvVars().get("BOOLEAN"));
-        assertEquals("Choice 1", builder.getEnvVars().get("CHOICE"));
-        assertEquals(jenkins.getRootUrl() + otherProject.getLastBuild().getUrl(), builder.getEnvVars().get("RUN"));
+        assertEquals("newValue", builder.getEnvVars().get("string"));
+        assertEquals("true", builder.getEnvVars().get("boolean"));
+        assertEquals("Choice 1", builder.getEnvVars().get("choice"));
+        assertEquals(jenkins.getRootUrl() + otherProject.getLastBuild().getUrl(), builder.getEnvVars().get("run"));
     }
 
     public void testChoiceWithLTGT() throws Exception {
@@ -102,7 +102,7 @@ public class ParametersTest extends HudsonTestCase {
         else Thread.sleep(1000);
 
         assertNotNull(builder.getEnvVars());
-        assertEquals("Choice <2>", builder.getEnvVars().get("CHOICE"));
+        assertEquals("Choice <2>", builder.getEnvVars().get("choice"));
     }
 
     public void testSensitiveParameters() throws Exception {
