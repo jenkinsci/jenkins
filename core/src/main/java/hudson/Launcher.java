@@ -737,7 +737,7 @@ public abstract class Launcher {
             public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
                 EnvVars e = new EnvVars(env);
                 e.putAll(envVars);
-                return outer.launchChannel(cmd,out,workDir,e);
+                return outer.launchChannel(cmd,out,workDir,e.forNativeProcess());
             }
 
             @Override
@@ -770,7 +770,7 @@ public abstract class Launcher {
             for ( int idx = 0 ; idx < jobCmd.length; idx++ )
             	jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
 
-            return new LocalProc(jobCmd, Util.mapToEnv(jobEnv),
+            return new LocalProc(jobCmd, Util.mapToEnv(jobEnv.forNativeProcess()),
                     ps.reverseStdin ?LocalProc.SELFPUMP_INPUT:ps.stdin,
                     ps.reverseStdout?LocalProc.SELFPUMP_OUTPUT:ps.stdout,
                     ps.reverseStderr?LocalProc.SELFPUMP_OUTPUT:ps.stderr,

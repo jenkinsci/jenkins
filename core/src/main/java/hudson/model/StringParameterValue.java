@@ -29,6 +29,8 @@ import org.kohsuke.stapler.export.Exported;
 
 import java.util.Locale;
 
+import jenkins.model.Jenkins;
+
 import hudson.util.VariableResolver;
 
 /**
@@ -54,7 +56,9 @@ public class StringParameterValue extends ParameterValue {
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         env.put(name,value);
-        env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
+        if (!env.isCaseSensitive()) {
+            env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
+        }
     }
 
     @Override
