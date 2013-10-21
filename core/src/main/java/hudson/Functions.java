@@ -1099,7 +1099,7 @@ public class Functions {
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo » bar"
+     *      String like "foo/bar"
      */
     public static String getRelativeNameFrom(Item p, ItemGroup g) {
         return getRelativeNameFrom(p, g, false);
@@ -1113,7 +1113,7 @@ public class Functions {
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo » bar"
+     *      String like "Foo » Bar"
      */
     public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
         return getRelativeNameFrom(p, g, true);
