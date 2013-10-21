@@ -323,7 +323,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
         if(n.length()==0)   return getDisplayName();
-        else                return n+" \u00BB "+getDisplayName();
+        else                return n+" » "+getDisplayName();
     }
     
     /**

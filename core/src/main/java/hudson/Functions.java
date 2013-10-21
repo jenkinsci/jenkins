@@ -257,7 +257,7 @@ public class Functions {
      * like "-5", "+/-0", "+3".
      */
     public static String getDiffString(int i) {
-        if(i==0)    return "\u00B10";   // +/-0
+        if(i==0)    return "±0";
         String s = Integer.toString(i);
         if(i>0)     return "+"+s;
         else        return s;
