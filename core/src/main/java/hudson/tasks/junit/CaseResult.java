@@ -30,12 +30,14 @@ import org.jvnet.localizer.Localizable;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.tasks.test.TestResult;
+import hudson.util.ColorPalette;
 
 import org.dom4j.Element;
 import org.kohsuke.stapler.export.Exported;
 
 import java.io.File;
 import java.io.IOException;
+import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.Collection;
@@ -68,6 +70,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     private final String skippedMessage;
     private final String errorStackTrace;
     private final String errorDetails;
+    private final Boolean failureIsAnError;
     private transient SuiteResult parent;
 
     private transient ClassResult classResult;
@@ -132,6 +135,12 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         testName = nameAttr;
         errorStackTrace = getError(testCase);
         errorDetails = getErrorMessage(testCase);
+        if(errorStackTrace!=null) {
+            failureIsAnError = isFailureAnError(testCase);
+        }
+        else {
+        	failureIsAnError = null; //null if not an error or failure
+        }
         this.parent = parent;
         duration = parseTime(testCase);
         skipped = isMarkedAsSkipped(testCase);
@@ -207,6 +216,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         this.testName = testName;
         this.errorStackTrace = errorStackTrace;
         this.errorDetails = "";
+        this.failureIsAnError = errorStackTrace!=null?false:null; //defaults to failure (not error)
         this.parent = parent;
         this.stdout = null;
         this.stderr = null;
@@ -237,6 +247,11 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         }
 
         return msg.attributeValue("message");
+    }
+
+    private static boolean isFailureAnError(Element testCase) {
+        String msg = testCase.elementText("error");
+        return (msg!=null);
     }
 
     /**
@@ -344,7 +359,12 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
 
     @Override
     public int getFailCount() {
-        if (isFailed()) return 1; else return 0;
+        if (isFailed() && (failureIsAnError==null || !failureIsAnError)) return 1; else return 0;
+    }
+
+    @Override
+    public int getErrorCount() {
+        if (isFailed() && failureIsAnError!=null && failureIsAnError) return 1; else return 0;
     }
 
     @Override
@@ -513,6 +533,10 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public boolean isPassed() {
         return !skipped && errorStackTrace==null;
     }
+    
+    public Boolean isFailureAnError() {
+        return failureIsAnError;
+    }
 
     /**
      * Tests whether the test was skipped or not.  TestNG allows tests to be
@@ -585,13 +609,13 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         }
         CaseResult pr = getPreviousResult();
         if(pr==null) {
-            return isPassed() ? Status.PASSED : Status.FAILED;
+            return isPassed() ? Status.PASSED : (failureIsAnError!=null && failureIsAnError) ? Status.ERROR : Status.FAILED;
         }
 
         if(pr.isPassed()) {
             return isPassed() ? Status.PASSED : Status.REGRESSION;
         } else {
-            return isPassed() ? Status.FIXED : Status.FAILED;
+            return isPassed() ? Status.FIXED : (failureIsAnError!=null && failureIsAnError) ? Status.ERROR : Status.FAILED;
         }
     }
 
@@ -610,33 +634,39 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         /**
          * This test runs OK, just like its previous run.
          */
-        PASSED("result-passed",Messages._CaseResult_Status_Passed(),true),
+        PASSED("result-passed", ColorPalette.BLUE, Messages._CaseResult_Status_Passed(),true),
         /**
          * This test was skipped due to configuration or the
          * failure or skipping of a method that it depends on.
          */
-        SKIPPED("result-skipped",Messages._CaseResult_Status_Skipped(),false),
+        SKIPPED("result-skipped", ColorPalette.YELLOW, Messages._CaseResult_Status_Skipped(),false),
         /**
          * This test failed, just like its previous run.
          */
-        FAILED("result-failed",Messages._CaseResult_Status_Failed(),false),
+        FAILED("result-failed", ColorPalette.RED, Messages._CaseResult_Status_Failed(),false),
+        /**
+         * This test failed with an error, just like its previous run.
+         */
+        ERROR("result-error", ColorPalette.DARK_RED, Messages._CaseResult_Status_Error(),false),
         /**
          * This test has been failing, but now it runs OK.
          */
-        FIXED("result-fixed",Messages._CaseResult_Status_Fixed(),true),
+        FIXED("result-fixed", ColorPalette.BLUE, Messages._CaseResult_Status_Fixed(),true),
         /**
          * This test has been running OK, but now it failed.
          */
-        REGRESSION("result-regression",Messages._CaseResult_Status_Regression(),false);
+        REGRESSION("result-regression", ColorPalette.RED, Messages._CaseResult_Status_Regression(),false);
 
         private final String cssClass;
         private final Localizable message;
         public final boolean isOK;
+        public final Color color;
 
-        Status(String cssClass, Localizable message, boolean OK) {
+        Status(String cssClass, Color color, Localizable message, boolean OK) {
            this.cssClass = cssClass;
            this.message = message;
            isOK = OK;
+           this.color = color;
        }
 
         public String getCssClass() {

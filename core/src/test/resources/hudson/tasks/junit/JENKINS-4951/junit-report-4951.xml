@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="2" name="tbrugz.jenkinstest.TestIt" tests="7" time="0.094" timestamp="2012-11-17T21:06:02">
+  <testcase classname="tbrugz.jenkinstest.TestIt" name="testOK2" time="0.002" />
+  <testcase classname="tbrugz.jenkinstest.TestIt" name="testOK3" time="0.0" />
+  <testcase classname="tbrugz.jenkinstest.TestIt" name="testOK4" time="0.0" />
+  <testcase classname="tbrugz.jenkinstest.TestIt" name="testFail1" time="0.012">
+    <failure message="Failure 1 expected:&lt;0&gt; but was:&lt;1&gt;" type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Failure 1 expected:&lt;0&gt; but was:&lt;1&gt;
+	at tbrugz.jenkinstest.TestIt.testFail1(TestIt.java:21)
+</failure>
+  </testcase>
+  <testcase classname="tbrugz.jenkinstest.TestIt" name="testFail2" time="0.003">
+    <failure message="Failure 2 expected:&lt;0&gt; but was:&lt;1&gt;" type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Failure 2 expected:&lt;0&gt; but was:&lt;1&gt;
+	at tbrugz.jenkinstest.TestIt.testFail2(TestIt.java:25)
+</failure>
+  </testcase>
+  <testcase classname="tbrugz.jenkinstest.TestIt" name="testError1" time="0.001">
+    <error message="Error 1" type="java.lang.RuntimeException">java.lang.RuntimeException: Error 1
+	at tbrugz.jenkinstest.TestIt.testError1(TestIt.java:30)
+</error>
+  </testcase>
+  <testcase classname="tbrugz.jenkinstest.TestIt" name="testOK1" time="0.0" />
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
