@@ -35,7 +35,6 @@ import hudson.util.Memoizer;
 import hudson.util.Iterators.FlattenIterator;
 import hudson.slaves.NodeDescriptor;
 import hudson.tasks.Publisher;
-import hudson.tasks.Publisher.DescriptorExtensionListImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -72,7 +71,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     public static <T extends Describable<T>,D extends Descriptor<T>>
     DescriptorExtensionList<T,D> createDescriptorList(Jenkins jenkins, Class<T> describableType) {
         if (describableType == (Class) Publisher.class) {
-            return (DescriptorExtensionList) new DescriptorExtensionListImpl(jenkins);
+            return (DescriptorExtensionList) new Publisher.DescriptorExtensionListImpl(jenkins);
         }
         return new DescriptorExtensionList<T,D>(jenkins,describableType);
     }
