@@ -141,6 +141,10 @@ public class BuildCommand extends CLICommand {
         QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
         
         if (wait || sync || follow) {
+            if (f == null) {
+                stderr.println("Build scheduling Refused by an extension, hence not in Queue.");
+                return -1;
+            }
             AbstractBuild b = f.waitForStart();    // wait for the start
             stdout.println("Started "+b.getFullDisplayName());
 
