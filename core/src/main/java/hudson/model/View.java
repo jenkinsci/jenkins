@@ -1170,8 +1170,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 throw new Failure(Messages.View_MissingMode());
         }
 
+        ViewDescriptor descriptor = all().findByName(mode);
+        if (descriptor == null) {
+            throw new Failure("No view type ‘" + mode + "’ is known");
+        }
+
         // create a view
-        View v = all().findByName(mode).newInstance(req,req.getSubmittedForm());
+        View v = descriptor.newInstance(req,req.getSubmittedForm());
         v.owner = owner;
 
         // redirect to the config screen

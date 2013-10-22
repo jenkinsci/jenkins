@@ -263,6 +263,9 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             }
 
             NodeDescriptor d = NodeDescriptor.all().findByName(mode);
+            if (d == null) {
+                throw new Failure("No node type ‘" + mode + "’ is known");
+            }
             d.handleNewNodePage(this,name,req,rsp);
         }
     }
