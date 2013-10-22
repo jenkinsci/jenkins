@@ -175,6 +175,7 @@ public class ListView extends View implements Saveable {
         // check the filters
         Iterable<ViewJobFilter> jobFilters = getJobFilters();
         List<TopLevelItem> allItems = new ArrayList<TopLevelItem>(parentItems);
+        if (recurse) allItems = expand(allItems, new ArrayList<TopLevelItem>());
     	for (ViewJobFilter jobFilter: jobFilters) {
     		items = jobFilter.filter(items, allItems, this);
     	}
@@ -182,6 +183,19 @@ public class ListView extends View implements Saveable {
         items = new ArrayList<TopLevelItem>(new LinkedHashSet<TopLevelItem>(items));
         
         return items;
+    }
+
+    private List<TopLevelItem> expand(Collection<TopLevelItem> items, List<TopLevelItem> allItems) {
+        for (Item item : items) {
+            if (item instanceof ItemGroup) {
+                ItemGroup<TopLevelItem> ig = (ItemGroup<TopLevelItem>) item;
+                expand(ig.getItems(), allItems);
+            }
+            if (item instanceof TopLevelItem) {
+                allItems.add((TopLevelItem) item);
+            }
+        }
+        return allItems;
     }
     
     @Override
