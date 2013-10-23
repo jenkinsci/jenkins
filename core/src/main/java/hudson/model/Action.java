@@ -25,6 +25,10 @@ package hudson.model;
 
 import hudson.Functions;
 import hudson.tasks.test.TestResultProjectAction;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
@@ -126,4 +130,10 @@ public interface Action extends ModelObject {
      * @see Functions#getActionUrl(String, Action)
      */
     String getUrlName();
+    
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    public @interface ContextMenuVisibility {
+        boolean visible() default true;                
+    } 
 }

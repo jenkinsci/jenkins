@@ -24,10 +24,13 @@
 package hudson;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import hudson.model.Action;
+import hudson.model.Action.ContextMenuVisibility;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
@@ -292,5 +295,53 @@ public class FunctionsTest {
         assertEquals("Hello world!", Functions.breakableString("Hello world!"));
         assertEquals("H<wbr>,e<wbr>.l<wbr>/l<wbr>:o<wbr>-w<wbr>_o<wbr>=+|d", Functions.breakableString("H,e.l/l:o-w_o=+|d"));
         assertEquals("ALongStrin<wbr>gThatCanNo<wbr>tBeBrokenB<wbr>yDefault", Functions.breakableString("ALongStringThatCanNotBeBrokenByDefault"));
+    }
+    
+    @Test
+    public void testContextMenuVisibility() {
+        TestActionContextMenuVisible visible = new TestActionContextMenuVisible();
+        assertTrue(Functions.isContextMenuVisible(visible));
+        
+        TestActionContextMenuInvisible invisible = new TestActionContextMenuInvisible();
+        assertFalse(Functions.isContextMenuVisible(invisible));
+    }
+    
+    class TestActionContextMenuVisible implements Action {
+
+        @Override
+        public String getIconFileName() {
+            return "foo.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Test Action Context Menu Visible";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "testaction";
+        }       
+    
+    }
+    
+    @ContextMenuVisibility(visible=false)
+    class TestActionContextMenuInvisible implements Action {
+
+        @Override
+        public String getIconFileName() {
+            return "foo.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Test Action Context Menu Invisible";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "invisibletestaction";
+        }
+        
     }
 }
