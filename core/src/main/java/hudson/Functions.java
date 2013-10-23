@@ -150,6 +150,8 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import hudson.model.Action.ContextMenuVisibility;
+import java.lang.annotation.Annotation;
 import java.util.concurrent.atomic.AtomicLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -1847,5 +1849,21 @@ public class Functions {
             rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
             rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
         }
+    }
+    
+    /**
+     * Checks if an action should be visible in the context menu. If the class
+     * doesn't have the ContextMenuVisibility annotation, we assume it
+     * should be visible.
+     * @param a - the action to check for visibility
+     * @return true if the action should be visible in the context menu, false
+     * otherwise.
+     */
+    public static boolean isContextMenuVisible(Action a) {
+        ContextMenuVisibility v = a.getClass().getAnnotation(ContextMenuVisibility.class);
+        if(v != null) {
+            return v.visible();
+        }
+        return true;
     }
 }
