@@ -153,6 +153,7 @@ import com.google.common.base.Predicates;
 import java.util.concurrent.atomic.AtomicLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Utility functions used in views.
@@ -1848,4 +1849,14 @@ public class Functions {
             rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
         }
     }
+
+    @Restricted(NoExternalUse.class) // for actions.jelly and ContextMenu.add
+    public static boolean isContextMenuVisible(Action a) {
+        if (a instanceof ModelObjectWithContextMenu.ContextMenuVisibility) {
+            return ((ModelObjectWithContextMenu.ContextMenuVisibility) a).isVisible();
+        } else {
+            return true;
+        }
+    }
+
 }
