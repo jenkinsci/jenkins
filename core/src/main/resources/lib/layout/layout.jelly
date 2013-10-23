@@ -173,7 +173,7 @@ ${h.initPageVariables(context)}
                 <st:nbsp/>
                 <j:choose>
                   <j:when test="${!h.isAnonymous()}">
-                    <j:set var="user" value="${app.getUser(app.authentication.name)}"/>
+                    <j:invokeStatic var="user" className="hudson.model.User" method="current" />
                     <j:choose>
                       <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
                         <j:set var="userName" value="${user.id}"/>
