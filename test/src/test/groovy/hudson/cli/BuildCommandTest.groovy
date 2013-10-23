@@ -162,7 +162,7 @@ public class BuildCommandTest {
         try {
             def o = new ByteArrayOutputStream()
             cli.execute(["build","-s","-v",p.name],System.in,System.out,new TeeOutputStream(System.err,o))
-            assertTrue(o.toString(), o.toString().contains("Build scheduling Refused by an extension, hence not in Queue"))
+            assertTrue(o.toString(), o.toString().contains(BuildCommand.BUILD_SCHEDULING_REFUSED))
         } finally {
             cli.close()
         }
