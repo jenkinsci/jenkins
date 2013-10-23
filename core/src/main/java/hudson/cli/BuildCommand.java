@@ -89,6 +89,8 @@ public class BuildCommand extends CLICommand {
     @Option(name="-r") @Deprecated
     public int retryCnt = 10;
 
+    protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue";
+
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
 
@@ -141,6 +143,10 @@ public class BuildCommand extends CLICommand {
         QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
         
         if (wait || sync || follow) {
+            if (f == null) {
+                stderr.println(BUILD_SCHEDULING_REFUSED);
+                return -1;
+            }
             AbstractBuild b = f.waitForStart();    // wait for the start
             stdout.println("Started "+b.getFullDisplayName());
 
