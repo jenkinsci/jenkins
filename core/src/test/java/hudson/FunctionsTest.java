@@ -203,16 +203,20 @@ public class FunctionsTest {
         when(i.getName()).thenReturn("jobName");
         when(i.getDisplayName()).thenReturn("displayName");
         TopLevelItemAndItemGroup ig = mock(TopLevelItemAndItemGroup.class);
-        Jenkins j = mock(Jenkins.class);
+        ItemGroup j = mock(Jenkins.class);
         when(ig.getName()).thenReturn("parent");
         when(ig.getDisplayName()).thenReturn("parentDisplay");
-        when(ig.getParent()).thenReturn((ItemGroup) j);
+        when(ig.getParent()).thenReturn(j);
         when(i.getParent()).thenReturn(ig);
-        
+        Item i2 = mock(Item.class);
+        when(i2.getDisplayName()).thenReturn("top");
+        when(i2.getParent()).thenReturn(j);
+
         assertEquals("displayName", Functions.getRelativeDisplayNameFrom(i, ig));
         assertEquals("parentDisplay » displayName", Functions.getRelativeDisplayNameFrom(i, j));
+        assertEquals(".. » top", Functions.getRelativeDisplayNameFrom(i2, ig));
     }
-    
+
     private void createMockAncestors(StaplerRequest req, Ancestor... ancestors) {
         List<Ancestor> ancestorsList = Arrays.asList(ancestors);
         when(req.getAncestors()).thenReturn(ancestorsList);

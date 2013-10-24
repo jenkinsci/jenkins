@@ -47,7 +47,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractList;
@@ -236,12 +235,11 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
             Node src = app.getNode(from);
             if(src==null) {
-                rsp.setStatus(SC_BAD_REQUEST);
-                if(Util.fixEmpty(from)==null)
-                    sendError(Messages.ComputerSet_SpecifySlaveToCopy(),req,rsp);
-                else
-                    sendError(Messages.ComputerSet_NoSuchSlave(from),req,rsp);
-                return;
+                if (Util.fixEmpty(from) == null) {
+                    throw new Failure(Messages.ComputerSet_SpecifySlaveToCopy());
+                } else {
+                    throw new Failure(Messages.ComputerSet_NoSuchSlave(from));
+                }
             }
 
             // copy through XStream
@@ -260,12 +258,14 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             rsp.sendRedirect2(result.getNodeName()+"/configure");
         } else {
             // proceed to step 2
-            if(mode==null) {
-                rsp.sendError(SC_BAD_REQUEST);
-                return;
+            if (mode == null) {
+                throw new Failure("No mode given");
             }
 
             NodeDescriptor d = NodeDescriptor.all().findByName(mode);
+            if (d == null) {
+                throw new Failure("No node type ‘" + mode + "’ is known");
+            }
             d.handleNewNodePage(this,name,req,rsp);
         }
     }

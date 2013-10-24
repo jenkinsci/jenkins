@@ -153,6 +153,7 @@ import com.google.common.base.Predicates;
 import java.util.concurrent.atomic.AtomicLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Utility functions used in views.
@@ -257,7 +258,7 @@ public class Functions {
      * like "-5", "+/-0", "+3".
      */
     public static String getDiffString(int i) {
-        if(i==0)    return "\u00B10";   // +/-0
+        if(i==0)    return "±0";
         String s = Integer.toString(i);
         if(i>0)     return "+"+s;
         else        return s;
@@ -1099,7 +1100,7 @@ public class Functions {
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo » bar"
+     *      String like "foo/bar"
      */
     public static String getRelativeNameFrom(Item p, ItemGroup g) {
         return getRelativeNameFrom(p, g, false);
@@ -1113,7 +1114,7 @@ public class Functions {
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo » bar"
+     *      String like "Foo » Bar"
      */
     public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
         return getRelativeNameFrom(p, g, true);
@@ -1848,4 +1849,14 @@ public class Functions {
             rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
         }
     }
+
+    @Restricted(NoExternalUse.class) // for actions.jelly and ContextMenu.add
+    public static boolean isContextMenuVisible(Action a) {
+        if (a instanceof ModelObjectWithContextMenu.ContextMenuVisibility) {
+            return ((ModelObjectWithContextMenu.ContextMenuVisibility) a).isVisible();
+        } else {
+            return true;
+        }
+    }
+
 }

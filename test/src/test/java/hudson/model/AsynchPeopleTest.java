@@ -40,7 +40,9 @@ public class AsynchPeopleTest {
     @Bug(18641)
     @Test public void display() throws Exception {
         User.get("bob");
-        HtmlPage page = j.createWebClient().goTo("asynchPeople");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage page = wc.goTo("asynchPeople");
+        assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         assertEquals("display: none;", page.getElementById("status").getAttribute("style"));
         assertNotNull(page.getElementById("person-bob"));
     }
