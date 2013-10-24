@@ -32,6 +32,7 @@ import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
+import hudson.util.EditDistance;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import javax.annotation.CheckForNull;
 
 /**
  * Convenience methods related to {@link Item}.
@@ -277,6 +279,25 @@ public class Items {
             
         });
         return r;
+    }
+
+    /**
+     * Finds an item whose name (when referenced from the specified context) is closest to the given name.
+     * @param <T> the type of item being considered
+     * @param type same as {@code T}
+     * @param name the supplied name
+     * @param context a context to start from (used to compute relative names)
+     * @return the closest available item
+     * @since 1.538
+     */
+    public static @CheckForNull <T extends Item> T findNearest(Class<T> type, String name, ItemGroup context) {
+        List<T> projects = Jenkins.getInstance().getAllItems(type);
+        String[] names = new String[projects.size()];
+        for (int i = 0; i < projects.size(); i++) {
+            names[i] = projects.get(i).getRelativeNameFrom(context);
+        }
+        String nearest = EditDistance.findNearest(name, names);
+        return Jenkins.getInstance().getItem(nearest, context, type);
     }
 
     /**

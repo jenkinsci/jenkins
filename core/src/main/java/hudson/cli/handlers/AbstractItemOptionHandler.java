@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright 2013 Jesse Glick.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,31 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
 
-import hudson.Extension;
+package hudson.cli.handlers;
+
 import hudson.model.AbstractItem;
-import org.kohsuke.args4j.Argument;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
+import org.kohsuke.MetaInfServices;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
- * @author Kohsuke Kawaguchi
+ * Refers to an {@link AbstractItem} by name.
+ * @since 1.538
  */
-@Extension
-public class UpdateJobCommand extends CLICommand {
-    @Argument(metaVar="JOB",usage="Name of the job",required=true)
-    public AbstractItem job;
+@MetaInfServices(OptionHandler.class) public class AbstractItemOptionHandler extends GenericItemOptionHandler<AbstractItem> {
 
-    @Override
-    public String getShortDescription() {
-        return Messages.UpdateJobCommand_ShortDescription();
+    public AbstractItemOptionHandler(CmdLineParser parser, OptionDef option, Setter<AbstractItem> setter) {
+        super(parser, option, setter);
     }
 
-    protected int run() throws Exception {
-        job.updateByXml((Source)new StreamSource(stdin));
-        return 0;
+    @Override protected Class<AbstractItem> type() {
+        return AbstractItem.class;
     }
+
 }
-

@@ -80,7 +80,6 @@ import hudson.triggers.TriggerDescriptor;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
-import hudson.util.EditDistance;
 import hudson.util.FormValidation;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
@@ -2299,6 +2298,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Finds a {@link AbstractProject} that has the name closest to the given name.
+     * @see Items#findNearest
      */
     public static AbstractProject findNearest(String name) {
         return findNearest(name,Hudson.getInstance());
@@ -2308,15 +2308,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Finds a {@link AbstractProject} whose name (when referenced from the specified context) is closest to the given name.
      *
      * @since 1.419
+     * @see Items#findNearest
      */
     public static AbstractProject findNearest(String name, ItemGroup context) {
-        List<AbstractProject> projects = Hudson.getInstance().getAllItems(AbstractProject.class);
-        String[] names = new String[projects.size()];
-        for( int i=0; i<projects.size(); i++ )
-            names[i] = projects.get(i).getRelativeNameFrom(context);
-
-        String nearest = EditDistance.findNearest(name, names);
-        return (AbstractProject)Jenkins.getInstance().getItem(nearest,context);
+        return Items.findNearest(AbstractProject.class, name, context);
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
