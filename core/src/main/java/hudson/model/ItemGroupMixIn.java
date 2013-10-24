@@ -170,9 +170,13 @@ public abstract class ItemGroupMixIn {
             } else {
                 if(mode==null)
                     throw new Failure("No mode given");
+                TopLevelItemDescriptor descriptor = Items.all().findByName(mode);
+                if (descriptor == null) {
+                    throw new Failure("No item type ‘" + mode + "’ is known");
+                }
 
                 // create empty job and redirect to the project config screen
-                result = createProject(Items.all().findByName(mode), name, true);
+                result = createProject(descriptor, name, true);
             }
         }
 

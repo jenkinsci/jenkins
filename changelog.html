@@ -55,6 +55,26 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    NPE thrown from CLI <code>build</code> command under some circumstances.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/979">pull request 979</a>)
+  <li class=bug>
+    Pass full list of all possible jobs to ViewJobFilter when recurse option is set
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20143">issue 20143</a>)
+  <li class=bug>
+    Avoid submitting polling jobs while all suitable executors are offline
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20227">issue 20227</a>)
+  <li class=rfe>
+    Added API allowing plugins to hide entries from the context menu even while they appear in the sidepanel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19173">issue 19173</a>)
+  </li>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.537>What's new in 1.537</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class='rfe'>
     Upgrade bundled plugin versions: ssh-slaves to 1.5, and credentials to 1.9.1
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20071">issue 20071</a>)
@@ -70,11 +90,8 @@ Upcoming changes</a>
     Integer overflow could cause JavaScript functions to break in long-running Jenkins processes.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20085">issue 20085</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.536>What's new in 1.536</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.536>What's new in 1.536</a> (2013/10/20)</h3>
 <ul class=image>
   <li class=bug>
     Fixed two file descriptor leaks.
@@ -99,9 +116,9 @@ Upcoming changes</a>
     Upgrade bundled iplugin versions: ssh-slaves to 1.4, ssh-credentials to 1.5.3 and 
     credentials to 1.8.3
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19945">issue 19945</a>)
-
+  <li class='major rfe'>
+    Executor threads are now created only on demand.
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.535>What's new in 1.535</a> (2013/10/14)</h3>
 <ul class=image>
   <li class=bug>

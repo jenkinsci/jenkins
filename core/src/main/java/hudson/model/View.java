@@ -1156,7 +1156,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         String name = req.getParameter("name");
         checkGoodName(name);
         if(owner.getView(name)!=null)
-            throw new FormException(Messages.Hudson_ViewAlreadyExists(name),"name");
+            throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
         String mode = req.getParameter("mode");
         if (mode==null || mode.length()==0) {
@@ -1167,11 +1167,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return v;
             } else
-                throw new FormException(Messages.View_MissingMode(),"mode");
+                throw new Failure(Messages.View_MissingMode());
+        }
+
+        ViewDescriptor descriptor = all().findByName(mode);
+        if (descriptor == null) {
+            throw new Failure("No view type ‘" + mode + "’ is known");
         }
 
         // create a view
-        View v = all().findByName(mode).newInstance(req,req.getSubmittedForm());
+        View v = descriptor.newInstance(req,req.getSubmittedForm());
         v.owner = owner;
 
         // redirect to the config screen
