@@ -24,8 +24,6 @@
 package hudson.tasks.test;
 
 import hudson.model.AbstractBuild;
-import hudson.tasks.junit.CaseResult;
-import hudson.tasks.junit.TestResult;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -104,8 +102,8 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     }
 
     @Override
-    public List<CaseResult> getFailedTests() {
-        List<CaseResult> failedTests = new ArrayList<CaseResult>(failCount);
+    public List<? extends TestResult> getFailedTests() {
+        List<TestResult> failedTests = new ArrayList<TestResult>(failCount);
         for (ChildReport childReport : getChildReports()) {
             if (childReport.result instanceof TestResult) {
                 failedTests.addAll(((TestResult) childReport.result).getFailedTests());

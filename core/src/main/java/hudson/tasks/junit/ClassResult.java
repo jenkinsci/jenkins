@@ -227,6 +227,7 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     /**
      * @since 1.515
      */
+    @Override
     public String getFullName() {
     	return getParent().getName() + "." + className;
     }

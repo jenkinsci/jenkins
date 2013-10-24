@@ -25,7 +25,6 @@ package hudson.tasks.test;
 
 import hudson.Functions;
 import hudson.model.*;
-import hudson.tasks.junit.CaseResult;
 import hudson.util.*;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import org.jfree.chart.ChartFactory;
@@ -188,7 +187,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
      * 
      * @return List of failed tests from associated test result.
      */
-    public List<CaseResult> getFailedTests() {
+    public List<? extends TestResult> getFailedTests() {
         return Collections.emptyList();
     }
 
