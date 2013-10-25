@@ -2615,29 +2615,30 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                     primaryView = v.getViewName();
                 }
 
-                // read in old data that doesn't have the security field set
-                if(authorizationStrategy==null) {
-                    if(useSecurity==null || !useSecurity)
-                        authorizationStrategy = AuthorizationStrategy.UNSECURED;
-                    else
-                        authorizationStrategy = new LegacyAuthorizationStrategy();
-                }
-                if(securityRealm==null) {
-                    if(useSecurity==null || !useSecurity)
-                        setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-                    else
-                        setSecurityRealm(new LegacySecurityRealm());
-                } else {
-                    // force the set to proxy
-                    setSecurityRealm(securityRealm);
-                }
-
-                if(useSecurity!=null && !useSecurity) {
+                if (useSecurity!=null && !useSecurity) {
                     // forced reset to the unsecure mode.
                     // this works as an escape hatch for people who locked themselves out.
                     authorizationStrategy = AuthorizationStrategy.UNSECURED;
                     setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                } else {
+                    // read in old data that doesn't have the security field set
+                    if(authorizationStrategy==null) {
+                        if(useSecurity==null)
+                            authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                        else
+                            authorizationStrategy = new LegacyAuthorizationStrategy();
+                    }
+                    if(securityRealm==null) {
+                        if(useSecurity==null)
+                            setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                        else
+                            setSecurityRealm(new LegacySecurityRealm());
+                    } else {
+                        // force the set to proxy
+                        setSecurityRealm(securityRealm);
+                    }
                 }
+
 
                 // Initialize the filter with the crumb issuer
                 setCrumbIssuer(crumbIssuer);
