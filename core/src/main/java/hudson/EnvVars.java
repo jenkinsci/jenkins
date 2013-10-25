@@ -31,6 +31,8 @@ import hudson.util.CaseInsensitiveComparator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Arrays;
@@ -210,13 +212,34 @@ public class EnvVars extends TreeMap<String,String> {
     /**
      * Overrides all values in the map by the given map.
      * See {@link #override(String, String)}.
+     * @param all key and values. values will be expanded using expander.
+     * @param expander used to expand values.
+     * @return this
+     */
+    public EnvVars overrideAll(Map<String,String> all, EnvVars expander) {
+        List<Map.Entry<String, String>> extendingEntryList = new ArrayList<Map.Entry<String, String>>();
+        for (Map.Entry<String, String> e : all.entrySet()) {
+            if(e.getKey().indexOf('+') > 0) {
+                // For keys "XYZ+FOO" are used to expand "XYZ", 
+                // they should be processed after "XYZ" is processed.
+                extendingEntryList.add(e);
+                continue;
+            }
+            override(e.getKey(),(expander == null)?e.getValue():expander.expand(e.getValue()));
+        }
+        for (Map.Entry<String, String> e : extendingEntryList) {
+            override(e.getKey(),(expander == null)?e.getValue():expander.expand(e.getValue()));
+        }
+        return this;
+    }
+
+    /**
+     * Overrides all values in the map by the given map.
+     * See {@link #override(String, String)}.
      * @return this
      */
     public EnvVars overrideAll(Map<String,String> all) {
-        for (Map.Entry<String, String> e : all.entrySet()) {
-            override(e.getKey(),e.getValue());
-        }
-        return this;
+        return overrideAll(all, null);
     }
 
     /**
