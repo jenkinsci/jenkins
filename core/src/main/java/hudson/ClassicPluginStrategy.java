@@ -693,10 +693,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         @Override
         protected Class defineClassFromData(File container, byte[] classData, String classname) throws IOException {
-            return super.defineClassFromData(container, pluginManager.getCompatibilityTransformer().transform(classname,classData), classname);
+            if (!DISABLE_TRANSFORMER)
+                classData = pluginManager.getCompatibilityTransformer().transform(classname, classData);
+            return super.defineClassFromData(container, classData, classname);
         }
     }
 
     public static boolean useAntClassLoader = Boolean.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
     private static final Logger LOGGER = Logger.getLogger(ClassicPluginStrategy.class.getName());
+    public static boolean DISABLE_TRANSFORMER = Boolean.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
 }
