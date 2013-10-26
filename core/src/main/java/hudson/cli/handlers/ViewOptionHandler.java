@@ -56,7 +56,7 @@ import org.kohsuke.args4j.spi.Setter;
  * name does not exist or a user was not granted {@link View.READ} permission.
  *
  * @author ogondza
- * @since TODO
+ * @since 1.538
  */
 @MetaInfServices
 public class ViewOptionHandler extends OptionHandler<View> {

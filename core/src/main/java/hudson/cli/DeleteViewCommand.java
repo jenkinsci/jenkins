@@ -31,7 +31,7 @@ import org.kohsuke.args4j.Argument;
 
 /**
  * @author ogondza
- * @since TODO
+ * @since 1.538
  */
 @Extension
 public class DeleteViewCommand extends CLICommand {
