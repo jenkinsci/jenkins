@@ -24,6 +24,7 @@
 package hudson.util
 
 import hudson.model.Computer
+import jenkins.timer.TimerConfiguration
 import jenkins.model.Jenkins
 import hudson.model.Label
 import hudson.model.Queue.BlockedItem
@@ -31,7 +32,6 @@ import hudson.model.Queue.BuildableItem
 import hudson.model.Queue.WaitingItem
 import hudson.triggers.SafeTimerTask
 import java.text.DateFormat
-import hudson.triggers.Trigger;
 
 /**
  * Spits out the load information.
@@ -51,7 +51,7 @@ public class LoadMonitorImpl extends SafeTimerTask {
         this.dataFile = dataFile;
         labels = Jenkins.getInstance().labels*.name;
         printHeaders();
-        Trigger.timer.scheduleAtFixedRate(this,0,10*1000);
+        TimerConfiguration.getTimer().scheduleAtFixedRate(this,0,10*1000);
     }
 
     private String quote(Object s) { "\"${s}\""; }
