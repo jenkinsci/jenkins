@@ -26,12 +26,20 @@ package hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.CaseInsensitiveComparator;
+import hudson.util.VariableResolver;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Arrays;
+import java.util.TreeSet;
 import java.util.UUID;
 
 /**
@@ -144,6 +152,220 @@ public class EnvVars extends TreeMap<String,String> {
     public EnvVars overrideAll(Map<String,String> all) {
         for (Map.Entry<String, String> e : all.entrySet()) {
             override(e.getKey(),e.getValue());
+        }
+        return this;
+    }
+
+    /**
+     * Calculates the order to override variables.
+     * 
+     * We should override variables in a following order:
+     * <ol>
+     *   <li>variables that does not contain variable expressions.</li>
+     *   <li>variables that refers variables overridden in 1.</li>
+     *   <li>variables that refers variables overridden in 2.</li>
+     *   <li>...</li>
+     *   <li>(last) variables contains '+' (as PATH+MAVEN)</li>
+     * </ol>
+     * 
+     * This class orders variables in a following way:
+     * <ol>
+     *   <li>scan each overriding variables and list all referred variables (includes indirect references).</li>
+     *   <li>sort variables with a number of referring variables (ascending order).</li>
+     * </ol>
+     */
+    public static class OverrideOrderCalculator {
+        /**
+         * Extract variables referred directly from a variable.
+         */
+        private static class TraceResolver implements VariableResolver<String> {
+            private final Comparator<? super String> comparator;
+            public Set<String> referredVariables;
+            
+            public TraceResolver(Comparator<? super String> comparator) {
+                this.comparator = comparator;
+                clear();
+            }
+            
+            public void clear() {
+                referredVariables = new TreeSet<String>(comparator);
+            }
+            
+            public String resolve(String name) {
+                referredVariables.add(name);
+                return "";
+            }
+        }
+        
+        private final Comparator<? super String> comparator;
+        
+        private final Map<String,String> overrides;
+        /**
+         * set of variables that a variable is REFERRING.
+         * When A=${B}, refereeSetMap.get("A").contains("B").
+         * Also contains indirect references, when A=${B}, B=${C},
+         * refereeSetMap.get("A").contains("C").
+         */
+        private Map<String, Set<String>> refereeSetMap;
+        
+        /**
+         * set of variables that a variable is REFERRED BY.
+         * When A=${B}, referrerSetMap.get("B").contains("A").
+         * Also contains indirect references, when A=${B}, B=${C},
+         * referrerSetMap.get("C").contains("A").
+         */
+        private Map<String, Set<String>> referrerSetMap;
+        
+        public OverrideOrderCalculator(EnvVars target, Map<String,String> overrides) {
+            comparator = target.comparator();
+            this.overrides = overrides;
+            refereeSetMap = new TreeMap<String, Set<String>>(comparator);
+            referrerSetMap = new TreeMap<String, Set<String>>(comparator);
+            scan();
+        }
+        
+        /**
+         * Return an iterator for keys of overriding variables.
+         * 
+         * Scan variables in this order.
+         * This is only provided for testing purpose to control scanning order.
+         * 
+         * @return an iterator for keys of overriding variables
+         */
+        protected Iterator<String> rawKeyIterator() {
+            return overrides.keySet().iterator();
+        }
+        
+        public Set<String> getRefereeSet(String variable) {
+            return refereeSetMap.get(variable);
+        }
+        
+        public int getRefereeNum(String variable) {
+            if (refereeSetMap.containsKey(variable)) {
+                return refereeSetMap.get(variable).size();
+            }
+            return 0;
+        }
+        
+        public List<Map.Entry<String,String>> getOrderedVariables() {
+            List<Map.Entry<String,String>> varList = new ArrayList<Map.Entry<String,String>>(overrides.entrySet());
+            Collections.sort(varList, new Comparator<Map.Entry<String,String>>() {
+                @Override
+                public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
+                    String key1 = o1.getKey();
+                    String key2 = o2.getKey();
+                    if (key1.indexOf('+') > -1) {
+                        if (key2.indexOf('+') > -1) {
+                            // ABC+FOO == XYZ+BAR
+                            return 0;
+                        }
+                        // ABC+FOO > BAR
+                        return 1;
+                    }
+                    
+                    if (key2.indexOf('+') > -1) {
+                        // FOO < ABC+BAR
+                        return -1;
+                    }
+                    
+                    // depends on the number of variables each variable refers.
+                    return getRefereeNum(key1) - getRefereeNum(key2);
+                }
+            });
+            return varList;
+        }
+        
+        /**
+         * Scan all variables and list all referring variables.
+         */
+        public void scan() {
+            TraceResolver resolver = new TraceResolver(comparator);
+            
+            Iterator<String> referrerIterator  = rawKeyIterator();
+            while (referrerIterator.hasNext()) {
+                String currentVar = referrerIterator.next();
+                if (currentVar.indexOf('+') > 0) {
+                    // XYZ+AAA variables should be always processed in last.
+                    continue;
+                }
+                resolver.clear();
+                Util.replaceMacro(overrides.get(currentVar), resolver);
+                
+                // Variables directly referred from the current scanning variable.
+                Set<String> refereeSet = resolver.referredVariables;
+                
+                if (refereeSet.isEmpty()) {
+                    // nothing to do if this variables does not refer other variables.
+                    continue;
+                }
+                
+                // Find indirect referred variables:
+                //   A=${B}
+                //   CurrentVar=${A}
+                //   -> CurrentVar refers B.
+                Set<String> indirectRefereeSet = new TreeSet<String>(comparator);
+                for (String referee: refereeSet) {
+                    if (refereeSetMap.containsKey(referee)) {
+                        indirectRefereeSet.addAll(refereeSetMap.get(referee));
+                    }
+                }
+                
+                // now contains variables referred both directly and indirectly.
+                refereeSet.addAll(indirectRefereeSet);
+                
+                // Variables refers the current scanning variable.
+                // this contains both direct and indirect reference.
+                Set<String> referrerSet = referrerSetMap.get(currentVar);
+                
+                // what I have to do:
+                // 1. Create a link between the current scanning variable and referred variables.
+                //     1-a. register the current variable as a referrer of referred variables.
+                //     1-b. register referred variables as a referee of the current variable.
+                // 2. Create links between referring variables and referred variables.
+                //     2-a. register referring variables as referrers of referred variables.
+                //     2-b. register referred variables as referees of referring variables.
+                // 
+                // Links between referring variables and the current scanning variable
+                // is already created from referring variables.
+                for (String referee: refereeSet) {
+                    if (!referrerSetMap.containsKey(referee)) {
+                        referrerSetMap.put(referee, new TreeSet<String>(comparator));
+                    }
+                    // 1-a. register the current variable as a referrer of referred variables.
+                    referrerSetMap.get(referee).add(currentVar);
+                    // 2-b. register referred variables as referees of referring variables.
+                    if (referrerSet != null) {
+                        referrerSetMap.get(referee).addAll(referrerSet);
+                    }
+                }
+                
+                if (!refereeSetMap.containsKey(currentVar)) {
+                    refereeSetMap.put(currentVar, new TreeSet<String>(comparator));
+                }
+                // 1-b. register referred variables as a referee of the current variable.
+                refereeSetMap.get(currentVar).addAll(refereeSet);
+                
+                if (referrerSet != null) {
+                    for (String referer: referrerSet) {
+                        // 2-b. register referred variables as referees of referring variables.
+                        // For referrer refers the current scanning variable,
+                        // refereeSetMap.get(referer) always exists.
+                        refereeSetMap.get(referer).addAll(refereeSet);
+                    }
+                }
+            }
+        }
+    }
+    
+
+    /**
+     * Overrides all values in the map by the given map. Expressions in values will be expanded.
+     * See {@link #override(String, String)}.
+     * @return this
+     */
+    public EnvVars overrideExpandingAll(Map<String,String> all) {
+        for (Map.Entry<String, String> e : new OverrideOrderCalculator(this, all).getOrderedVariables()) {
+            override(e.getKey(), expand(e.getValue()));
         }
         return this;
     }
