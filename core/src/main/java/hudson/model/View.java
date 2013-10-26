@@ -83,6 +83,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1044,21 +1045,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return new HttpResponse() {
                 public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                     rsp.setContentType("application/xml");
-                    // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
-                    XStream2 xStream2 = new XStream2();
-                    xStream2.omitField(View.class, "owner");
-                    xStream2.toXMLUTF8(View.this,  rsp.getOutputStream());
+                    View.this.writeXml(rsp.getOutputStream());
                 }
             };
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            updateByXml((Source)new StreamSource(req.getReader()));
+            updateByXml(new StreamSource(req.getReader()));
             return HttpResponses.ok();
         }
 
         // huh?
         return HttpResponses.error(SC_BAD_REQUEST, "Unexpected request method " + req.getMethod());
+    }
+
+    /**
+     * @since 1.538
+     */
+    public void writeXml(OutputStream out) throws IOException {
+        // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
+        XStream2 xStream2 = new XStream2();
+        xStream2.omitField(View.class, "owner");
+        xStream2.toXMLUTF8(View.this,  out);
     }
 
     /**
@@ -1083,7 +1091,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // try to reflect the changes by reloading
         InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")));
         try {
+            // Do not allow overwriting view name as it might collide with another
+            // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
+            String oldname = name;
             Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
+            name = oldname;
         } catch (StreamException e) {
             throw new IOException2("Unable to read",e);
         } catch(ConversionException e) {
@@ -1185,11 +1197,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return v;
     }
 
+    /**
+     * Instantiate View subtype from XML stream.
+     *
+     * @param name Alternative name to use or <tt>null</tt> to keep the one in xml.
+     */
     public static View createViewFromXML(String name, InputStream xml) throws IOException {
         InputStream in = new BufferedInputStream(xml);
         try {
             View v = (View) Jenkins.XSTREAM.fromXML(in);
-            v.name = name;
+            if (name != null) v.name = name;
+            checkGoodName(v.name);
             return v;
         } catch(StreamException e) {
             throw new IOException2("Unable to read",e);
