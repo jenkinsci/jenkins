@@ -46,12 +46,15 @@ import org.apache.commons.discovery.resource.classes.DiscoverClasses;
 import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
 import org.jvnet.hudson.annotation_indexer.Index;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.ClassParser;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.spi.OptionHandler;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -208,7 +211,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         this.stderr = stderr;
         this.locale = locale;
         registerOptionHandlers();
-        CmdLineParser p = new CmdLineParser(this);
+        CmdLineParser p = getCmdLineParser();
 
         // add options from the authenticator
         SecurityContext sc = SecurityContextHolder.getContext();
@@ -241,6 +244,16 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } finally {
             sc.setAuthentication(old); // restore
         }
+    }
+
+    /**
+     * Get parser for this command.
+     *
+     * Exposed to be overridden by {@link CLIRegisterer}.
+     * @since TODO
+     */
+    protected CmdLineParser getCmdLineParser() {
+        return new CmdLineParser(this);
     }
     
     public Channel checkChannel() throws AbortException {
@@ -329,9 +342,44 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     protected abstract int run() throws Exception;
 
     protected void printUsage(PrintStream stderr, CmdLineParser p) {
-        stderr.println("java -jar jenkins-cli.jar "+getName()+" args...");
+        stderr.print("java -jar jenkins-cli.jar " + getName());
+        p.printSingleLineUsage(stderr);
+        stderr.println();
         printUsageSummary(stderr);
         p.printUsage(stderr);
+    }
+
+    /**
+     * Get single line summary as a string.
+     */
+    @Restricted(NoExternalUse.class)
+    public final String getSingleLineSummary() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        getCmdLineParser().printSingleLineUsage(out);
+        return out.toString();
+    }
+
+    /**
+     * Get usage as a string.
+     */
+    @Restricted(NoExternalUse.class)
+    public final String getUsage() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        getCmdLineParser().printUsage(out);
+        return out.toString();
+    }
+
+    /**
+     * Get long description as a string.
+     */
+    @Restricted(NoExternalUse.class)
+    public final String getLongDescription() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(out);
+
+        printUsageSummary(ps);
+        ps.close();
+        return out.toString();
     }
 
     /**
