@@ -23,16 +23,20 @@
  */
 package hudson.model;
 
+import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.Random;
-import java.util.Timer;
+
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 /**
  * Extension point to perform a periodic task in Hudson (through {@link Timer}.)
@@ -87,6 +91,14 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      */
     public static ExtensionList<PeriodicWork> all() {
         return Jenkins.getInstance().getExtensionList(PeriodicWork.class);
+    }
+
+    @Initializer(after= JOB_LOADED)
+    public static void init() {
+        // start all PeriodicWorks
+        for (PeriodicWork p : PeriodicWork.all()) {
+            Timer.get().scheduleAtFixedRate(p, p.getInitialDelay(), p.getRecurrencePeriod(), TimeUnit.MILLISECONDS);
+        }
     }
 
     // time constants
