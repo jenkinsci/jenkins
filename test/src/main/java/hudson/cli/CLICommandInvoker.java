@@ -24,6 +24,7 @@
 
 package hudson.cli;
 
+import hudson.Extension;
 import hudson.model.User;
 import hudson.security.Permission;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -31,11 +32,16 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import jenkins.model.Jenkins;
+
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -56,6 +62,14 @@ public class CLICommandInvoker {
 
     public CLICommandInvoker(final JenkinsRule rule, final CLICommand command) {
 
+        if (command.getClass().getAnnotation(Extension.class) == null) {
+
+            throw new AssertionError(String.format(
+                    "Command %s is missing @Extension annotation.",
+                    command.getClass()
+            ));
+        }
+
         this.rule = rule;
         this.command = command;
     }
@@ -67,6 +81,8 @@ public class CLICommandInvoker {
     }
 
     public CLICommandInvoker withStdin(final InputStream stdin) {
+
+        if (stdin == null) throw new NullPointerException("No stdin provided");
 
         this.stdin = stdin;
         return this;
@@ -150,6 +166,72 @@ public class CLICommandInvoker {
         public String stderr() {
 
             return err.toString();
+        }
+
+        @Override
+        public String toString() {
+
+            StringBuilder builder = new StringBuilder("CLI command exited with ").append(result);
+            String stdout = stdout();
+            if (!"".equals(stdout)) {
+                builder.append("\nSTDOUT:\n").append(stdout);
+            }
+            String stderr = stderr();
+            if (!"".equals(stderr)) {
+                builder.append("\nSTDERR:\n").append(stderr);
+            }
+
+            return builder.toString();
+        }
+    }
+
+    public abstract static class Matcher extends TypeSafeMatcher<Result> {
+
+        private final String description;
+
+        private Matcher(String description) {
+            this.description = description;
+        }
+
+        @Override
+        protected void describeMismatchSafely(Result result, Description description) {
+            description.appendText(result.toString());
+        }
+
+        public void describeTo(Description description) {
+            description.appendText(this.description);
+        }
+
+        public static Matcher hasNoStandardOutput() {
+            return new Matcher("No standard output") {
+                @Override protected boolean matchesSafely(Result result) {
+                    return "".equals(result.stdout());
+                }
+            };
+        }
+
+        public static Matcher hasNoErrorOutput() {
+            return new Matcher("No error output") {
+                @Override protected boolean matchesSafely(Result result) {
+                    return "".equals(result.stderr());
+                }
+            };
+        }
+
+        public static Matcher succeeded() {
+            return new Matcher("Exited with 0 return code") {
+                @Override protected boolean matchesSafely(Result result) {
+                    return result.result == 0;
+                }
+            };
+        }
+
+        public static Matcher failedWith(final long expectedCode) {
+            return new Matcher("Exited with " + expectedCode + " return code") {
+                @Override protected boolean matchesSafely(Result result) {
+                    return result.result == expectedCode;
+                }
+            };
         }
     }
 }
