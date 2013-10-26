@@ -81,11 +81,13 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
+import hudson.util.TimeUnit2;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.Uptime;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
@@ -1532,7 +1534,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
 
-                // build now, or nothing will ever be built
+                // At this point we start thinking about triggering a build just to get a workspace,
+                // because otherwise there's no way we can detect changes.
+                // However, first there are some conditions in which we do not want to do so.
+
+                // give time for slaves to come online if we are right after reconnection (JENKINS-8408)
+                long running = Jenkins.getInstance().getInjector().getInstance(Uptime.class).getUptime();
+                long remaining = TimeUnit2.MINUTES.toMillis(10)-running;
+                if (remaining>0) {
+                    listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(remaining/1000));
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
+                    return NO_CHANGES;
+                }
+
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
@@ -1541,17 +1555,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return NO_CHANGES;
                 }
+
                 listener.getLogger().println( ws==null
                     ? Messages.AbstractProject_WorkspaceOffline()
                     : Messages.AbstractProject_NoWorkspace());
                 if (isInQueue()) {
                     listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
                     return NO_CHANGES;
-                } else {
-                    listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
-                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
-                    return BUILD_NOW;
                 }
+
+                // build now, or nothing will ever be built
+                listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
+                listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
+                return BUILD_NOW;
             } else {
                 WorkspaceList l = b.getBuiltOn().toComputer().getWorkspaceList();
                 return pollWithWorkspace(listener, scm, b, ws, l);
