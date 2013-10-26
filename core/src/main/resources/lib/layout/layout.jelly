@@ -173,8 +173,17 @@ ${h.initPageVariables(context)}
                 <st:nbsp/>
                 <j:choose>
                   <j:when test="${!h.isAnonymous()}">
+                    <j:invokeStatic var="user" className="hudson.model.User" method="current" />
+                    <j:choose>
+                      <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
+                        <j:set var="userName" value="${user.id}"/>
+                      </j:when>
+                      <j:otherwise>
+                        <j:set var="userName" value="${user.fullName}"/>
+                      </j:otherwise>
+                    </j:choose>
                     <span style="white-space:nowrap">
-                      <a href="${rootURL}/user/${app.authentication.name}" class="model-link inside"><b>${app.authentication.name}</b></a>
+                      <a href="${rootURL}/user/${user.id}" class="model-link inside"><b>${userName}</b></a>
                       <j:if test="${app.securityRealm.canLogOut()}">
                         |
                         <a href="${rootURL}/logout"><b>${%logout}</b></a>
