@@ -2,8 +2,15 @@
     var errorMessage = "Leave without saving?";
     var needToConfirm = false;
 
-    window.onbeforeunload = confirmExit;
-    Event.observe(window, 'load', initConfirm);
+    function confirm() {
+      needToConfirm = true;
+    }
+
+    function confirmExit() {
+      if (needToConfirm) {
+        return errorMessage;
+      }
+    }
 
     function initConfirm() {
       var configForm = document.getElementsByName("config")[0];
@@ -13,53 +20,38 @@
       for ( var i = 0; i < buttons.length; i++) {
         name = buttons[i].parentNode.parentNode.getAttribute('name');
         if (name == "Submit") {
-          addEventToElement(buttons[i], 'click', function() {
+          $(buttons[i]).on('click', function() {
             needToConfirm = false;
           });
         } else if (name == "Apply") {
         } else {
-          addEventToElement(buttons[i], 'click', confirm);
+          $(buttons[i]).on('click', confirm);
         }
       }
 
       var inputs = configForm.getElementsByTagName("input");
       for ( var i = 0; i < inputs.length; i++) {
-        addEventToElement(inputs[i], 'change', confirm);
+        $(inputs[i]).on('change', confirm);
         if (inputs[i].type == 'checkbox' || inputs[i].type == 'radio') {
-          addEventToElement(inputs[i], 'click', confirm);
+          $(inputs[i]).on('click', confirm);
         } else {
-          addEventToElement(inputs[i], 'keydown', confirm);
+          $(inputs[i]).on('keydown', confirm);
         }
       }
 
       inputs = configForm.getElementsByTagName("select");
       for ( var i = 0; i < inputs.length; i++) {
-        addEventToElement(inputs[i], 'keydown', confirm);
-        addEventToElement(inputs[i], 'click', confirm);
+        $(inputs[i]).on('keydown', confirm);
+        $(inputs[i]).on('click', confirm);
       }
 
       inputs = configForm.getElementsByTagName("textarea");
       for ( var i = 0; i < inputs.length; i++) {
-        addEventToElement(inputs[i], 'keydown', confirm);
+        $(inputs[i]).on('keydown', confirm);
       }
     }
 
-    function confirm() {
-      needToConfirm = true;
-    }
+    window.onbeforeunload = confirmExit;
+    $(window).on('load', initConfirm);
 
-    function addEventToElement(obj, evType, fn) {
-      if (obj.addEventListener) {
-        obj.addEventListener(evType, fn, false);
-        return true;
-      } else if (obj.attachEvent) {
-        return obj.attachEvent("on" + evType, fn);
-      }
-    }
-
-    function confirmExit() {
-      if (needToConfirm) {
-        return errorMessage;
-      }
-    }
 })();
