@@ -54,7 +54,9 @@ public class BooleanParameterValue extends ParameterValue {
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         env.put(name,Boolean.toString(value));
-        env.put(name.toUpperCase(Locale.ENGLISH),Boolean.toString(value)); // backward compatibility pre 1.345
+        if (!env.isCaseSensitive()) {
+            env.put(name.toUpperCase(Locale.ENGLISH),Boolean.toString(value)); // backward compatibility pre 1.345
+        }
     }
 
     @Override

@@ -109,7 +109,7 @@ public class CommandLauncher extends ComputerLauncher {
             }
 
             if (env != null) {
-            	pb.environment().putAll(env);
+            	pb.environment().putAll(env.forNativeProcess());
             }
             
             final Process proc = _proc = pb.start();

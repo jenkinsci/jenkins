@@ -24,7 +24,9 @@
 package hudson;
 
 import hudson.remoting.Callable;
+import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
+import hudson.slaves.SlaveComputer;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
@@ -42,7 +44,10 @@ import java.util.TreeMap;
 import java.util.Arrays;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jenkins.model.Jenkins;
 
 /**
  * Environment variables.
@@ -73,6 +78,7 @@ import java.util.logging.Logger;
  */
 public class EnvVars extends TreeMap<String,String> {
     private static Logger LOGGER = Logger.getLogger(EnvVars.class.getName());
+    public static final String PROP_CASE_INSENSITIVE = "hudson.EnvVars.caseInsensitive";
     /**
      * If this {@link EnvVars} object represents the whole environment variable set,
      * not just a partial list used for overriding later, then we need to know
@@ -84,8 +90,60 @@ public class EnvVars extends TreeMap<String,String> {
      */
     private Platform platform;
 
+    private boolean caseSensitive;
+
+    /**
+     * Returns whether variables are handled case sensitive.
+     * 
+     * @return Whether variables are handled case sensitive
+     */
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
+    public EnvVars(boolean caseSensitive) {
+        super(caseSensitive?null:CaseInsensitiveComparator.INSTANCE);
+        this.platform = Platform.current();
+        this.caseSensitive = caseSensitive;
+    }
+
     public EnvVars() {
-        super(CaseInsensitiveComparator.INSTANCE);
+        this(isShouldCaseSensitive());
+    }
+
+    private static Boolean shouldNotCaseSensitive;
+
+    /**
+     * Return whether configured to handle variables case sensitive.
+     * 
+     * For {@link EnvVars#masterEnvVars} are initialized before Jenkins finishes to startup,
+     * there is a case {@link Jenkins#getInstance()} returns null even on the master node.
+     * 
+     * @return whether configured to handle variables case sensitive
+     */
+    private static boolean isShouldCaseSensitive() {
+        if (shouldNotCaseSensitive != null) {
+            return !shouldNotCaseSensitive;
+        }
+        VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+        if(channelToMaster == null || channelToMaster instanceof LocalChannel) {
+            // Running on master.
+            shouldNotCaseSensitive = Boolean.parseBoolean(System.getProperty(PROP_CASE_INSENSITIVE, "false"));
+        } else {
+            // Running on slave.
+            try {
+                shouldNotCaseSensitive = channelToMaster.call(new Callable<Boolean, Exception>(){
+                    private static final long serialVersionUID = -1077487410050526334L;
+                    @Override
+                    public Boolean call() throws Exception {
+                        return Boolean.parseBoolean(System.getProperty(PROP_CASE_INSENSITIVE, "false"));
+                    }
+                });
+            } catch(Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to get a system property on the master", e);
+            }
+        }
+        return (shouldNotCaseSensitive != null)?!shouldNotCaseSensitive:true;
     }
 
     public EnvVars(Map<String,String> m) {
@@ -131,7 +189,18 @@ public class EnvVars extends TreeMap<String,String> {
         int idx = key.indexOf('+');
         if(idx>0) {
             String realKey = key.substring(0,idx);
-            String v = get(realKey);
+            String v = null;
+            if (!platform.envCaseSensitive && isCaseSensitive()) {
+                EnvVars incase = new EnvVars(false);
+                incase.putAll(this);
+                if (incase.containsKey(realKey)) {
+                    Map.Entry<String, String> entry = incase.ceilingEntry(realKey);
+                    realKey = entry.getKey();
+                    v = entry.getValue();
+                }
+            } else {
+                v = get(realKey);
+            }
             if(v==null) v=value;
             else {
                 // we might be handling environment variables for a slave that can have different path separator
@@ -153,7 +222,17 @@ public class EnvVars extends TreeMap<String,String> {
      * @return this
      */
     public EnvVars overrideAll(Map<String,String> all) {
+        List<Map.Entry<String, String>> extendingEntryList = new ArrayList<Map.Entry<String, String>>();
         for (Map.Entry<String, String> e : all.entrySet()) {
+            if(e.getKey().indexOf('+') > 0) {
+                // For keys "XYZ+FOO" are used to expand "XYZ", 
+                // they should be processed after "XYZ" is processed.
+                extendingEntryList.add(e);
+                continue;
+            }
+            override(e.getKey(),e.getValue());
+        }
+        for (Map.Entry<String, String> e : extendingEntryList) {
             override(e.getKey(),e.getValue());
         }
         return this;
@@ -426,5 +505,34 @@ public class EnvVars extends TreeMap<String,String> {
             // they'll hang
             vars.remove("MAVEN_OPTS");
         return vars;
+    }
+
+    /**
+     * Return environment variables for launching a native process.
+     * 
+     * In Unix, does nothing.
+     * 
+     * In Windows, removes environment variables with case-different names
+     * except only one value.
+     * It is implementation-dependent which value is used.
+     * 
+     * @return environment variables adjusted for a native process.
+     */
+    public EnvVars forNativeProcess() {
+        if (platform.envCaseSensitive || !isCaseSensitive()) {
+            return this;
+        }
+        EnvVars incase = new EnvVars(false);
+        incase.putAll(this);
+        return incase;
+    }
+
+    /**
+     * @return
+     * @see java.util.AbstractMap#toString()
+     */
+    @Override
+    public String toString() {
+        return isCaseSensitive()?super.toString():String.format("[Case insensitive]%s", super.toString());
     }
 }
