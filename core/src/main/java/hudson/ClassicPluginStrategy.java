@@ -441,7 +441,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Repackage classes directory into a jar file to make it remoting friendly.
      * The remoting layer can cache jar files but not class files.
      */
-    private static void createClassJarFromWebInfClasses(File archive, File destDir, Project prj) {
+    private static void createClassJarFromWebInfClasses(File archive, File destDir, Project prj) throws IOException {
         File classesJar = new File(destDir, "WEB-INF/lib/classes.jar");
 
         ZipFileSet zfs = new ZipFileSet();
@@ -458,31 +458,36 @@ public class ClassicPluginStrategy implements PluginStrategy {
         mapper.add(gm);
 
         final long dirTime = archive.lastModified();
-        Zip z = new Zip() {
-            /**
-             * Forces the fixed timestamp for directories to make sure
-             * classes.jar always get a consistent checksum.
-             */
-            protected void zipDir(Resource dir, ZipOutputStream zOut, String vPath,
-                                  int mode, ZipExtraField[] extra)
-                throws IOException {
-
-                ZipOutputStream wrapped = new ZipOutputStream(new NullOutputStream()) {
-                    @Override
-                    public void putNextEntry(ZipEntry ze) throws IOException {
-                        ze.setTime(dirTime+1999);   // roundup
-                        super.putNextEntry(ze);
-                    }
-                };
-                super.zipDir(dir,wrapped,vPath,mode,extra);
+        // this ZipOutputStream is reused and not created for each directory
+        final ZipOutputStream wrappedZOut = new ZipOutputStream(new NullOutputStream()) {
+            @Override
+            public void putNextEntry(ZipEntry ze) throws IOException {
+                ze.setTime(dirTime+1999);   // roundup
+                super.putNextEntry(ze);
             }
         };
-        z.setProject(prj);
-        z.setTaskType("zip");
-        classesJar.getParentFile().mkdirs();
-        z.setDestFile(classesJar);
-        z.add(mapper);
-        z.execute();
+        try {
+            Zip z = new Zip() {
+                /**
+                 * Forces the fixed timestamp for directories to make sure
+                 * classes.jar always get a consistent checksum.
+                 */
+                protected void zipDir(Resource dir, ZipOutputStream zOut, String vPath,
+                                      int mode, ZipExtraField[] extra)
+                    throws IOException {
+                    // use wrappedZOut instead of zOut
+                    super.zipDir(dir,wrappedZOut,vPath,mode,extra);
+                }
+            };
+            z.setProject(prj);
+            z.setTaskType("zip");
+            classesJar.getParentFile().mkdirs();
+            z.setDestFile(classesJar);
+            z.add(mapper);
+            z.execute();
+        } finally {
+            wrappedZOut.close();
+        }
     }
 
     private static void unzipExceptClasses(File archive, File destDir, Project prj) {
