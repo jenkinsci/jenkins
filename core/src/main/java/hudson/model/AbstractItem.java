@@ -265,7 +265,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         cp.setProject(new org.apache.tools.ant.Project());
                         cp.setTodir(newRoot);
                         FileSet src = new FileSet();
-                        src.setDir(getRootDir());
+                        src.setDir(oldRoot);
                         cp.addFileset(src);
                         cp.setOverwrite(true);
                         cp.setPreserveLastModified(true);
