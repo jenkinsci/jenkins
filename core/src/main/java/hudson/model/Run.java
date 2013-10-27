@@ -468,7 +468,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Determine whether the run is being build right now.
      * @return true if after started and before completed.
-     * @since TODO
+     * @since 1.538
      */
     protected boolean isInProgress() {
         return state.equals(State.BUILDING) || state.equals(State.POST_PRODUCTION);
