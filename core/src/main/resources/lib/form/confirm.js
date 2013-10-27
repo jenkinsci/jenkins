@@ -1,5 +1,5 @@
 (function() {
-    var errorMessage = "Leave without saving?";
+    var errorMessage = "You have modified configuration";
     var needToConfirm = false;
 
     function confirm() {
@@ -19,11 +19,10 @@
       var name;
       for ( var i = 0; i < buttons.length; i++) {
         name = buttons[i].parentNode.parentNode.getAttribute('name');
-        if (name == "Submit") {
+        if (name == "Submit" || name == "Apply") {
           $(buttons[i]).on('click', function() {
             needToConfirm = false;
           });
-        } else if (name == "Apply") {
         } else {
           $(buttons[i]).on('click', confirm);
         }
@@ -52,6 +51,6 @@
     }
 
     window.onbeforeunload = confirmExit;
-    $(window).on('load', initConfirm);
+    Event.on(window,'load', initConfirm);
 
 })();
