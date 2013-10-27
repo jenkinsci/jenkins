@@ -226,6 +226,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         /**
          * Build is completed now, and the status is determined,
          * but log files are still being updated.
+         *
+         * The significance of this state is that Jenkins
+         * will now see this build as completed. Things like
+         * "triggering other builds" requires this as pre-condition.
+         * See JENKINS-980.
          */
         POST_PRODUCTION,
         /**
