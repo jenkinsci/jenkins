@@ -62,8 +62,10 @@ public class Timer {
      * Shutdown the timer and throw it away.
      */
     public static synchronized void shutdown() {
-        executorService.shutdownNow();
-        executorService = null;
+        if (executorService != null) {
+            executorService.shutdownNow();
+            executorService = null;
+        }
     }
 
     /**
