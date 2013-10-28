@@ -24,18 +24,19 @@
 package hudson;
 
 import com.google.common.collect.Lists;
+import com.thoughtworks.xstream.XStream;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
+import hudson.util.FormValidation;
+import hudson.util.IOUtils;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.XStream2;
-
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
@@ -43,13 +44,10 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
-
-import com.thoughtworks.xstream.XStream;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-
+import jenkins.model.Jenkins;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -65,7 +63,7 @@ import org.kohsuke.stapler.QueryParameter;
  * (as described in the Java 6 tech note 
  * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
- * 
+ *
  * @see jenkins.model.Jenkins#proxy
  */
 public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
@@ -80,7 +78,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     /**
      * List of host names that shouldn't use proxy, as typed by users.
      *
-     * @see #getNoProxyHostPatterns() 
+     * @see #getNoProxyHostPatterns()
      */
     public final String noProxyHost;
 
@@ -91,6 +89,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * encrypted password
      */
     private Secret secretPassword;
+    
+    private String testUrl;
 
     public ProxyConfiguration(String name, int port) {
         this(name,port,null,null);
@@ -100,13 +100,18 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this(name,port,userName,password,null);
     }
 
-    @DataBoundConstructor
     public ProxyConfiguration(String name, int port, String userName, String password, String noProxyHost) {
+        this(name,port,userName,password,noProxyHost,null);
+    }
+
+    @DataBoundConstructor
+    public ProxyConfiguration(String name, int port, String userName, String password, String noProxyHost, String testUrl) {
         this.name = Util.fixEmptyAndTrim(name);
         this.port = port;
         this.userName = Util.fixEmptyAndTrim(userName);
         this.secretPassword = Secret.fromString(password);
         this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
+        this.testUrl =Util.fixEmptyAndTrim(testUrl);
     }
 
     public String getUserName() {
@@ -124,6 +129,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     public String getEncryptedPassword() {
         return (secretPassword == null) ? null : secretPassword.getEncryptedValue();
+    }
+
+    public String getTestUrl() {
+        return testUrl;
     }
 
     /**
@@ -207,7 +216,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
         URLConnection con = url.openConnection(p.createProxy(url.getHost()));
         if(p.getUserName()!=null) {
-        	// Add an authenticator which provides the credentials for proxy authentication
+            // Add an authenticator which provides the credentials for proxy authentication
             Authenticator.setDefault(new Authenticator() {
                 @Override
                 public PasswordAuthentication getPasswordAuthentication() {
@@ -224,10 +233,14 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
         return con;
     }
-    
+
     public static InputStream getInputStream(URL url) throws IOException {
         Jenkins h = Jenkins.getInstance(); // this code might run on slaves
         final ProxyConfiguration p = (h != null) ? h.proxy : null;
+        return getInputStream(url, p);
+    }
+    
+    public static InputStream getInputStream(URL url, final ProxyConfiguration p) throws IOException {
         if (p == null) 
             return new RetryableHttpStream(url);
 
@@ -245,7 +258,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 }
             });
         }
-        
+
         return is;
     }
 
@@ -279,6 +292,32 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 return FormValidation.error(Messages.PluginManager_PortNotInRange(0, 65535));
             }
             return FormValidation.ok();
+        }
+
+        public FormValidation doValidateProxy(
+                @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
+                @QueryParameter("userName") String userName, @QueryParameter("password") String password,
+                @QueryParameter("noProxyHost") String noProxyHost) {
+
+            if (Util.fixEmptyAndTrim(testUrl) == null) {
+                return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
+            }
+            
+            ProxyConfiguration pc = null;
+            if (Util.fixEmptyAndTrim(name) != null) {
+                pc = new ProxyConfiguration(name, port, userName, password, noProxyHost);
+            }
+            
+            InputStream is = null;
+            try {
+                is = ProxyConfiguration.getInputStream(new URL(testUrl), pc);
+            } catch (IOException e) {
+                return FormValidation.error(e, Messages.ProxyConfiguration_FailedToConnectViaProxy(testUrl));
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
+            
+            return FormValidation.ok(Messages.ProxyConfiguration_Success());
         }
     }
 }
