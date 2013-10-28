@@ -26,10 +26,10 @@ package hudson.node_monitors;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
+import jenkins.timer.TimerConfiguration;
 import jenkins.model.Jenkins;
 import hudson.model.ComputerSet;
 import hudson.model.AdministrativeMonitor;
-import hudson.triggers.Trigger;
 import hudson.triggers.SafeTimerTask;
 import hudson.slaves.OfflineCause;
 
@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,14 +86,12 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     }
 
     private void schedule(long interval) {
-        Timer timer = Trigger.timer;
-        if (timer != null) {
-            timer.scheduleAtFixedRate(new SafeTimerTask() {
+        TimerConfiguration.getTimer()
+            .scheduleAtFixedRate(new SafeTimerTask() {
                 public void doRun() {
                     triggerUpdate();
                 }
             }, interval, interval);
-        }
     }
 
     /**

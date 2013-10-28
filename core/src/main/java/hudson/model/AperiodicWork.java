@@ -25,12 +25,11 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import jenkins.timer.TimerConfiguration;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import jenkins.model.Jenkins;
 
 import java.util.Random;
-import java.util.Timer;
 import java.util.logging.Logger;
 
 
@@ -85,10 +84,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
     @Override
     public final void doRun() throws Exception{
     	doAperiodicRun();
-        Timer timer = Trigger.timer;
-        if (timer != null) {
-            timer.schedule(getNewInstance(), getRecurrencePeriod());
-        }
+        TimerConfiguration.getTimer().schedule(getNewInstance(), getRecurrencePeriod());
     }
     
     protected abstract void doAperiodicRun();

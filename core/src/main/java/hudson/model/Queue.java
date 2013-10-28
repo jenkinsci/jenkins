@@ -65,8 +65,8 @@ import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
+import jenkins.timer.TimerConfiguration;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import hudson.util.TimeUnit2;
 import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
@@ -91,7 +91,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Timer;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -1986,10 +1985,7 @@ public class Queue extends ResourceController implements Saveable {
 
         private void periodic() {
             long interval = 5000;
-            Timer timer = Trigger.timer;
-            if (timer != null) {
-                timer.schedule(this, interval, interval);
-            }
+            TimerConfiguration.getTimer().scheduleWithFixedDelay(this, interval, interval);
         }
 
         protected void doRun() {

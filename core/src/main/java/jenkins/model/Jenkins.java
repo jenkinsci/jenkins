@@ -161,6 +161,7 @@ import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import jenkins.timer.TimerConfiguration;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
@@ -838,15 +839,12 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             }
             dnsMultiCast = new DNSMultiCast(this);
 
-            Timer timer = Trigger.timer;
-            if (timer != null) {
-                timer.scheduleAtFixedRate(new SafeTimerTask() {
-                    @Override
-                    protected void doRun() throws Exception {
-                        trimLabels();
-                    }
-                }, TimeUnit2.MINUTES.toMillis(5), TimeUnit2.MINUTES.toMillis(5));
-            }
+            TimerConfiguration.getTimer().scheduleAtFixedRate(new SafeTimerTask() {
+                @Override
+                protected void doRun() throws Exception {
+                    trimLabels();
+                }
+            }, TimeUnit2.MINUTES.toMillis(5), TimeUnit2.MINUTES.toMillis(5));
 
             updateComputerList();
 
@@ -2700,12 +2698,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         if(dnsMultiCast!=null)
             dnsMultiCast.close();
         interruptReloadThread();
-        Timer timer = Trigger.timer;
-        if (timer != null) {
-            timer.cancel();
-        }
-        // TODO: how to wait for the completion of the last job?
-        Trigger.timer = null;
+        TimerConfiguration.getTimer().shutdown();
+
         if(tcpSlaveAgentListener!=null)
             tcpSlaveAgentListener.shutdown();
 

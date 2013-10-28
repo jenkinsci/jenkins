@@ -23,9 +23,9 @@
  */
 package hudson.util;
 
+import jenkins.timer.TimerConfiguration;
 import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -40,7 +40,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
-import java.util.Timer;
 
 /**
  * Makes sure that no other Hudson uses our <tt>JENKINS_HOME</tt> directory,
@@ -146,14 +145,13 @@ public class DoubleLaunchChecker {
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
         long MINUTE = 1000*60;
-        Timer timer = Trigger.timer;
-        if (timer != null) {
-            timer.schedule(new SafeTimerTask() {
+
+        TimerConfiguration.getTimer()
+            .schedule(new SafeTimerTask() {
                 protected void doRun() {
                     execute();
                 }
-            },(random.nextInt(30)+60)*MINUTE);
-        }
+            }, (random.nextInt(30) + 60) * MINUTE);
     }
 
     /**
