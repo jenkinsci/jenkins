@@ -30,7 +30,7 @@ public class Timer {
      * The scheduled executor thread pool. This is initialized lazily since it may be created/shutdown many times
      * when running the test suite.
      */
-    private static ScheduledExecutorService executorService = null;
+    private static ScheduledExecutorService executorService;
 
     /**
      * Returns the scheduled executor service used by all timed tasks in Jenkins.
