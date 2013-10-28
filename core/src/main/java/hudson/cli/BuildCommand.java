@@ -23,6 +23,7 @@
  */
 package hudson.cli;
 
+import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -108,7 +109,7 @@ public class BuildCommand extends CLICommand {
                 if (pd==null)
                     throw new AbortException(String.format("\'%s\' is not a valid parameter. Did you mean %s?",
                             name, EditDistance.findNearest(name, pdp.getParameterDefinitionNames())));
-                values.add(pd.createValue(this,e.getValue()));
+                values.add(pd.createValue(this, Util.fixNull(e.getValue())));
             }
 
             // handle missing parameters by adding as default values ISSUE JENKINS-7162
