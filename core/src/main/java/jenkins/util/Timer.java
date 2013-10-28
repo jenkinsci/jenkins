@@ -1,6 +1,7 @@
 package jenkins.util;
 
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -36,37 +37,31 @@ public class Timer {
      *
      * @return the single {@link ScheduledExecutorService}.
      */
-    public static ScheduledExecutorService get() {
+    @Nonnull
+    public static synchronized ScheduledExecutorService get() {
+        if (executorService == null) {
+            // corePoolSize is set to 10, but will only be created if needed.
+            // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
+            executorService = Executors.newScheduledThreadPool(10, new ThreadFactory() {
+
+                private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setName("Jenkins-cron-thread-" + threadNumber.getAndIncrement());
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
+        }
         return executorService;
-    }
-
-    /**
-     * Explicitly initialize the Timer.
-     *
-     * We don't initialize lazily because it's not required and
-     * it's simpler than using the requisite DCL/volatile pattern.
-     */
-    public static void initialize() {
-        // corePoolSize is set to 10, but will only be created if needed.
-        // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
-        executorService = Executors.newScheduledThreadPool(10, new ThreadFactory() {
-
-            private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("Jenkins-cron-thread-" + threadNumber.getAndIncrement());
-                t.setDaemon(true);
-                return t;
-            }
-        });
     }
 
     /**
      * Shutdown the timer and throw it away.
      */
-    public static void shutdown() {
+    public static synchronized void shutdown() {
         executorService.shutdownNow();
         executorService = null;
     }
