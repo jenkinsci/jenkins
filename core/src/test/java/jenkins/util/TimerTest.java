@@ -16,7 +16,7 @@ public class TimerTest {
      */
     @Test
     @Bug(19622)
-    public void testThatTimersArentBlocked() throws InterruptedException {
+    public void timersArentBlocked() throws InterruptedException {
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch stopLatch = new CountDownLatch(1);
 
@@ -35,7 +35,6 @@ public class TimerTest {
             }
         };
 
-        Timer.initialize();
         Timer.get().schedule(task1, 1, TimeUnit.MILLISECONDS);
         startLatch.await();
         Timer.get().schedule(task2, 2, TimeUnit.MILLISECONDS);
