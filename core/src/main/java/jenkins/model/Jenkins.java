@@ -765,7 +765,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             // doing this early allows InitStrategy to set environment upfront
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
-            Timer.initialize();
+            Trigger.timer = new java.util.Timer("Jenkins cron thread");
             queue = new Queue(LoadBalancer.CONSISTENT_HASH);
 
             try {
@@ -2697,6 +2697,14 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         if(dnsMultiCast!=null)
             dnsMultiCast.close();
         interruptReloadThread();
+
+        java.util.Timer timer = Trigger.timer;
+        if (timer != null) {
+            timer.cancel();
+        }
+        // TODO: how to wait for the completion of the last job?
+        Trigger.timer = null;
+
         Timer.shutdown();
 
         if(tcpSlaveAgentListener!=null)
