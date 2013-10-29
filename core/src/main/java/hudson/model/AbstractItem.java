@@ -569,6 +569,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Updates Job by its XML definition.
+     * @since 1.473
      */
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
