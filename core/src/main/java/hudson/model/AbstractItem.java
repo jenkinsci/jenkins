@@ -52,6 +52,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -157,15 +158,17 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
              
     public File getRootDir() {
-        return parent.getRootDirFor(this);
+        return getParent().getRootDirFor(this);
     }
 
     /**
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
     @WithBridgeMethods(value=Jenkins.class,castRequired=true)
-    public ItemGroup getParent() {
-        assert parent!=null;
+    @Override public @Nonnull ItemGroup getParent() {
+        if (parent == null) {
+            throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + name + "]");
+        }
         return parent;
     }
 
