@@ -593,8 +593,7 @@ THE SOFTWARE.
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
-            <!-- Currently held back to java15. After Sep 30 2013 (perhaps?), switch to java1${java.level}. -->
-            <artifactId>java15</artifactId>
+            <artifactId>java1${java.level}</artifactId>
             <version>1.0</version>
           </signature>
         </configuration>
