@@ -317,6 +317,7 @@ THE SOFTWARE.
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.0</version>
           <configuration>
+            <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
           </configuration>
         </plugin>
