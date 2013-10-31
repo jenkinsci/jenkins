@@ -237,6 +237,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Points to the same object as {@link #jenkins} does.
      */
+    @Deprecated
     public Hudson hudson;
 
     public Jenkins jenkins;
