@@ -17,7 +17,9 @@ import java.io.OutputStream;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.339
+ * @deprecated Does nothing different from {@link SFTPv3Client}.
  */
+@Deprecated
 public class SFTPClient extends SFTPv3Client {
     public SFTPClient(Connection conn) throws IOException {
         super(conn);
