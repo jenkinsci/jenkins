@@ -211,7 +211,6 @@ import jenkins.model.JenkinsLocationConfiguration;
 
 import org.acegisecurity.GrantedAuthorityImpl;
 
-import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -1111,7 +1110,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Asserts that the XPath matches.
      */
     public void assertXPath(HtmlPage page, String xpath) {
-        assertThat(page.getDocumentElement(), hasXPath(xpath));
+        assertNotNull("There should be an object that matches XPath:" + xpath,
+                page.getDocumentElement().selectSingleNode(xpath));
     }
 
     /** Asserts that the XPath matches the contents of a DomNode page. This
@@ -1126,13 +1126,23 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
     public void assertXPathValue(DomNode page, String xpath, String expectedValue) {
-        org.w3c.dom.Node node = page.getFirstByXPath(xpath);
-        assertThat(node, hasXPath(xpath, is(expectedValue)));
+        Object node = page.getFirstByXPath(xpath);
+        assertNotNull("no node found", node);
+        assertTrue("the found object was not a Node " + xpath, node instanceof org.w3c.dom.Node);
+
+        org.w3c.dom.Node n = (org.w3c.dom.Node) node;
+        String textString = n.getTextContent();
+        assertEquals("xpath value should match for " + xpath, expectedValue, textString);
     }
 
     public void assertXPathValueContains(DomNode page, String xpath, String needle) {
-        org.w3c.dom.Node node = page.getFirstByXPath(xpath);
-        assertThat(node, hasXPath(xpath, Matchers.containsString(needle)));
+        Object node = page.getFirstByXPath(xpath);
+        assertNotNull("no node found", node);
+        assertTrue("the found object was not a Node " + xpath, node instanceof org.w3c.dom.Node);
+
+        org.w3c.dom.Node n = (org.w3c.dom.Node) node;
+        String textString = n.getTextContent();
+        assertTrue("needle found in haystack", textString.contains(needle));
     }
 
     public void assertXPathResultsContainText(DomNode page, String xpath, String needle) {
