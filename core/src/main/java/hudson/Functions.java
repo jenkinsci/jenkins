@@ -1147,8 +1147,10 @@ public class Functions {
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
             int threadsLen = tg.enumerate(threads, true);
-            for (int i = 0; i < threadsLen; i++)
-                map.put(threads[i].getId(), threads[i].getThreadGroup().getName());
+            for (int i = 0; i < threadsLen; i++) {
+                ThreadGroup group = threads[i].getThreadGroup();
+                map.put(threads[i].getId(), group != null ? group.getName() : null);
+            }
         }
 
         protected int compare(long idA, long idB) {
