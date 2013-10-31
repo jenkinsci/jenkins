@@ -307,10 +307,12 @@ public class CLI {
         } catch (IOException e) {
             try {
                 InputStream es = ((HttpURLConnection)conn).getErrorStream();
-                while (es.read(buf) >= 0) {
-                    // Ignore
+                if (es!=null) {
+                    while (es.read(buf) >= 0) {
+                        // Ignore
+                    }
+                    es.close();
                 }
-                es.close();
             } catch (IOException ex) {
                 // Ignore
             }
