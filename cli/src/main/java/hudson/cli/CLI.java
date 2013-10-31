@@ -284,6 +284,10 @@ public class CLI {
 
         flushURLConnection(head);
         if (p1==null && p2==null) {
+            // we aren't finding headers we are expecting. Is this even running Jenkins?
+            if (head.getHeaderField("X-Hudson")==null && head.getHeaderField("X-Jenkins")==null)
+                throw new IOException("There's no Jenkins running at "+url);
+
             throw new IOException("No X-Jenkins-CLI2-Port among " + head.getHeaderFields().keySet());
         }
 
