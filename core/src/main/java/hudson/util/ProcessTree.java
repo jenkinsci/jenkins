@@ -406,10 +406,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     }
 
                     public void killRecursively() throws InterruptedException {
+                        //TODO: Workaround for the nested processes issue
                         LOGGER.fine("Recursively killing pid="+getPid());
-                        for (OSProcess p : getChildren())
-                            p.killRecursively();                        
-                        kill();
+                        // Give a chance to Cygwin process killer
+                        killByKiller();
+                        
+                        // Kill other stuff
+                        p.killRecursively();                                                
                     }
 
                     public void kill() throws InterruptedException {
