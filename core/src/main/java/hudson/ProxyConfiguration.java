@@ -30,7 +30,6 @@ import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormValidation;
-import hudson.util.IOUtils;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.XStream2;
@@ -39,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.Authenticator;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
@@ -48,6 +48,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -233,14 +238,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
         return con;
     }
-
+    
     public static InputStream getInputStream(URL url) throws IOException {
         Jenkins h = Jenkins.getInstance(); // this code might run on slaves
         final ProxyConfiguration p = (h != null) ? h.proxy : null;
-        return getInputStream(url, p);
-    }
-    
-    public static InputStream getInputStream(URL url, final ProxyConfiguration p) throws IOException {
         if (p == null) 
             return new RetryableHttpStream(url);
 
@@ -303,18 +304,30 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
             
-            ProxyConfiguration pc = null;
-            if (Util.fixEmptyAndTrim(name) != null) {
-                pc = new ProxyConfiguration(name, port, userName, password, noProxyHost);
-            }
-            
-            InputStream is = null;
+            GetMethod method = null;
             try {
-                is = ProxyConfiguration.getInputStream(new URL(testUrl), pc);
+                method = new GetMethod(testUrl);
+                method.getParams().setParameter("http.socket.timeout", new Integer(30 * 1000));
+                
+                HttpClient client = new HttpClient();
+                if (Util.fixEmptyAndTrim(name) != null) {
+                    client.getHostConfiguration().setProxy(name, port);
+                    Credentials credentials = 
+                            new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
+                    AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
+                    client.getState().setProxyCredentials(scope, credentials);
+                }
+                
+                int code = client.executeMethod(method);
+                if (code != HttpURLConnection.HTTP_OK) {
+                    return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, code));
+                }
             } catch (IOException e) {
                 return FormValidation.error(e, Messages.ProxyConfiguration_FailedToConnectViaProxy(testUrl));
             } finally {
-                IOUtils.closeQuietly(is);
+                if (method != null) {
+                    method.releaseConnection();
+                }
             }
             
             return FormValidation.ok(Messages.ProxyConfiguration_Success());
