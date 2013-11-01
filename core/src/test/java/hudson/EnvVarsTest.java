@@ -118,13 +118,18 @@ public class EnvVarsTest extends TestCase {
     
     public void testOverrideOrderCalculatorCyclic() {
         EnvVars env = new EnvVars();
+        env.put("C", "Existing");
         EnvVars overrides = new EnvVars();
         overrides.put("A", "${B}");
-        overrides.put("B", "${C}");
+        overrides.put("B", "${C}"); // This will be ignored.
         overrides.put("C", "${A}");
+        
+        overrides.put("D", "${C}${E}");
+        overrides.put("E", "${C}${D}");
         
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
         List<String> order = calc.getOrderedVariableNames();
-        assertEquals(Sets.newHashSet("A", "B", "C"), new HashSet<String>(order));
+        assertEquals(Arrays.asList("B", "A", "C"), order.subList(0, 3));
+        assertEquals(Sets.newHashSet("E", "D"), new HashSet<String>(order.subList(3, order.size())));
     }
 }
