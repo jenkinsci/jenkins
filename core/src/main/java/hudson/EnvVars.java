@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -173,8 +172,10 @@ public class EnvVars extends TreeMap<String,String> {
      *   <li>scan each overriding variables and list all referred variables (includes indirect references).</li>
      *   <li>sort variables with a number of referring variables (ascending order).</li>
      * </ol>
+     *
+     * This is package accessible for testing purpose.
      */
-    public static class OverrideOrderCalculator {
+    static class OverrideOrderCalculator {
         /**
          * Extract variables referred directly from a variable.
          */
@@ -224,38 +225,20 @@ public class EnvVars extends TreeMap<String,String> {
             scan();
         }
         
-        /**
-         * Return an iterator for keys of overriding variables.
-         * 
-         * Scan variables in this order.
-         * This is only provided for testing purpose to control scanning order.
-         * 
-         * @return an iterator for keys of overriding variables
-         */
-        protected Iterator<String> rawKeyIterator() {
-            return overrides.keySet().iterator();
-        }
-        
-        public Set<String> getRefereeSet(String variable) {
-            return refereeSetMap.get(variable);
-        }
-        
-        public int getRefereeNum(String variable) {
+        private int getRefereeNum(String variable) {
             if (refereeSetMap.containsKey(variable)) {
                 return refereeSetMap.get(variable).size();
             }
             return 0;
         }
         
-        public List<Map.Entry<String,String>> getOrderedVariables() {
-            List<Map.Entry<String,String>> varList = new ArrayList<Map.Entry<String,String>>(overrides.entrySet());
-            Collections.sort(varList, new Comparator<Map.Entry<String,String>>() {
+        public List<String> getOrderedVariableNames() {
+            List<String> nameList = new ArrayList<String>(overrides.keySet());
+            Collections.sort(nameList, new Comparator<String>() {
                 @Override
-                public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
-                    String key1 = o1.getKey();
-                    String key2 = o2.getKey();
-                    if (key1.indexOf('+') > -1) {
-                        if (key2.indexOf('+') > -1) {
+                public int compare(String o1, String o2) {
+                    if (o1.indexOf('+') > -1) {
+                        if (o2.indexOf('+') > -1) {
                             // ABC+FOO == XYZ+BAR
                             return 0;
                         }
@@ -263,16 +246,16 @@ public class EnvVars extends TreeMap<String,String> {
                         return 1;
                     }
                     
-                    if (key2.indexOf('+') > -1) {
+                    if (o2.indexOf('+') > -1) {
                         // FOO < ABC+BAR
                         return -1;
                     }
                     
                     // depends on the number of variables each variable refers.
-                    return getRefereeNum(key1) - getRefereeNum(key2);
+                    return getRefereeNum(o1) - getRefereeNum(o2);
                 }
             });
-            return varList;
+            return nameList;
         }
         
         /**
@@ -281,9 +264,7 @@ public class EnvVars extends TreeMap<String,String> {
         public void scan() {
             TraceResolver resolver = new TraceResolver(comparator);
             
-            Iterator<String> referrerIterator  = rawKeyIterator();
-            while (referrerIterator.hasNext()) {
-                String currentVar = referrerIterator.next();
+            for (String currentVar: overrides.keySet()) {
                 if (currentVar.indexOf('+') > 0) {
                     // XYZ+AAA variables should be always processed in last.
                     continue;
@@ -364,8 +345,8 @@ public class EnvVars extends TreeMap<String,String> {
      * @return this
      */
     public EnvVars overrideExpandingAll(Map<String,String> all) {
-        for (Map.Entry<String, String> e : new OverrideOrderCalculator(this, all).getOrderedVariables()) {
-            override(e.getKey(), expand(e.getValue()));
+        for (String key : new OverrideOrderCalculator(this, all).getOrderedVariableNames()) {
+            override(key, expand(all.get(key)));
         }
         return this;
     }
