@@ -28,9 +28,10 @@ import junit.framework.TestCase;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+
+import com.google.common.collect.Sets;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -74,20 +75,9 @@ public class EnvVarsTest extends TestCase {
         overrides.put("D", "Refer3${B}${Nosuch}");
         
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
-        assertEquals(0, calc.getRefereeNum("A"));
-        assertEquals(0, calc.getRefereeNum("A+B"));
-        assertEquals(0, calc.getRefereeNum("Nosuch"));
-        assertEquals(1, calc.getRefereeNum("B"));
-        assertEquals(2, calc.getRefereeNum("C"));
-        assertEquals(3, calc.getRefereeNum("D"));
         
-        List<Map.Entry<String,String>> order = calc.getOrderedVariables();
-        assertEquals(5, order.size());
-        assertEquals("A", order.get(0).getKey());
-        assertEquals("B", order.get(1).getKey());
-        assertEquals("C", order.get(2).getKey());
-        assertEquals("D", order.get(3).getKey());
-        assertEquals("A+B", order.get(4).getKey());
+        List<String> order = calc.getOrderedVariableNames();
+        assertEquals(Arrays.asList("A", "B", "C", "D", "A+B"), order);
     }
     
     public void testOverrideOrderCalculatorInOrder() {
@@ -95,22 +85,13 @@ public class EnvVarsTest extends TestCase {
         EnvVars overrides = new EnvVars();
         overrides.put("A", "NoReference");
         overrides.put("B", "${A}");
-        overrides.put("C", "${B}"); // refers A, B
-        overrides.put("D", "${E}"); // refers A, B, C, E
-        overrides.put("E", "${C}"); // refers A, B, C
+        overrides.put("C", "${B}");
+        overrides.put("D", "${E}");
+        overrides.put("E", "${C}");
         
-        OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides) {
-            @Override
-            protected Iterator<String> rawKeyIterator() {
-                // should process in this order.
-                return Arrays.asList("A", "B", "C", "D", "E", "F").iterator();
-            }
-        };
-        assertEquals(0, calc.getRefereeNum("A"));
-        assertEquals(1, calc.getRefereeNum("B"));
-        assertEquals(2, calc.getRefereeNum("C"));
-        assertEquals(4, calc.getRefereeNum("D"));
-        assertEquals(3, calc.getRefereeNum("E"));
+        OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
+        List<String> order = calc.getOrderedVariableNames();
+        assertEquals(Arrays.asList("A", "B", "C", "E", "D"), order);
     }
     
     public void testOverrideOrderCalculatorMultiple() {
@@ -121,9 +102,8 @@ public class EnvVarsTest extends TestCase {
         overrides.put("C", "${A}${B}");
         
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
-        assertEquals(0, calc.getRefereeNum("A"));
-        assertEquals(1, calc.getRefereeNum("B"));
-        assertEquals(2, calc.getRefereeNum("C"));
+        List<String> order = calc.getOrderedVariableNames();
+        assertEquals(Arrays.asList("A", "B", "C"), order);
     }
     
     public void testOverrideOrderCalculatorSelfReference() {
@@ -132,19 +112,24 @@ public class EnvVarsTest extends TestCase {
         overrides.put("PATH", "some;${PATH}");
         
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
-        assertEquals(1, calc.getRefereeNum("PATH"));
+        List<String> order = calc.getOrderedVariableNames();
+        assertEquals(Arrays.asList("PATH"), order);
     }
     
     public void testOverrideOrderCalculatorCyclic() {
         EnvVars env = new EnvVars();
+        env.put("C", "Existing");
         EnvVars overrides = new EnvVars();
         overrides.put("A", "${B}");
-        overrides.put("B", "${C}");
+        overrides.put("B", "${C}"); // This will be ignored.
         overrides.put("C", "${A}");
         
+        overrides.put("D", "${C}${E}");
+        overrides.put("E", "${C}${D}");
+        
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
-        assertEquals(3, calc.getRefereeNum("A"));
-        assertEquals(3, calc.getRefereeNum("B"));
-        assertEquals(3, calc.getRefereeNum("C"));
+        List<String> order = calc.getOrderedVariableNames();
+        assertEquals(Arrays.asList("B", "A", "C"), order.subList(0, 3));
+        assertEquals(Sets.newHashSet("E", "D"), new HashSet<String>(order.subList(3, order.size())));
     }
 }
