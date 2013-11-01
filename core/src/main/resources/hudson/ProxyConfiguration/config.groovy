@@ -22,5 +22,5 @@ f.advanced(){
         f.textbox()
     }
     f.validateButton(title:_("Validate Proxy"), 
-                     method:"validateProxy", with:"testUrl,name,port,userName,passwrod,noProxyHost")
+                     method:"validateProxy", with:"testUrl,name,port,userName,password,noProxyHost")
 }
