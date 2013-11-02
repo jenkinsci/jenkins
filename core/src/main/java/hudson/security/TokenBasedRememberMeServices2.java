@@ -28,6 +28,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
@@ -68,6 +69,16 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 						getParameter() + "')");
 			}
 
+			return;
+		}
+
+		Jenkins j = Jenkins.getInstance();
+		if (j != null && j.isDisableRememberMe()) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Did not send remember-me cookie because 'Remember Me' is disabled in " +
+						"security configuration (principal did set parameter '" + getParameter() + "')");
+			}
+			// XXX log warning when receiving remember-me request despite the feature being disabled?
 			return;
 		}
 
