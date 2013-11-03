@@ -23,16 +23,16 @@ case "$1" in
     
         [ -r /etc/default/jenkins ] && . /etc/default/jenkins
         : ${JENKINS_USER:=jenkins}
+        : ${JENKINS_GROUP:=jenkins}
 
         # Create jenkins user if it doesn't exist.
         # sometimes tools that users want Jenkins to run need a shell,
         # so use /bin/bash. See JENKINS-4830
-        if ! id $JENKINS_USER > /dev/null 2>&1 ; then
-            adduser --system --home /var/lib/jenkins --no-create-home \
-                --ingroup nogroup --disabled-password --shell /bin/bash \
-                --gecos 'Jenkins' \
-                $JENKINS_USER
-        fi
+        addgroup --system --quiet $JENKINS_GROUP
+        adduser --system --quiet --home /var/lib/jenkins --no-create-home \
+            --ingroup $JENKINS_GROUP --disabled-password --shell /bin/bash \
+            --gecos 'Jenkins' \
+            $JENKINS_USER
 	
         # If we have an old hudson install, rename it to jenkins
         if test -d /var/lib/hudson -a \! \( -e /var/lib/hudson/.for-jenkins \) ; then
@@ -47,20 +47,20 @@ case "$1" in
       
         # directories needed for jenkins
         # we don't do -R because it can take a long time on big installation
-        chown $JENKINS_USER:adm /var/lib/jenkins /var/log/jenkins
+        chown $JENKINS_USER:$JENKINS_GROUP /var/lib/jenkins /var/log/jenkins
         # we don't do "chmod 750" so that the user can choose the pemission for g and o on their own
         chmod u+rwx /var/lib/jenkins /var/log/jenkins
 
         # make sure jenkins can delete everything in /var/cache/jenkins to
         # re-explode war.
-        chown -R $JENKINS_USER:adm /var/cache/jenkins
-        chmod -R 750               /var/cache/jenkins
+        chown -R $JENKINS_USER:$JENKINS_GROUP /var/cache/jenkins
+        chmod -R 750                          /var/cache/jenkins
 
         # older installations may use /var/run/jenkins
         # so make sure that they can delete too.
         if test -d /var/run/jenkins ; then
-            chown -R $JENKINS_USER:adm /var/run/jenkins
-            chmod -R 750               /var/run/jenkins
+            chown -R $JENKINS_USER:$JENKINS_GROUP /var/run/jenkins
+            chmod -R 750                          /var/run/jenkins
         fi
     ;;
 

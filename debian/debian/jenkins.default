@@ -13,8 +13,9 @@ JAVA_ARGS="-Djava.awt.headless=true"  # Allow graphs etc. to work even when an X
 
 PIDFILE=/var/run/jenkins/jenkins.pid
 
-# user id to be invoked as (otherwise will run as root; not wise!)
+# user and group to be invoked as (default to jenkins)
 JENKINS_USER=jenkins
+JENKINS_GROUP=jenkins
 
 # location of the jenkins war file
 JENKINS_WAR=/usr/share/jenkins/jenkins.war
