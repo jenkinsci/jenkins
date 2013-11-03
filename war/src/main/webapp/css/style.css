@@ -1123,3 +1123,8 @@ td.matrix-cell {
 	border: 1px #BBBBBB solid;
 	text-align: center;
 }
+
+/* ========================= legend.jelly ================== */
+table#legend-table td {
+	vertical-align: middle;
+}
