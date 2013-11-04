@@ -35,9 +35,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -55,6 +55,7 @@ import java.security.Signature;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.concurrent.TimeUnit;
 
 public class Connection {
     public final InputStream in;
@@ -128,7 +129,21 @@ public class Connection {
     }
 
     public byte[] readByteArray() throws IOException {
-        byte[] buf = new byte[din.readInt()];
+        int bufSize = din.readInt();
+        if (bufSize < 1) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+                //giving din 1 more chance max.
+            }
+            catch (InterruptedException ie) {
+                //nothing to lose => keep going
+            }
+            bufSize = din.readInt(); //retrying
+            if(bufSize < 1) {
+                throw new EOFException();
+            }
+        }
+        byte[] buf = new byte[bufSize];
         din.readFully(buf);
         return buf;
     }
