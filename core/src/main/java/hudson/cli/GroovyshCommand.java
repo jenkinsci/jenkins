@@ -59,8 +59,7 @@ public class GroovyshCommand extends CLICommand {
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
         Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
-        // TODO: ^as this class overrides main() (which has authentication stuff),
-        // how to get ADMIN permission for this command?
+        // TODO JENKINS-17929 this does not work
 
         // this being remote means no jline capability is available
         System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
