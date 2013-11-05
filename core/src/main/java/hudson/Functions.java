@@ -1838,17 +1838,18 @@ public class Functions {
      */
     public static void advertiseHeaders(HttpServletResponse rsp) {
         Jenkins j = Jenkins.getInstance();
+        if (j!=null) {
+            rsp.setHeader("X-Hudson","1.395");
+            rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+            rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
 
-        rsp.setHeader("X-Hudson","1.395");
-        rsp.setHeader("X-Jenkins", Jenkins.VERSION);
-        rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
-
-        TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-        if (tal !=null) {
-            rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
-            rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
-            rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
-            rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+            TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
+            if (tal !=null) {
+                rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
+                rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
+                rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
+                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+            }
         }
     }
 
