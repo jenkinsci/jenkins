@@ -141,7 +141,7 @@ public class InstallPluginCommand extends CLICommand {
         }
 
         if (restart)
-            h.restart();
+            h.safeRestart();
         return 0; // all success
     }
 
