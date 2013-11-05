@@ -26,6 +26,7 @@ package hudson.scm;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskAction;
 import hudson.model.BuildBadgeAction;
+import hudson.model.Run;
 import hudson.security.Permission;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
@@ -33,6 +34,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import jenkins.model.RunAction2;
 
 /**
  * Common part of <tt>CVSSCM.TagAction</tt> and <tt>SubversionTagAction</tt>.
@@ -44,8 +46,8 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction {
-    protected final AbstractBuild build;
+public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction, RunAction2 {
+    protected transient /*final*/ AbstractBuild build;
 
     protected AbstractScmTagAction(AbstractBuild build) {
         this.build = build;
@@ -91,6 +93,14 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         if(workerThread!=null)
             return "inProgress.jelly";
         return "tagForm.jelly";
+    }
+
+    @Override public void onAttached(Run<?, ?> r) {
+        // unnecessary, constructor already does this
+    }
+
+    @Override public void onLoad(Run<?, ?> r) {
+        build = (AbstractBuild) r;
     }
 
 }
