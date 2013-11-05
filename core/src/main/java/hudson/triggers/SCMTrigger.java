@@ -36,6 +36,7 @@ import hudson.model.Item;
 import hudson.model.Project;
 import hudson.model.SCMedItem;
 import hudson.model.AdministrativeMonitor;
+import hudson.model.Run;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
 import hudson.util.StreamTaskListener;
@@ -66,6 +67,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerResponse;
 
 import static java.util.logging.Level.*;
+import jenkins.model.RunAction2;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -289,8 +291,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
      *
      * @since 1.376
      */
-    public static class BuildAction implements Action {
-        public final AbstractBuild build;
+    public static class BuildAction implements RunAction2 {
+        public transient /*final*/ AbstractBuild build;
 
         public BuildAction(AbstractBuild build) {
             this.build = build;
@@ -336,6 +338,14 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         public void writePollingLogTo(long offset, XMLOutput out) throws IOException {
             // TODO: resurrect compressed log file support
             getPollingLogText().writeHtmlTo(offset, out.asWriter());
+        }
+
+        @Override public void onAttached(Run<?, ?> r) {
+            // unnecessary, existing constructor does this
+        }
+
+        @Override public void onLoad(Run<?, ?> r) {
+            build = (AbstractBuild) r;
         }
     }
 
