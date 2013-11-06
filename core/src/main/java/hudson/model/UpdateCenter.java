@@ -1544,7 +1544,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *
      * This has to wait until after all plugins load, to let custom UpdateCenterConfiguration take effect first.
      */
-    @Initializer(after=PLUGINS_STARTED)
+    @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
     }
