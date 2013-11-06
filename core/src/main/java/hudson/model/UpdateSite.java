@@ -40,6 +40,9 @@ import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -728,6 +731,7 @@ public class UpdateSite {
             }
         }
 
+        @Restricted(NoExternalUse.class) // jelly
         public VersionNumber getNeededDependenciesRequiredCore() {
             VersionNumber versionNumber = null;
             try {
@@ -742,6 +746,7 @@ public class UpdateSite {
             return versionNumber;
         }
 
+        @Restricted(NoExternalUse.class) // jelly
         public boolean isNeededDependenciesForNewerJenkins() {
             for (Plugin p: getNeededDependencies()) {
                 if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) return true;
@@ -757,6 +762,7 @@ public class UpdateSite {
          * If it's not older, or it's not installed, or it's installed but there's no compatibleSinceVersion
          * specified, it'll return true.
          */
+        @Restricted(NoExternalUse.class) // jelly
         public boolean isNeededDependenciesCompatibleWithInstalledVersion() {
             for (Plugin p: getNeededDependencies()) {
                 if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion())
