@@ -787,7 +787,7 @@ THE SOFTWARE.
       <plugin><!-- generate Jelly tag lib documentation -->
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.16</version>
+        <!-- version specified in grandparent pom -->
         <configuration>
           <patterns>
             <pattern>/lib/.*</pattern>
