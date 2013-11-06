@@ -82,7 +82,6 @@ import hudson.widgets.RenderOnDemandClosure;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.LockInfo;
@@ -1356,9 +1355,41 @@ public class Functions {
     }
 
     public static String printThrowable(Throwable t) {
-        StringWriter sw = new StringWriter();
-        t.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
+        StringBuilder s = new StringBuilder();
+        doPrintStackTrace(s, t, null);
+        return s.toString();
+    }
+    private static void doPrintStackTrace(StringBuilder s, Throwable t, Throwable higher) {
+        // TODO check if t overrides printStackTrace
+        // TODO handle suppressed exceptions
+        Throwable lower = t.getCause();
+        if (lower != null) {
+            doPrintStackTrace(s, lower, t);
+            s.append("Caused: ");
+        }
+        String summary = t.toString();
+        if (lower != null) {
+            String suffix = ": " + lower;
+            if (summary.endsWith(suffix)) {
+                summary = summary.substring(0, summary.length() - suffix.length());
+            }
+        }
+        s.append(summary).append('\n');
+        StackTraceElement[] trace = t.getStackTrace();
+        int end = trace.length;
+        if (higher != null) {
+            StackTraceElement[] higherTrace = higher.getStackTrace();
+            while (end > 0) {
+                int higherEnd = end + higherTrace.length - trace.length;
+                if (higherEnd <= 0 || !higherTrace[higherEnd - 1].equals(trace[end - 1])) {
+                    break;
+                }
+                end--;
+            }
+        }
+        for (int i = 0; i < end; i++) {
+            s.append("\tat ").append(trace[i]).append('\n');
+        }
     }
 
     /**
