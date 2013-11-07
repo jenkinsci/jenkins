@@ -357,7 +357,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
      */
     public String getDisplayName() {
-        return "User Database";
+        return Messages.HudsonPrivateSecurityRealm_DisplayName();
     }
 
     public ACL getACL() {
