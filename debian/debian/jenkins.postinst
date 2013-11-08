@@ -54,6 +54,7 @@ case "$1" in
         # make sure jenkins can delete everything in /var/cache/jenkins to
         # re-explode war. older installations may use /var/run/jenkins
         # so make sure that they can delete too.
+        mkdir -p /var/run/jenkins
         chown -R $JENKINS_USER:adm /var/cache/jenkins /var/run/jenkins
         chmod -R 750               /var/cache/jenkins /var/run/jenkins
     ;;
