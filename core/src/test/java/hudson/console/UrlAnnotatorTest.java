@@ -56,5 +56,9 @@ public class UrlAnnotatorTest extends TestCase {
         text = new MarkupText("Punctuation: http://foo/.");
         ca.annotate(null, text);
         assertEquals("Punctuation: <a href='http://foo/'>http://foo/</a>.", text.toString(true));
+        text = new MarkupText("Get this file://here/in/this/folder/.");
+        ca.annotate(null, text);
+        assertEquals("Get this <a href='file://here/in/this/folder/'>file://here/in/this/folder/</a>.",
+                text.toString(true));
     }
 }
