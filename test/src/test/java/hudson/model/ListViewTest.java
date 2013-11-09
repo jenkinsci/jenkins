@@ -37,9 +37,13 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
-
+import hudson.matrix.MatrixProject;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.methods.PostMethod;
 
 public class ListViewTest {
 
@@ -93,6 +97,98 @@ public class ListViewTest {
       HtmlPage page = webClient.goTo(top.getUrl());
       HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
       webClient.getPage(top, link.getHrefAttribute());
+    }
+    
+    @Test
+    public void testGetItems() throws Exception {
+        ListView view = new ListView("foo", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job1 = j.createFreeStyleProject("free");
+        MatrixProject job2 = j.createMatrixProject("matrix");
+        FreeStyleProject job3 = j.createFreeStyleProject("not-contained");
+        view.jobNames.add(job1.getDisplayName());
+        view.jobNames.add(job2.getDisplayName());
+        assertTrue("View " + view.getDisplayName() + " should contains job " + job1.getDisplayName(), view.getItems().contains(job1));
+        assertTrue("View " + view.getDisplayName() + " should contains job " + job2.getDisplayName(), view.getItems().contains(job2));
+        assertFalse("View " + view.getDisplayName() + " should not contains job " + job3.getDisplayName(), view.getItems().contains(job3));
+        
+    }
+     
+    private void setPattern(String pattern, String nameView) throws Exception{
+        HtmlForm form = j.createWebClient().goTo("view/" + nameView + "/configure").getFormByName("viewConfig");
+        form.getInputByName("useincluderegex").setChecked(true);
+        form.getInputByName("includeRegex").setValueAttribute(pattern);
+        j.submit(form);
+    }
+     
+    @Test
+    public void testGetItemsByPattern() throws Exception{
+        ListView view = new ListView("foo", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job1 = j.createFreeStyleProject("job1");
+        MatrixProject job2 = j.createMatrixProject("job2");
+        FreeStyleProject job3 = j.createFreeStyleProject("not-contained");
+        setPattern("job.*", "foo");
+        assertTrue("View " + view.getDisplayName() + " should contains job " + job1.getDisplayName(), view.getItems().contains(job1));
+        assertTrue("View " + view.getDisplayName() + " should contains job " + job2.getDisplayName(), view.getItems().contains(job2));
+        assertFalse("View " + view.getDisplayName() + " should not contains job " + job3.getDisplayName(), view.getItems().contains(job3));
+        
+    }
+    
+    @Test
+    public void testJobRename() throws Exception{
+        ListView view = new ListView("foo", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job1 = j.createFreeStyleProject("job1");
+        FreeStyleProject job3 = j.createFreeStyleProject("not-contained");
+        setPattern("job.*", "foo");
+        job1.renameTo("renamed");
+        assertFalse("View " + view.getDisplayName() + " should not contains job " + job1.getDisplayName(), view.getItems().contains(job1));
+        job1.renameTo("job1");
+        assertTrue("View " + view.getDisplayName() + " should contains job " + job1.getDisplayName(), view.getItems().contains(job1));
+        
+    }
+    
+    @Test
+    public void testDoAddJobToView() throws IOException, SAXException, Exception{
+        ListView view = new ListView("foo", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job1 = j.createFreeStyleProject("job");
+        assertFalse("View " + view.getDisplayName() + " should contains job " + job1.getDisplayName(), view.getItems().contains(job1));
+        PostMethod m = new PostMethod();
+        m.setURI(new URI(j.createWebClient().createCrumbedUrl("/view/foo/addJobToView").toString(),true));
+        m.addParameter("name", "job");
+        HttpClient client = new HttpClient();
+        client.executeMethod(m);
+        assertTrue("View " + view.getDisplayName() + " should contains job " + job1.getDisplayName(), view.getItems().contains(job1));
+    }
+    
+    @Test
+    public void testDoCreateItem() throws Exception{
+        ListView view = new ListView("foo", j.jenkins);
+        j.jenkins.addView(view);
+        HtmlForm form = j.createWebClient().goTo("view/" + view.getDisplayName() + "/newJob").getFormByName("createItem");
+        form.getInputByValue("hudson.model.FreeStyleProject").setChecked(true);
+        form.getInputByName("name").setValueAttribute("job");
+        j.submit(form);
+        Item item = j.jenkins.getItem("job");
+        assertTrue("View " + view.getDisplayName() + " should not contains job " + item.getDisplayName(), view.getItems().contains(item));
+    }
+    
+    @Test
+    public void testDoRemoveJobFromView() throws Exception {
+        ListView view = new ListView("foo", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job1 = j.createFreeStyleProject("job");
+        view.jobNames.add(job1.getDisplayName());
+        assertTrue("View " + view.getDisplayName() + " should contains job " + job1.getDisplayName(), view.getItems().contains(job1));
+        PostMethod m = new PostMethod();
+        m.setURI(new URI(j.createWebClient().createCrumbedUrl("/view/foo/removeJobFromView").toString(),true));
+        m.addParameter("name", "job");
+        HttpClient client = new HttpClient();
+        client.executeMethod(m);
+        assertFalse("View " + view.getDisplayName() + " should not contains job " + job1.getDisplayName(), view.getItems().contains(job1));
+    
     }
 
 }
