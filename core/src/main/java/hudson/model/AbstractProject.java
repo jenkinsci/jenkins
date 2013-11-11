@@ -29,6 +29,7 @@ package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.EnvVars;
+import hudson.ExtensionPoint;
 import hudson.Functions;
 import antlr.ANTLRException;
 import hudson.AbortException;
@@ -103,6 +104,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -2209,7 +2211,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;
         }
 
-        public FormValidation doCheckAssignedLabelString(@QueryParameter String value) {
+        public FormValidation doCheckAssignedLabelString(@AncestorInPath AbstractProject<?,?> project,
+                                                         @QueryParameter String value) {
             if (Util.fixEmpty(value)==null)
                 return FormValidation.ok(); // nothing typed yet
             try {
@@ -2227,6 +2230,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
                 return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
+            }
+            if (project != null) {
+                for (AbstractProject.LabelValidator v : Jenkins.getInstance()
+                        .getExtensionList(AbstractProject.LabelValidator.class)) {
+                    FormValidation result = v.check(project, l);
+                    if (!FormValidation.Kind.OK.equals(result.kind)) {
+                        return result;
+                    }
+                }
             }
             return FormValidation.ok();
         }
@@ -2384,5 +2396,23 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.customWorkspace= Util.fixEmptyAndTrim(customWorkspace);
         save();
     }
-    
+
+    /**
+     * Plugins may want to contribute additional restrictions on the use of specific labels for specific projects.
+     * This extension point allows such restrictions.
+     *
+     * @since 1.540
+     */
+    public static abstract class LabelValidator implements ExtensionPoint {
+        /**
+         * Check the use of the label within the specified context.
+         *
+         * @param project the project that wants to restrict itself to the specified label.
+         * @param label   the label that the project wants to restrict itself to.
+         * @return the {@link FormValidation} result.
+         */
+        @Nonnull
+        public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
+    }
+
 }
