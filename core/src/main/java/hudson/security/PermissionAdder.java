@@ -24,14 +24,9 @@
 
 package hudson.security;
 
-import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.User;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Service which can add permissions for a given user to the configured authorization strategy.
@@ -39,8 +34,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 1.535
  */
 public abstract class PermissionAdder implements ExtensionPoint {
-
-    private static final Logger LOGGER = Logger.getLogger(PermissionAdder.class.getName());
 
     /**
      * Called to try to give a user global permission.
@@ -50,23 +43,5 @@ public abstract class PermissionAdder implements ExtensionPoint {
      * @return true if the permission was added, false if this service is incapable of handling it
      */
     public abstract boolean add(AuthorizationStrategy strategy, User user, Permission perm);
-
-    // TODO delete when 1.535 released and matrix-auth can depend on it
-    @Restricted(NoExternalUse.class)
-    @Extension public static final class Legacy extends PermissionAdder {
-
-        @Override public boolean add(AuthorizationStrategy strategy, User user, Permission perm) {
-            try {
-                strategy.getClass().getMethod("add", Permission.class, String.class).invoke(strategy, Jenkins.ADMINISTER, user.getId());
-                return true;
-            } catch (NoSuchMethodException x) {
-                // fine, not GlobalMatrixAuthorizationStrategy or a subclass
-            } catch (Exception x) {
-                LOGGER.log(Level.WARNING, null, x);
-            }
-            return false;
-        }
-
-    }
 
 }
