@@ -78,7 +78,7 @@ Upcoming changes</a>
   <li class=rfe>
     Add log handling line beginning with 'file://' as URL.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19866">issue 19866</a>)
-  <li class=bug>
+  <li class='major bug'>
     Builds of a concurrently executable job might end up colliding on the same workspace.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10615">issue 10615</a>)
   <li class=bug>
@@ -94,6 +94,18 @@ Upcoming changes</a>
   <li class=bug>
     Fixed issue where CLI required giving Overall read permission to anonymous.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8815">issue 8815</a>)
+  <li class=bug>
+    Jar cache option wasn't taking effect on JNLP slaves.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20093">issue 20093</a>)
+  <li class=bug>
+    Interrupting remote class loading can lead to <tt>NoClassDefFoundError: Could not initialize class</tt>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19453">issue 19453</a>)
+  <li class=rfe>
+    Name channel executor threads for better diagnosability.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19004">issue 19004</a>)
+  <li class=rfe>
+    Better diagnosability for remoting <tt>StreamCorruptedException</tt>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8856">issue 8856</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
