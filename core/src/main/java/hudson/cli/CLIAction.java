@@ -32,6 +32,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import hudson.util.IOException2;
+import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 
 import org.kohsuke.accmod.Restricted;
@@ -44,7 +45,6 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.Extension;
 import hudson.model.FullDuplexHttpChannel;
-import hudson.model.RootAction;
 import hudson.remoting.Channel;
 
 /**
@@ -54,7 +54,7 @@ import hudson.remoting.Channel;
  */
 @Extension
 @Restricted(NoExternalUse.class)
-public class CLIAction implements RootAction, StaplerProxy {
+public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
     private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
 
