@@ -59,8 +59,6 @@ import java.lang.ref.WeakReference
 
 import org.jvnet.hudson.test.MockFolder
 
-import java.util.concurrent.Phaser;
-
 /**
  * @author Kohsuke Kawaguchi
  */
