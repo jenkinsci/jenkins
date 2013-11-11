@@ -62,8 +62,7 @@ public class CLIAction implements UnprotectedRootAction {
     }
 
     public String getUrlName() {
-
-        return "/cli";
+        return "cli";
     }
 
     public void doCommand(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
