@@ -40,6 +40,10 @@ import org.xml.sax.SAXException;
 
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.matrix.AxisList;
+import hudson.matrix.MatrixProject;
+import hudson.matrix.TextAxis;
+import java.util.Collections;
 
 public class ListViewTest {
 
@@ -93,6 +97,19 @@ public class ListViewTest {
       HtmlPage page = webClient.goTo(top.getUrl());
       HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
       webClient.getPage(top, link.getHrefAttribute());
+    }
+
+    @Bug(20415)
+    @Test public void nonTopLevelItemGroup() throws Exception {
+        MatrixProject mp = j.createMatrixProject();
+        mp.setAxes(new AxisList(new TextAxis("axis", "one", "two")));
+        assertEquals(2, mp.getItems().size());
+        ListView v = new ListView("v");
+        j.jenkins.addView(v);
+        v.setIncludeRegex(".*");
+        v.setRecurse(true);
+        // Note: did not manage to reproduce CCE until I changed expand to use ‘for (TopLevelItem item : items)’ rather than ‘for (Item item : items)’; perhaps a compiler-specific issue?
+        assertEquals(Collections.singletonList(mp), v.getItems());
     }
 
 }

@@ -186,14 +186,12 @@ public class ListView extends View implements Saveable {
     }
 
     private List<TopLevelItem> expand(Collection<TopLevelItem> items, List<TopLevelItem> allItems) {
-        for (Item item : items) {
+        for (TopLevelItem item : items) {
             if (item instanceof ItemGroup) {
-                ItemGroup<TopLevelItem> ig = (ItemGroup<TopLevelItem>) item;
-                expand(ig.getItems(), allItems);
+                ItemGroup<? extends Item> ig = (ItemGroup<? extends Item>) item;
+                expand(Util.filter(ig.getItems(), TopLevelItem.class), allItems);
             }
-            if (item instanceof TopLevelItem) {
-                allItems.add((TopLevelItem) item);
-            }
+            allItems.add(item);
         }
         return allItems;
     }
