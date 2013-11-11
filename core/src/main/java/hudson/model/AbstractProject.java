@@ -2231,10 +2231,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
                 return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
             }
-            for (AbstractProject.LabelValidator v: Jenkins.getInstance().getExtensionList(AbstractProject.LabelValidator.class)) {
-                FormValidation result = v.check(project, l);
-                if (!FormValidation.Kind.OK.equals(result.kind)) {
-                    return result;
+            if (project != null) {
+                for (AbstractProject.LabelValidator v : Jenkins.getInstance()
+                        .getExtensionList(AbstractProject.LabelValidator.class)) {
+                    FormValidation result = v.check(project, l);
+                    if (!FormValidation.Kind.OK.equals(result.kind)) {
+                        return result;
+                    }
                 }
             }
             return FormValidation.ok();
@@ -2396,10 +2399,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Plugins may want to contribute additional restrictions on the use of specific labels for specific projects.
-     * This extension point allows such restrictions
+     * This extension point allows such restrictions.
+     *
+     * @since 1.540
      */
     public static abstract class LabelValidator implements ExtensionPoint {
-        public abstract FormValidation check(@CheckForNull AbstractProject<?,?> project, @Nonnull Label label);
+        /**
+         * Check the use of the label within the specified context.
+         *
+         * @param project the project that wants to restrict itself to the specified label.
+         * @param label   the label that the project wants to restrict itself to.
+         * @return the {@link FormValidation} result.
+         */
+        @Nonnull
+        public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
     }
-    
+
 }
