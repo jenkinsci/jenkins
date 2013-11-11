@@ -27,6 +27,7 @@ package org.jvnet.hudson.test;
 import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.google.inject.Injector;
+
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
 import hudson.DNSMultiCast;
@@ -183,7 +184,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+
 import java.net.HttpURLConnection;
+
 import jenkins.model.JenkinsLocationConfiguration;
 
 /**
@@ -255,7 +258,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Number of seconds until the test times out.
      */
-    public int timeout = 180;
+    public int timeout = Integer.getInteger("jenkins.test.timeout", 180);
 
     private volatile Timer timeoutTimer;
 
@@ -355,8 +358,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         timeoutTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (timeoutTimer!=null)
+                if (timeoutTimer!=null) {
+                    LOGGER.warning(String.format("Test timed out (after %d seconds).", timeout));
                     testThread.interrupt();
+                }
             }
         }, TimeUnit.SECONDS.toMillis(timeout));
     }

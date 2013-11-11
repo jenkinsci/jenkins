@@ -292,7 +292,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Number of seconds until the test times out.
      */
-    public int timeout = 90;
+    public int timeout = Integer.getInteger("jenkins.test.timeout", 180);
 
     private volatile Timer timeoutTimer;
 
@@ -355,6 +355,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         JenkinsLocationConfiguration.get().setUrl(getURL().toString());
         for( Descriptor d : jenkins.getExtensionList(Descriptor.class) )
             d.load();
+        
+        setUpTimeout();
     }
 
     /**
@@ -372,7 +374,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         sites.clear();
         sites.add(new UpdateSite("default", updateCenterUrl));
     }
-
+    
     protected void setUpTimeout() {
         if (timeout<=0)     return; // no timeout
 
@@ -381,8 +383,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         timeoutTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (timeoutTimer!=null)
+                if (timeoutTimer!=null) {
+                    LOGGER.warning(String.format("Test timed out (after %d seconds).", timeout));
                     testThread.interrupt();
+                }
             }
         }, TimeUnit.SECONDS.toMillis(timeout));
     }
