@@ -6,7 +6,8 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import org.junit.Rule
 import org.junit.Test
 import org.jvnet.hudson.test.JenkinsRule
-import org.jvnet.hudson.test.HudsonTestCase.WebClient;
+import org.jvnet.hudson.test.recipes.PresetData;
+import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -37,13 +38,9 @@ class CLIActionTest {
     }
 
     @Test
+    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     public void serveCliActionToAnonymousUser() throws Exception {
         def wc = j.createWebClient();
-        wc.goTo("cli"); // Verify user can see cli before security
-
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
-
-        wc.goTo("cli"); // and after security enabled.
+        wc.goTo("cli");
     }
 }
