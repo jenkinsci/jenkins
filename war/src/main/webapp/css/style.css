@@ -323,6 +323,10 @@ td.pane-header {
   font-weight: bold;
 }
 
+td.pane-header > a.collapse {
+	float: right;
+}
+
 th.pane {
   border: 1px #bbb solid;
   font-weight: bold;
