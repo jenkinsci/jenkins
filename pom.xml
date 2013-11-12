@@ -657,7 +657,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.0-beta-1+kohsuke</version>
+            <version>1.0-beta-2</version>
           </dependency>
         </dependencies>
       </plugin>
