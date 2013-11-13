@@ -977,6 +977,88 @@ public abstract class Launcher {
             }
         }
     }
+    
+    /**
+     * A launcher which delegates to a provided inner launcher. 
+     * Allows subclasses to only implement methods they want to override.
+     * Originally, this launcher has been implemented in 
+     * <a href="https://wiki.jenkins-ci.org/display/JENKINS/Custom+Tools+Plugin">
+     * Custom Tools Plugin</a>.
+     * 
+     * @author rcampbell
+     * @author Oleg Nenashev, Synopsys Inc.
+     * @since TODO: define version
+     */
+    public static class DecoratedLauncher extends Launcher {
+
+        private Launcher inner = null;
+
+        public DecoratedLauncher(Launcher inner) {
+            super(inner);
+            this.inner = inner;
+        }
+
+        @Override
+        public Proc launch(ProcStarter starter) throws IOException {
+            return inner.launch(starter);
+        }
+
+        @Override
+        public Channel launchChannel(String[] cmd, OutputStream out,
+                FilePath workDir, Map<String, String> envVars) throws IOException,
+                InterruptedException {
+            return inner.launchChannel(cmd, out, workDir, envVars);
+        }
+
+        @Override
+        public void kill(Map<String, String> modelEnvVars) throws IOException,
+                InterruptedException {
+            inner.kill(modelEnvVars);
+        }
+
+        @Override
+        public boolean isUnix() {
+            return inner.isUnix();
+        }
+
+        @Override
+        public Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+            return inner.launch(cmd, mask, env, in, out, workDir);
+        }
+
+        @Override
+        public Computer getComputer() {
+            return inner.getComputer();
+        }
+
+        @Override
+        public TaskListener getListener() {
+            return inner.getListener();
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "; decorates " + inner.toString();
+        }
+
+        @Override
+        public VirtualChannel getChannel() {
+            return inner.getChannel();
+        }
+
+        @Override
+        public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+            return inner.launch(cmd, env, in, out, workDir); 
+        }
+   
+        /**
+         * Gets nested launcher.
+         * @return Inner launcher
+         */
+        public Launcher getInner() {
+            return inner;
+        }    
+    }
 
     public static class IOTriplet implements Serializable {
         InputStream stdout,stderr;
