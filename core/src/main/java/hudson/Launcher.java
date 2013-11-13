@@ -300,8 +300,13 @@ public abstract class Launcher {
             return this;
         }
 
+        /**
+         * Gets a list of environment variables to be set.
+         * Returns an empty array if envs field has not been initialized.
+         * @return If initialized, returns a copy of internal envs array. Otherwise - a new empty array.
+         */
         public String[] envs() {
-            return envs.clone();
+            return envs != null ? envs.clone() : new String[0];
         }
 
         /**
