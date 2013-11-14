@@ -32,6 +32,7 @@ import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.PerSession;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
@@ -187,7 +188,17 @@ public class Queue extends ResourceController implements Saveable {
     private final Cache<Integer,LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5*60, TimeUnit.SECONDS).build();
 
     private final CachedItemList itemsView = new CachedItemList();
-
+    
+    private PerSession<Boolean> collapsed = new PerSession<Boolean>("collapsed", false);
+    
+    public boolean isCollapsed() {
+		return collapsed.get();
+	}
+    
+    public void setCollapsed(boolean collapsed) {
+		this.collapsed.set(collapsed);
+	}
+    
     /**
      * Maintains a copy of {@link Queue#getItems()}
      *
@@ -667,6 +678,11 @@ public class Queue extends ResourceController implements Saveable {
             cancel(item);
         } // else too late, ignore (JENKINS-14813)
         return HttpResponses.forwardToPreviousPage();
+    }
+    
+    public HttpResponse doToggleCollapse() {
+    	this.collapsed.set(!this.collapsed.get());
+    	return HttpResponses.forwardToPreviousPage();
     }
 
     public synchronized boolean isEmpty() {
