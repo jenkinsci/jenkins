@@ -44,6 +44,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
+import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Project;
@@ -134,6 +135,7 @@ import jenkins.model.ModelObjectWithContextMenu;
 
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
@@ -142,10 +144,13 @@ import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -580,6 +585,10 @@ public class Functions {
         return false;
     }
 
+    public static boolean isCollapsed(String paneId) {
+    	return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
+    }
+    
     /**
      * Finds the given object in the ancestor list and returns its URL.
      * This is used to determine the "current" URL assigned to the given object,
