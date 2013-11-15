@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This ExecutorService will create additional threads to execute due (enabled) tasks.
  *
  * Provides a minimal abstraction for locating the ScheduledExecutorService so that we
- * can modify it's behavior going forward. For instance, to add managability/monitoring.
+ * can modify it's behavior going forward. For instance, to add manageability/monitoring.
  *
  * This is not an @Extension because it must be available before any extensions are loaded.
  *
@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   {@link hudson.model.AsyncAperiodicWork}, {@link hudson.model.AsyncPeriodicWork}.
  *
  * @author Ryan Campbell
- * @since 1.538
+ * @since 1.541
  */
 public class Timer {
 
