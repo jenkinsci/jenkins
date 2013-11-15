@@ -42,7 +42,6 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import jnr.posix.FileStat;
 import jnr.posix.POSIX;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -259,16 +258,11 @@ public class Util {
     /**
      * Makes the given file writable by any means possible.
      */
-    @IgnoreJRERequirement
     private static void makeWritable(File f) {
-        // try JDK6-way of doing it.
-        try {
-            if (f.setWritable(true)) {
-                return;
-            }
-        } catch (NoSuchMethodError e) {
-            // not JDK6
+        if (f.setWritable(true)) {
+            return;
         }
+        // TODO do we still need to try anything else?
 
         // try chmod. this becomes no-op if this is not Unix.
         try {
@@ -1378,17 +1372,9 @@ public class Util {
      * Loads a key/value pair string as {@link Properties}
      * @since 1.392
      */
-    @IgnoreJRERequirement
     public static Properties loadProperties(String properties) throws IOException {
         Properties p = new Properties();
-        try {
-            p.load(new StringReader(properties));
-        } catch (NoSuchMethodError e) {
-            // load(Reader) method is only available on JDK6.
-            // this fall back version doesn't work correctly with non-ASCII characters,
-            // but there's no other easy ways out it seems.
-            p.load(new ByteArrayInputStream(properties.getBytes()));
-        }
+        p.load(new StringReader(properties));
         return p;
     }
 

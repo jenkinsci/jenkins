@@ -32,7 +32,6 @@ import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -592,10 +591,7 @@ public class CLI {
         return pemString.contains("4,ENCRYPTED");
     }
     
-    @SuppressWarnings("Since15")
-    @IgnoreJRERequirement
     private static String askForPasswd(String filePath){
-        try {
             Console cons = System.console();
             String passwd = null;
             if (cons != null){
@@ -603,9 +599,6 @@ public class CLI {
                 passwd = String.valueOf(p);
             }
             return passwd;
-        } catch (LinkageError e) {
-            throw new Error("Your private key is encrypted, but we need Java6 to ask you password safely",e);
-        }
     }
     
     /**

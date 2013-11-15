@@ -15,7 +15,6 @@ import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.args4j.Option;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
@@ -141,7 +140,6 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * Asks for the password.
      */
     private static class InteractivelyAskForPassword implements Callable<String,IOException> {
-        @IgnoreJRERequirement
         public String call() throws IOException {
             Console console = System.console();
             if (console == null)    return null;    // no terminal
