@@ -2169,7 +2169,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * processes for this build.
      *
      * <p>
-     * {@link BuildStep}s that invoke external processes should use this.
+     * {@link hudson.tasks.BuildStep}s that invoke external processes should use this.
      * This allows {@link BuildWrapper}s and other project configurations (such as JDK selection)
      * to take effect.
      *
