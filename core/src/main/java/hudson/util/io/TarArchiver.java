@@ -28,7 +28,6 @@ import hudson.Functions;
 import hudson.org.apache.tools.tar.TarOutputStream;
 import hudson.os.PosixException;
 import hudson.util.FileVisitor;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import org.apache.tools.tar.TarEntry;
 
@@ -80,7 +79,7 @@ final class TarArchiver extends Archiver {
             linkName.setLength(0);
             linkName.append(target);
         } catch (IllegalAccessException x) {
-            throw new IOException2("Failed to set linkName", x);
+            throw new IOException("Failed to set linkName", x);
         }
 
         tar.putNextEntry(e);

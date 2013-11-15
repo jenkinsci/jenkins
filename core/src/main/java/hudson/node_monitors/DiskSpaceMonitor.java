@@ -25,7 +25,6 @@ package hudson.node_monitors;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
@@ -76,7 +75,6 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
 
     @Extension
     public static DiskSpaceMonitorDescriptor install() {
-        if(Functions.isMustangOrAbove())    return DESCRIPTOR;
-        return null;
+        return DESCRIPTOR;
     }
 }

@@ -929,7 +929,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         // TODO: hmm, they don't really belong
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if(rootUrl!=null) {
             env.put("HUDSON_URL", rootUrl); // Legacy.
             env.put("JENKINS_URL", rootUrl);

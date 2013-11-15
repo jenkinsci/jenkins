@@ -30,7 +30,6 @@ import hudson.model.Describable;
 import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.UnbufferedBase64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
@@ -228,7 +227,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.
             // package that up as IOException so that the caller won't fatally die.
-            throw new IOException2(e);
+            throw new IOException(e);
         }
     }
 

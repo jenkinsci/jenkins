@@ -44,7 +44,6 @@ import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
-import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
@@ -776,7 +775,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
                     }
                 } catch (IOException e) {
-                    throw new IOException2("Failed to load "+src+" to "+tmp,e);
+                    throw new IOException("Failed to load "+src+" to "+tmp,e);
                 }
 
                 in.close();
@@ -791,7 +790,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 return tmp;
             } catch (IOException e) {
-                throw new IOException2("Failed to download from "+src,e);
+                throw new IOException("Failed to download from "+src,e);
             }
         }
 
@@ -873,7 +872,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
                    // fix up this crappy error message from JDK
-                    throw new IOException2("Failed to validate the SSL certificate of "+url,e);
+                    throw new IOException("Failed to validate the SSL certificate of "+url,e);
             }
         }
     }
@@ -1314,7 +1313,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } catch (RestartRequiredException e) {
                     throw new SuccessButRequiresRestart(e.message);
                 } catch (Exception e) {
-                    throw new IOException2("Failed to dynamically deploy this plugin",e);
+                    throw new IOException("Failed to dynamically deploy this plugin",e);
                 }
             } else {
                 throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());

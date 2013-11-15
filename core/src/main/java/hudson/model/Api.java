@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
 
@@ -152,7 +151,7 @@ public class Api extends AbstractModelObject {
 
         } catch (DocumentException e) {
             LOGGER.log(Level.FINER, "Failed to do XPath/wrapper handling. XML is as follows:"+sw, e);
-            throw new IOException2("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.",e);
+            throw new IOException("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.",e);
         }
 
         OutputStream o = rsp.getCompressedOutputStream(req);
