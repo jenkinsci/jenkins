@@ -28,16 +28,19 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.NodeDescriptor;
+import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import jenkins.util.Timer;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -54,9 +57,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
+
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -396,6 +402,16 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Just to force the execution of the static initializer.
      */
     public static void initialize() {}
+
+    @Initializer(after= JOB_LOADED)
+    public static void init() {
+        // start monitoring nodes, although there's no hurry.
+        Timer.get().schedule(new SafeTimerTask() {
+            public void doRun() {
+                ComputerSet.initialize();
+            }
+        }, 10, TimeUnit.SECONDS);
+    }
 
     private static final Logger LOGGER = Logger.getLogger(ComputerSet.class.getName());
 
