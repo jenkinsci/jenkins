@@ -34,7 +34,6 @@ import hudson.model.Fingerprint;
 import hudson.model.FingerprintCleanupThread;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.util.RunList;
 import java.io.File;
@@ -47,6 +46,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 import hudson.util.StreamTaskListener;
+import jenkins.model.Jenkins;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -161,7 +161,7 @@ public class FingerprinterTest {
 
         upstreamBuild.delete();
 
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();

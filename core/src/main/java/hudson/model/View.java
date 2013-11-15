@@ -255,7 +255,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             return _getOwnerItemGroup();
         } catch (AbstractMethodError e) {
-            return Hudson.getInstance();
+            return Jenkins.getInstance();
         }
     }
 
@@ -283,7 +283,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             return _getOwnerViewActions();
         } catch (AbstractMethodError e) {
-            return Hudson.getInstance().getActions();
+            return Jenkins.getInstance().getActions();
         }
     }
 

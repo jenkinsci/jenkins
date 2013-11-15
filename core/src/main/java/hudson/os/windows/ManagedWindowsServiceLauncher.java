@@ -414,10 +414,6 @@ public class ManagedWindowsServiceLauncher extends ComputerLauncher {
         }
     }
 
-    private EnvVars getEnvVars(Hudson h) {
-        return getEnvVars(h.getGlobalNodeProperties());
-    }
-
     private EnvVars getEnvVars(Node n) {
         return getEnvVars(n.getNodeProperties());
     }

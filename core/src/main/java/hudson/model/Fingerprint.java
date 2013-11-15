@@ -729,7 +729,7 @@ public class Fingerprint implements ModelObject, Saveable {
         @Override
         public void onRenamed(Item item, String oldName, String newName) {
             if (item instanceof AbstractProject) {
-                AbstractProject p = Hudson.getInstance().getItemByFullName(newName, AbstractProject.class);
+                AbstractProject p = Jenkins.getInstance().getItemByFullName(newName, AbstractProject.class);
                 if (p != null) {
                     RunList builds = p.getBuilds();
                     for (Object build : builds) {

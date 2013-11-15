@@ -28,7 +28,6 @@ import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 
 import java.util.Arrays;
@@ -113,7 +112,7 @@ public abstract class ExtensionComponentSet {
         return new ExtensionComponentSet() {
             @Override
             public <T> Collection<ExtensionComponent<T>> find(Class<T> type) {
-                return f.find(type,Hudson.getInstance());
+                return f.find(type,Jenkins.getInstance());
             }
         };
     }

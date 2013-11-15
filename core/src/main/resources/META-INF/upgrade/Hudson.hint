@@ -1,0 +1,1 @@
+hudson.model.Hudson.getInstance() => jenkins.model.Jenkins.getInstance();;
