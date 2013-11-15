@@ -25,7 +25,6 @@ package hudson.widgets;
 
 import hudson.Util;
 import hudson.model.Descriptor;
-import hudson.util.IOException2;
 import hudson.util.PackedMap;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -124,7 +123,7 @@ public class RenderOnDemandClosure {
                     }.invokeScript(req,rsp,bodyStack[0],null);
                 } catch (JellyTagException e) {
                     LOGGER.log(Level.WARNING, "Failed to evaluate the template closure", e);
-                    throw new IOException2("Failed to evaluate the template closure",e);
+                    throw new IOException("Failed to evaluate the template closure",e);
                 }
             }
         };

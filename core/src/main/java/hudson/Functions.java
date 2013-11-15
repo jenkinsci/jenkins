@@ -140,7 +140,6 @@ import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
@@ -1126,7 +1125,6 @@ public class Functions {
         return sorted;
     }
 
-    @IgnoreJRERequirement
     public static ThreadInfo[] getThreadInfos() {
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
         return mbean.dumpAllThreads(mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
@@ -1190,20 +1188,14 @@ public class Functions {
     }
 
     /**
-     * Are we running on JRE6 or above?
+     * @deprecated Now always true.
      */
-    @IgnoreJRERequirement
+    @Deprecated
     public static boolean isMustangOrAbove() {
-        try {
-            System.console();
-            return true;
-        } catch(LinkageError e) {
-            return false;
-        }
+        return true;
     }
 
     // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version
-    @IgnoreJRERequirement
     public static String dumpThreadInfo(ThreadInfo ti, ThreadGroupMap map) {
         String grp = map.getThreadGroup(ti);
         StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" +

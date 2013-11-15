@@ -54,6 +54,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.util.Enumeration;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
 
 /**
  * Represents a Jenkins plug-in and associated control information
@@ -372,7 +373,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Terminates the plugin.
      */
     public void stop() {
-        LOGGER.info("Stopping "+shortName);
+        LOGGER.log(Level.FINE, "Stopping {0}", shortName);
         try {
             getPlugin().stop();
         } catch(Throwable t) {

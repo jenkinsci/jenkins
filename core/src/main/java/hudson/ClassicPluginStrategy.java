@@ -29,7 +29,6 @@ import hudson.PluginWrapper.Dependency;
 import hudson.model.Hudson;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
 import hudson.util.VersionNumber;
@@ -117,7 +116,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             try {
                 manifest = new Manifest(in);
             } catch (IOException e) {
-                throw new IOException2("Failed to load " + archive, e);
+                throw new IOException("Failed to load " + archive, e);
             } finally {
                 in.close();
             }
@@ -350,13 +349,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     }
                     wrapper.setPlugin((Plugin) o);
                 } catch (LinkageError e) {
-                    throw new IOException2("Unable to load " + className + " from " + wrapper.getShortName(),e);
+                    throw new IOException("Unable to load " + className + " from " + wrapper.getShortName(),e);
                 } catch (ClassNotFoundException e) {
-                    throw new IOException2("Unable to load " + className + " from " + wrapper.getShortName(),e);
+                    throw new IOException("Unable to load " + className + " from " + wrapper.getShortName(),e);
                 } catch (IllegalAccessException e) {
-                    throw new IOException2("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
+                    throw new IOException("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
                 } catch (InstantiationException e) {
-                    throw new IOException2("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
+                    throw new IOException("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
                 }
             }
 
@@ -367,7 +366,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 startPlugin(wrapper);
             } catch(Throwable t) {
                 // gracefully handle any error in plugin.
-                throw new IOException2("Failed to initialize",t);
+                throw new IOException("Failed to initialize",t);
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);
@@ -427,7 +426,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             unzipExceptClasses(archive, destDir, prj);
             createClassJarFromWebInfClasses(archive, destDir, prj);
         } catch (BuildException x) {
-            throw new IOException2("Failed to expand " + archive,x);
+            throw new IOException("Failed to expand " + archive,x);
         }
 
         try {
@@ -646,7 +645,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
-     * Deprecated as of Java 7, retained only for Java 5/6.
+     * Deprecated as of Java 7, retained only for Java 6.
      */
     private final class AntClassLoader2 extends AntClassLoader implements Closeable {
         private final Vector pathComponents;

@@ -34,7 +34,6 @@ import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
@@ -55,7 +54,6 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormApply;
-import hudson.util.IOException2;
 import hudson.util.LogTaskListener;
 import hudson.util.XStream2;
 
@@ -392,7 +390,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } catch (ParseException e) {
             throw new InvalidDirectoryNameException(buildDir);
         } catch (InterruptedException e) {
-            throw new IOException2("Interrupted while resolving symlink directory "+buildDir,e);
+            throw new IOException("Interrupted while resolving symlink directory "+buildDir,e);
         }
     }
 
@@ -2169,7 +2167,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * processes for this build.
      *
      * <p>
-     * {@link BuildStep}s that invoke external processes should use this.
+     * {@link hudson.tasks.BuildStep}s that invoke external processes should use this.
      * This allows {@link BuildWrapper}s and other project configurations (such as JDK selection)
      * to take effect.
      *

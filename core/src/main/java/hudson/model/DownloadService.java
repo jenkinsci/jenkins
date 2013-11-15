@@ -28,7 +28,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
@@ -240,7 +239,7 @@ public class DownloadService extends PageDecorator {
                     return JSONObject.fromObject(df.read());
                 } catch (JSONException e) {
                     df.delete(); // if we keep this file, it will cause repeated failures
-                    throw new IOException2("Failed to parse "+df+" into JSON",e);
+                    throw new IOException("Failed to parse "+df+" into JSON",e);
                 }
             return null;
         }

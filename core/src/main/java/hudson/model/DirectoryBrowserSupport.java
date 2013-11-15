@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -122,7 +121,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         try {
             serveFile(req,rsp,base,icon,serveDirIndex);
         } catch (InterruptedException e) {
-            throw new IOException2("interrupted",e);
+            throw new IOException("interrupted",e);
         }
     }
 

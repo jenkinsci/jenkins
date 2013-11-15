@@ -53,7 +53,7 @@ import org.kohsuke.args4j.spi.Setter;
  * Handler traverse the view names from left to right. First one is expected to
  * be a top level view and all but the last one are expected to be instances of
  * {@link ViewGroup}. Handler fails to resolve view provided a view with given
- * name does not exist or a user was not granted {@link View.READ} permission.
+ * name does not exist or a user was not granted {@link View#READ} permission.
  *
  * @author ogondza
  * @since 1.538

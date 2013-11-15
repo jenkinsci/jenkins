@@ -2329,7 +2329,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @see Items#findNearest
      */
     public static AbstractProject findNearest(String name) {
-        return findNearest(name,Hudson.getInstance());
+        return findNearest(name,Jenkins.getInstance());
     }
 
     /**

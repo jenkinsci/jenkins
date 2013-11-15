@@ -28,7 +28,6 @@ import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
-import hudson.util.IOException2;
 import hudson.util.NullStream;
 
 import java.io.ByteArrayInputStream;
@@ -142,9 +141,9 @@ public class FilePathTest extends ChannelTestCase {
                         private Exception closed;
                         private volatile int count;
 
-                        private void checkNotClosed() throws IOException2 {
+                        private void checkNotClosed() throws IOException {
                             if (closed != null)
-                                throw new IOException2(closed);
+                                throw new IOException(closed);
                         }
 
                         @Override
