@@ -23,24 +23,28 @@
  */
 package hudson.util;
 
+import hudson.init.Initializer;
 import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
+import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletContext;
+
+import static hudson.init.InitMilestone.JOB_LOADED;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
-import java.util.Timer;
 
 /**
  * Makes sure that no other Hudson uses our <tt>JENKINS_HOME</tt> directory,
@@ -146,14 +150,18 @@ public class DoubleLaunchChecker {
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
         long MINUTE = 1000*60;
-        Timer timer = Trigger.timer;
-        if (timer != null) {
-            timer.schedule(new SafeTimerTask() {
+
+        Timer.get()
+            .schedule(new SafeTimerTask() {
                 protected void doRun() {
                     execute();
                 }
-            },(random.nextInt(30)+60)*MINUTE);
-        }
+            }, (random.nextInt(30) + 60) * MINUTE, TimeUnit.MILLISECONDS);
+    }
+
+    @Initializer(after= JOB_LOADED)
+    public static void init() {
+        new DoubleLaunchChecker().schedule();
     }
 
     /**
