@@ -354,7 +354,7 @@ public class Util {
             Object path = File.class.getMethod("toPath").invoke(file);
             return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
         } catch (NoSuchMethodException x) {
-            return null; // fine, Java 5/6
+            return null; // fine, Java 6
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
@@ -1141,7 +1141,7 @@ public class Util {
             filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
             return true;
         } catch (NoSuchMethodException x) {
-            return false; // fine, Java 5/6
+            return false; // fine, Java 6
         } catch (InvocationTargetException x) {
             Throwable x2 = x.getCause();
             if (x2 instanceof UnsupportedOperationException) {
@@ -1206,7 +1206,7 @@ public class Util {
             Object path = File.class.getMethod("toPath").invoke(link);
             return Class.forName("java.nio.file.Files").getMethod("readSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path).toString();
         } catch (NoSuchMethodException x) {
-            // fine, Java 5/6; fall through
+            // fine, Java 6; fall through
         } catch (InvocationTargetException x) {
             Throwable x2 = x.getCause();
             if (x2 instanceof UnsupportedOperationException) {

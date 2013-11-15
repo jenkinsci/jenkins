@@ -645,7 +645,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
-     * Deprecated as of Java 7, retained only for Java 5/6.
+     * Deprecated as of Java 7, retained only for Java 6.
      */
     private final class AntClassLoader2 extends AntClassLoader implements Closeable {
         private final Vector pathComponents;
