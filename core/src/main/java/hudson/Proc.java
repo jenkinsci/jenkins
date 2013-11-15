@@ -28,6 +28,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.ExceptionCatchingThreadFactory;
+import hudson.util.NamingThreadFactory;
 import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
@@ -131,7 +132,7 @@ public abstract class Proc {
      */
     public abstract OutputStream getStdin();
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
+    private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "Proc.executor")));
     
     /**
      * Like {@link #join} but can be given a maximum time to wait.

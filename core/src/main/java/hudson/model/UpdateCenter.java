@@ -44,6 +44,7 @@ import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
+import hudson.util.NamingThreadFactory;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
@@ -81,7 +82,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -130,25 +130,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @since 1.501
      */
     private final ExecutorService installerService = new AtmostOneThreadExecutor(
-        new DaemonThreadFactory(new ThreadFactory() {
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("Update center installer thread");
-                return t;
-            }
-        }));
+        new NamingThreadFactory(new DaemonThreadFactory(), "Update center installer thread"));
 
     /**
      * An {@link ExecutorService} for updating UpdateSites.
      */
     protected final ExecutorService updateService = Executors.newCachedThreadPool(
-        new DaemonThreadFactory(new ThreadFactory() {
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("Update site data downloader");
-                return t;
-            }
-        }));
+        new NamingThreadFactory(new DaemonThreadFactory(), "Update site data downloader"));
         
     /**
      * List of created {@link UpdateCenterJob}s. Access needs to be synchronized.
