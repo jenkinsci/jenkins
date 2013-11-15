@@ -256,7 +256,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         private Map<Class<? extends Annotation>,GuiceExtensionAnnotation<?>> extensionAnnotations = Maps.newHashMap();
 
         public GuiceFinder() {
-            for (ExtensionComponent<GuiceExtensionAnnotation> ec : moduleFinder.find(GuiceExtensionAnnotation.class, Jenkins.getInstance())) {
+            for (ExtensionComponent<GuiceExtensionAnnotation> ec : moduleFinder.find(GuiceExtensionAnnotation.class, Hudson.getInstance())) {
                 GuiceExtensionAnnotation gea = ec.getInstance();
                 extensionAnnotations.put(gea.annotationType,gea);
             }
@@ -274,7 +274,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             });
             modules.add(new SezpozModule(sezpozIndex));
 
-            for (ExtensionComponent<Module> ec : moduleFinder.find(Module.class, Jenkins.getInstance())) {
+            for (ExtensionComponent<Module> ec : moduleFinder.find(Module.class, Hudson.getInstance())) {
                 modules.add(ec.getInstance());
             }
 
