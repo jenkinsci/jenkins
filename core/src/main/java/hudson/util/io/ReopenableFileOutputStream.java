@@ -23,8 +23,6 @@
  */
 package hudson.util.io;
 
-import hudson.util.IOException2;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -55,7 +53,7 @@ public class ReopenableFileOutputStream extends OutputStream {
             try {
                 current = new FileOutputStream(out,appendOnNextOpen);
             } catch (FileNotFoundException e) {
-                throw new IOException2("Failed to open "+out,e);
+                throw new IOException("Failed to open "+out,e);
             }
         return current;
     }

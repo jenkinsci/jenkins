@@ -28,7 +28,6 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.ExceptionCatchingThreadFactory;
-import hudson.util.IOException2;
 import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
@@ -454,7 +453,7 @@ public abstract class Proc {
             } catch (ExecutionException e) {
                 if(e.getCause() instanceof IOException)
                     throw (IOException)e.getCause();
-                throw new IOException2("Failed to join the process",e);
+                throw new IOException("Failed to join the process",e);
             } catch (CancellationException x) {
                 return -1;
             }

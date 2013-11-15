@@ -47,7 +47,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
-import hudson.util.IOException2;
 import hudson.util.PackedMap;
 import hudson.util.RunList;
 import net.sf.json.JSONObject;
@@ -238,9 +237,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                     try {
                         results.add(new Record(produced,f,file.getName(),new FilePath(file).digest()));
                     } catch (IOException e) {
-                        throw new IOException2(Messages.Fingerprinter_DigestFailed(file),e);
+                        throw new IOException(Messages.Fingerprinter_DigestFailed(file),e);
                     } catch (InterruptedException e) {
-                        throw new IOException2(Messages.Fingerprinter_Aborted(),e);
+                        throw new IOException(Messages.Fingerprinter_Aborted(),e);
                     }
                 }
 

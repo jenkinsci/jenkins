@@ -1,7 +1,6 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 
 import javax.crypto.SecretKey;
@@ -72,7 +71,7 @@ public class CliProtocol2 extends CliProtocol {
 
                 runCli(c);
             } catch (GeneralSecurityException e) {
-                throw new IOException2("Failed to encrypt the CLI channel",e);
+                throw new IOException("Failed to encrypt the CLI channel",e);
             }
         }
     }

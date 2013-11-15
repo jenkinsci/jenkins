@@ -172,7 +172,7 @@ public final class RemotingDiagnostics {
 
                     return new FilePath(hprof);
                 } catch (JMException e) {
-                    throw new IOException2(e);
+                    throw new IOException(e);
                 }
             }
 

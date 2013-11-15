@@ -7,7 +7,6 @@ import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-import hudson.util.IOException2;
 import hudson.util.StreamCopyThread;
 import org.jinterop.dcom.common.JIException;
 import org.jvnet.hudson.remcom.WindowsRemoteProcessLauncher;
@@ -56,9 +55,9 @@ public class WindowsRemoteLauncher extends Launcher {
         try {
             proc = launcher.launch(buildCommandLine(ps), ps.pwd().getRemote());
         } catch (JIException e) {
-            throw new IOException2(e);
+            throw new IOException(e);
         } catch (InterruptedException e) {
-            throw new IOException2(e);
+            throw new IOException(e);
         }
         final Thread t1 = new StreamCopyThread("stdout copier: "+name, proc.getInputStream(), ps.stdout(),false);
         t1.start();
@@ -117,7 +116,7 @@ public class WindowsRemoteLauncher extends Launcher {
             return new Channel("channel over named pipe to "+launcher.getHostName(),
                 Computer.threadPoolForRemoting, proc.getInputStream(), new BufferedOutputStream(proc.getOutputStream()));
         } catch (JIException e) {
-            throw new IOException2(e);
+            throw new IOException(e);
         }
     }
 

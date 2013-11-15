@@ -50,7 +50,6 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.FormApply;
-import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
@@ -1085,7 +1084,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     new StreamResult(out));
             out.close();
         } catch (TransformerException e) {
-            throw new IOException2("Failed to persist configuration.xml", e);
+            throw new IOException("Failed to persist configuration.xml", e);
         }
 
         // try to reflect the changes by reloading
@@ -1097,11 +1096,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
             name = oldname;
         } catch (StreamException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(ConversionException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } finally {
             in.close();
         }
@@ -1210,11 +1209,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             checkGoodName(v.name);
             return v;
         } catch(StreamException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(ConversionException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } finally {
             in.close();
         }

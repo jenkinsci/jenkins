@@ -2,7 +2,6 @@ package jenkins.security;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import hudson.util.TextFile;
@@ -80,7 +79,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             cos.write(payload);
             cos.write(MAGIC);
         } catch (GeneralSecurityException e) {
-            throw new IOException2("Failed to persist the key: "+key.getId(),e);
+            throw new IOException("Failed to persist the key: "+key.getId(),e);
         } finally {
             IOUtils.closeQuietly(cos);
             IOUtils.closeQuietly(fos);
@@ -107,7 +106,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             byte[] bytes = IOUtils.toByteArray(cis);
             return verifyMagic(bytes);
         } catch (GeneralSecurityException e) {
-            throw new IOException2("Failed to persist the key: "+key.getId(),e);
+            throw new IOException("Failed to persist the key: "+key.getId(),e);
         } finally {
             IOUtils.closeQuietly(cis);
             IOUtils.closeQuietly(fis);

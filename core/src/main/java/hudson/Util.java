@@ -30,7 +30,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
-import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
@@ -569,7 +568,7 @@ public class Util {
             }
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
-            throw new IOException2("MD5 not installed",e);    // impossible
+            throw new IOException("MD5 not installed",e);    // impossible
         }
         /* JENKINS-18178: confuses Maven 2 runner
         try {

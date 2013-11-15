@@ -40,7 +40,6 @@ import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -586,7 +585,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         new StreamResult(out));
                 out.close();
             } catch (TransformerException e) {
-                throw new IOException2("Failed to persist configuration.xml", e);
+                throw new IOException("Failed to persist configuration.xml", e);
             }
 
             // try to reflect the changes by reloading
