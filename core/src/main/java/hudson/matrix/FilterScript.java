@@ -90,26 +90,47 @@ class FilterScript {
     }
 
     public static FilterScript parse(String expression) {
+        return parse(expression, ACCEPT_ALL);
+    }
+
+    /**
+     * @since 1.541
+     */
+    public static FilterScript parse(String expression, FilterScript defaultScript) {
         if (Util.fixEmptyAndTrim(expression)==null)
-            return NOOP;
+            return defaultScript;
 
         GroovyShell shell = new GroovyShell();
 
         return new FilterScript(shell.parse("use("+BooleanCategory.class.getName().replace('$','.')+") {"+expression+"}"));
     }
 
-    /**
-     * Constant that always applies to any combination.
-     */
-    private static final FilterScript NOOP = new FilterScript(new Script() {
+    private static final Script EMPTY = new Script() {
         @Override
         public Object run() {
             return true;
         }
-    }) {
+    };
+
+    /**
+     * Constant that always applies to any combination.
+     * @since 1.541
+     */
+    /*package*/ static final FilterScript ACCEPT_ALL = new FilterScript(EMPTY) {
         @Override
         public boolean apply(MatrixBuildExecution context, Combination combination) {
             return true;
+        }
+    };
+
+    /**
+     * Constant that does not apply to any combination.
+     * @since 1.541
+     */
+    /*package*/ static final FilterScript REJECT_ALL = new FilterScript(EMPTY) {
+        @Override
+        public boolean apply(MatrixBuildExecution context, Combination combination) {
+            return false;
         }
     };
 }

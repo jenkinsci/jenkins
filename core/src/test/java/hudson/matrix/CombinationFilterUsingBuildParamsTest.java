@@ -56,6 +56,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.Bug;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.verification.VerificationMode;
@@ -180,6 +181,25 @@ public class CombinationFilterUsingBuildParamsTest {
         givenTheVersionIs("3");
 
         strategy.run(execution);
+
+        wasBuilt(confs.get("devel"));
+        wasNotBuilt(confs.get("beta"));
+        wasNotBuilt(confs.get("stable"));
+        wasNotBuilt(confs.get("experimental"));
+    }
+
+    @Test
+    @Bug(7285)
+    public void reproduceTouchstoneRegression () throws InterruptedException, IOException {
+
+        givenTheVersionIs("3");
+
+        // No touchstone
+        MatrixExecutionStrategy myStrategy = new DefaultMatrixExecutionStrategyImpl (
+                true, null, Result.SUCCESS, new NoopMatrixConfigurationSorter()
+        );
+
+        myStrategy.run(execution);
 
         wasBuilt(confs.get("devel"));
         wasNotBuilt(confs.get("beta"));

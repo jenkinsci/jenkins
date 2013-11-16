@@ -174,8 +174,8 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
 
         final MatrixBuild build = execution.getBuild();
 
-        final FilterScript combinationFilter = FilterScript.parse(execution.getProject().getCombinationFilter());
-        final FilterScript touchStoneFilter = FilterScript.parse(getTouchStoneCombinationFilter());
+        final FilterScript combinationFilter = FilterScript.parse(execution.getProject().getCombinationFilter(), FilterScript.ACCEPT_ALL);
+        final FilterScript touchStoneFilter = FilterScript.parse(getTouchStoneCombinationFilter(), FilterScript.REJECT_ALL);
 
         try {
 
