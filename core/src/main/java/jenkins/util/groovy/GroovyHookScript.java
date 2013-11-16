@@ -1,5 +1,6 @@
 package jenkins.util.groovy;
 
+import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
 import jenkins.model.Jenkins;
@@ -38,9 +39,19 @@ import static java.util.logging.Level.WARNING;
  */
 public class GroovyHookScript {
     private final String hook;
+    private final Binding bindings = new Binding();
 
     public GroovyHookScript(String hook) {
         this.hook = hook;
+    }
+
+    public GroovyHookScript bind(String name, Object o) {
+        bindings.setProperty(name,o);
+        return this;
+    }
+
+    public Binding getBindings() {
+        return bindings;
     }
 
     public void run() {
@@ -118,7 +129,7 @@ public class GroovyHookScript {
      * Can be used to customize the environment in which the script runs.
      */
     protected GroovyShell createShell() {
-        return new GroovyShell(Jenkins.getInstance().getPluginManager().uberClassLoader);
+        return new GroovyShell(Jenkins.getInstance().getPluginManager().uberClassLoader, bindings);
     }
 
     private static final Logger LOGGER = Logger.getLogger(GroovyHookScript.class.getName());
