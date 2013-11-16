@@ -26,6 +26,7 @@ package hudson;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
 import hudson.model.Hudson;
+import hudson.util.BootFailure;
 import jenkins.model.Jenkins;
 import hudson.util.HudsonIsLoading;
 import hudson.util.IncompatibleServletVersionDetected;
@@ -82,8 +83,8 @@ public final class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
+        final ServletContext context = event.getServletContext();
         try {
-            final ServletContext context = event.getServletContext();
 
             // use the current request to determine the language
             LocaleProvider.setProvider(new LocaleProvider() {
@@ -98,8 +99,7 @@ public final class WebAppMain implements ServletContextListener {
                 jvm = new JVM();
                 new URLClassLoader(new URL[0],getClass().getClassLoader());
             } catch(SecurityException e) {
-                context.setAttribute(APP,new InsufficientPermissionDetected(e));
-                return;
+                throw new InsufficientPermissionDetected(e);
             }
 
             try {// remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
@@ -116,16 +116,12 @@ public final class WebAppMain implements ServletContextListener {
             System.out.println("Jenkins home directory: "+home+" found at: "+describedHomeDir.description);
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
-            if (! home.exists()) {
-                context.setAttribute(APP,new NoHomeDir(home));
-                return;
-            }
+            if (!home.exists())
+                throw new NoHomeDir(home);
 
             // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
             if(jvm.bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
-                // nope
-                context.setAttribute(APP,new IncompatibleVMDetected());
-                return;
+                throw new IncompatibleVMDetected(); // nope
             }
 
 //  JNA is no longer a hard requirement. It's just nice to have. See HUDSON-4820 for more context.
@@ -163,22 +159,19 @@ public final class WebAppMain implements ServletContextListener {
             try {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
-                context.setAttribute(APP,new IncompatibleServletVersionDetected(ServletResponse.class));
-                return;
+                throw new IncompatibleServletVersionDetected(ServletResponse.class);
             }
 
             // make sure that we see Ant 1.7
             try {
                 FileSet.class.getMethod("getDirectoryScanner");
             } catch (NoSuchMethodException e) {
-                context.setAttribute(APP,new IncompatibleAntVersionDetected(FileSet.class));
-                return;
+                throw new IncompatibleAntVersionDetected(FileSet.class);
             }
 
             // make sure AWT is functioning, or else JFreeChart won't even load.
             if(ChartUtil.awtProblemCause!=null) {
-                context.setAttribute(APP,new AWTProblem(ChartUtil.awtProblemCause));
-                return;
+                throw new AWTProblem(ChartUtil.awtProblemCause);
             }
 
             // some containers (in particular Tomcat) doesn't abort a launch
@@ -188,8 +181,7 @@ public final class WebAppMain implements ServletContextListener {
                 File f = File.createTempFile("test", "test");
                 f.delete();
             } catch (IOException e) {
-                context.setAttribute(APP,new NoTempDir(e));
-                return;
+                throw new NoTempDir(e);
             }
 
             // Tomcat breaks XSLT with JDK 5.0 and onward. Check if that's the case, and if so,
@@ -225,12 +217,10 @@ public final class WebAppMain implements ServletContextListener {
                         LOGGER.info("Jenkins is fully up and running");
                         success = true;
                     } catch (Error e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
-                        context.setAttribute(APP,new HudsonFailedToLoad(e));
+                        new HudsonFailedToLoad(e).publish(context);
                         throw e;
                     } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
-                        context.setAttribute(APP,new HudsonFailedToLoad(e));
+                        new HudsonFailedToLoad(e).publish(context);
                     } finally {
                         Jenkins instance = Jenkins.getInstance();
                         if(!success && instance!=null)
@@ -239,6 +229,8 @@ public final class WebAppMain implements ServletContextListener {
                 }
             };
             initThread.start();
+        } catch (BootFailure e) {
+            e.publish(context);
         } catch (Error e) {
             LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
             throw e;

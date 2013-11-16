@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import hudson.Functions;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -38,7 +39,18 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class ErrorObject {
+public abstract class ErrorObject extends Exception {
+    protected ErrorObject() {
+    }
+
+    protected ErrorObject(Throwable cause) {
+        super(cause);
+    }
+
+    public String getStackTraceString() {
+        return Functions.printThrowable(this);
+    }
+
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         rsp.setStatus(SC_SERVICE_UNAVAILABLE);
         req.getView(this,"index.jelly").forward(req,rsp);
