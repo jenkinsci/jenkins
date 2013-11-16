@@ -33,6 +33,9 @@ import java.io.IOException;
 /**
  * Basis for error model objects.
  *
+ * This implementation serves error pages for any requests under its domain. Subclasses are responsible for providing
+ * <tt>index</tt> view.
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class ErrorObject {
