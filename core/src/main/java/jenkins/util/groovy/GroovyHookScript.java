@@ -11,8 +11,9 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * A collection of Groovy scripts that are executed as various hooks.
@@ -42,20 +43,28 @@ public class GroovyHookScript {
         this.hook = hook;
     }
 
-    public void run() throws IOException {
+    public void run() {
         Jenkins j = Jenkins.getInstance();
         final String hookGroovy = hook+".groovy";
         final String hookGroovyD = hook+".groovy.d";
 
-        URL bundled = j.servletContext.getResource("/WEB-INF/"+ hookGroovy);
-        execute(bundled);
+        try {
+            URL bundled = j.servletContext.getResource("/WEB-INF/"+ hookGroovy);
+            execute(bundled);
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to execute /WEB-INF/"+hookGroovy,e);
+        }
 
         Set<String> resources = j.servletContext.getResourcePaths("/WEB-INF/"+ hookGroovyD +"/");
         if (resources!=null) {
             // sort to execute them in a deterministic order
             for (String res : new TreeSet<String>(resources)) {
-                bundled = j.servletContext.getResource(res);
-                execute(bundled);
+                try {
+                    URL bundled = j.servletContext.getResource(res);
+                    execute(bundled);
+                } catch (IOException e) {
+                    LOGGER.log(WARNING, "Failed to execute " + res, e);
+                }
             }
         }
 
@@ -72,8 +81,9 @@ public class GroovyHookScript {
             if (scripts!=null) {
                 // sort to run them in a deterministic order
                 Arrays.sort(scripts);
-                for (File f : scripts)
+                for (File f : scripts) {
                     execute(f);
+                }
             }
         }
     }
@@ -85,10 +95,14 @@ public class GroovyHookScript {
         }
     }
 
-    protected void execute(File f) throws IOException {
+    protected void execute(File f) {
         if (f.exists()) {
             LOGGER.info("Executing "+f);
-            execute(new GroovyCodeSource(f));
+            try {
+                execute(new GroovyCodeSource(f));
+            } catch (IOException e) {
+                LOGGER.log(WARNING, "Failed to execute " + f, e);
+            }
         }
     }
 
@@ -96,7 +110,7 @@ public class GroovyHookScript {
         try {
             createShell().evaluate(s);
         } catch (RuntimeException x) {
-            LOGGER.log(Level.WARNING, "Failed to run script " + s.getName(), x);
+            LOGGER.log(WARNING, "Failed to run script " + s.getName(), x);
         }
     }
 

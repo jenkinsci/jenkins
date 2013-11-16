@@ -38,7 +38,7 @@ import static hudson.init.InitMilestone.*;
  */
 public class GroovyInitScript {
     @Initializer(after=JOB_LOADED)
-    public static void init(Jenkins j) throws IOException {
+    public static void init(Jenkins j) {
         new GroovyHookScript("init").run();
     }
 }
