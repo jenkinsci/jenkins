@@ -25,7 +25,6 @@ package hudson.matrix;
 
 import groovy.lang.Binding;
 import hudson.Util;
-import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,7 +95,7 @@ public final class Combination extends TreeMap<String,String> implements Compara
      * @see #evalGroovyExpression(AxisList, String)
      * @since 1.515
      * @deprecated as of 1.528
-     *      Use {@link FilterScript#apply(MatrixBuildExecution, Combination)}
+     *      Use {@link FilterScript#apply(hudson.matrix.MatrixBuild.MatrixBuildExecution, Combination)}
      */
     public boolean evalGroovyExpression(AxisList axes, String expression, Binding binding) {
         return FilterScript.parse(expression).apply(axes, this, binding);
