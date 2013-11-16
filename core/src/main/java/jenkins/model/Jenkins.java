@@ -3086,7 +3086,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                     reload();
                 } catch (Exception e) {
                     LOGGER.log(SEVERE,"Failed to reload Jenkins config",e);
-                    new JenkinsReloadFailed(e).publish(servletContext);
+                    new JenkinsReloadFailed(e).publish(servletContext,root);
                 }
             }
         }.start();
