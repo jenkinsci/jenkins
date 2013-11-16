@@ -72,7 +72,7 @@ import static java.util.logging.Level.*;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class WebAppMain implements ServletContextListener {
+public class WebAppMain implements ServletContextListener {
     private final RingBufferLogHandler handler = new RingBufferLogHandler() {
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
@@ -249,6 +249,10 @@ public final class WebAppMain implements ServletContextListener {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         }
+    }
+
+    public void joinInit() throws InterruptedException {
+        initThread.join();
     }
 
     /**

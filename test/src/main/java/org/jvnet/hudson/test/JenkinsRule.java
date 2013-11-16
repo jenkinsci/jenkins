@@ -229,9 +229,9 @@ import org.junit.rules.TemporaryFolder;
 @SuppressWarnings({"deprecation","rawtypes"})
 public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
-    private TestEnvironment env;
+    protected TestEnvironment env;
 
-    private Description testDescription;
+    protected Description testDescription;
 
     /**
      * Points to the same object as {@link #jenkins} does.
@@ -313,7 +313,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Override to set up your specific external resource.
      * @throws Throwable if setup fails (which will disable {@code after}
      */
-    protected void before() throws Throwable {
+    public void before() throws Throwable {
         env = new TestEnvironment(testDescription);
         env.pin();
         recipe();
@@ -394,10 +394,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Override to tear down your specific external resource.
      */
-    protected void after() throws Exception {
+    public void after() throws Exception {
         try {
-            for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
-                tl.onTearDown();
+            if (jenkins!=null) {
+                for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
+                    tl.onTearDown();
+            }
 
             if (timeoutTimer!=null) {
                 timeoutTimer.cancel();
@@ -429,7 +431,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                     // ignore
                 }
 
-            jenkins.cleanUp();
+            if (jenkins!=null)
+                jenkins.cleanUp();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
 
