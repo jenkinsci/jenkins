@@ -4,6 +4,7 @@ import hudson.WebAppMain
 import hudson.model.Hudson
 import hudson.model.listeners.ItemListener
 import jenkins.model.Jenkins
+import org.junit.After
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -53,6 +54,11 @@ class BootFailureTest extends Assert {
                 return a;
             return null;    // didn't boot
         }
+    }
+
+    @After
+    public void tearDown() {
+        Jenkins.getInstance()?.cleanUp()
     }
 
     public static class SeriousError extends Error {}
