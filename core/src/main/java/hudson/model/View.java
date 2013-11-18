@@ -60,6 +60,7 @@ import jenkins.util.ProgressiveRendering;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -1172,8 +1173,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         String mode = req.getParameter("mode");
         if (mode==null || mode.length()==0) {
             if(isXmlSubmission) {
-                View v;
-                v = createViewFromXML(name, req.getInputStream());
+                View v = createViewFromXML(name, req.getInputStream());
                 v.owner = owner;
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return v;
@@ -1181,18 +1181,39 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 throw new Failure(Messages.View_MissingMode());
         }
 
-        ViewDescriptor descriptor = all().findByName(mode);
-        if (descriptor == null) {
-            throw new Failure("No view type ‘" + mode + "’ is known");
-        }
+        View v;
+        if (mode!=null && mode.equals("copy")) {
+            v = copy(req, owner, name);
+        } else {
+            ViewDescriptor descriptor = all().findByName(mode);
+            if (descriptor == null) {
+                throw new Failure("No view type ‘" + mode + "’ is known");
+            }
 
-        // create a view
-        View v = descriptor.newInstance(req,req.getSubmittedForm());
+            // create a view
+            v = descriptor.newInstance(req,req.getSubmittedForm());
+        }
         v.owner = owner;
 
         // redirect to the config screen
         rsp.sendRedirect2(req.getContextPath()+'/'+v.getUrl()+v.getPostConstructLandingPage());
 
+        return v;
+    }
+
+    private static View copy(StaplerRequest req, ViewGroup owner, String name) throws IOException {
+        View v;
+        String from = req.getParameter("from");
+        View src = src = owner.getView(from);
+
+        if(src==null) {
+            if(Util.fixEmpty(from)==null)
+                throw new Failure("Specify which view to copy");
+            else
+                throw new Failure("No such view: "+from);
+        }
+        String xml = Jenkins.XSTREAM.toXML(src);
+        v = createViewFromXML(name, new StringInputStream(xml));
         return v;
     }
 
