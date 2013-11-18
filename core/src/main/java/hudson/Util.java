@@ -62,6 +62,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1136,9 +1137,28 @@ public class Util {
             Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
             Class<?> filesC = Class.forName("java.nio.file.Files");
             Class<?> pathC = Class.forName("java.nio.file.Path");
-            filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+            Class<?> fileAlreadyExistsExceptionC = Class.forName("java.nio.file.FileAlreadyExistsException");
+
             Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
-            filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+            final int maxNumberOfTries = 4;
+            final int timeInMillis = 100;
+            for (int tryNumber = 1; tryNumber <= maxNumberOfTries; tryNumber++) {
+                filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+                try {
+                    filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+                    break;
+                }
+                catch (Exception x) {
+                    if (fileAlreadyExistsExceptionC.isInstance(x)) {
+                        if(tryNumber < maxNumberOfTries) {
+                            TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
+                            continue;
+                        }
+                        LOGGER.warning("symlink FileAlreadyExistsException thrown "+maxNumberOfTries+" times => cannot createSymbolicLink");
+                    }
+                    throw x;
+                }
+            }
             return true;
         } catch (NoSuchMethodException x) {
             return false; // fine, Java 6
