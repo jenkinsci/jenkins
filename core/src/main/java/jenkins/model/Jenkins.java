@@ -3869,10 +3869,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Shortcut for {@code Hudson.getInstance().lookup.get(type)}
+     * Shortcut for {@code Jenkins.getInstance().lookup.get(type)}
      */
-    public static <T> T lookup(Class<T> type) {
-        return Jenkins.getInstance().lookup.get(type);
+    public static @CheckForNull <T> T lookup(Class<T> type) {
+        Jenkins j = Jenkins.getInstance();
+        return j != null ? j.lookup.get(type) : null;
     }
 
     /**
