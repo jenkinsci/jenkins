@@ -55,6 +55,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import java.util.Enumeration;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
+import javax.annotation.CheckForNull;
 
 /**
  * Represents a Jenkins plug-in and associated control information
@@ -284,8 +285,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Gets the instance of {@link Plugin} contributed by this plugin.
      */
-    public Plugin getPlugin() {
-        return Jenkins.lookup(PluginInstanceStore.class).store.get(this);
+    public @CheckForNull Plugin getPlugin() {
+        PluginInstanceStore pis = Jenkins.lookup(PluginInstanceStore.class);
+        return pis != null ? pis.store.get(this) : null;
     }
 
     /**
@@ -373,11 +375,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Terminates the plugin.
      */
     public void stop() {
-        LOGGER.log(Level.FINE, "Stopping {0}", shortName);
-        try {
-            getPlugin().stop();
-        } catch(Throwable t) {
-            LOGGER.log(WARNING, "Failed to shut down "+shortName, t);
+        Plugin plugin = getPlugin();
+        if (plugin != null) {
+            try {
+                LOGGER.log(Level.FINE, "Stopping {0}", shortName);
+                plugin.stop();
+            } catch (Throwable t) {
+                LOGGER.log(WARNING, "Failed to shut down " + shortName, t);
+            }
+        } else {
+            LOGGER.log(Level.FINE, "Could not find Plugin instance to stop for {0}", shortName);
         }
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
