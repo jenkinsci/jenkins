@@ -174,13 +174,13 @@ public class PersistedList<T> extends AbstractList<T> {
     }
 
     /**
-     * Version of {@link #_onModified()} that swallows an exception for compliance with {@link List}.
+     * Version of {@link #onModified()} that throws an unchecked exception for compliance with {@link List}.
      */
     private void _onModified() {
         try {
             onModified();
         } catch (IOException e) {
-            throw new Error(e);
+            throw new RuntimeException(e);
         }
     }
 
