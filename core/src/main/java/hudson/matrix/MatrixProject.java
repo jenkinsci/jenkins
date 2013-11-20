@@ -854,7 +854,7 @@ public class MatrixProject extends AbstractProject<MatrixProject,MatrixBuild> im
         checkAxisNames(newAxes);
         this.axes = new AxisList(newAxes.toList());
 
-        buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
+        buildWrappers.rebuildHetero(req, json, BuildWrappers.getFor(this), "buildWrapper");
         builders.rebuildHetero(req, json, Builder.all(), "builder");
         publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
 

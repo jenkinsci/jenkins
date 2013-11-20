@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2013, Sun Microsystems, Inc., Kohsuke Kawaguchi and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,18 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <j:set var="wrappers" value="${h.getBuildWrapperDescriptors(it)}" />
-  <j:if test="${!empty(wrappers)}">
-    <f:descriptorList title="${%Build Environment}"
-                      descriptors="${wrappers}"
-                      instances="${it.buildWrappers}" />
-  </j:if>
+    <j:set var="wrappers" value="${h.getBuildWrapperDescriptors(it)}" />
+    <j:if test="${!empty(wrappers)}">
+        <f:section title="${%Build Environment}">     
+            <f:block>
+                <f:hetero-list name="buildWrapper" hasHeader="true"
+                   descriptors="${wrappers}"
+                   items="${it.buildWrappersList}"
+                   oneEach="true"
+                   menuAlign="bl-tl"
+                   honorOrder="true"
+                   addCaption="${%Add build wrapper}"/>
+            </f:block>
+        </f:section>
+    </j:if>
 </j:jelly>
