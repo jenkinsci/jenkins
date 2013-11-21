@@ -39,14 +39,13 @@ THE SOFTWARE.
                                oneEach="true"
                                menuAlign="bl-tl"
                                honorOrder="true"
-                               addCaption="${%Add build trigger}">
-              <d:invokeBody />
-              <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
-              <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
-          </f:hetero-list>
+                               addCaption="${%Add build trigger}"/>                    
+          <d:invokeBody />
+          <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
+          <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />           
       </f:block>
   </f:section>
-  <!--
+<!--
   <f:descriptorList title="${%Build Triggers}"
                     descriptors="${triggers}"
                     instances="${it.triggers}">
