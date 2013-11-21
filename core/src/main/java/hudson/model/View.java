@@ -429,7 +429,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         List<Computer> result = new ArrayList<Computer>();
 
         HashSet<Label> labels = new HashSet<Label>();
-        for (Item item : getItems()) {
+        for (Item item : getAllItems()) {
             if (item instanceof AbstractProject<?, ?>) {
                 labels.addAll(((AbstractProject<?, ?>) item).getRelevantLabels());
             }
@@ -459,7 +459,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return base;
         }
 
-        Collection<TopLevelItem> items = getItems();
+        Collection<TopLevelItem> items = getAllItems();
         List<Queue.Item> result = new ArrayList<Queue.Item>();
         for (Queue.Item qi : base) {
             if (items.contains(qi.task)) {
