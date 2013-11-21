@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2013, Sun Microsystems, Inc., Kohsuke Kawaguchi and contributors
+Copyright (c) 2004-2013, Sun Microsystems, Inc., Kohsuke Kawaguchi, 
+Oleg Nenashev and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +28,38 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
+    <st:documentation>
+        The default behavior is not used in core (see JENKINS-20683). 
+        It is recommended update your code to use
+        publishers.rebuildHetero(req, json, Publisher.all(), "buildWrapper");
+        <st:attribute name="useHeteroList">
+            Switches entry to use hetero-list instead of describableList to
+            simplify UI layout (value == "true").
+        </st:attribute>
+    </st:documentation>
     <j:set var="wrappers" value="${h.getBuildWrapperDescriptors(it)}" />
-    <j:if test="${!empty(wrappers)}">
-        <f:section title="${%Build Environment}">     
-            <f:block>
-                <f:hetero-list name="buildWrapper" hasHeader="true"
-                   descriptors="${wrappers}"
-                   items="${it.buildWrappersList}"
-                   oneEach="true"
-                   menuAlign="bl-tl"
-                   honorOrder="true"
-                   addCaption="${%Add build wrapper}"/>
-            </f:block>
-        </f:section>
+    <j:if test="${!empty(wrappers)}">      
+        <j:switch on="${attrs.useHeteroList}">
+            <!--New behavior--> 
+            <j:case value="true">
+                <f:section title="${%Build Environment}">     
+                    <f:block>
+                        <f:hetero-list name="buildWrapper" hasHeader="true"
+                               descriptors="${wrappers}"
+                               items="${it.buildWrappersList}"
+                               oneEach="true"
+                               menuAlign="bl-tl"
+                               honorOrder="true"
+                               addCaption="${%Add build wrapper}"/>
+                    </f:block>
+                </f:section>
+            </j:case>         
+            <!--Legacy behavior--> 
+            <j:default> 
+                <f:descriptorList title="${%Build Environment}"
+                                  descriptors="${wrappers}"
+                                  instances="${it.buildWrappers}" />
+            </j:default>
+        </j:switch>
     </j:if>
 </j:jelly>

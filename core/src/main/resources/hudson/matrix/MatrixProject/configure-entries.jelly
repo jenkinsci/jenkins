@@ -93,7 +93,7 @@ THE SOFTWARE.
     </j:choose>
   </f:section>
 
-  <p:config-buildWrappers />
-  <p:config-builders />
+  <p:config-buildWrappers useHeteroList="true"/>
+  <p:config-builders/>
   <p:config-publishers2 />
 </j:jelly>
