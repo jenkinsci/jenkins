@@ -187,17 +187,26 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @since 1.520
      */
     public Collection<TopLevelItem> getAllItems() {
+        final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
 
         if (this instanceof ViewGroup) {
-            final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
-
             for(View view: ((ViewGroup) this).getViews()) {
                 items.addAll(view.getAllItems());
             }
-            return Collections.unmodifiableCollection(items);
         } else {
-            return getItems();
+            for (TopLevelItem item : getItems()) {
+                // View item might be a ViewGroup instance (e.g. Folder)
+                if (item instanceof ViewGroup) {
+                    for(View view: ((ViewGroup) item).getViews()) {
+                        items.addAll(view.getAllItems());
+                    }
+                } else {
+                    items.add(item);
+                }
+            }
         }
+
+        return Collections.unmodifiableCollection(items);
     }
 
     /**
