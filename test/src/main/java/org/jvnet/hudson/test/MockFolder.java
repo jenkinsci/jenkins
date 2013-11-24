@@ -33,11 +33,11 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ItemGroupMixIn;
+import hudson.model.ModifiableViewGroup;
 import hudson.model.Job;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.View;
-import hudson.model.ViewGroup;
 import hudson.model.ViewGroupMixIn;
 import hudson.util.Function1;
 import hudson.views.DefaultViewsTabBar;
@@ -69,7 +69,7 @@ import org.kohsuke.stapler.WebMethod;
  * @since 1.494
  */
 @SuppressWarnings({"unchecked", "rawtypes"}) // the usual API mistakes
-public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGroup, TopLevelItem, ViewGroup, StaplerFallback {
+public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGroup, TopLevelItem, ModifiableViewGroup, StaplerFallback {
 
     private transient Map<String,TopLevelItem> items = new TreeMap<String,TopLevelItem>();
     private final List<View> views = new ArrayList<View>(Collections.singleton(new AllView("All", this)));
@@ -188,7 +188,7 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
         return Jenkins.getInstance().getDescriptorByType(DescriptorImpl.class);
     }
 
-    public void addView(View view) throws IOException {
+    @Override public void addView(View view) throws IOException {
         vgmixin().addView(view);
     }
 
