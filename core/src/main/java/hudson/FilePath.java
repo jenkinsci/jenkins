@@ -1408,12 +1408,12 @@ public final class FilePath implements Serializable {
 
     /**
      * Returns the number of unallocated bytes in the partition of that file.
-     *
+     * @since 1.542
      */
     public long getFreeDiskSpace() throws IOException, InterruptedException {
         return act(new FileCallable<Long>() {
             private static final long serialVersionUID = 1L;
-            public Long invoke(File f, VirtualChannel channel) throws IOException {
+            @Override public Long invoke(File f, VirtualChannel channel) throws IOException {
                 return f.getFreeSpace();
             }
         });
@@ -1421,12 +1421,12 @@ public final class FilePath implements Serializable {
 
     /**
      * Returns the total number of bytes in the partition of that file.
-     *
+     * @since 1.542
      */
     public long getTotalDiskSpace() throws IOException, InterruptedException {
         return act(new FileCallable<Long>() {
             private static final long serialVersionUID = 1L;
-            public Long invoke(File f, VirtualChannel channel) throws IOException {
+            @Override public Long invoke(File f, VirtualChannel channel) throws IOException {
                 return f.getTotalSpace();
             }
         });
@@ -1434,12 +1434,12 @@ public final class FilePath implements Serializable {
 
     /**
      * Returns the number of usable bytes in the partition of that file.
-     *
+     * @since 1.542
      */
     public long getUsableDiskSpace() throws IOException, InterruptedException {
         return act(new FileCallable<Long>() {
             private static final long serialVersionUID = 1L;
-            public Long invoke(File f, VirtualChannel channel) throws IOException {
+            @Override public Long invoke(File f, VirtualChannel channel) throws IOException {
                 return f.getUsableSpace();
             }
         });
