@@ -1407,6 +1407,45 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Returns the number of unallocated bytes in the partition of that file.
+     *
+     */
+    public long getFreeDiskSpace() throws IOException, InterruptedException {
+        return act(new FileCallable<Long>() {
+            private static final long serialVersionUID = 1L;
+            public Long invoke(File f, VirtualChannel channel) throws IOException {
+                return f.getFreeSpace();
+            }
+        });
+    }
+
+    /**
+     * Returns the total number of bytes in the partition of that file.
+     *
+     */
+    public long getTotalDiskSpace() throws IOException, InterruptedException {
+        return act(new FileCallable<Long>() {
+            private static final long serialVersionUID = 1L;
+            public Long invoke(File f, VirtualChannel channel) throws IOException {
+                return f.getTotalSpace();
+            }
+        });
+    }
+
+    /**
+     * Returns the number of usable bytes in the partition of that file.
+     *
+     */
+    public long getUsableDiskSpace() throws IOException, InterruptedException {
+        return act(new FileCallable<Long>() {
+            private static final long serialVersionUID = 1L;
+            public Long invoke(File f, VirtualChannel channel) throws IOException {
+                return f.getUsableSpace();
+            }
+        });
+    }
+
+    /**
      * Sets the file permission.
      *
      * On Windows, no-op.
