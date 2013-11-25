@@ -37,6 +37,12 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+
 @SuppressWarnings("DM_DEFAULT_ENCODING")
 public class CopyJobCommandTest {
 
@@ -54,6 +60,25 @@ public class CopyJobCommandTest {
         assertEquals("", out.toString());
         assertNotNull(j.jenkins.getItemByFullName("dir2/p2"));
         // TODO test copying from/to root, or into nonexistent folder
+    }
+
+    // hold off build until saved only makes sense on the UI with config screen shown after copying;
+    // expect the CLI copy command to leave the job buildable
+    @Test public void copiedJobIsBuildable() throws Exception {
+        FreeStyleProject p1 = j.createFreeStyleProject();
+        String copiedProjectName = "p2";
+
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, new CopyJobCommand())
+                .invokeWithArgs(p1.getName(), copiedProjectName);
+
+        assertThat("Command expected to succeed; " + result.stderr() + ' ' + result.stdout(), result, succeeded());
+        assertThat("stdout empty", result, hasNoStandardOutput());
+        assertThat("stderr empty", result, hasNoErrorOutput());
+
+        FreeStyleProject p2 = (FreeStyleProject)j.jenkins.getItem(copiedProjectName);
+
+        assertNotNull(p2);
+        assertTrue(p2.isBuildable());
     }
 
 }
