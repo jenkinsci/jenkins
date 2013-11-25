@@ -26,12 +26,8 @@ package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.FreeStyleProject;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Locale;
-import org.apache.commons.io.input.NullInputStream;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -47,17 +43,23 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 public class CopyJobCommandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    private CLICommandInvoker command;
+
+    @Before public void setUp() {
+        command = new CLICommandInvoker(j, new CopyJobCommand());
+    }
 
     @Test public void copyBetweenFolders() throws Exception {
         MockFolder dir1 = j.createFolder("dir1");
         MockFolder dir2 = j.createFolder("dir2");
         FreeStyleProject p = dir1.createProject(FreeStyleProject.class, "p1");
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream outS = new PrintStream(out);
-        int result = new CopyJobCommand().main(Arrays.asList("dir1/p1", "dir2/p2"), Locale.ENGLISH, new NullInputStream(0), outS, outS);
-        outS.flush();
-        assertEquals(out.toString(), 0, result);
-        assertEquals("", out.toString());
+
+        CLICommandInvoker.Result result = command.invokeWithArgs("dir1/p1", "dir2/p2");
+
+        assertThat(result, succeeded());
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result, hasNoErrorOutput());
+
         assertNotNull(j.jenkins.getItemByFullName("dir2/p2"));
         // TODO test copying from/to root, or into nonexistent folder
     }
@@ -68,12 +70,11 @@ public class CopyJobCommandTest {
         FreeStyleProject p1 = j.createFreeStyleProject();
         String copiedProjectName = "p2";
 
-        CLICommandInvoker.Result result = new CLICommandInvoker(j, new CopyJobCommand())
-                .invokeWithArgs(p1.getName(), copiedProjectName);
+        CLICommandInvoker.Result result = command.invokeWithArgs(p1.getName(), copiedProjectName);
 
-        assertThat("Command expected to succeed; " + result.stderr() + ' ' + result.stdout(), result, succeeded());
-        assertThat("stdout empty", result, hasNoStandardOutput());
-        assertThat("stderr empty", result, hasNoErrorOutput());
+        assertThat(result, succeeded());
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result, hasNoErrorOutput());
 
         FreeStyleProject p2 = (FreeStyleProject)j.jenkins.getItem(copiedProjectName);
 
