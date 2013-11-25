@@ -103,7 +103,8 @@ THE SOFTWARE.
   </d:taglib>
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
     <l:pane width="3" id="executors"
-        title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>">
+        title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>"
+        collapsedText="${%Computers(computers.size() - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
       <colgroup><col width="1*"/><col width="200*"/><col width="24"/></colgroup>
 
       <tr>
