@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Tom Huybrechts, Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  read icon size from a cookie and set it up
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set scope="parent" var="iconSize" value="${h.iconSize}" />
-  <!--
-    balls look smaller than their actual size,
-    so we try not to make the secondary icons look bigger than the icon.
-    we want the user's eyes to go to balls, not the clock.
-  -->
-  <j:set scope="parent" var="subIconSize" value="${iconSize=='32x32'?'24x24':iconSize}"/>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry title="${%Icon Size}">
+    <t:setIconSize/>
+    <select name="dimension">
+      <f:option selected="${iconSize=='16x16'}" value="16x16">${%Small}</f:option>
+      <f:option selected="${iconSize=='24x24'}" value="24x24">${%Medium}</f:option>
+      <f:option selected="${iconSize=='32x32'}" value="32x32">${%Large}</f:option>
+    </select>
+  </f:entry>
 </j:jelly>

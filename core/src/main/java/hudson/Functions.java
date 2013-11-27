@@ -44,7 +44,6 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
-import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Project;
@@ -129,9 +128,12 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.GlobalConfigurationCategory.Unclassified;
+import jenkins.model.AutoRefreshProperty;
+import jenkins.model.IconSizeProperty;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.PaneStatusProperty;
 
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
@@ -140,6 +142,7 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
@@ -152,6 +155,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.util.RunList;
 import java.util.concurrent.atomic.AtomicLong;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -553,7 +557,7 @@ public class Functions {
      *      On certain pages, like a page with forms, will have annoying interference
      *      with auto refresh. On those pages, disable auto-refresh.
      */
-    public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response, boolean noAutoRefresh) {
+    public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response, boolean noAutoRefresh) throws IOException {
         if(noAutoRefresh)
             return;
 
@@ -561,13 +565,7 @@ public class Functions {
         boolean refresh = isAutoRefresh(request);
         if (param != null) {
             refresh = Boolean.parseBoolean(param);
-            Cookie c = new Cookie("hudson_auto_refresh", Boolean.toString(refresh));
-            // Need to set path or it will not stick from e.g. a project page to the dashboard.
-            // Using request.getContextPath() might work but it seems simpler to just use the hudson_ prefix
-            // to avoid conflicts with any other web apps that might be on the same machine.
-            c.setPath("/");
-            c.setMaxAge(60*60*24*30); // persist it roughly for a month
-            response.addCookie(c);
+            User.currentUser().getProperty(AutoRefreshProperty.class).setAutoRefresh(refresh);
         }
         if (refresh) {
             response.addHeader("Refresh", System.getProperty("hudson.Functions.autoRefreshSeconds", "10"));
@@ -579,20 +577,17 @@ public class Functions {
         if (param != null) {
             return Boolean.parseBoolean(param);
         }
-        Cookie[] cookies = request.getCookies();
-        if(cookies==null)
-            return false; // when API design messes it up, we all suffer
-
-        for (Cookie c : cookies) {
-            if (c.getName().equals("hudson_auto_refresh")) {
-                return Boolean.parseBoolean(c.getValue());
-            }
-        }
-        return false;
+        final AutoRefreshProperty autoRefreshProperty = User.currentUser().getProperty(AutoRefreshProperty.class);
+        //User properties are not being loaded before this test when Jenkins is "Getting Ready to Work"
+        return autoRefreshProperty != null ? autoRefreshProperty.isAutoRefresh() : false;
     }
 
     public static boolean isCollapsed(String paneId) {
-    	return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
+        return User.currentUser().getProperty(PaneStatusProperty.class).isCollapsed(paneId);
+    }
+
+    public String getIconSize() {
+        return User.currentUser().getProperty(IconSizeProperty.class).getDimension();
     }
     
     /**

@@ -25,6 +25,7 @@
 package hudson.model;
 
 import com.google.common.base.Predicate;
+import static org.apache.commons.lang.ObjectUtils.defaultIfNull;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.*;
 import hudson.model.Descriptor.FormException;
@@ -50,6 +51,7 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.springframework.dao.DataAccessException;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -59,6 +61,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileFilter;
@@ -106,7 +109,9 @@ import javax.annotation.Nonnull;
 @ExportedBean
 public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu {
     
-    private transient final String id;
+    private static final String JENKINS_ANONYMOUS_USER = "jenkins_anonymous_user";
+
+	private transient final String id;
 
     private volatile String fullName;
 
@@ -132,7 +137,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Loads the other data from disk if it's available.
      */
-    private synchronized void load() {
+    protected synchronized void load() {
         properties.clear();
 
         XmlFile config = getConfigFile();
@@ -388,6 +393,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Gets the {@link User} object representing the currently logged-in user, or null
      * if the current user is anonymous.
      * @since 1.172
+     * @deprecated use {@link User#currentUser()}
      */
     public static @CheckForNull User current() {
         Authentication a = Jenkins.getAuthentication();
@@ -397,6 +403,25 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // Since we already know this is a name, we can just call getOrCreate with the name directly.
         String id = a.getName();
         return getOrCreate(id, id, true);
+    }
+
+    /**
+     * Gets the {@link User} object representing the currently logged-in user, or an
+     * instance of {@link AnonymousUser} bound to current {@link HttpSession}.
+     * @since 1.543
+     */
+    public static @Nonnull User currentUser() {
+        User current = current();
+        if (current == null) {
+            current = new AnonymousUser();
+            final StaplerRequest currentRequest = Stapler.getCurrentRequest();
+            if (currentRequest != null) {
+                final HttpSession session = currentRequest.getSession();
+                current = (User) defaultIfNull(session.getAttribute(JENKINS_ANONYMOUS_USER), current);
+                session.setAttribute(JENKINS_ANONYMOUS_USER, current);
+            }
+        }
+        return current;
     }
 
     private static volatile long lastScanned;
@@ -741,6 +766,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this,request,response);
+    }
+
+    /**
+     * Non persistent anonymous {@link User}
+     */
+    private static class AnonymousUser extends User {
+
+        private AnonymousUser() {
+            super("anonymous", "anonymous");
+        }
+
+        @Override
+        public synchronized void save() throws IOException {
+
+        }
+
+        @Override
+        public synchronized void delete() throws IOException {
+
+        }
+
+        @Override
+        public Authentication impersonate() {
+            return null;
+        }
+
     }
 
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
