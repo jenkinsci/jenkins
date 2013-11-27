@@ -153,7 +153,11 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+<<<<<<< HEAD
 import hudson.util.RunList;
+=======
+
+>>>>>>> Refactoring to allow user properties for anonymous users with
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.kohsuke.accmod.Restricted;
@@ -555,8 +559,8 @@ public class Functions {
         String param = request.getParameter("auto_refresh");
         boolean refresh = isAutoRefresh(request);
         if (param != null) {
-            refresh = Boolean.parseBoolean(param);
-            User.currentUser().getProperty(AutoRefreshProperty.class).setAutoRefresh(refresh);
+        	refresh = Boolean.parseBoolean(param);
+        	User.currentUser().getProperty(AutoRefreshProperty.class).setAutoRefresh(refresh);
         }
         if (refresh) {
             response.addHeader("Refresh", System.getProperty("hudson.Functions.autoRefreshSeconds", "10"));
@@ -576,7 +580,7 @@ public class Functions {
     public static boolean isCollapsed(String paneId) {
         return User.currentUser().getProperty(PaneStatusProperty.class).isCollapsed(paneId);
     }
-
+    
     public String getIconSize() {
         return User.currentUser().getProperty(IconSizeProperty.class).getDimension();
     }
@@ -1821,8 +1825,8 @@ public class Functions {
      */
     public static String breakableString(final String plain) {
 
-        return plain.replaceAll("([\\p{Punct}&&[^;]]+\\w)", "<wbr>$1")
-                .replaceAll("([^\\p{Punct}\\s-]{10})(?=[^\\p{Punct}\\s-]{3})", "$1<wbr>")
+        return plain.replaceAll("(\\p{Punct}+\\w)", "<wbr>$1")
+                .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
         ;
     }
 
