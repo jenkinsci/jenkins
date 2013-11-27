@@ -66,7 +66,6 @@ import hudson.model.LoadBalancer;
 import hudson.model.ManagementLink;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
-import hudson.model.PaneStatusProperties;
 import hudson.model.Project;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
@@ -244,7 +243,6 @@ import javax.crypto.SecretKey;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import static hudson.init.InitMilestone.*;
@@ -294,7 +292,6 @@ import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -2881,10 +2878,10 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     public HttpResponse doToggleCollapse() throws ServletException, IOException {
-    	final StaplerRequest request = Stapler.getCurrentRequest();
-    	final String paneId = request.getParameter("paneId");
+        final StaplerRequest request = Stapler.getCurrentRequest();
+        final String paneId = request.getParameter("paneId");
     	
-    	PaneStatusProperties.forCurrentUser().toggleCollapsed(paneId);
+        User.currentUser().getProperty(PaneStatusProperty.class).toggleCollapsed(paneId);
     	
         return HttpResponses.forwardToPreviousPage();
     }
@@ -3442,15 +3439,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Changes the icon size by changing the cookie
+     * Changes the icon size property
      */
     public void doIconSize( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         String qs = req.getQueryString();
-        if(qs==null || !ICON_SIZE.matcher(qs).matches())
-            throw new ServletException();
-        Cookie cookie = new Cookie("iconSize", qs);
-        cookie.setMaxAge(/* ~4 mo. */9999999); // #762
-        rsp.addCookie(cookie);
+        final IconSizeProperty iconSize = User.currentUser().getProperty(IconSizeProperty.class);
+        try {
+            iconSize.setDimension(qs);
+        } catch (IllegalArgumentException e) {
+            throw new ServletException(e);
+        }
         String ref = req.getHeader("Referer");
         if(ref==null)   ref=".";
         rsp.sendRedirect2(ref);
@@ -4049,8 +4047,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
-
-    private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
