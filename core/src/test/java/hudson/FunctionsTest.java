@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import jenkins.model.Jenkins;
 
@@ -289,4 +291,12 @@ public class FunctionsTest {
         assertEquals("H<wbr>,e<wbr>.l<wbr>/l<wbr>:o<wbr>-w<wbr>_o<wbr>=+|d", Functions.breakableString("H,e.l/l:o-w_o=+|d"));
         assertEquals("ALongStrin<wbr>gThatCanNo<wbr>tBeBrokenB<wbr>yDefault", Functions.breakableString("ALongStringThatCanNotBeBrokenByDefault"));
     }
+
+    @Bug(20800)
+    @Test public void printLogRecordHtml() throws Exception {
+        LogRecord lr = new LogRecord(Level.INFO, "Bad input <xml/>");
+        lr.setLoggerName("test");
+        assertEquals("Bad input &lt;xml/>\n", Functions.printLogRecordHtml(lr, null)[3]);
+    }
+
 }
