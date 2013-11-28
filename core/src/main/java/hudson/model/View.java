@@ -50,7 +50,6 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.FormApply;
-import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
@@ -61,6 +60,7 @@ import jenkins.util.ProgressiveRendering;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -83,6 +83,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -255,7 +256,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             return _getOwnerItemGroup();
         } catch (AbstractMethodError e) {
-            return Hudson.getInstance();
+            return Jenkins.getInstance();
         }
     }
 
@@ -283,7 +284,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             return _getOwnerViewActions();
         } catch (AbstractMethodError e) {
-            return Hudson.getInstance().getActions();
+            return Jenkins.getInstance().getActions();
         }
     }
 
@@ -1044,21 +1045,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return new HttpResponse() {
                 public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                     rsp.setContentType("application/xml");
-                    // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
-                    XStream2 xStream2 = new XStream2();
-                    xStream2.omitField(View.class, "owner");
-                    xStream2.toXMLUTF8(View.this,  rsp.getOutputStream());
+                    View.this.writeXml(rsp.getOutputStream());
                 }
             };
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            updateByXml((Source)new StreamSource(req.getReader()));
+            updateByXml(new StreamSource(req.getReader()));
             return HttpResponses.ok();
         }
 
         // huh?
         return HttpResponses.error(SC_BAD_REQUEST, "Unexpected request method " + req.getMethod());
+    }
+
+    /**
+     * @since 1.538
+     */
+    public void writeXml(OutputStream out) throws IOException {
+        // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
+        XStream2 xStream2 = new XStream2();
+        xStream2.omitField(View.class, "owner");
+        xStream2.toXMLUTF8(View.this,  out);
     }
 
     /**
@@ -1077,19 +1085,23 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     new StreamResult(out));
             out.close();
         } catch (TransformerException e) {
-            throw new IOException2("Failed to persist configuration.xml", e);
+            throw new IOException("Failed to persist configuration.xml", e);
         }
 
         // try to reflect the changes by reloading
         InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")));
         try {
+            // Do not allow overwriting view name as it might collide with another
+            // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
+            String oldname = name;
             Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
+            name = oldname;
         } catch (StreamException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(ConversionException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } finally {
             in.close();
         }
@@ -1161,8 +1173,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         String mode = req.getParameter("mode");
         if (mode==null || mode.length()==0) {
             if(isXmlSubmission) {
-                View v;
-                v = createViewFromXML(name, req.getInputStream());
+                View v = createViewFromXML(name, req.getInputStream());
                 v.owner = owner;
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return v;
@@ -1170,13 +1181,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 throw new Failure(Messages.View_MissingMode());
         }
 
-        ViewDescriptor descriptor = all().findByName(mode);
-        if (descriptor == null) {
-            throw new Failure("No view type ‘" + mode + "’ is known");
-        }
+        View v;
+        if (mode!=null && mode.equals("copy")) {
+            v = copy(req, owner, name);
+        } else {
+            ViewDescriptor descriptor = all().findByName(mode);
+            if (descriptor == null) {
+                throw new Failure("No view type ‘" + mode + "’ is known");
+            }
 
-        // create a view
-        View v = descriptor.newInstance(req,req.getSubmittedForm());
+            // create a view
+            v = descriptor.newInstance(req,req.getSubmittedForm());
+        }
         v.owner = owner;
 
         // redirect to the config screen
@@ -1185,18 +1201,40 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return v;
     }
 
+    private static View copy(StaplerRequest req, ViewGroup owner, String name) throws IOException {
+        View v;
+        String from = req.getParameter("from");
+        View src = src = owner.getView(from);
+
+        if(src==null) {
+            if(Util.fixEmpty(from)==null)
+                throw new Failure("Specify which view to copy");
+            else
+                throw new Failure("No such view: "+from);
+        }
+        String xml = Jenkins.XSTREAM.toXML(src);
+        v = createViewFromXML(name, new StringInputStream(xml));
+        return v;
+    }
+
+    /**
+     * Instantiate View subtype from XML stream.
+     *
+     * @param name Alternative name to use or <tt>null</tt> to keep the one in xml.
+     */
     public static View createViewFromXML(String name, InputStream xml) throws IOException {
         InputStream in = new BufferedInputStream(xml);
         try {
             View v = (View) Jenkins.XSTREAM.fromXML(in);
-            v.name = name;
+            if (name != null) v.name = name;
+            checkGoodName(v.name);
             return v;
         } catch(StreamException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(ConversionException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } finally {
             in.close();
         }

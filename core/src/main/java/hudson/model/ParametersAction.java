@@ -36,7 +36,6 @@ import hudson.util.VariableResolver;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,6 +43,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * Records the parameter values used for a build.
@@ -164,23 +166,31 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
      * Creates a new {@link ParametersAction} that contains all the parameters in this action
      * with the overrides / new values given as parameters.
      */
-    public ParametersAction createUpdated(Collection<? extends ParameterValue> newValues) {
-        List<ParameterValue> r = new ArrayList<ParameterValue>();
+    public ParametersAction createUpdated(Collection<? extends ParameterValue> overrides) {
+        if(overrides == null) {
+            return new ParametersAction(parameters);
+        }
+        List<ParameterValue> combinedParameters = newArrayList(overrides);
+        Set<String> names = newHashSet();
 
-        Set<String> names = new HashSet<String>();
-        for (ParameterValue v : newValues) {
-            names.add(v.name);
+        for(ParameterValue v : overrides) {
+            names.add(v.getName());
         }
 
-        for (Iterator<ParameterValue> itr = parameters.iterator(); itr.hasNext(); ) {
-            ParameterValue v = itr.next();
-            if (!names.contains(v.getName()))
-                r.add(v);
+        for (ParameterValue v : parameters) {
+            if (!names.contains(v.getName())) {
+                combinedParameters.add(v);
+            }
         }
 
-        r.addAll(newValues);
+        return new ParametersAction(combinedParameters);
+    }
 
-        return new ParametersAction(r);
+    public ParametersAction merge(ParametersAction overrides) {
+        if(overrides == null) {
+            return new ParametersAction(parameters);
+        }
+        return createUpdated(overrides.getParameters());
     }
 
     private Object readResolve() {

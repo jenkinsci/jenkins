@@ -51,12 +51,14 @@ import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import hudson.util.Futures;
+import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -85,8 +87,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -929,7 +929,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         // TODO: hmm, they don't really belong
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if(rootUrl!=null) {
             env.put("HUDSON_URL", rootUrl); // Legacy.
             env.put("JENKINS_URL", rootUrl);
@@ -1060,19 +1060,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         private static final long serialVersionUID = 1L;
     }
 
-    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(
-            new ThreadFactory() {
-                
-                private final AtomicInteger threadNumber = new AtomicInteger(1);
-                
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread t = new Thread(r);
-                    t.setName("Jenkins-Remoting-Thread-"+threadNumber.getAndIncrement());
-                    t.setDaemon(true);
-                    return t;
-                }
-            }));
+    public static final ExecutorService threadPoolForRemoting = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "Computer.threadPoolForRemoting")));
 
 //
 //

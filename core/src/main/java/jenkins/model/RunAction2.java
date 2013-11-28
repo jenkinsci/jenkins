@@ -29,7 +29,7 @@ import hudson.model.Run;
 
 /**
  * Optional interface for {@link Action}s that add themselves to a {@link Run}.
- * @since 1.519
+ * @since 1.519, 1.509.3
  */
 public interface RunAction2 extends Action {
 

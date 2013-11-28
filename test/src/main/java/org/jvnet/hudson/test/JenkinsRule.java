@@ -211,7 +211,6 @@ import jenkins.model.JenkinsLocationConfiguration;
 
 import org.acegisecurity.GrantedAuthorityImpl;
 
-import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -230,13 +229,14 @@ import org.junit.rules.TemporaryFolder;
 @SuppressWarnings({"deprecation","rawtypes"})
 public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
-    private TestEnvironment env;
+    protected TestEnvironment env;
 
-    private Description testDescription;
+    protected Description testDescription;
 
     /**
      * Points to the same object as {@link #jenkins} does.
      */
+    @Deprecated
     public Hudson hudson;
 
     public Jenkins jenkins;
@@ -292,7 +292,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Number of seconds until the test times out.
      */
-    public int timeout = 90;
+    public int timeout = Integer.getInteger("jenkins.test.timeout", 180);
 
     private volatile Timer timeoutTimer;
 
@@ -313,7 +313,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Override to set up your specific external resource.
      * @throws Throwable if setup fails (which will disable {@code after}
      */
-    protected void before() throws Throwable {
+    public void before() throws Throwable {
         env = new TestEnvironment(testDescription);
         env.pin();
         recipe();
@@ -355,6 +355,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         JenkinsLocationConfiguration.get().setUrl(getURL().toString());
         for( Descriptor d : jenkins.getExtensionList(Descriptor.class) )
             d.load();
+        
+        setUpTimeout();
     }
 
     /**
@@ -372,7 +374,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         sites.clear();
         sites.add(new UpdateSite("default", updateCenterUrl));
     }
-
+    
     protected void setUpTimeout() {
         if (timeout<=0)     return; // no timeout
 
@@ -381,8 +383,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         timeoutTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (timeoutTimer!=null)
+                if (timeoutTimer!=null) {
+                    LOGGER.warning(String.format("Test timed out (after %d seconds).", timeout));
                     testThread.interrupt();
+                }
             }
         }, TimeUnit.SECONDS.toMillis(timeout));
     }
@@ -390,10 +394,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Override to tear down your specific external resource.
      */
-    protected void after() throws Exception {
+    public void after() throws Exception {
         try {
-            for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
-                tl.onTearDown();
+            if (jenkins!=null) {
+                for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
+                    tl.onTearDown();
+            }
 
             if (timeoutTimer!=null) {
                 timeoutTimer.cancel();
@@ -425,7 +431,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                     // ignore
                 }
 
-            jenkins.cleanUp();
+            if (jenkins!=null)
+                jenkins.cleanUp();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
 
@@ -1110,7 +1117,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Asserts that the XPath matches.
      */
     public void assertXPath(HtmlPage page, String xpath) {
-        assertThat(page.getDocumentElement(), hasXPath(xpath));
+        assertNotNull("There should be an object that matches XPath:" + xpath,
+                page.getDocumentElement().selectSingleNode(xpath));
     }
 
     /** Asserts that the XPath matches the contents of a DomNode page. This
@@ -1125,13 +1133,23 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
     public void assertXPathValue(DomNode page, String xpath, String expectedValue) {
-        org.w3c.dom.Node node = page.getFirstByXPath(xpath);
-        assertThat(node, hasXPath(xpath, is(expectedValue)));
+        Object node = page.getFirstByXPath(xpath);
+        assertNotNull("no node found", node);
+        assertTrue("the found object was not a Node " + xpath, node instanceof org.w3c.dom.Node);
+
+        org.w3c.dom.Node n = (org.w3c.dom.Node) node;
+        String textString = n.getTextContent();
+        assertEquals("xpath value should match for " + xpath, expectedValue, textString);
     }
 
     public void assertXPathValueContains(DomNode page, String xpath, String needle) {
-        org.w3c.dom.Node node = page.getFirstByXPath(xpath);
-        assertThat(node, hasXPath(xpath, Matchers.containsString(needle)));
+        Object node = page.getFirstByXPath(xpath);
+        assertNotNull("no node found", node);
+        assertTrue("the found object was not a Node " + xpath, node instanceof org.w3c.dom.Node);
+
+        org.w3c.dom.Node n = (org.w3c.dom.Node) node;
+        String textString = n.getTextContent();
+        assertTrue("needle found in haystack", textString.contains(needle));
     }
 
     public void assertXPathResultsContainText(DomNode page, String xpath, String needle) {

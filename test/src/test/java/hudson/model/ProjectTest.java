@@ -29,6 +29,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.util.Collections;
+
+import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.PollingResult;
@@ -92,15 +94,13 @@ public class ProjectTest {
     public static boolean createSubTask = false;
     
     @Test
-    public void testSave() throws IOException, InterruptedException {
+    public void testSave() throws IOException, InterruptedException, ReactorException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.disabled = true;
         p.nextBuildNumber = 5;
         p.description = "description";
         p.save();
-        j.jenkins.doReload();
-        //wait until all configuration are reloaded
-        reload(); 
+        j.jenkins.reload();
         assertEquals("All persistent data should be saved.", "description", p.description);
         assertEquals("All persistent data should be saved.", 5, p.nextBuildNumber);
         assertEquals("All persistent data should be saved", true, p.disabled);
@@ -296,7 +296,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testSaveAfterSet() throws Exception{
+    public void testSaveAfterSet() throws Exception, ReactorException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setScm(new NullSCM());
         p.setScmCheckoutStrategy(new SCMCheckoutStrategyImpl());
@@ -307,7 +307,7 @@ public class ProjectTest {
         j.jenkins.save();
         p.setJDK(j.jenkins.getJDK("jdk"));
         p.setCustomWorkspace("/some/path");
-        reload();
+        j.jenkins.reload();
         assertNotNull("Project did not save scm.", p.getScm());
         assertTrue("Project did not save scm checkout strategy.", p.getScmCheckoutStrategy() instanceof SCMCheckoutStrategyImpl);
         assertEquals("Project did not save quiet period.", 15, p.getQuietPeriod());
@@ -315,14 +315,6 @@ public class ProjectTest {
         assertTrue("Project did not save block if upstream is buildidng.", p.blockBuildWhenUpstreamBuilding());
         assertNotNull("Project did not save jdk", p.getJDK());
         assertEquals("Project did not save custom workspace.", "/some/path", p.getCustomWorkspace());
-    }
-    
-    private void reload() throws IOException, InterruptedException{
-        j.jenkins.doReload();
-        //wait until all configuration are reloaded
-        if(j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading){
-            Thread.sleep(500);
-        } 
     }
     
     @Test

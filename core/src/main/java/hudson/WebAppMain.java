@@ -25,7 +25,9 @@ package hudson;
 
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
+import com.trilead.ssh2.util.IOUtils;
 import hudson.model.Hudson;
+import hudson.util.BootFailure;
 import jenkins.model.Jenkins;
 import hudson.util.HudsonIsLoading;
 import hudson.util.IncompatibleServletVersionDetected;
@@ -52,21 +54,25 @@ import javax.servlet.ServletResponse;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.Security;
 import java.util.logging.LogRecord;
 
+import static java.util.logging.Level.*;
+
 /**
  * Entry point when Hudson is used as a webapp.
  *
  * @author Kohsuke Kawaguchi
  */
-public final class WebAppMain implements ServletContextListener {
+public class WebAppMain implements ServletContextListener {
     private final RingBufferLogHandler handler = new RingBufferLogHandler() {
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
@@ -82,8 +88,9 @@ public final class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
+        final ServletContext context = event.getServletContext();
+        File home=null;
         try {
-            final ServletContext context = event.getServletContext();
 
             // use the current request to determine the language
             LocaleProvider.setProvider(new LocaleProvider() {
@@ -98,8 +105,7 @@ public final class WebAppMain implements ServletContextListener {
                 jvm = new JVM();
                 new URLClassLoader(new URL[0],getClass().getClassLoader());
             } catch(SecurityException e) {
-                context.setAttribute(APP,new InsufficientPermissionDetected(e));
-                return;
+                throw new InsufficientPermissionDetected(e);
             }
 
             try {// remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
@@ -111,21 +117,19 @@ public final class WebAppMain implements ServletContextListener {
             installLogger();
 
             final FileAndDescription describedHomeDir = getHomeDir(event);
-            final File home = describedHomeDir.file.getAbsoluteFile();
+            home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();
             System.out.println("Jenkins home directory: "+home+" found at: "+describedHomeDir.description);
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
-            if (! home.exists()) {
-                context.setAttribute(APP,new NoHomeDir(home));
-                return;
-            }
+            if (!home.exists())
+                throw new NoHomeDir(home);
+
+            recordBootAttempt(home);
 
             // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
             if(jvm.bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
-                // nope
-                context.setAttribute(APP,new IncompatibleVMDetected());
-                return;
+                throw new IncompatibleVMDetected(); // nope
             }
 
 //  JNA is no longer a hard requirement. It's just nice to have. See HUDSON-4820 for more context.
@@ -163,22 +167,19 @@ public final class WebAppMain implements ServletContextListener {
             try {
                 ServletResponse.class.getMethod("setCharacterEncoding",String.class);
             } catch (NoSuchMethodException e) {
-                context.setAttribute(APP,new IncompatibleServletVersionDetected(ServletResponse.class));
-                return;
+                throw new IncompatibleServletVersionDetected(ServletResponse.class);
             }
 
             // make sure that we see Ant 1.7
             try {
                 FileSet.class.getMethod("getDirectoryScanner");
             } catch (NoSuchMethodException e) {
-                context.setAttribute(APP,new IncompatibleAntVersionDetected(FileSet.class));
-                return;
+                throw new IncompatibleAntVersionDetected(FileSet.class);
             }
 
             // make sure AWT is functioning, or else JFreeChart won't even load.
             if(ChartUtil.awtProblemCause!=null) {
-                context.setAttribute(APP,new AWTProblem(ChartUtil.awtProblemCause));
-                return;
+                throw new AWTProblem(ChartUtil.awtProblemCause);
             }
 
             // some containers (in particular Tomcat) doesn't abort a launch
@@ -188,8 +189,7 @@ public final class WebAppMain implements ServletContextListener {
                 File f = File.createTempFile("test", "test");
                 f.delete();
             } catch (IOException e) {
-                context.setAttribute(APP,new NoTempDir(e));
-                return;
+                throw new NoTempDir(e);
             }
 
             // Tomcat breaks XSLT with JDK 5.0 and onward. Check if that's the case, and if so,
@@ -199,13 +199,13 @@ public final class WebAppMain implements ServletContextListener {
                 // if this works we are all happy
             } catch (TransformerFactoryConfigurationError x) {
                 // no it didn't.
-                LOGGER.log(Level.WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
+                LOGGER.log(WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
                 System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
                 try {
                     TransformerFactory.newInstance();
                     LOGGER.info("XSLT is set to the JAXP RI in JRE");
                 } catch(TransformerFactoryConfigurationError y) {
-                    LOGGER.log(Level.SEVERE, "Failed to correct the problem.");
+                    LOGGER.log(SEVERE, "Failed to correct the problem.");
                 }
             }
 
@@ -213,24 +213,25 @@ public final class WebAppMain implements ServletContextListener {
 
             context.setAttribute(APP,new HudsonIsLoading());
 
+            final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
                 @Override
                 public void run() {
                     boolean success = false;
                     try {
-                        Jenkins instance = new Hudson(home, context);
+                        Jenkins instance = new Hudson(_home, context);
                         context.setAttribute(APP, instance);
+
+                        BootFailure.getBootFailureFile(_home).delete();
 
                         // at this point we are open for business and serving requests normally
                         LOGGER.info("Jenkins is fully up and running");
                         success = true;
                     } catch (Error e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
-                        context.setAttribute(APP,new HudsonFailedToLoad(e));
+                        new HudsonFailedToLoad(e).publish(context,_home);
                         throw e;
                     } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
-                        context.setAttribute(APP,new HudsonFailedToLoad(e));
+                        new HudsonFailedToLoad(e).publish(context,_home);
                     } finally {
                         Jenkins instance = Jenkins.getInstance();
                         if(!success && instance!=null)
@@ -239,12 +240,36 @@ public final class WebAppMain implements ServletContextListener {
                 }
             };
             initThread.start();
+        } catch (BootFailure e) {
+            e.publish(context,home);
         } catch (Error e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
+            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",e);
+            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw e;
+        }
+    }
+
+    public void joinInit() throws InterruptedException {
+        initThread.join();
+    }
+
+    /**
+     * To assist boot failure script, record the number of boot attempts.
+     * This file gets deleted in case of successful boot.
+     *
+     * @see BootFailure
+     */
+    private void recordBootAttempt(File home) {
+        FileOutputStream o=null;
+        try {
+            o = new FileOutputStream(BootFailure.getBootFailureFile(home), true);
+            o.write((new Date().toString() + System.getProperty("line.separator", "\n")).toString().getBytes());
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to record boot attempts",e);
+        } finally {
+            IOUtils.closeQuietly(o);
         }
     }
 

@@ -422,6 +422,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     /**
      * Get a chance to do operations after the workspace i checked out and the changelog is written.
+     * @since 1.534, 1.532.1
      */
     public void postCheckout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException, InterruptedException {
         /* Default implementation is noop */

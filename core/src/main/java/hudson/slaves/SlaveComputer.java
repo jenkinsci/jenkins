@@ -24,7 +24,6 @@
 package hudson.slaves;
 
 import hudson.model.*;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
 import jenkins.model.Jenkins.MasterComputer;
@@ -72,7 +71,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.RequestDispatcher;
 import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
-import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -613,7 +611,7 @@ public class SlaveComputer extends Computer {
                 c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
                 encrypted = c.doFinal(baos.toByteArray());
             } catch (GeneralSecurityException x) {
-                throw new IOException2(x);
+                throw new IOException(x);
             }
             res.setContentType("application/octet-stream");
             res.getOutputStream().write(iv);

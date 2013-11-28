@@ -116,8 +116,13 @@ public class CauseAction implements FoldableAction, RunAction2 {
         return causes.get(0).getShortDescription();
     }
 
-    @Override public void onLoad(Run<?,?> r) {
-        // noop
+    @Override public void onLoad(Run<?,?> owner) {
+        if (owner instanceof AbstractBuild) { // cf. onAttached
+            AbstractBuild<?,?> b = (AbstractBuild) owner;
+            for (Cause c : causes) {
+                c.onLoad(b);
+            }
+        }
     }
 
     /**

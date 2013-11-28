@@ -44,8 +44,27 @@ THE SOFTWARE.
   </st:documentation>
   <table class="pane" id="${attrs.id}">
     <tr><td class="pane-header" colspan="${width}">
+      <div>
       <j:out value="${title}"/>
+      <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}" 
+         title="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}">
+        <img src="${imagesURL}/16x16/${h.isCollapsed(attrs.id) ? 'expand' : 'collapse'}.png" 
+             class="icon16x16" 
+             alt="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}" />
+      </a>
+      </div>
     </td></tr>
-    <d:invokeBody />
+    <j:choose>
+      <j:when test="${h.isCollapsed(attrs.id)}">
+        <tr>
+          <td class="pane" colspan="${width}">
+            ${attrs.collapsedText}
+          </td>
+        </tr>
+      </j:when>
+      <j:otherwise>
+        <d:invokeBody />
+      </j:otherwise>
+    </j:choose>
   </table>
 </j:jelly>

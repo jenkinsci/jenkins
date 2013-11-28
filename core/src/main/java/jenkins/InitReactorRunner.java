@@ -3,6 +3,7 @@ package jenkins;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.NamingThreadFactory;
 import hudson.util.Service;
 import jenkins.model.Configuration;
 import jenkins.model.Jenkins;
@@ -38,7 +39,7 @@ public class InitReactorRunner {
             es = new ThreadPoolExecutor(
                 TWICE_CPU_NUM, TWICE_CPU_NUM, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
         else
-            es = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+            es = Executors.newSingleThreadExecutor(new NamingThreadFactory(new DaemonThreadFactory(), "InitReactorRunner"));
         try {
             reactor.execute(es,buildReactorListener());
         } finally {

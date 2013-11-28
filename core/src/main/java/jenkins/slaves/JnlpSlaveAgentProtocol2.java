@@ -6,7 +6,6 @@ import hudson.Util;
 import hudson.remoting.Channel;
 import hudson.remoting.Engine;
 import hudson.slaves.SlaveComputer;
-import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 
 import java.io.ByteArrayInputStream;
@@ -80,9 +79,9 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
                     try {
                         computer.disconnect(new ConnectionFromCurrentPeer()).get(15, TimeUnit.SECONDS);
                     } catch (ExecutionException e) {
-                        throw new IOException2("Failed to disconnect the current client",e);
+                        throw new IOException("Failed to disconnect the current client",e);
                     } catch (TimeoutException e) {
-                        throw new IOException2("Failed to disconnect the current client",e);
+                        throw new IOException("Failed to disconnect the current client",e);
                     }
                 } else {
                     error(out, nodeName + " is already connected to this master. Rejecting this connection.");

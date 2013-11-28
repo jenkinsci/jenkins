@@ -24,12 +24,10 @@
 package hudson.node_monitors;
 
 import hudson.FilePath.FileCallable;
-import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
 import hudson.slaves.OfflineCause;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import java.io.File;
 import java.io.IOException;
@@ -161,16 +159,10 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
     protected static final class GetUsableSpace implements FileCallable<DiskSpace> {
         public GetUsableSpace() {}
-        @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
-            try {
                 long s = f.getUsableSpace();
                 if(s<=0)    return null;
                 return new DiskSpace(f.getCanonicalPath(), s);
-            } catch (LinkageError e) {
-                // pre-mustang
-                return null;
-            }
         }
         private static final long serialVersionUID = 1L;
     }

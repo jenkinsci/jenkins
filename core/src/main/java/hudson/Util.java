@@ -30,7 +30,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
-import hudson.util.IOException2;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
@@ -43,7 +42,6 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import jnr.posix.FileStat;
 import jnr.posix.POSIX;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -64,6 +62,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -260,16 +259,11 @@ public class Util {
     /**
      * Makes the given file writable by any means possible.
      */
-    @IgnoreJRERequirement
     private static void makeWritable(File f) {
-        // try JDK6-way of doing it.
-        try {
-            if (f.setWritable(true)) {
-                return;
-            }
-        } catch (NoSuchMethodError e) {
-            // not JDK6
+        if (f.setWritable(true)) {
+            return;
         }
+        // TODO do we still need to try anything else?
 
         // try chmod. this becomes no-op if this is not Unix.
         try {
@@ -361,7 +355,7 @@ public class Util {
             Object path = File.class.getMethod("toPath").invoke(file);
             return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
         } catch (NoSuchMethodException x) {
-            return null; // fine, Java 5/6
+            return null; // fine, Java 6
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
@@ -569,7 +563,7 @@ public class Util {
             }
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
-            throw new IOException2("MD5 not installed",e);    // impossible
+            throw new IOException("MD5 not installed",e);    // impossible
         }
         /* JENKINS-18178: confuses Maven 2 runner
         try {
@@ -1143,12 +1137,31 @@ public class Util {
             Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
             Class<?> filesC = Class.forName("java.nio.file.Files");
             Class<?> pathC = Class.forName("java.nio.file.Path");
-            filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+            Class<?> fileAlreadyExistsExceptionC = Class.forName("java.nio.file.FileAlreadyExistsException");
+
             Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
-            filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+            final int maxNumberOfTries = 4;
+            final int timeInMillis = 100;
+            for (int tryNumber = 1; tryNumber <= maxNumberOfTries; tryNumber++) {
+                filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+                try {
+                    filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+                    break;
+                }
+                catch (Exception x) {
+                    if (fileAlreadyExistsExceptionC.isInstance(x)) {
+                        if(tryNumber < maxNumberOfTries) {
+                            TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
+                            continue;
+                        }
+                        LOGGER.warning("symlink FileAlreadyExistsException thrown "+maxNumberOfTries+" times => cannot createSymbolicLink");
+                    }
+                    throw x;
+                }
+            }
             return true;
         } catch (NoSuchMethodException x) {
-            return false; // fine, Java 5/6
+            return false; // fine, Java 6
         } catch (InvocationTargetException x) {
             Throwable x2 = x.getCause();
             if (x2 instanceof UnsupportedOperationException) {
@@ -1213,7 +1226,7 @@ public class Util {
             Object path = File.class.getMethod("toPath").invoke(link);
             return Class.forName("java.nio.file.Files").getMethod("readSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path).toString();
         } catch (NoSuchMethodException x) {
-            // fine, Java 5/6; fall through
+            // fine, Java 6; fall through
         } catch (InvocationTargetException x) {
             Throwable x2 = x.getCause();
             if (x2 instanceof UnsupportedOperationException) {
@@ -1379,17 +1392,9 @@ public class Util {
      * Loads a key/value pair string as {@link Properties}
      * @since 1.392
      */
-    @IgnoreJRERequirement
     public static Properties loadProperties(String properties) throws IOException {
         Properties p = new Properties();
-        try {
-            p.load(new StringReader(properties));
-        } catch (NoSuchMethodError e) {
-            // load(Reader) method is only available on JDK6.
-            // this fall back version doesn't work correctly with non-ASCII characters,
-            // but there's no other easy ways out it seems.
-            p.load(new ByteArrayInputStream(properties.getBytes()));
-        }
+        p.load(new StringReader(properties));
         return p;
     }
 

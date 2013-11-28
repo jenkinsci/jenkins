@@ -51,7 +51,6 @@ import hudson.model.Failure;
 import hudson.model.Fingerprint;
 import hudson.model.FingerprintCleanupThread;
 import hudson.model.FingerprintMap;
-import hudson.model.FullDuplexHttpChannel;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -66,6 +65,7 @@ import hudson.model.LoadBalancer;
 import hudson.model.ManagementLink;
 import hudson.model.NoFingerprintMatch;
 import hudson.model.OverallLoadStatistics;
+import hudson.model.PaneStatusProperties;
 import hudson.model.Project;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
@@ -115,9 +115,6 @@ import static hudson.Util.fixEmpty;
 import static hudson.Util.fixNull;
 import hudson.WebAppMain;
 import hudson.XmlFile;
-import hudson.cli.CLICommand;
-import hudson.cli.CliEntryPoint;
-import hudson.cli.CliManagerImpl;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.lifecycle.Lifecycle;
@@ -125,7 +122,6 @@ import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
 import hudson.markup.RawHtmlMarkupFormatter;
 import hudson.remoting.Callable;
-import hudson.remoting.Channel;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
@@ -199,6 +195,7 @@ import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.slaves.WorkspaceLocator;
+import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -252,6 +249,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import static hudson.init.InitMilestone.*;
 import hudson.security.BasicAuthenticationFilter;
+import hudson.util.NamingThreadFactory;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
@@ -280,9 +278,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Timer;
 import java.util.TreeSet;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -765,7 +761,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             // doing this early allows InitStrategy to set environment upfront
             final InitStrategy is = InitStrategy.get(Thread.currentThread().getContextClassLoader());
 
-            Trigger.timer = new Timer("Jenkins cron thread");
+            Trigger.timer = new java.util.Timer("Jenkins cron thread");
             queue = new Queue(LoadBalancer.CONSISTENT_HASH);
 
             try {
@@ -838,15 +834,12 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             }
             dnsMultiCast = new DNSMultiCast(this);
 
-            Timer timer = Trigger.timer;
-            if (timer != null) {
-                timer.scheduleAtFixedRate(new SafeTimerTask() {
-                    @Override
-                    protected void doRun() throws Exception {
-                        trimLabels();
-                    }
-                }, TimeUnit2.MINUTES.toMillis(5), TimeUnit2.MINUTES.toMillis(5));
-            }
+            Timer.get().scheduleAtFixedRate(new SafeTimerTask() {
+                @Override
+                protected void doRun() throws Exception {
+                    trimLabels();
+                }
+            }, TimeUnit2.MINUTES.toMillis(5), TimeUnit2.MINUTES.toMillis(5), TimeUnit.MILLISECONDS);
 
             updateComputerList();
 
@@ -2615,29 +2608,30 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                     primaryView = v.getViewName();
                 }
 
-                // read in old data that doesn't have the security field set
-                if(authorizationStrategy==null) {
-                    if(useSecurity==null || !useSecurity)
-                        authorizationStrategy = AuthorizationStrategy.UNSECURED;
-                    else
-                        authorizationStrategy = new LegacyAuthorizationStrategy();
-                }
-                if(securityRealm==null) {
-                    if(useSecurity==null || !useSecurity)
-                        setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
-                    else
-                        setSecurityRealm(new LegacySecurityRealm());
-                } else {
-                    // force the set to proxy
-                    setSecurityRealm(securityRealm);
-                }
-
-                if(useSecurity!=null && !useSecurity) {
+                if (useSecurity!=null && !useSecurity) {
                     // forced reset to the unsecure mode.
                     // this works as an escape hatch for people who locked themselves out.
                     authorizationStrategy = AuthorizationStrategy.UNSECURED;
                     setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                } else {
+                    // read in old data that doesn't have the security field set
+                    if(authorizationStrategy==null) {
+                        if(useSecurity==null)
+                            authorizationStrategy = AuthorizationStrategy.UNSECURED;
+                        else
+                            authorizationStrategy = new LegacyAuthorizationStrategy();
+                    }
+                    if(securityRealm==null) {
+                        if(useSecurity==null)
+                            setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
+                        else
+                            setSecurityRealm(new LegacySecurityRealm());
+                    } else {
+                        // force the set to proxy
+                        setSecurityRealm(securityRealm);
+                    }
                 }
+
 
                 // Initialize the filter with the crumb issuer
                 setCrumbIssuer(crumbIssuer);
@@ -2699,12 +2693,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         if(dnsMultiCast!=null)
             dnsMultiCast.close();
         interruptReloadThread();
-        Timer timer = Trigger.timer;
+
+        java.util.Timer timer = Trigger.timer;
         if (timer != null) {
             timer.cancel();
         }
         // TODO: how to wait for the completion of the last job?
         Trigger.timer = null;
+
+        Timer.shutdown();
+
         if(tcpSlaveAgentListener!=null)
             tcpSlaveAgentListener.shutdown();
 
@@ -2877,6 +2875,15 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
         return new HttpRedirect(".");
+    }
+
+    public HttpResponse doToggleCollapse() throws ServletException, IOException {
+    	final StaplerRequest request = Stapler.getCurrentRequest();
+    	final String paneId = request.getParameter("paneId");
+    	
+    	PaneStatusProperties.forCurrentUser().toggleCollapsed(paneId);
+    	
+        return HttpResponses.forwardToPreviousPage();
     }
 
     /**
@@ -3089,7 +3096,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                     reload();
                 } catch (Exception e) {
                     LOGGER.log(SEVERE,"Failed to reload Jenkins config",e);
-                    WebApp.get(servletContext).setApp(new JenkinsReloadFailed(e));
+                    new JenkinsReloadFailed(e).publish(servletContext,root);
                 }
             }
         }.start();
@@ -3180,44 +3187,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         List<Object> args = new ArrayList<Object>();
         while (true)
             args.add(new byte[1024*1024]);
-    }
-
-    private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
-
-    /**
-     * Handles HTTP requests for duplex channels for CLI.
-     */
-    public void doCli(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        if (!"POST".equals(req.getMethod())) {
-            // for GET request, serve _cli.jelly, assuming this is a browser
-            checkPermission(READ);
-            req.getView(this,"_cli.jelly").forward(req,rsp);
-            return;
-        }
-
-        // do not require any permission to establish a CLI connection
-        // the actual authentication for the connecting Channel is done by CLICommand
-
-        UUID uuid = UUID.fromString(req.getHeader("Session"));
-        rsp.setHeader("Hudson-Duplex",""); // set the header so that the client would know
-
-        FullDuplexHttpChannel server;
-        if(req.getHeader("Side").equals("download")) {
-            duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !hasPermission(ADMINISTER)) {
-                protected void main(Channel channel) throws IOException, InterruptedException {
-                    // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
-                    channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION,getAuthentication());
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
-                }
-            });
-            try {
-                server.download(req,rsp);
-            } finally {
-                duplexChannels.remove(uuid);
-            }
-        } else {
-            duplexChannels.get(uuid).upload(req,rsp);
-        }
     }
 
     /**
@@ -3704,7 +3673,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/tcpSlaveAgentListener")
             // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
             || rest.matches("/computer/[^/]+/slave-agent[.]jnlp") && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))
-            || rest.startsWith("/cli")
             || rest.startsWith("/federatedLoginService/")
             || rest.startsWith("/securityRealm"))
                 return this;    // URLs that are always visible without READ permission
@@ -3922,10 +3890,11 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     }
 
     /**
-     * Shortcut for {@code Hudson.getInstance().lookup.get(type)}
+     * Shortcut for {@code Jenkins.getInstance().lookup.get(type)}
      */
-    public static <T> T lookup(Class<T> type) {
-        return Jenkins.getInstance().lookup.get(type);
+    public static @CheckForNull <T> T lookup(Class<T> type) {
+        Jenkins j = Jenkins.getInstance();
+        return j != null ? j.lookup.get(type) : null;
     }
 
     /**
@@ -3952,7 +3921,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     /*package*/ transient final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
         TWICE_CPU_NUM, TWICE_CPU_NUM,
-        5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
+        5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new NamingThreadFactory(new DaemonThreadFactory(), "Jenkins load"));
 
 
     private static void computeVersion(ServletContext context) {

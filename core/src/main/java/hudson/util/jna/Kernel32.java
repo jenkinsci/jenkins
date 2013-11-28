@@ -72,5 +72,6 @@ public interface Kernel32 extends StdCallLibrary {
 
     int STILL_ACTIVE = 259;
 
+    int GetTempPathW(int nBuffer, Pointer lpBuffer);
     // DWORD == int
 }

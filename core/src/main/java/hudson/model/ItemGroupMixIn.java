@@ -223,6 +223,10 @@ public abstract class ItemGroupMixIn {
         acl.checkPermission(Item.CREATE);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
+        if (parent.getItem(name) != null) {
+            throw new IllegalArgumentException(parent.getDisplayName() + " already contains an item '" + name + "'");
+        }
+
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
         configXml.getParentFile().mkdirs();
@@ -258,12 +262,7 @@ public abstract class ItemGroupMixIn {
         if(parent.getItem(name)!=null)
             throw new IllegalArgumentException("Project of the name "+name+" already exists");
 
-        TopLevelItem item;
-        try {
-            item = type.newInstance(parent,name);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
+        TopLevelItem item = type.newInstance(parent, name);
         try {
             callOnCreatedFromScratch(item);
         } catch (AbstractMethodError e) {

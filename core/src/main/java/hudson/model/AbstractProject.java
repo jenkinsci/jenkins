@@ -29,6 +29,7 @@ package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.EnvVars;
+import hudson.ExtensionPoint;
 import hudson.Functions;
 import antlr.ANTLRException;
 import hudson.AbortException;
@@ -80,13 +81,14 @@ import hudson.triggers.TriggerDescriptor;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
-import hudson.util.EditDistance;
 import hudson.util.FormValidation;
+import hudson.util.TimeUnit2;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.Uptime;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
@@ -102,6 +104,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -1533,7 +1536,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
 
-                // build now, or nothing will ever be built
+                // At this point we start thinking about triggering a build just to get a workspace,
+                // because otherwise there's no way we can detect changes.
+                // However, first there are some conditions in which we do not want to do so.
+
+                // give time for slaves to come online if we are right after reconnection (JENKINS-8408)
+                long running = Jenkins.getInstance().getInjector().getInstance(Uptime.class).getUptime();
+                long remaining = TimeUnit2.MINUTES.toMillis(10)-running;
+                if (remaining>0) {
+                    listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(remaining/1000));
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
+                    return NO_CHANGES;
+                }
+
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
@@ -1542,17 +1557,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return NO_CHANGES;
                 }
+
                 listener.getLogger().println( ws==null
                     ? Messages.AbstractProject_WorkspaceOffline()
                     : Messages.AbstractProject_NoWorkspace());
                 if (isInQueue()) {
                     listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
                     return NO_CHANGES;
-                } else {
-                    listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
-                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
-                    return BUILD_NOW;
                 }
+
+                // build now, or nothing will ever be built
+                listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
+                listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
+                return BUILD_NOW;
             } else {
                 WorkspaceList l = b.getBuiltOn().toComputer().getWorkspaceList();
                 return pollWithWorkspace(listener, scm, b, ws, l);
@@ -2194,7 +2211,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;
         }
 
-        public FormValidation doCheckAssignedLabelString(@QueryParameter String value) {
+        public FormValidation doCheckAssignedLabelString(@AncestorInPath AbstractProject<?,?> project,
+                                                         @QueryParameter String value) {
             if (Util.fixEmpty(value)==null)
                 return FormValidation.ok(); // nothing typed yet
             try {
@@ -2212,6 +2230,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
                 return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
+            }
+            if (project != null) {
+                for (AbstractProject.LabelValidator v : Jenkins.getInstance()
+                        .getExtensionList(AbstractProject.LabelValidator.class)) {
+                    FormValidation result = v.check(project, l);
+                    if (!FormValidation.Kind.OK.equals(result.kind)) {
+                        return result;
+                    }
+                }
             }
             return FormValidation.ok();
         }
@@ -2299,24 +2326,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Finds a {@link AbstractProject} that has the name closest to the given name.
+     * @see Items#findNearest
      */
     public static AbstractProject findNearest(String name) {
-        return findNearest(name,Hudson.getInstance());
+        return findNearest(name,Jenkins.getInstance());
     }
 
     /**
      * Finds a {@link AbstractProject} whose name (when referenced from the specified context) is closest to the given name.
      *
      * @since 1.419
+     * @see Items#findNearest
      */
     public static AbstractProject findNearest(String name, ItemGroup context) {
-        List<AbstractProject> projects = Hudson.getInstance().getAllItems(AbstractProject.class);
-        String[] names = new String[projects.size()];
-        for( int i=0; i<projects.size(); i++ )
-            names[i] = projects.get(i).getRelativeNameFrom(context);
-
-        String nearest = EditDistance.findNearest(name, names);
-        return (AbstractProject)Jenkins.getInstance().getItem(nearest,context);
+        return Items.findNearest(AbstractProject.class, name, context);
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
@@ -2373,5 +2396,23 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.customWorkspace= Util.fixEmptyAndTrim(customWorkspace);
         save();
     }
-    
+
+    /**
+     * Plugins may want to contribute additional restrictions on the use of specific labels for specific projects.
+     * This extension point allows such restrictions.
+     *
+     * @since 1.540
+     */
+    public static abstract class LabelValidator implements ExtensionPoint {
+        /**
+         * Check the use of the label within the specified context.
+         *
+         * @param project the project that wants to restrict itself to the specified label.
+         * @param label   the label that the project wants to restrict itself to.
+         * @return the {@link FormValidation} result.
+         */
+        @Nonnull
+        public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
+    }
+
 }

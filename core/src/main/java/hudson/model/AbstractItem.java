@@ -40,7 +40,6 @@ import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -52,6 +51,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -157,15 +157,17 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
              
     public File getRootDir() {
-        return parent.getRootDirFor(this);
+        return getParent().getRootDirFor(this);
     }
 
     /**
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
     @WithBridgeMethods(value=Jenkins.class,castRequired=true)
-    public ItemGroup getParent() {
-        assert parent!=null;
+    @Override public @Nonnull ItemGroup getParent() {
+        if (parent == null) {
+            throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + name + "]");
+        }
         return parent;
     }
 
@@ -265,7 +267,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         cp.setProject(new org.apache.tools.ant.Project());
                         cp.setTodir(newRoot);
                         FileSet src = new FileSet();
-                        src.setDir(getRootDir());
+                        src.setDir(oldRoot);
                         cp.addFileset(src);
                         cp.setOverwrite(true);
                         cp.setPreserveLastModified(true);
@@ -566,6 +568,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Updates Job by its XML definition.
+     * @since 1.473
      */
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
@@ -582,7 +585,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         new StreamResult(out));
                 out.close();
             } catch (TransformerException e) {
-                throw new IOException2("Failed to persist configuration.xml", e);
+                throw new IOException("Failed to persist configuration.xml", e);
             }
 
             // try to reflect the changes by reloading

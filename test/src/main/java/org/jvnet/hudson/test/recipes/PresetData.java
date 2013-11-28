@@ -62,6 +62,8 @@ public @interface PresetData {
          * and any logged in user has a full access.
          */
         ANONYMOUS_READONLY,
+
+        SECURED_ACEGI,
     }
 
     class RunnerImpl extends Recipe.Runner<PresetData> {

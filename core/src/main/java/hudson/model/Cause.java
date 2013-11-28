@@ -77,6 +77,14 @@ public abstract class Cause {
     public void onAddedTo(AbstractBuild build) {}
 
     /**
+     * Called when a build is loaded from disk.
+     * Useful in case the cause needs to keep a build reference;
+     * this ought to be {@code transient}.
+     * @since 1.540
+     */
+    public void onLoad(@Nonnull AbstractBuild<?,?> build) {}
+
+    /**
      * Report a line to the listener about this cause.
      * @since 1.362
      */

@@ -64,6 +64,8 @@ import org.kohsuke.stapler.WebMethod;
 /**
  * Minimal implementation of a modifiable item group akin to the CloudBees Folders plugin.
  * No UI, just enough implementation to test functionality of code which should deal with item full names, etc.
+ * <p>If you need to work with the UI during the test, or just prefer to depend on a plugin POM earlier than this class,
+ * you can simply add a test dependency on {@code cloudbees-folder} to your plugin and use {@code jenkinsRule.jenkins.createProject(Folder.class, "name")}.
  * @since 1.494
  */
 @SuppressWarnings({"unchecked", "rawtypes"}) // the usual API mistakes

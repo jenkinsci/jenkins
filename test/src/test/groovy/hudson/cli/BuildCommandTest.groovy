@@ -23,22 +23,27 @@
  */
 package hudson.cli
 
-import org.jvnet.hudson.test.JenkinsRule
-import org.junit.Rule
-import org.junit.Test
+import org.apache.commons.io.output.TeeOutputStream
 import static org.junit.Assert.*
 import org.junit.Assume
+import org.junit.Rule
+import org.junit.Test
+import org.jvnet.hudson.test.JenkinsRule
+import org.jvnet.hudson.test.TestBuilder
+import org.jvnet.hudson.test.TestExtension
+
+import hudson.Launcher
+import hudson.model.AbstractBuild
+import hudson.model.Action
+import hudson.model.BuildListener
+import hudson.model.FreeStyleProject;
+import hudson.model.ParametersAction
+import hudson.model.ParametersDefinitionProperty
+import hudson.model.Queue.QueueDecisionHandler
+import hudson.model.Queue.Task;
+import hudson.model.StringParameterDefinition
 import hudson.tasks.Shell
 import hudson.util.OneShotEvent
-import org.jvnet.hudson.test.TestBuilder
-import hudson.model.AbstractBuild
-import hudson.model.FreeStyleProject;
-import hudson.Launcher
-import hudson.model.BuildListener
-import hudson.model.ParametersDefinitionProperty
-import hudson.model.StringParameterDefinition
-import hudson.model.ParametersAction
-import org.apache.commons.io.output.TeeOutputStream
 
 /**
  * {@link BuildCommand} test.
@@ -72,7 +77,6 @@ public class BuildCommandTest {
         } finally {
             cli.close();
         }
-
     }
 
     /**
@@ -89,7 +93,6 @@ public class BuildCommandTest {
         } finally {
             cli.close();
         }
-
     }
 
     /**
@@ -152,6 +155,26 @@ public class BuildCommandTest {
         }
     }
 
+    @Test void consoleOutputWhenBuildSchedulingRefused() {
+        Assume.assumeFalse("Started test0 #1", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")))
+        def p = j.createFreeStyleProject()
+        def cli = new CLI(j.URL)
+        try {
+            def o = new ByteArrayOutputStream()
+            cli.execute(["build","-s","-v",p.name],System.in,System.out,new TeeOutputStream(System.err,o))
+            assertTrue(o.toString(), o.toString().contains(BuildCommand.BUILD_SCHEDULING_REFUSED))
+        } finally {
+            cli.close()
+        }
+    }
+    // <=>
+    @TestExtension("consoleOutputWhenBuildSchedulingRefused")
+    static class UnschedulingVetoer extends QueueDecisionHandler {
+        public boolean shouldSchedule(Task task, List<Action> actions) {
+            return false;
+        }
+    }
+
     @Test void refuseToBuildDisabledProject() {
 
         def project = j.createFreeStyleProject("the-project");
@@ -180,7 +203,7 @@ public class BuildCommandTest {
 
         def project = j.createFreeStyleProject("the-project");
         project.addProperty(new ParametersDefinitionProperty([
-                new StringParameterDefinition("expr", null)
+            new StringParameterDefinition("expr", null)
         ]));
 
         def invoker = new CLICommandInvoker(j, new BuildCommand());

@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.*;
+import javax.annotation.CheckForNull;
 
 
 /**
@@ -566,7 +567,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Returns the executor of the current thread or null if current thread is not an executor.
      */
-    public static Executor currentExecutor() {
+    public static @CheckForNull Executor currentExecutor() {
         Thread t = Thread.currentThread();
         if (t instanceof Executor) return (Executor) t;
         return IMPERSONATION.get();

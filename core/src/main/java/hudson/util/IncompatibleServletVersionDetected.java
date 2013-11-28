@@ -37,7 +37,7 @@ import java.net.URL;
  *
  * @author Kohsuke Kawaguchi
  */
-public class IncompatibleServletVersionDetected extends ErrorObject {
+public class IncompatibleServletVersionDetected extends BootFailure {
     private final Class servletClass;
 
     public IncompatibleServletVersionDetected(Class servletClass) {

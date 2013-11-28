@@ -30,6 +30,8 @@ import hudson.ExtensionList;
 import hudson.XmlFile;
 import jenkins.model.Jenkins;
 import hudson.model.Saveable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Receives notifications about save actions on {@link Saveable} objects in Hudson.
@@ -75,7 +77,13 @@ public abstract class SaveableListener implements ExtensionPoint {
      */
     public static void fireOnChange(Saveable o, XmlFile file) {
         for (SaveableListener l : all()) {
-            l.onChange(o,file);
+            try {
+                l.onChange(o,file);
+            } catch (ThreadDeath t) {
+                throw t;
+            } catch (Throwable t) {
+                Logger.getLogger(SaveableListener.class.getName()).log(Level.WARNING, null, t);
+            }
         }
     }
 

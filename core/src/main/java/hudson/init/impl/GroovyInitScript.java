@@ -23,20 +23,13 @@
  */
 package hudson.init.impl;
 
-import groovy.lang.GroovyCodeSource;
-import groovy.lang.GroovyShell;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.logging.Logger;
-
-import jenkins.model.Jenkins;
-import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.init.Initializer;
-import java.util.logging.Level;
+import jenkins.model.Jenkins;
+import jenkins.util.groovy.GroovyHookScript;
+
+import java.io.IOException;
+
+import static hudson.init.InitMilestone.*;
 
 /**
  * Run the initialization script, if it exists.
@@ -45,47 +38,7 @@ import java.util.logging.Level;
  */
 public class GroovyInitScript {
     @Initializer(after=JOB_LOADED)
-    public static void init(Jenkins j) throws IOException {
-        URL bundledInitScript = j.servletContext.getResource("/WEB-INF/init.groovy");
-        if (bundledInitScript!=null) {
-            LOGGER.info("Executing bundled init script: "+bundledInitScript);
-            execute(new GroovyCodeSource(bundledInitScript));
-        }
-
-        File initScript = new File(j.getRootDir(),"init.groovy");
-        if(initScript.exists()) {
-            execute(initScript);
-        }
-        
-        File initScriptD = new File(j.getRootDir(),"init.groovy.d");
-        if (initScriptD.isDirectory()) {
-            File[] scripts = initScriptD.listFiles(new FileFilter() {
-                public boolean accept(File f) {
-                    return f.getName().endsWith(".groovy");
-                }
-            });
-            if (scripts!=null) {
-                // sort to run them in a deterministic order
-                Arrays.sort(scripts);
-                for (File f : scripts)
-                    execute(f);
-            }
-        }
+    public static void init(Jenkins j) {
+        new GroovyHookScript("init").run();
     }
-
-    private static void execute(File initScript) throws IOException {
-        LOGGER.info("Executing "+initScript);
-        execute(new GroovyCodeSource(initScript));
-    }
-
-    private static void execute(GroovyCodeSource initScript) {
-        GroovyShell shell = new GroovyShell(Jenkins.getInstance().getPluginManager().uberClassLoader);
-        try {
-            shell.evaluate(initScript);
-        } catch (RuntimeException x) {
-            LOGGER.log(Level.WARNING, "Failed to run script " + initScript.getName(), x);
-        }
-    }
-
-    private static final Logger LOGGER = Logger.getLogger(GroovyInitScript.class.getName());
 }

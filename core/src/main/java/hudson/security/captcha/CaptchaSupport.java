@@ -28,10 +28,10 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import jenkins.model.Jenkins;
 
 
 /**
@@ -52,7 +52,7 @@ public abstract class CaptchaSupport extends AbstractDescribableImpl<CaptchaSupp
      * Returns all the registered {@link CaptchaSupport} descriptors.
      */
     public static DescriptorExtensionList<CaptchaSupport, Descriptor<CaptchaSupport>> all() {
-        return Hudson.getInstance().<CaptchaSupport, Descriptor<CaptchaSupport>>getDescriptorList(CaptchaSupport.class);
+        return Jenkins.getInstance().<CaptchaSupport, Descriptor<CaptchaSupport>>getDescriptorList(CaptchaSupport.class);
     }
     
     abstract public  boolean validateCaptcha(String id, String text); 
