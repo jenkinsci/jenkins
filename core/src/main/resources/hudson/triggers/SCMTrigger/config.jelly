@@ -32,8 +32,6 @@ THE SOFTWARE.
   </f:entry>
   <j:invokeStatic var="listeners" method="all" className="hudson.model.listeners.SCMPollListener"/>
   <j:forEach var="l" items="${listeners}">
-    <f:section title="${l.displayName}">
-      <st:include page="config" it="${l}" optional="true" />
-    </f:section>
+    <st:include page="config" it="${l}" optional="true" />
   </j:forEach>
 </j:jelly>
