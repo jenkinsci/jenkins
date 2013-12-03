@@ -24,6 +24,7 @@
 package hudson.node_monitors;
 
 import hudson.FilePath.FileCallable;
+import hudson.Functions;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
 import hudson.slaves.OfflineCause;
@@ -95,14 +96,11 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
          * Returns the HTML representation of the space.
          */
         public String toHtml() {
-            long space = size;
-            space/=1024L;   // convert to KB
-            space/=1024L;   // convert to MB
-            if(space/1024 < 1) {
-                return Util.wrapToErrorSpan(new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString()+"GB");
+            String humanReadableSpace = Functions.humanReadableByteSize(size);
+            if(triggered) {
+                return Util.wrapToErrorSpan(humanReadableSpace);
             }
-
-            return space/1024+"GB";
+            return humanReadableSpace;
         }
         
         /**
