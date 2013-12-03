@@ -98,8 +98,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             long space = size;
             space/=1024L;   // convert to KB
             space/=1024L;   // convert to MB
-            if(triggered) {
-                // less than a GB
+            if(space/1024 < 1) {
                 return Util.wrapToErrorSpan(new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString()+"GB");
             }
 
