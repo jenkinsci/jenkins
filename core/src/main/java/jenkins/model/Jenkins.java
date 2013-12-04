@@ -3668,6 +3668,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             || rest.startsWith("/logout")
             || rest.startsWith("/accessDenied")
             || rest.startsWith("/adjuncts/")
+            || rest.startsWith("/error")
             || rest.startsWith("/oops")
             || rest.startsWith("/signup")
             || rest.startsWith("/tcpSlaveAgentListener")
