@@ -59,10 +59,12 @@ THE SOFTWARE.
                   method:"POST",
                   parameters: {min: i*interval, max:(i+1)*interval},
                   onSuccess: function(t) {
-                    try {
-                      eventSource1.loadJSON(eval('('+t.responseText+')'),'.');
-                    } catch (e) {
-                      alert(e);
+                    if (t.status != 0) {
+                      try {
+                        eventSource1.loadJSON(eval('('+t.responseText+')'),'.');
+                      } catch (e) {
+                        alert(e);
+                      }
                     }
                   }
               });
