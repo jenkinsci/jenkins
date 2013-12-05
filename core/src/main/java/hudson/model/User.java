@@ -429,6 +429,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return getFullName();
     }
 
+    /** true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause} */
+    private boolean relatedTo(AbstractBuild<?,?> b) {
+        if (b.hasParticipant(this)) {
+            return true;
+        }
+        for (Cause cause : b.getCauses()) {
+            if (cause instanceof Cause.UserIdCause) {
+                String userId = ((Cause.UserIdCause) cause).getUserId();
+                if (userId != null && userId.equals(getId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets the list of {@link Build}s that include changes by this user,
      * by the timestamp order.
@@ -440,16 +456,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
             for (AbstractBuild<?,?> b : p.getBuilds().newBuilds()){
-                if(b.hasParticipant(this))
+                if (relatedTo(b)) {
                     r.add(b);
-                else {
-                    //append builds that were run by this user
-                    Cause.UserIdCause cause = b.getCause(Cause.UserIdCause.class);
-                    if (cause != null) {
-                        String userId = cause.getUserId();
-                        if (userId != null && this.getId() != null && userId.equals(this.getId()))
-                            r.add(b);
-                    }
                 }
             }
         return RunList.fromRuns(r);
@@ -581,7 +589,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         final List<Run> lastBuilds = new ArrayList<Run>();
         for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
             for (AbstractBuild<?,?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
-                if (b.hasParticipant(this)) { // TODO or check UserIdCause
+                if (relatedTo(b)) {
                     lastBuilds.add(b);
                     break;
                 }
