@@ -25,6 +25,7 @@
 package hudson.cli;
 
 import hudson.model.User;
+import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
@@ -113,6 +114,8 @@ public class CLICommandInvoker {
         rule.jenkins.setAuthorizationStrategy(auth);
 
         command.setTransportAuth(user().impersonate());
+        // Otherwise it is SYSTEM, which would be relevant for a command overriding main:
+        ACL.impersonate(Jenkins.ANONYMOUS);
     }
 
     public User user() {

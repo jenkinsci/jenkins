@@ -189,6 +189,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * The default implementation uses args4j to parse command line arguments and call {@link #run()},
      * but if that processing is undesirable, subtypes can directly override this method and leave {@link #run()}
      * to an empty method.
+     * You would however then have to consider {@link CliAuthenticator} and {@link #getTransportAuthentication},
+     * so this is not really recommended.
      * 
      * @param args
      *      Arguments to the sub command. For example, if the CLI is invoked like "java -jar cli.jar foo bar zot",
