@@ -582,12 +582,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<Run>();
-        for (final TopLevelItem item : Jenkins.getInstance().getItems()) {
-            if (!(item instanceof Job)) continue;
-            for (Run r = ((Job) item).getLastBuild(); r != null; r = r.getPreviousBuild()) {
-                if (!(r instanceof AbstractBuild)) continue;
-                final AbstractBuild b = (AbstractBuild) r;
-                if (b.hasParticipant(this)) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractBuild<?,?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+                if (b.hasParticipant(this)) { // TODO or check UserIdCause
                     lastBuilds.add(b);
                     break;
                 }
