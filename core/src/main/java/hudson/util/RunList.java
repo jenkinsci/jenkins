@@ -167,6 +167,8 @@ public class RunList<R extends Run> extends AbstractList<R> {
         return !iterator().hasNext();
     }
 
+    /** @deprecated see {@link #size()} for why this violates lazy-loading */
+    @Deprecated
     public R getFirstBuild() {
         size();
         return first;
