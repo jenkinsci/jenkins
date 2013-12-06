@@ -60,6 +60,8 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
 public abstract class ProgressiveRendering {
 
     private static final Logger LOG = Logger.getLogger(ProgressiveRendering.class.getName());
+    /** May be set to a number of milliseconds to sleep in {@link #canceled}, useful for watching what are normally fast computations. */
+    private static final Long DEBUG_SLEEP = Long.getLong("jenkins.util.ProgressiveRendering.DEBUG_SLEEP");
     private static final int CANCELED = -1;
     private static final int ERROR = -2;
 
@@ -144,6 +146,11 @@ public abstract class ProgressiveRendering {
      * @return true if user seems to have abandoned us, false if we should still run
      */
     protected final boolean canceled() {
+        if (DEBUG_SLEEP != null) {
+            try {
+                Thread.sleep(DEBUG_SLEEP);
+            } catch (InterruptedException x) {}
+        }
         if (status == ERROR) {
             return true; // recent call to data() failed
         }
