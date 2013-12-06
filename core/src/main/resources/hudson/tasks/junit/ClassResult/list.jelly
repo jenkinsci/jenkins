@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
     <table class="pane sortable" id="testresult">
       <tr>
         <td class="pane-header">${%Build}</td>
@@ -47,7 +47,9 @@ THE SOFTWARE.
               </j:forEach>
             </td>
             <td class="pane" style="text-align:right"><j:out value="${p.description}"/></td>
-            <td class="pane" style="test-align:right">${p.Owner.Time.toString()}</td>
+            <td class="pane" style="test-align:right">
+                <i:formatDate value="${p.owner.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+            </td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right">${p.skipCount}</td>

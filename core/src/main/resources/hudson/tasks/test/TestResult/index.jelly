@@ -23,7 +23,9 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:test="/lib/test">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+         xmlns:test="/lib/test" xmlns:i="jelly:fmt">
   <l:layout title="${it.owner} ${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
@@ -38,7 +40,7 @@ THE SOFTWARE.
           ${%took(it.durationString)}
         </a>
         <br/>
-        ${it.Owner.Time.toString()}
+        <i:formatDate value="${it.owner.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
       </div>
 
       <t:editableDescription permission="${it.owner.UPDATE}"/>
