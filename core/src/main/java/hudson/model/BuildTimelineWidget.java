@@ -45,13 +45,15 @@ public class BuildTimelineWidget {
     protected final RunList<?> builds;
 
     public BuildTimelineWidget(RunList<?> builds) {
-        this.builds = builds;
+        this.builds = builds.limit(20); // TODO instead render lazily
     }
 
+    @Deprecated
     public Run<?, ?> getFirstBuild() {
         return builds.getFirstBuild();
     }
 
+    @Deprecated
     public Run<?, ?> getLastBuild() {
         return builds.getLastBuild();
     }

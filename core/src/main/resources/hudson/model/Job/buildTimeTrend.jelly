@@ -34,8 +34,6 @@ THE SOFTWARE.
       <div style="height:2em"/><!-- spacer -->
 
       <h1>${%Build Time Trend}</h1>
-      <j:choose>
-        <j:when test="${it.builds.size()&gt;1}">
           <div align="center">
             <img src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[Build time graph]" style="float:right"/>
           </div>
@@ -51,7 +49,7 @@ THE SOFTWARE.
                   <th>${%Slave}</th>
                 </j:if>
               </tr>
-              <j:forEach var="r" items="${it.builds}">
+              <j:forEach var="r" items="${it.builds}"> <!-- TODO progressively render this -->
                 <tr>
                   <td data="${r.iconColor.ordinal()}">
                   	<img width="16" height="16" src="${imagesURL}/16x16/${r.buildStatusUrl}" alt="${r.iconColor.description}" />
@@ -73,11 +71,6 @@ THE SOFTWARE.
               </j:forEach>
             </table>
           </div>
-        </j:when>
-        <j:otherwise>
-          ${%More than 1 builds are needed for the trend report.}
-        </j:otherwise>
-      </j:choose>
     </l:main-panel>
 	</l:layout>
 </j:jelly>

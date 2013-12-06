@@ -150,6 +150,7 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import hudson.util.RunList;
 import java.util.concurrent.atomic.AtomicLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -1441,7 +1442,8 @@ public class Functions {
     }
 
     /**
-     * Returns a sub-list if the given list is bigger than the specified 'maxSize'
+     * Returns a sub-list if the given list is bigger than the specified {@code maxSize}.
+     * <strong>Warning:</strong> do not call this with a {@link RunList}, or you will break lazy loading!
      */
     public static <T> List<T> subList(List<T> base, int maxSize) {
         if(maxSize<base.size())
