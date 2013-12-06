@@ -138,4 +138,4 @@ exit 0
 
 %changelog
 * Wed Sep 28 2011 kk@kohsuke.org
-- See [http://jenkins-ci.org/changelog] for complete details
+- See [http://jenkins-ci.org/changelog-stable] for complete details
