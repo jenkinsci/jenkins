@@ -25,7 +25,6 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import hudson.model.Computer;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -179,10 +178,10 @@ public abstract class ProgressiveRendering {
 
     /**
      * May be overridden to provide an alternate executor service.
-     * @return by default, {@link Computer#threadPoolForRemoting}
+     * @return by default, {@link Timer#get}
      */
     protected ExecutorService executorService() {
-        return Computer.threadPoolForRemoting;
+        return Timer.get();
     }
 
     /**
