@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.*;
 import hudson.model.Descriptor.FormException;
@@ -451,19 +452,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets the list of {@link Build}s that include changes by this user,
      * by the timestamp order.
-     * 
-     * TODO: do we need some index for this?
      */
     @WithBridgeMethods(List.class)
     public RunList getBuilds() {
-        List<AbstractBuild> r = new ArrayList<AbstractBuild>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
-            for (AbstractBuild<?,?> b : p.getBuilds().newBuilds()){
-                if (relatedTo(b)) {
-                    r.add(b);
-                }
+    	return new RunList<Run<?,?>>(Jenkins.getInstance().getAllItems(Job.class)).filter(new Predicate<Run<?,?>>() {
+            @Override public boolean apply(Run<?,?> r) {
+                return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
             }
-        return RunList.fromRuns(r);
+        });
     }
 
     /**
