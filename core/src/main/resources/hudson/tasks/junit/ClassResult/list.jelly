@@ -29,6 +29,7 @@ THE SOFTWARE.
       <tr>
         <td class="pane-header">${%Build}</td>
         <td class="pane-header">${%Description}</td>
+        <td class="pane-header" style="width:5em">${%Run Date}</td>
         <td class="pane-header" style="width:5em">${%Duration}</td>
         <td class="pane-header" style="width:5em">${%Fail}</td>
         <td class="pane-header" style="width:5em">${%Skip}</td>
@@ -46,6 +47,7 @@ THE SOFTWARE.
               </j:forEach>
             </td>
             <td class="pane" style="text-align:right"><j:out value="${p.description}"/></td>
+            <td class="pane" style="test-align:right">${p.Owner.Time.toString()}</td>
             <td class="pane" style="text-align:right" data="${p.duration}">${p.durationString}</td>
             <td class="pane" style="text-align:right">${p.failCount}</td>
             <td class="pane" style="text-align:right">${p.skipCount}</td>

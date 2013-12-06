@@ -32,6 +32,7 @@ THE SOFTWARE.
     <tr>
       <td class="pane-header" style="width:10em">${%Build}</td>
       <td class="pane-header" style="width:10em">${%Test Description}</td>
+      <td class="pane-header" style="width:5em">${%Run Date}</td>
       <td class="pane-header" style="width:5em">${%Test Duration}</td>
       <td class="pane-header" style="width:5em">${%Test Result}</td>
     </tr>
@@ -47,6 +48,7 @@ THE SOFTWARE.
               </j:forEach>
             </td>
             <td class="pane" style="text-align:left"><j:out value="${test.description}"/></td>
+            <td class="pane" style="test-align:left">${test.Owner.Time.toString()}</td>
             <td class="pane" style="text-align:left" data="${test.duration}">${test.durationString}</td>
             <td class="pane">
               <j:set var="pst" value="${test.status}" />

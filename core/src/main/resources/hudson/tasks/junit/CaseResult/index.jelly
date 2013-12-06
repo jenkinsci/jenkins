@@ -58,6 +58,8 @@ THE SOFTWARE.
         <a href="history">
           ${%took(it.durationString)}
         </a>
+        <br/>
+        ${it.Owner.Time.toString()}
       </div>
 
       <t:editableDescription permission="${it.owner.UPDATE}"/>
