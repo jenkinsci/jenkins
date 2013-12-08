@@ -432,6 +432,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return getFullName();
     }
 
+    /** true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause} */
+    private boolean relatedTo(AbstractBuild<?,?> b) {
+        if (b.hasParticipant(this)) {
+            return true;
+        }
+        for (Cause cause : b.getCauses()) {
+            if (cause instanceof Cause.UserIdCause) {
+                String userId = ((Cause.UserIdCause) cause).getUserId();
+                if (userId != null && userId.equals(getId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets the list of {@link Build}s that include changes by this user,
      * by the timestamp order.
@@ -443,16 +459,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         List<AbstractBuild> r = new ArrayList<AbstractBuild>();
         for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
             for (AbstractBuild<?,?> b : p.getBuilds().newBuilds()){
-                if(b.hasParticipant(this))
+                if (relatedTo(b)) {
                     r.add(b);
-                else {
-                    //append builds that were run by this user
-                    Cause.UserIdCause cause = b.getCause(Cause.UserIdCause.class);
-                    if (cause != null) {
-                        String userId = cause.getUserId();
-                        if (userId != null && this.getId() != null && userId.equals(this.getId()))
-                            r.add(b);
-                    }
                 }
             }
         return RunList.fromRuns(r);
@@ -573,21 +581,18 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rss(req, rsp, " all builds", RunList.fromRuns(getBuilds()), Run.FEED_ADAPTER);
+        rss(req, rsp, " all builds", getBuilds(), Run.FEED_ADAPTER);
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rss(req, rsp, " regression builds", RunList.fromRuns(getBuilds()).regressionOnly(), Run.FEED_ADAPTER);
+        rss(req, rsp, " regression builds", getBuilds().regressionOnly(), Run.FEED_ADAPTER);
     }
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<Run>();
-        for (final TopLevelItem item : Jenkins.getInstance().getItems()) {
-            if (!(item instanceof Job)) continue;
-            for (Run r = ((Job) item).getLastBuild(); r != null; r = r.getPreviousBuild()) {
-                if (!(r instanceof AbstractBuild)) continue;
-                final AbstractBuild b = (AbstractBuild) r;
-                if (b.hasParticipant(this)) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractBuild<?,?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+                if (relatedTo(b)) {
                     lastBuilds.add(b);
                     break;
                 }

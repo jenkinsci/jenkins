@@ -845,6 +845,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     return;
                 }
                 for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
+                    if (canceled()) {
+                        return;
+                    }
                     if (u == unknown) {
                         continue;
                     }

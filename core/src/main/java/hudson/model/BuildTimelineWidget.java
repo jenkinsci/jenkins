@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.Date;
 
 /**
- * UI widget for showing the SMILE timeline control.
+ * UI widget for showing the SIMILE timeline control.
  *
  * <p>
  * Return this from your "getTimeline" method.
