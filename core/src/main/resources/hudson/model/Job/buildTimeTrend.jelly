@@ -45,19 +45,18 @@ THE SOFTWARE.
                     var p = $$('trend');
                     for (var x = 0; data.length > x; x++) {
                         var e = data[x];
-                        var tr = new Element('tr').
-                            insert(new Element('td', {data: e.iconColorOrdinal}).
-                                insert(new Element('img', {width: 16, height: 16, src: '${imagesURL}/16x16/' + e.buildStatusUrl, alt: e.iconColorDescription}))).
-                            insert(new Element('td', {data: e.number}).
-                                insert(new Element('a', {href: e.number + '/', 'class': 'model-link inside'}).
-                                    update(e.displayName.escapeHTML()))).
-                            insert(new Element('td', {data: e.duration}).
-                                    update(e.durationString.escapeHTML()))
+                        var tr = new Element('tr');
+                        tr.insert(new Element('td', {data: e.iconColorOrdinal}).
+                            insert(new Element('img', {width: 16, height: 16, src: '${imagesURL}/16x16/' + e.buildStatusUrl, alt: e.iconColorDescription})));
+                        tr.insert(new Element('td', {data: e.number}).
+                            insert(new Element('a', {href: e.number + '/', 'class': 'model-link inside'}).
+                                update(e.displayName.escapeHTML())));
+                        tr.insert(new Element('td', {data: e.duration}).
+                                update(e.durationString.escapeHTML()));
                 <j:if test="${isMasterSlaveEnabled}">
-                            .insert(new Element('td').
-                                update(e.builtOn ? new Element('a', {href: '${rootURL}/computer/' + e.builtOn, 'class': 'model-link inside'}).update(e.builtOnStr) : e.builtOnStr))
+                        tr.insert(new Element('td').
+                            update(e.builtOn ? new Element('a', {href: '${rootURL}/computer/' + e.builtOn, 'class': 'model-link inside'}).update(e.builtOnStr) : e.builtOnStr));
                 </j:if>
-                            ;
                         p.insert(tr);
                         Behaviour.applySubtree(tr);
                     }

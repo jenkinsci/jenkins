@@ -40,23 +40,23 @@ THE SOFTWARE.
           var p = $$('projectStatus');
           for (var x = 0; data.length > x; x++) {
               var e = data[x];
-              var tr = new Element('tr').
-                  insert(new Element('td', {data: e.iconColorOrdinal}).
-                      insert(new Element('a', {href: '${jobBaseUrl}' + e.url}).
-                          insert(new Element('img', {src: '${imagesURL}/${iconSize}/' + e.buildStatusUrl, alt: e.iconColorDescription, 'class': 'icon${iconSize}'})))).
-                  insert(new Element('td').
-                      insert(new Element('a', {href: '${jobBaseUrl}' + e.parentUrl, 'class': 'model-link'}).
-                          update(e.parentFullDisplayName)).
-                      insert('\u00A0').
-                      insert(new Element('a', {href: '${jobBaseUrl}' + e.url, 'class': 'model-link inside'}).
-                          update(e.displayName.escapeHTML()))).
-                  insert(new Element('td', {data: e.timestampString2, tooltip: '${%Click to center timeline on event}', onclick: 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString2 + '"))'}).
-                      update(e.timestampString.escapeHTML())).
-                  insert(new Element('td', {style: e.buildStatusSummaryWorse ? 'color: red' : ''}).
-                      update(e.buildStatusSummaryMessage.escapeHTML())).
-                  insert(new Element('td').
-                      insert(new Element('a', {href: '${jobBaseUrl}' + e.url + 'console'}).
-                          insert(new Element('img', {src: '${imagesURL}/${subIconSize}/terminal.png', alt: '${%Console output}', border: 0}))));
+              var tr = new Element('tr');
+              tr.insert(new Element('td', {data: e.iconColorOrdinal}).
+                  insert(new Element('a', {href: '${jobBaseUrl}' + e.url}).
+                      insert(new Element('img', {src: '${imagesURL}/${iconSize}/' + e.buildStatusUrl, alt: e.iconColorDescription, 'class': 'icon${iconSize}'}))));
+              tr.insert(new Element('td').
+                  insert(new Element('a', {href: '${jobBaseUrl}' + e.parentUrl, 'class': 'model-link'}).
+                      update(e.parentFullDisplayName)).
+                  insert('\u00A0').
+                  insert(new Element('a', {href: '${jobBaseUrl}' + e.url, 'class': 'model-link inside'}).
+                      update(e.displayName.escapeHTML())));
+              tr.insert(new Element('td', {data: e.timestampString2, tooltip: '${%Click to center timeline on event}', onclick: 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString2 + '"))'}).
+                  update(e.timestampString.escapeHTML()));
+              tr.insert(new Element('td', {style: e.buildStatusSummaryWorse ? 'color: red' : ''}).
+                  update(e.buildStatusSummaryMessage.escapeHTML()));
+              tr.insert(new Element('td').
+                  insert(new Element('a', {href: '${jobBaseUrl}' + e.url + 'console'}).
+                      insert(new Element('img', {src: '${imagesURL}/${subIconSize}/terminal.png', alt: '${%Console output}', border: 0}))));
               p.insert(tr);
               Behaviour.applySubtree(tr);
           }
