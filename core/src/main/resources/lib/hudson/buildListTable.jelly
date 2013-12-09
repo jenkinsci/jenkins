@@ -43,62 +43,30 @@ THE SOFTWARE.
       <th>${%Status}</th>
       <th><st:nbsp/></th>
     </tr>
-    <script>
+    <script><![CDATA[
         function displayBuilds(data) {
-            var p = $$('projectStatus');
+            var tmpl = new Template('<tr>' +
+                '<td data="#{iconColorOrdinal}"><a href="${jobBaseUrl}#{url}"><img src="${imagesURL}/${iconSize}/#{buildStatusUrl}" alt="#{iconColorDescription}" class="icon${iconSize}"></a></td>' +
+                '<td><a href="${jobBaseUrl}#{parentUrl}" class="model-link">#{parentFullDisplayName}</a>\u00A0<a href="${jobBaseUrl}#{url}" class="model-link inside">#{displayName}</a></td>' +
+                '<td data="#{timestampString2}" tooltip="${%Click to center timeline on event}" onclick="javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime(\'#{timestampString2}\'))">#{timestampString}</td>' +
+                '<td #{buildStatusStyle}>#{buildStatusSummaryMessage}</td>' +
+                '<td><a href="${jobBaseUrl}#{url}console"><img src="${imagesURL}/${subIconSize}/terminal.png" alt="${%Console output}" border="0"></img></a></td>' +
+                '</tr>');
+            var text = '';
             for (var x = 0; data.length > x; x++) {
                 var e = data[x];
-                var tr = document.createElement('tr');
-                var td = document.createElement('td');
-                td.setAttribute('data', e.iconColorOrdinal);
-                var a = document.createElement('a');
-                a.href = '${jobBaseUrl}' + e.url;
-                var img = document.createElement('img');
-                img.src = '${imagesURL}/${iconSize}/' + e.buildStatusUrl;
-                img.alt = e.iconColorDescription;
-                img.className = 'icon${iconSize}';
-                a.appendChild(img);
-                td.appendChild(a);
-                tr.appendChild(td);
-                td = document.createElement('td');
-                a = document.createElement('a');
-                a.href = '${jobBaseUrl}' + e.parentUrl;
-                a.className = 'model-link';
-                a.innerHTML = e.parentFullDisplayName;
-                td.appendChild(a);
-                td.appendChild(document.createTextNode('\u00A0')); // nbsp
-                a = document.createElement('a');
-                a.href = '${jobBaseUrl}' + e.url;
-                a.className = 'model-link inside';
-                a.appendChild(document.createTextNode(e.displayName));
-                td.appendChild(a);
-                tr.appendChild(td);
-                td = document.createElement('td');
-                td.setAttribute('data', e.timestampString2);
-                td.tooltip = '${%Click to center timeline on event}';
-                td.onclick = 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString2 + '"))';
-                td.appendChild(document.createTextNode(e.timestampString));
-                tr.appendChild(td);
-                td = document.createElement('td');
+                // parentFullDisplayName is escaped for us, as part of adding word breaks
+                e.displayName = e.displayName.escapeHTML();
                 if (e.buildStatusSummaryWorse) {
-                    td.style.color = 'red';
+                    e.buildStatusStyle = 'style="color: red"';
                 }
-                td.appendChild(document.createTextNode(e.buildStatusSummaryMessage));
-                tr.appendChild(td);
-                td = document.createElement('td');
-                var a = document.createElement('a');
-                a.href = '${jobBaseUrl}' + e.url + 'console';
-                var img = document.createElement('img');
-                img.src = '${imagesURL}/${subIconSize}/terminal.png';
-                img.alt = '${%Console output}';
-                img.border = 0;
-                a.appendChild(img);
-                td.appendChild(a);
-                tr.appendChild(td);
-                p.appendChild(tr);
+                e.buildStatusSummaryMessage = e.buildStatusSummaryMessage.escapeHTML();
+                text += tmpl.evaluate(e);
             }
+            $$('projectStatus').insert(text);
+            Behaviour.applySubtree($$('projectStatus'));
         }
-    </script>
+    ]]></script>
     <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
     ${handler.setBuilds(attrs.builds)}
     <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
