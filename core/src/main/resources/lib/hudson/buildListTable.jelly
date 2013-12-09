@@ -68,6 +68,7 @@ THE SOFTWARE.
                 p.insert(tr);
                 Behaviour.applySubtree(tr);
             }
+            ts_refresh(p);
         }
     </script>
     <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
