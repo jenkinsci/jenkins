@@ -27,50 +27,14 @@ package jenkins.widgets;
 import hudson.Functions;
 import hudson.model.BallColor;
 import hudson.model.Run;
-import java.util.ArrayList;
-import java.util.List;
-import jenkins.util.ProgressiveRendering;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
 @Restricted(DoNotUse.class) // only for buildListTable.jelly
-public class BuildListTable extends ProgressiveRendering {
+public class BuildListTable extends RunListProgressiveRendering {
 
-    private final List<JSONObject> results = new ArrayList<JSONObject>();
-    private Iterable<? extends Run<?,?>> builds;
-
-    /** Jelly cannot call a constructor with arguments. */
-    public void setBuilds(Iterable<? extends Run<?,?>> builds) {
-        this.builds = builds;
-    }
-
-    @Override protected void compute() throws Exception {
-        double decay = 1;
-        for (Run<?,?> build : builds) {
-            if (canceled()) {
-                return;
-            }
-            JSONObject element = new JSONObject();
-            calculate(build, element);
-            synchronized (results) {
-                results.add(element);
-            }
-            // Since we cannot predict how many there will be, just show an ever-growing bar.
-            decay *= .99;
-            progress(1 - decay);
-        }
-    }
-
-    @Override protected synchronized JSON data() {
-        JSONArray d = JSONArray.fromObject(results);
-        results.clear();
-        return d;
-    }
-
-    private void calculate(Run<?,?> build, JSONObject element) {
+    @Override protected void calculate(Run<?,?> build, JSONObject element) {
         BallColor iconColor = build.getIconColor();
         element.put("iconColorOrdinal", iconColor.ordinal());
         element.put("iconColorDescription", iconColor.getDescription());
