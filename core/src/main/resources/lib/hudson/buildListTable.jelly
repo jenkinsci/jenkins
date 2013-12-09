@@ -48,8 +48,8 @@ THE SOFTWARE.
             var p = $$('projectStatus');
             for (var x = 0; data.length > x; x++) {
                 var e = data[x];
-                p.insert(
-                    new Element('tr').
+                p.
+                    insert(new Element('tr').
                         insert(new Element('td', {data: e.iconColorOrdinal}).
                             insert(new Element('a', {href: '${jobBaseUrl}' + e.url}).
                                 insert(new Element('img', {src: '${imagesURL}/${iconSize}/' + e.buildStatusUrl, alt: e.iconColorDescription, 'class': 'icon${iconSize}'})))).
