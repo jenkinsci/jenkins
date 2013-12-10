@@ -24,7 +24,7 @@
 package hudson;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.StreamException;
@@ -141,9 +141,7 @@ public final class XmlFile {
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             return xs.fromXML(in);
-        } catch(StreamException e) {
-            throw new IOException2("Unable to read "+file,e);
-        } catch(ConversionException e) {
+        } catch (XStreamException e) {
             throw new IOException2("Unable to read "+file,e);
         } catch(Error e) {// mostly reflection errors
             throw new IOException2("Unable to read "+file,e);
@@ -164,9 +162,7 @@ public final class XmlFile {
         try {
             // TODO: expose XStream the driver from XStream
             return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
-        } catch (StreamException e) {
-            throw new IOException2("Unable to read "+file,e);
-        } catch(ConversionException e) {
+        } catch (XStreamException e) {
             throw new IOException2("Unable to read "+file,e);
         } catch(Error e) {// mostly reflection errors
             throw new IOException2("Unable to read "+file,e);

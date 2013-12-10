@@ -40,6 +40,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Defines a bunch of static methods to be used as a "mix-in" for {@link ItemGroup}
@@ -99,7 +101,7 @@ public abstract class ItemGroupMixIn {
                 V item = (V) Items.load(parent,subdir);
                 configurations.put(key.call(item), item);
             } catch (IOException e) {
-                e.printStackTrace(); // TODO: logging
+                Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not load " + subdir, e);
             }
         }
 
