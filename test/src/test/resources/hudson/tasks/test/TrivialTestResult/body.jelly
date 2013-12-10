@@ -65,7 +65,7 @@ THE SOFTWARE.
 
   <j:if test="${it.totalCount!=0}">
     <h2>${%All Tests}</h2>
-    <table class="pane sortable" id="testresult">
+    <table class="pane sortable bigtable" id="testresult">
       <tr>
         <td class="pane-header">${it.childTitle}</td>
         <td class="pane-header" style="width:5em">${%Duration}</td>
