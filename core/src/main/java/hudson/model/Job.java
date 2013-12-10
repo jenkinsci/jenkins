@@ -1269,7 +1269,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
 
                 DataSetBuilder<String, ChartLabel> data = new DataSetBuilder<String, ChartLabel>();
-                for (Run r : getBuilds()) {
+                for (Run r : getNewBuilds()) {
                     if (r.isBuilding())
                         continue;
                     data.add(((double) r.getDuration()) / (1000 * 60), "min",
