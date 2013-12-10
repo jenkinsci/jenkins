@@ -94,6 +94,9 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
     }
 
     @Override public TopLevelItem getItem(String name) {
+        if (items == null) {
+            return null; // cf. parent hack in AbstractProject.onLoad
+        }
         return items.get(name);
     }
 
