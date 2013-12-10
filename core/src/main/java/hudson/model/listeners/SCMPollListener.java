@@ -67,8 +67,6 @@ public abstract class SCMPollListener implements ExtensionPoint {
      */
     public void onPollingFailed( AbstractProject<?, ?> project, TaskListener listener, Throwable exception) {}
 
-    public String getDisplayName() { return getClass().getSimpleName(); }
-
 	public static void fireBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {
         for (SCMPollListener l : all()) {
             try {
