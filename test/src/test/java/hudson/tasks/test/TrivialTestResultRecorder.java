@@ -48,9 +48,9 @@ public class TrivialTestResultRecorder extends Recorder implements Serializable 
         System.out.println("performing TrviialTestResultRecorder");
         listener.getLogger().println("perfoming TrivialTestResultRecorder");
         TrivialTestResult r = new TrivialTestResult("gubernatorial");
-        TrivialTestResultAction action = new TrivialTestResultAction(build, r);
+        TrivialTestResultAction action = new TrivialTestResultAction(r);
         r.setParentAction(action);
-        build.getActions().add(action);
+        build.addAction(action);
         listener.getLogger().println("done with TrivialTestResultRecorder");
         System.out.println("done with TrivialTestResultRecorder");
         return true;

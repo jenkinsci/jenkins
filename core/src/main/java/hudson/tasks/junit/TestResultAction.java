@@ -62,9 +62,15 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     private Integer totalCount;
     private List<Data> testData = new ArrayList<Data>();
 
+    @Deprecated
     public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
         super(owner);
         setResult(result, listener);
+    }
+
+    /** @since 1.544 */
+    public TestResultAction(TestResult result, BuildListener listener) {
+        this(null, result, listener);
     }
 
     /**

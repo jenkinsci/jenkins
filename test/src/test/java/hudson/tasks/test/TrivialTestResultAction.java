@@ -32,10 +32,17 @@ import org.kohsuke.stapler.StaplerProxy;
 public class TrivialTestResultAction extends AbstractTestResultAction<TrivialTestResultAction> implements StaplerProxy {
 
     protected TrivialTestResult result;
+
+    @Deprecated
     protected TrivialTestResultAction(AbstractBuild owner, TrivialTestResult result) {
         super(owner);
         this.result = result;
         this.result.setParentAction(this);
+    }
+
+    /** @since 1.544 */
+    protected TrivialTestResultAction(TrivialTestResult result) {
+        this(null, result);
     }
 
     /**

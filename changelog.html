@@ -61,6 +61,9 @@ Upcoming changes</a>
   <li class=bug>
     Hudson shows 0GB free space when space available drops below 1GB.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7776">issue 7776</a>)
+  <li class=bug>
+    Avoiding serializing the owning build as part of a test result action, as this can lead to errors later.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18410">issue 18410</a>)
   <li class=rfe>
     Added filter field for installed plugins tab.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20219">issue 20219</a>)
