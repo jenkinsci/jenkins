@@ -33,7 +33,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.ref.Reference;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -577,7 +576,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return unwrap(old);
     }
 
-    private R unwrap(Reference<R> ref) {
+    private R unwrap(BuildReference<R> ref) {
         return ref!=null ? ref.get() : null;
     }
 
