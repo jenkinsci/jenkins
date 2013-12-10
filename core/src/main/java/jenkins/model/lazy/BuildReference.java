@@ -12,7 +12,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Reference (by default a {@link SoftReference}) to a build object.
@@ -100,14 +100,17 @@ public final class BuildReference<R> {
             // AbstractBuild.NONE
             return new DefaultHolderFactory.NoHolder<R>();
         }
-        for (HolderFactory f : Jenkins.getInstance().getExtensionList(HolderFactory.class)) {
-            Holder<R> h = f.make(referent);
-            if (h != null) {
-                LOGGER.log(Level.FINE, "created build reference for {0} using {1}", new Object[] {referent, f});
-                return h;
+        Jenkins j = Jenkins.getInstance();
+        if (j != null) {
+            for (HolderFactory f : j.getExtensionList(HolderFactory.class)) {
+                Holder<R> h = f.make(referent);
+                if (h != null) {
+                    LOGGER.log(Level.FINE, "created build reference for {0} using {1}", new Object[] {referent, f});
+                    return h;
+                }
             }
         }
-        throw new IllegalStateException();
+        return new DefaultHolderFactory().make(referent);
     }
 
     /**
@@ -124,7 +127,7 @@ public final class BuildReference<R> {
      * <dd>Do not hold onto builds at all. Mainly offered as an option for the purpose of reproducing lazy-loading bugs.
      * </dl>
      */
-    @Restricted(DoNotUse.class)
+    @Restricted(NoExternalUse.class)
     @Extension(ordinal=Double.NEGATIVE_INFINITY) public static final class DefaultHolderFactory implements HolderFactory {
 
         public static final String MODE_PROPERTY = "jenkins.model.lazy.BuildReference.MODE";
