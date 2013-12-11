@@ -22,6 +22,8 @@ permGen=`$defaults permGen` && javaArgs="$javaArgs -XX:MaxPermSize=${permGen}"
 minHeapSize=`$defaults minHeapSize` && javaArgs="$javaArgs -Xms${minHeapSize}"
 heapSize=`$defaults heapSize` && javaArgs="$javaArgs -Xmx${heapSize}"
 
+tmpdir=`$defaults tmpdir` && javaArgs="$javaArgs -Djava.io.tmpdir=${tmpdir}"
+
 home=`$defaults JENKINS_HOME` && export JENKINS_HOME="$home"
 
 add_to_args() {
