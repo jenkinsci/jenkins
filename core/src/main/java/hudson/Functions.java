@@ -1825,8 +1825,8 @@ public class Functions {
      */
     public static String breakableString(final String plain) {
 
-        return plain.replaceAll("(\\p{Punct}+\\w)", "<wbr>$1")
-                .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
+        return plain.replaceAll("([\\p{Punct}&&[^;]]+\\w)", "<wbr>$1")
+                .replaceAll("([^\\p{Punct}\\s-]{10})(?=[^\\p{Punct}\\s-]{3})", "$1<wbr>")
         ;
     }
 
