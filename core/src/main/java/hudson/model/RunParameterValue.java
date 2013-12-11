@@ -71,7 +71,7 @@ public class RunParameterValue extends ParameterValue {
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         Run run = getRun();
         
-        String value = Jenkins.getInstance().getRootUrl() + run.getUrl();
+        String value = (null == run) ? "UNKNOWN" : Jenkins.getInstance().getRootUrl() + run.getUrl();
         env.put(name, value);
 
         env.put(name + ".jobName", getJobName());   // undocumented, left for backward compatibility
@@ -80,9 +80,10 @@ public class RunParameterValue extends ParameterValue {
         env.put(name + ".number" , getNumber ());   // same as above
         env.put(name + "_NUMBER" , getNumber ());
         
-        env.put(name + "_NAME",  run.getDisplayName());  // since 1.504
+        // if run is null, default to the standard '#1' display name format
+        env.put(name + "_NAME",  (null == run) ? "#" + getNumber() : run.getDisplayName());  // since 1.504
 
-        String buildResult = (null == run.getResult()) ? "UNKNOWN" : run.getResult().toString();
+        String buildResult = (null == run || null == run.getResult()) ? "UNKNOWN" : run.getResult().toString();
         env.put(name + "_RESULT",  buildResult);  // since 1.517
 
         env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
@@ -95,7 +96,8 @@ public class RunParameterValue extends ParameterValue {
     }
 
     @Override public String getShortDescription() {
-        return name + "=" + getRun().getFullDisplayName();
+        Run run = getRun();
+        return name + "=" + ((null == run) ? getJobName() + " #" + getNumber() : run.getFullDisplayName());
     }
 
 }
