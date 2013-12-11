@@ -40,7 +40,7 @@ public class TrivialTestResultAction extends AbstractTestResultAction<TrivialTes
         this.result.setParentAction(this);
     }
 
-    /** @since 1.544 */
+    /** @since 1.545 */
     protected TrivialTestResultAction(TrivialTestResult result) {
         this(null, result);
     }

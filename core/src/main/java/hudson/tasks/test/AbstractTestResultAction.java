@@ -67,7 +67,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
 
     private Map<String,String> descriptions = new ConcurrentHashMap<String, String>();
 
-    /** @since 1.544 */
+    /** @since 1.545 */
     protected AbstractTestResultAction() {}
 
     /** @deprecated Use the default constructor and just call {@link Run#addAction} to associate the build with the action. */

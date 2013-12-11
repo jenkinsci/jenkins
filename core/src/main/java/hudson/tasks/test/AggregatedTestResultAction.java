@@ -72,7 +72,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
         super(owner);
     }
 
-    /** @since 1.544 */
+    /** @since 1.545 */
     public AggregatedTestResultAction() {}
 
     protected void update(List<? extends AbstractTestResultAction> children) {

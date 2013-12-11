@@ -44,7 +44,7 @@ public class MatrixTestResult extends AggregatedTestResultAction {
         super(owner);
     }
 
-    /** @since 1.544 */
+    /** @since 1.545 */
     public MatrixTestResult() {}
 
     /**

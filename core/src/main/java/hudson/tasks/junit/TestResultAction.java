@@ -68,7 +68,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         setResult(result, listener);
     }
 
-    /** @since 1.544 */
+    /** @since 1.545 */
     public TestResultAction(TestResult result, BuildListener listener) {
         this(null, result, listener);
     }

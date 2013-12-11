@@ -55,7 +55,12 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+      <code>CannotResolveClassException</code> breaks loading of entire containing folder, not just one job.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20951">issue 20951</a>)
+  <li class=bug>
+    Avoiding serializing the owning build as part of a test result action, as this can lead to errors later.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18410">issue 18410</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
@@ -69,9 +74,6 @@ Upcoming changes</a>
   <li class=bug>
     Hudson shows 0GB free space when space available drops below 1GB.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7776">issue 7776</a>)
-  <li class=bug>
-    Avoiding serializing the owning build as part of a test result action, as this can lead to errors later.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18410">issue 18410</a>)
   <li class=rfe>
     Added filter field for installed plugins tab.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20219">issue 20219</a>)
@@ -84,9 +86,6 @@ Upcoming changes</a>
   <li class=bug>
     Error page should be visible even if the anonymous user does not have overall/read access.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20866">issue 20866</a>)
-  <li class=bug>
-      <code>CannotResolveClassException</code> breaks loading of entire containing folder, not just one job.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20951">issue 20951</a>)
   <li class=bug>
     JavaScript errors when navigating away from a page with a build timeline widget while the timeline is loading.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1041">pull request 1041</a>)
