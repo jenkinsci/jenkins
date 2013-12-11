@@ -259,6 +259,19 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
+     * Filter the list to completed builds above threshold.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.545
+     */
+    public RunList<R> overThresholdAndCompletedOnly(final Result threshold) {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return (!r.isBuilding() && r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold));
+            }
+        });
+    }
+
+    /**
      * Filter the list to builds on a single node only
      * <em>Warning:</em> this method mutates the original list and then returns it.
      */
