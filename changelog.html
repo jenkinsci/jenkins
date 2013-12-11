@@ -55,7 +55,12 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+      <code>CannotResolveClassException</code> breaks loading of entire containing folder, not just one job.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20951">issue 20951</a>)
+  <li class=bug>
+    Avoiding serializing the owning build as part of a test result action, as this can lead to errors later.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18410">issue 18410</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
