@@ -41,6 +41,7 @@ import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -220,6 +221,106 @@ public class PluginManagerTest extends HudsonTestCase {
         // TODO restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
         // TODO dependencies installed or upgraded too
         // TODO required plugin installed but inactive
+    }
+
+    // plugin "depender" optionally depends on plugin "dependee".
+    // they are written like this:
+    // dummy.comp.depender.Depender:
+    //   public class Depender {
+    //     public static String getValue() {
+    //       if (Jenkins.getInstance().getPlugin("dependee") != null) {
+    //         return Dependee.getValue();
+    //       }
+    //       return "depender";
+    //     }
+    //   }
+    // 
+    // dummy.comp.dependee.Dependee:
+    //   public class Dependee {
+    //     public static String getValue() {
+    //       return "dependee";
+    //     }
+    //   }
+    
+    
+    /**
+     * call dummy.comp.depender.Depender.getValue().
+     * 
+     * @return
+     * @throws Exception
+     */
+    private String callDependerValue() throws Exception {
+        Class<?> c = jenkins.getPluginManager().uberClassLoader.loadClass("dummy.comp.depender.Depender");
+        Method m = c.getMethod("getValue");
+        return (String)m.invoke(null);
+    }
+    
+    /**
+     * Load "dependee" and then load "depender".
+     * Asserts that "depender" can access to "dependee".
+     * 
+     * @throws Exception
+     */
+    public void testInstallDependingPluginWithoutRestart() throws Exception {
+        // Load dependee.
+        {
+            String target = "dependee.hpi";
+            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            FileUtils.copyURLToFile(src, dest);
+            jenkins.pluginManager.dynamicLoad(dest);
+        }
+        
+        // before load depender, failed to call Depender.getValue()
+        try {
+            callDependerValue();
+            fail();
+        } catch( Exception e ) {
+        }
+        
+        // Load depender.
+        {
+            String target = "depender.hpi";
+            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            FileUtils.copyURLToFile(src, dest);
+            jenkins.pluginManager.dynamicLoad(dest);
+        }
+        
+        // depender successfully access to dependee.
+        assertEquals("dependee", callDependerValue());
+    }
+    
+    /**
+     * Load "depender" and then load "dependee".
+     * Asserts that "depender" can access to "dependee".
+     * 
+     * @throws Exception
+     */
+    public void testInstallDependedPluginWithoutRestart() throws Exception {
+        // Load depender.
+        {
+            String target = "depender.hpi";
+            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            FileUtils.copyURLToFile(src, dest);
+            jenkins.pluginManager.dynamicLoad(dest);
+        }
+        
+        // before load dependee, depender does not access to dependee.
+        assertEquals("depender", callDependerValue());
+        
+        // Load dependee.
+        {
+            String target = "dependee.hpi";
+            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            FileUtils.copyURLToFile(src, dest);
+            jenkins.pluginManager.dynamicLoad(dest);
+        }
+        
+        // depender successfully access to dependee.
+        assertEquals("dependee", callDependerValue());
     }
 
 }
