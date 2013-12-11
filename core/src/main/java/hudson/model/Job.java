@@ -972,11 +972,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public PermalinkList getPermalinks() {
         // TODO: shall we cache this?
         PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
-        for (Action a : getActions()) {
-            if (a instanceof PermalinkProjectAction) {
-                PermalinkProjectAction ppa = (PermalinkProjectAction) a;
-                permalinks.addAll(ppa.getPermalinks());
-            }
+        for (PermalinkProjectAction ppa : getActions(PermalinkProjectAction.class)) {
+            permalinks.addAll(ppa.getPermalinks());
         }
         return permalinks;
     }

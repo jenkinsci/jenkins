@@ -30,7 +30,6 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ExpandableDetailsNote;
 import hudson.console.ModelHyperlinkNote;
@@ -922,7 +921,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             for (Environment e : buildEnvironments)
                 e.buildEnvVars(env);
 
-        for (EnvironmentContributingAction a : Util.filter(getActions(),EnvironmentContributingAction.class))
+        for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
             a.buildEnvVars(this,env);
 
         EnvVars.resolve(env);

@@ -776,13 +776,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public List<ProminentProjectAction> getProminentActions() {
-        List<Action> a = getActions();
-        List<ProminentProjectAction> pa = new Vector<ProminentProjectAction>();
-        for (Action action : a) {
-            if(action instanceof ProminentProjectAction)
-                pa.add((ProminentProjectAction) action);
-        }
-        return pa;
+        return getActions(ProminentProjectAction.class);
     }
 
     @Override

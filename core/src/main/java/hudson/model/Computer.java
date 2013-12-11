@@ -189,7 +189,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     		}
     		result.addAll(transientActions);
     	}
-    	return result;
+    	return Collections.unmodifiableList(result);
     }
 
     @Override

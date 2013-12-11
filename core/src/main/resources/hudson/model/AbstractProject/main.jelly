@@ -61,7 +61,7 @@ THE SOFTWARE.
       </j:if>
     </j:if>
 
-    <j:forEach var="atr" items="${it.lastCompletedBuild.actions}">
+    <j:forEach var="atr" items="${it.lastCompletedBuild.allActions}">
       <j:if test="${atr!=null}">
         <j:if test="${atr.class.name == 'hudson.tasks.test.AggregatedTestResultPublisher$TestResultAction'}">
           <t:summary icon="clipboard.png">
@@ -75,7 +75,7 @@ THE SOFTWARE.
   </table>
 
   <!-- merge fragments from the actions -->
-  <j:forEach var="a" items="${it.actions}">
+  <j:forEach var="a" items="${it.allActions}">
     <st:include page="jobMain.jelly" it="${a}" optional="true" />
   </j:forEach>
 
