@@ -297,6 +297,7 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import jenkins.security.SecurityListener;
 
 /**
  * Root object of the system.
@@ -3043,6 +3044,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             return;
         }
 
+        SecurityListener.fireLoggedIn(getAuthentication()); // TODO distinguish from login failures
+
         String from = req.getParameter("from");
         if(from!=null && from.startsWith("/") && !from.equals("/loginError")) {
             rsp.sendRedirect2(from);    // I'm bit uncomfortable letting users redircted to other sites, make sure the URL falls into this domain
@@ -3065,6 +3068,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         securityRealm.doLogout(req, rsp);
+        SecurityListener.fireLoggedOut(getAuthentication());
     }
 
     /**
