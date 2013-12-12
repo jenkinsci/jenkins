@@ -225,7 +225,17 @@ public class PluginManagerTest extends HudsonTestCase {
 
     // plugin "depender" optionally depends on plugin "dependee".
     // they are written like this:
-    // dummy.comp.depender.Depender:
+    // org.jenkinsci.plugins.dependencytest.dependee:
+    //   public class Dependee {
+    //     public static String getValue() {
+    //       return "dependee";
+    //     }
+    //   }
+    //   
+    //   public abstract class DependeeExtensionPoint implements ExtensionPoint {
+    //   }
+    //   
+    // org.jenkinsci.plugins.dependencytest.depender:
     //   public class Depender {
     //     public static String getValue() {
     //       if (Jenkins.getInstance().getPlugin("dependee") != null) {
@@ -234,23 +244,20 @@ public class PluginManagerTest extends HudsonTestCase {
     //       return "depender";
     //     }
     //   }
-    // 
-    // dummy.comp.dependee.Dependee:
-    //   public class Dependee {
-    //     public static String getValue() {
-    //       return "dependee";
-    //     }
+    //   
+    //   @Extension(optional=true)
+    //   public class DependerExtension extends DependeeExtensionPoint {
     //   }
     
     
     /**
-     * call dummy.comp.depender.Depender.getValue().
+     * call org.jenkinsci.plugins.dependencytest.depender.Depender.getValue().
      * 
      * @return
      * @throws Exception
      */
     private String callDependerValue() throws Exception {
-        Class<?> c = jenkins.getPluginManager().uberClassLoader.loadClass("dummy.comp.depender.Depender");
+        Class<?> c = jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
         Method m = c.getMethod("getValue");
         return (String)m.invoke(null);
     }
@@ -271,12 +278,15 @@ public class PluginManagerTest extends HudsonTestCase {
             jenkins.pluginManager.dynamicLoad(dest);
         }
         
-        // before load depender, failed to call Depender.getValue()
+        // before load depender, of course failed to call Depender.getValue()
         try {
             callDependerValue();
             fail();
-        } catch( Exception e ) {
+        } catch (ClassNotFoundException _) {
         }
+        
+        // No extensions exist.
+        assertTrue(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
         
         // Load depender.
         {
@@ -287,8 +297,12 @@ public class PluginManagerTest extends HudsonTestCase {
             jenkins.pluginManager.dynamicLoad(dest);
         }
         
-        // depender successfully access to dependee.
+        // (MUST) Not throws an exception
+        // (SHOULD) depender successfully accesses to dependee.
         assertEquals("dependee", callDependerValue());
+        
+        // Extension in depender is loaded.
+        assertFalse(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
     
     /**
@@ -310,6 +324,13 @@ public class PluginManagerTest extends HudsonTestCase {
         // before load dependee, depender does not access to dependee.
         assertEquals("depender", callDependerValue());
         
+        // before load dependee, of course failed to list extensions for dependee.
+        try {
+            jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
+            fail();
+        } catch( ClassNotFoundException _ ){
+        }
+        
         // Load dependee.
         {
             String target = "dependee.hpi";
@@ -321,6 +342,10 @@ public class PluginManagerTest extends HudsonTestCase {
         
         // depender successfully access to dependee.
         assertEquals("dependee", callDependerValue());
+        
+        // No extensions exist.
+        // extensions in depender is not loaded.
+        assertTrue(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
 
 }
