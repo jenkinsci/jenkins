@@ -129,21 +129,15 @@ public class CLI {
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
 
         Channel _channel;
-        try {
-            _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
-        } catch (IOException e) {
-            LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
+        if(factory.connectViaHttpOnly) {
+            _channel = tryConnectViaHttp(url, null);
+        }
+        else {
             try {
-                _channel = connectViaHttp(url);
-            } catch (IOException e2) {
-                try { // Java 7: e.addSuppressed(e2);
-                    Throwable.class.getMethod("addSuppressed", Throwable.class).invoke(e, e2);
-                } catch (NoSuchMethodException _ignore) {
-                    // Java 6
-                } catch (Exception _huh) {
-                    LOGGER.log(Level.SEVERE, null, _huh);
-                }
-                throw e;
+                _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
+            } catch (IOException e) {
+                LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
+                _channel = tryConnectViaHttp(url, e);
             }
         }
         this.channel = _channel;
@@ -153,6 +147,28 @@ public class CLI {
 
         if(entryPoint.protocolVersion()!=CliEntryPoint.VERSION)
             throw new IOException(Messages.CLI_VersionMismatch());
+    }
+
+    private Channel tryConnectViaHttp(String url, IOException e) throws IOException {
+        Channel _channel;
+        try {
+            _channel = connectViaHttp(url);
+        } catch (IOException e2) {
+            if(e != null) {
+                try { // Java 7: e.addSuppressed(e2);
+                    Throwable.class.getMethod("addSuppressed", Throwable.class).invoke(e, e2);
+                } catch (NoSuchMethodException _ignore) {
+                      // Java 6
+                } catch (Exception _huh) {
+                    LOGGER.log(Level.SEVERE, null, _huh);
+                }
+                throw e;
+            }
+            else {
+                throw e2;
+            }
+        }
+        return _channel;
     }
 
     private Channel connectViaHttp(String url) throws IOException {
@@ -394,6 +410,7 @@ public class CLI {
         List<KeyPair> candidateKeys = new ArrayList<KeyPair>();
         boolean sshAuthRequestedExplicitly = false;
         String httpProxy=null;
+        boolean connectViaHttpOnly = false;
 
         String url = System.getenv("JENKINS_URL");
 
@@ -451,6 +468,12 @@ public class CLI {
                 args = args.subList(2,args.size());
                 continue;
             }
+            if (head.equals("-connectViaHttpOnly")) {
+                System.out.println("Skipping connectViaCliPort => connectViaHttp");
+                connectViaHttpOnly = true;
+                args = args.subList(1,args.size());
+                continue;
+            }
             break;
         }
 
@@ -465,7 +488,7 @@ public class CLI {
         if (candidateKeys.isEmpty())
             addDefaultPrivateKeyLocations(candidateKeys);
 
-        CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
+        CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy).connectViaHttpOnly(connectViaHttpOnly);
         String userInfo = new URL(url).getUserInfo();
         if (userInfo != null) {
             factory = factory.basicAuth(userInfo);

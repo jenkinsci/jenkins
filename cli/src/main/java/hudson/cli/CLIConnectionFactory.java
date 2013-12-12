@@ -17,6 +17,7 @@ public class CLIConnectionFactory {
     ExecutorService exec;
     String httpsProxyTunnel;
     String authorization;
+    boolean connectViaHttpOnly;
 
     /**
      * Top URL of the Jenkins to connect to.
@@ -54,6 +55,14 @@ public class CLIConnectionFactory {
      */
     public CLIConnectionFactory authorization(String value) {
         this.authorization = value;
+        return this;
+    }
+
+    /**
+     * Tells CLI to connect via http only, skipping connecting via port.
+     */
+    public CLIConnectionFactory connectViaHttpOnly(boolean value) {
+        this.connectViaHttpOnly = value;
         return this;
     }
 

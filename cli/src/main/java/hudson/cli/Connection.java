@@ -124,6 +124,7 @@ public class Connection {
     public void writeByteArray(byte[] data) throws IOException {
         dout.writeInt(data.length);
         dout.write(data);
+        dout.flush();
     }
 
     public byte[] readByteArray() throws IOException {
