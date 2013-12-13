@@ -297,8 +297,7 @@ public class PluginManagerTest extends HudsonTestCase {
             jenkins.pluginManager.dynamicLoad(dest);
         }
         
-        // (MUST) Not throws an exception
-        // (SHOULD) depender successfully accesses to dependee.
+        // depender successfully accesses to dependee.
         assertEquals("dependee", callDependerValue());
         
         // Extension in depender is loaded.
@@ -340,7 +339,8 @@ public class PluginManagerTest extends HudsonTestCase {
             jenkins.pluginManager.dynamicLoad(dest);
         }
         
-        // depender successfully access to dependee.
+        // (MUST) Not throws an exception
+        // (SHOULD) depender successfully accesses to dependee.
         assertEquals("dependee", callDependerValue());
         
         // No extensions exist.
