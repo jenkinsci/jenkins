@@ -653,7 +653,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         LOGGER.warning("Extracting a copy of Maven bundled in the test harness into " + mvnHome + ". " +
                 "To avoid a performance hit, set the system property 'maven.home' to point to a Maven2 installation.");
         FilePath mvn = jenkins.getRootPath().createTempFile("maven", "zip");
-        mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
+        mvn.copyFrom(JenkinsRule.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         mvn.unzip(new FilePath(buildDirectory));
         // TODO: switch to tar that preserves file permissions more easily
         if(!Functions.isWindows())
@@ -676,7 +676,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             LOGGER.warning("Extracting a copy of Ant bundled in the test harness. " +
                     "To avoid a performance hit, set the environment variable ANT_HOME to point to an  Ant installation.");
             FilePath ant = jenkins.getRootPath().createTempFile("ant", "zip");
-            ant.copyFrom(HudsonTestCase.class.getClassLoader().getResource("apache-ant-1.8.1-bin.zip"));
+            ant.copyFrom(JenkinsRule.class.getClassLoader().getResource("apache-ant-1.8.1-bin.zip"));
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
@@ -1667,7 +1667,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * in the context of an HTTP request.
      *
      * <p>
-     * In {@link HudsonTestCase}, a thread that's executing the test code is different from the thread
+     * In {@link JenkinsRule}, a thread that's executing the test code is different from the thread
      * that carries out HTTP requests made through {@link WebClient}. But sometimes you want to
      * make assertions and other calls with side-effect from within the request handling thread.
      *
@@ -1783,7 +1783,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * Logs in to Hudson, by using the user name as the password.
          *
          * <p>
-         * See {@link HudsonTestCase#configureUserRealm()} for how the container is set up with the user names
+         * See {@link #configureUserRealm} for how the container is set up with the user names
          * and passwords. All the test accounts have the same user name and password.
          */
         public WebClient login(String username) throws Exception {
@@ -1796,7 +1796,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * in the context of an HTTP request.
          *
          * <p>
-         * In {@link HudsonTestCase}, a thread that's executing the test code is different from the thread
+         * In {@link JenkinsRule}, a thread that's executing the test code is different from the thread
          * that carries out HTTP requests made through {@link WebClient}. But sometimes you want to
          * make assertions and other calls with side-effect from within the request handling thread.
          *
