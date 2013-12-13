@@ -3067,8 +3067,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Logs out the user.
      */
     public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        Authentication user = getAuthentication();
         securityRealm.doLogout(req, rsp);
-        SecurityListener.fireLoggedOut(getAuthentication());
+        SecurityListener.fireLoggedOut(user);
     }
 
     /**
