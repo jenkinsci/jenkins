@@ -25,14 +25,12 @@
 package jenkins.security;
 
 import hudson.ExtensionPoint;
-import hudson.security.SecurityRealm;
+import hudson.security.AbstractPasswordBasedSecurityRealm;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -44,48 +42,85 @@ public abstract class SecurityListener implements ExtensionPoint {
     
     private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());
 
-    // TODO should these methods take User rather than Authentication? Higher level, perhaps more convenient, perhaps not.
+    /**
+     * Fired when a user was successfully authenticated by password.
+     * This might be via the web UI, or via REST (not with an API token) or CLI (not with an SSH key).
+     * Only {@link AbstractPasswordBasedSecurityRealm}s are considered.
+     * @param username the user
+     * @param groups the names of any groups the user belongs to (not counting {@code authenticated})
+     */
+    protected abstract void authenticated(@Nonnull String username, @Nonnull List<String> groups);
 
     /**
-     * Fired when a user logs in.
-     * @param user the user authentication
+     * Fired when a user tried to authenticate by password but failed.
+     * @param username the user
+     * @see #authenticated
      */
-    protected abstract void loggedIn(@Nonnull Authentication user);
+    protected abstract void failedToAuthenticate(@Nonnull String username);
+
+    /**
+     * Fired when a user has logged in via the web UI.
+     * Would be called after {@link #authenticated}.
+     * @param username the user
+     */
+    protected abstract void loggedIn(@Nonnull String username);
+
+    /**
+     * Fired when a user has failed to log in via the web UI.
+     * Would be called after {@link #failedToAuthenticate}.
+     * @param username the user
+     */
+    protected abstract void failedToLogIn(@Nonnull String username);
 
     /**
      * Fired when a user logs out.
-     * @param user the user authentication
+     * @param username the user
      */
-    protected abstract void loggedOut(@Nonnull Authentication user);
+    protected abstract void loggedOut(@Nonnull String username);
 
+    // TODO event for authenticated via SSH key in CLI (SshCliAuthenticator)
+    // TODO event for authenticated via API token (ApiTokenFilter)
+    // TODO event for permission denied exception thrown (mainly ACL.checkPermission), and/or caught at top level (ExceptionTranslationFilter.handleException)
     // TODO event for new user signed up (e.g. in HudsonPrivateSecurityRealm)
     // TODO event for CAPTCHA failure
-    // TODO event for authenticated via CLI
-    // TODO event for authenticated via API token
-    // TODO event for permission denied exception thrown (and/or caught at top level)
 
     @Restricted(NoExternalUse.class)
-    public static void fireLoggedIn(@Nonnull Authentication user) {
-        if (LOGGER.isLoggable(Level.FINE)) {
-            StringBuilder b = new StringBuilder("logged in: ").append(user.getName());
-            for (GrantedAuthority auth : user.getAuthorities()) {
-                if (auth.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
-                    continue;
-                }
-                b.append(' ').append(auth.getAuthority());
-            }
-            LOGGER.log(Level.FINE, b.toString());
-        }
+    public static void fireAuthenticated(@Nonnull String username, @Nonnull List<String> groups) {
+        LOGGER.log(Level.FINE, "authenticated: {0} {1}", new Object[] {username, groups});
         for (SecurityListener l : all()) {
-            l.loggedIn(user);
+            l.authenticated(username, groups);
         }
     }
 
     @Restricted(NoExternalUse.class)
-    public static void fireLoggedOut(@Nonnull Authentication user) {
-        LOGGER.log(Level.FINE, "logged out: {0}", user.getName());
+    public static void fireFailedToAuthenticate(@Nonnull String username) {
+        LOGGER.log(Level.FINE, "failed to authenticate: {0}", username);
         for (SecurityListener l : all()) {
-            l.loggedOut(user);
+            l.failedToAuthenticate(username);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void fireLoggedIn(@Nonnull String username) {
+        LOGGER.log(Level.FINE, "logged in: {0}", username);
+        for (SecurityListener l : all()) {
+            l.loggedIn(username);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void fireFailedToLogIn(@Nonnull String username) {
+        LOGGER.log(Level.FINE, "failed to log in: {0}", username);
+        for (SecurityListener l : all()) {
+            l.failedToLogIn(username);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void fireLoggedOut(@Nonnull String username) {
+        LOGGER.log(Level.FINE, "logged out: {0}", username);
+        for (SecurityListener l : all()) {
+            l.loggedOut(username);
         }
     }
 

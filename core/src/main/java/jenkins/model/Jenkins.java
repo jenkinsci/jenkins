@@ -3020,6 +3020,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @see BasicAuthenticationFilter
      */
     public void doSecured( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        // TODO fire something in SecurityListener? (seems to be used only for REST calls when LegacySecurityRealm is active)
+
         if(req.getUserPrincipal()==null) {
             // authentication must have failed
             rsp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -3037,6 +3039,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     /**
      * Called once the user logs in. Just forward to the top page.
+     * Used only by {@link LegacySecurityRealm}.
      */
     public void doLoginEntry( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         if(req.getUserPrincipal()==null) {
@@ -3044,7 +3047,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
             return;
         }
 
-        SecurityListener.fireLoggedIn(getAuthentication()); // TODO distinguish from login failures
+        // TODO fire something in SecurityListener?
 
         String from = req.getParameter("from");
         if(from!=null && from.startsWith("/") && !from.equals("/loginError")) {
@@ -3067,7 +3070,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Logs out the user.
      */
     public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Authentication user = getAuthentication();
+        String user = getAuthentication().getName();
         securityRealm.doLogout(req, rsp);
         SecurityListener.fireLoggedOut(user);
     }
