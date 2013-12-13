@@ -2070,7 +2070,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Specify this to a TCP/IP port number to have slaves started with the debugger.
      */
-    public static int SLAVE_DEBUG_PORT = Integer.getInteger(HudsonTestCase.class.getName()+".slaveDebugPort",-1);
+    public static final int SLAVE_DEBUG_PORT = Integer.getInteger(HudsonTestCase.class.getName()+".slaveDebugPort",-1);
 
     public static final MimeTypes MIME_TYPES = new MimeTypes();
     static {
