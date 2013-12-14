@@ -48,6 +48,7 @@ public class CronTabTest {
         new CronTab("@yearly");
         new CronTab("@weekly");
         new CronTab("@midnight");
+        new CronTab("@morning");
         new CronTab("@monthly");
         new CronTab("0 0 * 1-10/3 *");
     }

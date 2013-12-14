@@ -69,6 +69,10 @@ throws ANTLRException
       {
         table.set("H H(0-2) * * *",getHashForTokens());
       }
+      | "morning"
+      {
+        table.set("H H(8-11) * * *",getHashForTokens());
+      }
       | "hourly"
       {
         table.set("H * * * *",getHashForTokens());
@@ -161,4 +165,5 @@ MONTHLY: "monthly";
 WEEKLY: "weekly";
 DAILY: "daily";
 MIDNIGHT: "midnight";
+MORNING: "morning";
 HOURLY: "hourly";
