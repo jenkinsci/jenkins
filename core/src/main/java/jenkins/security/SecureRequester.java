@@ -18,6 +18,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @see Api
  * @since 1.537
  */
+@Restricted(NoExternalUse.class)
 public interface SecureRequester extends ExtensionPoint {
 
     /**
