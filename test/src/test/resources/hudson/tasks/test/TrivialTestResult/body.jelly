@@ -73,6 +73,8 @@ THE SOFTWARE.
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Skip}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
+        <td class="pane-header" style="width:5em">${%Pass}</td>
+        <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Total}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
       </tr>
@@ -95,6 +97,10 @@ THE SOFTWARE.
             <td class="pane" style="text-align:right">${p.skipCount}</td>
             <td class="pane" style="text-align:right">
               ${h.getDiffString2(p.skipCount-prev.skipCount)}
+            </td>
+            <td class="pane" style="text-align:right">${p.passCount}</td>
+            <td class="pane" style="text-align:right">
+              ${h.getDiffString2(p.passCount-prev.passCount)}
             </td>
             <td class="pane" style="text-align:right">${p.totalCount}</td>
             <td class="pane" style="text-align:right">
