@@ -132,7 +132,7 @@ returns [int value=0]
 
 class CrontabLexer extends Lexer;
 options {
-  k=2; // I'm sure there's a better way to do this than using lookahead. ANTLR sucks...
+  k=3; // I'm sure there's a better way to do this than using lookahead. ANTLR sucks...
   defaultErrorHandler=false;
 }
 
