@@ -54,8 +54,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.servlet.ServletException;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
-import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -69,7 +69,7 @@ import org.kohsuke.stapler.WebMethod;
  * @since 1.494
  */
 @SuppressWarnings({"unchecked", "rawtypes"}) // the usual API mistakes
-public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGroup, TopLevelItem, ModifiableViewGroup, StaplerFallback {
+public class MockFolder extends AbstractItem implements DirectlyModifiableTopLevelItemGroup, TopLevelItem, ModifiableViewGroup, StaplerFallback {
 
     private transient Map<String,TopLevelItem> items = new TreeMap<String,TopLevelItem>();
     private final List<View> views = new ArrayList<View>(Collections.singleton(new AllView("All", this)));
@@ -185,6 +185,18 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
     @Override public void onDeleted(TopLevelItem item) throws IOException {
         // could call ItemListener.onDeleted
         items.remove(item.getName());
+    }
+
+    @Override public boolean canAdd(TopLevelItem item) {
+        return true;
+    }
+
+    @Override synchronized public <I extends TopLevelItem> I add(I item, String name) throws IOException, IllegalArgumentException {
+        if (items.containsKey(name)) {
+            throw new IllegalArgumentException("already an item '" + name + "'");
+        }
+        items.put(name, item);
+        return item;
     }
 
     @Override public TopLevelItemDescriptor getDescriptor() {
