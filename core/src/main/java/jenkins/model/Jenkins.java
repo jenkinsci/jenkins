@@ -2443,8 +2443,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     public void onDeleted(TopLevelItem item) throws IOException {
-        for (ItemListener l : ItemListener.all())
-            l.onDeleted(item);
+        ItemListener.fireOnDeleted(item);
 
         items.remove(item.getName());
         for (View v : views)

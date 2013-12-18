@@ -39,6 +39,7 @@ import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.View;
 import hudson.model.ViewGroupMixIn;
+import hudson.model.listeners.ItemListener;
 import hudson.util.Function1;
 import hudson.views.DefaultViewsTabBar;
 import hudson.views.ViewsTabBar;
@@ -180,11 +181,17 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
     @Override public void onRenamed(TopLevelItem item, String oldName, String newName) throws IOException {
         items.remove(oldName);
         items.put(newName, item);
+        for (View v : views) {
+            v.onJobRenamed(item, oldName, newName);
+        }
     }
 
     @Override public void onDeleted(TopLevelItem item) throws IOException {
-        // could call ItemListener.onDeleted
+        ItemListener.fireOnDeleted(item);
         items.remove(item.getName());
+        for (View v : views) {
+            v.onJobRenamed(item, item.getName(), null);
+        }
     }
 
     @Override public boolean canAdd(TopLevelItem item) {

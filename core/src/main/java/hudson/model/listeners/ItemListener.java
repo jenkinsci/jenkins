@@ -141,4 +141,12 @@ public class ItemListener implements ExtensionPoint {
         for (ItemListener l : all())
             l.onUpdated(item);
     }
+
+    /** @since TODO */
+    public static void fireOnDeleted(Item item) {
+        for (ItemListener l : all()) {
+            l.onDeleted(item);
+        }
+    }
+
 }

@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.model.listeners.ItemListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.io.File;
@@ -81,6 +82,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
 
     /**
      * Internal method. Called by {@link Item}s when they are deleted by users.
+     * Should normally call {@link ItemListener#fireOnDeleted} and {@link View#onJobRenamed} (with a null {@code newName}).
      */
     void onDeleted(T item) throws IOException;
 }
