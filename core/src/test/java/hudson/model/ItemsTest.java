@@ -74,4 +74,16 @@ public class ItemsTest {
         assertEquals("/foo/sister", Items.computeRelativeNamesAfterRenaming("fooq", "foo", "/fooq/sister", foo));
     }
 
+    @Test public void getRelativeNameFrom() {
+        assertEquals("foo", Items.getRelativeNameFrom("foo", ""));
+        assertEquals("foo/bar", Items.getRelativeNameFrom("foo/bar", ""));
+        assertEquals("../bar", Items.getRelativeNameFrom("bar", "foo"));
+        assertEquals("../baz", Items.getRelativeNameFrom("foo/baz", "foo/bar"));
+        assertEquals("bar", Items.getRelativeNameFrom("foo/bar", "foo"));
+        assertEquals(".", Items.getRelativeNameFrom("foo/bar", "foo/bar"));
+        assertEquals("../..", Items.getRelativeNameFrom("foo", "foo/bar/baz"));
+        assertEquals("bar/baz", Items.getRelativeNameFrom("foo/bar/baz", "foo"));
+        assertEquals("../quux/hey", Items.getRelativeNameFrom("foo/bar/quux/hey", "foo/bar/baz"));
+    }
+
 }

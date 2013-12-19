@@ -173,8 +173,11 @@ public class Items {
             String canonicalName = getCanonicalName(context, relativeName);
             if (canonicalName.equals(oldFullName) || canonicalName.startsWith(oldFullName+'/')) {
                 String newCanonicalName = newFullName + canonicalName.substring(oldFullName.length());
-                // relative name points to the renamed item, let's compute the new relative name
-                newValue.add( computeRelativeNameAfterRenaming(canonicalName, newCanonicalName, relativeName) );
+                if (relativeName.startsWith("/")) {
+                    newValue.add("/" + newCanonicalName);
+                } else {
+                    newValue.add(getRelativeNameFrom(newCanonicalName, context.getFullName()));
+                }
             } else {
                 newValue.add(relativeName);
             }
@@ -182,39 +185,55 @@ public class Items {
         return StringUtils.join(newValue, ",");
     }
 
-    /**
-     * Compute the relative name of an Item after renaming
-     */
-    private static String computeRelativeNameAfterRenaming(String oldFullName, String newFullName, String relativeName) {
-
-        String[] a = oldFullName.split("/");
-        String[] n = newFullName.split("/");
-        // TODO this logic needs to be updated to account for moves
-        assert a.length == n.length : Arrays.toString(a) + " vs. " + Arrays.toString(n);
-        String[] r = relativeName.split("/");
-
-        int j = a.length-1;
-        for(int i=r.length-1;i>=0;i--) {
-            String part = r[i];
-            if (part.equals("") && i==0) {
+    // Had difficulty adapting the version in Functions to use no live items, so rewrote it:
+    static String getRelativeNameFrom(String p, String g) {
+        String[] pA = p.isEmpty() ? new String[0] : p.split("/");
+        String[] gA = g.isEmpty() ? new String[0] : g.split("/");
+        for (int i = 0; ; i++) {
+            if (i == pA.length) {
+                if (i == gA.length) {
+                    // p and g are identical
+                    return ".";
+                } else {
+                    // p is an ancestor of g; insert ../ for rest of g
+                    StringBuilder b = new StringBuilder();
+                    for (int j = 0; j < gA.length - pA.length; j++) {
+                        if (j > 0) {
+                            b.append('/');
+                        }
+                        b.append("..");
+                    }
+                    return b.toString();
+                }
+            } else if (i == gA.length) {
+                // g is an ancestor of p; insert rest of p
+                StringBuilder b = new StringBuilder();
+                for (int j = i; j < pA.length; j++) {
+                    if (j > i) {
+                        b.append('/');
+                    }
+                    b.append(pA[j]);
+                }
+                return b.toString();
+            } else if (pA[i].equals(gA[i])) {
+                // identical up to this point
                 continue;
-            }
-            if (part.equals(".")) {
-                continue;
-            }
-            if (part.equals("..")) {
-                j--;
-                continue;
-            }
-            if (part.equals(a[j])) {
-                r[i] = n[j];
-                j--;
-                continue;
+            } else {
+                // first mismatch; insert ../ for rest of g, then rest of p
+                StringBuilder b = new StringBuilder();
+                for (int j = i; j < gA.length; j++) {
+                    if (j > i) {
+                        b.append('/');
+                    }
+                    b.append("..");
+                }
+                for (int j = i; j < pA.length; j++) {
+                    b.append('/').append(pA[j]);
+                }
+                return b.toString();
             }
         }
-        return StringUtils.join(r, '/');
     }
-
 
     /**
      * Loads a {@link Item} from a config file.
