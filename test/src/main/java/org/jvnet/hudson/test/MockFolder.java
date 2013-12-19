@@ -186,6 +186,10 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
         }
     }
 
+    @Override public void renameTo(String newName) throws IOException {
+        super.renameTo(newName); // just to make it public
+    }
+
     @Override public void onDeleted(TopLevelItem item) throws IOException {
         ItemListener.fireOnDeleted(item);
         items.remove(item.getName());
@@ -204,6 +208,10 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
         }
         items.put(name, item);
         return item;
+    }
+
+    @Override public void remove(TopLevelItem item) throws IOException, IllegalArgumentException {
+        items.remove(item.getName());
     }
 
     @Override public TopLevelItemDescriptor getDescriptor() {

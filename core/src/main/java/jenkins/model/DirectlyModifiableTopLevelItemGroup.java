@@ -46,7 +46,6 @@ public interface DirectlyModifiableTopLevelItemGroup extends ModifiableTopLevelI
      * Adds an item to this group.
      * Unlike {@link Jenkins#putItem} this does not try to call {@link Item#delete} on an existing item, nor does it fire {@link ItemListener#onCreated}, nor check permissions.
      * Normally you would call {@link Item#onLoad} after calling this method (the implementation is not expected to do so).
-     * To remove an item, use {@link #onDeleted}.
      * @param <I> the kind of item
      * @param item an item to add which is currently elsewhere
      * @param name the desired item name in this group (might simply be the original {@link Item#getName})
@@ -55,5 +54,14 @@ public interface DirectlyModifiableTopLevelItemGroup extends ModifiableTopLevelI
      * @throws IllegalArgumentException if {@link #canAdd} is false, or an item with this name already exists, or this item is as yet unnamed
      */
     <I extends TopLevelItem> I add(I item, String name) throws IOException, IllegalArgumentException;
+
+    /**
+     * Removes an item from this group.
+     * Unlike {@link #onDeleted} this is not expected to fire any events.
+     * @param item an item which was part of this group
+     * @throws IOException if removing fails
+     * @throws IllegalArgumentException if this was not part of the group to begin with
+     */
+    void remove(TopLevelItem item) throws IOException, IllegalArgumentException;
 
 }

@@ -30,6 +30,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
+import hudson.model.listeners.ItemListener;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
@@ -41,6 +42,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import javax.annotation.CheckForNull;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Convenience methods related to {@link Item}.
@@ -298,6 +301,38 @@ public class Items {
         }
         String nearest = EditDistance.findNearest(name, names);
         return Jenkins.getInstance().getItem(nearest, context, type);
+    }
+
+    /**
+     * Moves an item between folders (or top level).
+     * Fires all relevant events but does not verify that the item’s directory is not currently being used in some way (for example by a running build).
+     * Does not check any permissions.
+     * @param item some item (job or folder)
+     * @param destination the destination of the move (a folder or {@link Jenkins}); not the current parent (or you could just call {@link AbstractItem#renameTo})
+     * @throws IOException if the move fails, or some subsequent step fails (directory might have already been moved)
+     * @throws IllegalArgumentException if the move would really be a rename, or the destination cannot accept the item, or the destination already has an item of that name
+     * @since TODO
+     */
+    public static <I extends AbstractItem & TopLevelItem> void move(I item, DirectlyModifiableTopLevelItemGroup destination) throws IOException, IllegalArgumentException {
+        DirectlyModifiableTopLevelItemGroup oldParent = (DirectlyModifiableTopLevelItemGroup) item.getParent();
+        if (oldParent == destination) {
+            throw new IllegalArgumentException();
+        }
+        // TODO verify that destination is to not equal to, or inside, item
+        if (!destination.canAdd(item)) {
+            throw new IllegalArgumentException();
+        }
+        String name = item.getName();
+        if (destination.getItem(name) != null) {
+            throw new IllegalArgumentException(name + " already exists");
+        }
+        String oldFullName = item.getFullName();
+        // TODO AbstractItem.renameTo has a more baroque implementation; factor it out into a utility method perhaps?
+        FileUtils.moveDirectory(item.getRootDir(), destination.getRootDirFor(item));
+        oldParent.remove(item);
+        destination.add(item, name);
+        item.onLoad(destination, name);
+        ItemListener.fireLocationChange(item, oldFullName);
     }
 
     /**

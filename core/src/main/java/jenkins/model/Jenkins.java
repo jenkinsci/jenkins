@@ -2463,6 +2463,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return item;
     }
 
+    @Override public void remove(TopLevelItem item) throws IOException, IllegalArgumentException {
+        items.remove(item.getName());
+    }
+
     public FingerprintMap getFingerprintMap() {
         return fingerprintMap;
     }

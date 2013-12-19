@@ -224,6 +224,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                             + " already exists");
 
                 String oldName = this.name;
+                String oldFullName = getFullName();
                 File oldRoot = this.getRootDir();
 
                 doSetName(newName);
@@ -294,8 +295,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
                 callOnRenamed(newName, parent, oldName);
 
-                for (ItemListener l : ItemListener.all())
-                    l.onRenamed(this, oldName, newName);
+                ItemListener.fireLocationChange(this, oldFullName);
             }
         }
     }
