@@ -278,6 +278,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertSymlinkForBuild(lastStable, 1);
     }
 
+    /* TODO too slow, seems capable of causing testWorkspaceLock to time out:
     @Bug(15156)
     public void testGetBuildAfterGC() {
         FreeStyleProject job = createFreeStyleProject();
@@ -286,6 +287,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
         assert job.lastBuild != null;
     }
+    */
 
     @Bug(13502)
     public void testHandleBuildTrigger() {

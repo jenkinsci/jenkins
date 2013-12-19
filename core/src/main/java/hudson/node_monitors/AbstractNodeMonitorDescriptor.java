@@ -265,7 +265,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
             synchronized(AbstractNodeMonitorDescriptor.this) {
                 if(inProgress!=null) {
                     // maybe it got stuck?
-                    LOGGER.warning("Previous "+getDisplayName()+" monitoring activity still in progress. Interrupting");
+                    LOGGER.log(Level.WARNING, "Previous {0} monitoring activity still in progress. Interrupting", getDisplayName());
                     inProgress.interrupt();
                 }
                 inProgress = this;
@@ -283,7 +283,9 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
                 timestamp = System.currentTimeMillis();
                 record = this;
 
-                LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
+                LOGGER.log(Level.FINE, "Node monitoring {0} completed in {1}ms", new Object[] {getDisplayName(), System.currentTimeMillis()-startTime});
+            } catch (InterruptedException x) {
+                // interrupted by new one, fine
             } catch (Throwable t) {
                 LOGGER.log(Level.WARNING, "Unexpected node monitoring termination: "+getDisplayName(),t);
             } finally {

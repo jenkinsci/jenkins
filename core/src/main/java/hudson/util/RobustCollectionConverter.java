@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
@@ -31,16 +30,15 @@ import com.thoughtworks.xstream.converters.reflection.SerializableConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import static java.util.logging.Level.FINE;
-import java.util.logging.Logger;
 
 
 /**
- * {@link CollectionConverter} that ignores {@link CannotResolveClassException}.
+ * {@link CollectionConverter} that ignores {@link XStreamException}.
  *
  * <p>
  * This allows Hudson to load XML files that contain non-existent classes
@@ -84,16 +82,13 @@ public class RobustCollectionConverter extends CollectionConverter {
             try {
                 Object item = readItem(reader, context, collection);
                 collection.add(item);
-            } catch (CannotResolveClassException e) {
-                LOGGER.log(FINE, "Failed to resolve class", e);
+            } catch (XStreamException e) {
                 RobustReflectionConverter.addErrorInContext(context, e);
             } catch (LinkageError e) {
-                LOGGER.log(FINE, "Failed to resolve class", e);
                 RobustReflectionConverter.addErrorInContext(context, e);
             }
             reader.moveUp();
         }
     }
 
-    private static final Logger LOGGER = Logger.getLogger(RobustCollectionConverter.class.getName());
 }

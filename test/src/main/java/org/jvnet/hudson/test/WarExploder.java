@@ -89,17 +89,21 @@ final class WarExploder {
 
         // TODO this assumes that the CWD of the Maven process is the plugin ${basedir}, which may not be the case
         File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();
+        while (new File(explodeDir + ".exploding").isFile()) {
+            explodeDir = new File(explodeDir + "x");
+        }
         File timestamp = new File(explodeDir,".timestamp");
 
         if(!timestamp.exists() || (timestamp.lastModified()!=war.lastModified())) {
-            System.out.println("Exploding jenkins.war at "+war);
+            System.out.println("Exploding " + war + " into " + explodeDir);
+            new FileOutputStream(explodeDir + ".exploding").close();
             new FilePath(explodeDir).deleteRecursive();
-            // TODO this can fail (race condition?) when running tests in parallel; need a three-state flag, and switch to a different explodeDir as needed
             new FilePath(war).unzip(new FilePath(explodeDir));
             if(!explodeDir.exists())    // this is supposed to be impossible, but I'm investigating HUDSON-2605
                 throw new IOException("Failed to explode "+war);
             new FileOutputStream(timestamp).close();
             timestamp.setLastModified(war.lastModified());
+            new File(explodeDir + ".exploding").delete();
         } else {
             System.out.println("Picking up existing exploded jenkins.war at "+explodeDir.getAbsolutePath());
         }

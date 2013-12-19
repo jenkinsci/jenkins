@@ -23,12 +23,12 @@
  */
 package hudson.util;
 
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.converters.reflection.MissingFieldException;
 import com.thoughtworks.xstream.converters.reflection.ObjectAccessException;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.converters.reflection.ReflectionConverter;
@@ -38,7 +38,6 @@ import com.thoughtworks.xstream.core.util.Primitives;
 import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Saveable;
@@ -293,14 +292,9 @@ public class RobustReflectionConverter implements Converter {
                         implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
                     }
                 }
-            } catch (MissingFieldException e) {
-                LOGGER.log(FINE, "Skipping a non-existent field " + e.getFieldName(), e);
-                addErrorInContext(context, e);
-            } catch (CannotResolveClassException e) {
-                LOGGER.log(FINE, "Skipping a non-existent type", e);
+            } catch (XStreamException e) {
                 addErrorInContext(context, e);
             } catch (LinkageError e) {
-                LOGGER.log(FINE, "Failed to resolve a type", e);
                 addErrorInContext(context, e);
             }
 
@@ -316,6 +310,7 @@ public class RobustReflectionConverter implements Converter {
     }
 
     public static void addErrorInContext(UnmarshallingContext context, Throwable e) {
+        LOGGER.log(FINE, "Failed to load", e);
         ArrayList<Throwable> list = (ArrayList<Throwable>)context.get("ReadError");
         if (list == null)
             context.put("ReadError", list = new ArrayList<Throwable>());

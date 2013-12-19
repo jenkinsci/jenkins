@@ -2221,7 +2221,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return FormValidation.error(e,
                         Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
             }
-            Label l = Jenkins.getInstance().getLabel(value);
+            Jenkins j = Jenkins.getInstance();
+            Label l = j.getLabel(value);
             if (l.isEmpty()) {
                 for (LabelAtom a : l.listAtoms()) {
                     if (a.isEmpty()) {
@@ -2232,7 +2233,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
             }
             if (project != null) {
-                for (AbstractProject.LabelValidator v : Jenkins.getInstance()
+                for (AbstractProject.LabelValidator v : j
                         .getExtensionList(AbstractProject.LabelValidator.class)) {
                     FormValidation result = v.check(project, l);
                     if (!FormValidation.Kind.OK.equals(result.kind)) {
@@ -2240,7 +2241,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
             }
-            return FormValidation.ok();
+            return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
+                    j.getRootUrl(), l.getUrl(), l.getNodes().size() + l.getClouds().size()
+            ));
         }
 
         public FormValidation doCheckCustomWorkspace(@QueryParameter(value="customWorkspace.directory") String customWorkspace){
