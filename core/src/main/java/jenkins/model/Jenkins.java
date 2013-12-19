@@ -2434,6 +2434,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         items.remove(oldName);
         items.put(newName,job);
 
+        // For compatibility with old views:
         for (View v : views)
             v.onJobRenamed(job, oldName, newName);
         save();
@@ -2446,6 +2447,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         ItemListener.fireOnDeleted(item);
 
         items.remove(item.getName());
+        // For compatibility with old views:
         for (View v : views)
             v.onJobRenamed(item, item.getName(), null);
         save();

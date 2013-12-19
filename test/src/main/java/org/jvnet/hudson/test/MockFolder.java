@@ -181,9 +181,6 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
     @Override public void onRenamed(TopLevelItem item, String oldName, String newName) throws IOException {
         items.remove(oldName);
         items.put(newName, item);
-        for (View v : views) {
-            v.onJobRenamed(item, oldName, newName);
-        }
     }
 
     @Override public void renameTo(String newName) throws IOException {
@@ -193,9 +190,6 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
     @Override public void onDeleted(TopLevelItem item) throws IOException {
         ItemListener.fireOnDeleted(item);
         items.remove(item.getName());
-        for (View v : views) {
-            v.onJobRenamed(item, item.getName(), null);
-        }
     }
 
     @Override public boolean canAdd(TopLevelItem item) {

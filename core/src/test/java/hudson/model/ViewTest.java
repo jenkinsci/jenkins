@@ -178,10 +178,6 @@ public class ViewTest {
         }
 
         @Override
-        public void onJobRenamed(Item item, String oldName, String newName) {
-        }
-
-        @Override
         protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         }
 
