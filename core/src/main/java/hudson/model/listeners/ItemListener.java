@@ -84,7 +84,7 @@ public class ItemListener implements ExtensionPoint {
 
     /**
      * Called after a job is renamed.
-     *
+     * Most implementers should rather use {@link #onLocationChanged}.
      * @param item
      *      The job being renamed.
      * @param oldName
@@ -113,6 +113,7 @@ public class ItemListener implements ExtensionPoint {
      * @param item an item whose absolute position is now different
      * @param oldFullName the former {@link Item#getFullName}
      * @param newFullName the current {@link Item#getFullName}
+     * @see Items#computeRelativeNamesAfterRenaming
      * @since TODO
      */
     public void onLocationChanged(Item item, String oldFullName, String newFullName) {}

@@ -152,8 +152,8 @@ public class Items {
     }
 
     /**
-     * Compute the relative name of list of items after a rename occurred. Used to manage job references as names in
-     * plugins to support {@link hudson.model.listeners.ItemListener#onRenamed(hudson.model.Item, String, String)}.
+     * Computes the relative name of list of items after a rename or move occurred.
+     * Used to manage job references as names in plugins to support {@link hudson.model.listeners.ItemListener#onLocationChanged}.
      * <p>
      * In a hierarchical context, when a plugin has a reference to a job as <code>../foo/bar</code> this method will
      * handle the relative path as "foo" is renamed to "zot" to compute <code>../zot/bar</code>
@@ -189,7 +189,8 @@ public class Items {
 
         String[] a = oldFullName.split("/");
         String[] n = newFullName.split("/");
-        assert a.length == n.length;
+        // TODO this logic needs to be updated to account for moves
+        assert a.length == n.length : Arrays.toString(a) + " vs. " + Arrays.toString(n);
         String[] r = relativeName.split("/");
 
         int j = a.length-1;
