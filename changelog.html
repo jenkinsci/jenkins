@@ -55,6 +55,30 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.545>What's new in 1.545</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+      <code>CannotResolveClassException</code> breaks loading of entire containing folder, not just one job.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20951">issue 20951</a>)
+  <li class=bug>
+    Better robustness against XML deserialization errors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21024">issue 21024</a>)
+  <li class=bug>
+    Minimizing disk I/O while loading the <em>names</em> of build records during Jenkins startup.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21078">issue 21078</a>)
+  <li class=bug>
+    Avoiding serializing the owning build as part of a test result action, as this can lead to errors later.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18410">issue 18410</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.544>What's new in 1.544</a> (2013/12/15)</h3>
+<ul class=image>
   <li class=bug>
     RingBufferLogHandler throws ArrayIndexOutOfBoundsException after int-overflow.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9120">issue 9120</a>)
@@ -68,17 +92,16 @@ Upcoming changes</a>
       <code>groovysh</code> command did not work in authenticated Jenkins instances.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17929">issue 17929</a>)
   <li class=bug>
+    Avoid eagerly loading all builds when displaying lists of them (<i>Build History</i> and <i>Build Time Trend</i> UIs).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20892">issue 20892</a>)
+  <li class=bug>
     Error page should be visible even if the anonymous user does not have overall/read access.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20866">issue 20866</a>)
   <li class=bug>
     JavaScript errors when navigating away from a page with a build timeline widget while the timeline is loading.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1041">pull request 1041</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.543>What's new in 1.543</a> <!--=DATE=--></h3>
+<h3><a name=v1.543>What's new in 1.543</a> (2013/12/10)</h3>
 <ul class=image>
   <li class=bug>
     Fixed a possible dead lock problem in deleting projects.
@@ -87,7 +110,6 @@ Upcoming changes</a>
     HTML metacharacters not escaped in log messages.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20800">issue 20800</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.542>What's new in 1.542</a> (2013/12/02)</h3>
 <ul class=image>
   <li class=bug>
@@ -798,6 +820,9 @@ Upcoming changes</a>
   <li class=bug>
     NPE from <code>MatrixConfiguration.newBuild</code>.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17728">issue 17728</a>)
+  <li class=bug>
+    Identify the short name of an uploaded plugin from the manifest, so it does not matter what the filename was.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-4543">issue 4543</a>)
   <li class='major bug'>
     NPE configuring Copy Artifact with Maven jobs.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17402">issue 17402</a>)

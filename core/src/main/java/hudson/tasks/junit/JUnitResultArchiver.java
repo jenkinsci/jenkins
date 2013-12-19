@@ -133,6 +133,7 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 			TestResult result = parse(testResults, build, launcher, listener);
 
 			try {
+                // TODO can the build argument be omitted now, or is it used prior to the call to addAction?
 				action = new TestResultAction(build, result, listener);
 			} catch (NullPointerException npe) {
 				throw new AbortException(Messages.JUnitResultArchiver_BadXML(testResults));
@@ -173,7 +174,7 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 			return true;
 		}
 
-		build.getActions().add(action);
+		build.addAction(action);
 		CHECKPOINT.report();
 
 		if (action.getResult().getFailCount() > 0)

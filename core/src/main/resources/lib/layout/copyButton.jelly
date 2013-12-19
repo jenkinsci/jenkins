@@ -50,5 +50,5 @@ THE SOFTWARE.
   <span class="copy-button" tooltip="${attrs.tooltip}" text="${attrs.text}" message="${attrs.message}" container="${attrs.container}">
     <input type="button"/>
   </span>
-  <st:adjunct includes="org.kohsuke.stapler.zeroclipboard, lib.layout.copyButton.copyButton"/>
+  <st:adjunct includes="lib.layout.copyButton.copyButton"/>
 </j:jelly>
