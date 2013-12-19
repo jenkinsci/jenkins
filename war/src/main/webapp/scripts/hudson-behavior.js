@@ -1661,10 +1661,13 @@ function createSearchBox(searchURL) {
     ac.typeAhead = false;
     ac.autoHighlight = false;
 
-    var box   = $("search-box");
-    var sizer = $("search-box-sizer");
-    var comp  = $("search-box-completion");
-    var minW  = $("search-box-minWidth");
+    var header = $("header");
+    var box    = $("search-box");
+    var logo   = $("jenkins-home-link");
+    var login  = $("login-field");
+    var sizer  = $("search-box-sizer");
+    var comp   = $("search-box-completion");
+    var minW   = $("search-box-minWidth");
 
     Behaviour.addLoadEvent(function(){
         // make sure all three components have the same font settings
@@ -1683,12 +1686,18 @@ function createSearchBox(searchURL) {
     // update positions and sizes of the components relevant to search
     function updatePos() {
         function max(a,b) { if(a>b) return a; else return b; }
+        function min(a,b) { if(a<b) return a; else return b; }
 
         sizer.innerHTML = box.value.escapeHTML();
-        var w = max(sizer.offsetWidth,minW.offsetWidth);
+        var maxW = header.offsetWidth - (logo.offsetWidth + login.offsetWidth) - 60;
+        sizer.style.display = 'block';
+        sizer.style.width = 'auto';
+        var w = min(max(sizer.offsetWidth, minW.offsetWidth) + 60, maxW);
+        sizer.style.width = maxW + "px";
+        sizer.style.display = 'none';
         box.style.width =
         comp.style.width = 
-        comp.firstChild.style.width = (w+60)+"px";
+        comp.firstChild.style.width = w + "px";
 
         var pos = YAHOO.util.Dom.getXY(box);
         pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
@@ -1697,6 +1706,13 @@ function createSearchBox(searchURL) {
 
     updatePos();
     box.onkeyup = updatePos;
+    var oldWindowResize = window.onresize;
+    window.onresize = function() {
+    	updatePos();
+    	if (oldWindowResize) {
+    		oldWindowResize();
+    	}
+    }
 }
 
 

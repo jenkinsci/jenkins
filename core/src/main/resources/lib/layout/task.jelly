@@ -111,7 +111,7 @@ THE SOFTWARE.
         </div>
       </j:when>
       <j:otherwise>
-        <div class="task">
+        <div class="task" style="${h.mobile ? 'float: left' : ''}">
           <j:set var="icon" value="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
 
@@ -140,6 +140,7 @@ THE SOFTWARE.
           </j:choose>
           <st:nbsp />
 
+          <j:if test="${!h.mobile}">
           <j:choose>
             <j:when test="${requiresConfirmation and not attrs.onClick}">
               <l:confirmationLink class="task-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
@@ -166,6 +167,7 @@ THE SOFTWARE.
               </a>
             </j:otherwise>
           </j:choose>
+          </j:if>
 
           <j:if test="${match}">
             <div class="subtasks">
