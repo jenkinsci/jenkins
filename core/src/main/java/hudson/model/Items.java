@@ -349,7 +349,9 @@ public class Items {
         }
         String oldFullName = item.getFullName();
         // TODO AbstractItem.renameTo has a more baroque implementation; factor it out into a utility method perhaps?
-        FileUtils.moveDirectory(item.getRootDir(), destination.getRootDirFor(item));
+        File destDir = destination.getRootDirFor(item);
+        FileUtils.forceMkdir(destDir.getParentFile());
+        FileUtils.moveDirectory(item.getRootDir(), destDir);
         oldParent.remove(item);
         I newItem = destination.add(item, name);
         newItem.onLoad(destination, name);
