@@ -329,11 +329,12 @@ public class Items {
      * Does not check any permissions.
      * @param item some item (job or folder)
      * @param destination the destination of the move (a folder or {@link Jenkins}); not the current parent (or you could just call {@link AbstractItem#renameTo})
+     * @return the new item (usually the same object as {@code item})
      * @throws IOException if the move fails, or some subsequent step fails (directory might have already been moved)
      * @throws IllegalArgumentException if the move would really be a rename, or the destination cannot accept the item, or the destination already has an item of that name
      * @since TODO
      */
-    public static <I extends AbstractItem & TopLevelItem> void move(I item, DirectlyModifiableTopLevelItemGroup destination) throws IOException, IllegalArgumentException {
+    public static <I extends AbstractItem & TopLevelItem> I move(I item, DirectlyModifiableTopLevelItemGroup destination) throws IOException, IllegalArgumentException {
         DirectlyModifiableTopLevelItemGroup oldParent = (DirectlyModifiableTopLevelItemGroup) item.getParent();
         if (oldParent == destination) {
             throw new IllegalArgumentException();
@@ -350,9 +351,10 @@ public class Items {
         // TODO AbstractItem.renameTo has a more baroque implementation; factor it out into a utility method perhaps?
         FileUtils.moveDirectory(item.getRootDir(), destination.getRootDirFor(item));
         oldParent.remove(item);
-        destination.add(item, name);
-        item.onLoad(destination, name);
-        ItemListener.fireLocationChange(item, oldFullName);
+        I newItem = destination.add(item, name);
+        newItem.onLoad(destination, name);
+        ItemListener.fireLocationChange(newItem, oldFullName);
+        return newItem;
     }
 
     /**
