@@ -1627,6 +1627,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         updateTransientActions();
     }
 
+    @Override
+    public void renameTo(String newName) throws IOException {
+        super.renameTo(newName);
+        // Update locations inside builds cache
+        builds.updateBaseDir(getBuildDir(), false);
+    }
+
     protected final synchronized <T extends Describable<T>>
     void removeFromList(Descriptor<T> item, List<T> collection) throws IOException {
         for( int i=0; i< collection.size(); i++ ) {
@@ -2054,6 +2061,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         makeDisabled(false);
         return new HttpRedirect(".");
     }
+    
 
     /**
      * RSS feed for changes in this project.
