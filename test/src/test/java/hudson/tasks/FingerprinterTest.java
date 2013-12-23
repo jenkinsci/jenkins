@@ -100,6 +100,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
 
+        j.jenkins.rebuildDependencyGraph();
+
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
 
@@ -117,6 +119,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(upstream2.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+
+        j.jenkins.rebuildDependencyGraph();
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> downstreamProjects2 = upstream2.getDownstreamProjects();
@@ -138,6 +142,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get());
+
+        j.jenkins.rebuildDependencyGraph();
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
@@ -176,6 +182,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         
+        Jenkins.getInstance().rebuildDependencyGraph();
+
         List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = p.getDownstreamProjects();
         
@@ -194,6 +202,8 @@ public class FingerprinterTest {
         j.buildAndAssertSuccess(matrixProject);
         j.buildAndAssertSuccess(freestyleProject);
         j.waitUntilNoActivity();
+
+        j.jenkins.rebuildDependencyGraph();
 
         RunList<FreeStyleBuild> builds = freestyleProject.getBuilds();
         assertEquals("There should only be one FreestyleBuild", 1, builds.size());
@@ -300,6 +310,8 @@ public class FingerprinterTest {
         Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+"\n"));
         assertEquals(3,f.getUsages().size());
 
+        j.jenkins.rebuildDependencyGraph();
+
         assertEquals(Arrays.asList(p1), p2.getUpstreamProjects());
         assertEquals(Arrays.asList(p1), p3.getUpstreamProjects());
         assertEquals(new HashSet(Arrays.asList(p2,p3)), new HashSet(p1.getDownstreamProjects()));
@@ -307,6 +319,8 @@ public class FingerprinterTest {
         // discard the p3 records
         p3.delete();
         new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
+
+        j.jenkins.rebuildDependencyGraph();
 
         // records for p3 should have been deleted now
         assertEquals(2,f.getUsages().size());

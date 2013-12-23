@@ -3625,7 +3625,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
         dependencyGraphDirty.set(true);
-        return Timer.get().submit(new java.util.concurrent.Callable<DependencyGraph>() {
+        return Timer.get().schedule(new java.util.concurrent.Callable<DependencyGraph>() {
             @Override
             public DependencyGraph call() throws Exception {
                 if (dependencyGraphDirty.get()) {
@@ -3633,7 +3633,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
                 }
                 return dependencyGraph;
             }
-        });
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
     public DependencyGraph getDependencyGraph() {
