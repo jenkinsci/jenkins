@@ -49,8 +49,18 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                     }
                     $(containerId).appendChild(error);
                     var r = YAHOO.util.Dom.getClientRegion();
-                    responseDialog.cfg.setProperty("width",r.width*3/4+"px");
-                    responseDialog.cfg.setProperty("height",r.height*3/4+"px");
+
+                    var contentHeight = r.height*3/4;
+                    var dialogStyleHeight = contentHeight+40;
+                    var contentWidth = r.width*3/4;
+                    var dialogStyleWidth = contentWidth+20;
+
+                    $(containerId).style.height = contentHeight+"px";
+                    $(containerId).style.width = contentWidth+"px";
+                    $(containerId).style.overflow = "scroll";
+
+                    responseDialog.cfg.setProperty("width", dialogStyleWidth+"px");
+                    responseDialog.cfg.setProperty("height", dialogStyleHeight+"px");
                     responseDialog.center();
                     responseDialog.show();
                 }
