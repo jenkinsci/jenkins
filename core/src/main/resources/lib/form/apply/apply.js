@@ -12,7 +12,7 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
         });
 
         responseDialog.setHeader("Error");
-        responseDialog.setBody("<div id='"+containerId+"'></iframe>");
+        responseDialog.setBody("<div id='"+containerId+"'></div>");
         responseDialog.render(document.body);
         var target; // iframe
 
@@ -42,7 +42,12 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                 } else {
                     // otherwise this is possibly an error from the server, so we need to render the whole content.
                     var doc = target.contentDocument || target.contentWindow.document;
-                    $(containerId).appendChild(doc.getElementsByTagName('body')[0]);
+                    var error = doc.getElementById('error-description');
+                    if (!error) {
+                        // fallback if it's not a regular error dialog from oops.jelly: use the entire body
+                        error = doc.getElementsByTagName('body')[0];
+                    }
+                    $(containerId).appendChild(error);
                     var r = YAHOO.util.Dom.getClientRegion();
                     responseDialog.cfg.setProperty("width",r.width*3/4+"px");
                     responseDialog.cfg.setProperty("height",r.height*3/4+"px");
