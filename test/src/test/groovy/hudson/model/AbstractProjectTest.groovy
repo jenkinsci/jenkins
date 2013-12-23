@@ -375,6 +375,16 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert !b.rootDir.isDirectory();
     }
 
+    @Bug(18678)
+    public void testRenameJobLostBuilds() throws Exception {
+        def p = createFreeStyleProject("initial");
+        assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(1, p.getBuilds().size());
+        p.renameTo("edited");
+        p._getRuns().purgeCache();
+        assertEquals(1, p.getBuilds().size());
+    }
+
     @Bug(17575)
     public void testDeleteRedirect() {
         createFreeStyleProject("j1");
