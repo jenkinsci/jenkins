@@ -41,6 +41,8 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                     target.contentWindow.applyCompletionHandler(window);
                 } else {
                     // otherwise this is possibly an error from the server, so we need to render the whole content.
+                    var doc = target.contentDocument || target.contentWindow.document;
+                    $(containerId).appendChild(doc.getElementsByTagName('body')[0]);
                     var r = YAHOO.util.Dom.getClientRegion();
                     responseDialog.cfg.setProperty("width",r.width*3/4+"px");
                     responseDialog.cfg.setProperty("height",r.height*3/4+"px");
