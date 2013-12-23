@@ -326,8 +326,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
         this.builds = builds;
         triggers().setOwner(this);
-        for (Trigger t : triggers())
-            t.start(this, Items.updatingByXml.get());
+        for (Trigger t : triggers()) {
+            t.start(this, Items.currentlyUpdatingByXml());
+        }
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
 

@@ -34,6 +34,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.remoting.Callable;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -593,12 +594,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
             // try to reflect the changes by reloading
             new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
-            Items.updatingByXml.set(true);
-            try {
-                onLoad(getParent(), getRootDir().getName());
-            } finally {
-                Items.updatingByXml.set(false);
-            }
+            Items.whileUpdatingByXml(new Callable<Void,IOException>() {
+                @Override public Void call() throws IOException {
+                    onLoad(getParent(), getRootDir().getName());
+                    return null;
+                }
+            });
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             // if everything went well, commit this new version
