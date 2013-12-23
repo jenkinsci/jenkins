@@ -1680,7 +1680,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public void renameTo(String newName) throws IOException {
         super.renameTo(newName);
         // Update locations inside builds cache
-        builds.updateBaseDir(getBuildDir(), false);
+        builds.updateBaseDir(getBuildDir());
     }
 
     protected final synchronized <T extends Describable<T>>
