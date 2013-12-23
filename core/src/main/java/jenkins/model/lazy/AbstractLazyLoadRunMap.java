@@ -214,11 +214,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Updates base directory location after directory changes.
      * This method should be used on jobs renaming, etc.
      * @param dir Directory location
-     * @param reloadBuilds Purges cache after the directory update
+     * @since 1.546
      */
-    public final void updateBaseDir(File dir, boolean reloadBuilds) {
+    public final void updateBaseDir(File dir) {
         this.dir = dir;
-        purgeCache();
     }
     
     /**
@@ -229,6 +228,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     public void purgeCache() {
         index = new Index();
+        fullyLoaded = false;
+        loadIdOnDisk();
     }
 
     private void loadIdOnDisk() {
