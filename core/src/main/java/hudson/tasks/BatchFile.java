@@ -36,9 +36,13 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public class BatchFile extends CommandInterpreter {
-    @DataBoundConstructor
     public BatchFile(String command) {
-        super(command);
+        this(command, false);
+    }
+
+    @DataBoundConstructor
+    public BatchFile(String command, boolean markBuildAsUnstable) {
+        super(command, markBuildAsUnstable);
     }
 
     public String[] buildCommandLine(FilePath script) {

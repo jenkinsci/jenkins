@@ -27,3 +27,8 @@ f=namespace(lib.FormTagLib)
 f.entry(title:_("Command"),description:_("description",rootURL)) {
     f.textarea(name:"command",value:instance?.command,class:"fixed-width")
 }
+
+f.entry(title:"") {
+    f.checkbox(name:"markBuildAsUnstable",value:instance?.markBuildAsUnstable,
+            title:_("markAsUnstableTitle"),class:"fixed-width")
+}

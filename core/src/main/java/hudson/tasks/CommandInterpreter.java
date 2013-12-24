@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Node;
+import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.remoting.ChannelClosedException;
 
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -50,12 +52,26 @@ public abstract class CommandInterpreter extends Builder {
      */
     protected final String command;
 
+    /**
+     * True is we should mark the build as unstable instead of failed it the given command fails.
+     */
+    protected final boolean markBuildAsUnstable;
+
     public CommandInterpreter(String command) {
+        this(command, false);
+    }
+
+    public CommandInterpreter(String command, boolean markBuildAsUnstable) {
         this.command = command;
+        this.markBuildAsUnstable = markBuildAsUnstable;
     }
 
     public final String getCommand() {
         return command;
+    }
+
+    public final boolean getMarkBuildAsUnstable() {
+        return markBuildAsUnstable;
     }
 
     @Override
@@ -96,7 +112,17 @@ public abstract class CommandInterpreter extends Builder {
                 Util.displayIOException(e, listener);
                 e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
             }
-            return r==0;
+
+            if (r == 0) {
+                return true;
+            } else {
+                if (markBuildAsUnstable) {
+                    build.setResult(Result.UNSTABLE);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         } finally {
             try {
                 if(script!=null)

@@ -48,9 +48,13 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class Shell extends CommandInterpreter {
-    @DataBoundConstructor
     public Shell(String command) {
-        super(fixCrLf(command));
+        this(command, false);
+    }
+
+    @DataBoundConstructor
+    public Shell(String command, boolean markBuildAsUnstable) {
+        super(fixCrLf(command), markBuildAsUnstable);
     }
 
     /**
