@@ -138,7 +138,7 @@ public class BuildCommandTest {
     }
 
     @Test void consoleOutput() {
-        Assume.assumeFalse("Started test0 #1", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")))
+        Assume.assumeFalse("Started test0 #1", System.getenv("JOB_URL") != null);
         def p = j.createFreeStyleProject()
         def cli = new CLI(j.URL)
         try {
