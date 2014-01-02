@@ -31,6 +31,7 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.model.listeners.ItemListener;
+import hudson.remoting.Callable;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
@@ -64,11 +65,40 @@ public class Items {
      * @see Trigger#start
      * @since 1.482
      */
-    static final ThreadLocal<Boolean> updatingByXml = new ThreadLocal<Boolean>() {
+    private static final ThreadLocal<Boolean> updatingByXml = new ThreadLocal<Boolean>() {
         @Override protected Boolean initialValue() {
             return false;
         }
     };
+
+    /**
+     * Runs a block while making {@link #currentlyUpdatingByXml} be temporarily true.
+     * Use this when you are creating or changing an item.
+     * @param <V> a return value type (may be {@link Void})
+     * @param <T> an error type (may be {@link Error})
+     * @param callable a block, typically running {@link #load} or {@link Item#onLoad}
+     * @return whatever {@code callable} returned
+     * @throws T anything {@code callable} throws
+     * @since 1.546
+     */
+    public static <V,T extends Throwable> V whileUpdatingByXml(Callable<V,T> callable) throws T {
+        updatingByXml.set(true);
+        try {
+            return callable.call();
+        } finally {
+            updatingByXml.set(false);
+        }
+    }
+
+    /**
+     * Checks whether we are in the middle of creating or configuring an item via XML.
+     * Used to determine the {@code newInstance} parameter for {@link Trigger#start}.
+     * @return true if {@link #whileUpdatingByXml} is currently being called, false for example when merely starting Jenkins or reloading from disk
+     * @since 1.546
+     */
+    public static boolean currentlyUpdatingByXml() {
+        return updatingByXml.get();
+    }
 
     /**
      * Returns all the registered {@link TopLevelItemDescriptor}s.

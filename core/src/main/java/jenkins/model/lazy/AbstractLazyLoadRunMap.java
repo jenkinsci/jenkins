@@ -211,6 +211,16 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     /**
+     * Updates base directory location after directory changes.
+     * This method should be used on jobs renaming, etc.
+     * @param dir Directory location
+     * @since 1.546
+     */
+    public final void updateBaseDir(File dir) {
+        this.dir = dir;
+    }
+    
+    /**
      * Let go of all the loaded references.
      *
      * This is a bit more sophisticated version of forcing GC.
@@ -219,6 +229,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     public void purgeCache() {
         index = new Index();
+        fullyLoaded = false;
         loadIdOnDisk();
     }
 
