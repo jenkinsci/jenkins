@@ -37,12 +37,12 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import static org.junit.Assert.*;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.RandomlyFails;
 
 public class JUnitResultArchiverTest {
 
@@ -75,9 +75,9 @@ public class JUnitResultArchiverTest {
 
 	}
 
+    @RandomlyFails("TimeoutException from basic")
    @LocalData
    @Test public void slave() throws Exception {
-        Assume.assumeFalse("TimeoutException from basic", System.getenv("JOB_URL") != null);
         DumbSlave s = j.createOnlineSlave();
         project.setAssignedLabel(s.getSelfLabel());
 

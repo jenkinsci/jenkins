@@ -42,6 +42,7 @@ THE SOFTWARE.
   <properties>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
+    <ignore.random.failures>false</ignore.random.failures>
   </properties>
 
   <dependencies>
@@ -187,6 +188,7 @@ THE SOFTWARE.
               <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
               <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
               <buildDirectory>${project.build.directory}</buildDirectory>
+              <ignore.random.failures>${ignore.random.failures}</ignore.random.failures>
           </systemPropertyVariables>
           <reuseForks>true</reuseForks>
           <forkCount>${concurrency}</forkCount>

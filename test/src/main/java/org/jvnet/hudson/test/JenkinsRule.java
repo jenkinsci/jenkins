@@ -215,6 +215,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
+import org.junit.internal.AssumptionViolatedException;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 import org.junit.rules.TemporaryFolder;
@@ -314,6 +315,14 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * @throws Throwable if setup fails (which will disable {@code after}
      */
     public void before() throws Throwable {
+        // Not ideal (https://github.com/junit-team/junit/issues/116) but basically works.
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            RandomlyFails rf = testDescription.getAnnotation(RandomlyFails.class);
+            if (rf != null) {
+                throw new AssumptionViolatedException("Known to randomly fail: " + rf.value());
+            }
+        }
+
         env = new TestEnvironment(testDescription);
         env.pin();
         recipe();
@@ -483,6 +492,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                         try {
                             throw new BreakException();
                         } catch (BreakException e) {}
+
+                        RandomlyFails rf = testDescription.getAnnotation(RandomlyFails.class);
+                        if (rf != null) {
+                            System.err.println("Note: known to randomly fail: " + rf.value());
+                        }
 
                         // dump threads
                         ThreadInfo[] threadInfos = Functions.getThreadInfos();

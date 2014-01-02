@@ -25,10 +25,10 @@ package hudson.cli
 
 import org.apache.commons.io.output.TeeOutputStream
 import static org.junit.Assert.*
-import org.junit.Assume
 import org.junit.Rule
 import org.junit.Test
 import org.jvnet.hudson.test.JenkinsRule
+import org.jvnet.hudson.test.RandomlyFails
 import org.jvnet.hudson.test.TestBuilder
 import org.jvnet.hudson.test.TestExtension
 
@@ -140,8 +140,8 @@ public class BuildCommandTest {
         }
     }
 
+    @RandomlyFails("Started test0 #1")
     @Test void consoleOutput() {
-        Assume.assumeFalse("Started test0 #1", System.getenv("JOB_URL") != null);
         def p = j.createFreeStyleProject()
         def cli = new CLI(j.URL)
         try {
@@ -155,8 +155,8 @@ public class BuildCommandTest {
         }
     }
 
+    @RandomlyFails("Started test0 #1")
     @Test void consoleOutputWhenBuildSchedulingRefused() {
-        Assume.assumeFalse("Started test0 #1", System.getenv("JOB_URL") != null);
         def p = j.createFreeStyleProject()
         def cli = new CLI(j.URL)
         try {
