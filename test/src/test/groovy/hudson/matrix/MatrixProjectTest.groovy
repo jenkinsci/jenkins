@@ -110,7 +110,7 @@ public class MatrixProjectTest {
      */
     @Test
     public void testBuildAxisInMaven() throws Exception {
-        Assume.assumeFalse("Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.40/maven-antrun-extended-plugin-1.40.pom", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")));
+        Assume.assumeFalse("Not a v4.0.0 POM. for project org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin at /home/jenkins/.m2/repository/org/jvnet/maven-antrun-extended-plugin/maven-antrun-extended-plugin/1.40/maven-antrun-extended-plugin-1.40.pom", System.getenv("JOB_URL") != null);
         MatrixProject p = createMatrixProject();
         Maven.MavenInstallation maven = j.configureDefaultMaven();
         p.getBuildersList().add(new Maven('-Dprop=${db} validate',maven.getName()));
