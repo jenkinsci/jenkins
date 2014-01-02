@@ -299,7 +299,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * The file we save our configuration.
      */
     private XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().getRootDir(),"log/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(LogRecorderManager.configDir(), name + ".xml"));
     }
 
     /**

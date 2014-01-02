@@ -33,7 +33,6 @@ import hudson.model.RSS;
 import hudson.util.CopyOnWriteMap;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
-import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.stapler.QueryParameter;
@@ -52,7 +51,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -84,12 +82,16 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         return logRecorders.get(token);
     }
 
+    static File configDir() {
+        return new File(Jenkins.getInstance().getRootDir(), "log");
+    }
+
     /**
      * Loads the configuration from disk.
      */
     public void load() throws IOException {
         logRecorders.clear();
-        File dir = new File(Jenkins.getInstance().getRootDir(), "log");
+        File dir = configDir();
         File[] files = dir.listFiles((FileFilter)new WildcardFileFilter("*.xml"));
         if(files==null)     return;
         for (File child : files) {

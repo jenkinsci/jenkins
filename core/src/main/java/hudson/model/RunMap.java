@@ -194,24 +194,21 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         final SimpleDateFormat formatter = Run.ID_FORMATTER.get();
 
         return new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                // JENKINS-1461 sometimes create bogus data directories with impossible dates, such as year 0, April 31st,
-                // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
-                // Don't even bother trying.
-                if (!isCorrectDate(name)) {
-                    LOGGER.log(FINE, "Skipping {0}", new File(dir,name));
+            @Override public boolean accept(File dir, String name) {
+                if (name.startsWith("0000")) {
+                    // JENKINS-1461 sometimes create bogus data directories with impossible dates, such as year 0, April 31st,
+                    // or August 0th. Date object doesn't roundtrip those, so we eventually fail to load this data.
+                    // Don't even bother trying.
                     return false;
                 }
-                return !name.startsWith("0000") && new File(dir,name).isDirectory();
-            }
-
-            private boolean isCorrectDate(String name) {
                 try {
-                    if(formatter.format(formatter.parse(name)).equals(name))
+                    if (formatter.format(formatter.parse(name)).equals(name)) {
                         return true;
+                    }
                 } catch (ParseException e) {
                     // fall through
                 }
+                LOGGER.log(FINE, "Skipping {0} in {1}", new Object[] {name, dir});
                 return false;
             }
         };

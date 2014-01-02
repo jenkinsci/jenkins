@@ -58,7 +58,7 @@ THE SOFTWARE.
       if present, the foldable section will not be grouped into a separate JSON object upon submission
     </st:attribute>
   </st:documentation>
-  <j:if test="${attrs.help==null}">
+  <j:if test="${attrs.help == null and attrs.field != null}">
     <!-- infer the help page from the current descriptor and field if possible -->
     <j:set target="${attrs}" property="help"
            value="${descriptor.getHelpFile(attrs.field)}" />

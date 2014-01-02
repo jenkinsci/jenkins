@@ -289,6 +289,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
@@ -435,6 +436,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     private List<JDK> jdks = new ArrayList<JDK>();
 
     private transient volatile DependencyGraph dependencyGraph;
+    private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
 
     /**
      * Currently active Views tab bar.
@@ -3617,6 +3619,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         // volatile acts a as a memory barrier here and therefore guarantees 
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
+        dependencyGraphDirty.set(false);
     }
 
     /**
@@ -3629,13 +3632,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @since 1.522
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
-        return MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<DependencyGraph>() {
+        dependencyGraphDirty.set(true);
+        return Timer.get().schedule(new java.util.concurrent.Callable<DependencyGraph>() {
             @Override
             public DependencyGraph call() throws Exception {
-                rebuildDependencyGraph();
+                if (dependencyGraphDirty.get()) {
+                    rebuildDependencyGraph();
+                }
                 return dependencyGraph;
             }
-        });
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
     public DependencyGraph getDependencyGraph() {
