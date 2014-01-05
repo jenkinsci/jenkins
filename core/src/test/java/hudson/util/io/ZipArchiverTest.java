@@ -65,13 +65,13 @@ public class ZipArchiverTest extends TestCase {
         } catch (Exception e) {
             fail("exception driving ZipArchiver", e);
         } finally {
-            try {
-                archiver.close();
-            } catch (IOException e) {
-                // ignored
+            if (archiver != null) {
+                try {
+                    archiver.close();
+                } catch (IOException e) {
+                    // ignored
+                }
             }
-            
-            archiver = null;
         }
         
         // examine zip contents and assert that none of the entry names (paths) have
@@ -86,10 +86,12 @@ public class ZipArchiverTest extends TestCase {
         } catch (Exception e) {
             fail("failure enumerating zip entries", e);
         } finally {
-            try {
-                zipFileVerify.close();
-            } catch (IOException e) {
-                // ignored
+            if (zipFileVerify != null) {
+                try {
+                    zipFileVerify.close();
+                } catch (IOException e) {
+                    // ignored
+                }
             }
         }
         

@@ -745,16 +745,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @see DownloadJob
          */
         public File download(DownloadJob job, URL src) throws IOException {
+            CountingInputStream in = null;
+            OutputStream out = null;
             try {
                 URLConnection con = connect(job,src);
                 int total = con.getContentLength();
-                CountingInputStream in = new CountingInputStream(con.getInputStream());
+                in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
                 int len;
 
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath()+".tmp");
-                OutputStream out = new FileOutputStream(tmp);
+                out = new FileOutputStream(tmp);
 
                 LOGGER.info("Downloading "+job.getName());
                 try {
@@ -766,9 +768,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
                 }
 
-                in.close();
-                out.close();
-
                 if (total!=-1 && total!=tmp.length()) {
                     // don't know exactly how this happens, but report like
                     // http://www.ashlux.com/wordpress/2009/08/14/hudson-and-the-sonar-plugin-fail-maveninstallation-nosuchmethoderror/
@@ -779,6 +778,24 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return tmp;
             } catch (IOException e) {
                 throw new IOException("Failed to download from "+src,e);
+            }
+            finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    }
+                    catch (IOException ioe) {
+                        // swallow exception
+                    }
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    }
+                    catch (IOException ioe) {
+                        // swallow exception
+                    }
+                }
             }
         }
 

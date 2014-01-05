@@ -3935,12 +3935,23 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     private static void computeVersion(ServletContext context) {
         // set the version
         Properties props = new Properties();
+        InputStream is = null;
         try {
-            InputStream is = Jenkins.class.getResourceAsStream("jenkins-version.properties");
+            is = Jenkins.class.getResourceAsStream("jenkins-version.properties");
             if(is!=null)
                 props.load(is);
         } catch (IOException e) {
             e.printStackTrace(); // if the version properties is missing, that's OK.
+        }
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }
+                catch (IOException ioe) {
+                    // swallow exception
+                }
+            }
         }
         String ver = props.getProperty("version");
         if(ver==null)   ver="?";

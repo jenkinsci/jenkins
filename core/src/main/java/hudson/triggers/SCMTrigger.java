@@ -337,8 +337,17 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             rsp.setContentType("text/plain;charset=UTF-8");
             // Prevent jelly from flushing stream so Content-Length header can be added afterwards
             FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-            getPollingLogText().writeLogTo(0, out);
-            out.close();
+            try {
+                getPollingLogText().writeLogTo(0, out);
+            }
+            finally {
+                try {
+                    out.close();
+                }
+                catch (IOException ioe) {
+                    // swallow exception
+                }
+            }
         }
 
         public AnnotatedLargeText getPollingLogText() {

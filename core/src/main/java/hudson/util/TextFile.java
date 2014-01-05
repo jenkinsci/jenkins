@@ -86,7 +86,18 @@ public class TextFile {
             w.write(text);
             w.commit();
         } finally {
-            w.abort();
+            try {
+                w.abort();
+            }
+            catch (IOException ioe) {
+                // swallow exception
+            }
+            try {
+                w.close();
+            }
+            catch (IOException ioe) {
+                // swallow exception
+            }
         }
     }
 
