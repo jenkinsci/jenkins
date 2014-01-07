@@ -635,7 +635,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>com.infradna.tool</groupId>
         <artifactId>bridge-method-injector</artifactId>
-        <version>1.9</version>
         <executions>
           <execution>
             <goals>
@@ -782,7 +781,7 @@ THE SOFTWARE.
       <plugin><!-- generate Jelly tag lib documentation -->
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <version>${maven-stapler-plugin.version}</version>
         <configuration>
           <patterns>
             <pattern>/lib/.*</pattern>
