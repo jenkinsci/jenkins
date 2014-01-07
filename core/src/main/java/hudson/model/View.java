@@ -114,7 +114,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * This is an extension point in Hudson, allowing different kind of
  * rendering to be added as plugins.
  *
- * <h2>Note for implementors</h2>
+ * <h2>Note for implementers</h2>
  * <ul>
  * <li>
  * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,

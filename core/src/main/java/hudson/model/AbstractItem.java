@@ -368,7 +368,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Called right after when a {@link Item} is loaded from disk.
-     * This is an opporunity to do a post load processing.
+     * This is an opportunity to do a post load processing.
      */
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         this.parent = parent;
