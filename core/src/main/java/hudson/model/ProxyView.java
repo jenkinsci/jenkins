@@ -90,13 +90,6 @@ public class ProxyView extends View implements StaplerFallback {
     }
 
     @Override
-    public void onJobRenamed(Item item, String oldName, String newName) {
-        if (oldName.equals(proxiedViewName)) {
-            proxiedViewName = newName;
-        }
-    }
-
-    @Override
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         String proxiedViewName = req.getSubmittedForm().getString("proxiedViewName");
         if (Jenkins.getInstance().getView(proxiedViewName) == null) {

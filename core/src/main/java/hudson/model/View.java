@@ -581,21 +581,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getACL().hasPermission(p);
     }
 
-    /**
-     * Called when a job name is changed or deleted.
-     *
-     * <p>
-     * If this view contains this job, it should update the view membership so that
-     * the renamed job will remain in the view, and the deleted job is removed.
-     *
-     * @param item
-     *      The item whose name is being changed.
-     * @param oldName
-     *      Old name of the item. Always non-null.
-     * @param newName
-     *      New name of the item, if the item is renamed. Or null, if the item is removed.
-     */
-    public abstract void onJobRenamed(Item item, String oldName, String newName);
+    /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
+    @Deprecated
+    public void onJobRenamed(Item item, String oldName, String newName) {}
 
     @ExportedBean(defaultVisibility=2)
     public static final class UserInfo implements Comparable<UserInfo> {

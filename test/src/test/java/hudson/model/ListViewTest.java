@@ -24,11 +24,17 @@
 
 package hudson.model;
 
-import static org.junit.Assert.*;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Functions;
-
+import hudson.matrix.AxisList;
+import hudson.matrix.MatrixProject;
+import hudson.matrix.TextAxis;
 import java.io.IOException;
-
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -37,13 +43,6 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
-
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.matrix.AxisList;
-import hudson.matrix.MatrixProject;
-import hudson.matrix.TextAxis;
-import java.util.Collections;
 
 public class ListViewTest {
 
@@ -110,6 +109,30 @@ public class ListViewTest {
         v.setRecurse(true);
         // Note: did not manage to reproduce CCE until I changed expand to use ‘for (TopLevelItem item : items)’ rather than ‘for (Item item : items)’; perhaps a compiler-specific issue?
         assertEquals(Collections.singletonList(mp), v.getItems());
+    }
+
+    @Bug(18680)
+    @Test public void renamesMovesAndDeletes() throws Exception {
+        MockFolder top = j.createFolder("top");
+        MockFolder sub = top.createProject(MockFolder.class, "sub");
+        FreeStyleProject p1 = top.createProject(FreeStyleProject.class, "p1");
+        FreeStyleProject p2 = sub.createProject(FreeStyleProject.class, "p2");
+        FreeStyleProject p3 = top.createProject(FreeStyleProject.class, "p3");
+        ListView v = new ListView("v");
+        top.addView(v);
+        v.add(p1);
+        v.add(p2);
+        v.add(p3);
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2, p3)), new HashSet<TopLevelItem>(v.getItems()));
+        sub.renameTo("lower");
+        MockFolder stuff = top.createProject(MockFolder.class, "stuff");
+        Items.move(p1, stuff);
+        p3.delete();
+        Thread.sleep(500); // TODO working around crappy JENKINS-19446 fix
+        top.createProject(FreeStyleProject.class, "p3");
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
+        top.renameTo("upper");
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
     }
 
 }

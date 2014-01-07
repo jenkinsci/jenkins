@@ -305,7 +305,7 @@ import javax.annotation.Nullable;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
+public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
         ModelObjectWithContextMenu, ModelObjectWithChildren {
     private transient final Queue queue;
@@ -474,7 +474,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Active {@link Cloud}s.
      */
     public final Hudson.CloudList clouds = new Hudson.CloudList(this);
-
+    
     public static class CloudList extends DescribableList<Cloud,Descriptor<Cloud>> {
         public CloudList(Jenkins h) {
             super(h);
@@ -2436,6 +2436,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         items.remove(oldName);
         items.put(newName,job);
 
+        // For compatibility with old views:
         for (View v : views)
             v.onJobRenamed(job, oldName, newName);
         save();
@@ -2445,13 +2446,29 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     public void onDeleted(TopLevelItem item) throws IOException {
-        for (ItemListener l : ItemListener.all())
-            l.onDeleted(item);
+        ItemListener.fireOnDeleted(item);
 
         items.remove(item.getName());
+        // For compatibility with old views:
         for (View v : views)
             v.onJobRenamed(item, item.getName(), null);
         save();
+    }
+
+    @Override public boolean canAdd(TopLevelItem item) {
+        return true;
+    }
+
+    @Override synchronized public <I extends TopLevelItem> I add(I item, String name) throws IOException, IllegalArgumentException {
+        if (items.containsKey(name)) {
+            throw new IllegalArgumentException("already an item '" + name + "'");
+        }
+        items.put(name, item);
+        return item;
+    }
+
+    @Override public void remove(TopLevelItem item) throws IOException, IllegalArgumentException {
+        items.remove(item.getName());
     }
 
     public FingerprintMap getFingerprintMap() {
