@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -206,6 +207,7 @@ import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import jenkins.model.JenkinsLocationConfiguration;
 
@@ -250,11 +252,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     protected Server server;
 
     /**
-     * Where in the {@link Server} is Hudson deployed?
+     * Where in the {@link Server} is Jenkins deployed?
      * <p>
      * Just like {@link javax.servlet.ServletContext#getContextPath()}, starts with '/' but doesn't end with '/'.
+     * Unlike {@link WebClient#getContextPath} this is not a complete URL.
      */
-    protected String contextPath = "/jenkins";
+    public String contextPath = "/jenkins";
 
     /**
      * {@link Runnable}s to be invoked at {@link #after()} .
@@ -1913,10 +1916,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         }
 
         /**
-         * Requests a page within Hudson.
+         * Requests an HTML page within Jenkins.
          *
          * @param relative
-         *      Relative path within Hudson. Starts without '/'.
+         *      Relative path within Jenkins. Starts without '/'.
          *      For example, "job/test/" to go to a job top page.
          */
         public HtmlPage goTo(String relative) throws IOException, SAXException {
@@ -1928,14 +1931,24 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             }
         }
 
-        public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
+        /**
+         * Requests a page within Jenkins.
+         *
+         * @param relative
+         *      Relative path within Jenkins. Starts without '/'.
+         *      For example, "job/test/" to go to a job top page.
+         * @param expectedContentType the expected {@link WebResponse#getContentType}, or null to do no such check
+         */
+        public Page goTo(String relative, @CheckForNull String expectedContentType) throws IOException, SAXException {
             assert !relative.startsWith("/");
             Page p = super.getPage(getContextPath() + relative);
-            assertThat(p.getWebResponse().getContentType(), is(expectedContentType));
+            if (expectedContentType != null) {
+                assertThat(p.getWebResponse().getContentType(), is(expectedContentType));
+            }
             return p;
         }
 
-        /** Loads a page as XML. Useful for testing Hudson's xml api, in concert with
+        /** Loads a page as XML. Useful for testing Jenkins's XML API, in concert with
          * assertXPath(DomNode page, String xpath)
          * @param path   the path part of the url to visit
          * @return  the XmlPage found at that url
@@ -1968,6 +1981,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         /**
          * Returns the URL of the webapp top page.
          * URL ends with '/'.
+         * <p>This is actually the same as {@link #getURL} and should not be confused with {@link #contextPath}.
          */
         public String getContextPath() throws IOException {
             return getURL().toExternalForm();
