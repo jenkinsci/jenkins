@@ -114,7 +114,7 @@ public class ItemListener implements ExtensionPoint {
      * @param oldFullName the former {@link Item#getFullName}
      * @param newFullName the current {@link Item#getFullName}
      * @see Items#computeRelativeNamesAfterRenaming
-     * @since TODO
+     * @since 1.548
      */
     public void onLocationChanged(Item item, String oldFullName, String newFullName) {}
 
@@ -166,7 +166,7 @@ public class ItemListener implements ExtensionPoint {
             l.onUpdated(item);
     }
 
-    /** @since TODO */
+    /** @since 1.548 */
     public static void fireOnDeleted(Item item) {
         for (ItemListener l : all()) {
             l.onDeleted(item);
@@ -177,7 +177,7 @@ public class ItemListener implements ExtensionPoint {
      * Calls {@link #onRenamed} and {@link #onLocationChanged} as appropriate.
      * @param rootItem the topmost item whose location has just changed
      * @param oldFullName the previous {@link Item#getFullName}
-     * @since TODO
+     * @since 1.548
      */
     public static void fireLocationChange(Item rootItem, String oldFullName) {
         String prefix = rootItem.getParent().getFullName();

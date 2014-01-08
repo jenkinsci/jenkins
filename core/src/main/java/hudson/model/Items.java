@@ -362,7 +362,7 @@ public class Items {
      * @return the new item (usually the same object as {@code item})
      * @throws IOException if the move fails, or some subsequent step fails (directory might have already been moved)
      * @throws IllegalArgumentException if the move would really be a rename, or the destination cannot accept the item, or the destination already has an item of that name
-     * @since TODO
+     * @since 1.548
      */
     public static <I extends AbstractItem & TopLevelItem> I move(I item, DirectlyModifiableTopLevelItemGroup destination) throws IOException, IllegalArgumentException {
         DirectlyModifiableTopLevelItemGroup oldParent = (DirectlyModifiableTopLevelItemGroup) item.getParent();

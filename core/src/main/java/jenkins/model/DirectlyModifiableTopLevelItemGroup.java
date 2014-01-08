@@ -31,7 +31,7 @@ import java.io.IOException;
 
 /**
  * Item group which supports items being directly moved in or out of it.
- * @since TODO
+ * @since 1.548
  */
 public interface DirectlyModifiableTopLevelItemGroup extends ModifiableTopLevelItemGroup {
 
