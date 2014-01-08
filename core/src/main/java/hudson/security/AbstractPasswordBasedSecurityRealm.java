@@ -3,9 +3,12 @@ package hudson.security;
 import groovy.lang.Binding;
 import hudson.FilePath;
 import hudson.cli.CLICommand;
-import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
 import hudson.util.spring.BeanBuilder;
+import java.io.Console;
+import java.io.IOException;
+import jenkins.model.Jenkins;
+import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
@@ -18,9 +21,6 @@ import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.args4j.Option;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.io.Console;
-import java.io.IOException;
 
 /**
  * Partial implementation of {@link SecurityRealm} for username/password based authentication.
@@ -76,7 +76,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
                 if (password==null)
                     throw new BadCredentialsException("No password specified");
 
-                UserDetails d = AbstractPasswordBasedSecurityRealm.this.authenticate(userName, password);
+                UserDetails d = doAuthenticate(userName, password);
                 return new UsernamePasswordAuthenticationToken(d, password, d.getAuthorities());
             }
         };
@@ -107,6 +107,17 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      */
     protected abstract UserDetails authenticate(String username, String password) throws AuthenticationException;
 
+    private UserDetails doAuthenticate(String username, String password) throws AuthenticationException {
+        try {
+            UserDetails user = authenticate(username, password);
+            SecurityListener.fireAuthenticated(user);
+            return user;
+        } catch (AuthenticationException x) {
+            SecurityListener.fireFailedToAuthenticate(username);
+            throw x;
+        }
+    }
+
     /**
      * Retrieves information about an user by its name.
      *
@@ -132,7 +143,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         }
 
         protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-            return AbstractPasswordBasedSecurityRealm.this.authenticate(username,authentication.getCredentials().toString());
+            return doAuthenticate(username,authentication.getCredentials().toString());
         }
     }
 
