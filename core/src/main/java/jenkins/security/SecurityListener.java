@@ -26,11 +26,15 @@ package jenkins.security;
 
 import hudson.ExtensionPoint;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
+import hudson.security.SecurityRealm;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.userdetails.UserDetails;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -46,10 +50,9 @@ public abstract class SecurityListener implements ExtensionPoint {
      * Fired when a user was successfully authenticated by password.
      * This might be via the web UI, or via REST (not with an API token) or CLI (not with an SSH key).
      * Only {@link AbstractPasswordBasedSecurityRealm}s are considered.
-     * @param username the user
-     * @param groups the names of any groups the user belongs to (not counting {@code authenticated})
+     * @param details details of the newly authenticated user, such as name and groups
      */
-    protected abstract void authenticated(@Nonnull String username, @Nonnull List<String> groups);
+    protected abstract void authenticated(@Nonnull UserDetails details);
 
     /**
      * Fired when a user tried to authenticate by password but failed.
@@ -85,10 +88,18 @@ public abstract class SecurityListener implements ExtensionPoint {
     // TODO event for CAPTCHA failure
 
     @Restricted(NoExternalUse.class)
-    public static void fireAuthenticated(@Nonnull String username, @Nonnull List<String> groups) {
-        LOGGER.log(Level.FINE, "authenticated: {0} {1}", new Object[] {username, groups});
+    public static void fireAuthenticated(@Nonnull UserDetails details) {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            List<String> groups = new ArrayList<String>();
+            for (GrantedAuthority auth : details.getAuthorities()) {
+                if (!auth.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
+                    groups.add(auth.getAuthority());
+                }
+            }
+            LOGGER.log(Level.FINE, "authenticated: {0} {1}", new Object[] {details.getUsername(), groups});
+        }
         for (SecurityListener l : all()) {
-            l.authenticated(username, groups);
+            l.authenticated(details);
         }
     }
 

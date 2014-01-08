@@ -7,15 +7,12 @@ import hudson.remoting.Callable;
 import hudson.util.spring.BeanBuilder;
 import java.io.Console;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider;
 import org.acegisecurity.userdetails.UserDetails;
@@ -113,13 +110,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
     private UserDetails doAuthenticate(String username, String password) throws AuthenticationException {
         try {
             UserDetails user = authenticate(username, password);
-            List<String> groups = new ArrayList<String>();
-            for (GrantedAuthority auth : user.getAuthorities()) {
-                if (!auth.equals(AUTHENTICATED_AUTHORITY)) {
-                    groups.add(auth.getAuthority());
-                }
-            }
-            SecurityListener.fireAuthenticated(user.getUsername(), groups);
+            SecurityListener.fireAuthenticated(user);
             return user;
         } catch (AuthenticationException x) {
             SecurityListener.fireFailedToAuthenticate(username);
