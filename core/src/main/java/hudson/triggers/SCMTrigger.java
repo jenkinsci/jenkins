@@ -551,15 +551,10 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         @Override
         public void onAddedTo(AbstractBuild build) {
-            BuildAction oldAction = build.getAction(BuildAction.class);
-            if (oldAction != null) {
-                build.getActions().remove(oldAction);
-            }
-            
             try {
                 BuildAction a = new BuildAction(build);
                 FileUtils.writeStringToFile(a.getPollingLogFile(),pollingLog);
-                build.addAction(a);
+                build.replaceAction(a);
             } catch (IOException e) {
                 LOGGER.log(WARNING,"Failed to persist the polling log",e);
             }

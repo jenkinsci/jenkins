@@ -27,6 +27,7 @@ import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import jenkins.model.Jenkins;
@@ -55,7 +56,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Gets actions contributed to this object.
      *
      * <p>
-     * A new {@link Action} can be added by {@code getActions().add(...)}.
+     * A new {@link Action} can be added by {@link #addAction}.
      *
      * <p>If you are <em>reading</em> the list, rather than <em>modifying</em> it,
      * use {@link #getAllActions} instead.
@@ -64,7 +65,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *
      * @return
      *      may be empty but never null.
+     * @deprecated Normally outside code should not call this method any more.
+     *             Use {@link #getAllActions}, or {@link #addAction}, or {@link #replaceAction}.
+     *             May still be called for compatibility reasons from subclasses predating {@link TransientActionFactory}.
      */
+    @Deprecated
 	public List<Action> getActions() {
 		if(actions == null) {
 			synchronized (this) {
@@ -111,11 +116,26 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     /**
      * Adds a new action.
      *
-     * Short for <tt>getActions().add(a)</tt>
+     * The default implementation calls {@code getActions().add(a)}.
      */
     public void addAction(Action a) {
         if(a==null) throw new IllegalArgumentException();
         getActions().add(a);
+    }
+
+    /**
+     * Add an action, replacing any existing action of the (exact) same class.
+     * @param a an action to add/replace
+     * @since TODO
+     */
+    public void replaceAction(Action a) {
+        Iterator<Action> it = getActions().iterator();
+        while (it.hasNext()) {
+            if (a.getClass() == it.next().getClass()) {
+                it.remove();
+            }
+        }
+        addAction(a);
     }
 
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */

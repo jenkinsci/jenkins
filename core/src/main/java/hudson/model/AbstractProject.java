@@ -1169,6 +1169,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @see TransientProjectActionFactory
      */
+    @SuppressWarnings("deprecation")
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too

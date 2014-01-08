@@ -144,7 +144,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
             return;
         }
         // no CauseAction found, so add a copy of this one
-        item.getActions().add(new CauseAction(this));
+        item.addAction(new CauseAction(this));
     }
 
     public static class ConverterImpl extends XStream2.PassthruConverter<CauseAction> {

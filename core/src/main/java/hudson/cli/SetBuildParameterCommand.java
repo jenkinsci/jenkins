@@ -37,9 +37,7 @@ public class SetBuildParameterCommand extends CommandDuringBuild {
 
         ParametersAction a = r.getAction(ParametersAction.class);
         if (a!=null) {
-            ParametersAction b = a.createUpdated(Collections.singleton(p));
-            r.addAction(b);
-            r.getActions().remove(a);
+            r.replaceAction(a.createUpdated(Collections.singleton(p)));
         } else {
             r.addAction(new ParametersAction(p));
         }

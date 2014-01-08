@@ -955,6 +955,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getTimestamp();
     }
       
+    @SuppressWarnings("deprecation")
     public List<Action> getPersistentActions(){
         return super.getActions();
     }
