@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.model.listeners.ItemListener;
+import hudson.remoting.Callable;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
@@ -40,6 +41,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Defines a bunch of static methods to be used as a "mix-in" for {@link ItemGroup}
@@ -99,7 +102,7 @@ public abstract class ItemGroupMixIn {
                 V item = (V) Items.load(parent,subdir);
                 configurations.put(key.call(item), item);
             } catch (IOException e) {
-                e.printStackTrace(); // TODO: logging
+                Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not load " + subdir, e);
             }
         }
 
@@ -204,12 +207,12 @@ public abstract class ItemGroupMixIn {
         Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
 
         // reload from the new config
-        Items.updatingByXml.set(true);
-        try {
-            result = (T)Items.load(parent,result.getRootDir());
-        } finally {
-            Items.updatingByXml.set(false);
-        }
+        final File rootDir = result.getRootDir();
+        result = Items.whileUpdatingByXml(new Callable<T,IOException>() {
+            @Override public T call() throws IOException {
+                return (T) Items.load(parent, rootDir);
+            }
+        });
         result.onCopiedFrom(src);
 
         add(result);
@@ -229,18 +232,17 @@ public abstract class ItemGroupMixIn {
 
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
-        configXml.getParentFile().mkdirs();
+        final File dir = configXml.getParentFile();
+        dir.mkdirs();
         try {
             IOUtils.copy(xml,configXml);
 
             // load it
-            TopLevelItem result;
-            Items.updatingByXml.set(true);
-            try {
-                result = (TopLevelItem)Items.load(parent,configXml.getParentFile());
-            } finally {
-                Items.updatingByXml.set(false);
-            }
+            TopLevelItem result = Items.whileUpdatingByXml(new Callable<TopLevelItem,IOException>() {
+                @Override public TopLevelItem call() throws IOException {
+                    return (TopLevelItem) Items.load(parent, dir);
+                }
+            });
             add(result);
 
             ItemListener.fireOnCreated(result);
@@ -249,7 +251,7 @@ public abstract class ItemGroupMixIn {
             return result;
         } catch (IOException e) {
             // if anything fails, delete the config file to avoid further confusion
-            Util.deleteRecursive(configXml.getParentFile());
+            Util.deleteRecursive(dir);
             throw e;
         }
     }

@@ -30,4 +30,8 @@ THE SOFTWARE.
   <f:entry field="ignorePostCommitHooks" title="${%Ignore post-commit hooks}">
     <f:checkbox />
   </f:entry>
+  <j:invokeStatic var="listeners" method="all" className="hudson.model.listeners.SCMPollListener"/>
+  <j:forEach var="l" items="${listeners}">
+    <st:include page="config" it="${l}" optional="true" />
+  </j:forEach>
 </j:jelly>

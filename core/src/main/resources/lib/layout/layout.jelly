@@ -132,7 +132,9 @@ ${h.initPageVariables(context)}
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
+    <l:hasPermission permission="${app.READ}">
+      <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
+    </l:hasPermission>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
     <d:invokeBody />

@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import antlr.ANTLRException;
 import javax.annotation.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import hudson.model.Items;
 
 /**
  * Triggers a {@link Build}.
@@ -78,6 +79,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * @param newInstance
      *      True if this may be a newly created trigger first attached to the {@link Project} (generally if the project is being created or configured).
      *      False if this is invoked for a {@link Project} loaded from disk.
+     * @see Items#currentlyUpdatingByXml
      */
     public void start(J project, boolean newInstance) {
         this.job = project;

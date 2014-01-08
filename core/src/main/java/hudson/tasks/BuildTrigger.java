@@ -192,6 +192,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     public static boolean execute(AbstractBuild build, BuildListener listener) {
         PrintStream logger = listener.getLogger();
         // Check all downstream Project of the project, not just those defined by BuildTrigger
+        // TODO this may not yet be up to date if rebuildDependencyGraphAsync has been used; need a method to wait for the last call made before now to finish
         final DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
         List<Dependency> downstreamProjects = new ArrayList<Dependency>(
                 graph.getDownstreamDependencies(build.getProject()));
