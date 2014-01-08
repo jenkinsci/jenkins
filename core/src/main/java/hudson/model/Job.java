@@ -1216,7 +1216,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public Graph getBuildTimeGraph() {
-        return new Graph(getLastBuild().getTimestamp(),500,400) {
+        return new Graph(getLastBuildTime(),500,400) {
             @Override
             protected JFreeChart createGraph() {
                 class ChartLabel implements Comparable<ChartLabel> {
@@ -1348,6 +1348,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 return chart;
             }
         };
+    }
+
+    private Calendar getLastBuildTime() {
+        final RunT lastBuild = getLastBuild();
+        if (lastBuild ==null) {
+            final GregorianCalendar neverBuiltCalendar = new GregorianCalendar();
+            neverBuiltCalendar.setTimeInMillis(0);
+            return neverBuiltCalendar;
+        }
+        return lastBuild.getTimestamp();
     }
 
     /**
