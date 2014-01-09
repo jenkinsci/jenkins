@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.545-SNAPSHOT</version>
+    <version>1.548-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -219,7 +219,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.4-jenkins-4</version>
+      <version>1.4.4-jenkins-5</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
@@ -517,14 +517,9 @@ THE SOFTWARE.
       <version>1.9</version>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>jinterop-wmi</artifactId>
-      <version>1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>windows-remote-command</artifactId>
-      <version>1.4</version>
+      <groupId>org.kohsuke.jinterop</groupId>
+      <artifactId>j-interop</artifactId>
+      <version>2.0.6-kohsuke-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
@@ -640,7 +635,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>com.infradna.tool</groupId>
         <artifactId>bridge-method-injector</artifactId>
-        <version>1.9</version>
         <executions>
           <execution>
             <goals>
@@ -787,7 +781,7 @@ THE SOFTWARE.
       <plugin><!-- generate Jelly tag lib documentation -->
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <version>${maven-stapler-plugin.version}</version>
         <configuration>
           <patterns>
             <pattern>/lib/.*</pattern>

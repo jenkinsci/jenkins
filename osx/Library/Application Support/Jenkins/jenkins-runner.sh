@@ -14,7 +14,7 @@ defaults="defaults read /Library/Preferences/org.jenkins-ci"
 
 war=`$defaults war` || war="/Applications/Jenkins/jenkins.war"
 
-javaArgs=""
+javaArgs="-Dfile.encoding=UTF-8"
 
 minPermGen=`$defaults minPermGen` && javaArgs="$javaArgs -XX:PermSize=${minPermGen}"
 permGen=`$defaults permGen` && javaArgs="$javaArgs -XX:MaxPermSize=${permGen}"

@@ -54,6 +54,7 @@ import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.Graph;
 import hudson.util.ProcessTree;
+import hudson.util.QuotedStringTokenizer;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
@@ -1144,7 +1145,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 // check this error early to avoid HTTP response splitting.
                 Jenkins.checkGoodName(newName);
                 namingStrategy.checkName(newName);
-                rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
+                if (FormApply.isApply(req)) {
+                    FormApply.applyResponse("notificationBar.show(" + QuotedStringTokenizer.quote(Messages.Job_you_must_use_the_save_button_if_you_wish()) + ",notificationBar.WARNING)").generateResponse(req, rsp, null);
+                } else {
+                    rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
+                }
             } else {
                 if(namingStrategy.isForceExistingJobs()){
                     namingStrategy.checkName(name);
@@ -1211,7 +1216,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public Graph getBuildTimeGraph() {
-        return new Graph(getLastBuild().getTimestamp(),500,400) {
+        return new Graph(getLastBuildTime(),500,400) {
             @Override
             protected JFreeChart createGraph() {
                 class ChartLabel implements Comparable<ChartLabel> {
@@ -1343,6 +1348,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 return chart;
             }
         };
+    }
+
+    private Calendar getLastBuildTime() {
+        final RunT lastBuild = getLastBuild();
+        if (lastBuild ==null) {
+            final GregorianCalendar neverBuiltCalendar = new GregorianCalendar();
+            neverBuiltCalendar.setTimeInMillis(0);
+            return neverBuiltCalendar;
+        }
+        return lastBuild.getTimestamp();
     }
 
     /**

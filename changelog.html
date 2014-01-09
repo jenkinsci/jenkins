@@ -55,13 +55,63 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class='major rfe'>
+    Added infrastructure for moving items into or out of folders.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20008">issue 20008</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18028">issue 18028</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18680">issue 18680</a>)
+  <li class=bug>
+    <i>Apply</i> buttons did not work in Internet Explorer in compatibility mode.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19826">issue 19826</a>)
+  <li class=bug>
+    <code>/login</code> offers link to <code>/opensearch.xml</code> which anonymous users cannot retrieve.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21254">issue 21254</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.544>What's new in 1.544</a> <!--=DATE=--></h3>
+<h3><a name=v1.547>What's new in 1.547</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class="major bug">
+    NPE since 1.545 when using aggregated test result publisher without specifying downstream jobs explicitly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18410">issue 18410</a>)
+  <li class=bug>
+    Fixed Trend Graph NPE when there isn't any builds
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21239">issue 21239</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.546>What's new in 1.546</a> (2014/01/06)</h3>
+<ul class=image>
+  <li class="major bug">
+    Builds disappear after renaming a job.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18678">issue 18678</a>)
+  <li class=bug>
+    When clicking <i>Apply</i> to rename a job, tell the user that <i>Save</i> must be used instead.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17401">issue 17401</a>)
+  <li class="major bug">
+    Exception from XStream running Maven builds on strange Java versions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21183">issue 21183</a>)
+  <li class=bug>
+    When clicking <i>Apply</i> results in an exception (error page), show it, rather than creating an empty dialog.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20772">issue 20772</a>)
+</ul>
+<h3><a name=v1.545>What's new in 1.545</a> (2013/12/31)</h3>
+<ul class=image>
+  <li class=bug>
+      <code>CannotResolveClassException</code> breaks loading of entire containing folder, not just one job.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20951">issue 20951</a>)
+  <li class=bug>
+    Better robustness against XML deserialization errors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21024">issue 21024</a>)
+  <li class=bug>
+    Minimizing disk I/O while loading the <em>names</em> of build records during Jenkins startup.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21078">issue 21078</a>)
+  <li class=bug>
+    Avoiding serializing the owning build as part of a test result action, as this can lead to errors later.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18410">issue 18410</a>)
+</ul>
+<h3><a name=v1.544>What's new in 1.544</a> (2013/12/15)</h3>
 <ul class=image>
   <li class=bug>
     RingBufferLogHandler throws ArrayIndexOutOfBoundsException after int-overflow.
@@ -85,7 +135,6 @@ Upcoming changes</a>
     JavaScript errors when navigating away from a page with a build timeline widget while the timeline is loading.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1041">pull request 1041</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.543>What's new in 1.543</a> (2013/12/10)</h3>
 <ul class=image>
   <li class=bug>

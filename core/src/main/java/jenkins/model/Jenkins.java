@@ -56,6 +56,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ItemGroupMixIn;
 import hudson.model.Items;
+import hudson.model.ModifiableViewGroup;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.JobPropertyDescriptor;
@@ -78,7 +79,6 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.UpdateCenter;
 import hudson.model.User;
 import hudson.model.View;
-import hudson.model.ViewGroup;
 import hudson.model.ViewGroupMixIn;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtom;
@@ -289,6 +289,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
@@ -304,8 +305,8 @@ import javax.annotation.Nullable;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
-        ViewGroup, AccessControlled, DescriptorByNameOwner,
+public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
+        ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
         ModelObjectWithContextMenu, ModelObjectWithChildren {
     private transient final Queue queue;
 
@@ -434,6 +435,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     private List<JDK> jdks = new ArrayList<JDK>();
 
     private transient volatile DependencyGraph dependencyGraph;
+    private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
 
     /**
      * Currently active Views tab bar.
@@ -472,7 +474,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Active {@link Cloud}s.
      */
     public final Hudson.CloudList clouds = new Hudson.CloudList(this);
-
+    
     public static class CloudList extends DescribableList<Cloud,Descriptor<Cloud>> {
         public CloudList(Jenkins h) {
             super(h);
@@ -1456,6 +1458,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         return viewGroupMixIn.getViews();
     }
 
+    @Override
     public void addView(View v) throws IOException {
         viewGroupMixIn.addView(v);
     }
@@ -2433,6 +2436,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         items.remove(oldName);
         items.put(newName,job);
 
+        // For compatibility with old views:
         for (View v : views)
             v.onJobRenamed(job, oldName, newName);
         save();
@@ -2442,13 +2446,29 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * Called in response to {@link Job#doDoDelete(StaplerRequest, StaplerResponse)}
      */
     public void onDeleted(TopLevelItem item) throws IOException {
-        for (ItemListener l : ItemListener.all())
-            l.onDeleted(item);
+        ItemListener.fireOnDeleted(item);
 
         items.remove(item.getName());
+        // For compatibility with old views:
         for (View v : views)
             v.onJobRenamed(item, item.getName(), null);
         save();
+    }
+
+    @Override public boolean canAdd(TopLevelItem item) {
+        return true;
+    }
+
+    @Override synchronized public <I extends TopLevelItem> I add(I item, String name) throws IOException, IllegalArgumentException {
+        if (items.containsKey(name)) {
+            throw new IllegalArgumentException("already an item '" + name + "'");
+        }
+        items.put(name, item);
+        return item;
+    }
+
+    @Override public void remove(TopLevelItem item) throws IOException, IllegalArgumentException {
+        items.remove(item.getName());
     }
 
     public FingerprintMap getFingerprintMap() {
@@ -3608,6 +3628,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         // volatile acts a as a memory barrier here and therefore guarantees 
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
+        dependencyGraphDirty.set(false);
     }
 
     /**
@@ -3620,13 +3641,16 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      * @since 1.522
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
-        return MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<DependencyGraph>() {
+        dependencyGraphDirty.set(true);
+        return Timer.get().schedule(new java.util.concurrent.Callable<DependencyGraph>() {
             @Override
             public DependencyGraph call() throws Exception {
-                rebuildDependencyGraph();
+                if (dependencyGraphDirty.get()) {
+                    rebuildDependencyGraph();
+                }
                 return dependencyGraph;
             }
-        });
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
     public DependencyGraph getDependencyGraph() {
