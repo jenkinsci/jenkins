@@ -27,15 +27,16 @@
  */
 package hudson.model;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.EnvVars;
-import hudson.ExtensionPoint;
-import hudson.Functions;
 import antlr.ANTLRException;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -48,21 +49,23 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.queue.QueueTaskFuture;
-import hudson.model.queue.ScheduleResult;
-import hudson.model.queue.SubTask;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
+import hudson.model.queue.SubTask;
 import hudson.model.queue.SubTaskContributor;
 import hudson.node_monitors.DiskSpaceMonitor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
 import hudson.scm.PollingResult;
+
+import static hudson.scm.PollingResult.*;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
@@ -85,38 +88,6 @@ import hudson.util.FormValidation;
 import hudson.util.TimeUnit2;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
-import jenkins.model.Jenkins;
-import jenkins.model.JenkinsLocationConfiguration;
-import jenkins.model.ModelObjectWithChildren;
-import jenkins.model.Uptime;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.SCMCheckoutStrategy;
-import jenkins.scm.SCMCheckoutStrategyDescriptor;
-import jenkins.util.TimeDuration;
-import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.jenkinsci.bytecode.AdaptField;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.ForwardToView;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -139,10 +110,40 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static hudson.scm.PollingResult.*;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.*;
+import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.Uptime;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
+import jenkins.scm.SCMCheckoutStrategyDescriptor;
+import jenkins.util.TimeDuration;
+import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.bytecode.AdaptField;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -1672,13 +1673,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         updateTransientActions();
     }
 
-    @Override
-    public void renameTo(String newName) throws IOException {
-        super.renameTo(newName);
-        // Update locations inside builds cache
-        builds.updateBaseDir(getBuildDir());
-    }
-
     protected final synchronized <T extends Describable<T>>
     void removeFromList(Descriptor<T> item, List<T> collection) throws IOException {
         final Iterator<T> iCollection = collection.iterator();
@@ -2420,6 +2414,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          */
         @Nonnull
         public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
+    }
+
+    @Restricted(DoNotUse.class)
+    @Extension public static final class ItemListenerImpl extends ItemListener {
+        @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            if (item instanceof AbstractProject) {
+                AbstractProject p = (AbstractProject) item;
+                p.builds.updateBaseDir(p.getBuildDir());
+            }
+        }
     }
 
 }

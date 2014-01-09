@@ -388,6 +388,10 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertEquals(p, jenkins.getItemByFullName("d/edited"));
         p._getRuns().purgeCache();
         assertEquals(1, p.getBuilds().size());
+        d.renameTo("d2");
+        p = jenkins.getItemByFullName("d2/edited");
+        p._getRuns().purgeCache();
+        assertEquals(1, p.getBuilds().size());
     }
 
     @Bug(17575)
