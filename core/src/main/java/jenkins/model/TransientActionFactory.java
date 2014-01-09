@@ -32,7 +32,7 @@ import javax.annotation.Nonnull;
 /**
  * Allows you to add actions to any kind of {@link Actionable} at once.
  * @see Actionable#getAllActions
- * @since TODO
+ * @since 1.548
  */
 public abstract class TransientActionFactory<T extends Actionable> {
 

@@ -85,7 +85,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Gets all actions, transient or persistent.
      * {@link #getActions} is supplemented with anything contributed by {@link TransientActionFactory}.
      * @return an unmodifiable, possible empty list
-     * @since TODO
+     * @since 1.548
      */
     @Exported(name="actions")
     public final List<? extends Action> getAllActions() {
@@ -126,7 +126,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     /**
      * Add an action, replacing any existing action of the (exact) same class.
      * @param a an action to add/replace
-     * @since TODO
+     * @since 1.548
      */
     public void replaceAction(Action a) {
         Iterator<Action> it = getActions().iterator();
