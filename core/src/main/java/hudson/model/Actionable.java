@@ -97,7 +97,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         return Collections.unmodifiableList(_actions);
     }
-    private <T extends Actionable> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
+    private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
         return taf.createFor(taf.type().cast(this));
     }
 

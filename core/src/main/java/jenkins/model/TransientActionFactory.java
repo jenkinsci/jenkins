@@ -26,15 +26,18 @@ package jenkins.model;
 
 import hudson.model.Action;
 import hudson.model.Actionable;
+import hudson.model.TopLevelItem;
 import java.util.Collection;
 import javax.annotation.Nonnull;
 
 /**
- * Allows you to add actions to any kind of {@link Actionable} at once.
+ * Allows you to add actions to any kind of object at once.
+ * @param <T> the type of object to add to; typically an {@link Actionable} subtype,
+ *            but may specify a type such as {@link TopLevelItem} most of whose implementations are in fact {@link Actionable}
  * @see Actionable#getAllActions
  * @since 1.548
  */
-public abstract class TransientActionFactory<T extends Actionable> {
+public abstract class TransientActionFactory<T> {
 
     /**
      * The type of object this factory cares about.
