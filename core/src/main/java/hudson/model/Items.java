@@ -30,6 +30,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixConfiguration;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
+import hudson.model.listeners.ItemListener;
 import hudson.remoting.Callable;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
@@ -42,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import javax.annotation.CheckForNull;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Convenience methods related to {@link Item}.
@@ -179,8 +182,8 @@ public class Items {
     }
 
     /**
-     * Compute the relative name of list of items after a rename occurred. Used to manage job references as names in
-     * plugins to support {@link hudson.model.listeners.ItemListener#onRenamed(hudson.model.Item, String, String)}.
+     * Computes the relative name of list of items after a rename or move occurred.
+     * Used to manage job references as names in plugins to support {@link hudson.model.listeners.ItemListener#onLocationChanged}.
      * <p>
      * In a hierarchical context, when a plugin has a reference to a job as <code>../foo/bar</code> this method will
      * handle the relative path as "foo" is renamed to "zot" to compute <code>../zot/bar</code>
@@ -200,8 +203,11 @@ public class Items {
             String canonicalName = getCanonicalName(context, relativeName);
             if (canonicalName.equals(oldFullName) || canonicalName.startsWith(oldFullName+'/')) {
                 String newCanonicalName = newFullName + canonicalName.substring(oldFullName.length());
-                // relative name points to the renamed item, let's compute the new relative name
-                newValue.add( computeRelativeNameAfterRenaming(canonicalName, newCanonicalName, relativeName) );
+                if (relativeName.startsWith("/")) {
+                    newValue.add("/" + newCanonicalName);
+                } else {
+                    newValue.add(getRelativeNameFrom(newCanonicalName, context.getFullName()));
+                }
             } else {
                 newValue.add(relativeName);
             }
@@ -209,38 +215,55 @@ public class Items {
         return StringUtils.join(newValue, ",");
     }
 
-    /**
-     * Compute the relative name of an Item after renaming
-     */
-    private static String computeRelativeNameAfterRenaming(String oldFullName, String newFullName, String relativeName) {
-
-        String[] a = oldFullName.split("/");
-        String[] n = newFullName.split("/");
-        assert a.length == n.length;
-        String[] r = relativeName.split("/");
-
-        int j = a.length-1;
-        for(int i=r.length-1;i>=0;i--) {
-            String part = r[i];
-            if (part.equals("") && i==0) {
+    // Had difficulty adapting the version in Functions to use no live items, so rewrote it:
+    static String getRelativeNameFrom(String itemFullName, String groupFullName) {
+        String[] itemFullNameA = itemFullName.isEmpty() ? new String[0] : itemFullName.split("/");
+        String[] groupFullNameA = groupFullName.isEmpty() ? new String[0] : groupFullName.split("/");
+        for (int i = 0; ; i++) {
+            if (i == itemFullNameA.length) {
+                if (i == groupFullNameA.length) {
+                    // itemFullName and groupFullName are identical
+                    return ".";
+                } else {
+                    // itemFullName is an ancestor of groupFullName; insert ../ for rest of groupFullName
+                    StringBuilder b = new StringBuilder();
+                    for (int j = 0; j < groupFullNameA.length - itemFullNameA.length; j++) {
+                        if (j > 0) {
+                            b.append('/');
+                        }
+                        b.append("..");
+                    }
+                    return b.toString();
+                }
+            } else if (i == groupFullNameA.length) {
+                // groupFullName is an ancestor of itemFullName; insert rest of itemFullName
+                StringBuilder b = new StringBuilder();
+                for (int j = i; j < itemFullNameA.length; j++) {
+                    if (j > i) {
+                        b.append('/');
+                    }
+                    b.append(itemFullNameA[j]);
+                }
+                return b.toString();
+            } else if (itemFullNameA[i].equals(groupFullNameA[i])) {
+                // identical up to this point
                 continue;
-            }
-            if (part.equals(".")) {
-                continue;
-            }
-            if (part.equals("..")) {
-                j--;
-                continue;
-            }
-            if (part.equals(a[j])) {
-                r[i] = n[j];
-                j--;
-                continue;
+            } else {
+                // first mismatch; insert ../ for rest of groupFullName, then rest of itemFullName
+                StringBuilder b = new StringBuilder();
+                for (int j = i; j < groupFullNameA.length; j++) {
+                    if (j > i) {
+                        b.append('/');
+                    }
+                    b.append("..");
+                }
+                for (int j = i; j < itemFullNameA.length; j++) {
+                    b.append('/').append(itemFullNameA[j]);
+                }
+                return b.toString();
             }
         }
-        return StringUtils.join(r, '/');
     }
-
 
     /**
      * Loads a {@link Item} from a config file.
@@ -328,6 +351,42 @@ public class Items {
         }
         String nearest = EditDistance.findNearest(name, names);
         return Jenkins.getInstance().getItem(nearest, context, type);
+    }
+
+    /**
+     * Moves an item between folders (or top level).
+     * Fires all relevant events but does not verify that the item’s directory is not currently being used in some way (for example by a running build).
+     * Does not check any permissions.
+     * @param item some item (job or folder)
+     * @param destination the destination of the move (a folder or {@link Jenkins}); not the current parent (or you could just call {@link AbstractItem#renameTo})
+     * @return the new item (usually the same object as {@code item})
+     * @throws IOException if the move fails, or some subsequent step fails (directory might have already been moved)
+     * @throws IllegalArgumentException if the move would really be a rename, or the destination cannot accept the item, or the destination already has an item of that name
+     * @since 1.548
+     */
+    public static <I extends AbstractItem & TopLevelItem> I move(I item, DirectlyModifiableTopLevelItemGroup destination) throws IOException, IllegalArgumentException {
+        DirectlyModifiableTopLevelItemGroup oldParent = (DirectlyModifiableTopLevelItemGroup) item.getParent();
+        if (oldParent == destination) {
+            throw new IllegalArgumentException();
+        }
+        // TODO verify that destination is to not equal to, or inside, item
+        if (!destination.canAdd(item)) {
+            throw new IllegalArgumentException();
+        }
+        String name = item.getName();
+        if (destination.getItem(name) != null) {
+            throw new IllegalArgumentException(name + " already exists");
+        }
+        String oldFullName = item.getFullName();
+        // TODO AbstractItem.renameTo has a more baroque implementation; factor it out into a utility method perhaps?
+        File destDir = destination.getRootDirFor(item);
+        FileUtils.forceMkdir(destDir.getParentFile());
+        FileUtils.moveDirectory(item.getRootDir(), destDir);
+        oldParent.remove(item);
+        I newItem = destination.add(item, name);
+        newItem.onLoad(destination, name);
+        ItemListener.fireLocationChange(newItem, oldFullName);
+        return newItem;
     }
 
     /**

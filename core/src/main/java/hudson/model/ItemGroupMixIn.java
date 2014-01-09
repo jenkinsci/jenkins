@@ -99,7 +99,13 @@ public abstract class ItemGroupMixIn {
         CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<K,V>();
         for (File subdir : subdirs) {
             try {
-                V item = (V) Items.load(parent,subdir);
+                // Try to retain the identity of an existing child object if we can.
+                V item = (V) parent.getItem(subdir.getName());
+                if (item == null) {
+                    item = (V) Items.load(parent,subdir);
+                } else {
+                    item.onLoad(parent, subdir.getName());
+                }
                 configurations.put(key.call(item), item);
             } catch (IOException e) {
                 Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not load " + subdir, e);
