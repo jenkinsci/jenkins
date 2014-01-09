@@ -67,7 +67,7 @@ public final class WorkUnitContext {
         this.item = item;
         this.task = item.task;
         this.future = (FutureImpl)item.getFuture();
-        this.actions = item.getActions();
+        this.actions = new ArrayList<Action>(item.getAllActions());
         
         // +1 for the main task
         int workUnitSize = Tasks.getSubTasksOf(task).size();

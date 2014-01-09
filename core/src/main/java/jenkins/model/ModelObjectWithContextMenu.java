@@ -214,7 +214,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             } else
             if (self instanceof Actionable) {
                 // fallback
-                this.addAll(((Actionable)self).getActions());
+                this.addAll(((Actionable)self).getAllActions());
             }
     
             return this;

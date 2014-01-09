@@ -539,7 +539,7 @@ public class Queue extends ResourceController implements Saveable {
                 shouldScheduleItem |= action.shouldSchedule(actions);
     		}
     		for (QueueAction action: Util.filter(actions,QueueAction.class)) {
-                shouldScheduleItem |= action.shouldSchedule(item.getActions());
+                shouldScheduleItem |= action.shouldSchedule((new ArrayList<Action>(item.getAllActions())));
     		}
     		if(!shouldScheduleItem) {
     			duplicatesInQueue.add(item);
@@ -1417,7 +1417,7 @@ public class Queue extends ResourceController implements Saveable {
         }
         
         protected Item(Item item) {
-        	this(item.task, item.getActions(), item.id, item.future, item.inQueueSince);
+        	this(item.task, new ArrayList<Action>(item.getAllActions()), item.id, item.future, item.inQueueSince);
         }
 
         /**
@@ -1453,13 +1453,10 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public String getParams() {
         	StringBuilder s = new StringBuilder();
-        	for(Action action : getActions()) {
-        		if(action instanceof ParametersAction) {
-        			ParametersAction pa = (ParametersAction)action;
-        			for (ParameterValue p : pa.getParameters()) {
-        				s.append('\n').append(p.getShortDescription());
-        			}
-        		}
+        	for (ParametersAction pa : getActions(ParametersAction.class)) {
+                for (ParameterValue p : pa.getParameters()) {
+                    s.append('\n').append(p.getShortDescription());
+                }
         	}
         	return s.toString();
         }

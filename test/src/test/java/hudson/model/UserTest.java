@@ -28,7 +28,6 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.Cause.UserIdCause;
 import hudson.security.AccessDeniedException2;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
@@ -244,10 +243,7 @@ public class UserTest {
 
         //JENKINS-16178: build should include also builds scheduled by user
 
-        CauseAction action = build2.getAction(CauseAction.class); //remove existing cause action
-        if(action!=null)
-            build2.getActions().remove(action);
-        build2.addAction(new CauseAction(new Cause.UserIdCause()));
+        build2.replaceAction(new CauseAction(new Cause.UserIdCause()));
         assertFalse("User should not participate in the last build of project free2.", user.getBuilds().contains(build2));
         assertFalse("Current user should not participate in the last build of project free.", User.current().getBuilds().contains(build));
         assertTrue("Current user should participate in the last build of project free2.", User.current().getBuilds().contains(build2));

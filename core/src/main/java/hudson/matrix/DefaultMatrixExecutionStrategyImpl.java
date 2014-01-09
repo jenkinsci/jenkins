@@ -3,7 +3,6 @@ package hudson.matrix;
 import groovy.lang.GroovyRuntimeException;
 import hudson.AbortException;
 import hudson.Extension;
-import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.matrix.listeners.MatrixBuildListener;
@@ -238,7 +237,7 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
         exec.getListener().getLogger().println(Messages.MatrixBuild_Triggering(ModelHyperlinkNote.encodeTo(c)));
 
         // filter the parent actions for those that can be passed to the individual jobs.
-        List<MatrixChildAction> childActions = Util.filter(build.getActions(), MatrixChildAction.class);
+        List<MatrixChildAction> childActions = build.getActions(MatrixChildAction.class);
         c.scheduleBuild(childActions, new UpstreamCause((Run)build));
     }
 
