@@ -129,12 +129,15 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 1.548
      */
     public void replaceAction(Action a) {
-        Iterator<Action> it = getActions().iterator();
-        while (it.hasNext()) {
-            if (a.getClass() == it.next().getClass()) {
-                it.remove();
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<Action>(1);
+        List<Action> current = getActions();
+        for (Action a2 : current) {
+            if (a2.getClass() == a.getClass()) {
+                old.add(a2);
             }
         }
+        current.removeAll(old);
         addAction(a);
     }
 
