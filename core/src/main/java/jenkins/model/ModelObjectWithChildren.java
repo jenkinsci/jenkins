@@ -14,6 +14,7 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Kohsuke Kawaguchi
  * @see ModelObjectWithContextMenu
+ * @since 1.513
  */
 public interface ModelObjectWithChildren extends ModelObject {
     /**

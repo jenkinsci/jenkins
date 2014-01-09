@@ -40,7 +40,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
@@ -435,7 +434,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             failedPlugins.add(new FailedPlugin(sn, e));
             activePlugins.remove(p);
             plugins.remove(p);
-            throw new IOException2("Failed to install "+ sn +" plugin",e);
+            throw new IOException("Failed to install "+ sn +" plugin",e);
         }
 
         // run initializers in the added plugin
@@ -449,7 +448,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         try {
             new InitReactorRunner().run(r);
         } catch (ReactorException e) {
-            throw new IOException2("Failed to initialize "+ sn +" plugin",e);
+            throw new IOException("Failed to initialize "+ sn +" plugin",e);
         }
         LOGGER.info("Plugin " + sn + " dynamically installed");
     }
@@ -925,7 +924,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             });
         } catch (SAXException x) {
-            throw new IOException2("Failed to parse XML",x);
+            throw new IOException("Failed to parse XML",x);
         } catch (ParserConfigurationException e) {
             throw new AssertionError(e); // impossible since we don't tweak XMLParser
         }

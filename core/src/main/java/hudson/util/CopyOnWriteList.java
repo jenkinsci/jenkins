@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -38,8 +38,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
-import static java.util.logging.Level.FINE;
-import java.util.logging.Logger;
 
 
 /**
@@ -192,11 +190,9 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                 try {
                     Object item = readItem(reader, context, items);
                     items.add(item);
-                } catch (CannotResolveClassException e) {
-                    LOGGER.log(FINE, "Failed to resolve class", e);
+                } catch (XStreamException e) {
                     RobustReflectionConverter.addErrorInContext(context, e);
                 } catch (LinkageError e) {
-                    LOGGER.log(FINE, "Failed to resolve class", e);
                     RobustReflectionConverter.addErrorInContext(context, e);
                 }
                 reader.moveUp();
@@ -206,5 +202,4 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         }
     }
 
-    private static final Logger LOGGER = Logger.getLogger(CopyOnWriteList.class.getName());
 }

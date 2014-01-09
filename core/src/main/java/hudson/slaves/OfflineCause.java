@@ -24,6 +24,7 @@
 
 package hudson.slaves;
 
+import hudson.Functions;
 import hudson.model.Computer;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -78,6 +79,10 @@ public abstract class OfflineCause {
 
         public String getShortDescription() {
             return cause.toString();
+        }
+
+        @Override public String toString() {
+            return Messages.OfflineCause_connection_was_broken_(Functions.printThrowable(cause));
         }
     }
 

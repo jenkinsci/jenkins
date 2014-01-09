@@ -34,7 +34,7 @@ import java.io.File;
  *
  * @author Kohsuke Kawaguchi
  */
-public class NoHomeDir extends ErrorObject {
+public class NoHomeDir extends BootFailure {
     public final File home;
 
     public NoHomeDir(File home) {

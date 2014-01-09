@@ -35,7 +35,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -128,7 +127,11 @@ public class Connection {
     }
 
     public byte[] readByteArray() throws IOException {
-        byte[] buf = new byte[din.readInt()];
+        int bufSize = din.readInt();
+        if (bufSize < 0) {
+            throw new IOException("DataInputStream unexpectedly returned negative integer");
+        }
+        byte[] buf = new byte[bufSize];
         din.readFully(buf);
         return buf;
     }

@@ -29,7 +29,6 @@ import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
 import hudson.Util;
-import hudson.init.Initializer;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormApply;
 import hudson.util.FormValidation.CheckMethod;
@@ -63,7 +62,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -969,7 +967,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             if (FormApply.isApply(req)) {
-                FormApply.applyResponse("notificationBar.show(" + quote(getMessage())+ ",notificationBar.defaultOptions.ERROR)")
+                FormApply.applyResponse("notificationBar.show(" + quote(getMessage())+ ",notificationBar.ERROR)")
                         .generateResponse(req, rsp, node);
             } else {
                 // for now, we can't really use the field name that caused the problem.
@@ -987,77 +985,4 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public static final class Self {}
 
     protected static Class self() { return Self.class; }
-
-    /**
-     * Register a global {@link BindInterceptor} that uses {@link Descriptor#newInstance(StaplerRequest, JSONObject)}
-     * for instantiation
-     */
-    @Initializer
-    public static void initGlobalBindInterceptor() {
-        boolean newInstance = WebApp.get(Jenkins.getInstance().servletContext).bindInterceptors.add(new BindInterceptor() {
-            final class Input {
-                final Class type;
-                final JSONObject json;
-
-                private Input(Class type, JSONObject json) {
-                    this.type = type;
-                    this.json = json;
-                }
-
-                @Override
-                public boolean equals(Object o) {
-                    if (this == o) return true;
-                    if (o == null || getClass() != o.getClass()) return false;
-
-                    Input rhs = (Input) o;
-                    return json==rhs.json && type==rhs.type;
-
-                }
-
-                @Override
-                public int hashCode() {
-                    return 31*type.hashCode() + json.hashCode();
-                }
-            }
-
-            private final ThreadLocal<Stack<Input>> inputs = new ThreadLocal<Stack<Input>>() {
-                protected Stack<Input> initialValue() {
-                    return new Stack<Input>();
-                }
-            };
-
-            @Override
-            public Object instantiate(Class actualType, JSONObject json) {
-                if (Describable.class.isAssignableFrom(actualType)) {
-                    Descriptor d = Jenkins.getInstance().getDescriptor(actualType);
-                    if (d != null) {
-                        try {
-                            // only when Descriptor.newInstance is overridden
-                            Method m = d.getClass().getMethod("newInstance", StaplerRequest.class, JSONObject.class);
-                            if (m.getDeclaringClass() != Descriptor.class) {
-                                Input newFrame = new Input(actualType,json);
-                                if (!inputs.get().contains(newFrame)) {
-                                    // prevent infinite recursion in case Descriptor.newInstance calls right back into
-                                    // bindJSON
-                                    inputs.get().push(newFrame);
-                                    try {
-                                        StaplerRequest req = Stapler.getCurrentRequest();
-                                        if (req != null)
-                                            return d.newInstance(req, json);
-                                    } finally {
-                                        inputs.get().pop();
-                                    }
-                                }
-                            }
-                        } catch (NoSuchMethodException e) {
-                            throw new AssertionError(e);    // this can't happen because Descriptor defines such a method
-                        } catch (FormException e) {
-                            throw new IllegalArgumentException(e);
-                        }
-                    }
-                }
-                return DEFAULT;
-            }
-        });
-    }
 }

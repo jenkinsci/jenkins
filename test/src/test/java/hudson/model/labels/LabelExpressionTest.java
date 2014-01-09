@@ -233,11 +233,11 @@ public class LabelExpressionTest extends HudsonTestCase {
 
                 Label l = jenkins.getLabel("foo");
                 DumbSlave s = createSlave(l);
-                String msg = d.doCheckAssignedLabelString("goo").renderHtml();
+                String msg = d.doCheckAssignedLabelString(null, "goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
 
-                msg = d.doCheckAssignedLabelString("master && goo").renderHtml();
+                msg = d.doCheckAssignedLabelString(null, "master && goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
                 return null;

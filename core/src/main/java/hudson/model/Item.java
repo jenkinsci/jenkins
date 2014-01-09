@@ -180,7 +180,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
 
     /**
      * Called right after when a {@link Item} is loaded from disk.
-     * This is an opporunity to do a post load processing.
+     * This is an opportunity to do a post load processing.
      *
      * @param name
      *      Name of the directory (not a path --- just the name portion) from

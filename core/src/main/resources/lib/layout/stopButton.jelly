@@ -26,7 +26,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:i="jelly:fmt">
     <st:documentation>
-        Creates a clickable “Stop” button.
+        Creates a clickable "Stop" button.
         <st:attribute name="href" use="required">
             Link target. Relative to the current page.
         </st:attribute>
@@ -34,7 +34,7 @@ THE SOFTWARE.
             Alt text for image.
         </st:attribute>
     </st:documentation>
-    <a href="${href}" onclick="new Ajax.Request(this.href); return false">
-        <img src="${imagesURL}/16x16/stop.png" alt="${alt}" height="16" width="16"/>
+    <a class="stop-button-link" href="${href}" onclick="new Ajax.Request(this.href); return false">
+        <img class="stop-button-icon" src="${imagesURL}/16x16/stop.png" alt="${alt}" height="16" width="16"/>
     </a>
 </j:jelly>

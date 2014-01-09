@@ -31,15 +31,17 @@ THE SOFTWARE.
                   <j:choose>
                       <j:when test="${job.parameterized}">
                           <j:set var="title" value="${%Schedule a build with parameters}"/>
+                          <j:set var="onclick" value="${null}"/>
                       </j:when>
                       <j:otherwise>
                           <j:set var="title" value="${%Schedule a build}"/>
+                          <j:set var="onclick" value="return build_${id}(this)"/>
                       </j:otherwise>
                   </j:choose>
                   <j:set var="icon" value="${app.queue.contains(job) ? 'clock_anime.gif' : 'clock.png'}"/>
                   <img src="${imagesURL}/${subIconSize}/${icon}"
                          title="${title}" alt="${title}"
-                         onclick="return build_${id}(this)"
+                         onclick="${onclick}"
                          border="0"/>
               </a>
               <script>

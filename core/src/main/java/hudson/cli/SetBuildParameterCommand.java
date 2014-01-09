@@ -18,10 +18,10 @@ import java.util.Collections;
  */
 @Extension
 public class SetBuildParameterCommand extends CommandDuringBuild {
-    @Argument(index=0, required=true, usage="Name of the build variable")
+    @Argument(index=0, metaVar="NAME", required=true, usage="Name of the build variable")
     public String name;
 
-    @Argument(index=1,required=true, usage="Value of the build variable")
+    @Argument(index=1, metaVar="VALUE", required=true, usage="Value of the build variable")
     public String value;
 
     @Override
@@ -37,9 +37,7 @@ public class SetBuildParameterCommand extends CommandDuringBuild {
 
         ParametersAction a = r.getAction(ParametersAction.class);
         if (a!=null) {
-            ParametersAction b = a.createUpdated(Collections.singleton(p));
-            r.addAction(b);
-            r.getActions().remove(a);
+            r.replaceAction(a.createUpdated(Collections.singleton(p)));
         } else {
             r.addAction(new ParametersAction(p));
         }

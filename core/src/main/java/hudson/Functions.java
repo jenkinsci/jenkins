@@ -44,6 +44,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.PageDecorator;
+import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.Project;
@@ -140,7 +141,6 @@ import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
@@ -150,8 +150,10 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import hudson.util.RunList;
+import java.util.concurrent.atomic.AtomicLong;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Utility functions used in views.
@@ -164,21 +166,16 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  */
 @SuppressWarnings("rawtypes")
 public class Functions {
-    private static volatile int globalIota = 0;
-    private int iota;
+    private static final AtomicLong iota = new AtomicLong();
 
     public Functions() {
-        iota = globalIota;
-        // concurrent requests can use the same ID --- we are just trying to
-        // prevent the same user from seeing the same ID repeatedly.
-        globalIota+=1000;
     }
 
     /**
      * Generates an unique ID.
      */
     public String generateId() {
-        return "id"+iota++;
+        return "id" + iota.getAndIncrement();
     }
 
     public static boolean isModel(Object o) {
@@ -261,7 +258,7 @@ public class Functions {
      * like "-5", "+/-0", "+3".
      */
     public static String getDiffString(int i) {
-        if(i==0)    return "\u00B10";   // +/-0
+        if(i==0)    return "±0";
         String s = Integer.toString(i);
         if(i>0)     return "+"+s;
         else        return s;
@@ -449,13 +446,14 @@ public class Functions {
         return formatter.format(r);
     }
 
-    @Restricted(DoNotUse.class)
+    @Restricted(NoExternalUse.class)
     public static String[] printLogRecordHtml(LogRecord r, LogRecord prior) {
         String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
         String[] newParts = logRecordPreformat(r);
         for (int i = 0; i < /* not 4 */3; i++) {
             newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
         }
+        newParts[3] = Util.xmlEscape(newParts[3]);
         return newParts;
     }
     /**
@@ -584,6 +582,10 @@ public class Functions {
         return false;
     }
 
+    public static boolean isCollapsed(String paneId) {
+    	return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
+    }
+    
     /**
      * Finds the given object in the ancestor list and returns its URL.
      * This is used to determine the "current" URL assigned to the given object,
@@ -1103,7 +1105,7 @@ public class Functions {
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo » bar"
+     *      String like "foo/bar"
      */
     public static String getRelativeNameFrom(Item p, ItemGroup g) {
         return getRelativeNameFrom(p, g, false);
@@ -1117,7 +1119,7 @@ public class Functions {
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo » bar"
+     *      String like "Foo » Bar"
      */
     public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
         return getRelativeNameFrom(p, g, true);
@@ -1129,7 +1131,6 @@ public class Functions {
         return sorted;
     }
 
-    @IgnoreJRERequirement
     public static ThreadInfo[] getThreadInfos() {
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
         return mbean.dumpAllThreads(mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
@@ -1150,8 +1151,10 @@ public class Functions {
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
             int threadsLen = tg.enumerate(threads, true);
-            for (int i = 0; i < threadsLen; i++)
-                map.put(threads[i].getId(), threads[i].getThreadGroup().getName());
+            for (int i = 0; i < threadsLen; i++) {
+                ThreadGroup group = threads[i].getThreadGroup();
+                map.put(threads[i].getId(), group != null ? group.getName() : null);
+            }
         }
 
         protected int compare(long idA, long idB) {
@@ -1191,20 +1194,14 @@ public class Functions {
     }
 
     /**
-     * Are we running on JRE6 or above?
+     * @deprecated Now always true.
      */
-    @IgnoreJRERequirement
+    @Deprecated
     public static boolean isMustangOrAbove() {
-        try {
-            System.console();
-            return true;
-        } catch(LinkageError e) {
-            return false;
-        }
+        return true;
     }
 
     // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version
-    @IgnoreJRERequirement
     public static String dumpThreadInfo(ThreadInfo ti, ThreadGroupMap map) {
         String grp = map.getThreadGroup(ti);
         StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" +
@@ -1435,7 +1432,8 @@ public class Functions {
     }
 
     /**
-     * Returns a sub-list if the given list is bigger than the specified 'maxSize'
+     * Returns a sub-list if the given list is bigger than the specified {@code maxSize}.
+     * <strong>Warning:</strong> do not call this with a {@link RunList}, or you will break lazy loading!
      */
     public static <T> List<T> subList(List<T> base, int maxSize) {
         if(maxSize<base.size())
@@ -1828,8 +1826,8 @@ public class Functions {
      */
     public static String breakableString(final String plain) {
 
-        return plain.replaceAll("(\\p{Punct}+\\w)", "<wbr>$1")
-                .replaceAll("(\\w{10})(?=\\w{3})", "$1<wbr>")
+        return plain.replaceAll("([\\p{Punct}&&[^;]]+\\w)", "<wbr>$1")
+                .replaceAll("([^\\p{Punct}\\s-]{10})(?=[^\\p{Punct}\\s-]{3})", "$1<wbr>")
         ;
     }
 
@@ -1839,17 +1837,28 @@ public class Functions {
      */
     public static void advertiseHeaders(HttpServletResponse rsp) {
         Jenkins j = Jenkins.getInstance();
+        if (j!=null) {
+            rsp.setHeader("X-Hudson","1.395");
+            rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+            rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
 
-        rsp.setHeader("X-Hudson","1.395");
-        rsp.setHeader("X-Jenkins", Jenkins.VERSION);
-        rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
-
-        TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-        if (tal !=null) {
-            rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
-            rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
-            rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
-            rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+            TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
+            if (tal !=null) {
+                rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
+                rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
+                rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
+                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+            }
         }
     }
+
+    @Restricted(NoExternalUse.class) // for actions.jelly and ContextMenu.add
+    public static boolean isContextMenuVisible(Action a) {
+        if (a instanceof ModelObjectWithContextMenu.ContextMenuVisibility) {
+            return ((ModelObjectWithContextMenu.ContextMenuVisibility) a).isVisible();
+        } else {
+            return true;
+        }
+    }
+
 }

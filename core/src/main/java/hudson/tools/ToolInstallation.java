@@ -215,6 +215,10 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
         return this;
     }
 
+    @Override public String toString() {
+        return getClass().getSimpleName() + "[" + name + "]";
+    }
+
     /**
      * Subclasses can extend this for data migration from old field storing home directory.
      */

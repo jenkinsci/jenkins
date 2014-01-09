@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import jenkins.model.Jenkins;
 
@@ -203,16 +205,20 @@ public class FunctionsTest {
         when(i.getName()).thenReturn("jobName");
         when(i.getDisplayName()).thenReturn("displayName");
         TopLevelItemAndItemGroup ig = mock(TopLevelItemAndItemGroup.class);
-        Jenkins j = mock(Jenkins.class);
+        ItemGroup j = mock(Jenkins.class);
         when(ig.getName()).thenReturn("parent");
         when(ig.getDisplayName()).thenReturn("parentDisplay");
-        when(ig.getParent()).thenReturn((ItemGroup) j);
+        when(ig.getParent()).thenReturn(j);
         when(i.getParent()).thenReturn(ig);
-        
+        Item i2 = mock(Item.class);
+        when(i2.getDisplayName()).thenReturn("top");
+        when(i2.getParent()).thenReturn(j);
+
         assertEquals("displayName", Functions.getRelativeDisplayNameFrom(i, ig));
         assertEquals("parentDisplay » displayName", Functions.getRelativeDisplayNameFrom(i, j));
+        assertEquals(".. » top", Functions.getRelativeDisplayNameFrom(i2, ig));
     }
-    
+
     private void createMockAncestors(StaplerRequest req, Ancestor... ancestors) {
         List<Ancestor> ancestorsList = Arrays.asList(ancestors);
         when(req.getAncestors()).thenReturn(ancestorsList);
@@ -285,8 +291,33 @@ public class FunctionsTest {
     @Test
     public void testBreakableString() {
 
-        assertEquals("Hello world!", Functions.breakableString("Hello world!"));
-        assertEquals("H<wbr>,e<wbr>.l<wbr>/l<wbr>:o<wbr>-w<wbr>_o<wbr>=+|d", Functions.breakableString("H,e.l/l:o-w_o=+|d"));
-        assertEquals("ALongStrin<wbr>gThatCanNo<wbr>tBeBrokenB<wbr>yDefault", Functions.breakableString("ALongStringThatCanNotBeBrokenByDefault"));
+        assertBrokenAs("Hello world!", "Hello world!");
+        assertBrokenAs("Hello-world!", "Hello", "-world!");
+        assertBrokenAs("ALongStringThatCanNotBeBrokenByDefault", "ALongStrin", "gThatCanNo", "tBeBrokenB", "yDefault");
+        assertBrokenAs("jenkins_main_trunk", "jenkins", "_main", "_trunk");
+
+        assertBrokenAs("&lt;&lt;&lt;&lt;&lt;", "", "&lt;", "&lt;", "&lt;", "&lt;", "&lt;");
+        assertBrokenAs("&amp;&amp;&amp;&amp;&amp;", "", "&amp;", "&amp;", "&amp;", "&amp;", "&amp;");
+        assertBrokenAs("&thetasym;&thetasym;&thetasym;", "", "&thetasym;", "&thetasym;", "&thetasym;");
+        assertBrokenAs("Crazy &lt;ha ha&gt;", "Crazy ", "&lt;ha ha", "&gt;");
+        assertBrokenAs("A;String>Full]Of)Weird}Punctuation", "A;String", ">Full", "]Of", ")Weird", "}Punctuation");
+        assertBrokenAs("&lt;&lt;a&lt;bc&lt;def&lt;ghi&lt;", "", "&lt;", "&lt;a", "&lt;bc", "&lt;def", "&lt;ghi", "&lt;");
+        assertBrokenAs("H,e.l/l:o=w_o+|d", "H", ",e", ".l", "/l", ":o", "=w", "_o", "+|d");
+        assertBrokenAs("a¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷ", "a¶‱ﻷa¶‱ﻷa¶", "‱ﻷa¶‱ﻷa¶‱ﻷ", "a¶‱ﻷa¶‱ﻷa¶‱ﻷ");
     }
+
+    private void assertBrokenAs(String plain, String... chunks) {
+        assertEquals(
+                Util.join(Arrays.asList(chunks), "<wbr>"),
+                Functions.breakableString(plain)
+        );
+    }
+
+    @Bug(20800)
+    @Test public void printLogRecordHtml() throws Exception {
+        LogRecord lr = new LogRecord(Level.INFO, "Bad input <xml/>");
+        lr.setLoggerName("test");
+        assertEquals("Bad input &lt;xml/>\n", Functions.printLogRecordHtml(lr, null)[3]);
+    }
+
 }

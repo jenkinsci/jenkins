@@ -24,19 +24,38 @@ THE SOFTWARE.
 
 <!--  this is loaded on demand in the failed test results summary -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+  <d:taglib uri="local">
+    <d:tag name="item">
+      <j:if test="${value!=null and !empty value}">
+        <j:set var="id" value="${attrs.id}-${attrs.name}"/>
+        <j:set var="display" value="${attrs.opened ? '' : 'none'}"/>
+        <j:set var="idisplay" value="${attrs.opened ? 'none' : ''}"/>
+        <j:set var="open" value="javascript:showFailureSummary('${id}')"/>
+        <j:set var="close" value="javascript:hideFailureSummary('${id}')"/>
+        <h4>
+          <a id="${id}-showlink" href="${open}" title="Show ${title}" style="display: ${idisplay}">
+            <img src="${imagesURL}/16x16/document_add.png"/><st:nbsp/>${title}
+          </a>
+          <a id="${id}-hidelink" href="${close}" title="Hide ${title}" style="display: ${display}">
+            <img src="${imagesURL}/16x16/document_delete.png"/><st:nbsp/>${title}
+          </a>
+        </h4>
+        <pre id="${id}" style="display: ${display}">
+          <st:out value="${value}"/>
+        </pre>
+      </j:if>
+    </d:tag>
+  </d:taglib>
   <st:contentType value="text/plain;charset=UTF-8"/>
-  <j:choose>
-		<j:when test="${it.errorDetails!=null}">
-			<h3>${%Error Details}</h3>
-			<pre><st:out value="${it.errorDetails}"/></pre>
-		</j:when>
-		<j:otherwise>
-			<j:if test="${it.errorStackTrace!=null}">
-				<h3>${%Stack Trace}</h3>
-				<pre><j:out value="${it.annotate(it.errorStackTrace)}"/></pre>
-			</j:if>
-		</j:otherwise>
-  </j:choose>
+
+  <j:new var="h" className="hudson.Functions" />
+  ${h.initPageVariables(context)}
+
+  <j:set var="id" value="${h.generateId()}"/>
+
+  <local:item id="${id}" name="error" title="${%Error Details}" value="${it.errorDetails}" opened="true"/>
+  <local:item id="${id}" name="stacktrace" title="${%Stack Trace}" value="${it.errorStackTrace}"/>
+  <local:item id="${id}" name="stdout" title="${%Standard Output}" value="${it.stdout}"/>
+  <local:item id="${id}" name="stderr" title="${%Standard Error}" value="${it.stderr}"/>
 </j:jelly>

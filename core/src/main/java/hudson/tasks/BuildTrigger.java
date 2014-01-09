@@ -46,7 +46,6 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
-import hudson.tasks.BuildTrigger.DescriptorImpl.ItemListenerImpl;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -192,6 +191,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     public static boolean execute(AbstractBuild build, BuildListener listener) {
         PrintStream logger = listener.getLogger();
         // Check all downstream Project of the project, not just those defined by BuildTrigger
+        // TODO this may not yet be up to date if rebuildDependencyGraphAsync has been used; need a method to wait for the last call made before now to finish
         final DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
         List<Dependency> downstreamProjects = new ArrayList<Dependency>(
                 graph.getDownstreamDependencies(build.getProject()));
@@ -242,11 +242,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         return true;
     }
 
-    /**
-     * Called from {@link ItemListenerImpl} when a job is renamed.
-     *
-     * @return true if this {@link BuildTrigger} is changed and needs to be saved.
-     */
+    /** @deprecated Does not handle folder moves. */
+    @Deprecated
     public boolean onJobRenamed(String oldName, String newName) {
         // quick test
         if(!childProjects.contains(oldName))
@@ -354,17 +351,19 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         @Extension
         public static class ItemListenerImpl extends ItemListener {
             @Override
-            public void onRenamed(Item item, String oldName, String newName) {
+            public void onLocationChanged(Item item, String oldFullName, String newFullName) {
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?
                 for( Project<?,?> p : Jenkins.getInstance().getAllItems(Project.class) ) {
                     BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                     if(t!=null) {
-                        if(t.onJobRenamed(oldName,newName)) {
+                        String cp2 = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.childProjects, p.getParent());
+                        if (!cp2.equals(t.childProjects)) {
+                            t.childProjects = cp2;
                             try {
                                 p.save();
                             } catch (IOException e) {
-                                LOGGER.log(Level.WARNING, "Failed to persist project setting during rename from "+oldName+" to "+newName,e);
+                                LOGGER.log(Level.WARNING, "Failed to persist project setting during rename from "+oldFullName+" to "+newFullName,e);
                             }
                         }
                     }

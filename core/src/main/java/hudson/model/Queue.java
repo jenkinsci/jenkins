@@ -65,8 +65,8 @@ import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
+import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import hudson.util.TimeUnit2;
 import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
@@ -91,7 +91,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Timer;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -540,7 +539,7 @@ public class Queue extends ResourceController implements Saveable {
                 shouldScheduleItem |= action.shouldSchedule(actions);
     		}
     		for (QueueAction action: Util.filter(actions,QueueAction.class)) {
-                shouldScheduleItem |= action.shouldSchedule(item.getActions());
+                shouldScheduleItem |= action.shouldSchedule((new ArrayList<Action>(item.getAllActions())));
     		}
     		if(!shouldScheduleItem) {
     			duplicatesInQueue.add(item);
@@ -920,9 +919,10 @@ public class Queue extends ResourceController implements Saveable {
      * <p>
      * This wakes up one {@link Executor} so that it will maintain a queue.
      */
-    public void scheduleMaintenance() {
+    @WithBridgeMethods(void.class)
+    public Future<?> scheduleMaintenance() {
         // LOGGER.info("Scheduling maintenance");
-        maintainerThread.submit();
+        return maintainerThread.submit();
     }
 
     /**
@@ -998,7 +998,7 @@ public class Queue extends ResourceController implements Saveable {
         while (!waitingList.isEmpty()) {
             WaitingItem top = peek();
 
-            if (!top.timestamp.before(new GregorianCalendar()))
+            if (top.timestamp.compareTo(new GregorianCalendar())>0)
                 break; // finished moving all ready items from queue
 
             top.leave(this);
@@ -1417,7 +1417,7 @@ public class Queue extends ResourceController implements Saveable {
         }
         
         protected Item(Item item) {
-        	this(item.task, item.getActions(), item.id, item.future, item.inQueueSince);
+        	this(item.task, new ArrayList<Action>(item.getAllActions()), item.id, item.future, item.inQueueSince);
         }
 
         /**
@@ -1453,13 +1453,10 @@ public class Queue extends ResourceController implements Saveable {
         @Exported
         public String getParams() {
         	StringBuilder s = new StringBuilder();
-        	for(Action action : getActions()) {
-        		if(action instanceof ParametersAction) {
-        			ParametersAction pa = (ParametersAction)action;
-        			for (ParameterValue p : pa.getParameters()) {
-        				s.append('\n').append(p.getShortDescription());
-        			}
-        		}
+        	for (ParametersAction pa : getActions(ParametersAction.class)) {
+                for (ParameterValue p : pa.getParameters()) {
+                    s.append('\n').append(p.getShortDescription());
+                }
         	}
         	return s.toString();
         }
@@ -1771,24 +1768,8 @@ public class Queue extends ResourceController implements Saveable {
                     else                        return new BecauseNodeIsBusy(nodes.iterator().next());
                 }
             } else {
-                CauseOfBlockage c;
-                for (Node node : allNodes) {
-                    if (node.toComputer().isPartiallyIdle()) {
-                        c = canTake(node);
-                        if (c==null)    break;
-                    }
-                }
-
                 return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
             }
-        }
-
-        private CauseOfBlockage canTake(Node node) {
-            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-                CauseOfBlockage cause = d.canTake(node, this);
-                if (cause!=null)    return cause;
-            }
-            return null;
         }
 
         @Override
@@ -2001,10 +1982,7 @@ public class Queue extends ResourceController implements Saveable {
 
         private void periodic() {
             long interval = 5000;
-            Timer timer = Trigger.timer;
-            if (timer != null) {
-                timer.schedule(this, interval, interval);
-            }
+            Timer.get().scheduleWithFixedDelay(this, interval, interval, TimeUnit.MILLISECONDS);
         }
 
         protected void doRun() {

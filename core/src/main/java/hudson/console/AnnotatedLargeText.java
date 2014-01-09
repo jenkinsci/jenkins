@@ -28,8 +28,6 @@ package hudson.console;
 import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.IOException2;
-import hudson.util.Secret;
 import hudson.util.TimeUnit2;
 import jenkins.security.CryptoConfidentialKey;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -50,7 +48,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
@@ -134,7 +131,7 @@ public class AnnotatedLargeText<T> extends LargeText {
                 }
             }
         } catch (ClassNotFoundException e) {
-            throw new IOException2(e);
+            throw new IOException(e);
         }
         // start from scratch
         return ConsoleAnnotator.initial(context==null ? null : context.getClass());

@@ -27,14 +27,16 @@
  */
 package hudson.model;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.EnvVars;
-import hudson.Functions;
 import antlr.ANTLRException;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -47,21 +49,23 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.queue.QueueTaskFuture;
-import hudson.model.queue.ScheduleResult;
-import hudson.model.queue.SubTask;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
+import hudson.model.queue.SubTask;
 import hudson.model.queue.SubTaskContributor;
 import hudson.node_monitors.DiskSpaceMonitor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
 import hudson.scm.PollingResult;
+
+import static hudson.scm.PollingResult.*;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
@@ -80,40 +84,10 @@ import hudson.triggers.TriggerDescriptor;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
-import hudson.util.EditDistance;
 import hudson.util.FormValidation;
+import hudson.util.TimeUnit2;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
-import jenkins.model.Jenkins;
-import jenkins.model.JenkinsLocationConfiguration;
-import jenkins.model.ModelObjectWithChildren;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.SCMCheckoutStrategy;
-import jenkins.scm.SCMCheckoutStrategyDescriptor;
-import jenkins.util.TimeDuration;
-import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.jenkinsci.bytecode.AdaptField;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.ForwardToView;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -136,10 +110,40 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static hudson.scm.PollingResult.*;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.*;
+import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.Uptime;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
+import jenkins.scm.SCMCheckoutStrategyDescriptor;
+import jenkins.util.TimeDuration;
+import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.bytecode.AdaptField;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -323,8 +327,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
         this.builds = builds;
         triggers().setOwner(this);
-        for (Trigger t : triggers())
-            t.start(this, Items.updatingByXml.get());
+        for (Trigger t : triggers()) {
+            t.start(this, Items.currentlyUpdatingByXml());
+        }
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
 
@@ -773,13 +778,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public List<ProminentProjectAction> getProminentActions() {
-        List<Action> a = getActions();
-        List<ProminentProjectAction> pa = new Vector<ProminentProjectAction>();
-        for (Action action : a) {
-            if(action instanceof ProminentProjectAction)
-                pa.add((ProminentProjectAction) action);
-        }
-        return pa;
+        return getActions(ProminentProjectAction.class);
     }
 
     @Override
@@ -1171,6 +1170,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @see TransientProjectActionFactory
      */
+    @SuppressWarnings("deprecation")
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too
@@ -1533,7 +1533,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
 
-                // build now, or nothing will ever be built
+                // At this point we start thinking about triggering a build just to get a workspace,
+                // because otherwise there's no way we can detect changes.
+                // However, first there are some conditions in which we do not want to do so.
+
+                // give time for slaves to come online if we are right after reconnection (JENKINS-8408)
+                long running = Jenkins.getInstance().getInjector().getInstance(Uptime.class).getUptime();
+                long remaining = TimeUnit2.MINUTES.toMillis(10)-running;
+                if (remaining>0) {
+                    listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(remaining/1000));
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
+                    return NO_CHANGES;
+                }
+
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
@@ -1542,17 +1554,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return NO_CHANGES;
                 }
+
                 listener.getLogger().println( ws==null
                     ? Messages.AbstractProject_WorkspaceOffline()
                     : Messages.AbstractProject_NoWorkspace());
                 if (isInQueue()) {
                     listener.getLogger().println(Messages.AbstractProject_AwaitingBuildForWorkspace());
                     return NO_CHANGES;
-                } else {
-                    listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
-                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
-                    return BUILD_NOW;
                 }
+
+                // build now, or nothing will ever be built
+                listener.getLogger().print(Messages.AbstractProject_NewBuildForWorkspace());
+                listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
+                return BUILD_NOW;
             } else {
                 WorkspaceList l = b.getBuiltOn().toComputer().getWorkspaceList();
                 return pollWithWorkspace(listener, scm, b, ws, l);
@@ -2102,6 +2116,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         makeDisabled(false);
         return new HttpRedirect(".");
     }
+    
 
     /**
      * RSS feed for changes in this project.
@@ -2194,7 +2209,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;
         }
 
-        public FormValidation doCheckAssignedLabelString(@QueryParameter String value) {
+        public FormValidation doCheckAssignedLabelString(@AncestorInPath AbstractProject<?,?> project,
+                                                         @QueryParameter String value) {
             if (Util.fixEmpty(value)==null)
                 return FormValidation.ok(); // nothing typed yet
             try {
@@ -2203,7 +2219,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return FormValidation.error(e,
                         Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
             }
-            Label l = Jenkins.getInstance().getLabel(value);
+            Jenkins j = Jenkins.getInstance();
+            Label l = j.getLabel(value);
             if (l.isEmpty()) {
                 for (LabelAtom a : l.listAtoms()) {
                     if (a.isEmpty()) {
@@ -2213,7 +2230,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
                 return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
             }
-            return FormValidation.ok();
+            if (project != null) {
+                for (AbstractProject.LabelValidator v : j
+                        .getExtensionList(AbstractProject.LabelValidator.class)) {
+                    FormValidation result = v.check(project, l);
+                    if (!FormValidation.Kind.OK.equals(result.kind)) {
+                        return result;
+                    }
+                }
+            }
+            return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
+                    j.getRootUrl(), l.getUrl(), l.getNodes().size() + l.getClouds().size()
+            ));
         }
 
         public FormValidation doCheckCustomWorkspace(@QueryParameter(value="customWorkspace.directory") String customWorkspace){
@@ -2299,24 +2327,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Finds a {@link AbstractProject} that has the name closest to the given name.
+     * @see Items#findNearest
      */
     public static AbstractProject findNearest(String name) {
-        return findNearest(name,Hudson.getInstance());
+        return findNearest(name,Jenkins.getInstance());
     }
 
     /**
      * Finds a {@link AbstractProject} whose name (when referenced from the specified context) is closest to the given name.
      *
      * @since 1.419
+     * @see Items#findNearest
      */
     public static AbstractProject findNearest(String name, ItemGroup context) {
-        List<AbstractProject> projects = Hudson.getInstance().getAllItems(AbstractProject.class);
-        String[] names = new String[projects.size()];
-        for( int i=0; i<projects.size(); i++ )
-            names[i] = projects.get(i).getRelativeNameFrom(context);
-
-        String nearest = EditDistance.findNearest(name, names);
-        return (AbstractProject)Jenkins.getInstance().getItem(nearest,context);
+        return Items.findNearest(AbstractProject.class, name, context);
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
@@ -2373,5 +2397,33 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.customWorkspace= Util.fixEmptyAndTrim(customWorkspace);
         save();
     }
-    
+
+    /**
+     * Plugins may want to contribute additional restrictions on the use of specific labels for specific projects.
+     * This extension point allows such restrictions.
+     *
+     * @since 1.540
+     */
+    public static abstract class LabelValidator implements ExtensionPoint {
+        /**
+         * Check the use of the label within the specified context.
+         *
+         * @param project the project that wants to restrict itself to the specified label.
+         * @param label   the label that the project wants to restrict itself to.
+         * @return the {@link FormValidation} result.
+         */
+        @Nonnull
+        public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
+    }
+
+    @Restricted(DoNotUse.class)
+    @Extension public static final class ItemListenerImpl extends ItemListener {
+        @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            if (item instanceof AbstractProject) {
+                AbstractProject p = (AbstractProject) item;
+                p.builds.updateBaseDir(p.getBuildDir());
+            }
+        }
+    }
+
 }

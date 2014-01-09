@@ -67,9 +67,13 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
      */
     public final List<Child> children = new ArrayList<Child>();
 
+    @Deprecated
     public AggregatedTestResultAction(AbstractBuild owner) {
         super(owner);
     }
+
+    /** @since 1.545 */
+    public AggregatedTestResultAction() {}
 
     protected void update(List<? extends AbstractTestResultAction> children) {
         failCount = skipCount = totalCount = 0;

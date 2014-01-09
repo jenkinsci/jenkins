@@ -32,7 +32,6 @@ import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.SocketInputStream;
 import hudson.remoting.SocketOutputStream;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -284,6 +283,10 @@ public class CLI {
 
         flushURLConnection(head);
         if (p1==null && p2==null) {
+            // we aren't finding headers we are expecting. Is this even running Jenkins?
+            if (head.getHeaderField("X-Hudson")==null && head.getHeaderField("X-Jenkins")==null)
+                throw new IOException("There's no Jenkins running at "+url);
+
             throw new IOException("No X-Jenkins-CLI2-Port among " + head.getHeaderFields().keySet());
         }
 
@@ -307,10 +310,12 @@ public class CLI {
         } catch (IOException e) {
             try {
                 InputStream es = ((HttpURLConnection)conn).getErrorStream();
-                while (es.read(buf) >= 0) {
-                    // Ignore
+                if (es!=null) {
+                    while (es.read(buf) >= 0) {
+                        // Ignore
+                    }
+                    es.close();
                 }
-                es.close();
             } catch (IOException ex) {
                 // Ignore
             }
@@ -586,10 +591,7 @@ public class CLI {
         return pemString.contains("4,ENCRYPTED");
     }
     
-    @SuppressWarnings("Since15")
-    @IgnoreJRERequirement
     private static String askForPasswd(String filePath){
-        try {
             Console cons = System.console();
             String passwd = null;
             if (cons != null){
@@ -597,9 +599,6 @@ public class CLI {
                 passwd = String.valueOf(p);
             }
             return passwd;
-        } catch (LinkageError e) {
-            throw new Error("Your private key is encrypted, but we need Java6 to ask you password safely",e);
-        }
     }
     
     /**

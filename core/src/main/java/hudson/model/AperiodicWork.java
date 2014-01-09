@@ -25,14 +25,17 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
 
 import java.util.Random;
-import java.util.Timer;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 
 /**
@@ -85,12 +88,17 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
     @Override
     public final void doRun() throws Exception{
     	doAperiodicRun();
-        Timer timer = Trigger.timer;
-        if (timer != null) {
-            timer.schedule(getNewInstance(), getRecurrencePeriod());
+        Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
+    }
+
+    @Initializer(after= JOB_LOADED)
+    public static void init() {
+        // start all AperidocWorks
+        for (AperiodicWork p : AperiodicWork.all()) {
+            Timer.get().schedule(p, p.getInitialDelay(), TimeUnit.MILLISECONDS);
         }
     }
-    
+
     protected abstract void doAperiodicRun();
     
     /**

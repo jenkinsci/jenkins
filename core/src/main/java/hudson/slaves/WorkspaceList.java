@@ -41,6 +41,12 @@ import java.util.logging.Logger;
  * @see Computer#getWorkspaceList()
  */
 public final class WorkspaceList {
+    private static final class AllocationAt extends Exception {
+        @Override
+        public String toString() {
+            return "Allocation Point";
+        }
+    }
     /**
      * Book keeping for workspace allocation.
      */
@@ -58,7 +64,7 @@ public final class WorkspaceList {
         /**
          * From where?
          */
-        public final Exception source = new Exception();
+        public final Exception source = new AllocationAt();
 
         /**
          * True makes the caller of {@link WorkspaceList#allocate(FilePath)} wait

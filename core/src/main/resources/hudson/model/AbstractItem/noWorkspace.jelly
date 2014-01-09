@@ -57,7 +57,7 @@ THE SOFTWARE.
       </j:choose>
       <p>
       <j:if test="${!it.isDisabled()}">
-        ${%text(rootURL,it.url)}
+        ${%text}
       </j:if>
       </p>
     </l:main-panel>

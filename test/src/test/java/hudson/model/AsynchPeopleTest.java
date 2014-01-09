@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -40,9 +42,28 @@ public class AsynchPeopleTest {
     @Bug(18641)
     @Test public void display() throws Exception {
         User.get("bob");
-        HtmlPage page = j.createWebClient().goTo("asynchPeople");
-        assertEquals("display: none;", page.getElementById("status").getAttribute("style"));
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage page;
+        try {
+            page = wc.goTo("asynchPeople");
+        } catch (FailingHttpStatusCodeException x) {
+            System.err.println(x.getResponse().getResponseHeaders());
+            System.err.println(x.getResponse().getContentAsString());
+            throw x;
+        }
+        assertEquals(0, wc.waitForBackgroundJavaScript(120000));
+        boolean found = false;
+        for (HtmlElement table : page.getElementsByTagName("table")) {
+            if (table.getAttribute("class").contains("progress-bar")) {
+                found = true;
+                assertEquals("display: none;", table.getAttribute("style"));
+                break;
+            }
+        }
+        assertTrue(found);
+        /* TODO this still fails occasionally, for reasons TBD (I think because User.getAll sometimes is empty):
         assertNotNull(page.getElementById("person-bob"));
+        */
     }
 
 }

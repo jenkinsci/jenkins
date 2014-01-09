@@ -24,9 +24,7 @@
 package hudson.tasks.junit;
 
 import hudson.tasks.test.TestObject;
-import hudson.util.IOException2;
 import hudson.util.io.ParserConfigurator;
-import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -36,12 +34,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -212,7 +205,7 @@ public final class SuiteResult implements Serializable {
                     try {
                         stdout = CaseResult.possiblyTrimStdio(cases, keepLongStdio, mavenOutputFile);
                     } catch (IOException e) {
-                        throw new IOException2("Failed to read "+mavenOutputFile,e);
+                        throw new IOException("Failed to read "+mavenOutputFile,e);
                     }
                 }
             }
