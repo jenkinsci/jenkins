@@ -358,10 +358,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
         EnvVars env;
 
-        if (node!=null)
-            env = node.toComputer().buildEnvironment(listener);
-        else
+        if (node!=null) {
+            final Computer computer = node.toComputer();
+            env = (computer != null) ? computer.buildEnvironment(listener) : new EnvVars();                
+        } else {
             env = new EnvVars();
+        }
 
         env.putAll(getCharacteristicEnvVars());
 
