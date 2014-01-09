@@ -27,7 +27,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * and find things in it.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.485 (but as of TODO not a {@link SoftReference})
+ * @since 1.485 (but as of 1.548 not a {@link SoftReference})
  */
 public final class BuildReference<R> {
 
@@ -67,7 +67,7 @@ public final class BuildReference<R> {
 
     /**
      * An abstraction of {@link Reference}.
-     * @since TODO
+     * @since 1.548
      */
     public interface Holder<R> {
 
@@ -81,7 +81,7 @@ public final class BuildReference<R> {
 
     /**
      * Extensible factory for creating build references.
-     * @since TODO
+     * @since 1.548
      */
     public interface HolderFactory extends ExtensionPoint {
 
