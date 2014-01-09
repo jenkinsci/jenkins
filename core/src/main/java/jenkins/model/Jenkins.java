@@ -298,6 +298,7 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import jenkins.security.SecurityListener;
 
 /**
  * Root object of the system.
@@ -3038,6 +3039,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see BasicAuthenticationFilter
      */
     public void doSecured( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        // TODO fire something in SecurityListener? (seems to be used only for REST calls when LegacySecurityRealm is active)
+
         if(req.getUserPrincipal()==null) {
             // authentication must have failed
             rsp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -3055,12 +3058,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Called once the user logs in. Just forward to the top page.
+     * Used only by {@link LegacySecurityRealm}.
      */
     public void doLoginEntry( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         if(req.getUserPrincipal()==null) {
             rsp.sendRedirect2("noPrincipal");
             return;
         }
+
+        // TODO fire something in SecurityListener?
 
         String from = req.getParameter("from");
         if(from!=null && from.startsWith("/") && !from.equals("/loginError")) {
@@ -3083,7 +3089,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Logs out the user.
      */
     public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        String user = getAuthentication().getName();
         securityRealm.doLogout(req, rsp);
+        SecurityListener.fireLoggedOut(user);
     }
 
     /**
