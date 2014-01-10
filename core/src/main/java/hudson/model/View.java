@@ -436,18 +436,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         for (Computer c : computers) {
-            Node n = c.getNode();
-            if (n != null) {
-                if (labels.contains(null) && n.getMode() == Mode.NORMAL || isRelevant(labels, n)) {
-                    result.add(c);
-                }
-            }
+            if (isRelevant(labels, c)) result.add(c);
         }
 
         return result;
     }
 
-        private boolean isRelevant(Collection<Label> labels, Node node) {
+    private boolean isRelevant(Collection<Label> labels, Computer computer) {
+        Node node = computer.getNode();
+        if (node == null) return false;
+        if (labels.contains(null) && node.getMode() == Mode.NORMAL) return true;
+
         for (Label l : labels)
             if (l.contains(node))
                 return true;
