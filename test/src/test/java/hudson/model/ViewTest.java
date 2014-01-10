@@ -45,6 +45,7 @@ import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -239,57 +240,70 @@ public class ViewTest {
     
     @Test
     public void testGetComputers() throws IOException, Exception{
-        ListView view = new ListView("foo", j.jenkins);
-        ListView view2 =new ListView("foo2", j.jenkins);
-        ListView view3 =new ListView("foo3", j.jenkins);
-        j.jenkins.addView(view);
+        ListView view1 = new ListView("view1", j.jenkins);
+        ListView view2 = new ListView("view2", j.jenkins);
+        ListView view3 = new ListView("view3", j.jenkins);
+        j.jenkins.addView(view1);
         j.jenkins.addView(view2);
         j.jenkins.addView(view3);
-        FreeStyleProject job1 = j.jenkins.createProject(FreeStyleProject.class, "free");
-        MatrixProject job2 = j.jenkins.createProject(MatrixProject.class, "matrix");
-        List<String> values = new ArrayList();
-        values.add("label2");
-        LabelAxis axis = new LabelAxis("label",values);
-        AxisList axisList = new AxisList();
-        axisList.add(axis);
-        job2.setAxes(axisList);
-        FreeStyleProject job = j.jenkins.createProject(FreeStyleProject.class, "not-assigned-label");
-        FreeStyleProject job3 = j.jenkins.createProject(FreeStyleProject.class, "in-other-view");
-        job.setAssignedLabel(null);
-        view.filterExecutors=true;
-        view.jobNames.add(job1.getDisplayName());
-        view.jobNames.add(job2.getDisplayName());
+        view1.filterExecutors=true;
         view2.filterExecutors=true;
-        view2.jobNames.add(job3.getDisplayName());
         view3.filterExecutors=true;
-        view3.jobNames.add(job.getDisplayName());
-        Label label1 = j.jenkins.getLabel("label1");
-        Label label2 = j.jenkins.getLabel("label2");
-        Label label3 = j.jenkins.getLabel("label3");
-        job1.setAssignedLabel(j.jenkins.getLabel("label1||label3"));
-        job3.setAssignedLabel(j.jenkins.getLabel("label2||lable1"));
-        Slave slave1 = j.createOnlineSlave(label1);
-        Slave slave2 = j.createOnlineSlave(label2);
-        Slave slave3 = j.createOnlineSlave(label3);
-        Slave slave4 = j.createOnlineSlave(label1);
-        Slave slave5 = j.createOnlineSlave(j.jenkins.getLabel("label4"));
-        assertTrue("Filtered executors for view " + view.getDisplayName() + " should contain slave " + slave1.getDisplayName(),view.getComputers().contains(slave1.toComputer()));
-        assertTrue("Filtered executors for view " + view.getDisplayName() + " should contain slave " + slave2.getDisplayName(),view.getComputers().contains(slave2.toComputer()));
-        assertTrue("Filtered executors for view " + view.getDisplayName() + " should contain slave " + slave3.getDisplayName(),view.getComputers().contains(slave3.toComputer()));
-        assertTrue("Filtered executors for view " + view2.getDisplayName() + " should contain slave " + slave4.getDisplayName(),view2.getComputers().contains(slave4.toComputer()));
-        assertTrue("Filtered executors for view " + view2.getDisplayName() + " should contain slave " + slave1.getDisplayName(),view2.getComputers().contains(slave1.toComputer()));
-        assertTrue("Filtered executors for view " + view2.getDisplayName() + " should contain slave " + slave2.getDisplayName(),view2.getComputers().contains(slave3.toComputer()));
-        assertTrue("Filtered executors for view " + view2.getDisplayName() + " should contain slave " + slave4.getDisplayName(),view2.getComputers().contains(slave4.toComputer()));
-        assertTrue("Filtered executors for view " + view3.getDisplayName() + " should contain slave " + slave1.getDisplayName(),view3.getComputers().contains(slave1.toComputer()));
-        assertTrue("Filtered executors for view " + view3.getDisplayName() + " should contain slave " + slave2.getDisplayName(),view3.getComputers().contains(slave2.toComputer()));
-        assertTrue("Filtered executors for view " + view3.getDisplayName() + " should contain slave " + slave3.getDisplayName(),view3.getComputers().contains(slave3.toComputer()));
-        assertTrue("Filtered executors for view " + view3.getDisplayName() + " should contain slave " + slave4.getDisplayName(),view3.getComputers().contains(slave4.toComputer()));
-        assertTrue("Filtered executors for view " + view3.getDisplayName() + " should contain slave " + slave5.getDisplayName(),view3.getComputers().contains(slave5.toComputer()));
-        assertFalse("Filtered executors for view " + view.getDisplayName() + " should not contain slave " + slave5.getDisplayName(), view.getComputers().contains(slave5.toComputer()));
-        assertFalse("Filtered executors for view " + view2.getDisplayName() + " should not contain slave " + slave5.getDisplayName(), view2.getComputers().contains(slave5.toComputer()));
-        assertFalse("Filtered executors for view " + view2.getDisplayName() + " should not contain slave " + slave5.getDisplayName(), view2.getComputers().contains(slave3.toComputer()));
+
+        Slave slave0 = j.createOnlineSlave(j.jenkins.getLabel("label0"));
+        Slave slave1 = j.createOnlineSlave(j.jenkins.getLabel("label1"));
+        Slave slave2 = j.createOnlineSlave(j.jenkins.getLabel("label2"));
+        Slave slave3 = j.createOnlineSlave(j.jenkins.getLabel("label0"));
+        Slave slave4 = j.createOnlineSlave(j.jenkins.getLabel("label4"));
+
+        FreeStyleProject freestyleJob = j.jenkins.createProject(FreeStyleProject.class, "free");
+        view1.add(freestyleJob);
+        freestyleJob.setAssignedLabel(j.jenkins.getLabel("label0||label2"));
+
+        MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
+        view1.add(matrixJob);
+        matrixJob.setAxes(new AxisList(
+                new LabelAxis("label", Arrays.asList("label1"))
+        ));
+
+        FreeStyleProject noLabelJob = j.jenkins.createProject(FreeStyleProject.class, "not-assigned-label");
+        view3.add(noLabelJob);
+        noLabelJob.setAssignedLabel(null);
+
+        FreeStyleProject foreignJob = j.jenkins.createProject(FreeStyleProject.class, "in-other-view");
+        view2.add(foreignJob);
+        foreignJob.setAssignedLabel(j.jenkins.getLabel("label0||label1"));
+
+        // contains all slaves having labels associated with freestyleJob or matrixJob
+        assertContains(view1, slave0, slave1, slave2, slave3);
+        assertNotContains(view1, slave4);
+
+        // contains all slaves having labels associated with foreignJob
+        assertContains(view2, slave0, slave1, slave3);
+        assertNotContains(view2, slave2, slave4);
+
+        // contains all slaves as it contains noLabelJob that can run everywhere
+        assertContains(view3, slave0, slave1, slave2, slave3, slave4);
     }
-    
+
+    private void assertContains(View view, Node... slaves) {
+        for (Node slave: slaves) {
+            assertTrue(
+                    "Filtered executors for view " + view.getDisplayName() + " should contain slave " + slave.getDisplayName(),
+                    view.getComputers().contains(slave.toComputer())
+            );
+        }
+    }
+
+    private void assertNotContains(View view, Node... slaves) {
+        for (Node slave: slaves) {
+            assertFalse(
+                    "Filtered executors for view " + view.getDisplayName() + " should not contain slave " + slave.getDisplayName(),
+                    view.getComputers().contains(slave.toComputer())
+            );
+        }
+    }
+
     @Test
     public void testGetItem() throws Exception{
         ListView view = new ListView("foo", j.jenkins);
