@@ -438,7 +438,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         for (Computer c : computers) {
             Node n = c.getNode();
             if (n != null) {
-                if (labels.contains(null) && n.getMode() == Mode.NORMAL || !isDisjoint(n.getAssignedLabels(), labels)) {
+                if (labels.contains(null) && n.getMode() == Mode.NORMAL || isRelevant(labels, n)) {
                     result.add(c);
                 }
             }
@@ -447,11 +447,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return result;
     }
 
-    private boolean isDisjoint(Collection c1, Collection c2) {
-        for (Object o : c1)
-            if (c2.contains(o))
-                return false;
-        return true;
+        private boolean isRelevant(Collection<Label> labels, Node node) {
+        for (Label l : labels)
+            if (l.contains(node))
+                return true;
+        return false;
     }
 
     private List<Queue.Item> filterQueue(List<Queue.Item> base) {
