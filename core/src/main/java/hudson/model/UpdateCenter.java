@@ -44,7 +44,7 @@ import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
-import hudson.util.IOException2;
+import hudson.util.NamingThreadFactory;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
@@ -82,7 +82,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -131,25 +130,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @since 1.501
      */
     private final ExecutorService installerService = new AtmostOneThreadExecutor(
-        new DaemonThreadFactory(new ThreadFactory() {
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("Update center installer thread");
-                return t;
-            }
-        }));
+        new NamingThreadFactory(new DaemonThreadFactory(), "Update center installer thread"));
 
     /**
      * An {@link ExecutorService} for updating UpdateSites.
      */
     protected final ExecutorService updateService = Executors.newCachedThreadPool(
-        new DaemonThreadFactory(new ThreadFactory() {
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("Update site data downloader");
-                return t;
-            }
-        }));
+        new NamingThreadFactory(new DaemonThreadFactory(), "Update site data downloader"));
         
     /**
      * List of created {@link UpdateCenterJob}s. Access needs to be synchronized.
@@ -776,7 +763,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
                     }
                 } catch (IOException e) {
-                    throw new IOException2("Failed to load "+src+" to "+tmp,e);
+                    throw new IOException("Failed to load "+src+" to "+tmp,e);
                 }
 
                 in.close();
@@ -791,7 +778,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 return tmp;
             } catch (IOException e) {
-                throw new IOException2("Failed to download from "+src,e);
+                throw new IOException("Failed to download from "+src,e);
             }
         }
 
@@ -873,7 +860,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
                    // fix up this crappy error message from JDK
-                    throw new IOException2("Failed to validate the SSL certificate of "+url,e);
+                    throw new IOException("Failed to validate the SSL certificate of "+url,e);
             }
         }
     }
@@ -1314,7 +1301,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } catch (RestartRequiredException e) {
                     throw new SuccessButRequiresRestart(e.message);
                 } catch (Exception e) {
-                    throw new IOException2("Failed to dynamically deploy this plugin",e);
+                    throw new IOException("Failed to dynamically deploy this plugin",e);
                 }
             } else {
                 throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
@@ -1544,7 +1531,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *
      * This has to wait until after all plugins load, to let custom UpdateCenterConfiguration take effect first.
      */
-    @Initializer(after=PLUGINS_STARTED)
+    @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
     }

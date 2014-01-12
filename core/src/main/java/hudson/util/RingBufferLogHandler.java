@@ -51,7 +51,7 @@ public class RingBufferLogHandler extends Handler {
         int len = records.length;
         records[(start+size)%len]=record;
         if(size==len) {
-            start++;
+            start = (start+1)%len;
         } else {
             size++;
         }

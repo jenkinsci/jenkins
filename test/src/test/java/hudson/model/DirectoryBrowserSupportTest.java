@@ -159,7 +159,7 @@ public class DirectoryBrowserSupportTest {
 
         ZipFile readzip = new ZipFile(zipfile);
 
-        InputStream is = readzip.getInputStream(readzip.getEntry("artifact.out"));
+        InputStream is = readzip.getInputStream(readzip.getEntry("archive/artifact.out"));
 
         // ZipException in case of JENKINS-19752
         assertFalse("Downloaded zip file must not be empty", is.read() == -1);

@@ -176,23 +176,23 @@ public class ExtensionList<T> extends AbstractList<T> {
 
     @Override
     public synchronized boolean remove(Object o) {
-        removeComponent(legacyInstances,o);
+        boolean removed = removeComponent(legacyInstances, o);
         if(extensions!=null) {
             List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
-            removeComponent(r,o);
+            removed |= removeComponent(r,o);
             extensions = sort(r);
         }
-        return true;
+        return removed;
     }
 
-    private <T> void removeComponent(Collection<ExtensionComponent<T>> collection, Object t) {
+    private <T> boolean removeComponent(Collection<ExtensionComponent<T>> collection, Object t) {
         for (Iterator<ExtensionComponent<T>> itr = collection.iterator(); itr.hasNext();) {
             ExtensionComponent<T> c =  itr.next();
             if (c.getInstance().equals(t)) {
-                collection.remove(c);
-                return;
+                return collection.remove(c);
             }
         }
+        return false;
     }
 
     @Override

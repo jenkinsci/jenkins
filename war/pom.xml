@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.535-SNAPSHOT</version>
+    <version>1.548-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -51,7 +51,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.28</version>
+      <version>1.29</version>
       <scope>provided</scope>
     </dependency>
 
@@ -103,7 +103,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-47</version>
+      <version>2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -139,7 +139,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-      <version>1.5</version>
+      <version>1.6</version>
     </dependency>
     <dependency>
       <!--
@@ -269,31 +269,31 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <version>0.25</version>
+                  <version>1.5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>credentials</artifactId>
-                  <version>1.4</version>
+                  <version>1.9.3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-credentials</artifactId>
-                  <version>0.3</version>
+                  <version>1.6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>subversion</artifactId>
-                  <version>1.45</version>
+                  <version>1.54</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>cvs</artifactId>
-                  <version>2.8</version>
+                  <version>2.11</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -317,25 +317,37 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>external-monitor-job</artifactId>
-                  <version>1.1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>ldap</artifactId>
                   <version>1.2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ldap</artifactId>
+                  <version>1.6</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>pam-auth</artifactId>
-                  <version>1.0</version>
+                  <version>1.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.5</version>
+                  <version>1.6</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>matrix-auth</artifactId>
+                  <version>1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>windows-slaves</artifactId>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
@@ -446,14 +458,12 @@ THE SOFTWARE.
               <name>stapler.resourcePath</name>
               <value>
                   ../core/src/main/resources;
-                  ../ui-samples-plugin/src/main/resources;
               </value>
             </systemProperty>
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
               <value><!-- run "mvn install" once will generate the.hpl -->
-                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl,
                   ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
               </value>
             </systemProperty>

@@ -51,6 +51,9 @@ public abstract class DirScanner implements Serializable {
 
     /**
      * Scans everything recursively.
+     * <p>Note that all file paths are prefixed by the name of the root directory.
+     * For example, when scanning a directory {@code /tmp/dir} containing a file {@code file},
+     * the {@code relativePath} sent to the {@link FileVisitor} will be {@code dir/file}.
      */
     public static class Full extends DirScanner {
         private void scan(File f, String path, FileVisitor visitor) throws IOException {
@@ -71,7 +74,8 @@ public abstract class DirScanner implements Serializable {
     }
 
     /**
-     * Scans by filtering things out from {@link FileFilter}
+     * Scans by filtering things out from {@link FileFilter}.
+     * <p>An initial basename is prepended as with {@link Full}.
      */
     public static class Filter extends Full {
         private final FileFilter filter;
@@ -90,6 +94,10 @@ public abstract class DirScanner implements Serializable {
 
     /**
      * Scans by using Ant GLOB syntax.
+     * <p>An initial basename is prepended as with {@link Full} <strong>if the includes and excludes are blank</strong>.
+     * Otherwise there is no prepended path. So for example when scanning a directory {@code /tmp/dir} containing a file {@code file},
+     * the {@code relativePath} sent to the {@link FileVisitor} will be {@code dir/file} if {@code includes} is blank
+     * but {@code file} if it is {@code **}. (This anomaly is historical.)
      */
     public static class Glob extends DirScanner {
         private final String includes, excludes;

@@ -7,6 +7,7 @@ NAME=jenkins
 JAVA=/usr/bin/java
 
 # arguments to pass to java
+JAVA_ARGS="-Djava.awt.headless=true"  # Allow graphs etc. to work even when an X server is present
 #JAVA_ARGS="-Xmx256m"
 #JAVA_ARGS="-Djava.net.preferIPv4Stack=true" # make jenkins listen on IPv4 address
 

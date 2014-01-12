@@ -119,14 +119,7 @@ public class TreeView extends View implements ViewGroup {
         return null;
     }
 
-    @Override
-    public synchronized void onJobRenamed(Item item, String oldName, String newName) {
-        if(jobNames.remove(oldName) && newName!=null)
-            jobNames.add(newName);
-        // forward to children
-        for (View v : views)
-            v.onJobRenamed(item,oldName,newName);
-    }
+    // TODO listen for changes that might affect jobNames
 
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
     }

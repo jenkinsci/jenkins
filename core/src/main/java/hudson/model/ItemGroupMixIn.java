@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.model.listeners.ItemListener;
+import hudson.remoting.Callable;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
@@ -40,6 +41,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Defines a bunch of static methods to be used as a "mix-in" for {@link ItemGroup}
@@ -96,10 +99,16 @@ public abstract class ItemGroupMixIn {
         CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<K,V>();
         for (File subdir : subdirs) {
             try {
-                V item = (V) Items.load(parent,subdir);
+                // Try to retain the identity of an existing child object if we can.
+                V item = (V) parent.getItem(subdir.getName());
+                if (item == null) {
+                    item = (V) Items.load(parent,subdir);
+                } else {
+                    item.onLoad(parent, subdir.getName());
+                }
                 configurations.put(key.call(item), item);
             } catch (IOException e) {
-                e.printStackTrace(); // TODO: logging
+                Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not load " + subdir, e);
             }
         }
 
@@ -170,9 +179,13 @@ public abstract class ItemGroupMixIn {
             } else {
                 if(mode==null)
                     throw new Failure("No mode given");
+                TopLevelItemDescriptor descriptor = Items.all().findByName(mode);
+                if (descriptor == null) {
+                    throw new Failure("No item type ‘" + mode + "’ is known");
+                }
 
                 // create empty job and redirect to the project config screen
-                result = createProject(Items.all().findByName(mode), name, true);
+                result = createProject(descriptor, name, true);
             }
         }
 
@@ -200,12 +213,12 @@ public abstract class ItemGroupMixIn {
         Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
 
         // reload from the new config
-        Items.updatingByXml.set(true);
-        try {
-            result = (T)Items.load(parent,result.getRootDir());
-        } finally {
-            Items.updatingByXml.set(false);
-        }
+        final File rootDir = result.getRootDir();
+        result = Items.whileUpdatingByXml(new Callable<T,IOException>() {
+            @Override public T call() throws IOException {
+                return (T) Items.load(parent, rootDir);
+            }
+        });
         result.onCopiedFrom(src);
 
         add(result);
@@ -219,20 +232,23 @@ public abstract class ItemGroupMixIn {
         acl.checkPermission(Item.CREATE);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
+        if (parent.getItem(name) != null) {
+            throw new IllegalArgumentException(parent.getDisplayName() + " already contains an item '" + name + "'");
+        }
+
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
-        configXml.getParentFile().mkdirs();
+        final File dir = configXml.getParentFile();
+        dir.mkdirs();
         try {
             IOUtils.copy(xml,configXml);
 
             // load it
-            TopLevelItem result;
-            Items.updatingByXml.set(true);
-            try {
-                result = (TopLevelItem)Items.load(parent,configXml.getParentFile());
-            } finally {
-                Items.updatingByXml.set(false);
-            }
+            TopLevelItem result = Items.whileUpdatingByXml(new Callable<TopLevelItem,IOException>() {
+                @Override public TopLevelItem call() throws IOException {
+                    return (TopLevelItem) Items.load(parent, dir);
+                }
+            });
             add(result);
 
             ItemListener.fireOnCreated(result);
@@ -241,7 +257,7 @@ public abstract class ItemGroupMixIn {
             return result;
         } catch (IOException e) {
             // if anything fails, delete the config file to avoid further confusion
-            Util.deleteRecursive(configXml.getParentFile());
+            Util.deleteRecursive(dir);
             throw e;
         }
     }
@@ -254,12 +270,7 @@ public abstract class ItemGroupMixIn {
         if(parent.getItem(name)!=null)
             throw new IllegalArgumentException("Project of the name "+name+" already exists");
 
-        TopLevelItem item;
-        try {
-            item = type.newInstance(parent,name);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
+        TopLevelItem item = type.newInstance(parent, name);
         try {
             callOnCreatedFromScratch(item);
         } catch (AbstractMethodError e) {

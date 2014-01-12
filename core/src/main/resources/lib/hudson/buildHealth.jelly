@@ -42,14 +42,16 @@ THE SOFTWARE.
         <j:if test="${buildHealth!=null}">
             <j:choose>
               <j:when  test="${!empty(healthReports)}">
-                <a href="${empty(link)?'#':link}" style="${attrs.style}">
+                <a class="build-health-link" href="${empty(link)?'#':link}" 
+                    style="${attrs.style}">
                     <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                         alt="${buildHealth.score}%" class="icon${iconSize}"/>
+                         alt="${buildHealth.score}%" 
+                         class="build-health-icon icon${iconSize}"/>
                 </a>
               </j:when>
               <j:otherwise>
                  <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                      alt="${buildHealth.score}%" class="icon${iconSize}"/>
+                      alt="${buildHealth.score}%" class="build-health-icon icon${iconSize}"/>
                </j:otherwise>
              </j:choose>  
         </j:if>

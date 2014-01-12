@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -54,11 +53,6 @@ public class AllView extends View {
     }
     
     @Override
-    public String getDescription() {
-        return Jenkins.getInstance().getDescription();
-    }
-
-    @Override
     public boolean isEditable() {
         return false;
     }
@@ -83,21 +77,8 @@ public class AllView extends View {
     }
 
     @Override
-    public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(Jenkins.ADMINISTER);
-
-        Jenkins.getInstance().setSystemMessage(req.getParameter("description"));
-        rsp.sendRedirect(".");
-    }
-
-    @Override
     public String getPostConstructLandingPage() {
         return ""; // there's no configuration page
-    }
-
-    @Override
-    public void onJobRenamed(Item item, String oldName, String newName) {
-        // noop
     }
 
     @Override

@@ -26,12 +26,12 @@ package hudson.util.xstream;
 
 import com.google.common.collect.ImmutableList;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.converters.reflection.SerializableConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
 
 import hudson.util.RobustReflectionConverter;
@@ -76,7 +76,7 @@ public class ImmutableListConverter extends CollectionConverter {
 	                try {
 	                    Object item = readItem(reader, context, items);
 	                    items.add(item);
-	                } catch (CannotResolveClassException e) {
+	                } catch (XStreamException e) {
 	                    RobustReflectionConverter.addErrorInContext(context, e);
 	                } catch (LinkageError e) {
 	                    RobustReflectionConverter.addErrorInContext(context, e);

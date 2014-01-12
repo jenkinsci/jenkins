@@ -34,15 +34,16 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.remoting.Callable;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
+import jenkins.model.Jenkins.MasterComputer;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.WebMethod;
@@ -52,6 +53,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -157,15 +159,17 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
              
     public File getRootDir() {
-        return parent.getRootDirFor(this);
+        return getParent().getRootDirFor(this);
     }
 
     /**
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
     @WithBridgeMethods(value=Jenkins.class,castRequired=true)
-    public ItemGroup getParent() {
-        assert parent!=null;
+    @Override public @Nonnull ItemGroup getParent() {
+        if (parent == null) {
+            throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + name + "]");
+        }
         return parent;
     }
 
@@ -221,6 +225,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                             + " already exists");
 
                 String oldName = this.name;
+                String oldFullName = getFullName();
                 File oldRoot = this.getRootDir();
 
                 doSetName(newName);
@@ -265,7 +270,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         cp.setProject(new org.apache.tools.ant.Project());
                         cp.setTodir(newRoot);
                         FileSet src = new FileSet();
-                        src.setDir(getRootDir());
+                        src.setDir(oldRoot);
                         cp.addFileset(src);
                         cp.setOverwrite(true);
                         cp.setPreserveLastModified(true);
@@ -291,8 +296,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
                 callOnRenamed(newName, parent, oldName);
 
-                for (ItemListener l : ItemListener.all())
-                    l.onRenamed(this, oldName, newName);
+                ItemListener.fireLocationChange(this, oldFullName);
             }
         }
     }
@@ -323,7 +327,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
         if(n.length()==0)   return getDisplayName();
-        else                return n+" \u00BB "+getDisplayName();
+        else                return n+" » "+getDisplayName();
     }
     
     /**
@@ -508,21 +512,23 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         checkPermission(DELETE);
         performDelete();
 
-        try {
-            invokeOnDeleted();
-        } catch (AbstractMethodError e) {
-            // ignore
-        }
+        // defer the notification to avoid the lock ordering problem. See JENKINS-19446.
+        MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                invokeOnDeleted();
+                Jenkins.getInstance().rebuildDependencyGraphAsync();
+                return null;
+            }
 
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void invokeOnDeleted() throws IOException {
-        getParent().onDeleted(this);
+            /**
+             * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
+             * on BugParade for more details.
+             */
+            private void invokeOnDeleted() throws IOException {
+                getParent().onDeleted(AbstractItem.this);
+            }
+        });
     }
 
     /**
@@ -566,6 +572,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Updates Job by its XML definition.
+     * @since 1.473
      */
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
@@ -582,17 +589,17 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         new StreamResult(out));
                 out.close();
             } catch (TransformerException e) {
-                throw new IOException2("Failed to persist configuration.xml", e);
+                throw new IOException("Failed to persist config.xml", e);
             }
 
             // try to reflect the changes by reloading
             new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
-            Items.updatingByXml.set(true);
-            try {
-                onLoad(getParent(), getRootDir().getName());
-            } finally {
-                Items.updatingByXml.set(false);
-            }
+            Items.whileUpdatingByXml(new Callable<Void,IOException>() {
+                @Override public Void call() throws IOException {
+                    onLoad(getParent(), getRootDir().getName());
+                    return null;
+                }
+            });
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             // if everything went well, commit this new version

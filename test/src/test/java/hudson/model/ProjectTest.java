@@ -23,11 +23,14 @@
  */
 package hudson.model;
 
+import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
 import org.acegisecurity.context.SecurityContextHolder;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.util.Collections;
+
+import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.PollingResult;
@@ -43,8 +46,6 @@ import hudson.model.queue.SubTask;
 import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
 import jenkins.model.Jenkins;
-import java.util.HashSet;
-import java.util.Set;
 import hudson.model.AbstractProject.BecauseOfBuildInProgress;
 import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
@@ -60,6 +61,7 @@ import hudson.FilePath;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.EnvVars;
 import hudson.tasks.Shell;
+import org.jvnet.hudson.test.MilliSecLogFormatter;
 import org.jvnet.hudson.test.TestExtension;
 import java.util.List;
 import java.util.ArrayList;
@@ -74,7 +76,10 @@ import static org.junit.Assert.*;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.ArtifactArchiver;
 import java.util.Map;
-import hudson.Functions;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
 import org.junit.Ignore;
 
 /**
@@ -89,15 +94,13 @@ public class ProjectTest {
     public static boolean createSubTask = false;
     
     @Test
-    public void testSave() throws IOException, InterruptedException {
+    public void testSave() throws IOException, InterruptedException, ReactorException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.disabled = true;
         p.nextBuildNumber = 5;
         p.description = "description";
         p.save();
-        j.jenkins.doReload();
-        //wait until all configuration are reloaded
-        reload(); 
+        j.jenkins.reload();
         assertEquals("All persistent data should be saved.", "description", p.description);
         assertEquals("All persistent data should be saved.", 5, p.nextBuildNumber);
         assertEquals("All persistent data should be saved", true, p.disabled);
@@ -293,7 +296,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testSaveAfterSet() throws Exception{
+    public void testSaveAfterSet() throws Exception, ReactorException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setScm(new NullSCM());
         p.setScmCheckoutStrategy(new SCMCheckoutStrategyImpl());
@@ -304,7 +307,7 @@ public class ProjectTest {
         j.jenkins.save();
         p.setJDK(j.jenkins.getJDK("jdk"));
         p.setCustomWorkspace("/some/path");
-        reload();
+        j.jenkins.reload();
         assertNotNull("Project did not save scm.", p.getScm());
         assertTrue("Project did not save scm checkout strategy.", p.getScmCheckoutStrategy() instanceof SCMCheckoutStrategyImpl);
         assertEquals("Project did not save quiet period.", 15, p.getQuietPeriod());
@@ -312,14 +315,6 @@ public class ProjectTest {
         assertTrue("Project did not save block if upstream is buildidng.", p.blockBuildWhenUpstreamBuilding());
         assertNotNull("Project did not save jdk", p.getJDK());
         assertEquals("Project did not save custom workspace.", "/some/path", p.getCustomWorkspace());
-    }
-    
-    private void reload() throws IOException, InterruptedException{
-        j.jenkins.doReload();
-        //wait until all configuration are reloaded
-        if(j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading){
-            Thread.sleep(500);
-        } 
     }
     
     @Test
@@ -330,29 +325,51 @@ public class ProjectTest {
         assertNotNull("Action should contain transient actions too.", p.getAction(TransientAction.class));
         createAction = false;
     }
-    
+
+// for debugging
+//    static {
+//        Logger.getLogger("").getHandlers()[0].setFormatter(new MilliSecLogFormatter());
+//    }
+
     @Test
-    public void testGetCauseOfBlockage() throws IOException, InterruptedException{
+    public void testGetCauseOfBlockage() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.getBuildersList().add(new Shell("sleep 10"));
-        p.scheduleBuild2(0);
-        Thread.sleep(1000);//wait until it starts
-        assertTrue("Build can not start because previous build has not finished.", p.getCauseOfBlockage() instanceof BecauseOfBuildInProgress);
+        QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
+        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BecauseOfBuildInProgress.class);
         p.getLastBuild().getExecutor().interrupt();
+        b1.get();   // wait for it to finish
+
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
         downstream.getBuildersList().add(new Shell("sleep 10"));
-        Set<AbstractProject> upstream = new HashSet<AbstractProject>(Items.fromNameList(p.getParent(),"project",AbstractProject.class));
-        downstream.convertUpstreamBuildTrigger(upstream);
+        downstream.convertUpstreamBuildTrigger(Collections.<AbstractProject>singleton(p));
         Jenkins.getInstance().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
-        downstream.scheduleBuild2(0);
-        Thread.sleep(1000);//wait until it starts
-        assertTrue("Build can not start because build of downstream project has not finished.", p.getCauseOfBlockage() instanceof BecauseOfDownstreamBuildInProgress);
+        QueueTaskFuture<FreeStyleBuild> b2 = waitForStart(downstream);
+        assertInstanceOf("Build can not start because build of downstream project has not finished.", p.getCauseOfBlockage(), BecauseOfDownstreamBuildInProgress.class);
         downstream.getLastBuild().getExecutor().interrupt();
+        b2.get();
+
         downstream.setBlockBuildWhenUpstreamBuilding(true);
-        p.scheduleBuild2(0);
-        Thread.sleep(1000);//wait until it starts
-        assertTrue("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage() instanceof BecauseOfUpstreamBuildInProgress);
+        waitForStart(p);
+        assertInstanceOf("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), BecauseOfUpstreamBuildInProgress.class);
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(ProjectTest.class.getName());
+
+    private QueueTaskFuture<FreeStyleBuild> waitForStart(FreeStyleProject p) throws InterruptedException, ExecutionException {
+        long start = System.nanoTime();
+        LOGGER.info("Scheduling "+p);
+        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
+        f.waitForStart();
+        LOGGER.info("Wait:"+ TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-start));
+        return f;
+    }
+
+    private void assertInstanceOf(String msg, Object o, Class t) {
+        if (t.isInstance(o))
+            return;
+        fail(msg + ": " + o);
     }
     
     @Test

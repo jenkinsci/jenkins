@@ -167,7 +167,7 @@ public class AggregatedTestResultPublisherTest {
         addFingerprinterToProject(downstreamProject, singleContents, singleFiles);
 
         upstreamProject.getPublishersList().add(new BuildTrigger(ImmutableList.of(downstreamProject), Result.SUCCESS));
-        upstreamProject.getPublishersList().add(new AggregatedTestResultPublisher(TEST_PROJECT_NAME));
+        upstreamProject.getPublishersList().add(new AggregatedTestResultPublisher(null));
 
         j.jenkins.rebuildDependencyGraph();
     }

@@ -65,13 +65,15 @@ THE SOFTWARE.
 
   <j:if test="${it.totalCount!=0}">
     <h2>${%All Tests}</h2>
-    <table class="pane sortable" id="testresult">
+    <table class="pane sortable bigtable" id="testresult">
       <tr>
         <td class="pane-header">${it.childTitle}</td>
         <td class="pane-header" style="width:5em">${%Duration}</td>
         <td class="pane-header" style="width:5em">${%Fail}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Skip}</td>
+        <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
+        <td class="pane-header" style="width:5em">${%Pass}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
         <td class="pane-header" style="width:5em">${%Total}</td>
         <td class="pane-header" style="width:1em; font-size:smaller; white-space:nowrap;">(${%diff})</td>
@@ -95,6 +97,10 @@ THE SOFTWARE.
             <td class="pane" style="text-align:right">${p.skipCount}</td>
             <td class="pane" style="text-align:right">
               ${h.getDiffString2(p.skipCount-prev.skipCount)}
+            </td>
+            <td class="pane" style="text-align:right">${p.passCount}</td>
+            <td class="pane" style="text-align:right">
+              ${h.getDiffString2(p.passCount-prev.passCount)}
             </td>
             <td class="pane" style="text-align:right">${p.totalCount}</td>
             <td class="pane" style="text-align:right">

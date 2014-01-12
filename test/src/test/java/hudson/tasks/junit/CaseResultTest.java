@@ -28,16 +28,11 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.FreeStyleBuild;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
-import hudson.maven.MavenBuild;
-import hudson.maven.reporters.SurefireReport;
 import hudson.Launcher;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -124,27 +119,6 @@ public class CaseResultTest extends HudsonTestCase {
 		     errorStackTrace.getTextContent());
     }
     
-    /**
-     * Verifies that the error message and stacktrace from a failed junit test actually render properly.
-     */
-    @Bug(4257)
-    public void testMavenErrorMsgAndStacktraceRender() throws Exception {
-	configureDefaultMaven();
-	MavenModuleSet m = createMavenProject("maven-render-test");
-	m.setScm(new ExtractResourceSCM(m.getClass().getResource("maven-test-failure-findbugs.zip")));
-	m.setGoals("clean test");
-
-	MavenModuleSetBuild b = assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
-	MavenBuild modBuild = (MavenBuild)b.getModuleLastBuilds().get(m.getModule("test:test"));
-	TestResult tr = modBuild.getAction(SurefireReport.class).getResult();
-        assertEquals(1,tr.getFailedTests().size());
-        CaseResult cr = tr.getFailedTests().get(0);
-        assertEquals("test.AppTest",cr.getClassName());
-        assertEquals("testApp",cr.getName());
-	assertNotNull("Error details should not be null", cr.getErrorDetails());
-	assertNotNull("Error stacktrace should not be null", cr.getErrorStackTrace());
-    }
-
     /**
      * Verify fields show up at the correct visibility in the remote API
      */

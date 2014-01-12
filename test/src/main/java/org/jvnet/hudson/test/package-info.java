@@ -22,6 +22,6 @@
  * THE SOFTWARE.
  */
 /**
- * Test harness for Jenkins and its plugins. Start exploring from {@link JenkinsRule}.
+ * Test harness for Jenkins and its plugins. Start exploring from {@link org.jvnet.hudson.test.JenkinsRule}.
  */
 package org.jvnet.hudson.test;

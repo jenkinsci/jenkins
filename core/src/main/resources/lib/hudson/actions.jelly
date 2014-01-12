@@ -28,10 +28,10 @@ THE SOFTWARE.
     Shows a list of tasks.
 
     <st:attribute name="actions">
-      List of actions. Defaults to "it.actions"
+      List of actions. Defaults to "it.allActions ?: it.actions"
     </st:attribute>
   </st:documentation>
-  <j:forEach var="action" items="${attrs.actions?:it.actions}">
+  <j:forEach var="action" items="${attrs.actions ?: it.allActions ?: it.actions}">
     <!--
       allow the action to take over the rendering, but otherwise fall back to the default
       the action object itself is available in the 'action' variable
@@ -39,7 +39,7 @@ THE SOFTWARE.
     <st:include page="action.jelly" from="${action}" optional="true">
       <j:if test="${action.iconFileName!=null}">
         <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
-                href="${h.getActionUrl(it.url,action)}" />
+                href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}"/>
       </j:if>
     </st:include>
   </j:forEach>

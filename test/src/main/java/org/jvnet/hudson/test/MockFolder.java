@@ -33,12 +33,13 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ItemGroupMixIn;
+import hudson.model.ModifiableViewGroup;
 import hudson.model.Job;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.View;
-import hudson.model.ViewGroup;
 import hudson.model.ViewGroupMixIn;
+import hudson.model.listeners.ItemListener;
 import hudson.util.Function1;
 import hudson.views.DefaultViewsTabBar;
 import hudson.views.ViewsTabBar;
@@ -54,8 +55,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.servlet.ServletException;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
-import jenkins.model.ModifiableTopLevelItemGroup;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -64,10 +65,12 @@ import org.kohsuke.stapler.WebMethod;
 /**
  * Minimal implementation of a modifiable item group akin to the CloudBees Folders plugin.
  * No UI, just enough implementation to test functionality of code which should deal with item full names, etc.
+ * <p>If you need to work with the UI during the test, or just prefer to depend on a plugin POM earlier than this class,
+ * you can simply add a test dependency on {@code cloudbees-folder} to your plugin and use {@code jenkinsRule.jenkins.createProject(Folder.class, "name")}.
  * @since 1.494
  */
 @SuppressWarnings({"unchecked", "rawtypes"}) // the usual API mistakes
-public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGroup, TopLevelItem, ViewGroup, StaplerFallback {
+public class MockFolder extends AbstractItem implements DirectlyModifiableTopLevelItemGroup, TopLevelItem, ModifiableViewGroup, StaplerFallback {
 
     private transient Map<String,TopLevelItem> items = new TreeMap<String,TopLevelItem>();
     private final List<View> views = new ArrayList<View>(Collections.singleton(new AllView("All", this)));
@@ -92,6 +95,9 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
     }
 
     @Override public TopLevelItem getItem(String name) {
+        if (items == null) {
+            return null; // cf. parent hack in AbstractProject.onLoad
+        }
         return items.get(name);
     }
 
@@ -177,8 +183,28 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
         items.put(newName, item);
     }
 
+    @Override public void renameTo(String newName) throws IOException {
+        super.renameTo(newName); // just to make it public
+    }
+
     @Override public void onDeleted(TopLevelItem item) throws IOException {
-        // could call ItemListener.onDeleted
+        ItemListener.fireOnDeleted(item);
+        items.remove(item.getName());
+    }
+
+    @Override public boolean canAdd(TopLevelItem item) {
+        return true;
+    }
+
+    @Override synchronized public <I extends TopLevelItem> I add(I item, String name) throws IOException, IllegalArgumentException {
+        if (items.containsKey(name)) {
+            throw new IllegalArgumentException("already an item '" + name + "'");
+        }
+        items.put(name, item);
+        return item;
+    }
+
+    @Override public void remove(TopLevelItem item) throws IOException, IllegalArgumentException {
         items.remove(item.getName());
     }
 
@@ -186,7 +212,7 @@ public class MockFolder extends AbstractItem implements ModifiableTopLevelItemGr
         return Jenkins.getInstance().getDescriptorByType(DescriptorImpl.class);
     }
 
-    public void addView(View view) throws IOException {
+    @Override public void addView(View view) throws IOException {
         vgmixin().addView(view);
     }
 

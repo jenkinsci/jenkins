@@ -46,7 +46,7 @@ public class TestResultAggregator extends MatrixAggregator {
 
     @Override
     public boolean startBuild() throws InterruptedException, IOException {
-        result = new MatrixTestResult(build);
+        result = new MatrixTestResult();
         build.addAction(result);
         return true;
     }

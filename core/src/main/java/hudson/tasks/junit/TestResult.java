@@ -30,7 +30,6 @@ import hudson.model.Run;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.MetaTabulatedResult;
 import hudson.tasks.test.TestObject;
-import hudson.util.IOException2;
 
 import java.io.File;
 import java.io.IOException;
@@ -274,12 +273,12 @@ public final class TestResult extends MetaTabulatedResult {
             for (SuiteResult suiteResult : SuiteResult.parse(reportFile, keepLongStdio))
                 add(suiteResult);
         } catch (InterruptedException e) {
-            throw new IOException2("Failed to read "+reportFile,e);
+            throw new IOException("Failed to read "+reportFile,e);
         } catch (RuntimeException e) {
-            throw new IOException2("Failed to read "+reportFile,e);
+            throw new IOException("Failed to read "+reportFile,e);
         } catch (DocumentException e) {
             if (!reportFile.getPath().endsWith(".xml")) {
-                throw new IOException2("Failed to read "+reportFile+"\n"+
+                throw new IOException("Failed to read "+reportFile+"\n"+
                     "Is this really a JUnit report file? Your configuration must be matching too many files",e);
             } else {
                 SuiteResult sr = new SuiteResult(reportFile.getName(), "", "");

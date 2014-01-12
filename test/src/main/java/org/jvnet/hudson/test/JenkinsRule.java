@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -206,16 +207,17 @@ import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import jenkins.model.JenkinsLocationConfiguration;
 
 import org.acegisecurity.GrantedAuthorityImpl;
 
-import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
+import org.junit.internal.AssumptionViolatedException;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 import org.junit.rules.TemporaryFolder;
@@ -230,13 +232,14 @@ import org.junit.rules.TemporaryFolder;
 @SuppressWarnings({"deprecation","rawtypes"})
 public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
-    private TestEnvironment env;
+    protected TestEnvironment env;
 
-    private Description testDescription;
+    protected Description testDescription;
 
     /**
      * Points to the same object as {@link #jenkins} does.
      */
+    @Deprecated
     public Hudson hudson;
 
     public Jenkins jenkins;
@@ -249,11 +252,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     protected Server server;
 
     /**
-     * Where in the {@link Server} is Hudson deployed?
+     * Where in the {@link Server} is Jenkins deployed?
      * <p>
      * Just like {@link javax.servlet.ServletContext#getContextPath()}, starts with '/' but doesn't end with '/'.
+     * Unlike {@link WebClient#getContextPath} this is not a complete URL.
      */
-    protected String contextPath = "/jenkins";
+    public String contextPath = "/jenkins";
 
     /**
      * {@link Runnable}s to be invoked at {@link #after()} .
@@ -292,7 +296,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Number of seconds until the test times out.
      */
-    public int timeout = 90;
+    public int timeout = Integer.getInteger("jenkins.test.timeout", 180);
 
     private volatile Timer timeoutTimer;
 
@@ -313,7 +317,15 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Override to set up your specific external resource.
      * @throws Throwable if setup fails (which will disable {@code after}
      */
-    protected void before() throws Throwable {
+    public void before() throws Throwable {
+        // Not ideal (https://github.com/junit-team/junit/issues/116) but basically works.
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            RandomlyFails rf = testDescription.getAnnotation(RandomlyFails.class);
+            if (rf != null) {
+                throw new AssumptionViolatedException("Known to randomly fail: " + rf.value());
+            }
+        }
+
         env = new TestEnvironment(testDescription);
         env.pin();
         recipe();
@@ -355,6 +367,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         JenkinsLocationConfiguration.get().setUrl(getURL().toString());
         for( Descriptor d : jenkins.getExtensionList(Descriptor.class) )
             d.load();
+        
+        setUpTimeout();
     }
 
     /**
@@ -372,7 +386,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         sites.clear();
         sites.add(new UpdateSite("default", updateCenterUrl));
     }
-
+    
     protected void setUpTimeout() {
         if (timeout<=0)     return; // no timeout
 
@@ -381,8 +395,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         timeoutTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (timeoutTimer!=null)
+                if (timeoutTimer!=null) {
+                    LOGGER.warning(String.format("Test timed out (after %d seconds).", timeout));
                     testThread.interrupt();
+                }
             }
         }, TimeUnit.SECONDS.toMillis(timeout));
     }
@@ -390,10 +406,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Override to tear down your specific external resource.
      */
-    protected void after() throws Exception {
+    public void after() throws Exception {
         try {
-            for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
-                tl.onTearDown();
+            if (jenkins!=null) {
+                for (EndOfTestListener tl : jenkins.getExtensionList(EndOfTestListener.class))
+                    tl.onTearDown();
+            }
 
             if (timeoutTimer!=null) {
                 timeoutTimer.cancel();
@@ -425,7 +443,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                     // ignore
                 }
 
-            jenkins.cleanUp();
+            if (jenkins!=null)
+                jenkins.cleanUp();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
 
@@ -476,6 +495,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                         try {
                             throw new BreakException();
                         } catch (BreakException e) {}
+
+                        RandomlyFails rf = testDescription.getAnnotation(RandomlyFails.class);
+                        if (rf != null) {
+                            System.err.println("Note: known to randomly fail: " + rf.value());
+                        }
 
                         // dump threads
                         ThreadInfo[] threadInfos = Functions.getThreadInfos();
@@ -646,7 +670,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         LOGGER.warning("Extracting a copy of Maven bundled in the test harness into " + mvnHome + ". " +
                 "To avoid a performance hit, set the system property 'maven.home' to point to a Maven2 installation.");
         FilePath mvn = jenkins.getRootPath().createTempFile("maven", "zip");
-        mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
+        mvn.copyFrom(JenkinsRule.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         mvn.unzip(new FilePath(buildDirectory));
         // TODO: switch to tar that preserves file permissions more easily
         if(!Functions.isWindows())
@@ -669,7 +693,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             LOGGER.warning("Extracting a copy of Ant bundled in the test harness. " +
                     "To avoid a performance hit, set the environment variable ANT_HOME to point to an  Ant installation.");
             FilePath ant = jenkins.getRootPath().createTempFile("ant", "zip");
-            ant.copyFrom(HudsonTestCase.class.getClassLoader().getResource("apache-ant-1.8.1-bin.zip"));
+            ant.copyFrom(JenkinsRule.class.getClassLoader().getResource("apache-ant-1.8.1-bin.zip"));
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
@@ -1110,7 +1134,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Asserts that the XPath matches.
      */
     public void assertXPath(HtmlPage page, String xpath) {
-        assertThat(page.getDocumentElement(), hasXPath(xpath));
+        assertNotNull("There should be an object that matches XPath:" + xpath,
+                page.getDocumentElement().selectSingleNode(xpath));
     }
 
     /** Asserts that the XPath matches the contents of a DomNode page. This
@@ -1125,13 +1150,23 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
 
     public void assertXPathValue(DomNode page, String xpath, String expectedValue) {
-        org.w3c.dom.Node node = page.getFirstByXPath(xpath);
-        assertThat(node, hasXPath(xpath, is(expectedValue)));
+        Object node = page.getFirstByXPath(xpath);
+        assertNotNull("no node found", node);
+        assertTrue("the found object was not a Node " + xpath, node instanceof org.w3c.dom.Node);
+
+        org.w3c.dom.Node n = (org.w3c.dom.Node) node;
+        String textString = n.getTextContent();
+        assertEquals("xpath value should match for " + xpath, expectedValue, textString);
     }
 
     public void assertXPathValueContains(DomNode page, String xpath, String needle) {
-        org.w3c.dom.Node node = page.getFirstByXPath(xpath);
-        assertThat(node, hasXPath(xpath, Matchers.containsString(needle)));
+        Object node = page.getFirstByXPath(xpath);
+        assertNotNull("no node found", node);
+        assertTrue("the found object was not a Node " + xpath, node instanceof org.w3c.dom.Node);
+
+        org.w3c.dom.Node n = (org.w3c.dom.Node) node;
+        String textString = n.getTextContent();
+        assertTrue("needle found in haystack", textString.contains(needle));
     }
 
     public void assertXPathResultsContainText(DomNode page, String xpath, String needle) {
@@ -1649,7 +1684,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * in the context of an HTTP request.
      *
      * <p>
-     * In {@link HudsonTestCase}, a thread that's executing the test code is different from the thread
+     * In {@link JenkinsRule}, a thread that's executing the test code is different from the thread
      * that carries out HTTP requests made through {@link WebClient}. But sometimes you want to
      * make assertions and other calls with side-effect from within the request handling thread.
      *
@@ -1765,7 +1800,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * Logs in to Hudson, by using the user name as the password.
          *
          * <p>
-         * See {@link HudsonTestCase#configureUserRealm()} for how the container is set up with the user names
+         * See {@link #configureUserRealm} for how the container is set up with the user names
          * and passwords. All the test accounts have the same user name and password.
          */
         public WebClient login(String username) throws Exception {
@@ -1778,7 +1813,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * in the context of an HTTP request.
          *
          * <p>
-         * In {@link HudsonTestCase}, a thread that's executing the test code is different from the thread
+         * In {@link JenkinsRule}, a thread that's executing the test code is different from the thread
          * that carries out HTTP requests made through {@link WebClient}. But sometimes you want to
          * make assertions and other calls with side-effect from within the request handling thread.
          *
@@ -1881,10 +1916,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         }
 
         /**
-         * Requests a page within Hudson.
+         * Requests an HTML page within Jenkins.
          *
          * @param relative
-         *      Relative path within Hudson. Starts without '/'.
+         *      Relative path within Jenkins. Starts without '/'.
          *      For example, "job/test/" to go to a job top page.
          */
         public HtmlPage goTo(String relative) throws IOException, SAXException {
@@ -1896,14 +1931,24 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             }
         }
 
-        public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
+        /**
+         * Requests a page within Jenkins.
+         *
+         * @param relative
+         *      Relative path within Jenkins. Starts without '/'.
+         *      For example, "job/test/" to go to a job top page.
+         * @param expectedContentType the expected {@link WebResponse#getContentType}, or null to do no such check
+         */
+        public Page goTo(String relative, @CheckForNull String expectedContentType) throws IOException, SAXException {
             assert !relative.startsWith("/");
             Page p = super.getPage(getContextPath() + relative);
-            assertThat(p.getWebResponse().getContentType(), is(expectedContentType));
+            if (expectedContentType != null) {
+                assertThat(p.getWebResponse().getContentType(), is(expectedContentType));
+            }
             return p;
         }
 
-        /** Loads a page as XML. Useful for testing Hudson's xml api, in concert with
+        /** Loads a page as XML. Useful for testing Jenkins's XML API, in concert with
          * assertXPath(DomNode page, String xpath)
          * @param path   the path part of the url to visit
          * @return  the XmlPage found at that url
@@ -1936,6 +1981,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         /**
          * Returns the URL of the webapp top page.
          * URL ends with '/'.
+         * <p>This is actually the same as {@link #getURL} and should not be confused with {@link #contextPath}.
          */
         public String getContextPath() throws IOException {
             return getURL().toExternalForm();
@@ -2052,7 +2098,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Specify this to a TCP/IP port number to have slaves started with the debugger.
      */
-    public static int SLAVE_DEBUG_PORT = Integer.getInteger(HudsonTestCase.class.getName()+".slaveDebugPort",-1);
+    public static final int SLAVE_DEBUG_PORT = Integer.getInteger(HudsonTestCase.class.getName()+".slaveDebugPort",-1);
 
     public static final MimeTypes MIME_TYPES = new MimeTypes();
     static {

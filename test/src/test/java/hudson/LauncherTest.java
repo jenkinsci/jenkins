@@ -25,19 +25,22 @@ package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-
-import java.io.IOException;
-
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Slave;
 import hudson.model.StringParameterDefinition;
-import hudson.tasks.CommandInterpreter;
 import hudson.tasks.BatchFile;
+import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class LauncherTest {
@@ -45,6 +48,7 @@ public class LauncherTest {
     @Rule
     public JenkinsRule rule = new JenkinsRule();
 
+    @Bug(19488)
     @Test
     public void correctlyExpandEnvVars() throws Exception {
         FreeStyleProject project = rule.createFreeStyleProject();
@@ -62,6 +66,27 @@ public class LauncherTest {
         FreeStyleBuild build = project.scheduleBuild2(0).get();
 
         assertThat(log(build), containsString("aaa aaaccc ccc"));
+    }
+    
+    @Bug(19926)
+    @Test
+    public void overwriteSystemEnvVars() throws Exception {
+        Map<String, String> env = new HashMap<String,String>();
+        env.put("jenkins_19926", "original value");
+        Slave slave = rule.createSlave(new EnvVars(env));
+        
+        FreeStyleProject project = rule.createFreeStyleProject();
+        project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("jenkins_19926", "${jenkins_19926} and new value")));
+        final CommandInterpreter script = Functions.isWindows()
+                ? new BatchFile("echo %jenkins_19926")
+                : new Shell("echo ${jenkins_19926}")
+        ;
+        project.getBuildersList().add(script);
+        project.setAssignedNode(slave.getComputer().getNode());
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+
+        assertThat(log(build), containsString("original value and new value"));
     }
 
     @SuppressWarnings("deprecation")

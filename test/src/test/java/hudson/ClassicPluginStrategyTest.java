@@ -50,13 +50,12 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
         // Test data has: foo3 depends on foo2,foo1; foo2 depends on foo1
         // (thus findResources from foo3 can find foo1 resources via 2 dependency paths)
         PluginWrapper p = jenkins.getPluginManager().getPlugin("foo3");
-        String res = p.getIndexPage().toString();
-        assertTrue(res + "should be foo3", res.contains("/foo3/"));
+        String res;
 
         // In the current impl, the dependencies are the parent ClassLoader so resources
         // are found there before checking the plugin itself.  Adjust the expected results
         // below if this is ever changed to check the plugin first.
-        Enumeration<URL> en = p.classLoader.getResources("index.jelly");
+        Enumeration<URL> en = p.classLoader.getResources("test-resource");
         for (int i = 0; en.hasMoreElements(); i++) {
             res = en.nextElement().toString();
             if (i < 2)
@@ -65,7 +64,7 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
             else
                 assertTrue("In current impl, " + res + "should be foo3", res.contains("/foo3/"));
         }
-        res = p.classLoader.getResource("index.jelly").toString();
+        res = p.classLoader.getResource("test-resource").toString();
         assertTrue("In current impl, " + res + " should be foo1 or foo2",
                    res.contains("/foo1/") || res.contains("/foo2/"));
     }
@@ -79,7 +78,7 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
     public void testDisabledDependencyClassLoader() throws Exception {
         PluginWrapper p = jenkins.getPluginManager().getPlugin("foo4");
 
-        Enumeration<URL> en = p.classLoader.getResources("index.jelly");
+        Enumeration<URL> en = p.classLoader.getResources("test-resource");
         for (int i = 0; en.hasMoreElements(); i++) {
             String res = en.nextElement().toString();
             if (i == 0)

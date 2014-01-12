@@ -29,16 +29,16 @@ import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 import hudson.model.ComputerSet;
 import hudson.model.AdministrativeMonitor;
-import hudson.triggers.Trigger;
 import hudson.triggers.SafeTimerTask;
 import hudson.slaves.OfflineCause;
+import jenkins.util.Timer;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,14 +87,12 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     }
 
     private void schedule(long interval) {
-        Timer timer = Trigger.timer;
-        if (timer != null) {
-            timer.scheduleAtFixedRate(new SafeTimerTask() {
+        Timer.get()
+            .scheduleAtFixedRate(new SafeTimerTask() {
                 public void doRun() {
                     triggerUpdate();
                 }
-            }, interval, interval);
-        }
+            }, interval, interval, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -267,7 +265,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
             synchronized(AbstractNodeMonitorDescriptor.this) {
                 if(inProgress!=null) {
                     // maybe it got stuck?
-                    LOGGER.warning("Previous "+getDisplayName()+" monitoring activity still in progress. Interrupting");
+                    LOGGER.log(Level.WARNING, "Previous {0} monitoring activity still in progress. Interrupting", getDisplayName());
                     inProgress.interrupt();
                 }
                 inProgress = this;
@@ -285,7 +283,9 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
                 timestamp = System.currentTimeMillis();
                 record = this;
 
-                LOGGER.fine("Node monitoring "+getDisplayName()+" completed in "+(System.currentTimeMillis()-startTime)+"ms");
+                LOGGER.log(Level.FINE, "Node monitoring {0} completed in {1}ms", new Object[] {getDisplayName(), System.currentTimeMillis()-startTime});
+            } catch (InterruptedException x) {
+                // interrupted by new one, fine
             } catch (Throwable t) {
                 LOGGER.log(Level.WARNING, "Unexpected node monitoring termination: "+getDisplayName(),t);
             } finally {

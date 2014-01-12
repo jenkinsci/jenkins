@@ -166,10 +166,10 @@ public class QueueTest extends HudsonTestCase {
         // get another going
         Future<FreeStyleBuild> b2 = p.scheduleBuild2(0);
 
-        Thread.sleep(1000);
+        q.scheduleMaintenance().get();
         Queue.Item[] items = q.getItems();
         assertEquals(1,items.length);
-        assertTrue(items[0] instanceof BlockedItem);
+        assertTrue("Got "+items[0], items[0] instanceof BlockedItem);
 
         q.save();
     }

@@ -47,7 +47,7 @@ THE SOFTWARE.
               ${%The slave this project has run on for the last time was removed.}
             </li>
             <li>
-              ${%li3(it.workspace.local)}
+              ${%li3(it.workspace)}
             </li>
             <li>
               ${%The workspace was wiped out and no build has been done since then.}
@@ -57,7 +57,7 @@ THE SOFTWARE.
       </j:choose>
       <p>
       <j:if test="${!it.isDisabled()}">
-        ${%text(rootURL,it.url)}
+        ${%text}
       </j:if>
       </p>
     </l:main-panel>

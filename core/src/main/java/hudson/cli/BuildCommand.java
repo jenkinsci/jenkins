@@ -23,6 +23,7 @@
  */
 package hudson.cli;
 
+import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -86,11 +87,10 @@ public class BuildCommand extends CLICommand {
     @Option(name="-v",usage="Prints out the console output of the build. Use with -s")
     public boolean consoleOutput = false;
 
-    @Option(name="-r", usage="Number of times to retry reading of the output log if it does not exists on first attempt. Defaults to 0. Use with -v.")
-    public String retryCntStr = "0";
+    @Option(name="-r") @Deprecated
+    public int retryCnt = 10;
 
-    // hold parsed retryCnt;
-    private int retryCnt = 0;
+    protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue";
 
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
@@ -109,7 +109,7 @@ public class BuildCommand extends CLICommand {
                 if (pd==null)
                     throw new AbortException(String.format("\'%s\' is not a valid parameter. Did you mean %s?",
                             name, EditDistance.findNearest(name, pdp.getParameterDefinitionNames())));
-                values.add(pd.createValue(this,e.getValue()));
+                values.add(pd.createValue(this, Util.fixNull(e.getValue())));
             }
 
             // handle missing parameters by adding as default values ISSUE JENKINS-7162
@@ -123,8 +123,6 @@ public class BuildCommand extends CLICommand {
 
             a = new ParametersAction(values);
         }
-
-        retryCnt = Integer.parseInt(retryCntStr);
 
         if (checkSCM) {
             if (job.poll(new StreamTaskListener(stdout, getClientCharset())).change == Change.NONE) {
@@ -146,6 +144,10 @@ public class BuildCommand extends CLICommand {
         QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
         
         if (wait || sync || follow) {
+            if (f == null) {
+                stderr.println(BUILD_SCHEDULING_REFUSED);
+                return -1;
+            }
             AbstractBuild b = f.waitForStart();    // wait for the start
             stdout.println("Started "+b.getFullDisplayName());
 

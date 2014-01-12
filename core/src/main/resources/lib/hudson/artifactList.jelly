@@ -76,6 +76,12 @@ THE SOFTWARE.
               <link rel="stylesheet" href="${resURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css"/>
               <link rel="stylesheet" href="${resURL}/scripts/yui/fonts/fonts-min.css" type="text/css"/>
               <style type="text/css">#artifact-tree td { vertical-align:middle; }</style>
+              <br/>
+              <small>
+                <a href="javascript: YAHOO.widget.TreeView.getNode('artifact-tree',1).tree.expandAll()">${%Expand all}</a>
+                <st:nbsp/>
+                <a href="javascript: YAHOO.widget.TreeView.getNode('artifact-tree',1).tree.collapseAll();">${%Collapse all}</a>
+              </small>
               <div id="artifact-tree"></div>
               <script language="javascript">// &lt;![CDATA[
                 YAHOO.util.Event.onContentReady('artifact-tree', function () {

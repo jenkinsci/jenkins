@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -122,7 +121,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         try {
             serveFile(req,rsp,base,icon,serveDirIndex);
         } catch (InterruptedException e) {
-            throw new IOException2("interrupted",e);
+            throw new IOException("interrupted",e);
         }
     }
 
@@ -341,7 +340,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(outputStream);
         for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
-            ZipEntry e = new ZipEntry(n);
+            String relativePath;
+            if (glob.length() == 0) {
+                // JENKINS-19947: traditional behavior is to prepend the directory name
+                relativePath = dir.getName() + '/' + n;
+            } else {
+                relativePath = n;
+            }
+            ZipEntry e = new ZipEntry(relativePath);
             VirtualFile f = dir.child(n);
             e.setTime(f.lastModified());
             zos.putNextEntry(e);

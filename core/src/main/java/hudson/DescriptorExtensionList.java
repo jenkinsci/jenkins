@@ -35,7 +35,6 @@ import hudson.util.Memoizer;
 import hudson.util.Iterators.FlattenIterator;
 import hudson.slaves.NodeDescriptor;
 import hudson.tasks.Publisher;
-import hudson.tasks.Publisher.DescriptorExtensionListImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,6 +43,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.CheckForNull;
 
 import org.kohsuke.stapler.Stapler;
 import net.sf.json.JSONObject;
@@ -72,7 +72,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     public static <T extends Describable<T>,D extends Descriptor<T>>
     DescriptorExtensionList<T,D> createDescriptorList(Jenkins jenkins, Class<T> describableType) {
         if (describableType == (Class) Publisher.class) {
-            return (DescriptorExtensionList) new DescriptorExtensionListImpl(jenkins);
+            return (DescriptorExtensionList) new Publisher.DescriptorExtensionListImpl(jenkins);
         }
         return new DescriptorExtensionList<T,D>(jenkins,describableType);
     }
@@ -146,7 +146,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      *
      * If none is found, null is returned.
      */
-    public D findByName(String id) {
+    public @CheckForNull D findByName(String id) {
         for (D d : this)
             if(d.getId().equals(id))
                 return d;

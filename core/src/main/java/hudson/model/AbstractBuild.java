@@ -30,7 +30,6 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ExpandableDetailsNote;
 import hudson.console.ModelHyperlinkNote;
@@ -162,9 +161,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * <p>
      * Unlike {@link Run}, {@link AbstractBuild}s do lazy-loading, so we don't use
      * {@link Run#previousBuild} and {@link Run#nextBuild}, and instead use these
-     * fields and point to {@link #selfReference} of adjacent builds.
+     * fields and point to {@link #selfReference} (or {@link #none}) of adjacent builds.
      */
     private volatile transient BuildReference<R> previousBuild, nextBuild;
+
+    @SuppressWarnings({"unchecked", "rawtypes"}) private static final BuildReference NONE = new BuildReference("NONE", null);
+    @SuppressWarnings("unchecked") private BuildReference<R> none() {return NONE;}
 
     /*package*/ final transient BuildReference<R> selfReference = new BuildReference<R>(getId(),_this());
 
@@ -193,11 +195,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if(nextBuild!=null) {
             AbstractBuild nb = nextBuild.get();
             if (nb!=null) {
-                // remove the oldest build
-                if (previousBuild == selfReference) 
-                    nb.previousBuild = nextBuild;
-                else 
-                    nb.previousBuild = previousBuild;
+                nb.previousBuild = previousBuild;
             }
         }
         if(previousBuild!=null) {
@@ -223,13 +221,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     this.previousBuild = pb.selfReference;
                     return pb;
                 } else {
-                    // this indicates that we know there's no previous build
-                    // (as opposed to we don't know if/what our previous build is.
-                    this.previousBuild = selfReference;
+                    this.previousBuild = none();
                     return null;
                 }
             }
-            if (r==selfReference)
+            if (r==none())
                 return null;
 
             R referent = r.get();
@@ -253,13 +249,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     this.nextBuild = nb.selfReference;
                     return nb;
                 } else {
-                    // this indicates that we know there's no next build
-                    // (as opposed to we don't know if/what our next build is.
-                    this.nextBuild = selfReference;
+                    this.nextBuild = none();
                     return null;
                 }
             }
-            if (r==selfReference)
+            if (r==none())
                 return null;
 
             R referent = r.get();
@@ -421,8 +415,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if (upstreamCulprits) {
                 // If we have dependencies since the last successful build, add their authors to our list
                 if (getPreviousNotFailedBuild() != null) {
-                    Map <AbstractProject,AbstractBuild.DependencyChange> depmap = getDependencyChanges(getPreviousSuccessfulBuild());
-                    for (AbstractBuild.DependencyChange dep : depmap.values()) {
+                    Map <AbstractProject,DependencyChange> depmap = getDependencyChanges(getPreviousSuccessfulBuild());
+                    for (DependencyChange dep : depmap.values()) {
                         for (AbstractBuild<?,?> b : dep.getBuilds()) {
                             for (Entry entry : b.getChangeSet()) {
                                 r.add(entry.getAuthor());
@@ -501,6 +495,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected BuildListener listener;
 
         /**
+         * Lease of the workspace.
+         */
+        private Lease lease;
+
+        /**
          * Returns the current {@link Node} on which we are building.
          */
         protected final Node getCurrentNode() {
@@ -547,58 +546,53 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             else
             	listener.getLogger().print(Messages.AbstractBuild_Building());
             
-            final Lease lease = decideWorkspace(node,Computer.currentComputer().getWorkspaceList());
+            lease = decideWorkspace(node, Computer.currentComputer().getWorkspaceList());
 
-            try {
-                workspace = lease.path.getRemote();
-                listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
-                node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
-                
-                for (WorkspaceListener wl : WorkspaceListener.all()) {
-                    wl.beforeUse(AbstractBuild.this, lease.path, listener);
-                }
+            workspace = lease.path.getRemote();
+            listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
+            node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
 
-                getProject().getScmCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);
-                getProject().getScmCheckoutStrategy().checkout(this);
-
-                if (!preBuild(listener,project.getProperties()))
-                    return Result.FAILURE;
-
-                Result result = doRun(listener);
-
-                Computer c = node.toComputer();
-                if (c==null || c.isOffline()) {
-                    // As can be seen in HUDSON-5073, when a build fails because of the slave connectivity problem,
-                    // error message doesn't point users to the slave. So let's do it here.
-                    listener.hyperlink("/computer/"+builtOn+"/log","Looks like the node went offline during the build. Check the slave log for the details.");
-
-                    if (c != null) {
-                        // grab the end of the log file. This might not work very well if the slave already
-                        // starts reconnecting. Fixing this requires a ring buffer in slave logs.
-                        AnnotatedLargeText<Computer> log = c.getLogText();
-                        StringWriter w = new StringWriter();
-                        log.writeHtmlTo(Math.max(0,c.getLogFile().length()-10240),w);
-
-                        listener.getLogger().print(ExpandableDetailsNote.encodeTo("details",w.toString()));
-                        listener.getLogger().println();
-                    }
-                }
-
-                // kill run-away processes that are left
-                // use multiple environment variables so that people can escape this massacre by overriding an environment
-                // variable for some processes
-                launcher.kill(getCharacteristicEnvVars());
-
-                // this is ugly, but for historical reason, if non-null value is returned
-                // it should become the final result.
-                if (result==null)    result = getResult();
-                if (result==null)    result = Result.SUCCESS;
-
-                return result;
-            } finally {
-                lease.release();
-                this.listener = null;
+            for (WorkspaceListener wl : WorkspaceListener.all()) {
+                wl.beforeUse(AbstractBuild.this, lease.path, listener);
             }
+
+            getProject().getScmCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);
+            getProject().getScmCheckoutStrategy().checkout(this);
+
+            if (!preBuild(listener,project.getProperties()))
+                return Result.FAILURE;
+
+            Result result = doRun(listener);
+
+            Computer c = node.toComputer();
+            if (c==null || c.isOffline()) {
+                // As can be seen in HUDSON-5073, when a build fails because of the slave connectivity problem,
+                // error message doesn't point users to the slave. So let's do it here.
+                listener.hyperlink("/computer/"+builtOn+"/log","Looks like the node went offline during the build. Check the slave log for the details.");
+
+                if (c != null) {
+                    // grab the end of the log file. This might not work very well if the slave already
+                    // starts reconnecting. Fixing this requires a ring buffer in slave logs.
+                    AnnotatedLargeText<Computer> log = c.getLogText();
+                    StringWriter w = new StringWriter();
+                    log.writeHtmlTo(Math.max(0,c.getLogFile().length()-10240),w);
+
+                    listener.getLogger().print(ExpandableDetailsNote.encodeTo("details",w.toString()));
+                    listener.getLogger().println();
+                }
+            }
+
+            // kill run-away processes that are left
+            // use multiple environment variables so that people can escape this massacre by overriding an environment
+            // variable for some processes
+            launcher.kill(getCharacteristicEnvVars());
+
+            // this is ugly, but for historical reason, if non-null value is returned
+            // it should become the final result.
+            if (result==null)    result = getResult();
+            if (result==null)    result = Result.SUCCESS;
+
+            return result;
         }
 
         /**
@@ -654,7 +648,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 build.scm = NullChangeLogParser.INSTANCE;
 
                 try {
-                    if (project.checkout(build,launcher,listener,new File(build.getRootDir(),"changelog.xml"))) {
+                    if (project.checkout(build, launcher,listener,new File(build.getRootDir(),"changelog.xml"))) {
                         // check out succeeded
                         SCM scm = project.getScm();
 
@@ -665,7 +659,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             try {
                                 l.onChangeLogParsed(build,listener,build.getChangeSet());
                             } catch (Exception e) {
-                                throw new IOException2("Failed to parse changelog",e);
+                                throw new IOException("Failed to parse changelog",e);
                             }
 
                         // Get a chance to do something after checkout and changelog is done
@@ -720,6 +714,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         public void cleanUp(BuildListener listener) throws Exception {
+            if (lease!=null) {
+                lease.release();
+                lease = null;
+            }
             BuildTrigger.execute(AbstractBuild.this, listener);
             buildEnvironments = null;
         }
@@ -923,7 +921,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             for (Environment e : buildEnvironments)
                 e.buildEnvVars(env);
 
-        for (EnvironmentContributingAction a : Util.filter(getActions(),EnvironmentContributingAction.class))
+        for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
             a.buildEnvVars(this,env);
 
         EnvVars.resolve(env);
@@ -957,6 +955,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getTimestamp();
     }
       
+    @SuppressWarnings("deprecation")
     public List<Action> getPersistentActions(){
         return super.getActions();
     }

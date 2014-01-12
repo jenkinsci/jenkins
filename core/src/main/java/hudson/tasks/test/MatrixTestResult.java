@@ -41,9 +41,14 @@ import hudson.model.Action;
  * @author Kohsuke Kawaguchi
  */
 public class MatrixTestResult extends AggregatedTestResultAction {
+
+    @Deprecated
     public MatrixTestResult(MatrixBuild owner) {
         super(owner);
     }
+
+    /** @since 1.545 */
+    public MatrixTestResult() {}
 
     /**
      * Use the configuration name.
