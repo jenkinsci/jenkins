@@ -37,6 +37,8 @@ import hudson.XmlFile;
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixProject;
+import hudson.model.Queue.Task;
+
 import org.jvnet.hudson.test.Email;
 import org.w3c.dom.Text;
 
@@ -104,8 +106,7 @@ public class ViewTest {
         Text viewLabel = (Text) privateViewsPage.getFirstByXPath("//table[@id='viewList']//td[@class='active']/text()");
         assertTrue("'All' view should be selected", viewLabel.getTextContent().contains(Hudson_ViewName()));
 
-        View listView = new ListView("listView", j.jenkins);
-        j.jenkins.addView(listView);
+        View listView = listView("listView");
 
         HtmlPage newViewPage = wc.goTo("user/me/my-views/newView");
         HtmlForm form = newViewPage.getFormByName("createItem");
@@ -126,8 +127,7 @@ public class ViewTest {
     @Test public void deleteView() throws Exception {
         WebClient wc = j.createWebClient();
 
-        ListView v = new ListView("list", j.jenkins);
-        j.jenkins.addView(v);
+        ListView v = listView("list");
         HtmlPage delete = wc.getPage(v, "delete");
         j.submit(delete.getFormByName("delete"));
         assertNull(j.jenkins.getView("list"));
@@ -144,8 +144,7 @@ public class ViewTest {
 
     @Bug(9367)
     @Test public void persistence() throws Exception {
-        ListView view = new ListView("foo", j.jenkins);
-        j.jenkins.addView(view);
+        ListView view = listView("foo");
 
         ListView v = (ListView) Jenkins.XSTREAM.fromXML(Jenkins.XSTREAM.toXML(view));
         System.out.println(v.getProperties());
@@ -189,9 +188,8 @@ public class ViewTest {
 
     @Bug(17302)
     @Test public void doConfigDotXml() throws Exception {
-        ListView view = new ListView("v", j.jenkins);
+        ListView view = listView("v");
         view.description = "one";
-        j.jenkins.addView(view);
         WebClient wc = j.createWebClient();
         String xml = wc.goToXml("view/v/config.xml").getContent();
         assertTrue(xml, xml.contains("<description>one</description>"));
@@ -206,46 +204,63 @@ public class ViewTest {
     
     @Test
     public void testGetQueueItems() throws IOException, Exception{
-        ListView view = new ListView("foo", j.jenkins);
-        ListView view2 =new ListView("foo2", j.jenkins);
-        j.jenkins.addView(view);
-        j.jenkins.addView(view2);
-        FreeStyleProject job1 = j.jenkins.createProject(FreeStyleProject.class, "free");
-        MatrixProject job2 = j.jenkins.createProject(MatrixProject.class, "matrix");
-        FreeStyleProject job = j.jenkins.createProject(FreeStyleProject.class, "not-in-view");
-        FreeStyleProject job3 = j.jenkins.createProject(FreeStyleProject.class, "in-other-view");
-        view.filterQueue=true;
-        view.jobNames.add(job1.getDisplayName());
-        view.jobNames.add(job2.getDisplayName());
-        view2.filterQueue=true;
-        view2.jobNames.add(job3.getDisplayName());
-        job1.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
-        job2.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
-        job.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
-        job3.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
-        Queue.Item item = Queue.getInstance().schedule(job, 0);
-        Queue.Item item1 = Queue.getInstance().schedule(job1, 0);
-        Queue.Item item2 = Queue.getInstance().schedule(job2, 0);
-        Queue.Item item3 = Queue.getInstance().schedule(job3, 0);
+        ListView view1 = listView("view1");
+        view1.filterQueue = true;
+        ListView view2 = listView("view2");
+        view2.filterQueue = true;
+
+        FreeStyleProject inView1 = j.createFreeStyleProject("in-view1");
+        inView1.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
+        view1.add(inView1);
+
+        MatrixProject inView2 = j.createMatrixProject("in-view2");
+        inView2.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
+        view2.add(inView2);
+
+        FreeStyleProject notInView = j.createFreeStyleProject("not-in-view");
+        notInView.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
+
+        FreeStyleProject inBothViews = j.createFreeStyleProject("in-both-views");
+        inBothViews.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
+        view1.add(inBothViews);
+        view2.add(inBothViews);
+
+        Queue.getInstance().schedule(notInView, 0);
+        Queue.getInstance().schedule(inView1, 0);
+        Queue.getInstance().schedule(inView2, 0);
+        Queue.getInstance().schedule(inBothViews, 0);
+
         Thread.sleep(1000);
-        assertTrue("Queued items for view " + view.getDisplayName() + " should contain job " + job1.getDisplayName(),view.getQueueItems().contains(Queue.getInstance().getItem(job1)));
-        assertTrue("Queued items for view " + view.getDisplayName() + " should contain job " + job2.getDisplayName(),view.getQueueItems().contains(Queue.getInstance().getItem(job2)));
-        assertTrue("Queued items for view " + view2.getDisplayName() + " should contain job " + job3.getDisplayName(),view2.getQueueItems().contains(Queue.getInstance().getItem(job3)));
-        assertFalse("Queued items for view " + view.getDisplayName() + " should not contain job " + job.getDisplayName(), view.getQueueItems().contains(Queue.getInstance().getItem(job)));
-        assertFalse("Queued items for view " + view.getDisplayName() + " should not contain job " + job3.getDisplayName(), view.getQueueItems().contains(Queue.getInstance().getItem(job3)));
-        assertFalse("Queued items for view " + view2.getDisplayName() + " should not contain job " + job.getDisplayName(), view2.getQueueItems().contains(Queue.getInstance().getItem(job)));
-        assertFalse("Queued items for view " + view2.getDisplayName() + " should not contain job " + job1.getDisplayName(), view2.getQueueItems().contains(Queue.getInstance().getItem(job1)));
-        assertFalse("Queued items for view " + view2.getDisplayName() + " should not contain job " + job2.getDisplayName(), view2.getQueueItems().contains(Queue.getInstance().getItem(job2)));
+
+        assertContainsItems(view1, inView1, inBothViews);
+        assertNotContainsItems(view1, notInView, inView2);
+        assertContainsItems(view2, inView2, inBothViews);
+        assertNotContainsItems(view2, notInView, inView1);
+    }
+
+    private void assertContainsItems(View view, Task... items) {
+        for (Task job: items) {
+            assertTrue(
+                    "Queued items for " + view.getDisplayName() + " should contain " + job.getDisplayName(),
+                    view.getQueueItems().contains(Queue.getInstance().getItem(job))
+            );
+        }
+    }
+
+    private void assertNotContainsItems(View view, Task... items) {
+        for (Task job: items) {
+            assertFalse(
+                    "Queued items for " + view.getDisplayName() + " should not contain " + job.getDisplayName(),
+                    view.getQueueItems().contains(Queue.getInstance().getItem(job))
+            );
+        }
     }
     
     @Test
     public void testGetComputers() throws IOException, Exception{
-        ListView view1 = new ListView("view1", j.jenkins);
-        ListView view2 = new ListView("view2", j.jenkins);
-        ListView view3 = new ListView("view3", j.jenkins);
-        j.jenkins.addView(view1);
-        j.jenkins.addView(view2);
-        j.jenkins.addView(view3);
+        ListView view1 = listView("view1");
+        ListView view2 = listView("view2");
+        ListView view3 = listView("view3");
         view1.filterExecutors=true;
         view2.filterExecutors=true;
         view3.filterExecutors=true;
@@ -256,49 +271,49 @@ public class ViewTest {
         Slave slave3 = j.createOnlineSlave(j.jenkins.getLabel("label0"));
         Slave slave4 = j.createOnlineSlave(j.jenkins.getLabel("label4"));
 
-        FreeStyleProject freestyleJob = j.jenkins.createProject(FreeStyleProject.class, "free");
+        FreeStyleProject freestyleJob = j.createFreeStyleProject("free");
         view1.add(freestyleJob);
         freestyleJob.setAssignedLabel(j.jenkins.getLabel("label0||label2"));
 
-        MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
+        MatrixProject matrixJob = j.createMatrixProject("matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
                 new LabelAxis("label", Arrays.asList("label1"))
         ));
 
-        FreeStyleProject noLabelJob = j.jenkins.createProject(FreeStyleProject.class, "not-assigned-label");
+        FreeStyleProject noLabelJob = j.createFreeStyleProject("not-assigned-label");
         view3.add(noLabelJob);
         noLabelJob.setAssignedLabel(null);
 
-        FreeStyleProject foreignJob = j.jenkins.createProject(FreeStyleProject.class, "in-other-view");
+        FreeStyleProject foreignJob = j.createFreeStyleProject("in-other-view");
         view2.add(foreignJob);
         foreignJob.setAssignedLabel(j.jenkins.getLabel("label0||label1"));
 
         // contains all slaves having labels associated with freestyleJob or matrixJob
-        assertContains(view1, slave0, slave1, slave2, slave3);
-        assertNotContains(view1, slave4);
+        assertContainsNodes(view1, slave0, slave1, slave2, slave3);
+        assertNotContainsNodes(view1, slave4);
 
         // contains all slaves having labels associated with foreignJob
-        assertContains(view2, slave0, slave1, slave3);
-        assertNotContains(view2, slave2, slave4);
+        assertContainsNodes(view2, slave0, slave1, slave3);
+        assertNotContainsNodes(view2, slave2, slave4);
 
         // contains all slaves as it contains noLabelJob that can run everywhere
-        assertContains(view3, slave0, slave1, slave2, slave3, slave4);
+        assertContainsNodes(view3, slave0, slave1, slave2, slave3, slave4);
     }
 
-    private void assertContains(View view, Node... slaves) {
+    private void assertContainsNodes(View view, Node... slaves) {
         for (Node slave: slaves) {
             assertTrue(
-                    "Filtered executors for view " + view.getDisplayName() + " should contain slave " + slave.getDisplayName(),
+                    "Filtered executors for " + view.getDisplayName() + " should contain " + slave.getDisplayName(),
                     view.getComputers().contains(slave.toComputer())
             );
         }
     }
 
-    private void assertNotContains(View view, Node... slaves) {
+    private void assertNotContainsNodes(View view, Node... slaves) {
         for (Node slave: slaves) {
             assertFalse(
-                    "Filtered executors for view " + view.getDisplayName() + " should not contain slave " + slave.getDisplayName(),
+                    "Filtered executors for " + view.getDisplayName() + " should not contain " + slave.getDisplayName(),
                     view.getComputers().contains(slave.toComputer())
             );
         }
@@ -306,11 +321,10 @@ public class ViewTest {
 
     @Test
     public void testGetItem() throws Exception{
-        ListView view = new ListView("foo", j.jenkins);
-        j.jenkins.addView(view);
-        FreeStyleProject job1 = j.jenkins.createProject(FreeStyleProject.class, "free");
-        MatrixProject job2 = j.jenkins.createProject(MatrixProject.class, "matrix");
-        FreeStyleProject job3 = j.jenkins.createProject(FreeStyleProject.class, "not-included");
+        ListView view = listView("foo");
+        FreeStyleProject job1 = j.createFreeStyleProject("free");
+        MatrixProject job2 = j.createMatrixProject("matrix");
+        FreeStyleProject job3 = j.createFreeStyleProject("not-included");
         view.jobNames.add(job2.getDisplayName());
         view.jobNames.add(job1.getDisplayName());
         assertEquals("View should return job " + job1.getDisplayName(),job1,  view.getItem("free"));
@@ -319,12 +333,10 @@ public class ViewTest {
     
     @Test
     public void testRename() throws Exception {
-        ListView view = new ListView("foo", j.jenkins);
-        j.jenkins.addView(view);
+        ListView view = listView("foo");
         view.rename("renamed");
         assertEquals("View should have name foo.", "renamed", view.getDisplayName());
-        ListView view2 = new ListView("foo", j.jenkins);
-        j.jenkins.addView(view);
+        ListView view2 = listView("foo");
         try{
             view2.rename("renamed");
             fail("Attemt to rename job with a name used by another view with the same owner should throw exception");
@@ -336,24 +348,21 @@ public class ViewTest {
     
     @Test
     public void testGetOwnerItemGroup() throws Exception {
-        ListView view = new ListView("foo", j.jenkins);
-        j.jenkins.addView(view);
+        ListView view = listView("foo");
         assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwnerItemGroup());
     }
     
     @Test
     public void testGetOwnerPrimaryView() throws Exception{
-        ListView view = new ListView("foo", j.jenkins);
-        j.jenkins.addView(view);
+        ListView view = listView("foo");
         j.jenkins.setPrimaryView(view);
         assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwnerPrimaryView());
     }
     
     @Test
     public void testSave() throws Exception{
-        ListView view = new ListView("foo", j.jenkins);
-        j.jenkins.addView(view);
-        FreeStyleProject job = j.jenkins.createProject(FreeStyleProject.class, "free");
+        ListView view = listView("foo");
+        FreeStyleProject job = j.createFreeStyleProject("free");
         view.jobNames.add("free");
         view.save();
         j.jenkins.doReload();
@@ -366,13 +375,18 @@ public class ViewTest {
     
     @Test
     public void testGetProperties() throws Exception {
-        View view = new ListView("foo", j.jenkins);
-        j.jenkins.addView(view);
+        View view = listView("foo");
         Thread.sleep(100000);
         HtmlForm f = j.createWebClient().getPage(view, "configure").getFormByName("viewConfig");
         ((HtmlLabel)f.selectSingleNode(".//LABEL[text()='Test property']")).click();
         j.submit(f);
         assertNotNull("View should contains ViewPropertyImpl property.", view.getProperties().get(PropertyImpl.class));
+    }
+
+    private ListView listView(String name) throws IOException {
+        ListView view = new ListView(name, j.jenkins);
+        j.jenkins.addView(view);
+        return view;
     }
 
     public static class PropertyImpl extends ViewProperty {
@@ -391,6 +405,4 @@ public class ViewTest {
             }
         }
     }
-
-
 }
