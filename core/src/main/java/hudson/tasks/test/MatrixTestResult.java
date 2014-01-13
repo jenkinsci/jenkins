@@ -23,6 +23,9 @@
  */
 package hudson.tasks.test;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
@@ -44,7 +47,7 @@ public class MatrixTestResult extends AggregatedTestResultAction {
         super(owner);
     }
 
-    /** @since 1.545 */
+    @Restricted(NoExternalUse.class)
     public MatrixTestResult() {}
 
     /**

@@ -26,6 +26,9 @@ package hudson.tasks.test;
 import hudson.model.AbstractBuild;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.junit.TestResult;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -72,7 +75,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
         super(owner);
     }
 
-    /** @since 1.545 */
+    @Restricted(NoExternalUse.class)
     public AggregatedTestResultAction() {}
 
     protected void update(List<? extends AbstractTestResultAction> children) {
