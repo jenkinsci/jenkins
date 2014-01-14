@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.Util;
 import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.HttpResponse;
@@ -351,7 +352,12 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             VirtualFile f = dir.child(n);
             e.setTime(f.lastModified());
             zos.putNextEntry(e);
-            Util.copyStream(f.open(), zos);
+            InputStream in = f.open();
+            try {
+                Util.copyStream(in, zos);
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
             zos.closeEntry();
         }
         zos.close();
