@@ -42,10 +42,71 @@ public class LogRecorderTest {
         assertTrue(includes("", "hudson.model.Hudson"));
     }
 
-    private static boolean includes(String target, String logger) {
-        LogRecord r = new LogRecord(Level.INFO, "whatever");
+    @Test public void targetMatches() {
+        assertTrue(matches("hudson", "hudson"));
+        assertFalse(matches("hudson", "hudson", Level.FINE));
+        assertNull(matches("hudson", "hudsone"));
+        assertNull(matches("hudson", "hudso"));
+        assertTrue(matches("hudson", "hudson.model.Hudson"));
+        assertFalse(matches("hudson", "hudson.model.Hudson", Level.FINE));
+        assertNull(matches("hudson", "jenkins.model.Jenkins"));
+        assertTrue(matches("", "hudson.model.Hudson"));
+        assertFalse(matches("", "hudson.model.Hudson", Level.FINE));
+    }
+
+    @Test public void testSpecificExclusion() {
+        LogRecorder lr = new LogRecorder("foo");
+
+        LogRecorder.Target targetH = new LogRecorder.Target("foo.bar", Level.SEVERE);
+        LogRecorder.Target targetM = new LogRecorder.Target("foo", Level.INFO);
+        LogRecorder.Target targetL = new LogRecorder.Target("", Level.FINE);
+
+        lr.targets.add(targetH);
+        lr.targets.add(targetM);
+        lr.targets.add(targetL);
+
+        LogRecord r1h = createLogRecord("foo.bar.baz", Level.INFO, "hidden");
+        LogRecord r1v = createLogRecord("foo.bar.baz", Level.SEVERE, "visible");
+        LogRecord r2h = createLogRecord("foo.bar", Level.INFO, "hidden");
+        LogRecord r2v = createLogRecord("foo.bar", Level.SEVERE, "hidden");
+        LogRecord r3h = createLogRecord("foo", Level.FINE, "hidden");
+        LogRecord r3v = createLogRecord("foo", Level.INFO, "visible");
+        LogRecord r4v = createLogRecord("baz", Level.INFO, "visible");
+        lr.handler.publish(r1h);
+        lr.handler.publish(r1v);
+        lr.handler.publish(r2h);
+        lr.handler.publish(r2v);
+        lr.handler.publish(r3v);
+        lr.handler.publish(r3h);
+        lr.handler.publish(r4v);
+
+        assertTrue(lr.handler.getView().contains(r1v));
+        assertFalse(lr.handler.getView().contains(r1h));
+        assertFalse(lr.handler.getView().contains(r2h));
+        assertTrue(lr.handler.getView().contains(r2v));
+        assertFalse(lr.handler.getView().contains(r3h));
+        assertTrue(lr.handler.getView().contains(r3v));
+        assertTrue(lr.handler.getView().contains(r4v));
+    }
+
+    private static LogRecord createLogRecord(String logger, Level level, String message) {
+        LogRecord r = new LogRecord(level, message);
         r.setLoggerName(logger);
+        return r;
+    }
+
+    private static boolean includes(String target, String logger) {
+        LogRecord r = createLogRecord(logger, Level.INFO, "whatever");
         return new LogRecorder.Target(target, Level.INFO).includes(r);
+    }
+
+    private static Boolean matches(String target, String logger) {
+        return matches(target, logger, Level.INFO);
+    }
+
+    private static Boolean matches(String target, String logger, Level loggerLevel) {
+        LogRecord r = createLogRecord(logger, loggerLevel, "whatever");
+        return new LogRecorder.Target(target, Level.INFO).matches(r);
     }
 
 }
