@@ -1546,6 +1546,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     return NO_CHANGES;
                 }
 
+                // Do not trigger build, if no suitable slave is online
+                if (workspaceOfflineReason.equals(WorkspaceOfflineReason.all_suitable_nodes_are_offline)) {
+                    // No suitable executor is online
+                    listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(running/1000));
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
+                    return NO_CHANGES;
+                }
+
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
@@ -1610,7 +1618,43 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     enum WorkspaceOfflineReason {
         nonexisting_workspace,
         builton_node_gone,
-        builton_node_no_executors
+        builton_node_no_executors,
+        all_suitable_nodes_are_offline
+    }
+
+    /**
+     * Returns true if all suitable nodes for the job are offline.
+     *
+     */
+
+    private boolean isAllSuitableNodesOffline(R build) {
+        Label label = getAssignedLabel();
+        List<Node> allNodes = Jenkins.getInstance().getNodes();
+
+
+        if (allNodes.isEmpty() && !(label == Jenkins.getInstance().getSelfLabel())) {
+            // no master/slave. pointless to talk about nodes
+            label = null;
+        }
+
+        if (label != null) {
+            // Set<Node> nodes = label.getNodes();
+            if (label.isOffline()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            if (canRoam) {
+                for (Node n : Jenkins.getInstance().getNodes()) {
+                    Computer c = n.toComputer();
+                    if (c != null && (c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
+                        // Some executor is ready and this job can run anywhere
+                        return false;
+                }
+            }
+        }
+        return true;
     }
 
     private WorkspaceOfflineReason workspaceOffline(R build) throws IOException, InterruptedException {
