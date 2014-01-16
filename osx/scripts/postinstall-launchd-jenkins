@@ -61,6 +61,12 @@ else
     defaults write $DEFAULTS_PLIST minPermGen 64m    
 fi
 
+# Set tmpdir
+JENKINS_TMPDIR="$JENKINS_HOMEDIR/tmp"
+defaults write $DEFAULTS_PLIST tmpdir $JENKINS_TMPDIR
+mkdir -p $JENKINS_TMPDIR
+chown jenkins:jenkins $JENKINS_TMPDIR
+
 # Create log directory, which can be written by Jenkins daemon
 mkdir -p /var/log/jenkins
 chown jenkins:jenkins /var/log/jenkins
