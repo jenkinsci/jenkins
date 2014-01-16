@@ -2086,7 +2086,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void keepLog(boolean newValue) throws IOException {
-        checkPermission(UPDATE);
+        if (newValue || !getParent().isRequireDeletePermissionToDisableKeepLog()) {
+            checkPermission(UPDATE);
+        } else {
+            checkPermission(DELETE);
+        }
         keepLog = newValue;
         save();
     }
