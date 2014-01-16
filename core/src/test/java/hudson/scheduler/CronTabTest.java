@@ -193,6 +193,9 @@ public class CronTabTest {
         assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H 3 * * *", "0 3 * * *"), new CronTab("0 3 * * *").checkSanity());
         assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H 22 * * 6", "00 22 * * 6"), new CronTab("00 22 * * 6").checkSanity());
         assertEquals(null, new CronTab("H/15 * 1 1 *").checkSanity());
+        assertEquals(null, new CronTab("0 3 H/15 * *").checkSanity());
+        assertEquals(Messages.CronTab_short_cycles_in_the_day_of_month_field_w(), new CronTab("0 3 H/3 * *").checkSanity());
+        assertEquals(Messages.CronTab_short_cycles_in_the_day_of_month_field_w(), new CronTab("0 3 */5 * *").checkSanity());
     }
 
     /**
