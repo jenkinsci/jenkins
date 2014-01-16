@@ -148,6 +148,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     private boolean keepDependencies;
 
+    private boolean requireDeletePermissionToDisableKeepLog;
+
     /**
      * List of {@link UserProperty}s configured for this project.
      */
@@ -407,6 +409,20 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     public void setBuildDiscarder(BuildDiscarder bd) throws IOException {
         this.logRotator = bd;
+        save();
+    }
+
+    /**
+     * Return true when disabling 'keep log' requires Run.DELETE permission.
+     * @since TODO
+     */
+    @Exported
+    public boolean isRequireDeletePermissionToDisableKeepLog() {
+        return requireDeletePermissionToDisableKeepLog;
+    }
+
+    public void setRequireDeletePermissionToDisableKeepLog(boolean b) throws IOException {
+        this.requireDeletePermissionToDisableKeepLog = b;
         save();
     }
 
@@ -1120,10 +1136,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             setDisplayName(json.optString("displayNameOrNull"));
 
-            if (json.optBoolean("logrotate"))
+            if (json.optBoolean("logrotate")) {
                 logRotator = req.bindJSON(BuildDiscarder.class, json.optJSONObject("buildDiscarder"));
-            else
+                requireDeletePermissionToDisableKeepLog = json.has("requireDeletePermissionToDisableKeepLog");
+            } else {
                 logRotator = null;
+                requireDeletePermissionToDisableKeepLog = false;
+            }
 
             DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
             t.rebuild(req,json.optJSONObject("properties"),JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));

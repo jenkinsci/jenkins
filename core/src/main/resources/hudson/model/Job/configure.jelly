@@ -51,6 +51,10 @@ THE SOFTWARE.
             help="/help/project-config/log-rotation.html"
             title="${%Discard Old Builds}" checked="${it.buildDiscarder!=null}" inline="true">
             <f:dropdownDescriptorSelector field="buildDiscarder" title="${%Strategy}"/>
+            <f:entry title="${%Disabling ‚Keep Forever’ requires delete permission}"
+                description="${%By default, users with permission to update builds can disable Keep Forever for builds. This can effectively cause build deletion. Check this option to require permission to delete builds instead.}" field="requireDeletePermissionToDisableKeepLog">
+              <f:checkbox id="requireDeletePermissionToDisableKeepLog" />
+            </f:entry>
           </f:optionalBlock>
         </j:if>
 
