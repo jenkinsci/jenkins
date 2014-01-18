@@ -887,6 +887,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
 
+        // for testing purpose
+        /*package*/ Set<User> getModified() {
+            return modified;
+        }
+
         @Override protected synchronized JSON data() {
             JSONArray r = new JSONArray();
             for (User u : modified) {
