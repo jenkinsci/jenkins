@@ -40,6 +40,14 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                         f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
                     }
                 }
+                
+                f.entry (title: _("Privileges to display People view"), field: "displayPeoplePrivilege") {
+                    set("instance", app)
+                    set("descriptor", app.descriptor)
+                    f.enum(field: "displayPeoplePrivilege") {
+                        text(my.text)
+                    }
+                }
             }
 
             Functions.getSortedDescriptorsForGlobalConfig(my.FILTER).each { Descriptor descriptor ->

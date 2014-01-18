@@ -137,6 +137,7 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonFilter;
 import hudson.security.LegacyAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
+import hudson.security.AccessDeniedException2;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
@@ -216,6 +217,7 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -376,6 +378,38 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #setSecurityRealm(SecurityRealm)
      */
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
+
+    /**
+     * Enumerations for {@link Jenkins#displayPeoplePrivilege}
+     */
+    public enum DisplayPeoplePrivilege {
+        AnyoneCanDisplay(jenkins.model.Messages._Jenkins_DisplayPeoplePrivilege_AnyoneCanDisplay()),
+        RequireAuthenticated(jenkins.model.Messages._Jenkins_DisplayPeoplePrivilege_RequireAuthenticated()),
+        RequireAdminister(jenkins.model.Messages._Jenkins_DisplayPeoplePrivilege_RequireAdminister());
+        
+        private Localizable description;
+        
+        private DisplayPeoplePrivilege(Localizable description) {
+            this.description = description;
+        }
+        
+        public String getText() {
+            return description.toString();
+        }
+    }
+    
+    /**
+     * Privilege to display "People" view.
+     * 
+     * Administrators may want not to expose names of users to anonymous users for security reasons,
+     * especially when they uses external authentication system (Active Directory so on)
+     * 
+     * Defaults to "Allow to anyone with READ privilege".
+     * 
+     * @see #getDisplayPeoplePrivilege()
+     * @see #setDisplayPeoplePrivilege(DisplayPeoplePrivilege)
+     */
+    private DisplayPeoplePrivilege displayPeoplePrivilege = DisplayPeoplePrivilege.AnyoneCanDisplay;
 
     /**
      * Disables the remember me on this computer option in the standard login screen.
@@ -987,6 +1021,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public View.People getPeople() {
+        checkDisplayPeople();   // permission check
         return new View.People(this);
     }
 
@@ -994,6 +1029,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.484
      */
     public View.AsynchPeople getAsynchPeople() {
+        checkDisplayPeople();   // permission check
         return new View.AsynchPeople(this);
     }
 
@@ -2065,6 +2101,58 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         authorizationStrategy = a;
     }
 
+    public DisplayPeoplePrivilege getDisplayPeoplePrivilege() {
+        return displayPeoplePrivilege;
+    }
+    
+    public void setDisplayPeoplePrivilege(DisplayPeoplePrivilege displayPeoplePrivilege) {
+        this.displayPeoplePrivilege = displayPeoplePrivilege;
+    }
+    
+    /**
+     * Test whether an authentication is anonymous.
+     * 
+     * @param a authentication to test
+     * @return true if that is an anonymous.
+     */
+    public static boolean isAnonymous(Authentication a) {
+        return a == null || ANONYMOUS.getPrincipal().equals(a.getPrincipal());
+    }
+    
+    /**
+     * @return true if the current user is allowed to display "People" view.
+     */
+    public boolean canDisplayPeople() {
+        switch (getDisplayPeoplePrivilege()) {
+        case RequireAuthenticated:
+            return !isAnonymous(getAuthentication());
+        case RequireAdminister:
+            return hasPermission(ADMINISTER);
+        default:
+            // AnyoneCanDisplay
+            return true;
+        }
+    }
+    
+    /**
+     * Throws an exception if the current user is not allowed to display "People" view.
+     */
+    public void checkDisplayPeople() {
+        switch (getDisplayPeoplePrivilege()) {
+        case RequireAuthenticated:
+            if (isAnonymous(getAuthentication())) {
+                throw new AccessDeniedException2(ANONYMOUS, READ);
+            }
+            return;
+        case RequireAdminister:
+            checkPermission(ADMINISTER);
+            return;
+        default:
+            // AnyoneCanDisplay
+            return;
+        }
+    }
+    
     public boolean isDisableRememberMe() {
         return disableRememberMe;
     }

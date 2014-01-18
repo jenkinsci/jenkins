@@ -41,6 +41,7 @@ import javax.servlet.ServletException;
 
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.model.Jenkins.DisplayPeoplePrivilege;
 import jenkins.util.ServerTcpPort;
 import net.sf.json.JSONObject;
 
@@ -93,6 +94,7 @@ public class GlobalSecurityConfiguration extends ManagementLink {
             j.setDisableRememberMe(security.optBoolean("disableRememberMe", false));
             j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
             j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
+            j.setDisplayPeoplePrivilege(DisplayPeoplePrivilege.valueOf(security.getString("displayPeoplePrivilege")));
             try {
                 j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
             } catch (IOException e) {

@@ -32,6 +32,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
 
+import jenkins.model.Jenkins;
 import hudson.model.Descriptor.FormException;
 import hudson.Extension;
 
@@ -55,6 +56,24 @@ public class AllView extends View {
     @Override
     public boolean isEditable() {
         return false;
+    }
+
+    /**
+     * @return true if the current user is allowed to display "People" view.
+     * @see hudson.model.View#canDisplayPeople()
+     */
+    @Override
+    public boolean canDisplayPeople() {
+        return Jenkins.getInstance().canDisplayPeople();
+    }
+
+    /**
+     * Throws an exception if the current user is not allowed to display "People" view.
+     * @see hudson.model.View#checkDisplayPeople()
+     */
+    @Override
+    public void checkDisplayPeople() {
+        Jenkins.getInstance().checkDisplayPeople();
     }
 
     @Override

@@ -580,6 +580,29 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getACL().hasPermission(p);
     }
 
+    /**
+     * Return whether the current user is allowed to display "People" view.
+     * Override this if you want to restrict users to display people.
+     * You should also override {@link #checkDisplayPeople()}.
+     * 
+     * @return true if the current user is allowed to display "People" view.
+     * @see #checkDisplayPeople()
+     */
+    public boolean canDisplayPeople() {
+        return true;
+    }
+    
+    /**
+     * Throws an exception if the current user is not allowed to display "People" view.
+     * Override this if you want to restrict users to display people.
+     * You should also override {@link #canDisplayPeople()}.
+     * 
+     * @see #canDisplayPeople()
+     */
+    public void checkDisplayPeople() {
+        // nothing to do
+    }
+
     /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
     @Deprecated
     public void onJobRenamed(Item item, String oldName, String newName) {}
@@ -660,6 +683,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Gets the users that show up in the changelog of this job collection.
      */
     public People getPeople() {
+        checkDisplayPeople();   // access check
         return new People(this);
     }
 
@@ -667,6 +691,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @since 1.484
      */
     public AsynchPeople getAsynchPeople() {
+        checkDisplayPeople();   // access check
         return new AsynchPeople(this);
     }
 
@@ -698,7 +723,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
             for (Item item : items) {
+                if (!item.hasPermission(Item.READ)) {
+                    continue;
+                }
                 for (Job job : item.getAllJobs()) {
+                    if (!job.hasPermission(Item.READ)) {
+                        continue;
+                    }
                     if (job instanceof AbstractProject) {
                         AbstractProject<?,?> p = (AbstractProject) job;
                         for (AbstractBuild<?,?> build : p.getBuilds()) {
@@ -789,7 +820,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         @Override protected void compute() throws Exception {
             int itemCount = 0;
             for (Item item : items) {
+                if (!item.hasPermission(Item.READ)) {
+                    continue;
+                }
                 for (Job<?,?> job : item.getAllJobs()) {
+                    if (!job.hasPermission(Item.READ)) {
+                        continue;
+                    }
                     if (job instanceof AbstractProject) {
                         AbstractProject<?,?> p = (AbstractProject) job;
                         RunList<? extends AbstractBuild<?,?>> builds = p.getBuilds();
