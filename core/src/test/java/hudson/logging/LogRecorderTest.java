@@ -57,37 +57,36 @@ public class LogRecorderTest {
     @Test public void testSpecificExclusion() {
         LogRecorder lr = new LogRecorder("foo");
 
-        LogRecorder.Target targetLevel0 = new LogRecorder.Target("", Level.FINE);
-        LogRecorder.Target targetLevel1 = new LogRecorder.Target("foo", Level.INFO);
-        LogRecorder.Target targetLevel2 = new LogRecorder.Target("foo.bar", Level.SEVERE);
+        LogRecorder.Target targetH = new LogRecorder.Target("foo.bar", Level.SEVERE);
+        LogRecorder.Target targetM = new LogRecorder.Target("foo", Level.INFO);
+        LogRecorder.Target targetL = new LogRecorder.Target("", Level.FINE);
 
-        lr.targets.add(targetLevel1);
-        lr.targets.add(targetLevel2);
-        lr.targets.add(targetLevel0);
+        lr.targets.add(targetH);
+        lr.targets.add(targetM);
+        lr.targets.add(targetL);
 
-        assertEquals(lr.orderedTargets()[0], targetLevel2);
-        assertEquals(lr.orderedTargets()[1], targetLevel1);
-        assertEquals(lr.orderedTargets()[2], targetLevel0);
+        LogRecord r1h = createLogRecord("foo.bar.baz", Level.INFO, "hidden");
+        LogRecord r1v = createLogRecord("foo.bar.baz", Level.SEVERE, "visible");
+        LogRecord r2h = createLogRecord("foo.bar", Level.INFO, "hidden");
+        LogRecord r2v = createLogRecord("foo.bar", Level.SEVERE, "hidden");
+        LogRecord r3h = createLogRecord("foo", Level.FINE, "hidden");
+        LogRecord r3v = createLogRecord("foo", Level.INFO, "visible");
+        LogRecord r4v = createLogRecord("baz", Level.INFO, "visible");
+        lr.handler.publish(r1h);
+        lr.handler.publish(r1v);
+        lr.handler.publish(r2h);
+        lr.handler.publish(r2v);
+        lr.handler.publish(r3v);
+        lr.handler.publish(r3h);
+        lr.handler.publish(r4v);
 
-        LogRecord r1 = createLogRecord("baz", Level.INFO, "visible");
-        LogRecord r2 = createLogRecord("foo", Level.FINE, "hidden");
-        LogRecord r3 = createLogRecord("foo.bar", Level.INFO, "hidden");
-        LogRecord r4 = createLogRecord("foo.bar.baz", Level.INFO, "hidden");
-        LogRecord r5 = createLogRecord("foo.bar.baz", Level.SEVERE, "visible");
-        LogRecord r6 = createLogRecord("foo", Level.INFO, "visible");
-        lr.handler.publish(r1);
-        lr.handler.publish(r2);
-        lr.handler.publish(r3);
-        lr.handler.publish(r4);
-        lr.handler.publish(r5);
-        lr.handler.publish(r6);
-
-        assertTrue(lr.handler.getView().contains(r1));
-        assertFalse(lr.handler.getView().contains(r2));
-        assertFalse(lr.handler.getView().contains(r3));
-        assertFalse(lr.handler.getView().contains(r4));
-        assertTrue(lr.handler.getView().contains(r5));
-        assertTrue(lr.handler.getView().contains(r6));
+        assertTrue(lr.handler.getView().contains(r1v));
+        assertFalse(lr.handler.getView().contains(r1h));
+        assertFalse(lr.handler.getView().contains(r2h));
+        assertTrue(lr.handler.getView().contains(r2v));
+        assertFalse(lr.handler.getView().contains(r3h));
+        assertTrue(lr.handler.getView().contains(r3v));
+        assertTrue(lr.handler.getView().contains(r4v));
     }
 
     private static LogRecord createLogRecord(String logger, Level level, String message) {
