@@ -28,4 +28,8 @@ THE SOFTWARE.
            description="${%description(rootURL)}">
     <f:textarea name="command" value="${instance.command}" class="fixed-width" />
   </f:entry>
+  <f:entry title="">
+    <f:checkbox name="markBuildAsUnstable" checked="${instance.markBuildAsUnstable}"
+            title="${%markAsUnstableTitle}"/>
+  </f:entry>
 </j:jelly>
