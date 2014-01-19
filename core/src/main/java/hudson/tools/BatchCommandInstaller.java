@@ -1,8 +1,8 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2009, Sun Microsystems, Inc.
- *
+ * Copyright (c) 2013, Oleg Nenashev
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -29,33 +29,34 @@ import hudson.FilePath;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * Installs a tool by running an arbitrary shell command.
- * @since 1.305
+ * Installs tool via script execution of Batch script.
+ * Inspired by "Command installer" from the Jenkins core.
+ * @since 0.1
  */
-public class CommandInstaller extends AbstractCommandInstaller {
+public class BatchCommandInstaller extends AbstractCommandInstaller {
 
     @DataBoundConstructor
-    public CommandInstaller(String label, String command, String toolHome) {
+    public BatchCommandInstaller(String label, String command, String toolHome) {
         super(label, command, toolHome);
     }
 
     @Override
     public String getCommandFileExtension() {
-        return ".sh";
+        return ".bat";
     }
 
     @Override
     public String[] getCommandCall(FilePath script) {
-        String[] cmd = {"sh", "-e", script.getRemote()};
+        String[] cmd = {"cmd", "/c", "call", script.getRemote()};
         return cmd;
     }
-
+ 
     @Extension
-    public static class DescriptorImpl extends Descriptor<CommandInstaller> {
+    public static class DescriptorImpl extends Descriptor<BatchCommandInstaller> {
 
         @Override
         public String getDisplayName() {
-            return Messages.CommandInstaller_DescriptorImpl_displayName();
-        }
+            return Messages.BatchCommandInstaller_DescriptorImpl_displayName();
+        }        
     }
 }
