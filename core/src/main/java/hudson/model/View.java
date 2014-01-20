@@ -54,6 +54,7 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
+import jenkins.model.IconSizeProperty;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.util.ProgressiveRendering;
@@ -764,7 +765,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private final User unknown;
         private final Map<User,UserInfo> users = new HashMap<User,UserInfo>();
         private final Set<User> modified = new HashSet<User>();
-        private final String iconSize;
         public final ModelObject parent;
 
         /** @see Jenkins#getAsynchPeople */
@@ -779,11 +779,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
             this.parent = parent;
             items = parent.getItems();
             unknown = null;
-        }
-
-        {
-            StaplerRequest req = Stapler.getCurrentRequest();
-            iconSize = req != null ? Functions.getCookie(req, "iconSize", "32x32") : "32x32";
         }
 
         @Override protected void compute() throws Exception {
@@ -803,7 +798,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                                 UserInfo info = users.get(user);
                                 if (info == null) {
                                     UserInfo userInfo = new UserInfo(user, p, build.getTimestamp());
-                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
+                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user);
                                     synchronized (this) {
                                         users.put(user, userInfo);
                                         modified.add(user);
@@ -840,7 +835,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     }
                     if (!users.containsKey(u)) {
                         UserInfo userInfo = new UserInfo(u, null, null);
-                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
+                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u);
                         synchronized (this) {
                             users.put(u, userInfo);
                             modified.add(u);
@@ -854,6 +849,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             JSONArray r = new JSONArray();
             for (User u : modified) {
                 UserInfo i = users.get(u);
+                final String iconSize = u.getProperty(IconSizeProperty.class).getDimension();
                 JSONObject entry = new JSONObject().
                         accumulate("id", u.getId()).
                         accumulate("fullName", u.getFullName()).

@@ -24,8 +24,11 @@
  */
 package hudson.model;
 
+<<<<<<< HEAD
 import com.google.common.base.Predicate;
+=======
 import static org.apache.commons.lang.ObjectUtils.defaultIfNull;
+>>>>>>> Refactoring to allow user properties for anonymous users with
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.*;
 import hudson.model.Descriptor.FormException;
@@ -382,10 +385,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return null;
         return get(a.getName());
     }
-
+    
     /**
      * Gets the {@link User} object representing the currently logged-in user, or an
-     * instance of {@link AnonymousUser} bound to current {@link HttpSession}.
+     * instance of {@link AnonymousUser} bound to current {@link HttpSession}. 
      * @since 1.543
      */
     public static @Nonnull User currentUser() {
@@ -749,26 +752,26 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Non persistent anonymous {@link User}
      */
     private static class AnonymousUser extends User {
-
+        
         private AnonymousUser() {
             super("anonymous", "anonymous");
         }
-
+        
         @Override
         public synchronized void save() throws IOException {
-
+            
         }
-
+        
         @Override
         public synchronized void delete() throws IOException {
-
+            
         }
-
+        
         @Override
         public Authentication impersonate() {
             return null;
         }
-
+    
     }
 
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
