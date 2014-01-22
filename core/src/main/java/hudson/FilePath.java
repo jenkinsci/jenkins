@@ -1749,6 +1749,21 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Check to see if {@link hudson.FilePath} is a SymLink.
+     *
+     * @return {@link hudson.FilePath} is a SymLink.
+     */
+    public static boolean isSymlink(VirtualChannel channel, final FilePath filePath) throws Throwable {
+        return channel.call(new Callable<Boolean, Throwable>() {
+            @Override
+            public Boolean call() throws Throwable {
+                File file = new File(filePath.getRemote());
+                return !file.getCanonicalPath().equals(file.getAbsolutePath());
+            }
+        });
+    }
+
+    /**
      * Moves all the contents of this directory into the specified directory, then delete this directory itself.
      *
      * @since 1.308.
