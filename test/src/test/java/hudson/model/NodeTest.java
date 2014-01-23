@@ -31,12 +31,15 @@ import hudson.util.TagCloud.Entry;
 import hudson.util.TagCloud;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.security.ACL;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
+import hudson.slaves.OfflineCause.UserCause;
+
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import org.junit.Rule;
@@ -86,6 +89,32 @@ public class NodeTest {
         OfflineCause cause2 = new ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
         assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getOfflineCause());
+    }
+
+    @Test
+    public void testOfflineCause() throws Exception {
+        Node node = j.createOnlineSlave();
+        Computer computer = node.toComputer();
+        OfflineCause.UserCause cause;
+
+        final User someone = User.get("someone@somewhere.com");
+        ACL.impersonate(someone.impersonate());
+
+        computer.doToggleOffline("original message");
+        cause = (UserCause) computer.getOfflineCause();
+        assertEquals("Disconnected by someone@somewhere.com : original message", cause.toString());
+        assertEquals(someone, cause.getUser());
+
+        final User root = User.get("root@localhost");
+        ACL.impersonate(root.impersonate());
+
+        computer.doChangeOfflineCause("new message");
+        cause = (UserCause) computer.getOfflineCause();
+        assertEquals("Disconnected by root@localhost : new message", cause.toString());
+        assertEquals(root, cause.getUser());
+
+        computer.doToggleOffline(null);
+        assertNull(computer.getOfflineCause());
     }
 
     @Test
