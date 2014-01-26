@@ -23,6 +23,7 @@
  */
 package jenkins.model;
 
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
@@ -50,9 +51,13 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.JenkinsRule.DummySecurityRealm;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.HttpResponse;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collections;
+
+import jenkins.model.Jenkins.DisplayPeoplePrivilege;
 
 /**
  * @author kingfai
@@ -382,6 +387,79 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
 
     public HttpResponse doReportError() {
         return new Failure("My car is black");
+    }
+    
+    public void assertAccessibleToPeople(WebClient wc) throws Exception {
+        // whether link exists
+        HtmlPage topPage = wc.goTo("");
+        assertNotNull(topPage.getAnchorByHref(String.format("%s/asynchPeople/", getURL().getPath().replaceAll("/$", ""))));
+        
+        // can access to asynchPeople
+        wc.goTo("/asynchPeople/");
+    }
+    
+    public void assertNotAccessibleToPeople(WebClient wc) throws Exception {
+        // whether link exists
+        HtmlPage topPage = wc.goTo("");
+        try {
+            topPage.getAnchorByHref(String.format("%s/asynchPeople/", getURL().getPath().replaceAll("/$", "")));
+            fail("links to asynchPeople should not exist");
+        } catch(ElementNotFoundException e) {
+        }
+        
+        // can not access to asynchPeople
+        try {
+            wc.goTo("/asynchPeople/");
+            fail("access to asynchPeople should be denied");
+        } catch(FailingHttpStatusCodeException e) {
+            assertTrue(
+                    String.format("Access to asynchPeople should be denied with 401 or 403, but was %d.", e.getStatusCode()),
+                    (401 == e.getStatusCode() || 403 == e.getStatusCode())
+            );
+        }
+    }
+    
+    @LocalData
+    public void testDisplayPeoplePrivilege() throws Exception {
+        // check configurations.
+        User user1 = User.get("user1", false, Collections.emptyMap());
+        User admin = User.get("admin", false, Collections.emptyMap());
+        assertNotNull(user1);
+        assertNotNull(admin);
+        
+        assertTrue(jenkins.getACL().hasPermission(Jenkins.ANONYMOUS, jenkins.READ));
+        assertTrue(jenkins.getACL().hasPermission(user1.impersonate(), jenkins.READ));
+        assertTrue(jenkins.getACL().hasPermission(admin.impersonate(), jenkins.ADMINISTER));
+        assertTrue(jenkins.getACL().hasPermission(admin.impersonate(), jenkins.READ));
+        
+        // WebClients for each users
+        WebClient wcAnonymous = createWebClient();
+        WebClient wcUser1 = createWebClient().login(user1.getId());
+        WebClient wcAdmin = createWebClient().login(admin.getId());
+        
+        // Test AnyoneCanDisplay
+        {
+            jenkins.setDisplayPeoplePrivilege(DisplayPeoplePrivilege.AnyoneCanDisplay);
+            assertAccessibleToPeople(wcAnonymous);
+            assertAccessibleToPeople(wcUser1);
+            assertAccessibleToPeople(wcAdmin);
+        }
+        
+        // Test RequireAuthenticated
+        {
+            jenkins.setDisplayPeoplePrivilege(DisplayPeoplePrivilege.RequireAuthenticated);
+            assertNotAccessibleToPeople(wcAnonymous);
+            assertAccessibleToPeople(wcUser1);
+            assertAccessibleToPeople(wcAdmin);
+        }
+        
+        // Test AnyoneCanDisplay
+        {
+            jenkins.setDisplayPeoplePrivilege(DisplayPeoplePrivilege.RequireAdminister);
+            assertNotAccessibleToPeople(wcAnonymous);
+            assertNotAccessibleToPeople(wcUser1);
+            assertAccessibleToPeople(wcAdmin);
+        }
     }
 
 }
