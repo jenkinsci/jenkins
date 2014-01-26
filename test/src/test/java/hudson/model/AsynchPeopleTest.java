@@ -61,8 +61,6 @@ public class AsynchPeopleTest {
     @Bug(18641)
     @Test public void display() throws Exception {
         User.get("bob");
-        System.err.println(j.jenkins.getRootUrl());
-        Thread.sleep(60000);
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage page;
         try {
