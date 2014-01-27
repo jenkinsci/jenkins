@@ -27,6 +27,7 @@ import hudson.EnvVars.OverrideOrderCalculator;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -37,13 +38,62 @@ import com.google.common.collect.Sets;
  * @author Kohsuke Kawaguchi
  */
 public class EnvVarsTest extends TestCase {
+    private void resetEnvVarsCache() throws Exception {
+        Field f = EnvVars.class.getDeclaredField("shouldNotCaseSensitive");
+        f.setAccessible(true);
+        f.set(null, null);
+        f.setAccessible(false);
+    }
+    
+    /**
+     * Makes sure that {@link EnvVars} behave in case-sensitive way.
+     */
+    public void testCaseSensitive() throws Exception {
+        assertNull(System.getProperty(EnvVars.PROP_CASE_INSENSITIVE));
+        resetEnvVarsCache();
+        
+        EnvVars ev = new EnvVars(Collections.singletonMap("Path","A:B:C"));
+        assertFalse(ev.containsKey("PATH"));
+        assertTrue(ev.containsKey("Path"));
+        assertEquals("A:B:C",ev.get("Path"));
+        
+        ev.override("PATH+Test", "D");
+        if (Functions.isWindows()) {
+            // override always acts case-insensitive on Windows.
+            assertFalse(ev.containsKey("PATH"));
+            assertTrue(ev.containsKey("Path"));
+            assertEquals("D;A:B:C", ev.get("Path"));
+        } else {
+            assertTrue(ev.containsKey("PATH"));
+            assertEquals("D", ev.get("PATH"));
+            assertEquals("A:B:C",ev.get("Path"));
+        }
+    }
+    
     /**
      * Makes sure that {@link EnvVars} behave in case-insensitive way.
      */
-    public void test1() {
-        EnvVars ev = new EnvVars(Collections.singletonMap("Path","A:B:C"));
-        assertTrue(ev.containsKey("PATH"));
-        assertEquals("A:B:C",ev.get("PATH"));
+    public void testCaseInsensitive() throws Exception {
+        assertNull(System.getProperty(EnvVars.PROP_CASE_INSENSITIVE));
+        try {
+            System.setProperty(EnvVars.PROP_CASE_INSENSITIVE, "true");
+            resetEnvVarsCache();
+            
+            EnvVars ev = new EnvVars(Collections.singletonMap("Path","A:B:C"));
+            assertTrue(ev.containsKey("PATH"));
+            assertEquals("A:B:C",ev.get("PATH"));
+            
+            ev.override("PATH+Test", "D");
+            if (Functions.isWindows()) {
+                assertEquals("D;A:B:C", ev.get("Path"));
+                assertEquals("D;A:B:C", ev.get("PATH"));
+            } else {
+                assertEquals("D:A:B:C", ev.get("Path"));
+                assertEquals("D:A:B:C", ev.get("PATH"));
+            }
+        } finally {
+            System.getProperties().remove(EnvVars.PROP_CASE_INSENSITIVE);
+        }
     }
     
     public void testOverrideExpandingAll() throws Exception {

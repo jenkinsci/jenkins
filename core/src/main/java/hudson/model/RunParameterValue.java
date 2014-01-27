@@ -85,7 +85,9 @@ public class RunParameterValue extends ParameterValue {
         String buildResult = (null == run.getResult()) ? "UNKNOWN" : run.getResult().toString();
         env.put(name + "_RESULT",  buildResult);  // since 1.517
 
-        env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
+        if (!env.isCaseSensitive()) {
+            env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
+        }
 
     }
     

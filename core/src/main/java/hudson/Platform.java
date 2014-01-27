@@ -37,7 +37,7 @@ import java.util.Locale;
  * @author Kohsuke Kawaguchi
  */
 public enum Platform {
-    WINDOWS(';'),UNIX(':');
+    WINDOWS(';', false),UNIX(':', true);
 
     /**
      * The character that separates paths in environment variables like PATH and CLASSPATH. 
@@ -46,9 +46,15 @@ public enum Platform {
      * @see File#pathSeparator
      */
     public final char pathSeparator;
+    /**
+     * Whether names of environment variables are case sensitive on this platform.
+     * On Windows false, and on Unix true.
+     */
+    public final boolean envCaseSensitive;
 
-    private Platform(char pathSeparator) {
+    private Platform(char pathSeparator, boolean envCaseSensitive) {
         this.pathSeparator = pathSeparator;
+        this.envCaseSensitive = envCaseSensitive;
     }
 
     public static Platform current() {

@@ -44,7 +44,9 @@ public class JobParameterValue extends ParameterValue {
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         // TODO: check with Tom if this is really what he had in mind
         env.put(name,job.toString());
-        env.put(name.toUpperCase(Locale.ENGLISH),job.toString()); // backward compatibility pre 1.345
+        if (!env.isCaseSensitive()) {
+            env.put(name.toUpperCase(Locale.ENGLISH),job.toString()); // backward compatibility pre 1.345
+        }
     }
 
     @Override public String getShortDescription() {
