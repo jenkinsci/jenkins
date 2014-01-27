@@ -29,7 +29,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -46,11 +45,16 @@ import org.junit.Test;
 public class UpdateCenterTest {
     @Test public void data() throws Exception {
         try {
-            new URL("http://updates.jenkins-ci.org/").openStream();
-        } catch (IOException e) {
-            assumeNoException("No internet connectivity", e); // JENKINS-2095
+            doData();
+        } catch (Exception x) {
+            if (Boolean.getBoolean("ignore.random.failures")) {
+                assumeNoException("Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes", x);
+            } else {
+                throw x;
+            }
         }
-
+    }
+    private void doData() throws Exception {
         URL url = new URL("http://updates.jenkins-ci.org/update-center.json?version=build");
         String jsonp = IOUtils.toString(url.openStream());
         JSONObject json = JSONObject.fromObject(jsonp.substring(jsonp.indexOf('(') + 1, jsonp.lastIndexOf(')')));
