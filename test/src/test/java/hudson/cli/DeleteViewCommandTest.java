@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 
 import java.io.IOException;
@@ -78,9 +79,7 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoStandardOutput());
-        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeededSilently());
         assertThat(j.jenkins.getView("aView"), nullValue());
     }
 

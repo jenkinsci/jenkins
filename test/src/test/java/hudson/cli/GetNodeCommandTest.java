@@ -24,6 +24,10 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -58,8 +62,8 @@ public class GetNodeCommandTest {
         ;
 
         assertThat(result.stderr(), containsString("user is missing the Slave/ExtendedRead permission"));
-        assertThat("No output expected", result.stdout(), isEmptyString());
-        assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
+        assertThat(result, failedWith(-1));
+        assertThat(result, hasNoStandardOutput());
     }
 
     @Test public void getNodeShouldYieldConfigXml() throws Exception {
@@ -73,8 +77,8 @@ public class GetNodeCommandTest {
 
         assertThat(result.stdout(), startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
         assertThat(result.stdout(), containsString("<name>MySlave</name>"));
-        assertThat("No error output expected", result.stderr(), isEmptyString());
-        assertThat("Command is expected to succeed", result.returnCode(), equalTo(0));
+        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeeded());
     }
 
     @Test public void getNodeShouldFailIfNodeDoesNotExist() throws Exception {
@@ -85,7 +89,7 @@ public class GetNodeCommandTest {
         ;
 
         assertThat(result.stderr(), containsString("No such node 'MySlave'"));
-        assertThat("No output expected", result.stdout(), isEmptyString());
-        assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
+        assertThat(result, failedWith(-1));
+        assertThat(result, hasNoStandardOutput());
     }
 }

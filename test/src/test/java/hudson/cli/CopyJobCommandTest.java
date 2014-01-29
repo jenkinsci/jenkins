@@ -35,9 +35,7 @@ import org.jvnet.hudson.test.MockFolder;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 
 @SuppressWarnings("DM_DEFAULT_ENCODING")
 public class CopyJobCommandTest {
@@ -56,9 +54,7 @@ public class CopyJobCommandTest {
 
         CLICommandInvoker.Result result = command.invokeWithArgs("dir1/p1", "dir2/p2");
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoStandardOutput());
-        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeededSilently());
 
         assertNotNull(j.jenkins.getItemByFullName("dir2/p2"));
         // TODO test copying from/to root, or into nonexistent folder
@@ -72,9 +68,7 @@ public class CopyJobCommandTest {
 
         CLICommandInvoker.Result result = command.invokeWithArgs(p1.getName(), copiedProjectName);
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoStandardOutput());
-        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeededSilently());
 
         FreeStyleProject p2 = (FreeStyleProject)j.jenkins.getItem(copiedProjectName);
 
