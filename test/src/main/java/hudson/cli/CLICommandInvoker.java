@@ -74,6 +74,13 @@ public class CLICommandInvoker {
         this.command = command;
     }
 
+    public CLICommandInvoker(final JenkinsRule rule, final String command) {
+        this.rule = rule;
+        this.command = CLICommand.clone(command);
+
+        if (this.command == null) throw new AssertionError("No such command: " + command);
+    }
+
     public CLICommandInvoker authorizedTo(final Permission... permissions) {
 
         this.permissions = Arrays.asList(permissions);
@@ -224,6 +231,14 @@ public class CLICommandInvoker {
             return new Matcher("Exited with 0 return code") {
                 @Override protected boolean matchesSafely(Result result) {
                     return result.result == 0;
+                }
+            };
+        }
+
+        public static Matcher succeededSilently() {
+            return new Matcher("Succeeded silently") {
+                @Override protected boolean matchesSafely(Result result) {
+                    return result.result == 0 && "".equals(result.stderr()) && "".equals(result.stdout());
                 }
             };
         }
