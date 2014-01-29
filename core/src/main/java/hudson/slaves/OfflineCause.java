@@ -102,7 +102,7 @@ public abstract class OfflineCause {
 
     /**
      * Taken offline by user.
-     * @since TODO
+     * @since 1.551
      */
     public static class UserCause extends SimpleOfflineCause {
         private final User user;
