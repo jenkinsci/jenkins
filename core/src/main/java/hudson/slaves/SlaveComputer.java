@@ -530,10 +530,7 @@ public class SlaveComputer extends Computer {
             //does nothing in case computer is already disconnected
             checkPermission(DISCONNECT);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
-            disconnect(OfflineCause.create(Messages._SlaveComputer_DisconnectedBy(
-                    Jenkins.getAuthentication().getName(),
-                    offlineMessage!=null ? " : " + offlineMessage : "")
-            ));
+            disconnect(new OfflineCause.UserCause(User.current(), offlineMessage));
         }
         return new HttpRedirect(".");
     }
