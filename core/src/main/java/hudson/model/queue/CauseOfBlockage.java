@@ -92,7 +92,7 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_NodeOffline(node.getDisplayName());
+            return Messages.Queue_NodeOffline(node.toComputer().getDisplayName());
         }
         
         @Override
@@ -128,7 +128,7 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_WaitingForNextAvailableExecutorOn(node.getNodeName());
+            return Messages.Queue_WaitingForNextAvailableExecutorOn(node.toComputer().getDisplayName());
         }
         
         @Override
