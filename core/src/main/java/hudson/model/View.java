@@ -448,7 +448,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if (labels.contains(null) && node.getMode() == Mode.NORMAL) return true;
 
         for (Label l : labels)
-            if (l.contains(node))
+            if (l != null && l.contains(node))
                 return true;
         return false;
     }

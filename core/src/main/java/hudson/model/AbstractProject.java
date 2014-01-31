@@ -401,7 +401,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * If this project is configured to be always built on this node,
      * return that {@link Node}. Otherwise null.
      */
-    public Label getAssignedLabel() {
+    public @CheckForNull Label getAssignedLabel() {
         if(canRoam)
             return null;
 
