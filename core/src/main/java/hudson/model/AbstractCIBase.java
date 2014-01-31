@@ -54,6 +54,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * If you are calling this on Hudson something is wrong.
      *
      * @deprecated
+     *      Maybe you were trying to call {@link #getDisplayName()}.
      */
     @Deprecated @Override
     public String getNodeName() {
@@ -63,6 +64,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
    /**
      * @deprecated
      *      Why are you calling a method that always returns ""?
+    *       You probably want o call {@link Jenkins#getRootUrl()}
      */
     public String getUrl() {
         return "";
