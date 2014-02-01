@@ -98,7 +98,7 @@ my $pempty = 0;
 my $psame = 0;
 my $pnojenkins = 0;
 
-if ($tkeys ne 0) {
+if ($tkeys != 0) {
    $pdone = $tdone/$tkeys*100;
    $pmissing = $tmissing/$tkeys*100;
    $punused = $tunused/$tkeys*100;
