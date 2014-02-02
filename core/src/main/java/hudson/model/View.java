@@ -831,6 +831,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         // for testing purpose
+        @Restricted(NoExternalUse.class)
         /*package*/ Set<User> getModified() {
             return modified;
         }
