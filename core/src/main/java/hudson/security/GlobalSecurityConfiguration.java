@@ -30,6 +30,7 @@ import hudson.Functions;
 import hudson.markup.MarkupFormatter;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Describable;
 import hudson.model.ManagementLink;
 import hudson.util.FormApply;
 
@@ -55,7 +56,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 @Extension(ordinal = Integer.MAX_VALUE - 210)
-public class GlobalSecurityConfiguration extends ManagementLink {
+public class GlobalSecurityConfiguration extends ManagementLink implements Describable<GlobalSecurityConfiguration> {
     
     private static final Logger LOGGER = Logger.getLogger(GlobalSecurityConfiguration.class.getName());
 
@@ -126,7 +127,7 @@ public class GlobalSecurityConfiguration extends ManagementLink {
 
     @Override
     public String getDisplayName() {
-        return Messages.GlobalSecurityConfiguration_DisplayName();
+        return getDescriptor().getDisplayName();
     }
     
     @Override
@@ -154,4 +155,22 @@ public class GlobalSecurityConfiguration extends ManagementLink {
             return input instanceof GlobalConfigurationCategory.Security;
         }
     };
+
+    /**
+     * @return
+     * @see hudson.model.Describable#getDescriptor()
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Descriptor<GlobalSecurityConfiguration> getDescriptor() {
+        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+    }
+    
+    @Extension
+    public static final class DescriptorImpl extends Descriptor<GlobalSecurityConfiguration> {
+        @Override
+        public String getDisplayName() {
+            return Messages.GlobalSecurityConfiguration_DisplayName();
+        }
+    }
 }

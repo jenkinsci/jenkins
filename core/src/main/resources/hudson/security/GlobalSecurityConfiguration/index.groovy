@@ -22,6 +22,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
         div(class:"behavior-loading", _("LOADING"))
         f.form(method:"post",name:"config",action:"configure") {
             set("instance",my);
+            set("descriptor", my.descriptor);
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
                 f.entry (title:_("TCP port for JNLP slave agents"), field:"slaveAgentPort") {
