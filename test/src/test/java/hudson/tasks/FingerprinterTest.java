@@ -24,18 +24,15 @@
 
 package hudson.tasks;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
-import hudson.model.AbstractProject;
-import hudson.model.Fingerprint;
-import hudson.model.FingerprintCleanupThread;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.util.RunList;
 import java.io.File;
 
@@ -44,10 +41,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 import hudson.util.StreamTaskListener;
+
 import org.junit.Assume;
+
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -107,6 +108,26 @@ public class FingerprinterTest {
         assertEquals(1, upstreamProjects.size());
         assertTrue(upstreamProjects.contains(upstream));
         assertTrue(downstreamProjects.contains(downstream));
+    }
+
+    private static class FingerprintAddingBuilder extends Builder {
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            build.addAction(new Fingerprinter.FingerprintAction(build, ImmutableMap.of(singleFiles2[0], "fakefingerprint")));
+            return true;
+        }
+    }
+
+    @Test public void presentFingerprintActionIsReused() throws Exception {
+        FreeStyleProject project = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        project.getBuildersList().add(new FingerprintAddingBuilder());
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+
+        assertThat(build.getActions(Fingerprinter.FingerprintAction.class), hasSize(1));
+
+        Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
+        assertEquals(action.getRecords().keySet(), ImmutableSet.of(singleFiles2[0], singleFiles[0]));
     }
 
     @Test public void multipleUpstreamDependencies() throws Exception {
