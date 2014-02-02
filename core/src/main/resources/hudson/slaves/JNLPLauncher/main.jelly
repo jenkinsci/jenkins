@@ -28,7 +28,7 @@ THE SOFTWARE.
     <j:when test="${app.slaveAgentPort==-1}">
       <div class="error">
         ${%slaveAgentPort.disabled}
-        <l:isAdmin><a href="${rootURL}/configure">${%configure.link.text}</a>.</l:isAdmin>
+        <l:isAdmin><a href="${rootURL}/configureSecurity">${%configure.link.text}</a>.</l:isAdmin>
       </div>
     </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
