@@ -581,7 +581,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                     backupPlugin.close();
                 }
             } catch (IOException e) {
-                LOGGER.log(WARNING, "Failed to get backup version ", e);
+                LOGGER.log(WARNING, "Failed to get backup version from " + backup, e);
                 return null;
             }
         } else {

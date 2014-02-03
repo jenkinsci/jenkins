@@ -156,7 +156,7 @@ public class UsageStatistics extends PageDecorator {
         o.put("plugins",plugins);
 
         JSONObject jobs = new JSONObject();
-        List<TopLevelItem> items = j.getItems();
+        List<TopLevelItem> items = j.getAllItems(TopLevelItem.class);
         for (TopLevelItemDescriptor d : Items.all()) {
             int cnt=0;
             for (TopLevelItem item : items) {

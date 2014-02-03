@@ -55,6 +55,47 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class='major bug'>
+    Regression in Windows slaves since 1.547.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21373">issue 21373</a>)
+  <li class=bug>
+    Using <code>java -jar jenkins-core.jar folder/external-monitor-job cmd …</code> did not work.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21525">issue 21525</a>)
+  <li class=bug>
+    Jenkins crash on startup after upgrade from 1.546 to 1.548.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21474">issue 21474</a>)
+  <li class=bug>
+    f:combobox is narrow.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21612">issue 21612</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.550>What's new in 1.550</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Report number of all jobs as part of usage statistics
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21448">issue 21448</a>)
+  <li class=bug>
+    Replace description in error dialog instead of appending
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21457">issue 21457</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.549>What's new in 1.549</a> (2014/01/25)</h3>
+<ul class=image>
+  <li class=bug>
+    Removing the "keep this build forever" lock on a build should require the DELETE permission.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16417">issue 16417</a>)
+  <li class=bug>
+    Files added to zip archive are closed properly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20345">issue 20345</a>)
+  <li class=bug>
+    Broken CSS when reloading Jenkins after a time of inactivity
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17526">issue 17526</a>)
+</ul>
+<h3><a name=v1.548>What's new in 1.548</a> (2014/01/20)</h3>
+<ul class=image>
   <li class=rfe>
     API for adding actions to a wide class of model objects at once.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18224">issue 18224</a>)
@@ -79,12 +120,10 @@ Upcoming changes</a>
     Option to hold lazy-loaded build references strongly, weakly, and more.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19400">issue 19400</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.547>What's new in 1.547</a> <!--=DATE=--></h3>
+<h3><a name=v1.547>What's new in 1.547</a> (2014/01/12)</h3>
 <ul class=image>
+  <li class=rfe>
+    Split Windows slave functionality into its own plugin.
   <li class="major bug">
     NPE since 1.545 when using aggregated test result publisher without specifying downstream jobs explicitly.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18410">issue 18410</a>)
@@ -92,7 +131,6 @@ Upcoming changes</a>
     Fixed Trend Graph NPE when there isn't any builds
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21239">issue 21239</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.546>What's new in 1.546</a> (2014/01/06)</h3>
 <ul class=image>
   <li class="major bug">
@@ -558,8 +596,11 @@ Upcoming changes</a>
     Ensuring <code>/log/all</code> shows only <code>INFO</code> and above messages, even if custom loggers display <code>FINE</code> or below.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18959">issue 18959</a>)
   <li class=rfe>
-    Added a new monitor that detects and fixse out-of-order builds records.
+    Added a new monitor that detects and fixes out-of-order builds records.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18289">issue 18289</a>)
+  <li class=rfe>
+    Added CLI command <code>create-node</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18282">issue 18282</a>)
   <li class=rfe>
     Can't build using maven 3.1.0
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15935">issue 15935</a>)

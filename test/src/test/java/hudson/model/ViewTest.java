@@ -38,11 +38,13 @@ import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixProject;
 import hudson.model.Queue.Task;
+import hudson.model.Node.Mode;
 
 import org.jvnet.hudson.test.Email;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
+import hudson.slaves.DumbSlave;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
@@ -299,6 +301,27 @@ public class ViewTest {
 
         // contains all slaves as it contains noLabelJob that can run everywhere
         assertContainsNodes(view3, slave0, slave1, slave2, slave3, slave4);
+    }
+
+    @Test
+    @Bug(21474)
+    public void testGetComputersNPE() throws Exception {
+        ListView view = listView("aView");
+        view.filterExecutors = true;
+
+        DumbSlave dedicatedSlave = j.createOnlineSlave();
+        dedicatedSlave.setMode(Mode.EXCLUSIVE);
+        view.add(j.createFreeStyleProject());
+
+        FreeStyleProject tiedJob = j.createFreeStyleProject();
+        tiedJob.setAssignedNode(dedicatedSlave);
+        view.add(tiedJob);
+
+        DumbSlave notIncludedSlave = j.createOnlineSlave();
+        notIncludedSlave.setMode(Mode.EXCLUSIVE);
+
+        assertContainsNodes(view, j.jenkins, dedicatedSlave);
+        assertNotContainsNodes(view, notIncludedSlave);
     }
 
     private void assertContainsNodes(View view, Node... slaves) {

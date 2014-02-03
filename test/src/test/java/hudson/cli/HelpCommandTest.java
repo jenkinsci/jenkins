@@ -24,9 +24,9 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.*;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 
 import java.io.PrintStream;
@@ -58,15 +58,15 @@ public class HelpCommandTest {
         assertContainsOverviewOfMethodCommand(generalHelp);
 
         Result result = command.invokeWithArgs(ClassCommand.NAME);
-        assertThat(result.returnCode(), equalTo(0));
-        assertThat(result.stdout(), isEmptyString());
+        assertThat(result, succeeded());
+        assertThat(result, hasNoStandardOutput());
 
         assertContainsUsageOfClassCommand(result.stderr());
 
         result = command.invokeWithArgs("offline-node");
 
-        assertThat(result.returnCode(), equalTo(0));
-        assertThat(result.stdout(), isEmptyString());
+        assertThat(result, succeeded());
+        assertThat(result, hasNoStandardOutput());
 
         assertContainsUsageOfMethodCommand(result.stderr());
     }

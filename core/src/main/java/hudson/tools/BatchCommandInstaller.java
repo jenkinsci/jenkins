@@ -1,8 +1,8 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2012, Hayato ITO
- *
+ * Copyright (c) 2013, Oleg Nenashev
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -21,21 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson;
 
-import junit.framework.TestCase;
+package hudson.tools;
 
-import java.net.Proxy;
+import hudson.Extension;
+import hudson.FilePath;
+import org.kohsuke.stapler.DataBoundConstructor;
 
-public class ProxyConfigurationTest extends TestCase {
+/**
+ * Installs tool via script execution of Batch script.
+ * Inspired by "Command installer" from the Jenkins core.
+ * @since 0.1
+ */
+public class BatchCommandInstaller extends AbstractCommandInstaller {
 
-    public void testNoProxyHost() {
-        String noProxyHost = "*.example.com|192.168.*";
-        assertEquals(Proxy.Type.HTTP, ProxyConfiguration.createProxy("test.example.co.jp", "proxy.example.com", 8080, noProxyHost).type());
-        assertEquals(Proxy.Type.DIRECT, ProxyConfiguration.createProxy("test.example.com", "proxy.example.com", 8080, noProxyHost).type());
-        assertEquals(Proxy.Type.HTTP, ProxyConfiguration.createProxy("test.example.com.test.example.co.jp", "proxy.example.com", 8080, noProxyHost).type());
-        assertEquals(Proxy.Type.DIRECT, ProxyConfiguration.createProxy("test.test.example.com", "proxy.example.com", 8080, noProxyHost).type());
-        assertEquals(Proxy.Type.DIRECT, ProxyConfiguration.createProxy("192.168.10.10", "proxy.example.com", 8080, noProxyHost).type());
-        assertEquals(Proxy.Type.HTTP, ProxyConfiguration.createProxy("192.169.10.10", "proxy.example.com", 8080, noProxyHost).type());
+    @DataBoundConstructor
+    public BatchCommandInstaller(String label, String command, String toolHome) {
+        super(label, command, toolHome);
+    }
+
+    @Override
+    public String getCommandFileExtension() {
+        return ".bat";
+    }
+
+    @Override
+    public String[] getCommandCall(FilePath script) {
+        String[] cmd = {"cmd", "/c", "call", script.getRemote()};
+        return cmd;
+    }
+ 
+    @Extension
+    public static class DescriptorImpl extends Descriptor<BatchCommandInstaller> {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.BatchCommandInstaller_DescriptorImpl_displayName();
+        }        
     }
 }

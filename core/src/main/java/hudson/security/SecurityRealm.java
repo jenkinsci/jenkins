@@ -318,6 +318,28 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
+     * If this {@link SecurityRealm} supports a look up of {@link GroupDetails} by their names, override this method
+     * to provide the look up.
+     * <p/>
+     * <p/>
+     * This information, when available, can be used by {@link AuthorizationStrategy}s to improve the UI and
+     * error diagnostics for the user.
+     *
+     * @param groupname    the name of the group to fetch
+     * @param fetchMembers if {@code true} then try and fetch the members of the group if it exists. Trying does not
+     *                     imply that the members will be fetched and {@link hudson.security.GroupDetails#getMembers()}
+     *                     may still return {@code null}
+     * @throws UserMayOrMayNotExistException if no conclusive result could be determined regarding the group existance.
+     * @throws UsernameNotFoundException     if the group does not exist.
+     * @throws DataAccessException           if the backing security realm could not be connected to.
+     * @since 1.549
+     */
+    public GroupDetails loadGroupByGroupname(String groupname, boolean fetchMembers)
+            throws UsernameNotFoundException, DataAccessException {
+        return loadGroupByGroupname(groupname);
+    }
+
+    /**
      * Starts the user registration process for a new user that has the given verified identity.
      *
      * <p>

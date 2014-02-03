@@ -90,10 +90,26 @@ foreach (@files) {
 
 ## print statistics
 my $tdone = $tkeys - $tmissing - $tunused - $tempty - $tsame - $tnojenkins;
+
+my $pdone = 100;
+my $pmissing = 0;
+my $punused = 0;
+my $pempty = 0;
+my $psame = 0;
+my $pnojenkins = 0;
+
+if ($tkeys != 0) {
+   $pdone = $tdone/$tkeys*100;
+   $pmissing = $tmissing/$tkeys*100;
+   $punused = $tunused/$tkeys*100;
+   $pempty = $tempty/$tkeys*100;
+   $psame = $tsame/$tkeys*100;
+   $pnojenkins = $tnojenkins/$tkeys*100;
+}
 printf ("\nTOTAL: Files: %d Keys: %d Done: %d(%.2f\%)\n       Missing: %d(%.2f\%) Orphan: %d(%.2f\%) Empty: %d(%.2f\%) Same: %d(%.2f\%) NoJenkins: %d(%.2f\%)\n\n", 
-        $tfiles, $tkeys, $tdone, 
-        $tdone/$tkeys*100, $tmissing, $tmissing/$tkeys*100, $tunused, $tunused/$tkeys*100, 
-        $tempty, $tempty/$tkeys*100, $tsame, $tsame/$tkeys*100, $tnojenkins, $tnojenkins/$tkeys*100);
+        $tfiles, $tkeys, $tdone, $pdone,
+        $tmissing, $pmissing, $tunused, $punused, 
+        $tempty, $pempty, $tsame, $psame, $tnojenkins, $pnojenkins);
 ## end
 exit();
 
@@ -190,7 +206,7 @@ sub processFile {
    removeUnusedKeys($ofile, %keys) if ($remove && $unused ne "");
    
    # convert the language file to ISO or ACII which are
-   # the charsets which Hudson supports right now
+   # the charsets which Jenkins supports right now
    convert($ofile, $toiso, $toascii) if ( -f $ofile );
 }
 
@@ -258,7 +274,7 @@ sub loadPropertiesFile {
          s/[\r\n]+//;
          $ret{$key} .= " \n# $1" if ($cont && /\s*(.*)[\\\s]*$/);
          if (/^([^#\s].*?[^\\])=(.*)[\s\\]*$/) {
-           ($key, $val) = ($1, $2);
+           ($key, $val) = (trim($1), trim($2));
            $ret{$key}=$val;
          }
          $cont = (/\\\s*$/) ? 1 : 0;
@@ -359,10 +375,19 @@ sub printLicense {
    }
 }
 
+# trim function to remove whitespace from the start and end of the string
+sub trim($)
+{
+	my $string = shift;
+	$string =~ s/^\s+//;
+	$string =~ s/\s+$//;
+	return $string;
+}
+
 ### Usage 
 sub usage {
    print "
-Translation Tool for Hudson
+Translation Tool for Jenkins
    
 Usage: $0 --lang=xx [options] [dir]
 
