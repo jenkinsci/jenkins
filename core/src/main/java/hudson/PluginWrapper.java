@@ -45,6 +45,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -213,7 +214,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public String getDisplayName() {
-        return getLongName();
+        return StringUtils.removeStart(getLongName(), "Jenkins ");
     }
 
     public Api getApi() {
