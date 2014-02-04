@@ -92,7 +92,8 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_NodeOffline(node.getDisplayName());
+            String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
+            return Messages.Queue_NodeOffline(name);
         }
         
         @Override
@@ -128,7 +129,8 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_WaitingForNextAvailableExecutorOn(node.getNodeName());
+            String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
+            return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
         }
         
         @Override

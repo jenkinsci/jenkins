@@ -89,7 +89,7 @@ THE SOFTWARE.
 
         <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
-          ${%Labels:}
+          <h2>${%Labels}</h2>
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">

@@ -63,7 +63,7 @@ THE SOFTWARE.
                 <td class="pane">
                   <div>
                     <a href="${p.url}">
-                      ${p.updateInfo.title?:p.longName}
+                      ${p.updateInfo.displayName?:p.displayName}
                     </a>
                   </div>
                   <div class="excerpt">
