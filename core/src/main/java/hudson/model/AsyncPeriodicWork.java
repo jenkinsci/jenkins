@@ -90,7 +90,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      * @return 
      *      The logging level as @Level.
      *
-     * @since 1.450
+     * @since 1.551
      */
     protected Level getNormalLoggingLevel() {
         return Level.INFO;
@@ -102,7 +102,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      * @return 
      *      The logging level as @Level.
      *
-     * @since 1.450
+     * @since 1.551
      */
     protected Level getErrorLoggingLevel() {
         return Level.SEVERE;
