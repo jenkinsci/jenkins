@@ -89,7 +89,7 @@ public final class BuildPtr implements Comparable<BuildPtr> {
         File dir = new File(job.getRootDir(), "outOfOrderBuilds");
         dir.mkdirs();
         File dst = new File(dir, buildDir.getName());
-        listener.getLogger().println("Renaming "+dir);
+        listener.getLogger().println("Renaming "+buildDir);
         listener.getLogger().println("  -> "+dst);
         if (!buildDir.renameTo(dst)) {
             FilePath bd = new FilePath(buildDir);
