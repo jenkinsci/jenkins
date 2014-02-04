@@ -371,7 +371,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      null if this node is not connected hence the path is not available
      */
     // TODO: should this be modified now that getWorkspace is moved from AbstractProject to AbstractBuild?
-    public abstract FilePath getWorkspaceFor(TopLevelItem item);
+    public abstract @CheckForNull FilePath getWorkspaceFor(TopLevelItem item);
 
     /**
      * Gets the root directory of this node.
@@ -384,7 +384,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      null if the node is offline and hence the {@link FilePath}
      *      object is not available.
      */
-    public abstract FilePath getRootPath();
+    public abstract @CheckForNull FilePath getRootPath();
 
     /**
      * Gets the {@link FilePath} on this node.
