@@ -243,6 +243,28 @@ public class ListView extends View implements Saveable {
         save();
     }
 
+    /**
+     * Removes the given item from this view.
+     * @since 1.500
+     */
+    public void remove(TopLevelItem item) throws IOException {
+        synchronized (this) {
+            jobNames.remove(item.getName());
+        }
+        save();
+    }
+
+    /**
+     * Removes all items from this view.
+     * @since 1.500
+     */
+    public void removeAllItems() throws IOException {
+        synchronized (this) {
+            jobNames.clear();
+        }
+        save();
+    }
+
     public String getIncludeRegex() {
         return includeRegex;
     }
@@ -259,11 +281,39 @@ public class ListView extends View implements Saveable {
     }
 
     /**
+     * Set the inclusion regular expression.
+     * @since 1.500
+*/
+    public void setIncludeRegex(String includeRegex) throws IOException {
+        String newRegex = Util.fixEmptyAndTrim(includeRegex);
+        synchronized (this) {
+            if (this.includeRegex != newRegex)
+            {
+                this.includeRegex = newRegex;
+                this.includePattern = (this.includeRegex == null ? null : Pattern.compile(this.includeRegex));
+            }
+        }
+        save();
+    }
+
+    /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
      */
     public Boolean getStatusFilter() {
         return statusFilter;
+    }
+
+    /**
+     * Filter by enabled/disabled status of jobs.
+     * Null for no filter, true for enabled-only, false for disabled-only.
+     * @since 1.500
+     */
+    public void setStatusFilter(Boolean statusFilter) throws IOException {
+        synchronized (this) {
+            this.statusFilter = statusFilter;
+        }
+        save();
     }
 
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
