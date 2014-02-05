@@ -26,6 +26,7 @@ package hudson.tasks.junit;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.*;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -37,14 +38,17 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Builder;
+
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TouchBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class TestResultPublishingTest extends HudsonTestCase {
@@ -93,6 +97,56 @@ public class TestResultPublishingTest extends HudsonTestCase {
         wc.getPage(build, "testReport/hudson.security"); // package
         wc.getPage(build, "testReport/hudson.security/HudsonPrivateSecurityRealmTest/"); // class
         wc.getPage(build, "testReport/hudson.security/HudsonPrivateSecurityRealmTest/testDataCompatibilityWith1_282/"); // method
+    }
+
+    @LocalData
+    public void testRealtimePublishing() throws Exception {
+        project.getBuildWrappersList().add(new TestResultActionUpdater());
+
+        // Generate test reports one by one
+        final SequenceLock seq = new SequenceLock();
+        project.getBuildersList().clear();
+        project.getBuildersList().add(new SeqBuilder(seq, "TEST-hudson.scm.ScmTest.xml", 0));
+        project.getBuildersList().add(new SeqBuilder(seq, "TEST-org.jvnet.hudson.main.AppTest.xml", 3));
+
+        Future<FreeStyleBuild> fb = project.scheduleBuild2(0);
+
+        seq.phase(1);
+        TestResultAction action = waitForTests(project.getBuildByNumber(1));
+        assertEquals("Only ScmTest should be parsed at this point", 1, action.getTotalCount());
+        seq.phase(2);
+
+        seq.done();
+        fb.get();
+        assertEquals("Both tests should be parsed", 3, action.getTotalCount());
+    }
+
+    private TestResultAction waitForTests(FreeStyleBuild build) throws InterruptedException {
+        for (;;) {
+            TestResultAction action = build.getAction(TestResultAction.class);
+            if (action != null) return action;
+
+            Thread.sleep(1000);
+        }
+    }
+
+    private static class SeqBuilder extends Builder {
+        private final SequenceLock seq;
+        private final String name;
+        private final int phase;
+
+        public SeqBuilder(SequenceLock seq, String name, int phase) {
+            this.seq = seq;
+            this.name = name;
+            this.phase = phase;
+        }
+
+        @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            seq.phase(phase);
+            System.out.println(phase);
+            build.getWorkspace().child(name).touch(System.currentTimeMillis());
+            return true;
+        }
     }
 
     @LocalData
