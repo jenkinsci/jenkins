@@ -126,7 +126,11 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 			BuildListener listener) throws InterruptedException, IOException {
 		listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
 		TestResultAction action;
-		
+		if (build.getAction(TestResultAction.class) != null) {
+		    // TestResultActionUpdater is working on this already
+		    return true;
+		}
+
 		final String testResults = build.getEnvironment(listener).expand(this.testResults);
 
 		try {
@@ -215,7 +219,15 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 
 	public MatrixAggregator createAggregator(MatrixBuild build,
 			Launcher launcher, BuildListener listener) {
-		return new TestResultAggregator(build, launcher, listener);
+
+        TestResultActionUpdater updater = build.getParent()
+                .getBuildWrappersList()
+                .get(TestResultActionUpdater.class)
+        ;
+        // Updated periodically. No need to aggregate.
+        if (updater != null) return null;
+
+        return new TestResultAggregator(build, launcher, listener);
 	}
 
 	/**

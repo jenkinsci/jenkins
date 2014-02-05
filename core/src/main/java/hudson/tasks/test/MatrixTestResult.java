@@ -23,6 +23,9 @@
  */
 package hudson.tasks.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
@@ -65,5 +68,21 @@ public class MatrixTestResult extends AggregatedTestResultAction {
     public String getTestResultPath(TestResult it) {
         // Prepend Configuration path
         return it.getOwner().getParent().getShortUrl() + super.getTestResultPath(it);
+    }
+
+    /**
+     * Update aggregated report with data from underlying run reports.
+     * @since TODO
+     */
+    public void update() {
+        final List<MatrixRun> buildRun = ((MatrixBuild)owner).getExactRuns();
+        final List<AbstractTestResultAction<?>> actions = new ArrayList<AbstractTestResultAction<?>>(buildRun.size());
+        for (MatrixRun run: buildRun) {
+            final AbstractTestResultAction<?> action = run.getAction(AbstractTestResultAction.class);
+            if (action == null) continue;
+            actions.add(action);
+        }
+
+        super.update(actions);
     }
 }

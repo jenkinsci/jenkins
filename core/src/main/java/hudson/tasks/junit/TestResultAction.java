@@ -24,6 +24,7 @@
 package hudson.tasks.junit;
 
 import com.thoughtworks.xstream.XStream;
+
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
@@ -32,6 +33,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.TestObject;
 import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
+
 import org.kohsuke.stapler.StaplerProxy;
 
 import java.io.File;
@@ -42,6 +44,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.annotation.Nonnull;
 
 /**
  * {@link Action} that displays the JUnit test result.
@@ -97,7 +101,8 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         return new XmlFile(XSTREAM,new File(owner.getRootDir(), "junitResult.xml"));
     }
 
-    public synchronized TestResult getResult() {
+    @Override
+    public synchronized @Nonnull TestResult getResult() {
         TestResult r;
         if(result==null) {
             r = load();
@@ -116,6 +121,12 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
             skipCount = r.getSkipCount();
         }
         return r;
+    }
+
+    public synchronized void updateResult(TestResult result, BuildListener listener) {
+        final TestResult newResult = getResult();
+        newResult.include(result);
+        setResult(newResult, listener);
     }
 
     @Override
@@ -147,7 +158,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     /**
      * Loads a {@link TestResult} from disk.
      */
-    private TestResult load() {
+    private @Nonnull TestResult load() {
         TestResult r;
         try {
             r = (TestResult)getDataFile().read();
@@ -160,22 +171,23 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     }
 
     public Object getTarget() {
+
         return getResult();
     }
     
     public List<TestAction> getActions(TestObject object) {
-    	List<TestAction> result = new ArrayList<TestAction>();
-	// Added check for null testData to avoid NPE from issue 4257.
-	if (testData!=null) {
-        for (Data data : testData) {
-            result.addAll(data.getTestAction(object));
+        List<TestAction> result = new ArrayList<TestAction>();
+        // Added check for null testData to avoid NPE from issue 4257.
+        if (testData!=null) {
+            for (Data data : testData) {
+                result.addAll(data.getTestAction(object));
+            }
         }
+        return Collections.unmodifiableList(result);
     }
-	return Collections.unmodifiableList(result);
-	
-    }
+
     public void setData(List<Data> testData) {
-	this.testData = testData;
+        this.testData = testData;
     }
 
     /**
