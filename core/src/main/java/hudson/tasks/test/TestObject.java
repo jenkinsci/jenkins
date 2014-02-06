@@ -311,6 +311,20 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
     }
 
     /**
+     * Gets the full name of this object.
+     * @since 1.594
+     */
+    public String getFullName() {
+        StringBuilder sb = new StringBuilder(getName());
+        if (getParent() != null) {
+            sb.insert(0, " : ");
+            sb.insert(0, getParent().getFullName());
+        }
+        return sb.toString();
+    }
+
+
+    /**
      * Gets the version of {@link #getName()} that's URL-safe.
      */
     @Override
