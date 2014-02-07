@@ -123,6 +123,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Utility functions used in views.
@@ -424,6 +426,15 @@ public class Functions {
         Cookie c = getCookie(req, name);
         if(c==null || c.getValue()==null) return defaultValue;
         return c.getValue();
+    }
+
+    private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
+    @Restricted(NoExternalUse.class)
+    public static String validateIconSize(String iconSize) throws SecurityException {
+        if (!ICON_SIZE.matcher(iconSize).matches()) {
+            throw new SecurityException("invalid iconSize");
+        }
+        return iconSize;
     }
 
     /**

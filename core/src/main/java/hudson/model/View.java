@@ -766,7 +766,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         {
             StaplerRequest req = Stapler.getCurrentRequest();
-            iconSize = req != null ? Functions.getCookie(req, "iconSize", "32x32") : "32x32";
+            iconSize = req != null ? Functions.validateIconSize(Functions.getCookie(req, "iconSize", "32x32")) : "32x32";
         }
 
         @Override protected void compute() throws Exception {

@@ -295,7 +295,6 @@ import java.util.logging.Level;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -3417,9 +3416,9 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
      */
     public void doIconSize( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         String qs = req.getQueryString();
-        if(qs==null || !ICON_SIZE.matcher(qs).matches())
+        if(qs==null)
             throw new ServletException();
-        Cookie cookie = new Cookie("iconSize", qs);
+        Cookie cookie = new Cookie("iconSize", Functions.validateIconSize(qs));
         cookie.setMaxAge(/* ~4 mo. */9999999); // #762
         rsp.addCookie(cookie);
         String ref = req.getHeader("Referer");
@@ -3963,8 +3962,6 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
 
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
-
-    private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
