@@ -34,6 +34,7 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.CheckForNull;
@@ -371,10 +372,13 @@ public abstract class Cause {
         @Override
         public String getShortDescription() {
             if(note != null) {
-                return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, note);
-            } else {
-                return Messages.Cause_RemoteCause_ShortDescription(addr);
+                try {
+                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, Jenkins.getInstance().getMarkupFormatter().translate(note));
+                } catch (IOException x) {
+                    // ignore
+                }
             }
+            return Messages.Cause_RemoteCause_ShortDescription(addr);
         }
 
         @Override
