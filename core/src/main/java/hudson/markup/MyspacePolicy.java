@@ -48,7 +48,7 @@ public class MyspacePolicy {
                     "script","noscript",/*"iframe",*/"frameset","frame");
 
             tag("label",    "for");
-            tag("form",     "action",ONSITE_OR_OFFSITE_URL,
+            tag("form",     "action",ONSITE_URL,
                             "method");
             tag("button",   "value", "type");
             tag("input",    "maxlength","checked",
