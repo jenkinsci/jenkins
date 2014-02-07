@@ -669,6 +669,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 r.add(n);
             }
         }
+        Collections.sort(r, String.CASE_INSENSITIVE_ORDER);
         return r;
     }
 
