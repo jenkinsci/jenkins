@@ -32,6 +32,10 @@ THE SOFTWARE.
         ${it.name}
       </h1>
 
+      <j:forEach var="a" items="${it.actions}">
+        <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+      </j:forEach>
+
       <div>
         <h2>${%Nodes}</h2>
         <j:forEach var="n" items="${it.nodes}">
