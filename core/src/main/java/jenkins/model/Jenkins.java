@@ -3985,6 +3985,8 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
         // for backward compatibility with <1.75, recognize the tag name "view" as well.
         XSTREAM.alias("view", ListView.class);
         XSTREAM.alias("listView", ListView.class);
+        XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
+        XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
         // this seems to be necessary to force registration of converter early enough
         Mode.class.getEnumConstants();
 

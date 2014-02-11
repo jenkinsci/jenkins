@@ -45,6 +45,7 @@ import hudson.model.Saveable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -73,6 +74,8 @@ public class RobustReflectionConverter implements Converter {
     protected transient SerializationMethodInvoker serializationMethodInvoker;
     private transient ReflectionProvider pureJavaReflectionProvider;
     private final @Nonnull XStream2.ClassOwnership classOwnership;
+    /** {@code pkg.Clazz#fieldName} */
+    private final Set<String> criticalFields = Collections.synchronizedSet(new HashSet<String>());
 
     public RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
         this(mapper, reflectionProvider, new XStream2().new PluginClassOwnership());
@@ -83,6 +86,10 @@ public class RobustReflectionConverter implements Converter {
         assert classOwnership != null;
         this.classOwnership = classOwnership;
         serializationMethodInvoker = new SerializationMethodInvoker();
+    }
+
+    void addCriticalField(Class<?> clazz, String field) {
+        criticalFields.add(clazz.getName() + '#' + field);
     }
 
     public boolean canConvert(Class type) {
@@ -261,8 +268,16 @@ public class RobustReflectionConverter implements Converter {
         while (reader.hasMoreChildren()) {
             reader.moveDown();
 
+            boolean critical = false;
             try {
                 String fieldName = mapper.realMember(result.getClass(), reader.getNodeName());
+                for (Class<?> concrete = result.getClass(); concrete != null; concrete = concrete.getSuperclass()) {
+                    // Not quite right since a subclass could shadow a field, but probably suffices:
+                    if (criticalFields.contains(concrete.getName() + '#' + fieldName)) {
+                        critical = true;
+                        break;
+                    }
+                }
                 boolean implicitCollectionHasSameName = mapper.getImplicitCollectionDefForFieldName(result.getClass(), reader.getNodeName()) != null;
 
                 Class classDefiningField = determineWhichClassDefinesField(reader);
@@ -294,12 +309,21 @@ public class RobustReflectionConverter implements Converter {
                     }
                 }
             } catch (MissingFieldException e) {
+                if (critical) {
+                    throw e;
+                }
                 LOGGER.log(WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
                 addErrorInContext(context, e);
             } catch (CannotResolveClassException e) {
+                if (critical) {
+                    throw e;
+                }
                 LOGGER.log(WARNING,"Skipping a non-existent type",e);
                 addErrorInContext(context, e);
             } catch (LinkageError e) {
+                if (critical) {
+                    throw e;
+                }
                 LOGGER.log(WARNING,"Failed to resolve a type",e);
                 addErrorInContext(context, e);
             }
