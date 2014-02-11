@@ -1011,7 +1011,7 @@ public class Functions {
 
             if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
                 assert i instanceof TopLevelItem;
-                if (view.contains((TopLevelItem)i)) {
+                if (view != null && view.contains((TopLevelItem)i)) {
                     // if p and the current page belongs to the same view, then return a relative path
                     return normalizeURI(ancestors.get(view)+'/'+url);
                 } else {
