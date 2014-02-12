@@ -479,33 +479,19 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
         List<String> missingDependencies = new ArrayList<String>();
-        List<String> incompatibleDependencies = new ArrayList<String>();
         // make sure dependencies exist
         for (Dependency d : dependencies) {
-            PluginWrapper plugin = parent.getPlugin(d.shortName);
-            if (plugin == null || plugin.isActive()) {
+            if (parent.getPlugin(d.shortName) == null)
                 missingDependencies.add(d.toString());
-            } else if (new VersionNumber(plugin.getVersion()).isOlderThan(new VersionNumber(d.version))) {
-                incompatibleDependencies.add(d.toString());
-            }
         }
-
-        // add the optional dependencies that exists
-        for (Dependency d : optionalDependencies) {
-            PluginWrapper plugin = parent.getPlugin(d.shortName);
-            if (plugin != null) {
-                dependencies.add(d);
-            } else if (new VersionNumber(plugin.getVersion()).isOlderThan(new VersionNumber(d.version))) {
-                incompatibleDependencies.add(d.toString());
-            }
-        }
-
         if (!missingDependencies.isEmpty())
             throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
 
-        if (!incompatibleDependencies.isEmpty())
-            throw new IOException("Dependency "+Util.join(incompatibleDependencies, ", ")+" doesn't match required version");
-
+        // add the optional dependencies that exists
+        for (Dependency d : optionalDependencies) {
+            if (parent.getPlugin(d.shortName) != null)
+                dependencies.add(d);
+        }
     }
 
     /**
