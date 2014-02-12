@@ -29,6 +29,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
+import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
 import com.thoughtworks.xstream.converters.DataHolder;
@@ -36,6 +37,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.SingleValueConverterWrapper;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.extended.DynamicProxyConverter;
 import com.thoughtworks.xstream.core.JVM;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
@@ -155,6 +157,15 @@ public class XStream2 extends XStream {
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
         registerConverter(new AssociatedConverterImpl(this), -10);
+
+        registerConverter(new DynamicProxyConverter(getMapper()) { // SECURITY-105 defense
+            @Override public boolean canConvert(Class type) {
+                return /* this precedes NullConverter */ type != null && super.canConvert(type);
+            }
+            @Override public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+                throw new ConversionException("<dynamic-proxy> not supported");
+            }
+        }, PRIORITY_VERY_HIGH);
     }
 
     @Override
