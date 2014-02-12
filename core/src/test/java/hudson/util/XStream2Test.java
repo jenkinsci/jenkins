@@ -25,6 +25,7 @@ package hudson.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.thoughtworks.xstream.XStreamException;
 import hudson.XmlFile;
 import hudson.matrix.MatrixRun;
 import hudson.model.Result;
@@ -310,6 +311,21 @@ public class XStream2Test extends TestCase {
         Foo2 map = (Foo2) new XStream2().fromXML(getClass().getResourceAsStream("old-concurrentHashMap.xml"));
         assertEquals(1,map.m.size());
         assertEquals("def",map.m.get("abc"));
+    }
+
+    public void testDynamicProxyBlocked() throws Exception { // SECURITY-105
+        try {
+            ((Runnable) new XStream2().fromXML("<dynamic-proxy><interface>java.lang.Runnable</interface><handler class='java.beans.EventHandler'><target class='" + Hacked.class.getName() + "'/><action>oops</action></handler></dynamic-proxy>")).run();
+        } catch (XStreamException x) {
+            // good
+        }
+        assertFalse("should never have run that", Hacked.tripped);
+    }
+    public static final class Hacked {
+        static boolean tripped;
+        public void oops() {
+            tripped = true;
+        }
     }
 
     public void testTrimVersion() throws Exception {
