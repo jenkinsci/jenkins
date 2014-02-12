@@ -510,6 +510,15 @@ public class Functions {
         return c.getValue();
     }
 
+    private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
+    @Restricted(NoExternalUse.class)
+    public static String validateIconSize(String iconSize) throws SecurityException {
+        if (!ICON_SIZE.matcher(iconSize).matches()) {
+            throw new SecurityException("invalid iconSize");
+        }
+        return iconSize;
+    }
+
     /**
      * Gets the suffix to use for YUI JavaScript.
      */
@@ -1678,6 +1687,9 @@ public class Functions {
     public String getPasswordValue(Object o) {
         if (o==null)    return null;
         if (o instanceof Secret)    return ((Secret)o).getEncryptedValue();
+        if (getIsUnitTest()) {
+            throw new SecurityException("attempted to render plaintext ‘" + o + "’ in password field; use a getter of type Secret instead");
+        }
         return o.toString();
     }
 
