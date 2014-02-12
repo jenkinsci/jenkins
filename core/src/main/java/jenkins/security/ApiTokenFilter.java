@@ -2,9 +2,13 @@ package jenkins.security;
 
 import hudson.model.User;
 import hudson.security.ACL;
+import hudson.security.UserMayOrMayNotExistException;
 import hudson.util.Scrambler;
+import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.springframework.dao.DataAccessException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -41,6 +45,17 @@ public class ApiTokenFilter implements Filter {
             int idx = uidpassword.indexOf(':');
             if (idx >= 0) {
                 String username = uidpassword.substring(0, idx);
+                try {
+                    Jenkins.getInstance().getSecurityRealm().loadUserByUsername(username);
+                } catch (UserMayOrMayNotExistException x) {
+                    // OK, give them the benefit of the doubt.
+                } catch (UsernameNotFoundException x) {
+                    // Not/no longer a user; deny the API token. (But do not leak the information that this happened.)
+                    chain.doFilter(request, response);
+                    return;
+                } catch (DataAccessException x) {
+                    throw new ServletException(x);
+                }
                 String password = uidpassword.substring(idx+1);
 
                 // attempt to authenticate as API token

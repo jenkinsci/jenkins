@@ -65,6 +65,8 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.CheckForNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
@@ -119,6 +121,16 @@ public class XStream2 extends XStream {
         // replace default reflection converter
         reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider(), new PluginClassOwnership());
         return reflectionConverter;
+    }
+
+    /**
+     * Specifies that a given field of a given class should not be treated with laxity by {@link RobustCollectionConverter}.
+     * @param clazz a class which we expect to hold a non-{@code transient} field
+     * @param field a field name in that class
+     */
+    @Restricted(NoExternalUse.class) // TODO could be opened up later
+    public void addCriticalField(Class<?> clazz, String field) {
+        reflectionConverter.addCriticalField(clazz, field);
     }
 
     static String trimVersion(String version) {
