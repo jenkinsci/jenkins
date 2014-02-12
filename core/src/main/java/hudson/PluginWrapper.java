@@ -501,10 +501,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         }
 
         if (!missingDependencies.isEmpty())
-            throw new MissingDepencyException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist", missingDependencies);
+            throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
 
         if (!incompatibleDependencies.isEmpty())
-            throw new IncompatibleDependencyException("Dependency "+Util.join(incompatibleDependencies, ", ")+" doesn't match required version", incompatibleDependencies);
+            throw new IOException("Dependency "+Util.join(incompatibleDependencies, ", ")+" doesn't match required version");
 
     }
 
@@ -646,21 +646,4 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
 
-    public class IncompatibleDependencyException extends IOException {
-        public final List<String> plugins;
-
-        public IncompatibleDependencyException(String message, List<String> plugins) {
-            super(message);
-            this.plugins = plugins;
-        }
-    }
-
-    public class MissingDepencyException extends IOException {
-        public final List<String> plugins;
-
-        public MissingDepencyException(String message, List<String> plugins) {
-            super(message);
-            this.plugins = plugins;
-        }
-    }
 }
