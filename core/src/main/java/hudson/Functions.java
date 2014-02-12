@@ -1005,13 +1005,19 @@ public class Functions {
 
         Item i=p;
         String url = "";
+        Collection<TopLevelItem> viewItems;
+        if (view != null) {
+            viewItems = view.getItems();
+        } else {
+            viewItems = Collections.emptyList();
+        }
         while(true) {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
             if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
                 assert i instanceof TopLevelItem;
-                if (view.contains((TopLevelItem)i)) {
+                if(viewItems.contains((TopLevelItem)i)) {
                     // if p and the current page belongs to the same view, then return a relative path
                     return normalizeURI(ancestors.get(view)+'/'+url);
                 } else {
