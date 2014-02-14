@@ -1076,6 +1076,17 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Finds a facet of the specific type (including subtypes.)
+     */
+    public <T extends FingerprintFacet> T getFacet(Class<T> type) {
+        for (FingerprintFacet f : getFacets()) {
+            if (type.isInstance(f))
+                return type.cast(f);
+        }
+        return null;
+    }
+
+    /**
      * Returns the actions contributed from {@link #getFacets()}
      */
     public List<Action> getActions() {
