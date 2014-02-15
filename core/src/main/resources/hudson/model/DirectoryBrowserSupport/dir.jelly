@@ -80,6 +80,10 @@ THE SOFTWARE.
                         </a>
                         <st:nbsp/>
                         <a href="${x.href}/*view*/">${%view}</a>
+                        <j:if test="${x.title.endsWith('.log')}">
+                          <st:nbsp/>
+                          <a href="${x.href}/*tail*/">${%tail}</a>
+                        </j:if>
                       </j:if>                      
                     </td>
                   </j:if>
