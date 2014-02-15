@@ -261,7 +261,7 @@ public class CLI {
     /**
      * If the server advertises CLI endpoint, returns its location.
      */
-    private CliPort getCliTcpPort(String url) throws IOException {
+    protected CliPort getCliTcpPort(String url) throws IOException {
         URL _url = new URL(url);
         if (_url.getHost()==null || _url.getHost().length()==0) {
             throw new IOException("Invalid URL: "+url);
