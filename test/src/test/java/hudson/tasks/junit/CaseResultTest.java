@@ -181,6 +181,19 @@ public class CaseResultTest extends HudsonTestCase {
         assertTrue("Should have found 0 elements, but found " + found, found == 0);
     }
 
+    /**
+     * Makes sure the summary page remains text/plain (see commit 7089a81 in JENKINS-1544) but
+     * the index page must be in text/html.
+     */
+    @Bug(21261)
+    public void testContentType() throws Exception {
+        configureTestBuild("foo");
+        WebClient wc = createWebClient();
+        wc.goTo("job/foo/1/testReport/org.twia.vendor/VendorManagerTest/testCreateAdjustingFirm/","text/html");
+
+        wc.goTo("job/foo/1/testReport/org.twia.vendor/VendorManagerTest/testCreateAdjustingFirm/summary","text/plain");
+    }
+
     private FreeStyleBuild configureTestBuild(String projectName) throws Exception {
         FreeStyleProject p = projectName == null ? createFreeStyleProject() : createFreeStyleProject(projectName);
         p.getBuildersList().add(new TestBuilder() {

@@ -162,18 +162,19 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     public Object getTarget() {
         return getResult();
     }
-    
+
     public List<TestAction> getActions(TestObject object) {
-    	List<TestAction> result = new ArrayList<TestAction>();
-	// Added check for null testData to avoid NPE from issue 4257.
-	if (testData!=null) {
-        for (Data data : testData) {
-            result.addAll(data.getTestAction(object));
+        List<TestAction> result = new ArrayList<TestAction>();
+        // Added check for null testData to avoid NPE from issue 4257.
+        if (testData != null) {
+            for (Data data : testData)
+                for (TestAction ta : data.getTestAction(object))
+                    if (ta != null)
+                        result.add(ta);
         }
+        return Collections.unmodifiableList(result);
     }
-	return Collections.unmodifiableList(result);
-	
-    }
+
     public void setData(List<Data> testData) {
 	this.testData = testData;
     }
