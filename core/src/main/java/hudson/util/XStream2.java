@@ -29,6 +29,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
+import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
 import com.thoughtworks.xstream.converters.DataHolder;
@@ -36,6 +37,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.SingleValueConverterWrapper;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.extended.DynamicProxyConverter;
 import com.thoughtworks.xstream.core.JVM;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
@@ -65,6 +67,8 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.CheckForNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
@@ -121,6 +125,16 @@ public class XStream2 extends XStream {
         return reflectionConverter;
     }
 
+    /**
+     * Specifies that a given field of a given class should not be treated with laxity by {@link RobustCollectionConverter}.
+     * @param clazz a class which we expect to hold a non-{@code transient} field
+     * @param field a field name in that class
+     */
+    @Restricted(NoExternalUse.class) // TODO could be opened up later
+    public void addCriticalField(Class<?> clazz, String field) {
+        reflectionConverter.addCriticalField(clazz, field);
+    }
+
     static String trimVersion(String version) {
         // TODO seems like there should be some trick with VersionNumber to do this
         return version.replaceFirst(" .+$", "");
@@ -143,6 +157,15 @@ public class XStream2 extends XStream {
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
         registerConverter(new AssociatedConverterImpl(this), -10);
+
+        registerConverter(new DynamicProxyConverter(getMapper()) { // SECURITY-105 defense
+            @Override public boolean canConvert(Class type) {
+                return /* this precedes NullConverter */ type != null && super.canConvert(type);
+            }
+            @Override public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+                throw new ConversionException("<dynamic-proxy> not supported");
+            }
+        }, PRIORITY_VERY_HIGH);
     }
 
     @Override
