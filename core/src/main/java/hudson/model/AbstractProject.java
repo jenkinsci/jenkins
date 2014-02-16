@@ -72,6 +72,7 @@ import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.Permission;
+import hudson.slaves.Cloud;
 import hudson.slaves.WorkspaceList;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
@@ -1536,7 +1537,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // At this point we start thinking about triggering a build just to get a workspace,
                 // because otherwise there's no way we can detect changes.
                 // However, first there are some conditions in which we do not want to do so.
-
                 // give time for slaves to come online if we are right after reconnection (JENKINS-8408)
                 long running = Jenkins.getInstance().getInjector().getInstance(Uptime.class).getUptime();
                 long remaining = TimeUnit2.MINUTES.toMillis(10)-running;
@@ -1583,7 +1583,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         } else {
             // polling without workspace
             LOGGER.fine("Polling SCM changes of " + getName());
-
             if (pollingBaseline==null) // see NOTE-NO-BASELINE above
                 calcPollingBaseline(getLastBuild(),null,listener);
             PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
@@ -1619,7 +1618,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         nonexisting_workspace,
         builton_node_gone,
         builton_node_no_executors,
-        all_suitable_nodes_are_offline
+        all_suitable_nodes_are_offline,
+        use_ondemand_slave
     }
 
     /**
@@ -1631,14 +1631,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Label label = getAssignedLabel();
         List<Node> allNodes = Jenkins.getInstance().getNodes();
 
-
         if (allNodes.isEmpty() && !(label == Jenkins.getInstance().getSelfLabel())) {
             // no master/slave. pointless to talk about nodes
             label = null;
         }
 
         if (label != null) {
-            // Set<Node> nodes = label.getNodes();
             if (label.isOffline()) {
                 return true;
             } else {
@@ -1659,6 +1657,21 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     private WorkspaceOfflineReason workspaceOffline(R build) throws IOException, InterruptedException {
         FilePath ws = build.getWorkspace();
+        Label label = getAssignedLabel();
+
+        if (isAllSuitableNodesOffline(build)) {
+            // if (label.getClouds() != null) {
+                // An Ondemand slave can do this, doesnt matter if online now
+                for (  Cloud c : Jenkins.getInstance().clouds) {
+                    if(c.canProvision(label)) {
+                        // OnDemand slave will be provisioned
+                        return WorkspaceOfflineReason.use_ondemand_slave;
+                    }
+                }
+            //}
+            return WorkspaceOfflineReason.all_suitable_nodes_are_offline;
+        }
+
         if (ws==null || !ws.exists()) {
             return WorkspaceOfflineReason.nonexisting_workspace;
         }
