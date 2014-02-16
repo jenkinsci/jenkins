@@ -2107,9 +2107,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             return;
         }
 
-        RunT nb = getNextBuild();
-
-
         try{
             delete();
         }
@@ -2120,7 +2117,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             req.getView(this, "delete-retry.jelly").forward(req, rsp);  
             return;
         }
-        rsp.sendRedirect2(req.getContextPath()+'/' + (nb!=null ? nb.getUrl() : getParent().getUrl()));
+        rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 
     public void setDescription(String description) throws IOException {
