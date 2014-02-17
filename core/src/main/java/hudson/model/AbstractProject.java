@@ -1099,7 +1099,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Determines Class&lt;R>.
+     * Type token for the corresponding build type.
+     * The build class must have two constructors:
+     * one taking this project type;
+     * and one taking this project type, then {@link File}.
      */
     protected abstract Class<R> getBuildClass();
 

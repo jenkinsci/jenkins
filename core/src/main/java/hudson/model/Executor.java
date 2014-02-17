@@ -274,13 +274,13 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Returns the current {@link hudson.model.Queue.Task} this executor is running.
+     * Returns the current build this executor is running.
      *
      * @return
      *      null if the executor is idle.
      */
     @Exported
-    public Queue.Executable getCurrentExecutable() {
+    public @CheckForNull Queue.Executable getCurrentExecutable() {
         return executable;
     }
 
