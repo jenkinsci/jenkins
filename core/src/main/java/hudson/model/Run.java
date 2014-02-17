@@ -211,7 +211,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * The current build state.
      */
-    protected volatile transient State state;
+    private volatile transient State state;
 
     private static enum State {
         /**
