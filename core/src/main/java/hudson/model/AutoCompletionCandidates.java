@@ -104,7 +104,7 @@ public class AutoCompletionCandidates implements HttpResponse {
      *      The value the user has typed in. Matched as a prefix.
      * @param container
      *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
-     * @since TODO
+     * @since 1.553
      */
     public static  <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, ItemGroup container) {
         final AutoCompletionCandidates candidates = new AutoCompletionCandidates();
