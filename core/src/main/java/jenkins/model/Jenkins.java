@@ -120,7 +120,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.lifecycle.Lifecycle;
 import hudson.logging.LogRecorderManager;
 import hudson.lifecycle.RestartNotSupportedException;
-import hudson.markup.RawHtmlMarkupFormatter;
+import hudson.markup.EscapedMarkupFormatter;
 import hudson.remoting.Callable;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -1282,8 +1282,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      never null.
      * @since 1.391
      */
-    public MarkupFormatter getMarkupFormatter() {
-        return markupFormatter!=null ? markupFormatter : RawHtmlMarkupFormatter.INSTANCE;
+    public @Nonnull MarkupFormatter getMarkupFormatter() {
+        MarkupFormatter f = markupFormatter;
+        return f != null ? f : new EscapedMarkupFormatter();
     }
 
     /**

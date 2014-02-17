@@ -554,12 +554,6 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>owasp-html-sanitizer</artifactId>
-      <version>r88</version>
-    </dependency>
-
-    <dependency>
         <groupId>org.mindrot</groupId>
         <artifactId>jbcrypt</artifactId>
         <version>0.3m</version>
