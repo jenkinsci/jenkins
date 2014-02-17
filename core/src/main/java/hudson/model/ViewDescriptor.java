@@ -95,6 +95,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
 
     /**
      * Auto-completion for the "copy from" field in the new job page.
+     * @since 1.553
      */
     public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup container) {
         return AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
