@@ -23,14 +23,12 @@
  */
 package hudson.util;
 
-import static org.mockito.Mockito.when;
 import hudson.model.Run;
-
 import java.util.ArrayList;
-
 import junit.framework.TestCase;
-
 import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.Bug;
+import static org.mockito.Mockito.when;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -73,6 +71,7 @@ public class RunListTest extends TestCase {
 
 	}
 
+    @Bug(21159)
 	@PrepareForTest({Run.class})
 	public void testbyTimestampFirstRun() {
 		setUpByTimestampRuns();
