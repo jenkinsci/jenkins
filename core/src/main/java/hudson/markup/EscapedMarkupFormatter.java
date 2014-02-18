@@ -53,7 +53,7 @@ public class EscapedMarkupFormatter extends MarkupFormatter {
 
         @Override
         public String getDisplayName() {
-            return "Escaped HTML";
+            return Messages.EscapedMarkupFormatter_DisplayName();
         }
     }
 
