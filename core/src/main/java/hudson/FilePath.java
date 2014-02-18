@@ -25,84 +25,52 @@
  */
 package hudson;
 
+import com.jcraft.jzlib.GZIPInputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.os.PosixAPI;
-import jenkins.model.Jenkins;
-import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
-import hudson.remoting.Callable;
-import hudson.remoting.Channel;
-import hudson.remoting.DelegatingCallable;
-import hudson.remoting.Future;
-import hudson.remoting.Pipe;
-import hudson.remoting.RemoteOutputStream;
-import hudson.remoting.VirtualChannel;
-import hudson.remoting.RemoteInputStream;
-import hudson.remoting.Which;
-import hudson.security.AccessControlled;
-import hudson.util.DirScanner;
-import hudson.util.HeadBufferingStream;
-import hudson.util.FormValidation;
-import hudson.util.IOUtils;
-
-import static hudson.Util.*;
-import static hudson.FilePath.TarCompression.GZIP;
+import hudson.model.TaskListener;
 import hudson.org.apache.tools.tar.TarInputStream;
+import hudson.os.PosixAPI;
+import hudson.os.PosixException;
+import hudson.remoting.*;
+import hudson.security.AccessControlled;
+import hudson.util.*;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
+import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.input.CountingInputStream;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
-import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.fileupload.FileItem;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
 import org.kohsuke.stapler.Stapler;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
+
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
-
-import hudson.os.PosixException;
-import hudson.util.FileVisitor;
-import java.util.Enumeration;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.tools.zip.ZipFile;
-import org.apache.tools.zip.ZipEntry;
+import static hudson.FilePath.TarCompression.GZIP;
+import static hudson.Util.fixEmpty;
         
 /**
  * {@link File} like object with remoting support.
@@ -1744,6 +1712,26 @@ public final class FilePath implements Serializable {
             public Void invoke(File f, VirtualChannel channel) throws IOException {
             	f.renameTo(new File(target.remote));
                 return null;
+            }
+        });
+    }
+
+    /**
+     * Check to see if {@link hudson.FilePath} is a SymLink.
+     *
+     * @return {@link hudson.FilePath} is a SymLink.
+     */
+    public static boolean isSymlink(VirtualChannel channel, final FilePath filePath) throws Throwable {
+        return channel.call(new Callable<Boolean, Throwable>() {
+            @Override
+            public Boolean call() throws Throwable {
+                File file = new File(filePath.getRemote());
+                if (!(File.separatorChar == '\\'))
+                    return FileUtils.isSymlink(file); // *nix system
+
+                // Windows system
+
+                return false;
             }
         });
     }

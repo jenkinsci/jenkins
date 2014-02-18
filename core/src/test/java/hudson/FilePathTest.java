@@ -595,6 +595,21 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
+    public void testIsSymlink() throws Throwable {
+        if (Functions.isWindows()) return; // Can't test simlinks in windows
+
+        FilePath tmp1 = new FilePath(Util.createTempDir());
+        FilePath tmp2 = new FilePath(Util.createTempDir());
+        try {
+            tmp1.symlinkTo(tmp2.getRemote(), TaskListener.NULL);
+            assertTrue(tmp1.getRemote() + " should be a Symlink.", FilePath.isSymlink(tmp1.getChannel(), tmp1));
+            assertFalse(tmp2.getRemote() + " should NOT be a Symlink.", FilePath.isSymlink(tmp2.getChannel(), tmp2));
+        } finally {
+            tmp1.deleteRecursive();
+            tmp2.deleteRecursive();
+        }
+    }
+
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
 
         final URLStreamHandler urlHandler = new URLStreamHandler() {
