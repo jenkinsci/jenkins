@@ -94,7 +94,7 @@ public abstract class CommandInterpreter extends Builder {
                 for(Map.Entry<String,String> e : build.getBuildVariables().entrySet())
                     envVars.put(e.getKey(),e.getValue());
 
-                r = join(launcher.launch().cmds(buildCommandLine(script)).envs(envVars).stdout(listener).pwd(ws).start());
+                r = join(launcher.launch().cmds(buildCommandLine(script, ws)).envs(envVars).stdout(listener).pwd(ws).start());
             } catch (IOException e) {
                 Util.displayIOException(e, listener);
                 e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
@@ -144,7 +144,7 @@ public abstract class CommandInterpreter extends Builder {
         return dir.createTextTempFile("hudson", getFileExtension(), getContents(), false);
     }
 
-    public abstract String[] buildCommandLine(FilePath script);
+    public abstract String[] buildCommandLine(FilePath script, FilePath ws);
 
     protected abstract String getContents();
 

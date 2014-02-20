@@ -41,7 +41,13 @@ public class BatchFile extends CommandInterpreter {
         super(command);
     }
 
-    public String[] buildCommandLine(FilePath script) {
+    public String[] buildCommandLine(FilePath script, FilePath ws) {
+    	if (ws.getRemote().startsWith("\\\\"))
+    	{
+    		// If workspace path is a UNC path, use pushd/popd to create a temporary drive and avoid cmd.exe to
+    		// complain about unsupported UNC path and moving to C:\Windows as working directory
+            return new String[] {"pushd", "&&", "cmd","/c","call",script.getRemote(), "&&", "popd"};
+    	}
         return new String[] {"cmd","/c","call",script.getRemote()};
     }
 

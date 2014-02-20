@@ -90,7 +90,7 @@ public class Shell extends CommandInterpreter {
         return s;
     }
 
-    public String[] buildCommandLine(FilePath script) {
+    public String[] buildCommandLine(FilePath script, FilePath ws) {
         if(command.startsWith("#!")) {
             // interpreter override
             int end = command.indexOf('\n');
