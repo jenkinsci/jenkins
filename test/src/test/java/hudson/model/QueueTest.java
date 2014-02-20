@@ -26,27 +26,48 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.Launcher;
 import hudson.matrix.AxisList;
+import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixRun;
 import hudson.matrix.TextAxis;
-import hudson.model.Cause.*;
+import hudson.model.Cause.RemoteCause;
+import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.*;
+import hudson.model.Queue.BlockedItem;
+import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
+import hudson.model.queue.SubTask;
 import hudson.security.ACL;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.DummyCloudImpl;
+import hudson.slaves.NodeProvisioner;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
-import hudson.util.XStream2;
 import hudson.util.OneShotEvent;
-import hudson.Launcher;
-import hudson.matrix.LabelAxis;
-import hudson.matrix.MatrixRun;
-import hudson.slaves.DummyCloudImpl;
-import hudson.slaves.NodeProvisioner;
+import hudson.util.XStream2;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
@@ -67,22 +88,6 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
-
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -346,6 +351,50 @@ public class QueueTest extends HudsonTestCase {
         List<MatrixRun> runs = build.getRuns();
         assertEquals(1, runs.size());
         assertEquals("slave0", runs.get(0).getBuiltOnStr());
+    }
+
+    public void testTaskEquality() throws Exception {
+        AtomicInteger cnt = new AtomicInteger();
+        ScheduleResult result = jenkins.getQueue().schedule2(new TestTask(cnt), 0);
+        assertTrue(result.isCreated());
+        WaitingItem item = result.getCreateItem();
+        assertFalse(jenkins.getQueue().schedule2(new TestTask(cnt), 0).isCreated());
+        item.getFuture().get();
+        waitUntilNoActivity();
+        assertEquals(1, cnt.get());
+    }
+    private static final class TestTask extends AbstractQueueTask {
+        private final AtomicInteger cnt;
+        TestTask(AtomicInteger cnt) {
+            this.cnt = cnt;
+        }
+        @Override public boolean equals(Object o) {
+            return o instanceof TestTask && cnt == ((TestTask) o).cnt;
+        }
+        @Override public int hashCode() {
+            return cnt.hashCode();
+        }
+        @Override public boolean isBuildBlocked() {return false;}
+        @Override public String getWhyBlocked() {return null;}
+        @Override public String getName() {return "test";}
+        @Override public String getFullDisplayName() {return "Test";}
+        @Override public void checkAbortPermission() {}
+        @Override public boolean hasAbortPermission() {return true;}
+        @Override public String getUrl() {return "test/";}
+        @Override public String getDisplayName() {return "Test";}
+        @Override public Label getAssignedLabel() {return null;}
+        @Override public Node getLastBuiltOn() {return null;}
+        @Override public long getEstimatedDuration() {return -1;}
+        @Override public ResourceList getResourceList() {return new ResourceList();}
+        @Override public Executable createExecutable() throws IOException {
+            return new Executable() {
+                @Override public SubTask getParent() {return TestTask.this;}
+                @Override public long getEstimatedDuration() {return -1;}
+                @Override public void run() {
+                    cnt.incrementAndGet();
+                }
+            };
+        }
     }
 
     public void testWaitForStart() throws Exception {

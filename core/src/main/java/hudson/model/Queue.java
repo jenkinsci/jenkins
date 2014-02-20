@@ -116,6 +116,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -448,12 +449,9 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * Schedule a new build for this project.
-     *
-     * @return true if the project is actually added to the queue.
-     *         false if the queue contained it and therefore the add()
-     *         was noop
+     * @see #schedule(Task, int)
      */
-    public WaitingItem schedule(AbstractProject p) {
+    public @CheckForNull WaitingItem schedule(AbstractProject p) {
         return schedule(p, p.getQuietPeriod());
     }
 
@@ -603,7 +601,7 @@ public class Queue extends ResourceController implements Saveable {
     	return schedule(p, quietPeriod)!=null;
     }
 
-    public synchronized WaitingItem schedule(Task p, int quietPeriod) {
+    public synchronized @CheckForNull WaitingItem schedule(Task p, int quietPeriod) {
     	return schedule(p, quietPeriod, new Action[0]);
     }
 
@@ -618,7 +616,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Convenience wrapper method around {@link #schedule(Task, int, List)}
      */
-    public synchronized WaitingItem schedule(Task p, int quietPeriod, Action... actions) {
+    public synchronized @CheckForNull WaitingItem schedule(Task p, int quietPeriod, Action... actions) {
     	return schedule2(p, quietPeriod, actions).getCreateItem();
     }
 
@@ -853,8 +851,9 @@ public class Queue extends ResourceController implements Saveable {
             return bi;
 
         for (Item item : waitingList) {
-            if (item.task == t)
+            if (item.task.equals(t)) {
                 return item;
+            }
         }
         return null;
     }
@@ -870,8 +869,9 @@ public class Queue extends ResourceController implements Saveable {
     	result.addAll(buildables.getAll(t));
         result.addAll(pendings.getAll(t));
         for (Item item : waitingList) {
-            if (item.task == t)
+            if (item.task.equals(t)) {
                 result.add(item);
+            }
         }
         return result;
     }
@@ -892,8 +892,9 @@ public class Queue extends ResourceController implements Saveable {
         if (blockedProjects.containsKey(t) || buildables.containsKey(t) || pendings.containsKey(t))
             return true;
         for (Item item : waitingList) {
-            if (item.task == t)
+            if (item.task.equals(t)) {
                 return true;
+            }
         }
         return false;
     }
@@ -2000,7 +2001,7 @@ public class Queue extends ResourceController implements Saveable {
     private class ItemList<T extends Item> extends ArrayList<T> {
     	public T get(Task task) {
     		for (T item: this) {
-    			if (item.task == task) {
+    			if (item.task.equals(task)) {
     				return item;
     			}
     		}
@@ -2010,7 +2011,7 @@ public class Queue extends ResourceController implements Saveable {
     	public List<T> getAll(Task task) {
     		List<T> result = new ArrayList<T>();
     		for (T item: this) {
-    			if (item.task == task) {
+    			if (item.task.equals(task)) {
     				result.add(item);
     			}
     		}
@@ -2025,7 +2026,7 @@ public class Queue extends ResourceController implements Saveable {
     		Iterator<T> it = iterator();
     		while (it.hasNext()) {
     			T t = it.next();
-    			if (t.task == task) {
+    			if (t.task.equals(task)) {
     				it.remove();
     				return t;
     			}
@@ -2034,7 +2035,7 @@ public class Queue extends ResourceController implements Saveable {
     	}
     	
     	public void put(Task task, T item) {
-    		assert item.task == task;
+    		assert item.task.equals(task);
     		add(item);
     	}
     	
