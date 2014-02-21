@@ -82,7 +82,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -941,8 +940,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          */
         private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<String, WeakReference<Class>>();
 
-        private ClassLoaderReflectionToolkit clt = new ClassLoaderReflectionToolkit();
-
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
         }
@@ -963,11 +960,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (FAST_LOOKUP) {
                 for (PluginWrapper p : activePlugins) {
                     try {
-                        Class c = clt.findLoadedClass(p.classLoader,name);
+                        Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(p.classLoader, name);
                         if (c!=null)    return c;
                         // calling findClass twice appears to cause LinkageError: duplicate class def
-                        return clt.findClass(p.classLoader,name);
-                    } catch (InvocationTargetException e) {
+                        return ClassLoaderReflectionToolkit._findClass(p.classLoader, name);
+                    } catch (ClassNotFoundException e) {
                         //not found. try next
                     }
                 }
@@ -987,15 +984,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         @Override
         protected URL findResource(String name) {
             if (FAST_LOOKUP) {
-                try {
                     for (PluginWrapper p : activePlugins) {
-                        URL url = clt.findResource(p.classLoader,name);
+                        URL url = ClassLoaderReflectionToolkit._findResource(p.classLoader, name);
                         if(url!=null)
                             return url;
                     }
-                } catch (InvocationTargetException e) {
-                    throw new Error(e);
-                }
             } else {
                 for (PluginWrapper p : activePlugins) {
                     URL url = p.classLoader.getResource(name);
@@ -1010,13 +1003,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         protected Enumeration<URL> findResources(String name) throws IOException {
             List<URL> resources = new ArrayList<URL>();
             if (FAST_LOOKUP) {
-                try {
                     for (PluginWrapper p : activePlugins) {
-                        resources.addAll(Collections.list(clt.findResources(p.classLoader, name)));
+                        resources.addAll(Collections.list(ClassLoaderReflectionToolkit._findResources(p.classLoader, name)));
                     }
-                } catch (InvocationTargetException e) {
-                    throw new Error(e);
-                }
             } else {
                 for (PluginWrapper p : activePlugins) {
                     resources.addAll(Collections.list(p.classLoader.getResources(name)));
