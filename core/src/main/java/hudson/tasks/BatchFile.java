@@ -27,8 +27,11 @@ import hudson.FilePath;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
+import com.google.common.collect.ObjectArrays;
 
 /**
  * Executes commands by using Windows batch file.
@@ -40,15 +43,25 @@ public class BatchFile extends CommandInterpreter {
     public BatchFile(String command) {
         super(command);
     }
+    
+    public String[] buildCommandLine(FilePath script) {
+        return new String[] {"cmd","/c","call",script.getRemote()};
+    }
 
-    public String[] buildCommandLine(FilePath script, FilePath ws) {
+    protected String[] buildCommandLine(FilePath script, FilePath ws) {
+    	String[] cmdLine = buildCommandLine(script);
+    	
     	if (ws.getRemote().startsWith("\\\\"))
     	{
     		// If workspace path is a UNC path, use pushd/popd to create a temporary drive and avoid cmd.exe to
     		// complain about unsupported UNC path and moving to C:\Windows as working directory
-            return new String[] {"pushd", "&&", "cmd","/c","call",script.getRemote(), "&&", "popd"};
+	    	String[] prependCmdLine = new String[] {"pushd",  "&&"};
+	    	String[] appendCmdLine = new String[] { "&&", "popd"};
+	    	cmdLine = ObjectArrays.concat(prependCmdLine, cmdLine, String.class);
+	    	cmdLine = ObjectArrays.concat(cmdLine, appendCmdLine, String.class);
     	}
-        return new String[] {"cmd","/c","call",script.getRemote()};
+    	
+        return cmdLine;
     }
 
     protected String getContents() {
