@@ -136,18 +136,11 @@ THE SOFTWARE.
       <artifactId>upstart-slave-installer</artifactId>
       <version>1.1</version>
     </dependency>
-    <!-- TODO disabled until this is fixed to not cause errors on Ubuntu:
-WARNING: org.jenkinsci.modules.systemd_slave_installer.SlaveInstallerFactoryImpl@614899d4 has failed on hudson.slaves.SlaveComputer@163dc443
-java.io.IOException: Cannot run program "systemctl": error=2, No such file or directory
-	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1041)
-	at org.jenkinsci.modules.systemd_slave_installer.SlaveInstallerFactoryImpl$HasSystemd.call(SlaveInstallerFactoryImpl.java:46)
-	at org.jenkinsci.modules.systemd_slave_installer.SlaveInstallerFactoryImpl$HasSystemd.call(SlaveInstallerFactoryImpl.java:39)
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>systemd-slave-installer</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
-    -->
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
