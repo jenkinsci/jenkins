@@ -32,6 +32,7 @@ import hudson.security.AccessDeniedException2;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
+import hudson.tasks.MailAddressResolver;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
@@ -264,6 +265,16 @@ public class UserTest {
         user = User.get("John Smithl", false, Collections.emptyMap());
         assertNotNull("User should not be null.", user);
         assertNotNull("User should be saved with all changes.", user.getProperty(SomeUserProperty.class));
+    }
+
+    @Bug(16332)
+    @Test public void unrecoverableFullName() throws Throwable {
+        User u = User.get("John Smith <jsmith@nowhere.net>");
+        assertEquals("jsmith@nowhere.net", MailAddressResolver.resolve(u));
+        String id = u.getId();
+        User.clear(); // simulate Jenkins restart
+        u = User.get(id);
+        assertEquals("jsmith@nowhere.net", MailAddressResolver.resolve(u));
     }
 
     @Test
