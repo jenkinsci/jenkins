@@ -55,7 +55,7 @@ public class BatchFile extends CommandInterpreter {
     	{
     		// If workspace path is a UNC path, use pushd/popd to create a temporary drive and avoid cmd.exe to
     		// complain about unsupported UNC path and moving to C:\Windows as working directory
-	    	String[] prependCmdLine = new String[] {"pushd",  "&&"};
+	    	String[] prependCmdLine = new String[] {"pushd",  "&&", "set", "WORKSPACE=%CD%", "&&"};
 	    	String[] appendCmdLine = new String[] { "&&", "popd"};
 	    	cmdLine = ObjectArrays.concat(prependCmdLine, cmdLine, String.class);
 	    	cmdLine = ObjectArrays.concat(cmdLine, appendCmdLine, String.class);
