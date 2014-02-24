@@ -359,7 +359,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Empty process list as a default value if the platform doesn't support it.
      */
-    private static final ProcessTree DEFAULT = new Local() {
+    /*package*/ static final ProcessTree DEFAULT = new Local() {
         public OSProcess get(final Process proc) {
             return new OSProcess(-1) {
                 public OSProcess getParent() {
