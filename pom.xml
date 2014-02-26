@@ -96,7 +96,6 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <slf4jVersion>1.7.4</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
-    <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
     <java.level>6</java.level>
