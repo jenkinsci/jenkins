@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.*;
 import hudson.model.Descriptor.FormException;
@@ -349,9 +350,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
                     LOGGER.log(Level.FINE, "mismatch on fullName (‘" + fullName + "’ vs. ‘" + prev.getFullName() + "’) for ‘" + id + "’", new Throwable());
                 }
-            }
-            if (LOGGER.isLoggable(Level.FINE) && id.equals(fullName) && fullName.matches(".+ _\\S+@\\S+_")) {
-                LOGGER.log(Level.FINE, "[JENKINS-16332] Suspicious fullName being stored: " + fullName, new Throwable());
+            } else if (!id.equals(fullName) && !getConfigFileFor(id).exists()) {
+                // JENKINS-16332: since the fullName may not be recoverable from the id, and various code may store the id only, we must save the fullName
+                try {
+                    u.save();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
             }
         }
         return u;
@@ -432,30 +437,33 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return getFullName();
     }
 
+    /** true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause} */
+    private boolean relatedTo(AbstractBuild<?,?> b) {
+        if (b.hasParticipant(this)) {
+            return true;
+        }
+        for (Cause cause : b.getCauses()) {
+            if (cause instanceof Cause.UserIdCause) {
+                String userId = ((Cause.UserIdCause) cause).getUserId();
+                if (userId != null && userId.equals(getId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets the list of {@link Build}s that include changes by this user,
      * by the timestamp order.
-     * 
-     * TODO: do we need some index for this?
      */
     @WithBridgeMethods(List.class)
     public RunList getBuilds() {
-        List<AbstractBuild> r = new ArrayList<AbstractBuild>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
-            for (AbstractBuild<?,?> b : p.getBuilds().newBuilds()){
-                if(b.hasParticipant(this))
-                    r.add(b);
-                else {
-                    //append builds that were run by this user
-                    Cause.UserIdCause cause = b.getCause(Cause.UserIdCause.class);
-                    if (cause != null) {
-                        String userId = cause.getUserId();
-                        if (userId != null && this.getId() != null && userId.equals(this.getId()))
-                            r.add(b);
-                    }
-                }
+    	return new RunList<Run<?,?>>(Jenkins.getInstance().getAllItems(Job.class)).filter(new Predicate<Run<?,?>>() {
+            @Override public boolean apply(Run<?,?> r) {
+                return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
             }
-        return RunList.fromRuns(r);
+        });
     }
 
     /**
@@ -573,21 +581,18 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rss(req, rsp, " all builds", RunList.fromRuns(getBuilds()), Run.FEED_ADAPTER);
+        rss(req, rsp, " all builds", getBuilds(), Run.FEED_ADAPTER);
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rss(req, rsp, " regression builds", RunList.fromRuns(getBuilds()).regressionOnly(), Run.FEED_ADAPTER);
+        rss(req, rsp, " regression builds", getBuilds().regressionOnly(), Run.FEED_ADAPTER);
     }
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<Run>();
-        for (final TopLevelItem item : Jenkins.getInstance().getItems()) {
-            if (!(item instanceof Job)) continue;
-            for (Run r = ((Job) item).getLastBuild(); r != null; r = r.getPreviousBuild()) {
-                if (!(r instanceof AbstractBuild)) continue;
-                final AbstractBuild b = (AbstractBuild) r;
-                if (b.hasParticipant(this)) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractBuild<?,?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+                if (relatedTo(b)) {
                     lastBuilds.add(b);
                     break;
                 }
@@ -668,6 +673,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 r.add(n);
             }
         }
+        Collections.sort(r, String.CASE_INSENSITIVE_ORDER);
         return r;
     }
 

@@ -56,6 +56,7 @@ THE SOFTWARE.
 <st:setHeader name="Expires" value="0" />
 <st:setHeader name="Cache-Control" value="no-cache,must-revalidate" />
 <st:setHeader name="X-Hudson-Theme" value="default" />
+<st:setHeader name="X-Frame-Options" value="sameorigin" />
 <st:contentType value="text/html;charset=UTF-8" />
 
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
@@ -132,7 +133,9 @@ ${h.initPageVariables(context)}
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
+    <l:hasPermission permission="${app.READ}">
+      <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
+    </l:hasPermission>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
     <d:invokeBody />

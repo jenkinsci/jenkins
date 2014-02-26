@@ -52,7 +52,7 @@ THE SOFTWARE.
       <st:include page="jobpropertysummaries.jelly" />
 
       <!-- merge fragments from the actions -->
-      <j:forEach var="a" items="${it.actions}">
+      <j:forEach var="a" items="${it.allActions}">
         <st:include page="jobMain.jelly" it="${a}" optional="true" />
       </j:forEach>
 

@@ -12,7 +12,6 @@ import java.io.OutputStream;
  *
  * @author Kohsuke Kawaguchi
  * @see PretendSlave
- * @see MockFakeLauncher
  */
 public interface FakeLauncher {
     /**

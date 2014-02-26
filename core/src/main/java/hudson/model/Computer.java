@@ -180,6 +180,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Returns the transient {@link Action}s associated with the computer.
      */
+    @SuppressWarnings("deprecation")
     public List<Action> getActions() {
     	List<Action> result = new ArrayList<Action>();
     	result.addAll(super.getActions());
@@ -189,9 +190,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     		}
     		result.addAll(transientActions);
     	}
-    	return result;
+    	return Collections.unmodifiableList(result);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void addAction(Action a) {
         if(a==null) throw new IllegalArgumentException();
@@ -1083,9 +1085,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             checkPermission(DISCONNECT);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             setTemporarilyOffline(!temporarilyOffline,
-                    OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
-                        Jenkins.getAuthentication().getName(),
-                        offlineMessage!=null ? " : " + offlineMessage : "")));
+                    new OfflineCause.UserCause(User.current(), offlineMessage));
         } else {
             checkPermission(CONNECT);
             setTemporarilyOffline(!temporarilyOffline,null);
@@ -1097,9 +1097,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(DISCONNECT);
         offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
         setTemporarilyOffline(true,
-                OfflineCause.create(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
-                        Jenkins.getAuthentication().getName(),
-                        offlineMessage != null ? " : " + offlineMessage : "")));
+                new OfflineCause.UserCause(User.current(), offlineMessage));
         return HttpResponses.redirectToDot();
     }
 

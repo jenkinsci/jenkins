@@ -57,6 +57,7 @@ import java.util.Set;
 import javax.servlet.ServletException;
 
 import hudson.util.TimeUnit2;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.slaves.WorkspaceLocator;
 
@@ -284,7 +285,7 @@ public abstract class Slave extends Node implements Serializable {
      * @return
      *      null if not connected.
      */
-    public FilePath getWorkspaceRoot() {
+    public @CheckForNull FilePath getWorkspaceRoot() {
         FilePath r = getRootPath();
         if(r==null) return null;
         return r.child(WORKSPACE_ROOT);

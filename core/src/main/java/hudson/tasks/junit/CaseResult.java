@@ -331,6 +331,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         else            return className.substring(0,idx);
     }
     
+    @Override
     public String getFullName() {
     	return className+'.'+getName();
     }

@@ -311,6 +311,20 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
     }
 
     /**
+     * Gets the full name of this object.
+     * @since 1.594
+     */
+    public String getFullName() {
+        StringBuilder sb = new StringBuilder(getName());
+        if (getParent() != null) {
+            sb.insert(0, " : ");
+            sb.insert(0, getParent().getFullName());
+        }
+        return sb.toString();
+    }
+
+
+    /**
      * Gets the version of {@link #getName()} that's URL-safe.
      */
     @Override
@@ -351,7 +365,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      */
     public static String safe(String s) {
         // this still seems to be a bit faster than a single replace with regexp
-        return s.replace('/', '_').replace('\\', '_').replace(':', '_').replace('?', '_').replace('#', '_');
+        return s.replace('/', '_').replace('\\', '_').replace(':', '_').replace('?', '_').replace('#', '_').replace('%', '_');
         
         // Note: we probably should some helpers like Commons URIEscapeUtils here to escape all invalid URL chars, but then we
         // still would have to escape /, ? and so on

@@ -24,10 +24,12 @@
 
 package hudson.cli;
 
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 
@@ -56,8 +58,8 @@ public class SetBuildDisplayNameCommandTest {
         ;
 
         assertThat(result.stderr(), containsString("Build #42 does not exist"));
-        assertThat("No output expected", result.stdout(), isEmptyString());
-        assertThat("Command is expected to fail", result.returnCode(), equalTo(-1));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result, failedWith(-1));
     }
 
     @Test public void setDescriptionSuccesfully() throws Exception {
@@ -69,9 +71,7 @@ public class SetBuildDisplayNameCommandTest {
                 .invokeWithArgs("project", "1", "DisplayName")
         ;
 
-        assertThat("No output expected", result.stdout(), isEmptyString());
-        assertThat("No error output expected", result.stderr(), isEmptyString());
-        assertThat("Command is expected to succeed", result.returnCode(), equalTo(0));
+        assertThat(result, succeededSilently());
         assertThat(build.getDisplayName(), equalTo("DisplayName"));
     }
 }

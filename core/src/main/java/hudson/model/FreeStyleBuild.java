@@ -23,9 +23,6 @@
  */
 package hudson.model;
 
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
-
 import java.io.IOException;
 import java.io.File;
 

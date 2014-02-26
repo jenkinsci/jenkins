@@ -87,11 +87,6 @@ public class MyView extends View {
     }
 
     @Override
-    public void onJobRenamed(Item item, String oldName, String newName) {
-        // noop
-    }
-
-    @Override
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         // noop
     }

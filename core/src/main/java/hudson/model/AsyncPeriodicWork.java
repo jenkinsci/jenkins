@@ -38,12 +38,12 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     public final void doRun() {
         try {
             if(thread!=null && thread.isAlive()) {
-                logger.log(Level.INFO, name+" thread is still running. Execution aborted.");
+                logger.log(this.getNormalLoggingLevel(), name+" thread is still running. Execution aborted.");
                 return;
             }
             thread = new Thread(new Runnable() {
                 public void run() {
-                    logger.log(Level.INFO, "Started "+name);
+                    logger.log(getNormalLoggingLevel(), "Started "+name);
                     long startTime = System.currentTimeMillis();
 
                     StreamTaskListener l = createListener();
@@ -59,13 +59,13 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                         l.closeQuietly();
                     }
 
-                    logger.log(Level.INFO, "Finished "+name+". "+
+                    logger.log(getNormalLoggingLevel(), "Finished "+name+". "+
                         (System.currentTimeMillis()-startTime)+" ms");
                 }
             },name+" thread");
             thread.start();
         } catch (Throwable t) {
-            logger.log(Level.SEVERE, name+" thread failed with error", t);
+            logger.log(this.getErrorLoggingLevel(), name+" thread failed with error", t);
         }
     }
 
@@ -83,7 +83,31 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected File getLogFile() {
         return new File(Jenkins.getInstance().getRootDir(),name+".log");
     }
-
+    
+    /**
+     * Returns the logging level at which normal messages are displayed.
+     * 
+     * @return 
+     *      The logging level as @Level.
+     *
+     * @since 1.551
+     */
+    protected Level getNormalLoggingLevel() {
+        return Level.INFO;
+    }
+    
+    /**
+     * Returns the logging level at which error messages are displayed.
+     * 
+     * @return 
+     *      The logging level as @Level.
+     *
+     * @since 1.551
+     */
+    protected Level getErrorLoggingLevel() {
+        return Level.SEVERE;
+    }
+    
     /**
      * Executes the task.
      *

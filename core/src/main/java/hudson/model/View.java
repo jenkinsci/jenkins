@@ -114,7 +114,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * This is an extension point in Hudson, allowing different kind of
  * rendering to be added as plugins.
  *
- * <h2>Note for implementors</h2>
+ * <h2>Note for implementers</h2>
  * <ul>
  * <li>
  * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
@@ -436,22 +436,21 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         for (Computer c : computers) {
-            Node n = c.getNode();
-            if (n != null) {
-                if (labels.contains(null) && n.getMode() == Mode.NORMAL || !isDisjoint(n.getAssignedLabels(), labels)) {
-                    result.add(c);
-                }
-            }
+            if (isRelevant(labels, c)) result.add(c);
         }
 
         return result;
     }
 
-    private boolean isDisjoint(Collection c1, Collection c2) {
-        for (Object o : c1)
-            if (c2.contains(o))
-                return false;
-        return true;
+    private boolean isRelevant(Collection<Label> labels, Computer computer) {
+        Node node = computer.getNode();
+        if (node == null) return false;
+        if (labels.contains(null) && node.getMode() == Mode.NORMAL) return true;
+
+        for (Label l : labels)
+            if (l != null && l.contains(node))
+                return true;
+        return false;
     }
 
     private List<Queue.Item> filterQueue(List<Queue.Item> base) {
@@ -581,21 +580,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getACL().hasPermission(p);
     }
 
-    /**
-     * Called when a job name is changed or deleted.
-     *
-     * <p>
-     * If this view contains this job, it should update the view membership so that
-     * the renamed job will remain in the view, and the deleted job is removed.
-     *
-     * @param item
-     *      The item whose name is being changed.
-     * @param oldName
-     *      Old name of the item. Always non-null.
-     * @param newName
-     *      New name of the item, if the item is renamed. Or null, if the item is removed.
-     */
-    public abstract void onJobRenamed(Item item, String oldName, String newName);
+    /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
+    @Deprecated
+    public void onJobRenamed(Item item, String oldName, String newName) {}
 
     @ExportedBean(defaultVisibility=2)
     public static final class UserInfo implements Comparable<UserInfo> {
@@ -796,7 +783,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         {
             StaplerRequest req = Stapler.getCurrentRequest();
-            iconSize = req != null ? Functions.getCookie(req, "iconSize", "32x32") : "32x32";
+            iconSize = req != null ? Functions.validateIconSize(Functions.getCookie(req, "iconSize", "32x32")) : "32x32";
         }
 
         @Override protected void compute() throws Exception {
@@ -845,6 +832,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     return;
                 }
                 for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
+                    if (canceled()) {
+                        return;
+                    }
                     if (u == unknown) {
                         continue;
                     }

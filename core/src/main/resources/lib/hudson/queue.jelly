@@ -34,7 +34,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <t:setIconSize/>
-  <l:pane title="${%Build Queue}" width="2" id="buildQueue">
+  <l:pane title="${%Build Queue(items.size())}" width="2" id="buildQueue">
     <j:if test="${app.quietingDown}">
       <tr>
         <td class="pane" colspan="2" style="white-space: normal;">

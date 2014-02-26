@@ -30,13 +30,13 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ExpandableDetailsNote;
 import hudson.console.ModelHyperlinkNote;
 import hudson.matrix.MatrixConfiguration;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SCMListener;
 import hudson.scm.ChangeLogParser;
@@ -541,11 +541,30 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             this.listener = listener;
 
             launcher = createLauncher(listener);
-            if (!Jenkins.getInstance().getNodes().isEmpty())
-                listener.getLogger().print(node instanceof Jenkins ? Messages.AbstractBuild_BuildingOnMaster() : 
-                    Messages.AbstractBuild_BuildingRemotely(ModelHyperlinkNote.encodeTo("/computer/" + builtOn, builtOn)));
-            else
-            	listener.getLogger().print(Messages.AbstractBuild_Building());
+            if (!Jenkins.getInstance().getNodes().isEmpty()) {
+                if (node instanceof Jenkins) {
+                    listener.getLogger().print(Messages.AbstractBuild_BuildingOnMaster());
+                } else {
+                    listener.getLogger().print(Messages.AbstractBuild_BuildingRemotely(ModelHyperlinkNote.encodeTo("/computer/" + builtOn, builtOn)));
+                    Set<LabelAtom> assignedLabels = new HashSet<LabelAtom>(node.getAssignedLabels());
+                    assignedLabels.remove(node.getSelfLabel());
+                    if (!assignedLabels.isEmpty()) {
+                        boolean first = true;
+                        for (LabelAtom label : assignedLabels) {
+                            if (first) {
+                                listener.getLogger().print(" (");
+                                first = false;
+                            } else {
+                                listener.getLogger().print(' ');
+                            }
+                            listener.getLogger().print(label.getName());
+                        }
+                        listener.getLogger().print(')');
+                    }
+                }
+            } else {
+                listener.getLogger().print(Messages.AbstractBuild_Building());
+            }
             
             lease = decideWorkspace(node, Computer.currentComputer().getWorkspaceList());
 
@@ -922,7 +941,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             for (Environment e : buildEnvironments)
                 e.buildEnvVars(env);
 
-        for (EnvironmentContributingAction a : Util.filter(getActions(),EnvironmentContributingAction.class))
+        for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
             a.buildEnvVars(this,env);
 
         EnvVars.resolve(env);
@@ -956,6 +975,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getTimestamp();
     }
       
+    @SuppressWarnings("deprecation")
     public List<Action> getPersistentActions(){
         return super.getActions();
     }

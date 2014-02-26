@@ -40,6 +40,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -637,8 +638,12 @@ public class UpdateSite {
         }
 
         public String getDisplayName() {
-            if(title!=null) return title;
-            return name;
+            String displayName;
+            if(title!=null)
+                displayName = title;
+            else
+                displayName = name;
+            return StringUtils.removeStart(displayName, "Jenkins ");
         }
 
         /**

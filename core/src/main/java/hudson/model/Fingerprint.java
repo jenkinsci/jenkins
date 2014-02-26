@@ -727,7 +727,7 @@ public class Fingerprint implements ModelObject, Saveable {
     @Extension
     public static final class ProjectRenameListener extends ItemListener {
         @Override
-        public void onRenamed(Item item, String oldName, String newName) {
+        public void onLocationChanged(Item item, String oldName, String newName) {
             if (item instanceof AbstractProject) {
                 AbstractProject p = Jenkins.getInstance().getItemByFullName(newName, AbstractProject.class);
                 if (p != null) {

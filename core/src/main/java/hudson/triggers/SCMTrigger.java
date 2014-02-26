@@ -74,6 +74,12 @@ import jenkins.model.RunAction2;
 /**
  * {@link Trigger} that checks for SCM updates periodically.
  *
+ * You can add UI elements under the SCM section by creating a
+ * config.jelly or config.groovy in the resources area for
+ * your class that inherits from SCMTrigger and has the 
+ * @{@link hudson.model.Extension} annotation. The UI should 
+ * be wrapped in an f:section element to denote it.
+ *
  * @author Kohsuke Kawaguchi
  */
 public class SCMTrigger extends Trigger<SCMedItem> {
@@ -545,15 +551,10 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         @Override
         public void onAddedTo(AbstractBuild build) {
-            BuildAction oldAction = build.getAction(BuildAction.class);
-            if (oldAction != null) {
-                build.getActions().remove(oldAction);
-            }
-            
             try {
                 BuildAction a = new BuildAction(build);
                 FileUtils.writeStringToFile(a.getPollingLogFile(),pollingLog);
-                build.addAction(a);
+                build.replaceAction(a);
             } catch (IOException e) {
                 LOGGER.log(WARNING,"Failed to persist the polling log",e);
             }

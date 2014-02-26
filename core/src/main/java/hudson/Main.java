@@ -37,7 +37,6 @@ import java.io.Writer;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.nio.charset.Charset;
@@ -104,14 +103,14 @@ public class Main {
             }
         }
 
-        String projectNameEnc = URLEncoder.encode(projectName,"UTF-8").replaceAll("\\+","%20");
+        URL jobURL = new URL(home + "job/" + Util.encode(projectName).replace("/", "/job/") + "/");
 
         {// check if the job name is correct
-            HttpURLConnection con = open(new URL(home+"job/"+projectNameEnc+"/acceptBuildResult"));
+            HttpURLConnection con = open(new URL(jobURL, "acceptBuildResult"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if(con.getResponseCode()!=200) {
-                System.err.println(projectName+" is not a valid job name on "+home+" ("+con.getResponseMessage()+")");
+                System.err.println(jobURL + " is not a valid external job (" + con.getResponseCode() + " " + con.getResponseMessage() + ")");
                 return -1;
             }
         }
@@ -156,11 +155,11 @@ public class Main {
             w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
             w.close();
 
-            String location = home+"job/"+projectNameEnc+"/postBuildResult";
+            URL location = new URL(jobURL, "postBuildResult");
             while(true) {
                 try {
                     // start a remote connection
-                    HttpURLConnection con = open(new URL(location));
+                    HttpURLConnection con = open(location);
                     if (auth != null) con.setRequestProperty("Authorization", auth);
                     if (crumbField != null && crumbValue != null) {
                         con.setRequestProperty(crumbField, crumbValue);
@@ -182,7 +181,7 @@ public class Main {
                 } catch (HttpRetryException e) {
                     if(e.getLocation()!=null) {
                         // retry with the new location
-                        location = e.getLocation();
+                        location = new URL(e.getLocation());
                         continue;
                     }
                     // otherwise failed for reasons beyond us.

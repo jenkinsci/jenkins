@@ -321,6 +321,21 @@ td.pane-header {
   border-left: none;
   background-color: #f0f0f0;
   font-weight: bold;
+  padding-right: 24px;
+}
+
+td.pane-header > div {
+  position: relative;
+  padding-right: 24px;
+  width: 100%;
+  height: 100%;
+}
+
+td.pane-header > div > a.collapse {
+	float: right;
+	position: absolute;
+	right: 4px;
+	top: -1px;
 }
 
 th.pane {

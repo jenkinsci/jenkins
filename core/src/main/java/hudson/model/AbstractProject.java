@@ -27,15 +27,16 @@
  */
 package hudson.model;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.EnvVars;
-import hudson.ExtensionPoint;
-import hudson.Functions;
 import antlr.ANTLRException;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -48,21 +49,23 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.queue.QueueTaskFuture;
-import hudson.model.queue.ScheduleResult;
-import hudson.model.queue.SubTask;
 import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
+import hudson.model.queue.SubTask;
 import hudson.model.queue.SubTaskContributor;
 import hudson.node_monitors.DiskSpaceMonitor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
 import hudson.scm.PollingResult;
+
+import static hudson.scm.PollingResult.*;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
@@ -85,38 +88,6 @@ import hudson.util.FormValidation;
 import hudson.util.TimeUnit2;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
-import jenkins.model.Jenkins;
-import jenkins.model.JenkinsLocationConfiguration;
-import jenkins.model.ModelObjectWithChildren;
-import jenkins.model.Uptime;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
-import jenkins.scm.SCMCheckoutStrategy;
-import jenkins.scm.SCMCheckoutStrategyDescriptor;
-import jenkins.util.TimeDuration;
-import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.jenkinsci.bytecode.AdaptField;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.ForwardToView;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -139,10 +110,40 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static hudson.scm.PollingResult.*;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.*;
+import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.Uptime;
+import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
+import jenkins.scm.SCMCheckoutStrategy;
+import jenkins.scm.SCMCheckoutStrategyDescriptor;
+import jenkins.util.TimeDuration;
+import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.bytecode.AdaptField;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Base implementation of {@link Job}s that build software.
@@ -326,8 +327,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
         this.builds = builds;
         triggers().setOwner(this);
-        for (Trigger t : triggers())
-            t.start(this, Items.updatingByXml.get());
+        for (Trigger t : triggers()) {
+            t.start(this, Items.currentlyUpdatingByXml());
+        }
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
 
@@ -399,7 +401,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * If this project is configured to be always built on this node,
      * return that {@link Node}. Otherwise null.
      */
-    public Label getAssignedLabel() {
+    public @CheckForNull Label getAssignedLabel() {
         if(canRoam)
             return null;
 
@@ -776,13 +778,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public List<ProminentProjectAction> getProminentActions() {
-        List<Action> a = getActions();
-        List<ProminentProjectAction> pa = new Vector<ProminentProjectAction>();
-        for (Action action : a) {
-            if(action instanceof ProminentProjectAction)
-                pa.add((ProminentProjectAction) action);
-        }
-        return pa;
+        return getActions(ProminentProjectAction.class);
     }
 
     @Override
@@ -1103,7 +1099,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Determines Class&lt;R>.
+     * Type token for the corresponding build type.
+     * The build class must have two constructors:
+     * one taking this project type;
+     * and one taking this project type, then {@link File}.
      */
     protected abstract Class<R> getBuildClass();
 
@@ -1174,6 +1173,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @see TransientProjectActionFactory
      */
+    @SuppressWarnings("deprecation")
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too
@@ -2026,7 +2026,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         for (Publisher _t : Descriptor.newInstancesFromHeteroList(req, json, "publisher", Jenkins.getInstance().getExtensionList(BuildTrigger.DescriptorImpl.class))) {
             BuildTrigger t = (BuildTrigger) _t;
-            for (AbstractProject downstream : t.getChildProjects(this)) {
+            List<AbstractProject> childProjects;
+            SecurityContext orig = ACL.impersonate(ACL.SYSTEM);
+            try {
+                childProjects = t.getChildProjects(this);
+            } finally {
+                SecurityContextHolder.setContext(orig);
+            }
+            for (AbstractProject downstream : childProjects) {
                 downstream.checkPermission(BUILD);
             }
         }
@@ -2119,6 +2126,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         makeDisabled(false);
         return new HttpRedirect(".");
     }
+    
 
     /**
      * RSS feed for changes in this project.
@@ -2221,7 +2229,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return FormValidation.error(e,
                         Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
             }
-            Label l = Jenkins.getInstance().getLabel(value);
+            Jenkins j = Jenkins.getInstance();
+            Label l = j.getLabel(value);
             if (l.isEmpty()) {
                 for (LabelAtom a : l.listAtoms()) {
                     if (a.isEmpty()) {
@@ -2232,7 +2241,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
             }
             if (project != null) {
-                for (AbstractProject.LabelValidator v : Jenkins.getInstance()
+                for (AbstractProject.LabelValidator v : j
                         .getExtensionList(AbstractProject.LabelValidator.class)) {
                     FormValidation result = v.check(project, l);
                     if (!FormValidation.Kind.OK.equals(result.kind)) {
@@ -2240,7 +2249,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
             }
-            return FormValidation.ok();
+            return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
+                    j.getRootUrl(), l.getUrl(), l.getNodes().size() + l.getClouds().size()
+            ));
         }
 
         public FormValidation doCheckCustomWorkspace(@QueryParameter(value="customWorkspace.directory") String customWorkspace){
@@ -2413,6 +2424,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          */
         @Nonnull
         public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
+    }
+
+    @Restricted(DoNotUse.class)
+    @Extension public static final class ItemListenerImpl extends ItemListener {
+        @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            if (item instanceof AbstractProject) {
+                AbstractProject p = (AbstractProject) item;
+                p.builds.updateBaseDir(p.getBuildDir());
+            }
+        }
     }
 
 }

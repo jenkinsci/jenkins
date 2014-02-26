@@ -116,6 +116,9 @@ public class UpdateSiteTest {
         assertEquals(new HashSet<String>(Arrays.asList("tasks", "dummy")), data.plugins.keySet());
         assertEquals(new URL(url, "tasks.jpi").toString(), data.plugins.get("tasks").url);
         assertEquals("http://nowhere.net/dummy.hpi", data.plugins.get("dummy").url);
+
+        UpdateSite.Plugin tasksPlugin = data.plugins.get("tasks");
+        assertEquals("Wrong name of plugin found", "Task Scanner Plug-in", tasksPlugin.getDisplayName());
     }
 
     @Test public void updateDirectlyWithJson() throws Exception {

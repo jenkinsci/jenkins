@@ -55,6 +55,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
+import hudson.util.ProcessTree;
 import hudson.util.XStream2;
 
 import java.io.BufferedReader;
@@ -210,7 +211,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * The current build state.
      */
-    protected volatile transient State state;
+    private volatile transient State state;
 
     private static enum State {
         /**
@@ -331,7 +332,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @SuppressWarnings("deprecation")
     protected void onLoad() {
-        for (Action a : getActions()) {
+        for (Action a : getAllActions()) {
             if (a instanceof RunAction2) {
                 ((RunAction2) a).onLoad(this);
             } else if (a instanceof RunAction) {
@@ -347,7 +348,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Return all transient actions associated with this build.
      * 
      * @return the list can be empty but never null. read only.
+     * @deprecated Use {@link #getAllActions} instead.
      */
+    @Deprecated
     public List<Action> getTransientActions() {
         List<Action> actions = new ArrayList<Action>();
         for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
@@ -442,21 +445,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Gets the subset of {@link #getActions()} that consists of {@link BuildBadgeAction}s.
      */
     public List<BuildBadgeAction> getBadgeActions() {
-        List<BuildBadgeAction> r = null;
-        for (Action a : getActions()) {
-            if(a instanceof BuildBadgeAction) {
-                if(r==null)
-                    r = new ArrayList<BuildBadgeAction>();
-                r.add((BuildBadgeAction)a);
-            }
-        }
+        List<BuildBadgeAction> r = getActions(BuildBadgeAction.class);
         if(isKeepLog()) {
-            if(r==null)
-                r = new ArrayList<BuildBadgeAction>();
             r.add(new KeepLogBuildBadge());
         }
-        if(r==null)     return Collections.emptyList();
-        else            return r;
+        return r;
     }
 
     /**
@@ -1252,7 +1245,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         /**
          * Gets the artifact file.
-         * @deprecated May not be meaningful with custom artifact managers. Use {@link ArtifactManager#load} with {@link #relativePath} instead.
+         * @deprecated May not be meaningful with custom artifact managers. Use {@link ArtifactManager#root} plus {@link VirtualFile#child} with {@link #relativePath} instead.
          */
         @Deprecated
         public File getFile() {
@@ -1370,10 +1363,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public void writeWholeLogTo(OutputStream out) throws IOException, InterruptedException {
         long pos = 0;
         AnnotatedLargeText logText;
-        do {
+        logText = getLogText();
+        pos = logText.writeLogTo(pos, out);
+
+        while (!logText.isComplete()) {
+            // Instead of us hitting the log file as many times as possible, instead we get the information once every
+            // second to avoid CPU usage getting very high.
+            Thread.sleep(1000);
             logText = getLogText();
             pos = logText.writeLogTo(pos, out);
-        } while (!logText.isComplete());
+        }
     }
 
     /**
@@ -1388,7 +1387,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         SearchIndexBuilder builder = super.makeSearchIndex()
                 .add("console")
                 .add("changes");
-        for (Action a : getActions()) {
+        for (Action a : getAllActions()) {
             if(a.getIconFileName()!=null)
                 builder.add(a.getUrlName());
         }
@@ -2093,7 +2092,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     public void keepLog(boolean newValue) throws IOException {
-        checkPermission(UPDATE);
+        checkPermission(newValue ? UPDATE : DELETE);
         keepLog = newValue;
         save();
     }
@@ -2123,7 +2122,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             req.setAttribute("stackTraces", writer);
             req.getView(this, "delete-retry.jelly").forward(req, rsp);  
             return;
-        } 
+        }
         rsp.sendRedirect2(req.getContextPath()+'/' + getParent().getUrl());
     }
 

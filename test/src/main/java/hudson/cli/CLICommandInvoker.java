@@ -26,13 +26,13 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.User;
+import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,6 +72,13 @@ public class CLICommandInvoker {
 
         this.rule = rule;
         this.command = command;
+    }
+
+    public CLICommandInvoker(final JenkinsRule rule, final String command) {
+        this.rule = rule;
+        this.command = CLICommand.clone(command);
+
+        if (this.command == null) throw new AssertionError("No such command: " + command);
     }
 
     public CLICommandInvoker authorizedTo(final Permission... permissions) {
@@ -129,6 +136,8 @@ public class CLICommandInvoker {
         rule.jenkins.setAuthorizationStrategy(auth);
 
         command.setTransportAuth(user().impersonate());
+        // Otherwise it is SYSTEM, which would be relevant for a command overriding main:
+        ACL.impersonate(Jenkins.ANONYMOUS);
     }
 
     public User user() {
@@ -222,6 +231,14 @@ public class CLICommandInvoker {
             return new Matcher("Exited with 0 return code") {
                 @Override protected boolean matchesSafely(Result result) {
                     return result.result == 0;
+                }
+            };
+        }
+
+        public static Matcher succeededSilently() {
+            return new Matcher("Succeeded silently") {
+                @Override protected boolean matchesSafely(Result result) {
+                    return result.result == 0 && "".equals(result.stderr()) && "".equals(result.stdout());
                 }
             };
         }

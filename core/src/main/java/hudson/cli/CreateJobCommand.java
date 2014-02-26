@@ -72,6 +72,7 @@ public class CreateJobCommand extends CLICommand {
             name = name.substring(i + 1);
         }
 
+        Jenkins.checkGoodName(name);
         ig.createProjectFromXML(name, stdin);
         return 0;
     }

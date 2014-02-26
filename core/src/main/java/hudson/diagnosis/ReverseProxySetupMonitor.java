@@ -25,12 +25,10 @@ package hudson.diagnosis;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
-import hudson.util.FormValidation;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.WebMethod;
 
 import java.io.IOException;
 
@@ -54,12 +52,15 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     }
 
     public HttpResponse doTest() {
-        return new HttpRedirect("test-for-reverse-proxy-setup");
+        return new HttpRedirect("testForReverseProxySetup/a%2Fb/");
     }
 
-    @WebMethod(name="test-for-reverse-proxy-setup")
-    public FormValidation doFoo() {
-        return FormValidation.ok();
+    public void getTestForReverseProxySetup(String rest) {
+        if (rest.equals("a/b")) {
+            throw HttpResponses.ok();
+        } else {
+            throw HttpResponses.errorWithoutStack(404, "expected a/b but got " + rest);
+        }
     }
 
     /**
