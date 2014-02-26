@@ -26,6 +26,14 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.IOException2;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,23 +43,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
-import org.apache.commons.io.IOUtils;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Has convenience methods to serve file system.
@@ -432,9 +431,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static final class FileComparator implements Comparator<VirtualFile> {
         private Collator collator;
-        private final Map<VirtualFile,Boolean> isDirCache = new HashMap<VirtualFile,Boolean>();
 
-        FileComparator(Locale locale) {
+        public FileComparator(Locale locale) {
             this.collator = Collator.getInstance(locale);
         }
 
@@ -446,18 +444,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             return this.collator.compare(lhs.getName(), rhs.getName());
         }
 
-        private boolean isDirectory(VirtualFile f) throws IOException {
-            Boolean known = isDirCache.get(f);
-            if (known == null) {
-                known = f.isDirectory();
-                isDirCache.put(f, known);
-            }
-            return known;
-        }
-
         private int dirRank(VirtualFile f) {
             try {
-            if(isDirectory(f))     return 0;
+            if(f.isDirectory())     return 0;
             else                    return 1;
             } catch (IOException ex) {
                 return 0;
