@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -431,7 +431,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static final class FileComparator implements Comparator<VirtualFile> {
         private Collator collator;
-        private final Map<VirtualFile,Boolean> isDirCache = new HashMap<VirtualFile,Boolean>();
+        private final Map<VirtualFile,Boolean> isDirCache = new IdentityHashMap<VirtualFile,Boolean>();
 
         FileComparator(Locale locale) {
             this.collator = Collator.getInstance(locale);
