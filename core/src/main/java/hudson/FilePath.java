@@ -1933,7 +1933,7 @@ public final class FilePath implements Serializable {
                         @Override public void visit(File f, String relativePath) throws IOException {
                             if (f.isFile()) {
                                 File target = new File(dest, relativePath);
-                                target.getParentFile().mkdirs();
+                                IOUtils.mkdirs(target.getParentFile());
                                 Util.copyFile(f, target);
                                 count.incrementAndGet();
                             }
@@ -1943,6 +1943,7 @@ public final class FilePath implements Serializable {
                         }
                         @Override public void visitSymlink(File link, String target, String relativePath) throws IOException {
                             try {
+                                IOUtils.mkdirs(new File(dest, relativePath).getParentFile());
                                 Util.createSymlink(dest, target, relativePath, TaskListener.NULL);
                             } catch (InterruptedException x) {
                                 throw (IOException) new IOException(x.toString()).initCause(x);

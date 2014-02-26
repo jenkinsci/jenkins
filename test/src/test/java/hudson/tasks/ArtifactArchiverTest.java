@@ -24,28 +24,32 @@
 
 package hudson.tasks;
 
-import hudson.model.AbstractProject;
-import org.junit.Test;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.model.StreamBuildListener;
 import hudson.tasks.LogRotatorTest.TestsFail;
-import java.io.File;
 import static hudson.tasks.LogRotatorTest.build;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import jenkins.util.VirtualFile;
+import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
-import static org.junit.Assert.*;
 
 /**
  * Verifies that artifacts from the last successful and stable builds of a job will be kept if requested.
@@ -166,6 +170,37 @@ public class ArtifactArchiverTest {
         project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", false, true)));
         assertEquals("(no artifacts)", Result.SUCCESS, build(project));
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
+    }
+
+    @Bug(21958)
+    @Test public void symlinks() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                if (ws == null) {
+                    return false;
+                }
+                FilePath dir = ws.child("dir");
+                dir.mkdirs();
+                dir.child("fizz").write("contents", null);
+                dir.child("lodge").symlinkTo("fizz", listener);
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver("dir/lodge", "", false, true));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FilePath ws = b.getWorkspace();
+        assertNotNull(ws);
+        assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(1, artifacts.size());
+        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        assertEquals("dir/lodge", artifact.relativePath);
+        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
+        assertEquals(1, kids.length);
+        assertEquals("lodge", kids[0].getName());
+        // do not check that it .exists() since its target has not been archived
     }
     
     private void runNewBuildAndStartUnitlIsCreated(AbstractProject project) throws InterruptedException{
