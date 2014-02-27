@@ -28,7 +28,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
-import hudson.util.IOUtils;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
 import jenkins.model.Jenkins;
@@ -45,6 +44,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import static hudson.util.TimeUnit2.DAYS;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Service for plugins to periodically retrieve update data files

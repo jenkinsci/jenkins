@@ -24,7 +24,6 @@
 package hudson.slaves;
 
 import hudson.model.*;
-import hudson.util.IOUtils;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
 import jenkins.model.Jenkins.MasterComputer;
 import hudson.remoting.Channel;
@@ -82,6 +81,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponseWrapper;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.ResponseImpl;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.compression.FilterServletOutputStream;

@@ -5,7 +5,6 @@ import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
-import hudson.util.IOUtils;
 import hudson.util.jna.Kernel32Utils;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.DirectoryScanner;
@@ -24,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Finds crash dump reports and show them in the UI.
