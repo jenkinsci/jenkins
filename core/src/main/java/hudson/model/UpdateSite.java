@@ -27,32 +27,18 @@ package hudson.model;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
-import hudson.ProxyConfiguration;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
 import hudson.util.TextFile;
+import static hudson.util.TimeUnit2.*;
 import hudson.util.VersionNumber;
-import jenkins.model.Jenkins;
-import jenkins.util.JSONSignatureValidator;
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -66,10 +52,23 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static hudson.util.TimeUnit2.*;
 import org.apache.commons.io.IOUtils;
-
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
+import jenkins.security.DownloadSettings;
+import jenkins.util.JSONSignatureValidator;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Source of the update center information, like "http://jenkins-ci.org/update-center.json"
@@ -154,42 +153,30 @@ public class UpdateSite {
      * @return null if no updates are necessary, or the future result
      * @since 1.502
      */
-    public Future<FormValidation> updateDirectly(final boolean signatureCheck) {
+    public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
             return Jenkins.getInstance().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
-                
-                public FormValidation call() throws Exception {
-                    URL src = new URL(getUrl() + "?id=" + URLEncoder.encode(getId(),"UTF-8") 
-                            + "&version="+URLEncoder.encode(Jenkins.VERSION, "UTF-8"));
-                    URLConnection conn = ProxyConfiguration.open(src);
-                    InputStream is = conn.getInputStream();
-                    try {
-                        String uncleanJson = IOUtils.toString(is,"UTF-8");
-                        int jsonStart = uncleanJson.indexOf("{\"");
-                        if (jsonStart >= 0) {
-                            uncleanJson = uncleanJson.substring(jsonStart);
-                            int end = uncleanJson.lastIndexOf('}');
-                            if (end>0)
-                                uncleanJson = uncleanJson.substring(0,end+1);
-                            return updateData(uncleanJson, signatureCheck);
-                        } else {
-                            throw new IOException("Could not find json in content of " +
-                            		"update center from url: "+src.toExternalForm());
-                        }
-                    } finally {
-                        if (is != null)
-                            is.close();
-                    }
+                @Override public FormValidation call() throws Exception {
+                    return updateDirectlyNow(signatureCheck);
                 }
             });
-        }
+        } else {
             return null;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public @Nonnull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
+        return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
     
     /**
      * This is the endpoint that receives the update center data file from the browser.
      */
     public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
+        if (!DownloadSettings.get().isUseBrowser()) {
+            throw new IOException("not allowed");
+        }
         return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
     }
 
