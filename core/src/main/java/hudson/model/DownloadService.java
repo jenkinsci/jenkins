@@ -345,7 +345,7 @@ public class DownloadService extends PageDecorator {
 
     public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
 
-    /** @deprecated Use {@link DownloadSettings#setIgnoreSignature} instead. */
+    /** Now used only to set default value of, and enable UI switching of, {@link DownloadSettings#setIgnoreSignature}. */
     public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 
