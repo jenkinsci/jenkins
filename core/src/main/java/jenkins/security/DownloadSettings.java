@@ -25,6 +25,7 @@
 package jenkins.security;
 
 import hudson.Extension;
+import hudson.PluginManager;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
 import hudson.model.TaskListener;
@@ -84,6 +85,11 @@ import org.kohsuke.stapler.StaplerRequest;
     }
     
     public void setCheckSignature(boolean checkSignature) {
+        if (!checkSignature) {
+            // Just to be on the safe side. Normally this is implied by ADMINISTER, needed to configure the security screen anyway,
+            // but in case ADMINISTER but not CONFIGURE_UPDATECENTER is somehow granted, make sure signature checking cannot be disabled.
+            Jenkins.getInstance().checkPermission(PluginManager.CONFIGURE_UPDATECENTER);
+        }
         this.checkSignature = checkSignature;
         save();
     }
