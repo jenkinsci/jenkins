@@ -52,13 +52,14 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
 
     public void suggest(String token, List<SearchItem> result) {
          Collection<SMT> items = all();
-        if(UserSearchProperty.isCaseInsensitive()){ 
+        boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
+        if(isCaseSensitive){
           token = token.toLowerCase();
         }
         if(items==null)     return;
         for (SMT o : items) {
             String name = getName(o);
-            if(UserSearchProperty.isCaseInsensitive())
+            if(isCaseSensitive)
                 name=name.toLowerCase();
             if(o!=null && name.contains(token))
                 result.add(o);
