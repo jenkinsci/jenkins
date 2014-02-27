@@ -7,6 +7,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
+import jenkins.security.DownloadSettings;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -40,13 +41,13 @@ public class DownloadServiceTest extends HudsonTestCase {
         assertNull(job.getData());
 
         // and now it should work
-        DownloadService.signatureCheck = false;
+        DownloadSettings.get().setCheckSignature(false);
         try {
             createWebClient().goTo("/self/testPost");
             JSONObject d = job.getData();
             assertEquals(hashCode(),d.getInt("hello"));
         } finally {
-            DownloadService.signatureCheck = true;
+            DownloadSettings.get().setCheckSignature(true);
         }
 
         // TODO: test with a signature

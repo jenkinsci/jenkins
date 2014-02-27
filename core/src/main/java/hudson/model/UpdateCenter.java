@@ -88,6 +88,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import jenkins.security.DownloadSettings;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -630,7 +631,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
         List <Future<FormValidation>> futures = new ArrayList<Future<FormValidation>>();
         for (UpdateSite site : getSites()) {
-            Future<FormValidation> future = site.updateDirectly(true);
+            Future<FormValidation> future = site.updateDirectly(DownloadSettings.get().isCheckSignature());
             if (future != null) {
                 futures.add(future);
             }
