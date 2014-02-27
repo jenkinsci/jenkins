@@ -239,9 +239,13 @@ public abstract class FormValidation extends IOException implements HttpResponse
             return ok();
         return new FormValidation(kind, message) {
             public String renderHtml() {
+                StaplerRequest req = Stapler.getCurrentRequest();
+                if (req == null) { // being called from some other context
+                    return message;
+                }
                 // 1x16 spacer needed for IE since it doesn't support min-height
                 return "<div class="+ kind.name().toLowerCase(Locale.ENGLISH) +"><img src='"+
-                        Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
+                        req.getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                         message+"</div>";
             }
             @Override public String toString() {

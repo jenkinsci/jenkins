@@ -108,7 +108,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static hudson.init.InitMilestone.*;
+import hudson.model.DownloadService;
+import hudson.util.FormValidation;
 import static java.util.logging.Level.WARNING;
+import jenkins.security.DownloadSettings;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -773,6 +778,24 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (Exception e) {// grrr. fileItem.write throws this
             throw new ServletException(e);
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
+        for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+            FormValidation v = site.updateDirectlyNow(DownloadSettings.get().isCheckSignature());
+            if (v.kind != FormValidation.Kind.OK) {
+                // TODO crude but enough for now
+                return v;
+            }
+        }
+        for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
+            FormValidation v = d.updateNow();
+            if (v.kind != FormValidation.Kind.OK) {
+                return v;
+            }
+        }
+        return HttpResponses.forwardToPreviousPage();
     }
 
     protected String identifyPluginShortName(File t) {
