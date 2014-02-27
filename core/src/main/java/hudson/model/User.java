@@ -374,7 +374,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         Authentication a = Jenkins.getAuthentication();
         if(a instanceof AnonymousAuthenticationToken)
             return null;
-        return get(a.getName());
+
+        // Since we already know this is a name, we can just call getOrCreate with the name directly.
+        String id = a.getName();
+        return getOrCreate(id, id, true);
     }
 
     private static volatile long lastScanned;
