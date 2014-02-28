@@ -1,13 +1,16 @@
 package hudson.model;
 
 import hudson.model.DownloadService.Downloadable;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Set;
+import java.util.TreeSet;
+import jenkins.security.DownloadSettings;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.WithoutJenkins;
 import org.kohsuke.stapler.StaplerResponse;
-
-import java.io.IOException;
-import jenkins.security.DownloadSettings;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -21,16 +24,13 @@ public class DownloadServiceTest extends HudsonTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        if (jenkins == null) {
+            return;
+        }
         // this object receives the submission.
         // to bypass the URL restriction, we'll trigger downloadService.download ourselves
         job = new Downloadable("test", "UNUSED");
         Downloadable.all().add(job);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        Downloadable.all().remove(job);
-        super.tearDown();
     }
 
     @Bug(5536)
@@ -60,4 +60,20 @@ public class DownloadServiceTest extends HudsonTestCase {
         rsp.setContentType("application/javascript");
         rsp.getWriter().println("downloadService.post('test',{'hello':"+hashCode()+"})");
     }
+
+    @WithoutJenkins // could have been in core/src/test/ but update-center.json was already in test/src/test/ (used by UpdateSiteTest)
+    public void testLoadJSON() throws Exception {
+        assertRoots("[list]", "hudson.tasks.Maven.MavenInstaller.json"); // format used by most tools
+        assertRoots("[data, version]", "hudson.tools.JDKInstaller.json"); // anomalous format
+        assertRoots("[connectionCheckUrl, core, id, plugins, signature, updateCenterVersion]", "update-center.json");
+    }
+
+    private static void assertRoots(String expected, String file) throws Exception {
+        URL resource = DownloadServiceTest.class.getResource(file);
+        assertNotNull(file, resource);
+        JSONObject json = JSONObject.fromObject(DownloadService.loadJSON(resource));
+        @SuppressWarnings("unchecked") Set<String> keySet = json.keySet();
+        assertEquals(expected, new TreeSet<String>(keySet).toString());
+    }
+
 }
