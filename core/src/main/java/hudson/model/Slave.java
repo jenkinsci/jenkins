@@ -343,9 +343,21 @@ public abstract class Slave extends Node implements Serializable {
 
     }
 
+    /**
+     * Creates a launcher for the slave.
+     *
+     * @return
+     *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
+     *      will return a {@link hudson.Launcher.RemoteLauncher} instead.
+     */
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
-        return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
+        if (c == null) {
+            listener.error("Issue with creating launcher for slave " + name + ".");
+            return new Launcher.DummyLauncher(listener);
+        } else {
+            return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
+        }
     }
 
     /**
