@@ -108,7 +108,7 @@ public class TextFile {
 
             return new String(buf,0,read);
         } finally {
-            IOUtils.closeQuietly(r);
+            org.apache.commons.io.IOUtils.closeQuietly(r);
         }
     }
 
