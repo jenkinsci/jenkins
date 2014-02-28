@@ -841,6 +841,31 @@ public abstract class Launcher {
         }
     }
 
+    public static class DummyLauncher extends Launcher {
+
+        public DummyLauncher(TaskListener listener) {
+            super(listener, null);
+        }
+
+        @Override
+        public Proc launch(ProcStarter starter) throws IOException {
+            listener.error("Can not call launch on a dummy launcher.");
+            return null;
+        }
+
+        @Override
+        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
+            listener.error("Can not call launchChannel on a dummy launcher.");
+            return null;
+        }
+
+        @Override
+        public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
+            // Kill method should do nothing.
+        }
+    }
+
+
     /**
      * Launches processes remotely by using the given channel.
      */
