@@ -33,7 +33,6 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
-import hudson.util.IOUtils;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
@@ -69,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.util.TimeUnit2.*;
+import org.apache.commons.io.IOUtils;
 
 
 /**

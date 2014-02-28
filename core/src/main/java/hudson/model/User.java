@@ -350,9 +350,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
                     LOGGER.log(Level.FINE, "mismatch on fullName (‘" + fullName + "’ vs. ‘" + prev.getFullName() + "’) for ‘" + id + "’", new Throwable());
                 }
-            }
-            if (LOGGER.isLoggable(Level.FINE) && id.equals(fullName) && fullName.matches(".+ _\\S+@\\S+_")) {
-                LOGGER.log(Level.FINE, "[JENKINS-16332] Suspicious fullName being stored: " + fullName, new Throwable());
+            } else if (!id.equals(fullName) && !getConfigFileFor(id).exists()) {
+                // JENKINS-16332: since the fullName may not be recoverable from the id, and various code may store the id only, we must save the fullName
+                try {
+                    u.save();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, null, x);
+                }
             }
         }
         return u;

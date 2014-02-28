@@ -2,7 +2,6 @@ package jenkins.security;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.util.IOUtils;
 import hudson.util.Secret;
 import hudson.util.TextFile;
 import jenkins.model.Jenkins;
@@ -17,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Default portable implementation of {@link ConfidentialStore} that uses

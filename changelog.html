@@ -55,14 +55,39 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=rfe>
-    Split the “raw HTML” markup formatter out of core into a bundled plugin.
+  <li class=bug>
+    Archiving of symlinks as artifacts did not work in some cases.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21958">issue 21958</a>)
+  <li class=bug>
+    Slow rendering of directories with many entries in remote workspaces.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21780">issue 21780</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.552>What's new in 1.552</a> <!--=DATE=--></h3>
+<h3><a name=v1.553>What's new in 1.553</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Build history widget only showed the last day of builds.
+    (Due to JENKINS-20892, even with this fix at most 20 builds are shown.)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21159">issue 21159</a>)
+  <li class=bug>
+    Random class loading error mostly known to affect static analysis plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12124">issue 12124</a>)
+  <li class=bug>
+    After restarting Jenkins, users known only from changelogs could be shown as <code>First Last _first.last@some.org_</code>, breaking mail delivery.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16332">issue 16332</a>)
+  <li class=bug>
+    CLI <code>build -s -v</code> command caused 100% CPU usage on the master.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20965">issue 20965</a>)
+  <li class=rfe>
+    Slave started from Java Web Start can now install itself as a systemd service.
+  <li class=rfe>
+    Split the “raw HTML” markup formatter out of core into a bundled plugin.
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.552>What's new in 1.552</a> (2014/02/24)</h3>
 <ul class=image>
   <li class=bug>
     Fixed handling of default JENKINS_HOME when storing CLI credentials
@@ -76,11 +101,7 @@ Upcoming changes</a>
   <li class=bug>
     Expensive symlink-related calls on Windows can be simplified.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20534">issue 20534</a>)
-  <li class=bug>
-    Slow rendering of directories with many entries in remote workspaces.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21780">issue 21780</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.551>What's new in 1.551</a> (2014/02/14)</h3>
 <ul class=image>
   <li class='major bug'>
@@ -236,12 +257,12 @@ Upcoming changes</a>
   <li class=bug>
     JavaScript errors when navigating away from a page with a build timeline widget while the timeline is loading.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1041">pull request 1041</a>)
-</ul>
-<h3><a name=v1.543>What's new in 1.543</a> (2013/12/10)</h3>
-<ul class=image>
   <li class=bug>
     Fixed a possible dead lock problem in deleting projects.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19446">issue 19446</a>)
+</ul>
+<h3><a name=v1.543>What's new in 1.543</a> (2013/12/10)</h3>
+<ul class=image>
   <li class=bug>
     HTML metacharacters not escaped in log messages.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20800">issue 20800</a>)

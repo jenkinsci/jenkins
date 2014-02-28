@@ -43,7 +43,6 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
-import jenkins.model.Jenkins.MasterComputer;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.WebMethod;
@@ -508,27 +507,21 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
      * from showing the stack trace. This
      */
-    public synchronized void delete() throws IOException, InterruptedException {
+    public void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
-        performDelete();
+        synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
+            performDelete();
+        } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
+        invokeOnDeleted();
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
+    }
 
-        // defer the notification to avoid the lock ordering problem. See JENKINS-19446.
-        MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                invokeOnDeleted();
-                Jenkins.getInstance().rebuildDependencyGraphAsync();
-                return null;
-            }
-
-            /**
-             * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-             * on BugParade for more details.
-             */
-            private void invokeOnDeleted() throws IOException {
-                getParent().onDeleted(AbstractItem.this);
-            }
-        });
+    /**
+     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
+     * on BugParade for more details.
+     */
+    private void invokeOnDeleted() throws IOException {
+        getParent().onDeleted(AbstractItem.this);
     }
 
     /**

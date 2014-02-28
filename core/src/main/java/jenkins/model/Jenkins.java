@@ -2440,7 +2440,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // For compatibility with old views:
         for (View v : views)
             v.onJobRenamed(job, oldName, newName);
-        save();
     }
 
     /**
@@ -2453,7 +2452,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // For compatibility with old views:
         for (View v : views)
             v.onJobRenamed(item, item.getName(), null);
-        save();
     }
 
     @Override public boolean canAdd(TopLevelItem item) {

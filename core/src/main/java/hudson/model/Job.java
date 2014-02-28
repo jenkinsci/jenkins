@@ -617,7 +617,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
-    @Override public synchronized void delete() throws IOException, InterruptedException {
+    @Override public void delete() throws IOException, InterruptedException {
         super.delete();
         Util.deleteRecursive(getBuildDir());
     }

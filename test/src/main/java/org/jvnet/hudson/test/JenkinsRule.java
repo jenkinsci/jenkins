@@ -1941,7 +1941,15 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          */
         public Page goTo(String relative, @CheckForNull String expectedContentType) throws IOException, SAXException {
             assert !relative.startsWith("/");
-            Page p = super.getPage(getContextPath() + relative);
+            Page p;
+            try {
+                p = super.getPage(getContextPath() + relative);
+            } catch (IOException x) {
+                if (x.getCause() != null) {
+                    x.getCause().printStackTrace();
+                }
+                throw x;
+            }
             if (expectedContentType != null) {
                 assertThat(p.getWebResponse().getContentType(), is(expectedContentType));
             }

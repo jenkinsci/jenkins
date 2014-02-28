@@ -450,6 +450,9 @@ public class IOUtils {
         org.apache.commons.io.IOUtils.writeLines(lines, lineEnding, writer);
     }
 
+    /**
+     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#copy(java.io.InputStream, java.io.OutputStream)}
+     */
     public static int copy(InputStream input, OutputStream output) throws IOException {
         return org.apache.commons.io.IOUtils.copy(input, output);
     }

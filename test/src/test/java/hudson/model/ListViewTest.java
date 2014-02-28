@@ -128,7 +128,6 @@ public class ListViewTest {
         MockFolder stuff = top.createProject(MockFolder.class, "stuff");
         Items.move(p1, stuff);
         p3.delete();
-        Thread.sleep(500); // TODO working around crappy JENKINS-19446 fix
         top.createProject(FreeStyleProject.class, "p3");
         assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
         top.renameTo("upper");

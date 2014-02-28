@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.remoting.Callable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,10 +35,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -252,7 +251,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             } else
             if(serveDirIndex) {
                 // serve directory index
-                glob = buildChildPaths(baseFile, req.getLocale());
+                glob = baseFile.run(new BuildChildPaths(baseFile, req.getLocale()));
             }
 
             if(glob!=null) {
@@ -431,7 +430,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static final class FileComparator implements Comparator<VirtualFile> {
         private Collator collator;
-        private final Map<VirtualFile,Boolean> isDirCache = new HashMap<VirtualFile,Boolean>();
 
         FileComparator(Locale locale) {
             this.collator = Collator.getInstance(locale);
@@ -445,18 +443,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             return this.collator.compare(lhs.getName(), rhs.getName());
         }
 
-        private boolean isDirectory(VirtualFile f) throws IOException {
-            Boolean known = isDirCache.get(f);
-            if (known == null) {
-                known = f.isDirectory();
-                isDirCache.put(f, known);
-            }
-            return known;
-        }
-
         private int dirRank(VirtualFile f) {
             try {
-            if(isDirectory(f))     return 0;
+            if(f.isDirectory())     return 0;
             else                    return 1;
             } catch (IOException ex) {
                 return 0;
@@ -464,6 +453,17 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
+    private static final class BuildChildPaths implements Callable<List<List<Path>>,IOException> {
+        private final VirtualFile cur;
+        private final Locale locale;
+        BuildChildPaths(VirtualFile cur, Locale locale) {
+            this.cur = cur;
+            this.locale = locale;
+        }
+        @Override public List<List<Path>> call() throws IOException {
+            return buildChildPaths(cur, locale);
+        }
+    }
     /**
      * Builds a list of list of {@link Path}. The inner
      * list of {@link Path} represents one child item to be shown

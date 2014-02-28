@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.553-SNAPSHOT</version>
+  <version>1.554-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -95,7 +95,6 @@ THE SOFTWARE.
 
     <slf4jVersion>1.7.4</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <maven-plugin.version>2.1</maven-plugin.version>
-    <netbeans.compile.on.save>none</netbeans.compile.on.save> <!-- we rely on Maven source generation -->
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
     <java.level>6</java.level>

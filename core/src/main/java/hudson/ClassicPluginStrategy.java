@@ -56,7 +56,6 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,7 +71,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClassicPluginStrategy implements PluginStrategy {
-    private final ClassLoaderReflectionToolkit clt = new ClassLoaderReflectionToolkit();
 
     /**
      * Filter for jar files.
@@ -569,10 +567,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (PluginManager.FAST_LOOKUP) {
                 for (PluginWrapper pw : getTransitiveDependencies()) {
                     try {
-                        Class c = clt.findLoadedClass(pw.classLoader,name);
+                        Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(pw.classLoader, name);
                         if (c!=null)    return c;
-                        return clt.findClass(pw.classLoader,name);
-                    } catch (InvocationTargetException e) {
+                        return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
+                    } catch (ClassNotFoundException e) {
                         //not found. try next
                     }
                 }
@@ -596,15 +594,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
             HashSet<URL> result = new HashSet<URL>();
 
             if (PluginManager.FAST_LOOKUP) {
-                try {
                     for (PluginWrapper pw : getTransitiveDependencies()) {
-                        Enumeration<URL> urls = clt.findResources(pw.classLoader, name);
+                        Enumeration<URL> urls = ClassLoaderReflectionToolkit._findResources(pw.classLoader, name);
                         while (urls != null && urls.hasMoreElements())
                             result.add(urls.nextElement());
                     }
-                } catch (InvocationTargetException e) {
-                    throw new Error(e);
-                }
             } else {
                 for (Dependency dep : dependencies) {
                     PluginWrapper p = pluginManager.getPlugin(dep.shortName);
@@ -622,14 +616,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
         @Override
         protected URL findResource(String name) {
             if (PluginManager.FAST_LOOKUP) {
-                try {
                     for (PluginWrapper pw : getTransitiveDependencies()) {
-                        URL url = clt.findResource(pw.classLoader,name);
+                        URL url = ClassLoaderReflectionToolkit._findResource(pw.classLoader, name);
                         if (url!=null)    return url;
                     }
-                } catch (InvocationTargetException e) {
-                    throw new Error(e);
-                }
             } else {
                 for (Dependency dep : dependencies) {
                     PluginWrapper p = pluginManager.getPlugin(dep.shortName);

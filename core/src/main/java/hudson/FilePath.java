@@ -665,7 +665,7 @@ public final class FilePath implements Serializable {
                 private static final long serialVersionUID = 1L;
             });
         } finally {
-            IOUtils.closeQuietly(_in);
+            org.apache.commons.io.IOUtils.closeQuietly(_in);
         }
     }
 
@@ -815,7 +815,7 @@ public final class FilePath implements Serializable {
     public void copyFrom(InputStream in) throws IOException, InterruptedException {
         OutputStream os = write();
         try {
-            IOUtils.copy(in, os);
+            org.apache.commons.io.IOUtils.copy(in, os);
         } finally {
             os.close();
         }
@@ -846,7 +846,7 @@ public final class FilePath implements Serializable {
             InputStream i = file.getInputStream();
             OutputStream o = write();
             try {
-                IOUtils.copy(i,o);
+                org.apache.commons.io.IOUtils.copy(i,o);
             } finally {
                 try {
                     o.close();
@@ -1640,8 +1640,8 @@ public final class FilePath implements Serializable {
                     Util.copyStream(fis,p.getOut());
                     return null;
                 } finally {
-                    IOUtils.closeQuietly(fis);
-                    IOUtils.closeQuietly(p.getOut());
+                    org.apache.commons.io.IOUtils.closeQuietly(fis);
+                    org.apache.commons.io.IOUtils.closeQuietly(p.getOut());
                 }
             }
         });
@@ -1655,7 +1655,7 @@ public final class FilePath implements Serializable {
     public String readToString() throws IOException {
         InputStream in = read();
         try {
-            return IOUtils.toString(in);
+            return org.apache.commons.io.IOUtils.toString(in);
         } finally {
             in.close();
         }
@@ -1815,8 +1815,8 @@ public final class FilePath implements Serializable {
                     Util.copyStream(fis,out);
                     return null;
                 } finally {
-                    IOUtils.closeQuietly(fis);
-                    IOUtils.closeQuietly(out);
+                    org.apache.commons.io.IOUtils.closeQuietly(fis);
+                    org.apache.commons.io.IOUtils.closeQuietly(out);
                 }
             }
         });
@@ -1933,7 +1933,7 @@ public final class FilePath implements Serializable {
                         @Override public void visit(File f, String relativePath) throws IOException {
                             if (f.isFile()) {
                                 File target = new File(dest, relativePath);
-                                target.getParentFile().mkdirs();
+                                IOUtils.mkdirs(target.getParentFile());
                                 Util.copyFile(f, target);
                                 count.incrementAndGet();
                             }
@@ -1943,6 +1943,7 @@ public final class FilePath implements Serializable {
                         }
                         @Override public void visitSymlink(File link, String target, String relativePath) throws IOException {
                             try {
+                                IOUtils.mkdirs(new File(dest, relativePath).getParentFile());
                                 Util.createSymlink(dest, target, relativePath, TaskListener.NULL);
                             } catch (InterruptedException x) {
                                 throw (IOException) new IOException(x.toString()).initCause(x);
