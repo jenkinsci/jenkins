@@ -45,7 +45,8 @@ import org.junit.Test;
 public class UpdateCenterTest {
     @Test public void data() throws Exception {
         try {
-            doData();
+            doData("http://updates.jenkins-ci.org/update-center.json?version=build");
+            doData("http://updates.jenkins-ci.org/stable/update-center.json?version=build");
         } catch (Exception x) {
             if (Boolean.getBoolean("ignore.random.failures")) {
                 assumeNoException("Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes", x);
@@ -54,8 +55,8 @@ public class UpdateCenterTest {
             }
         }
     }
-    private void doData() throws Exception {
-        URL url = new URL("http://updates.jenkins-ci.org/update-center.json?version=build");
+    private void doData(String location) throws Exception {
+        URL url = new URL(location);
         String jsonp = IOUtils.toString(url.openStream());
         JSONObject json = JSONObject.fromObject(jsonp.substring(jsonp.indexOf('(') + 1, jsonp.lastIndexOf(')')));
 
