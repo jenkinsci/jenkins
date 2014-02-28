@@ -130,11 +130,4 @@ public class UpdateSiteTest {
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
     
-    @RandomlyFails("CertificateExpiredException: NotAfter: …")
-    @Test public void updateDirectlyWithHtml() throws Exception {
-        UpdateSite us = new UpdateSite("default", new URL(baseUrl, "update-center.json.html").toExternalForm());
-        assertNull(us.getPlugin("AdaptivePlugin"));
-        assertEquals(FormValidation.ok(), us.updateDirectly(true).get());
-        assertNotNull(us.getPlugin("AdaptivePlugin"));
-    }
 }
