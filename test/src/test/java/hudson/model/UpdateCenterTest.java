@@ -26,7 +26,6 @@ package hudson.model;
 import com.trilead.ssh2.crypto.Base64;
 import hudson.util.TimeUnit2;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
@@ -57,8 +56,8 @@ public class UpdateCenterTest {
     }
     private void doData(String location) throws Exception {
         URL url = new URL(location);
-        String jsonp = IOUtils.toString(url.openStream());
-        JSONObject json = JSONObject.fromObject(jsonp.substring(jsonp.indexOf('(') + 1, jsonp.lastIndexOf(')')));
+        String jsonp = DownloadService.loadJSON(url);
+        JSONObject json = JSONObject.fromObject(jsonp);
 
         UpdateSite us = new UpdateSite("default", url.toExternalForm());
         UpdateSite.Data data = us.new Data(json);
