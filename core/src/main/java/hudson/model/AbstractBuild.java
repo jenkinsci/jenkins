@@ -244,7 +244,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             if (r==null) {
                 // having two neighbors pointing to each other is important to make RunMap.removeValue work
-                R nb = getParent().builds.search(number+1, Direction.ASC);
+                R nb = getParent()._getRuns().search(number+1, Direction.ASC);
                 if (nb!=null) {
                     ((AbstractBuild)nb).previousBuild = selfReference;   // establish bi-di link
                     this.nextBuild = nb.selfReference;

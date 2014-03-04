@@ -32,7 +32,6 @@ import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
-import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
@@ -49,7 +48,6 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.ItemListener;
@@ -86,11 +84,9 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.TimeUnit2;
-import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -118,7 +114,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.Uptime;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
@@ -129,7 +125,6 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -173,15 +168,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     private volatile transient SCMRevisionState pollingBaseline = null;
 
+    private transient LazyBuildMixIn<P,R> buildMixIn;
+
     /**
      * All the builds keyed by their build number.
-     *
+     * Kept here for binary compatibility only; otherwise use {@link #buildMixIn}.
      * External code should use {@link #getBuildByNumber(int)} or {@link #getLastBuild()} and traverse via
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    protected transient RunMap<R> builds = new RunMap<R>();
+    protected transient RunMap<R> builds;
 
     /**
      * The quiet period. Null to delegate to the system default.
@@ -274,12 +270,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
+        initBuildMixIn();
 
         if(Jenkins.getInstance()!=null && !Jenkins.getInstance().getNodes().isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
             // make it roamable by default
             canRoam = true;
         }
+    }
+
+    private void initBuildMixIn() {
+        buildMixIn = new LazyBuildMixIn<P,R>(this) {
+            @Override protected Class<R> getBuildClass() {
+                return AbstractProject.this.getBuildClass();
+            }
+        };
+        builds = buildMixIn.getRunMap();
     }
 
     @Override
@@ -291,7 +297,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onCreatedFromScratch() {
         super.onCreatedFromScratch();
-        builds = createBuildRunMap();
+        buildMixIn.onCreatedFromScratch();
+        builds = buildMixIn.getRunMap();
         // solicit initial contributions, especially from TransientProjectActionFactory
         updateTransientActions();
     }
@@ -299,33 +306,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
-
-        RunMap<R> builds = createBuildRunMap();
-
-        RunMap<R> currentBuilds = this.builds;
-
-        if (currentBuilds==null && parent!=null) {
-            // are we overwriting what currently exist?
-            // this is primarily when Jenkins is getting reloaded
-            Item current;
-            try {
-                current = parent.getItem(name);
-            } catch (RuntimeException x) {
-                LOGGER.log(Level.WARNING, "failed to look up " + name + " in " + parent, x);
-                current = null;
-            }
-            if (current!=null && current.getClass()==getClass()) {
-                currentBuilds = ((AbstractProject)current).builds;
-            }
-        }
-        if (currentBuilds !=null) {
-            // if we are reloading, keep all those that are still building intact
-            for (R r : currentBuilds.getLoadedBuilds().values()) {
-                if (r.isBuilding())
-                    builds.put(r);
-            }
-        }
-        this.builds = builds;
+        initBuildMixIn();
         triggers().setOwner(this);
         for (Trigger t : triggers()) {
             t.start(this, Items.currentlyUpdatingByXml());
@@ -336,14 +317,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
         updateTransientActions();
-    }
-
-    private RunMap<R> createBuildRunMap() {
-        return new RunMap<R>(getBuildDir(), new Constructor<R>() {
-            public R create(File dir) throws IOException {
-                return loadBuild(dir);
-            }
-        });
     }
 
     @WithBridgeMethods(List.class)
@@ -1039,18 +1012,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public RunMap<R> _getRuns() {
-        if (builds == null) {
-            throw new IllegalStateException("no run map created yet for " + this);
-        }
-        assert builds.baseDirInitialized() : "neither onCreatedFromScratch nor onLoad called on " + this + " yet";
-        return builds;
+        return buildMixIn._getRuns();
     }
 
     @Override
     public void removeRun(R run) {
-        if (!this.builds.remove(run)) {
-            LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {this, run});
-        }
+        buildMixIn.removeRun(run);
     }
 
     /**
@@ -1060,7 +1027,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public R getBuild(String id) {
-        return builds.getById(id);
+        return buildMixIn.getBuild(id);
     }
 
     /**
@@ -1070,7 +1037,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public R getBuildByNumber(int n) {
-        return builds.getByNumber(n);
+        return buildMixIn.getBuildByNumber(n);
     }
 
     /**
@@ -1080,22 +1047,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public R getFirstBuild() {
-        return builds.oldestBuild();
+        return buildMixIn.getFirstBuild();
     }
 
     @Override
     public @CheckForNull R getLastBuild() {
-        return builds.newestBuild();
+        return buildMixIn.getLastBuild();
     }
 
     @Override
     public R getNearestBuild(int n) {
-        return builds.search(n, Direction.ASC);
+        return buildMixIn.getNearestBuild(n);
     }
 
     @Override
     public R getNearestOldBuild(int n) {
-        return builds.search(n, Direction.DESC);
+        return buildMixIn.getNearestOldBuild(n);
     }
 
     /**
@@ -1106,61 +1073,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     protected abstract Class<R> getBuildClass();
 
-    // keep track of the previous time we started a build
-    private transient long lastBuildStartTime;
-    
     /**
      * Creates a new build of this project for immediate execution.
+     * Suitable for {@link SubTask#createExecutable}.
      */
     protected synchronized R newBuild() throws IOException {
-    	// make sure we don't start two builds in the same second
-    	// so the build directories will be different too
-    	long timeSinceLast = System.currentTimeMillis() - lastBuildStartTime;
-    	if (timeSinceLast < 1000) {
-    		try {
-				Thread.sleep(1000 - timeSinceLast);
-			} catch (InterruptedException e) {
-			}
-    	}
-    	lastBuildStartTime = System.currentTimeMillis();
-        try {
-            R lastBuild = getBuildClass().getConstructor(getClass()).newInstance(this);
-            builds.put(lastBuild);
-            return lastBuild;
-        } catch (InstantiationException e) {
-            throw new Error(e);
-        } catch (IllegalAccessException e) {
-            throw new Error(e);
-        } catch (InvocationTargetException e) {
-            throw handleInvocationTargetException(e);
-        } catch (NoSuchMethodException e) {
-            throw new Error(e);
-        }
-    }
-
-    private IOException handleInvocationTargetException(InvocationTargetException e) {
-        Throwable t = e.getTargetException();
-        if(t instanceof Error)  throw (Error)t;
-        if(t instanceof RuntimeException)   throw (RuntimeException)t;
-        if(t instanceof IOException)    return (IOException)t;
-        throw new Error(t);
+        return buildMixIn.newBuild();
     }
 
     /**
      * Loads an existing build record from disk.
      */
     protected R loadBuild(File dir) throws IOException {
-        try {
-            return getBuildClass().getConstructor(getClass(),File.class).newInstance(this,dir);
-        } catch (InstantiationException e) {
-            throw new Error(e);
-        } catch (IllegalAccessException e) {
-            throw new Error(e);
-        } catch (InvocationTargetException e) {
-            throw handleInvocationTargetException(e);
-        } catch (NoSuchMethodException e) {
-            throw new Error(e);
-        }
+        return buildMixIn.loadBuild(dir);
     }
 
     /**
@@ -1820,7 +1745,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     protected HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget<R>(this,builds,HISTORY_ADAPTER);
+        return buildMixIn.createHistoryWidget();
     }
     
     public boolean isParameterized() {
@@ -2424,16 +2349,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          */
         @Nonnull
         public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
-    }
-
-    @Restricted(DoNotUse.class)
-    @Extension public static final class ItemListenerImpl extends ItemListener {
-        @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            if (item instanceof AbstractProject) {
-                AbstractProject p = (AbstractProject) item;
-                p.builds.updateBaseDir(p.getBuildDir());
-            }
-        }
     }
 
 }
