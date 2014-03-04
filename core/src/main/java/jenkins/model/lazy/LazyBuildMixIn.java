@@ -170,6 +170,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
     /**
      * Creates a new build of this project for immediate execution.
      * Calls the ({@link Job}) constructor of {@link #getBuildClass}.
+     * Suitable for {@link SubTask#createExecutable}.
      */
     @SuppressWarnings("SleepWhileHoldingLock")
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("SWL_SLEEP_WITH_LOCK_HELD")

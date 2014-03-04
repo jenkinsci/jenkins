@@ -1075,7 +1075,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Creates a new build of this project for immediate execution.
-     * Suitable for {@link SubTask#createExecutable}.
      */
     protected synchronized R newBuild() throws IOException {
         return buildMixIn.newBuild();
