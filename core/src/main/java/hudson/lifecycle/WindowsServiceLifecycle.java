@@ -123,7 +123,10 @@ public class WindowsServiceLifecycle extends Lifecycle {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener task = new StreamTaskListener(baos);
         task.getLogger().println("Restarting a service");
-        File executable = new File(home, "hudson.exe");
+        String exe = System.getenv("WINSW_EXECUTABLE");
+        File executable;
+        if (exe!=null)   executable = new File(exe);
+        else            executable = new File(home, "hudson.exe");
         if (!executable.exists())   executable = new File(home, "jenkins.exe");
 
         int r = new LocalLauncher(task).launch().cmds(executable, "restart")
