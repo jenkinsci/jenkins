@@ -270,7 +270,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
-        initBuildMixIn();
+        buildMixIn = createBuildMixIn();
+        builds = buildMixIn.getRunMap();
 
         if(Jenkins.getInstance()!=null && !Jenkins.getInstance().getNodes().isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
@@ -279,13 +280,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    private void initBuildMixIn() {
-        buildMixIn = new LazyBuildMixIn<P,R>(this) {
+    private LazyBuildMixIn<P,R> createBuildMixIn() {
+        return new LazyBuildMixIn<P,R>(this) {
             @Override protected Class<R> getBuildClass() {
                 return AbstractProject.this.getBuildClass();
             }
         };
-        builds = buildMixIn.getRunMap();
     }
 
     @Override
@@ -306,7 +306,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
-        initBuildMixIn();
+        buildMixIn = createBuildMixIn();
+        buildMixIn.onLoad(parent, name);
+        builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
         for (Trigger t : triggers()) {
             t.start(this, Items.currentlyUpdatingByXml());
