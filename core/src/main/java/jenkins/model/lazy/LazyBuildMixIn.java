@@ -33,6 +33,7 @@ import hudson.model.Queue.Task;
 import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.listeners.ItemListener;
+import hudson.model.queue.SubTask;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import java.io.File;
@@ -56,7 +57,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
 
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
-    private final Job<?,?> job;
+    private final Job<P,R> job;
 
     @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
     private @Nonnull RunMap<R> builds = new RunMap<R>();
@@ -67,9 +68,11 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
     /**
      * Initializes this mixin based on a job.
      * Call this from a constructor and {@link AbstractItem#onLoad} to make sure it is always initialized.
-     * @param job the owning job (should be of type {@code P} and assignable to {@link Task})
+     * @param job the owning job (should be of type {@code P} and assignable to {@link Task} and {@link LazyLoadingJob})
      */
-    public LazyBuildMixIn(Job<?,?> job) {
+    public LazyBuildMixIn(Job<P,R> job) {
+        Task.class.cast(job);
+        LazyLoadingJob.class.cast(job);
         this.job = job;
     }
 
@@ -83,7 +86,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
     }
 
     /**
-     * Same as {@link #getRunMap} but suitable for {@link Job#_getRuns}, which you <em>must override to be public</em>.
+     * Same as {@link #getRunMap} but suitable for {@link Job#_getRuns}.
      */
     public final RunMap<R> _getRuns() {
         assert builds.baseDirInitialized() : "neither onCreatedFromScratch nor onLoad called on " + job + " yet";
@@ -115,11 +118,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
                 current = null;
             }
             if (current != null && current.getClass() == job.getClass()) {
-                try {
-                    currentBuilds = (RunMap<R>) current.getClass().getMethod("_getRuns").invoke(current);
-                } catch (Exception x) {
-                    assert false : "you should have made _getRuns public in " + job.getClass();
-                }
+                currentBuilds = (RunMap<R>) ((LazyLoadingJob) current).getLazyBuildMixIn().builds;
             }
         }
         if (currentBuilds != null) {
@@ -273,23 +272,18 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
         return new BuildHistoryWidget((Task) job, builds, Job.HISTORY_ADAPTER);
     }
 
+    /**
+     * Marker for a {@link Job} which uses this mixin.
+     */
+    public interface LazyLoadingJob {
+        LazyBuildMixIn<?,?> getLazyBuildMixIn();
+    }
+
     @Restricted(DoNotUse.class)
     @Extension public static final class ItemListenerImpl extends ItemListener {
         @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            if (item instanceof Job) {
-                RunMap<?> builds;
-                try {
-                    builds = (RunMap<?>) item.getClass().getMethod("_getRuns").invoke(item);
-                } catch (NoSuchMethodException x) {
-                    // OK, did not override this to be public
-                    return;
-                } catch (ClassCastException x) {
-                    // override it to be public but of a different type, fine
-                    return;
-                } catch (Exception x) {
-                    LOGGER.log(Level.WARNING, null, x);
-                    return;
-                }
+            if (item instanceof LazyLoadingJob) {
+                RunMap<?> builds = ((LazyLoadingJob) item).getLazyBuildMixIn().builds;
                 builds.updateBaseDir(((Job) item).getBuildDir());
             }
         }

@@ -149,7 +149,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren, LazyBuildMixIn.LazyLoadingJob {
 
     /**
      * {@link SCM} associated with the project.
@@ -286,6 +286,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return AbstractProject.this.getBuildClass();
             }
         };
+    }
+
+    @Override public LazyBuildMixIn<P,R> getLazyBuildMixIn() {
+        return buildMixIn;
     }
 
     @Override
