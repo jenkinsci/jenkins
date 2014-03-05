@@ -42,7 +42,7 @@ THE SOFTWARE.
           <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" contextMenu="false" />
         </j:when>
         <j:otherwise>
-          <l:task icon="images/24x24/up.png" href="${url}/../" title="${%Up}" contextMenu="false" />
+          <l:task icon="images/24x24/up.png" href="${rootURL}/${it.parent.url}" title="${%Up}" contextMenu="false" />
         </j:otherwise>
       </j:choose>
       <l:task icon="images/24x24/search.png"  href="${url}/" title="${%Status}" contextMenu="false"/>
