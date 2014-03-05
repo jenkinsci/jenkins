@@ -308,7 +308,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
-        buildMixIn = createBuildMixIn();
+        if (buildMixIn == null) {
+            buildMixIn = createBuildMixIn();
+        }
         buildMixIn.onLoad(parent, name);
         builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
