@@ -96,7 +96,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -128,7 +127,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
@@ -1876,31 +1874,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         rsp.forwardToPreviousPage(req);
     }
 
-    /**
-     * Deletes this project.
-     */
-    @Override
-    @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        delete();
-        if (req == null || rsp == null)
-            return;
-        List<Ancestor> ancestors = req.getAncestors();
-        ListIterator<Ancestor> it = ancestors.listIterator(ancestors.size());
-        String url = getParent().getUrl(); // fallback but we ought to get to Jenkins.instance at the root
-        while (it.hasPrevious()) {
-            Object a = it.previous().getObject();
-            if (a instanceof View) {
-                url = ((View) a).getUrl();
-                break;
-            } else if (a instanceof ViewGroup) {
-                url = ((ViewGroup) a).getUrl();
-                break;
-            }
-        }
-        rsp.sendRedirect2(req.getContextPath() + '/' + url);
-    }
-    
     @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req,rsp);
