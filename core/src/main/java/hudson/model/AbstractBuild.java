@@ -170,6 +170,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent();
     }
 
+    // Just here so that we do not get e.g. NoSuchMethodError: hudson.maven.MavenModuleSetBuild.getNextBuild()Lhudson/model/AbstractBuild; from getModuleLastBuilds
+    @Override
+    public R getPreviousBuild() {
+        return super.getPreviousBuild();
+    }
+
+    @Override
+    public R getNextBuild() {
+        return super.getNextBuild();
+    }
+
     /**
      * Returns a {@link Slave} on which this build was done.
      *
