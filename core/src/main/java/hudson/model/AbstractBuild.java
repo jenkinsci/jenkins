@@ -58,8 +58,6 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.util.*;
 import jenkins.model.Jenkins;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import jenkins.model.lazy.BuildReference;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -156,23 +154,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     protected transient List<Environment> buildEnvironments;
 
-    /**
-     * Pointers to form bi-directional link between adjacent {@link AbstractBuild}s.
-     *
-     * <p>
-     * Unlike {@link Run}, {@link AbstractBuild}s do lazy-loading, so we don't use
-     * {@link Run#previousBuild} and {@link Run#nextBuild}, and instead use these
-     * fields and point to {@link #selfReference} (or {@link #none}) of adjacent builds.
-     */
-    private volatile transient BuildReference<R> previousBuild, nextBuild;
-
-    @SuppressWarnings({"unchecked", "rawtypes"}) private static final BuildReference NONE = new BuildReference("NONE", null);
-    @SuppressWarnings("unchecked") private BuildReference<R> none() {return NONE;}
-
-    /*package*/ final transient BuildReference<R> selfReference = new BuildReference<R>(getId(),_this());
-
-
-
     protected AbstractBuild(P job) throws IOException {
         super(job);
     }
@@ -187,82 +168,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     public final P getProject() {
         return getParent();
-    }
-
-    @Override
-    void dropLinks() {
-        super.dropLinks();
-
-        if(nextBuild!=null) {
-            AbstractBuild nb = nextBuild.get();
-            if (nb!=null) {
-                nb.previousBuild = previousBuild;
-            }
-        }
-        if(previousBuild!=null) {
-            AbstractBuild pb = previousBuild.get();
-            if (pb!=null)   pb.nextBuild = nextBuild;
-        }
-    }
-
-    @Override
-    public R getPreviousBuild() {
-        while (true) {
-            BuildReference<R> r = previousBuild;    // capture the value once
-
-            if (r==null) {
-                // having two neighbors pointing to each other is important to make RunMap.removeValue work
-                P _parent = getParent();
-                if (_parent == null) {
-                    throw new IllegalStateException("no parent for " + number + " in " + workspace);
-                }
-                R pb = _parent._getRuns().search(number-1, Direction.DESC);
-                if (pb!=null) {
-                    ((AbstractBuild)pb).nextBuild = selfReference;   // establish bi-di link
-                    this.previousBuild = pb.selfReference;
-                    return pb;
-                } else {
-                    this.previousBuild = none();
-                    return null;
-                }
-            }
-            if (r==none())
-                return null;
-
-            R referent = r.get();
-            if (referent!=null) return referent;
-
-            // the reference points to a GC-ed object, drop the reference and do it again
-            this.previousBuild = null;
-        }
-    }
-
-    @Override
-    public R getNextBuild() {
-        while (true) {
-            BuildReference<R> r = nextBuild;    // capture the value once
-
-            if (r==null) {
-                // having two neighbors pointing to each other is important to make RunMap.removeValue work
-                R nb = getParent()._getRuns().search(number+1, Direction.ASC);
-                if (nb!=null) {
-                    ((AbstractBuild)nb).previousBuild = selfReference;   // establish bi-di link
-                    this.nextBuild = nb.selfReference;
-                    return nb;
-                } else {
-                    this.nextBuild = none();
-                    return null;
-                }
-            }
-            if (r==none())
-                return null;
-
-            R referent = r.get();
-            if (referent!=null) return referent;
-
-            // the reference points to a GC-ed object, drop the reference and do it again
-            this.nextBuild = null;
-        }
     }
 
     /**

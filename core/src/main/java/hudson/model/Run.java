@@ -124,6 +124,9 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.RunAction2;
+import jenkins.model.lazy.AbstractLazyLoadRunMap;
+import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.util.VirtualFile;
 
 /**
@@ -154,7 +157,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Previous build. Can be null.
-     * These two fields are maintained and updated by {@link RunMap}.
+     * TODO JENKINS-22052 this is not actually implemented any more
      *
      * External code should use {@link #getPreviousBuild()}
      */
@@ -168,6 +171,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Restricted(NoExternalUse.class)
     protected volatile transient RunT nextBuild;
+
+    /**
+     * Pointers to form bi-directional link between adjacent runs using {@link LazyBuildMixIn}.
+     *
+     * <p>
+     * Some {@link Run}s do lazy-loading, so we don't use
+     * {@link #previousBuild} and {@link #nextBuild}, and instead use these
+     * fields and point to {@link #selfReference} (or {@link #none}) of adjacent builds.
+     */
+    private volatile transient BuildReference<RunT> previousBuildR, nextBuildR;
+
+    @SuppressWarnings({"unchecked", "rawtypes"}) private static final BuildReference NONE = new BuildReference("NONE", null);
+    @SuppressWarnings("unchecked") private BuildReference<RunT> none() {return NONE;}
+
+    /*package*/ final transient BuildReference<RunT> selfReference = new BuildReference<RunT>(getId(), _this());
 
     /**
      * Pointer to the next younger build in progress. This data structure is lazily updated,
@@ -772,19 +790,72 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return number;
     }
 
+    final boolean isLazy() {
+        return getParent() instanceof LazyBuildMixIn.LazyLoadingJob;
+    }
+
     /**
      * Called by {@link RunMap} to drop bi-directional links in preparation for
      * deleting a build.
      */
-    /*package*/ void dropLinks() {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    /*package*/ final void dropLinks() {
         if(nextBuild!=null)
             nextBuild.previousBuild = previousBuild;
         if(previousBuild!=null)
             previousBuild.nextBuild = nextBuild;
+        if (isLazy()) {
+            if (nextBuildR != null) {
+                Run nb = nextBuildR.get();
+                if (nb != null) {
+                    nb.previousBuildR = previousBuildR;
+                }
+            }
+            if (previousBuildR != null) {
+                Run pb = previousBuildR.get();
+                if (pb != null) {
+                    pb.nextBuildR = nextBuildR;
+                }
+            }
+        }
     }
 
-    public RunT getPreviousBuild() {
-        return previousBuild;
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public /* ought to be final */ RunT getPreviousBuild() {
+        if (!isLazy()) {
+            return previousBuild;
+        }
+        while (true) {
+            BuildReference<RunT> r = previousBuildR;    // capture the value once
+
+            if (r == null) {
+                // having two neighbors pointing to each other is important to make RunMap.removeValue work
+                JobT _parent = getParent();
+                if (_parent == null) {
+                    throw new IllegalStateException("no parent for " + number);
+                }
+                Run pb = ((LazyBuildMixIn.LazyLoadingJob) _parent).getLazyBuildMixIn()._getRuns().search(number - 1, AbstractLazyLoadRunMap.Direction.DESC);
+                if (pb != null) {
+                    pb.nextBuildR = selfReference;   // establish bi-di link
+                    this.previousBuildR = pb.selfReference;
+                    return (RunT) pb;
+                } else {
+                    this.previousBuildR = none();
+                    return null;
+                }
+            }
+            if (r == none()) {
+                return null;
+            }
+
+            RunT referent = r.get();
+            if (referent != null) {
+                return referent;
+            }
+
+            // the reference points to a GC-ed object, drop the reference and do it again
+            this.previousBuildR = null;
+        }
     }
 
     /**
@@ -905,8 +976,38 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return builds;
     }
 
-    public RunT getNextBuild() {
-        return nextBuild;
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public /* ought to be final */ RunT getNextBuild() {
+        if (!isLazy()) {
+            return nextBuild;
+        }
+        while (true) {
+            BuildReference<RunT> r = nextBuildR;    // capture the value once
+
+            if (r == null) {
+                // having two neighbors pointing to each other is important to make RunMap.removeValue work
+                Run nb = ((LazyBuildMixIn.LazyLoadingJob) getParent()).getLazyBuildMixIn()._getRuns().search(number + 1, AbstractLazyLoadRunMap.Direction.ASC);
+                if (nb != null) {
+                    nb.previousBuildR = selfReference;   // establish bi-di link
+                    this.nextBuildR = nb.selfReference;
+                    return (RunT) nb;
+                } else {
+                    this.nextBuildR = none();
+                    return null;
+                }
+            }
+            if (r == none()) {
+                return null;
+            }
+
+            RunT referent = r.get();
+            if (referent != null) {
+                return referent;
+            }
+
+            // the reference points to a GC-ed object, drop the reference and do it again
+            this.nextBuildR = null;
+        }
     }
 
     /**
