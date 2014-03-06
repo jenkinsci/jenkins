@@ -185,7 +185,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @SuppressWarnings({"unchecked", "rawtypes"}) private static final BuildReference NONE = new BuildReference("NONE", null);
     @SuppressWarnings("unchecked") private BuildReference<RunT> none() {return NONE;}
 
-    /*package*/ final transient BuildReference<RunT> selfReference = new BuildReference<RunT>(getId(), _this());
+    /*package*/ final transient BuildReference<RunT> selfReference;
 
     /**
      * Pointer to the next younger build in progress. This data structure is lazily updated,
@@ -320,6 +320,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
 		getRootDir().mkdirs();
+        selfReference = new BuildReference<RunT>(getId(), _this());
     }
 
     /**
