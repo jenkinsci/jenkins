@@ -100,7 +100,7 @@ public class FileParameterValue extends ParameterValue {
      * Exposes the originalFileName as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    public void buildEnvVars(Run<?,?> build, EnvVars env) {
         env.put(name,originalFileName);
     }
 

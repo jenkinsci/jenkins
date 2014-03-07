@@ -41,8 +41,6 @@ import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Cause.LegacyCodeCause;
-import hudson.model.Cause.RemoteCause;
-import hudson.model.Cause.UserIdCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
@@ -54,7 +52,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.SubTaskContributor;
 import hudson.node_monitors.DiskSpaceMonitor;
@@ -108,10 +105,10 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.*;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.Uptime;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
@@ -131,7 +128,6 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -147,7 +143,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren, LazyBuildMixIn.LazyLoadingJob {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren, LazyBuildMixIn.LazyLoadingJob, ParameterizedJobMixIn.ParameterizedJob {
 
     /**
      * {@link SCM} associated with the project.
@@ -167,6 +163,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private volatile transient SCMRevisionState pollingBaseline = null;
 
     private transient LazyBuildMixIn<P,R> buildMixIn;
+    private transient ParameterizedJobMixIn<P,R> parameterizedJobMixIn;
 
     /**
      * All the builds keyed by their build number.
@@ -288,6 +285,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override public LazyBuildMixIn<P,R> getLazyBuildMixIn() {
         return buildMixIn;
+    }
+
+    @Override public synchronized ParameterizedJobMixIn<P,R> getParameterizedJobMixIn() {
+        if (parameterizedJobMixIn == null) {
+            parameterizedJobMixIn = new ParameterizedJobMixIn<P,R>() {
+                @SuppressWarnings("unchecked") // untypable
+                @Override protected P asJob() {
+                    return (P) AbstractProject.this;
+                }
+            };
+        }
+        return parameterizedJobMixIn;
     }
 
     @Override
@@ -455,7 +464,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.401
      */
     public String getBuildNowText() {
-        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, isParameterized() ? Messages.AbstractProject_build_with_parameters() : Messages.AbstractProject_BuildNow());
+        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, getParameterizedJobMixIn().getBuildNowText());
     }
 
     /**
@@ -845,7 +854,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
 	 */
     public boolean scheduleBuild() {
-    	return scheduleBuild(new LegacyCodeCause());
+    	return getParameterizedJobMixIn().scheduleBuild();
     }
     
 	/**
@@ -853,7 +862,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
 	 */
     public boolean scheduleBuild(int quietPeriod) {
-    	return scheduleBuild(quietPeriod, new LegacyCodeCause());
+    	return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
     }
     
     /**
@@ -864,11 +873,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      false if the task was rejected from the queue (such as when the system is being shut down.)
      */
     public boolean scheduleBuild(Cause c) {
-        return scheduleBuild(getQuietPeriod(), c);
+        return getParameterizedJobMixIn().scheduleBuild(c);
     }
 
     public boolean scheduleBuild(int quietPeriod, Cause c) {
-        return scheduleBuild(quietPeriod, c, new Action[0]);
+        return getParameterizedJobMixIn().scheduleBuild(quietPeriod, c);
     }
 
     /**
@@ -910,44 +919,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(Future.class)
     public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
-        if (!isBuildable())
-            return null;
-
         List<Action> queueActions = new ArrayList<Action>(actions);
-        if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
-            queueActions.add(new ParametersAction(getDefaultParametersValues()));
-        }
-
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
-
-        ScheduleResult i = Jenkins.getInstance().getQueue().schedule2(this, quietPeriod, queueActions);
-        if(i.isAccepted())
-            return (QueueTaskFuture)i.getItem().getFuture();
-        return null;
-    }
-
-    private List<ParameterValue> getDefaultParametersValues() {
-        ParametersDefinitionProperty paramDefProp = getProperty(ParametersDefinitionProperty.class);
-        ArrayList<ParameterValue> defValues = new ArrayList<ParameterValue>();
-        
-        /*
-         * This check is made ONLY if someone will call this method even if isParametrized() is false.
-         */
-        if(paramDefProp == null)
-            return defValues;
-        
-        /* Scan for all parameter with an associated default values */
-        for(ParameterDefinition paramDefinition : paramDefProp.getParameterDefinitions())
-        {
-           ParameterValue defaultValue  = paramDefinition.getDefaultParameterValue();
-            
-            if(defaultValue != null)
-                defValues.add(defaultValue);           
-        }
-        
-        return defValues;
+        return getParameterizedJobMixIn().scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
     }
 
     /**
@@ -1742,10 +1718,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
-        SearchIndexBuilder sib = super.makeSearchIndex();
-        if(isBuildable() && hasPermission(Jenkins.ADMINISTER))
-            sib.add("build","build");
-        return sib;
+        return getParameterizedJobMixIn().extendSearchIndex(super.makeSearchIndex());
     }
 
     @Override
@@ -1754,7 +1727,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
     
     public boolean isParameterized() {
-        return getProperty(ParametersDefinitionProperty.class) != null;
+        return getParameterizedJobMixIn().isParameterized();
     }
 
 //
@@ -1766,52 +1739,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a new build command.
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
-        if (delay==null)    delay=new TimeDuration(getQuietPeriod());
-
-        // if a build is parameterized, let that take over
-        ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
-        if (pp != null && !req.getMethod().equals("POST")) {
-            // show the parameter entry form.
-            req.getView(pp, "index.jelly").forward(req, rsp);
-            return;
-        }
-
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
-
-        if (pp != null) {
-            pp._doBuild(req,rsp,delay);
-            return;
-        }
-
-        if (!isBuildable())
-            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
-
-        ScheduleResult r = Jenkins.getInstance().getQueue().schedule2(this, delay.getTime(), getBuildCause(req));
-        if (r.isAccepted()) {
-            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+r.getItem().getUrl());
-        } else
-            rsp.sendRedirect(".");
+        getParameterizedJobMixIn().doBuild(req, rsp, delay);
     }
 
     /** @deprecated use {@link #doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
     @Deprecated
     public void doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doBuild(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
-    }
-
-    /**
-     * Computes the build cause, using RemoteCause or UserCause as appropriate.
-     */
-    /*package*/ CauseAction getBuildCause(StaplerRequest req) {
-        Cause cause;
-        if (authToken != null && authToken.getToken() != null && req.getParameter("token") != null) {
-            // Optional additional cause text when starting via token
-            String causeText = req.getParameter("cause");
-            cause = new RemoteCause(req.getRemoteAddr(), causeText);
-        } else {
-            cause = new UserIdCause();
-        }
-        return new CauseAction(cause);
     }
 
     /**
@@ -1839,15 +1773,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Currently only String parameters are supported.
      */
     public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
-
-        ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
-        if (pp != null) {
-            pp.buildWithParameters(req,rsp,delay);
-        } else {
-        	throw new IllegalStateException("This build is not parameterized!");
-        }
-    	
+        getParameterizedJobMixIn().doBuildWithParameters(req, rsp, delay);
     }
 
     /** @deprecated use {@link #doBuildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
@@ -1870,10 +1796,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @RequirePOST
     public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(ABORT);
-
-        Jenkins.getInstance().getQueue().cancel(this);
-        rsp.forwardToPreviousPage(req);
+        getParameterizedJobMixIn().doCancelQueue(req, rsp);
     }
 
     @Override
