@@ -695,10 +695,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     String siteName = n.substring(index + 1);
                     UpdateSite updateSite = Jenkins.getInstance().getUpdateCenter().getById(siteName);
                     if (siteName != null) {
-                        if (p != null) {
-                            throw new Failure("Ambiguous plugin: " + n);
+                        UpdateSite.Plugin plugin = updateSite.getPlugin(pluginName);
+                        if (plugin != null) {
+                            if (p != null) {
+                                throw new Failure("Ambiguous plugin: " + n);
+                            }
+                            p = plugin;
                         }
-                        p = updateSite.getPlugin(pluginName);
                     }
                     index = n.indexOf('.', index + 1);
                 }
