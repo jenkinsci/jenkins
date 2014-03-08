@@ -175,7 +175,7 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
         if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
 
         Jenkins.getInstance().getQueue().schedule(
-                getJob(), delay.getTime(), new ParametersAction(values), getJob().getParameterizedJobMixIn().getBuildCause(req));
+                getJob(), delay.getTime(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req));
 
         if (requestWantsJson(req)) {
             rsp.setContentType("application/json");

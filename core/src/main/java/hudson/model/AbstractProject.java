@@ -287,7 +287,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return buildMixIn;
     }
 
-    @Override public synchronized ParameterizedJobMixIn<P,R> getParameterizedJobMixIn() {
+    private synchronized ParameterizedJobMixIn<P,R> getParameterizedJobMixIn() {
         if (parameterizedJobMixIn == null) {
             parameterizedJobMixIn = new ParameterizedJobMixIn<P,R>() {
                 @SuppressWarnings("unchecked") // untypable

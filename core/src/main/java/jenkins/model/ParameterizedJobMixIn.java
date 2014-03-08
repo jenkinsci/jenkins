@@ -171,7 +171,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR, new IOException(asJob().getFullName() + " is not buildable"));
         }
 
-        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(asJob(), delay.getTime(), getBuildCause(req)).getItem();
+        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(asJob(), delay.getTime(), getBuildCause(asJob(), req)).getItem();
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
@@ -223,10 +223,10 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * Computes the build cause, using RemoteCause or UserCause as appropriate.
      */
     @Restricted(NoExternalUse.class)
-    public final CauseAction getBuildCause(StaplerRequest req) {
+    public static final CauseAction getBuildCause(ParameterizedJob job, StaplerRequest req) {
         Cause cause;
         @SuppressWarnings("deprecation")
-        hudson.model.BuildAuthorizationToken authToken = asJob().getAuthToken();
+        hudson.model.BuildAuthorizationToken authToken = job.getAuthToken();
         if (authToken != null && authToken.getToken() != null && req.getParameter("token") != null) {
             // Optional additional cause text when starting via token
             String causeText = req.getParameter("cause");
@@ -250,8 +250,6 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * Marker for job using this mixin.
      */
     public interface ParameterizedJob extends hudson.model.Queue.Task {
-
-        ParameterizedJobMixIn<?,?> getParameterizedJobMixIn();
 
         @SuppressWarnings("deprecation")
         @CheckForNull hudson.model.BuildAuthorizationToken getAuthToken();
