@@ -82,7 +82,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
 
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         for (ParameterValue p : parameters)
-            p.buildEnvVars((Run) build, env);
+            p.buildEnvironment(build, env);
     }
 
     // TODO do we need an EnvironmentContributingAction variant that takes Run so this can implement it?
