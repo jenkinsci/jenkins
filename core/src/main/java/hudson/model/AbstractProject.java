@@ -163,7 +163,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private volatile transient SCMRevisionState pollingBaseline = null;
 
     private transient LazyBuildMixIn<P,R> buildMixIn;
-    private transient ParameterizedJobMixIn<P,R> parameterizedJobMixIn;
 
     /**
      * All the builds keyed by their build number.
@@ -287,16 +286,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return buildMixIn;
     }
 
-    private synchronized ParameterizedJobMixIn<P,R> getParameterizedJobMixIn() {
-        if (parameterizedJobMixIn == null) {
-            parameterizedJobMixIn = new ParameterizedJobMixIn<P,R>() {
-                @SuppressWarnings("unchecked") // untypable
-                @Override protected P asJob() {
-                    return (P) AbstractProject.this;
-                }
-            };
-        }
-        return parameterizedJobMixIn;
+    private ParameterizedJobMixIn<P,R> getParameterizedJobMixIn() {
+        return new ParameterizedJobMixIn<P,R>() {
+            @SuppressWarnings("unchecked") // untypable
+            @Override protected P asJob() {
+                return (P) AbstractProject.this;
+            }
+        };
     }
 
     @Override

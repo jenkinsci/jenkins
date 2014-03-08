@@ -61,6 +61,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Allows a {@link Job} to make use of {@link ParametersDefinitionProperty} and be scheduled in various ways.
+ * Stateless so there is no need to keep an instance of it in a field.
  * @since TODO
  */
 @SuppressWarnings("unchecked") // AbstractItem.getParent does not correctly override; scheduleBuild2 inherently untypable
