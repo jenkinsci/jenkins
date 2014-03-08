@@ -110,6 +110,11 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
     }
 
     @Deprecated
+    public Collection<Action> getJobActions(AbstractProject<?, ?> job) {
+        return getJobActions((Job) job);
+    }
+
+    @Deprecated
     public AbstractProject<?, ?> getProject() {
         return (AbstractProject<?, ?>) owner;
     }
