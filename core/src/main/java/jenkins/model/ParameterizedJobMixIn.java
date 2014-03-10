@@ -40,12 +40,15 @@ import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.search.SearchIndexBuilder;
+import hudson.triggers.Trigger;
+import hudson.triggers.TriggerDescriptor;
 import hudson.views.BuildButtonColumn;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
@@ -250,7 +253,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     /**
      * Marker for job using this mixin.
      */
-    public interface ParameterizedJob extends hudson.model.Queue.Task {
+    public interface ParameterizedJob extends hudson.model.Queue.Task, hudson.model.Item {
 
         @SuppressWarnings("deprecation")
         @CheckForNull hudson.model.BuildAuthorizationToken getAuthToken();
@@ -258,6 +261,13 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         int getQuietPeriod();
 
         String getBuildNowText();
+
+        /**
+         * Gets currently configured triggers.
+         * You may use {@code <p:config-trigger/>} to configure them.
+         * @return a map from trigger kind to instance
+         */
+        Map<TriggerDescriptor,Trigger<?>> getTriggers();
 
     }
 

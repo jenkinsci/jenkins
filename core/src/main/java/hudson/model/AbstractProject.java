@@ -1594,7 +1594,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @SuppressWarnings("unchecked")
-    public Map<TriggerDescriptor,Trigger<?>> getTriggers() {
+    @Override public Map<TriggerDescriptor,Trigger<?>> getTriggers() {
         return triggers().toMap();
     }
 
