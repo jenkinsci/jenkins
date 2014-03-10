@@ -587,7 +587,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * @see #getStartTimeInMillis()
      */
-    @Exported
+    @Exported(visibility=2)
     public Calendar getTimestamp() {
         GregorianCalendar c = new GregorianCalendar();
         c.setTimeInMillis(timestamp);

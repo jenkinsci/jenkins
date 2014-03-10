@@ -635,6 +635,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.EMPTY_LIST;
     }
 
+    @Exported
     public RunList getBuilds() {
     	return new RunList(Jenkins.getInstance().getAllItems(Job.class)).node(getNode());
     }
