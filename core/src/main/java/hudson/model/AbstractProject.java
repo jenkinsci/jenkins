@@ -353,6 +353,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
         return triggers;
     }
+    
+    /**
+     * Gets list of triggers in the project.
+     * This method provides a public interface for triggers as it has been done 
+     * for build actions in ${link Project}.
+     */
+    public DescribableList<Trigger<?>,TriggerDescriptor> getTriggersList() {
+        return triggers();
+    }
 
     @Override
     public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
@@ -2020,7 +2029,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         for (Trigger t : triggers())
             t.stop();
-        triggers.replaceBy(buildDescribable(req, Trigger.for_(this)));
+        triggers().rebuildHetero(req,json, Trigger.for_(this), "trigger");
         for (Trigger t : triggers())
             t.start(this,true);
 

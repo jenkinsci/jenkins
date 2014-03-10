@@ -31,11 +31,25 @@ THE SOFTWARE.
   <j:invokeStatic var="triggers" className="hudson.triggers.Trigger" method="for_">
     <j:arg value="${it}" type="hudson.model.Item" />
   </j:invokeStatic>
+  <f:section title="${%Build Triggers}">     
+      <f:block>
+          <f:hetero-list name="trigger" hasHeader="true"
+                               descriptors="${triggers}"
+                               items="${it.triggersList}"
+                               oneEach="true"
+                               menuAlign="bl-tl"
+                               honorOrder="true"
+                               addCaption="${%Add build trigger}"/>                    
+          <d:invokeBody />
+          <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
+          <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />           
+      </f:block>
+  </f:section>
+<!--
   <f:descriptorList title="${%Build Triggers}"
                     descriptors="${triggers}"
                     instances="${it.triggers}">
     <d:invokeBody />
-    <!-- pseudo-trigger to configure URL to trigger builds remotely. -->
     <st:include page="/hudson/model/BuildAuthorizationToken/config.jelly" />
-  </f:descriptorList>
+  </f:descriptorList> -->
 </j:jelly>
