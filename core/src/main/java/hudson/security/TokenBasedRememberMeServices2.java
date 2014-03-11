@@ -26,9 +26,12 @@ package hudson.security;
 import hudson.Functions;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
+import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.LastGrantedAuthoritiesProperty;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UserDetailsService;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.util.Assert;
 
@@ -47,6 +50,21 @@ import java.util.Date;
  * @author Kohsuke Kawaguchi
  */
 public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices {
+    /**
+     * Decorate {@link UserDetailsService} so that we can use information stored in
+     * {@link LastGrantedAuthoritiesProperty}.
+     *
+     * We wrap by {@link ImpersonatingUserDetailsService} in other places too,
+     * so this is possibly redundant, but there are many {@link AbstractPasswordBasedSecurityRealm#loadUserByUsername(String)}
+     * implementations that do not do it, so doing it helps retrofit old plugins to benefit from
+     * the user impersonation improvements. Plus multiple {@link ImpersonatingUserDetailsService}
+     * do not incur any real performance penalty.
+     */
+    @Override
+    public void setUserDetailsService(UserDetailsService userDetailsService) {
+        super.setUserDetailsService(new ImpersonatingUserDetailsService(userDetailsService));
+    }
+
     @Override
     protected String makeTokenSignature(long tokenExpiryTime, UserDetails userDetails) {
         String expectedTokenSignature = MAC.mac(userDetails.getUsername() + ":" + tokenExpiryTime + ":"
