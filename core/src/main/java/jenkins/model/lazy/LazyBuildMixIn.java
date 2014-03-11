@@ -29,7 +29,7 @@ import hudson.model.AbstractItem;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
-import hudson.model.Queue.Task;
+import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.listeners.ItemListener;
@@ -53,11 +53,10 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * <p>Should be kept in a {@code transient} field in the job.
  * @since TODO
  */
-public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
+@SuppressWarnings({"unchecked", "rawtypes"})
+public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuildMixIn.LazyLoadingJob, R extends Run<P,R>> {
 
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
-
-    private final Job<P,R> job;
 
     @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
     private @Nonnull RunMap<R> builds = new RunMap<R>();
@@ -66,15 +65,12 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
     private long lastBuildStartTime;
 
     /**
-     * Initializes this mixin based on a job.
+     * Initializes this mixin.
      * Call this from a constructor and {@link AbstractItem#onLoad} to make sure it is always initialized.
-     * @param job the owning job (should be of type {@code P} and assignable to {@link Task} and {@link LazyLoadingJob})
      */
-    public LazyBuildMixIn(Job<P,R> job) {
-        Task.class.cast(job);
-        LazyLoadingJob.class.cast(job);
-        this.job = job;
-    }
+    protected LazyBuildMixIn() {}
+
+    protected abstract P asJob();
 
     /**
      * Gets the raw model.
@@ -89,7 +85,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
      * Same as {@link #getRunMap} but suitable for {@link Job#_getRuns}.
      */
     public final RunMap<R> _getRuns() {
-        assert builds.baseDirInitialized() : "neither onCreatedFromScratch nor onLoad called on " + job + " yet";
+        assert builds.baseDirInitialized() : "neither onCreatedFromScratch nor onLoad called on " + asJob() + " yet";
         return builds;
     }
 
@@ -117,7 +113,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
                 LOGGER.log(Level.WARNING, "failed to look up " + name + " in " + parent, x);
                 current = null;
             }
-            if (current != null && current.getClass() == job.getClass()) {
+            if (current != null && current.getClass() == asJob().getClass()) {
                 currentBuilds = (RunMap<R>) ((LazyLoadingJob) current).getLazyBuildMixIn().builds;
             }
         }
@@ -133,7 +129,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
     }
 
     private RunMap<R> createBuildRunMap() {
-        return new RunMap<R>(job.getBuildDir(), new RunMap.Constructor<R>() {
+        return new RunMap<R>(asJob().getBuildDir(), new RunMap.Constructor<R>() {
             @Override public R create(File dir) throws IOException {
                 return loadBuild(dir);
             }
@@ -154,7 +150,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
      */
     public R loadBuild(File dir) throws IOException {
         try {
-            return getBuildClass().getConstructor(job.getClass(), File.class).newInstance(job, dir);
+            return getBuildClass().getConstructor(asJob().getClass(), File.class).newInstance(asJob(), dir);
         } catch (InstantiationException e) {
             throw new Error(e);
         } catch (IllegalAccessException e) {
@@ -185,7 +181,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
     	}
     	lastBuildStartTime = System.currentTimeMillis();
         try {
-            R lastBuild = getBuildClass().getConstructor(job.getClass()).newInstance(job);
+            R lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
             builds.put(lastBuild);
             return lastBuild;
         } catch (InstantiationException e) {
@@ -218,7 +214,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
      */
     public final void removeRun(R run) {
         if (!builds.remove(run)) {
-            LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {job, run});
+            LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {asJob(), run});
         }
     }
 
@@ -267,9 +263,8 @@ public abstract class LazyBuildMixIn<P extends Job<P,R>,R extends Run<P,R>> {
     /**
      * Suitable for {@link Job#createHistoryWidget}.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public final HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget((Task) job, builds, Job.HISTORY_ADAPTER);
+        return new BuildHistoryWidget(asJob(), builds, Job.HISTORY_ADAPTER);
     }
 
     /**

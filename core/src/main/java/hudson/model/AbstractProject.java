@@ -275,7 +275,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     private LazyBuildMixIn<P,R> createBuildMixIn() {
-        return new LazyBuildMixIn<P,R>(this) {
+        return new LazyBuildMixIn<P,R>() {
+            @SuppressWarnings("unchecked") // untypable
+            @Override protected P asJob() {
+                return (P) AbstractProject.this;
+            }
             @Override protected Class<R> getBuildClass() {
                 return AbstractProject.this.getBuildClass();
             }
