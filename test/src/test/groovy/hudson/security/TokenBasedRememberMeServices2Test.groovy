@@ -1,7 +1,5 @@
 package hudson.security
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm
-import com.gargoylesoftware.htmlunit.html.HtmlPage
 import org.acegisecurity.AuthenticationException
 import org.acegisecurity.BadCredentialsException
 import org.acegisecurity.GrantedAuthority
@@ -19,7 +17,6 @@ import org.jvnet.hudson.test.JenkinsRule
 import org.springframework.dao.DataAccessException
 
 import java.util.logging.Handler
-import java.util.logging.Level
 import java.util.logging.LogRecord
 import java.util.logging.Logger
 
@@ -73,7 +70,7 @@ class TokenBasedRememberMeServices2Test {
         j.jenkins.securityRealm = new BogusSecurityRealm()
 
         def wc = j.createWebClient()
-        loginWithRememberMe(wc)
+        wc.login("alice","alice",true)
 
         // we should see a remember me cookie
         def c = getRememberMeCookie(wc)
@@ -97,16 +94,6 @@ class TokenBasedRememberMeServices2Test {
 
     private Cookie getRememberMeCookie(JenkinsRule.WebClient wc) {
         wc.cookieManager.getCookie(TokenBasedRememberMeServices2.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY)
-    }
-
-    private void loginWithRememberMe(JenkinsRule.WebClient wc) {
-        HtmlPage page = wc.goTo("login");
-
-        HtmlForm form = page.getFormByName("login");
-        form.getInputByName("j_username").valueAttribute = "alice"
-        form.getInputByName("j_password").valueAttribute = "alice"
-        form.getInputByName("remember_me").checked = true
-        form.submit(null);
     }
 
     private class BogusSecurityRealm extends AbstractPasswordBasedSecurityRealm {
