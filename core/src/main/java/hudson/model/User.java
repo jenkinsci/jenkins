@@ -250,10 +250,17 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Creates an {@link Authentication} object that represents this user.
-     * 
+     *
+     * This method checks with {@link SecurityRealm} if the user is a valid user that can login to the security realm.
+     * If {@link SecurityRealm} is a kind that does not support querying information about other users, this will
+     * use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the last time the user has
+     * logged in.
+     *
+     * @throws UsernameNotFoundException
+     *      If this user is not a valid user in the backend {@link SecurityRealm}.
      * @since 1.419
      */
-    public Authentication impersonate() {
+    public Authentication impersonate() throws UsernameNotFoundException {
         try {
             UserDetails u = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id);
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
