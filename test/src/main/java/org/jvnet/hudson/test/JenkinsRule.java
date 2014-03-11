@@ -1783,15 +1783,23 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         }
 
         /**
-         * Logs in to Hudson.
+         * Logs in to Jenkins.
          */
         public WebClient login(String username, String password) throws Exception {
+            return login(username,password,false);
+        }
+
+        /**
+         * Logs in to Jenkins.
+         */
+        public WebClient login(String username, String password, boolean rememberMe) throws Exception {
             HtmlPage page = goTo("login");
 //            page = (HtmlPage) page.getFirstAnchorByText("Login").click();
 
             HtmlForm form = page.getFormByName("login");
             form.getInputByName("j_username").setValueAttribute(username);
             form.getInputByName("j_password").setValueAttribute(password);
+            form.getInputByName("remember_me").setChecked(rememberMe);
             form.submit(null);
             return this;
         }
