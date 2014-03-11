@@ -23,19 +23,18 @@
  */
 package hudson.security;
 
-import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import hudson.Functions;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.Authentication;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.util.Assert;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 
 /**
  * {@link TokenBasedRememberMeServices} with modification so as not to rely

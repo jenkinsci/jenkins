@@ -39,6 +39,7 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.security.ImpersonatingUserDetailsService;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import net.sf.json.JSONObject;
 
@@ -262,7 +263,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public Authentication impersonate() throws UsernameNotFoundException {
         try {
-            UserDetails u = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id);
+            UserDetails u = new ImpersonatingUserDetailsService(
+                    Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails).loadUserByUsername(id);
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
         } catch (UserMayOrMayNotExistException e) {
             // backend can't load information about other users. so use the stored information if available
@@ -273,12 +275,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             // seems like it's in the same boat as UserMayOrMayNotExistException
         }
 
-        LastGrantedAuthoritiesProperty p = getProperty(LastGrantedAuthoritiesProperty.class);
-        if (p!=null)
-            return new UsernamePasswordAuthenticationToken(id, "", p.getAuthorities());
-        else
-            return new UsernamePasswordAuthenticationToken(id, "",
-                new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
+        // seems like a legitimate user we have no idea about. proceed with minimum access
+        return new UsernamePasswordAuthenticationToken(id, "",
+            new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
     }
 
     /**

@@ -17,7 +17,6 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +28,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.556
+ * @see ImpersonatingUserDetailsService
  */
 public class LastGrantedAuthoritiesProperty extends UserProperty {
     private volatile String[] roles;
