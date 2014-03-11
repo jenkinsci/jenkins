@@ -1585,7 +1585,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                                     System.err.println("cannot resolve optional dependency " + dep + " of " + shortName + "; skipping");
                                     continue;
                                 }
-                                throw new IOException("Could not resolve " + dep);
+                                throw new IOException("Could not resolve " + dep + " in " + System.getProperty("java.class.path"));
                             }
 
                             File dst = new File(home, "plugins/" + artifactId + ".jpi");
@@ -1597,7 +1597,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 }
             }
 
-            private File resolveDependencyJar(MavenEmbedder embedder, String artifactId, String version) throws Exception {
+            private @CheckForNull File resolveDependencyJar(MavenEmbedder embedder, String artifactId, String version) throws Exception {
                 // try to locate it from manifest
                 Enumeration<URL> manifests = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
                 while (manifests.hasMoreElements()) {
@@ -1608,6 +1608,26 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
                     if (artifactId.equals(m.getMainAttributes().getValue("Short-Name")))
                         return Which.jarFile(manifest);
+                }
+
+                // For snapshot plugin dependencies, an IDE may have replaced ~/.m2/repository/…/${artifactId}.hpi with …/${artifactId}-plugin/target/classes/
+                // which unfortunately lacks META-INF/MANIFEST.MF so try to find index.jelly (which every plugin should include) and thus the ${artifactId}.hpi:
+                Enumeration<URL> jellies = getClass().getClassLoader().getResources("index.jelly");
+                while (jellies.hasMoreElements()) {
+                    URL jellyU = jellies.nextElement();
+                    if (jellyU.getProtocol().equals("file")) {
+                        File jellyF = new File(jellyU.toURI());
+                        File classes = jellyF.getParentFile();
+                        if (classes.getName().equals("classes")) {
+                            File target = classes.getParentFile();
+                            if (target.getName().equals("target")) {
+                                File hpi = new File(target, artifactId + ".hpi");
+                                if (hpi.isFile()) {
+                                    return hpi;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // need to search multiple group IDs
@@ -1642,7 +1662,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 throw new Exception("Failed to resolve plugin: "+artifactId+" version "+version,resolutionError);
             }
             
-            private File resolvePluginFile(MavenEmbedder embedder, String artifactId, String version, String groupId, String type)
+            private @CheckForNull File resolvePluginFile(MavenEmbedder embedder, String artifactId, String version, String groupId, String type)
 					throws MavenEmbedderException, ComponentLookupException, AbstractArtifactResolutionException {
 				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
 				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
