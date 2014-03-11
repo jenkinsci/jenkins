@@ -23,7 +23,6 @@
  */
 package hudson.cli;
 
-import com.trilead.ssh2.crypto.PEMDecoder;
 import hudson.cli.client.Messages;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
@@ -49,7 +48,6 @@ import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -61,13 +59,10 @@ import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
-import java.security.spec.DSAPrivateKeySpec;
-import java.security.spec.DSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,8 +73,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.Console;
-
 import static java.util.logging.Level.*;
 
 /**
@@ -391,7 +384,7 @@ public class CLI {
 
     public static int _main(String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
-        List<KeyPair> candidateKeys = new ArrayList<KeyPair>();
+        PrivateKeyProvider provider = new PrivateKeyProvider();
         boolean sshAuthRequestedExplicitly = false;
         String httpProxy=null;
 
@@ -431,17 +424,9 @@ public class CLI {
                     printUsage(Messages.CLI_NoSuchFileExists(f));
                     return -1;
                 }
-                KeyPair kp;
-                try {
-                    kp = loadKey(f);
-                } catch (IOException e) {
-                    //if the PEM file is encrypted, IOException is thrown
-                    kp = tryEncryptedFile(f);                    
-                } catch (GeneralSecurityException e) {
-                    throw new Exception("Failed to load key: "+f,e);
-                }
-                if(kp != null)
-                    candidateKeys.add(kp);
+
+                provider.readFrom(f);
+
                 args = args.subList(2,args.size());
                 sshAuthRequestedExplicitly = true;
                 continue;
@@ -462,8 +447,8 @@ public class CLI {
         if(args.isEmpty())
             args = Arrays.asList("help"); // default to help
 
-        if (candidateKeys.isEmpty())
-            addDefaultPrivateKeyLocations(candidateKeys);
+        if (!provider.hasKeys())
+            provider.readFromDefaultLocations();
 
         CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
         String userInfo = new URL(url).getUserInfo();
@@ -473,10 +458,10 @@ public class CLI {
 
         CLI cli = factory.connect();
         try {
-            if (!candidateKeys.isEmpty()) {
+            if (provider.hasKeys()) {
                 try {
                     // TODO: server verification
-                    cli.authenticate(candidateKeys);
+                    cli.authenticate(provider.getKeys());
                 } catch (IllegalStateException e) {
                     if (sshAuthRequestedExplicitly) {
                         System.err.println("The server doesn't support public key authentication");
@@ -528,97 +513,22 @@ public class CLI {
      * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
      */
     public static KeyPair loadKey(File f, String passwd) throws IOException, GeneralSecurityException {
-        return loadKey(readPemFile(f), passwd);
+        return PrivateKeyProvider.loadKey(f, passwd);
     }
 
     public static KeyPair loadKey(File f) throws IOException, GeneralSecurityException {
-    	return loadKey(f, null);
+        return loadKey(f, null);
     }
-    
-    private static String readPemFile(File f) throws IOException{
-        FileInputStream is = new FileInputStream(f);
-        try {
-        DataInputStream dis = new DataInputStream(is);
-        byte[] bytes = new byte[(int) f.length()];
-        dis.readFully(bytes);
-        dis.close();
-        return new String(bytes);
-        } finally {
-            is.close();
-        }
-    }
-    
+
     /**
      * Loads RSA/DSA private key in a PEM format into {@link KeyPair}.
      */
     public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
-        Object key = PEMDecoder.decode(pemString.toCharArray(), passwd);
-        if (key instanceof com.trilead.ssh2.signature.RSAPrivateKey) {
-            com.trilead.ssh2.signature.RSAPrivateKey x = (com.trilead.ssh2.signature.RSAPrivateKey)key;
-//            System.out.println("ssh-rsa " + new String(Base64.encode(RSASHA1Verify.encodeSSHRSAPublicKey(x.getPublicKey()))));
-
-            return x.toJCEKeyPair();
-        }
-        if (key instanceof com.trilead.ssh2.signature.DSAPrivateKey) {
-            com.trilead.ssh2.signature.DSAPrivateKey x = (com.trilead.ssh2.signature.DSAPrivateKey)key;
-            KeyFactory kf = KeyFactory.getInstance("DSA");
-//            System.out.println("ssh-dsa " + new String(Base64.encode(DSASHA1Verify.encodeSSHDSAPublicKey(x.getPublicKey()))));
-
-            return new KeyPair(
-                    kf.generatePublic(new DSAPublicKeySpec(x.getY(), x.getP(), x.getQ(), x.getG())),
-                    kf.generatePrivate(new DSAPrivateKeySpec(x.getX(), x.getP(), x.getQ(), x.getG())));
-        }
-
-        throw new UnsupportedOperationException("Unrecognizable key format: "+key);
+        return PrivateKeyProvider.loadKey(pemString, passwd);
     }
 
     public static KeyPair loadKey(String pemString) throws IOException, GeneralSecurityException {
-    	return loadKey(pemString, null);
-    }
-    
-    private static KeyPair tryEncryptedFile(File f) throws IOException, GeneralSecurityException{
-        KeyPair kp = null;
-        if(isPemEncrypted(f)){
-            String passwd = askForPasswd(f.getCanonicalPath());
-            kp = loadKey(f,passwd);
-        }
-        return kp;
-    }
-    
-    private static boolean isPemEncrypted(File f) throws IOException{
-        String pemString = readPemFile(f);
-        //simple check if the file is encrypted
-        return pemString.contains("4,ENCRYPTED");
-    }
-    
-    private static String askForPasswd(String filePath){
-            Console cons = System.console();
-            String passwd = null;
-            if (cons != null){
-                char[] p = cons.readPassword("%s", "Enter passphrase for "+filePath+":");
-                passwd = String.valueOf(p);
-            }
-            return passwd;
-    }
-    
-    /**
-     * try all the default key locations
-     */
-    private static void addDefaultPrivateKeyLocations(List<KeyPair> keyFileCandidates) {
-        File home = new File(System.getProperty("user.home"));
-        for (String path : new String[]{".ssh/id_rsa",".ssh/id_dsa",".ssh/identity"}) {
-            File key = new File(home,path);
-            if (key.exists()) {
-                try {
-                    keyFileCandidates.add(loadKey(key));
-                } catch (IOException e) {
-                    // don't report an error. the user can still see it by using the -i option
-                    LOGGER.log(FINE, "Failed to load "+key,e);
-                } catch (GeneralSecurityException e) {
-                    LOGGER.log(FINE, "Failed to load " + key, e);
-                }
-            }
-        }
+        return loadKey(pemString, null);
     }
 
     /**
