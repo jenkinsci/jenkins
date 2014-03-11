@@ -33,11 +33,13 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
+import hudson.security.UserMayOrMayNotExistException;
 import hudson.util.FormApply;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.security.LastGrantedAuthoritiesProperty;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -255,14 +257,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         try {
             UserDetails u = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id);
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
+        } catch (UserMayOrMayNotExistException e) {
+            // backend can't load information about other users. so use the stored information if available
         } catch (UsernameNotFoundException e) {
-            // ignore
+            // if the user no longer exists in the backend, we need to refuse impersonating this user
+            throw e;
         } catch (DataAccessException e) {
-            // ignore
+            // seems like it's in the same boat as UserMayOrMayNotExistException
         }
-        // TODO: use the stored GrantedAuthorities
-        return new UsernamePasswordAuthenticationToken(id, "",
-            new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
+
+        LastGrantedAuthoritiesProperty p = getProperty(LastGrantedAuthoritiesProperty.class);
+        if (p!=null)
+            return new UsernamePasswordAuthenticationToken(id, "", p.getAuthorities());
+        else
+            return new UsernamePasswordAuthenticationToken(id, "",
+                new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
     }
 
     /**
