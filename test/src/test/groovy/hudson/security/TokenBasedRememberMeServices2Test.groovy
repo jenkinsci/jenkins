@@ -1,5 +1,6 @@
 package hudson.security
 
+import jenkins.model.Jenkins
 import org.acegisecurity.AuthenticationException
 import org.acegisecurity.BadCredentialsException
 import org.acegisecurity.GrantedAuthority
@@ -66,8 +67,8 @@ class TokenBasedRememberMeServices2Test {
     }
 
     @Test
-    public void bogusTokenWillNotClearItself()  {
-        j.jenkins.securityRealm = new BogusSecurityRealm()
+    public void rememberMeAutoLoginFailure()  {
+        j.jenkins.securityRealm = new InvalidUserWhenLoggingBackInRealm()
 
         def wc = j.createWebClient()
         wc.login("alice","alice",true)
@@ -96,7 +97,7 @@ class TokenBasedRememberMeServices2Test {
         wc.cookieManager.getCookie(TokenBasedRememberMeServices2.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY)
     }
 
-    private class BogusSecurityRealm extends AbstractPasswordBasedSecurityRealm {
+    private class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {
             if (username==password)
@@ -112,7 +113,44 @@ class TokenBasedRememberMeServices2Test {
         @Override
         UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
             failureInduced = true
-            throw new IllegalArgumentException("intentionally not working");
+            throw new UsernameNotFoundException("intentionally not working");
+        }
+    }
+
+
+    @Test
+    public void basicFlow()  {
+        j.jenkins.securityRealm = new StupidRealm()
+
+        def wc = j.createWebClient()
+        wc.login("bob","bob",true)
+
+        // we should see a remember me cookie
+        def c = getRememberMeCookie(wc)
+        assert c!=null
+
+        // start a new session and attempt to access Jenkins,
+        wc = j.createWebClient()
+        wc.cookieManager.addCookie(c);
+
+        // this will trigger remember me
+        wc.goTo("")
+
+        // make sure that our security realm failed to report the info correctly
+        assert failureInduced
+        // but we should have logged in
+        wc.executeOnServer {
+            def a = Jenkins.getAuthentication()
+            assert a.name=="bob"
+            assert a.authorities*.authority.join(":")=="authenticated:myteam"
+        }
+    }
+
+    private class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
+        @Override
+        UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+            failureInduced = true
+            throw new UserMayOrMayNotExistException("I cannot tell");
         }
     }
 }
