@@ -53,8 +53,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * <p>Should be kept in a {@code transient} field in the job.
  * @since TODO
  */
-@SuppressWarnings({"unchecked", "rawtypes"})
-public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob, RunT extends Run<JobT,RunT>> {
+@SuppressWarnings({"unchecked", "rawtypes"}) // BuildHistoryWidget, and AbstractItem.getParent
+public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyBuildMixIn.LazyLoadingRun<JobT,RunT>> {
 
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
@@ -270,8 +270,144 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     /**
      * Marker for a {@link Job} which uses this mixin.
      */
-    public interface LazyLoadingJob {
-        LazyBuildMixIn<?,?> getLazyBuildMixIn();
+    public interface LazyLoadingJob<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyLoadingRun<JobT,RunT>> {
+        LazyBuildMixIn<JobT,RunT> getLazyBuildMixIn();
+    }
+
+    public interface LazyLoadingRun<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyLoadingRun<JobT,RunT>> {
+        RunMixIn<JobT,RunT> getRunMixIn();
+    }
+
+    /**
+     * Accompanying helper for the run type.
+     * Stateful but should be held in a {@code transient} field.
+     */
+    public static abstract class RunMixIn<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyLoadingRun<JobT,RunT>> {
+
+        /**
+         * Pointers to form bi-directional link between adjacent runs using
+         * {@link LazyBuildMixIn}.
+         *
+         * <p>
+         * Some {@link Run}s do lazy-loading, so we don't use
+         * {@link #previousBuild} and {@link #nextBuild}, and instead use these
+         * fields and point to {@link #selfReference} (or {@link #none}) of
+         * adjacent builds.
+         */
+        private volatile BuildReference<RunT> previousBuildR, nextBuildR;
+
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        private static final BuildReference NONE = new BuildReference("NONE", null);
+
+        @SuppressWarnings("unchecked")
+        private BuildReference<RunT> none() {
+            return NONE;
+        }
+
+        private BuildReference<RunT> selfReference;
+
+        protected RunMixIn() {}
+
+        protected abstract RunT asRun();
+
+        /**
+         * To implement {@link Run#createReference}.
+         */
+        public final synchronized BuildReference<RunT> createReference() {
+            if (selfReference == null) {
+                selfReference = new BuildReference<RunT>(asRun().getId(), asRun());
+            }
+            return selfReference;
+        }
+
+        /**
+         * To implement {@link Run#dropLinks}.
+         */
+        public final void dropLinks() {
+            if (nextBuildR != null) {
+                RunT nb = nextBuildR.get();
+                if (nb != null) {
+                    nb.getRunMixIn().previousBuildR = previousBuildR;
+                }
+            }
+            if (previousBuildR != null) {
+                RunT pb = previousBuildR.get();
+                if (pb != null) {
+                    pb.getRunMixIn().nextBuildR = nextBuildR;
+                }
+            }
+        }
+
+        /**
+         * To implement {@link Run#getPreviousBuild}.
+         */
+        public final RunT getPreviousBuild() {
+            while (true) {
+                BuildReference<RunT> r = previousBuildR;    // capture the value once
+
+                if (r == null) {
+                    // having two neighbors pointing to each other is important to make RunMap.removeValue work
+                    JobT _parent = asRun().getParent();
+                    if (_parent == null) {
+                        throw new IllegalStateException("no parent for " + asRun().number);
+                    }
+                    RunT pb = _parent.getLazyBuildMixIn()._getRuns().search(asRun().number - 1, AbstractLazyLoadRunMap.Direction.DESC);
+                    if (pb != null) {
+                        pb.getRunMixIn().nextBuildR = createReference();   // establish bi-di link
+                        this.previousBuildR = pb.getRunMixIn().createReference();
+                        return pb;
+                    } else {
+                        this.previousBuildR = none();
+                        return null;
+                    }
+                }
+                if (r == none()) {
+                    return null;
+                }
+
+                RunT referent = r.get();
+                if (referent != null) {
+                    return referent;
+                }
+
+                // the reference points to a GC-ed object, drop the reference and do it again
+                this.previousBuildR = null;
+            }
+        }
+
+        /**
+         * To implement {@link Run#getNextBuild}.
+         */
+        public final RunT getNextBuild() {
+            while (true) {
+                BuildReference<RunT> r = nextBuildR;    // capture the value once
+
+                if (r == null) {
+                    // having two neighbors pointing to each other is important to make RunMap.removeValue work
+                    RunT nb = asRun().getParent().getLazyBuildMixIn()._getRuns().search(asRun().number + 1, AbstractLazyLoadRunMap.Direction.ASC);
+                    if (nb != null) {
+                        nb.getRunMixIn().previousBuildR = createReference();   // establish bi-di link
+                        this.nextBuildR = nb.getRunMixIn().createReference();
+                        return nb;
+                    } else {
+                        this.nextBuildR = none();
+                        return null;
+                    }
+                }
+                if (r == none()) {
+                    return null;
+                }
+
+                RunT referent = r.get();
+                if (referent != null) {
+                    return referent;
+                }
+
+                // the reference points to a GC-ed object, drop the reference and do it again
+                this.nextBuildR = null;
+            }
+        }
+
     }
 
     @Restricted(DoNotUse.class)

@@ -89,6 +89,8 @@ import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static java.util.logging.Level.WARNING;
+import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -98,7 +100,7 @@ import static java.util.logging.Level.WARNING;
  * @author Kohsuke Kawaguchi
  * @see AbstractProject
  */
-public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable {
+public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R> {
 
     /**
      * Set if we want the blame information to flow from upstream to downstream build.
@@ -154,6 +156,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     protected transient List<Environment> buildEnvironments;
 
+    private transient LazyBuildMixIn.RunMixIn<P,R> runMixIn;
+
     protected AbstractBuild(P job) throws IOException {
         super(job);
     }
@@ -170,15 +174,33 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent();
     }
 
-    // Just here so that we do not get e.g. NoSuchMethodError: hudson.maven.MavenModuleSetBuild.getNextBuild()Lhudson/model/AbstractBuild; from getModuleLastBuilds
+    @Override public final synchronized LazyBuildMixIn.RunMixIn<P,R> getRunMixIn() {
+        if (runMixIn == null) {
+            runMixIn = new LazyBuildMixIn.RunMixIn<P,R>() {
+                @Override protected R asRun() {
+                    return _this();
+                }
+            };
+        }
+        return runMixIn;
+    }
+
+    @Override protected final BuildReference<R> createReference() {
+        return getRunMixIn().createReference();
+    }
+
+    @Override protected final void dropLinks() {
+        getRunMixIn().dropLinks();
+    }
+
     @Override
     public R getPreviousBuild() {
-        return super.getPreviousBuild();
+        return getRunMixIn().getPreviousBuild();
     }
 
     @Override
     public R getNextBuild() {
-        return super.getNextBuild();
+        return getRunMixIn().getNextBuild();
     }
 
     /**

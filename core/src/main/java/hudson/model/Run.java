@@ -27,29 +27,32 @@
  */
 package hudson.model;
 
-import hudson.console.ConsoleLogFilter;
-import hudson.Functions;
+import com.jcraft.jzlib.GZIPInputStream;
+import com.thoughtworks.xstream.XStream;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
+import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
 import hudson.console.AnnotatedLargeText;
+import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.security.PermissionScope;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
@@ -57,15 +60,18 @@ import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
-
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
@@ -79,23 +85,31 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.logging.Level;
+import static java.util.logging.Level.*;
 import java.util.logging.Logger;
-import com.jcraft.jzlib.GZIPInputStream;
-
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-
+import jenkins.model.ArtifactManager;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.PeepholePermalink;
+import jenkins.model.RunAction2;
+import jenkins.model.StandardArtifactManager;
+import jenkins.model.lazy.BuildReference;
+import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -105,29 +119,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import com.thoughtworks.xstream.XStream;
-import hudson.model.Run.RunExecution;
-import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-
-import java.io.StringWriter;
-import static java.util.logging.Level.*;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import jenkins.model.ArtifactManager;
-import jenkins.model.ArtifactManagerConfiguration;
-import jenkins.model.ArtifactManagerFactory;
-import jenkins.model.PeepholePermalink;
-import jenkins.model.StandardArtifactManager;
-import jenkins.model.RunAction2;
-import jenkins.model.lazy.AbstractLazyLoadRunMap;
-import jenkins.model.lazy.BuildReference;
-import jenkins.model.lazy.LazyBuildMixIn;
-import jenkins.util.VirtualFile;
 
 /**
  * A particular execution of {@link Job}.
@@ -171,21 +163,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Restricted(NoExternalUse.class)
     protected volatile transient RunT nextBuild;
-
-    /**
-     * Pointers to form bi-directional link between adjacent runs using {@link LazyBuildMixIn}.
-     *
-     * <p>
-     * Some {@link Run}s do lazy-loading, so we don't use
-     * {@link #previousBuild} and {@link #nextBuild}, and instead use these
-     * fields and point to {@link #selfReference} (or {@link #none}) of adjacent builds.
-     */
-    private volatile transient BuildReference<RunT> previousBuildR, nextBuildR;
-
-    @SuppressWarnings({"unchecked", "rawtypes"}) private static final BuildReference NONE = new BuildReference("NONE", null);
-    @SuppressWarnings("unchecked") private BuildReference<RunT> none() {return NONE;}
-
-    /*package*/ final transient BuildReference<RunT> selfReference;
 
     /**
      * Pointer to the next younger build in progress. This data structure is lazily updated,
@@ -320,7 +297,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
 		getRootDir().mkdirs();
-        selfReference = new BuildReference<RunT>(getId(), _this());
     }
 
     /**
@@ -791,72 +767,33 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return number;
     }
 
-    final boolean isLazy() {
-        return getParent() instanceof LazyBuildMixIn.LazyLoadingJob;
+    /**
+     * Called by {@link RunMap} to obtain a reference to this run.
+     * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#createReference
+     * @since TODO
+     */
+    protected BuildReference<RunT> createReference() {
+        return new BuildReference<RunT>(getId(), _this());
     }
 
     /**
      * Called by {@link RunMap} to drop bi-directional links in preparation for
      * deleting a build.
+     * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#dropLinks
+     * @since TODO
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    /*package*/ final void dropLinks() {
+    protected void dropLinks() {
         if(nextBuild!=null)
             nextBuild.previousBuild = previousBuild;
         if(previousBuild!=null)
             previousBuild.nextBuild = nextBuild;
-        if (isLazy()) {
-            if (nextBuildR != null) {
-                Run nb = nextBuildR.get();
-                if (nb != null) {
-                    nb.previousBuildR = previousBuildR;
-                }
-            }
-            if (previousBuildR != null) {
-                Run pb = previousBuildR.get();
-                if (pb != null) {
-                    pb.nextBuildR = nextBuildR;
-                }
-            }
-        }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public /* ought to be final */ RunT getPreviousBuild() {
-        if (!isLazy()) {
-            return previousBuild;
-        }
-        while (true) {
-            BuildReference<RunT> r = previousBuildR;    // capture the value once
-
-            if (r == null) {
-                // having two neighbors pointing to each other is important to make RunMap.removeValue work
-                JobT _parent = getParent();
-                if (_parent == null) {
-                    throw new IllegalStateException("no parent for " + number);
-                }
-                Run pb = ((LazyBuildMixIn.LazyLoadingJob) _parent).getLazyBuildMixIn()._getRuns().search(number - 1, AbstractLazyLoadRunMap.Direction.DESC);
-                if (pb != null) {
-                    pb.nextBuildR = selfReference;   // establish bi-di link
-                    this.previousBuildR = pb.selfReference;
-                    return (RunT) pb;
-                } else {
-                    this.previousBuildR = none();
-                    return null;
-                }
-            }
-            if (r == none()) {
-                return null;
-            }
-
-            RunT referent = r.get();
-            if (referent != null) {
-                return referent;
-            }
-
-            // the reference points to a GC-ed object, drop the reference and do it again
-            this.previousBuildR = null;
-        }
+    /**
+     * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#getPreviousBuild
+     */
+    public RunT getPreviousBuild() {
+        return previousBuild;
     }
 
     /**
@@ -977,38 +914,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return builds;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public /* ought to be final */ RunT getNextBuild() {
-        if (!isLazy()) {
-            return nextBuild;
-        }
-        while (true) {
-            BuildReference<RunT> r = nextBuildR;    // capture the value once
-
-            if (r == null) {
-                // having two neighbors pointing to each other is important to make RunMap.removeValue work
-                Run nb = ((LazyBuildMixIn.LazyLoadingJob) getParent()).getLazyBuildMixIn()._getRuns().search(number + 1, AbstractLazyLoadRunMap.Direction.ASC);
-                if (nb != null) {
-                    nb.previousBuildR = selfReference;   // establish bi-di link
-                    this.nextBuildR = nb.selfReference;
-                    return (RunT) nb;
-                } else {
-                    this.nextBuildR = none();
-                    return null;
-                }
-            }
-            if (r == none()) {
-                return null;
-            }
-
-            RunT referent = r.get();
-            if (referent != null) {
-                return referent;
-            }
-
-            // the reference points to a GC-ed object, drop the reference and do it again
-            this.nextBuildR = null;
-        }
+    /**
+     * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#getNextBuild
+     */
+    public RunT getNextBuild() {
+        return nextBuild;
     }
 
     /**

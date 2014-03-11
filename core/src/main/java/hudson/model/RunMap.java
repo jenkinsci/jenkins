@@ -182,8 +182,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      */
     @Override
     protected BuildReference<R> createReference(R r) {
-        if (r.isLazy())                     return r.selfReference;
-        else                                return super.createReference(r);
+        return r.createReference();
     }
 
     @Override
