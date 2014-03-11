@@ -28,8 +28,6 @@ import org.acegisecurity.ui.AuthenticationEntryPoint;
 import org.acegisecurity.ui.savedrequest.SavedRequest;
 import org.acegisecurity.util.PortResolver;
 import org.acegisecurity.util.PortResolverImpl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -42,6 +40,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Handles any <code>AccessDeniedException</code> and <code>AuthenticationException</code> thrown within the
@@ -85,7 +85,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
     //~ Static fields/initializers =====================================================================================
 
-	private static final Log logger = LogFactory.getLog(ExceptionTranslationFilter.class);
+	private static final Logger LOGGER = Logger.getLogger(ExceptionTranslationFilter.class.getName());
 
 	//~ Instance fields ================================================================================================
 
@@ -116,9 +116,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		try {
 			chain.doFilter(request, response);
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Chain processed normally");
-			}
+			LOGGER.finer("Chain processed normally");
 		}
 		catch (AuthenticationException ex) {
 			handleException(request, response, chain, ex);
@@ -155,27 +153,21 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 	private void handleException(ServletRequest request, ServletResponse response, FilterChain chain,
 			AcegiSecurityException exception) throws IOException, ServletException {
 		if (exception instanceof AuthenticationException) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Authentication exception occurred; redirecting to authentication entry point", exception);
-			}
+			LOGGER.log(Level.FINER, "Authentication exception occurred; redirecting to authentication entry point", exception);
 
 			sendStartAuthentication(request, response, chain, (AuthenticationException) exception);
 		}
 		else if (exception instanceof AccessDeniedException) {
 			if (authenticationTrustResolver.isAnonymous(SecurityContextHolder.getContext().getAuthentication())) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Access is denied (user is anonymous); redirecting to authentication entry point",
-							exception);
-				}
+					LOGGER.log(Level.FINER, "Access is denied (user is anonymous); redirecting to authentication entry point",
+						exception);
 
 				sendStartAuthentication(request, response, chain, new InsufficientAuthenticationException(
 						"Full authentication is required to access this resource",exception));
 			}
 			else {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Access is denied (user is not anonymous); delegating to AccessDeniedHandler",
-							exception);
-				}
+				LOGGER.log(Level.FINER, "Access is denied (user is not anonymous); delegating to AccessDeniedHandler",
+						exception);
 
 				accessDeniedHandler.handle(request, response, (AccessDeniedException) exception);
 			}
@@ -205,9 +197,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
 		SavedRequest savedRequest = new SavedRequest(httpRequest, portResolver);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Authentication entry point being called; SavedRequest added to Session: " + savedRequest);
-		}
+		LOGGER.finer("Authentication entry point being called; SavedRequest added to Session: " + savedRequest);
 
 		if (createSessionAllowed) {
 			// Store the HTTP request itself. Used by AbstractProcessingFilter

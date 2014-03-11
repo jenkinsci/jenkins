@@ -684,13 +684,31 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             String n =  en.nextElement();
             if(n.startsWith("plugin.")) {
                 n = n.substring(7);
-                if (n.indexOf(".") > 0) {
-                    String[] pluginInfo = n.split("\\.");
-                    UpdateSite.Plugin p = Jenkins.getInstance().getUpdateCenter().getById(pluginInfo[1]).getPlugin(pluginInfo[0]);
-                    if(p==null)
-                        throw new Failure("No such plugin: "+n);
-                    p.deploy(dynamicLoad);
+                // JENKINS-22080 plugin names can contain '.' as could (according to rumour) update sites
+                int index = n.indexOf('.');
+                UpdateSite.Plugin p = null;
+                while (index != -1) {
+                    if (index + 1 >= n.length()) {
+                        break;
+                    }
+                    String pluginName = n.substring(0, index);
+                    String siteName = n.substring(index + 1);
+                    UpdateSite updateSite = Jenkins.getInstance().getUpdateCenter().getById(siteName);
+                    if (siteName != null) {
+                        UpdateSite.Plugin plugin = updateSite.getPlugin(pluginName);
+                        if (plugin != null) {
+                            if (p != null) {
+                                throw new Failure("Ambiguous plugin: " + n);
+                            }
+                            p = plugin;
+                        }
+                    }
+                    index = n.indexOf('.', index + 1);
                 }
+                if (p == null) {
+                    throw new Failure("No such plugin: " + n);
+                }
+                p.deploy(dynamicLoad);
             }
         }
         rsp.sendRedirect("../updateCenter/");
