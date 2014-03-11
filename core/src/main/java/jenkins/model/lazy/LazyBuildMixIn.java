@@ -54,12 +54,12 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * @since TODO
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuildMixIn.LazyLoadingJob, R extends Run<P,R>> {
+public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob, RunT extends Run<JobT,RunT>> {
 
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
     @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    private @Nonnull RunMap<R> builds = new RunMap<R>();
+    private @Nonnull RunMap<RunT> builds = new RunMap<RunT>();
 
     // keep track of the previous time we started a build
     private long lastBuildStartTime;
@@ -70,21 +70,21 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
      */
     protected LazyBuildMixIn() {}
 
-    protected abstract P asJob();
+    protected abstract JobT asJob();
 
     /**
      * Gets the raw model.
      * Normally should not be called as such.
      * Note that the initial value is replaced during {@link #onCreatedFromScratch} or {@link #onLoad}.
      */
-    public final @Nonnull RunMap<R> getRunMap() {
+    public final @Nonnull RunMap<RunT> getRunMap() {
         return builds;
     }
 
     /**
      * Same as {@link #getRunMap} but suitable for {@link Job#_getRuns}.
      */
-    public final RunMap<R> _getRuns() {
+    public final RunMap<RunT> _getRuns() {
         assert builds.baseDirInitialized() : "neither onCreatedFromScratch nor onLoad called on " + asJob() + " yet";
         return builds;
     }
@@ -101,8 +101,8 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
      */
     @SuppressWarnings("unchecked")
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
-        RunMap<R> _builds = createBuildRunMap();
-        RunMap<R> currentBuilds = this.builds;
+        RunMap<RunT> _builds = createBuildRunMap();
+        RunMap<RunT> currentBuilds = this.builds;
         if (parent != null) {
             // are we overwriting what currently exist?
             // this is primarily when Jenkins is getting reloaded
@@ -114,12 +114,12 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
                 current = null;
             }
             if (current != null && current.getClass() == asJob().getClass()) {
-                currentBuilds = (RunMap<R>) ((LazyLoadingJob) current).getLazyBuildMixIn().builds;
+                currentBuilds = (RunMap<RunT>) ((LazyLoadingJob) current).getLazyBuildMixIn().builds;
             }
         }
         if (currentBuilds != null) {
             // if we are reloading, keep all those that are still building intact
-            for (R r : currentBuilds.getLoadedBuilds().values()) {
+            for (RunT r : currentBuilds.getLoadedBuilds().values()) {
                 if (r.isBuilding()) {
                     _builds.put(r);
                 }
@@ -128,9 +128,9 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
         this.builds = _builds;
     }
 
-    private RunMap<R> createBuildRunMap() {
-        return new RunMap<R>(asJob().getBuildDir(), new RunMap.Constructor<R>() {
-            @Override public R create(File dir) throws IOException {
+    private RunMap<RunT> createBuildRunMap() {
+        return new RunMap<RunT>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
+            @Override public RunT create(File dir) throws IOException {
                 return loadBuild(dir);
             }
         });
@@ -142,13 +142,13 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
      * one taking the project type ({@code P});
      * and one taking {@code P}, then {@link File}.
      */
-    protected abstract Class<R> getBuildClass();
+    protected abstract Class<RunT> getBuildClass();
 
     /**
      * Loads an existing build record from disk.
      * The default implementation just calls the ({@link Job}, {@link File}) constructor of {@link #getBuildClass}.
      */
-    public R loadBuild(File dir) throws IOException {
+    public RunT loadBuild(File dir) throws IOException {
         try {
             return getBuildClass().getConstructor(asJob().getClass(), File.class).newInstance(asJob(), dir);
         } catch (InstantiationException e) {
@@ -169,7 +169,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
      */
     @SuppressWarnings("SleepWhileHoldingLock")
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("SWL_SLEEP_WITH_LOCK_HELD")
-    public final synchronized R newBuild() throws IOException {
+    public final synchronized RunT newBuild() throws IOException {
     	// make sure we don't start two builds in the same second
     	// so the build directories will be different too
     	long timeSinceLast = System.currentTimeMillis() - lastBuildStartTime;
@@ -181,7 +181,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
     	}
     	lastBuildStartTime = System.currentTimeMillis();
         try {
-            R lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
+            RunT lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
             builds.put(lastBuild);
             return lastBuild;
         } catch (InstantiationException e) {
@@ -212,7 +212,7 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
     /**
      * Suitable for {@link Job#removeRun}.
      */
-    public final void removeRun(R run) {
+    public final void removeRun(RunT run) {
         if (!builds.remove(run)) {
             LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {asJob(), run});
         }
@@ -221,42 +221,42 @@ public abstract class LazyBuildMixIn<P extends Job<P,R> & Queue.Task & LazyBuild
     /**
      * Suitable for {@link Job#getBuild}.
      */
-    public final R getBuild(String id) {
+    public final RunT getBuild(String id) {
         return builds.getById(id);
     }
 
     /**
      * Suitable for {@link Job#getBuildByNumber}.
      */
-    public final R getBuildByNumber(int n) {
+    public final RunT getBuildByNumber(int n) {
         return builds.getByNumber(n);
     }
 
     /**
      * Suitable for {@link Job#getFirstBuild}.
      */
-    public final R getFirstBuild() {
+    public final RunT getFirstBuild() {
         return builds.oldestBuild();
     }
 
     /**
      * Suitable for {@link Job#getLastBuild}.
      */
-    public final @CheckForNull R getLastBuild() {
+    public final @CheckForNull RunT getLastBuild() {
         return builds.newestBuild();
     }
 
     /**
      * Suitable for {@link Job#getNearestBuild}.
      */
-    public final R getNearestBuild(int n) {
+    public final RunT getNearestBuild(int n) {
         return builds.search(n, AbstractLazyLoadRunMap.Direction.ASC);
     }
 
     /**
      * Suitable for {@link Job#getNearestOldBuild}.
      */
-    public final R getNearestOldBuild(int n) {
+    public final RunT getNearestOldBuild(int n) {
         return builds.search(n, AbstractLazyLoadRunMap.Direction.DESC);
     }
 
