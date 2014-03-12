@@ -50,7 +50,7 @@ public class UserAvatarResolverTest extends HudsonTestCase {
         assertTrue(avatar.endsWith("/images/20x20/user.png"));
     }
 
-    @Deprecated
+    @SuppressWarnings("deprecation")
     public void testIconSizeRegex() {
         Matcher matcher = UserAvatarResolver.iconSizeRegex.matcher("12x15");
         assertTrue(matcher.matches());
