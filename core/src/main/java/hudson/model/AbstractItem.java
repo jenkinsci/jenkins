@@ -586,6 +586,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
 
             // try to reflect the changes by reloading
+            doReload();
             new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
             Items.whileUpdatingByXml(new Callable<Void,IOException>() {
                 @Override public Void call() throws IOException {
@@ -601,6 +602,34 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         } finally {
             out.abort(); // don't leave anything behind
         }
+    }
+
+    /**
+     * Reloads this job from the disk.
+     *
+     * Exposed through CLI as well.
+     *
+     * TODO: think about exposing this to UI
+     *
+     * @since 1.556
+     */
+    @CLIMethod(name="reload-job")
+    @RequirePOST
+    public void doReload() throws IOException {
+        checkPermission(CONFIGURE);
+
+        // try to reflect the changes by reloading
+        getConfigFile().unmarshal(this);
+        Items.whileUpdatingByXml(new Callable<Void, IOException>() {
+            @Override
+            public Void call() throws IOException {
+                onLoad(getParent(), getRootDir().getName());
+                return null;
+            }
+        });
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
+
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 
