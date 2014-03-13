@@ -492,14 +492,14 @@ public class ProjectTest {
     
     @Test
     public void testDoCancelQueue() throws Exception{
-        User user = User.get("John Smith", true, Collections.emptyMap());
         FreeStyleProject project = j.createFreeStyleProject("project");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
+        User user = realm.createAccount("John Smith", "password");
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         try{
             project.doCancelQueue(null, null);
             fail("User should not have permission to build project");

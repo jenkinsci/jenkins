@@ -209,8 +209,7 @@ public class NodeTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = User.get("John Smith");
-
+        User user = realm.createAccount("John Smith","abcdef");
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         assertFalse("Current user should not have permission read.", node.hasPermission(Permission.READ));
         auth.add(Computer.CONFIGURE, user.getId());

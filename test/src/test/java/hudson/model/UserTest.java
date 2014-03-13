@@ -404,8 +404,8 @@ public class UserTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = User.get("John Smith");
-        User user2 = User.get("John Smith2");
+        User user = realm.createAccount("John Smith","password");
+        User user2 = realm.createAccount("John Smith2","password");
         user2.save();
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         assertFalse("User should not be able delete because he does not have administer permission.", user2.canDelete());
