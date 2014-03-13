@@ -28,6 +28,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import hudson.Functions;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
@@ -99,6 +100,16 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 							+ "'");
 		}
 	}
+
+    @Override
+    public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            return super.autoLogin(request, response);
+        } catch (Exception e) {
+            cancelCookie(request, response, "Failed to handle remember-me cookie: "+Functions.printThrowable(e));
+            return null;
+        }
+    }
 
     /**
      * Used to compute the token signature securely.
