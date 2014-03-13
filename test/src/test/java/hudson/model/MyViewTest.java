@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -42,6 +43,11 @@ public class MyViewTest {
     
     @Rule
     public JenkinsRule rule = new JenkinsRule();
+
+    @Before
+    public void setup() {
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
+    }
     
     @Test
     public void testContains() throws IOException, Exception{
