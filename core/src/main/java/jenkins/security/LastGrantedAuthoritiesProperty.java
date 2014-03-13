@@ -4,6 +4,7 @@ import hudson.Extension;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
+import hudson.model.UserPropertyDescriptor;
 import hudson.security.SecurityRealm;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -140,6 +141,22 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
 
         @Override
         protected void loggedOut(@Nonnull String username) {
+        }
+    }
+
+    @Extension
+    public static final class DescriptorImpl extends UserPropertyDescriptor {
+        public String getDisplayName() {
+            return null;    // not visible
+        }
+
+        @Override
+        public LastGrantedAuthoritiesProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return new LastGrantedAuthoritiesProperty();
+        }
+
+        public UserProperty newInstance(User user) {
+            return null;
         }
     }
 

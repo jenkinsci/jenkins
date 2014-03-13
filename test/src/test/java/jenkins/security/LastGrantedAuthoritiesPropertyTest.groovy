@@ -37,6 +37,14 @@ class LastGrantedAuthoritiesPropertyTest {
         assertAuthorities(p,"authenticated:alice:development:us")
         assertAuthorities(u.impersonate(),"authenticated:alice:development:us")
 
+        // visiting the configuration page shouldn't change authorities
+        def pg = wc.goTo("user/alice/configure");
+        j.submit(pg.getFormByName("config"));
+
+        p = u.getProperty(LastGrantedAuthoritiesProperty.class)
+        assertAuthorities(p,"authenticated:alice:development:us")
+        assertAuthorities(u.impersonate(),"authenticated:alice:development:us")
+
         // change should be reflected right away
         wc.login("alice","alice:development:uk")
         p = u.getProperty(LastGrantedAuthoritiesProperty.class)
