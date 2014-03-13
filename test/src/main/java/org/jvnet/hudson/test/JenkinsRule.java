@@ -27,6 +27,7 @@ package org.jvnet.hudson.test;
 import com.gargoylesoftware.htmlunit.AjaxController;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
@@ -1819,7 +1820,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             HtmlForm form = page.getFormByName("login");
             form.getInputByName("j_username").setValueAttribute(username);
             form.getInputByName("j_password").setValueAttribute(password);
-            form.getInputByName("remember_me").setChecked(rememberMe);
+            try {
+                form.getInputByName("remember_me").setChecked(rememberMe);
+            } catch (ElementNotFoundException e) {
+                // remember me not available is OK so long as the caller didn't ask for it
+                assert !rememberMe;
+            }
             form.submit(null);
             return this;
         }
