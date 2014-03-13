@@ -88,7 +88,7 @@ class TokenBasedRememberMeServices2Test {
 
         // make sure that the server recorded this failure
         assert failureInduced
-        assert logs.find { it.message.contains("intentionally not working")}!=null
+        assert logs.find { it.message.contains("contained username 'alice' but was not found")}!=null
         // and the problematic cookie should have been removed
         assert getRememberMeCookie(wc)==null
     }
