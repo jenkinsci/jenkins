@@ -420,7 +420,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * returns an intermediate result.
      * @return The status of the build, if it has completed or some build step has set a status; may be null if the build is ongoing.
      */
-    @Exported(visibility=2)
+    @Exported
     public @CheckForNull Result getResult() {
         return result;
     }
@@ -587,7 +587,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * @see #getStartTimeInMillis()
      */
-    @Exported(visibility=2)
+    @Exported
     public Calendar getTimestamp() {
         GregorianCalendar c = new GregorianCalendar();
         c.setTimeInMillis(timestamp);
@@ -747,11 +747,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @Exported
     public String getFullDisplayName() {
         return project.getFullDisplayName()+' '+getDisplayName();
-    }
-
-    @Exported(visibility = 2)
-    public String getProjectName() {
-        return project.getFullDisplayName();
     }
 
     public String getDisplayName() {
