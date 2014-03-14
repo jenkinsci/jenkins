@@ -408,19 +408,19 @@ public class UserTest {
         User user = realm.createAccount("John Smith","password");
         User user2 = realm.createAccount("John Smith2","password");
         user2.save();
-        User user3 = User.get("Random Somebody");
 
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
-        assertFalse("User should not be able delete because he does not have administer permission.", user2.canDelete());
+        assertFalse("Ordinary user cannot delete somebody else", user2.canDelete());
         auth.add(Jenkins.ADMINISTER, user.getId());
-        assertTrue("User should be able to delete.", user2.canDelete());
-        assertFalse("User should not be able to delete because it is current user.", user.canDelete());
+        assertTrue("Administrator can delete anybody else", user2.canDelete());
+        assertFalse("User (even admin) cannot delete himself", user.canDelete());
 
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
         auth.add(Jenkins.ADMINISTER, user2.getId());
-        assertFalse("User should not be able to delete because he is not saved.", user3.canDelete());
+        User user3 = User.get("Random Somebody");
+        assertFalse("Storage-less temporary user cannot be deleted", user3.canDelete());
         user3.save();
-        assertTrue("User should be able to delete.", user3.canDelete());
+        assertTrue("But once storage is allocated, he can be deleted", user3.canDelete());
     }
 
     @Test
