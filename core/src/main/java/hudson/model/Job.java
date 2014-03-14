@@ -98,6 +98,7 @@ import java.util.*;
 import java.util.List;
 
 import static javax.servlet.http.HttpServletResponse.*;
+import jenkins.model.lazy.LazyBuildMixIn;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -570,11 +571,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return r;
     }
 
+    /**
+     * @see LazyBuildMixIn#createHistoryWidget
+     */
     protected HistoryWidget createHistoryWidget() {
         return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
     }
 
-    protected static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<Run>() {
+    public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<Run>() {
         public int compare(Run record, String key) {
             try {
                 int k = Integer.parseInt(key);
@@ -674,6 +678,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * @deprecated since 2008-06-15.
      *     This is only used to support backward compatibility with old URLs.
+     * @see LazyBuildMixIn#getBuild
      */
     @Deprecated
     public RunT getBuild(String id) {
@@ -689,6 +694,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *            The build number.
      * @return null if no such build exists.
      * @see Run#getNumber()
+     * @see LazyBuildMixIn#getBuildByNumber
      */
     public RunT getBuildByNumber(int n) {
         return _getRuns().get(n);
@@ -724,6 +730,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
+     * @see LazyBuildMixIn#getNearestBuild
      */
     public RunT getNearestBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().headMap(n - 1); // the map should
@@ -738,6 +745,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
+     * @see LazyBuildMixIn#getNearestOldBuild
      */
     public RunT getNearestOldBuild(int n) {
         SortedMap<Integer, ? extends RunT> m = _getRuns().tailMap(n);
@@ -787,6 +795,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * The resulting map must be treated immutable (by employing copy-on-write
      * semantics.) The map is descending order, with newest builds at the top.
+     * @see LazyBuildMixIn#_getRuns
      */
     protected abstract SortedMap<Integer, ? extends RunT> _getRuns();
 
@@ -795,11 +804,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * The files are deleted already. So all the callee needs to do is to remove
      * a reference from this {@link Job}.
+     * @see LazyBuildMixIn#removeRun
      */
     protected abstract void removeRun(RunT run);
 
     /**
      * Returns the last build.
+     * @see LazyBuildMixIn#getLastBuild
      */
     @Exported
     @QuickSilver
@@ -813,6 +824,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Returns the oldest build in the record.
+     * @see LazyBuildMixIn#getFirstBuild
      */
     @Exported
     @QuickSilver
