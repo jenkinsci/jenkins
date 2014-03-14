@@ -175,6 +175,7 @@ public class UserTest {
 
     @Test
     public void testImpersonateAndCurrent() {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.get("John Smith"); 
         assertNotSame("User John Smith should not be the current user.", User.current().getId(), user.getId());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
@@ -379,14 +380,14 @@ public class UserTest {
     }
 
     @Test
-    public void testHasPermission() {
+    public void testHasPermission() throws IOException {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = User.get("John Smith");
-        User user2 = User.get("John Smith2");
+        User user = realm.createAccount("John Smith","password");
+        User user2 = realm.createAccount("John Smith2", "password");
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         assertFalse("Current user should not have permission read.", user2.hasPermission(Permission.READ));
         assertTrue("Current user should always have permission read to himself.", user.hasPermission(Permission.READ));
