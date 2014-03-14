@@ -51,7 +51,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * Provides method implementations for some abstract {@link Job} methods,
  * as well as some methods which are not abstract but which you should override.
  * <p>Should be kept in a {@code transient} field in the job.
- * @since TODO
+ * @since 1.556
  */
 @SuppressWarnings({"unchecked", "rawtypes"}) // BuildHistoryWidget, and AbstractItem.getParent
 public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyBuildMixIn.LazyLoadingRun<JobT,RunT>> {

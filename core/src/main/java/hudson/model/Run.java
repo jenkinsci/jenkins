@@ -770,7 +770,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Called by {@link RunMap} to obtain a reference to this run.
      * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#createReference
-     * @since TODO
+     * @since 1.556
      */
     protected BuildReference<RunT> createReference() {
         return new BuildReference<RunT>(getId(), _this());
@@ -780,7 +780,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Called by {@link RunMap} to drop bi-directional links in preparation for
      * deleting a build.
      * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#dropLinks
-     * @since TODO
+     * @since 1.556
      */
     protected void dropLinks() {
         if(nextBuild!=null)

@@ -65,7 +65,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 /**
  * Allows a {@link Job} to make use of {@link ParametersDefinitionProperty} and be scheduled in various ways.
  * Stateless so there is no need to keep an instance of it in a field.
- * @since TODO
+ * @since 1.556
  */
 @SuppressWarnings("unchecked") // AbstractItem.getParent does not correctly override; scheduleBuild2 inherently untypable
 public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & ParameterizedJobMixIn.ParameterizedJob & Queue.Task, RunT extends Run<JobT, RunT> & Queue.Executable> {
