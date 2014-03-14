@@ -23,10 +23,6 @@
  */
 package hudson.model;
 
-import jenkins.model.lazy.AbstractLazyLoadRunMap;
-import jenkins.model.lazy.BuildReference;
-import org.apache.commons.collections.comparators.ReverseComparator;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -39,10 +35,13 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static java.util.logging.Level.*;
+import java.util.logging.Logger;
+import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
+import jenkins.model.lazy.BuildReference;
+import org.apache.commons.collections.comparators.ReverseComparator;
 
 /**
  * {@link Map} from build number to {@link Run}.
@@ -54,8 +53,6 @@ import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
  *
  * @author Kohsuke Kawaguchi
  */
-// in practice R is always bound by AbstractBuild, but making that change causes all kinds of
-// signature breakage.
 public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> implements Iterable<R> {
     /**
      * Read-only view of this map.
@@ -185,8 +182,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      */
     @Override
     protected BuildReference<R> createReference(R r) {
-        if (r instanceof AbstractBuild)     return ((AbstractBuild)r).selfReference;
-        else                                return super.createReference(r);
+        return r.createReference();
     }
 
     @Override

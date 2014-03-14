@@ -29,7 +29,7 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}">
     <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread" />
     <j:invoke var="buildClass" on="${currentThread.contextClassLoader}" method="loadClass">
-      <j:arg value="hudson.model.AbstractBuild" />
+      <j:arg value="hudson.model.Run"/>
     </j:invoke>
     <j:set var="build" value="${request.findAncestorObject(buildClass)}" />
 		<st:include page="sidepanel.jelly" it="${build}" />
