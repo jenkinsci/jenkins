@@ -560,7 +560,10 @@ public class QueueTest extends HudsonTestCase {
     
     public void testCancelInQueue() throws Exception
     {
-        DumbSlave slave = createSlave();
+        // parepare an offline slave.
+        DumbSlave slave = createOnlineSlave();
+        assertFalse(slave.toComputer().isOffline());
+        slave.toComputer().disconnect(null).get();
         assertTrue(slave.toComputer().isOffline());
         
         FreeStyleProject p = createFreeStyleProject();
