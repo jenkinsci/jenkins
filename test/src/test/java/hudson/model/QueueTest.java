@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -554,6 +555,33 @@ public class QueueTest extends HudsonTestCase {
         List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
         for(Queue.BuildableItem item : items){
             assertFalse("Project " + project2.getDisplayName() + " stuck in pendings",item.task.getName().equals(project2.getName())); 
+        }
+    }
+    
+    public void testCancelInQueue() throws Exception
+    {
+        DumbSlave slave = createSlave();
+        assertTrue(slave.toComputer().isOffline());
+        
+        FreeStyleProject p = createFreeStyleProject();
+        p.setAssignedNode(slave);
+        
+        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
+        try {
+            f.get(3, TimeUnit.SECONDS);
+            fail("Should time out (as the slave is offline).");
+        } catch (TimeoutException e) {
+        }
+        
+        Queue.Item item = Queue.getInstance().getItem(p);
+        assertNotNull(item);
+        Queue.getInstance().doCancelItem(item.id);
+        assertNull(Queue.getInstance().getItem(p));
+        
+        try {
+            f.get(10, TimeUnit.SECONDS);
+            fail("Should not get (as it is cancelled).");
+        } catch (CancellationException e) {
         }
     }
 }
