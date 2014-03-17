@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 import java.util.TreeSet;
-import jenkins.security.DownloadSettings;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -41,13 +40,13 @@ public class DownloadServiceTest extends HudsonTestCase {
         assertNull(job.getData());
 
         // and now it should work
-        DownloadSettings.get().setCheckSignature(false);
+        DownloadService.signatureCheck = false;
         try {
             createWebClient().goTo("/self/testPost");
             JSONObject d = job.getData();
             assertEquals(hashCode(),d.getInt("hello"));
         } finally {
-            DownloadSettings.get().setCheckSignature(true);
+            DownloadService.signatureCheck = true;
         }
 
         // TODO: test with a signature

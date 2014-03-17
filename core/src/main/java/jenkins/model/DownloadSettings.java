@@ -22,24 +22,19 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package jenkins.model;
 
 import hudson.Extension;
-import hudson.PluginManager;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
 import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
 import java.io.IOException;
-import jenkins.model.GlobalConfiguration;
-import jenkins.model.GlobalConfigurationCategory;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -55,15 +50,9 @@ import org.kohsuke.stapler.StaplerRequest;
     }
 
     private boolean useBrowser = true; // historical default, not necessarily recommended
-    @SuppressWarnings("deprecation")
-    private boolean checkSignature = DownloadService.signatureCheck;
     
     public DownloadSettings() {
         load();
-    }
-
-    @Override public GlobalConfigurationCategory getCategory() {
-        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
     @Override public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
@@ -78,30 +67,6 @@ import org.kohsuke.stapler.StaplerRequest;
     public void setUseBrowser(boolean useBrowser) {
         this.useBrowser = useBrowser;
         save();
-    }
-
-    public boolean isCheckSignature() {
-        return checkSignature;
-    }
-    
-    public void setCheckSignature(boolean checkSignature) {
-        if (!checkSignature) {
-            // Just to be on the safe side. Normally this is implied by ADMINISTER, needed to configure the security screen anyway,
-            // but in case ADMINISTER but not CONFIGURE_UPDATECENTER is somehow granted, make sure signature checking cannot be disabled.
-            Jenkins.getInstance().checkPermission(PluginManager.CONFIGURE_UPDATECENTER);
-        }
-        this.checkSignature = checkSignature;
-        save();
-    }
-
-    public FormValidation doCheckCheckSignature(@QueryParameter boolean value, @QueryParameter boolean useBrowser) {
-        if (value) {
-            return FormValidation.ok();
-        } else if (useBrowser) {
-            return FormValidation.warningWithMarkup(Messages.DownloadSettings_disabling_signature_checks_for_in_browse());
-        } else {
-            return FormValidation.warningWithMarkup(Messages.DownloadSettings_disabling_signature_checks_is_not_recomm());
-        }
     }
 
     @Extension public static final class DailyCheck extends AsyncPeriodicWork {
