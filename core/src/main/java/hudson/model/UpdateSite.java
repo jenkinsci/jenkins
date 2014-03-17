@@ -58,7 +58,7 @@ import org.apache.commons.io.IOUtils;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
-import jenkins.security.DownloadSettings;
+import jenkins.model.DownloadSettings;
 import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;

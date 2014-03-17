@@ -111,7 +111,6 @@ import static hudson.init.InitMilestone.*;
 import hudson.model.DownloadService;
 import hudson.util.FormValidation;
 import static java.util.logging.Level.WARNING;
-import jenkins.security.DownloadSettings;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -801,7 +800,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
         for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
-            FormValidation v = site.updateDirectlyNow(DownloadSettings.get().isCheckSignature());
+            FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
             if (v.kind != FormValidation.Kind.OK) {
                 // TODO crude but enough for now
                 return v;
