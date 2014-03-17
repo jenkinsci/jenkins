@@ -37,7 +37,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.logging.Logger;
-import jenkins.security.DownloadSettings;
+import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
@@ -302,7 +302,7 @@ public class DownloadService extends PageDecorator {
         private FormValidation load(String json, long dataTimestamp) throws IOException {
             JSONObject o = JSONObject.fromObject(json);
 
-            if (DownloadSettings.get().isCheckSignature()) {
+            if (signatureCheck) {
                 FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
                 if (e.kind!= Kind.OK) {
                     return e;
@@ -346,7 +346,12 @@ public class DownloadService extends PageDecorator {
 
     public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
 
-    /** Now used only to set default value of, and enable UI switching of, {@link DownloadSettings#setIgnoreSignature}. */
+    /**
+     * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
+     * Useful when upstream signatures are broken, such as due to expired certificates.
+     * Should only be used when {@link DownloadSettings#isUseBrowser};
+     * disabling signature checks for in-browser downloads is <em>very dangerous</em> as unprivileged users could submit spoofed metadata!
+     */
     public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 
