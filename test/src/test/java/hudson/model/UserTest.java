@@ -175,6 +175,7 @@ public class UserTest {
 
     @Test
     public void testImpersonateAndCurrent() {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.get("John Smith"); 
         assertNotSame("User John Smith should not be the current user.", User.current().getId(), user.getId());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
@@ -379,14 +380,14 @@ public class UserTest {
     }
 
     @Test
-    public void testHasPermission() {
+    public void testHasPermission() throws IOException {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = User.get("John Smith");
-        User user2 = User.get("John Smith2");
+        User user = realm.createAccount("John Smith","password");
+        User user2 = realm.createAccount("John Smith2", "password");
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         assertFalse("Current user should not have permission read.", user2.hasPermission(Permission.READ));
         assertTrue("Current user should always have permission read to himself.", user.hasPermission(Permission.READ));
@@ -404,19 +405,22 @@ public class UserTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = User.get("John Smith");
-        User user2 = User.get("John Smith2");
+        User user = realm.createAccount("John Smith","password");
+        User user2 = realm.createAccount("John Smith2","password");
         user2.save();
+
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
-        assertFalse("User should not be able delete because he does not have administer permission.", user2.canDelete());
+        assertFalse("Ordinary user cannot delete somebody else", user2.canDelete());
         auth.add(Jenkins.ADMINISTER, user.getId());
-        assertTrue("User should be able to delete.", user2.canDelete());
-        assertFalse("User should not be able to delete because it is current user.", user.canDelete());
+        assertTrue("Administrator can delete anybody else", user2.canDelete());
+        assertFalse("User (even admin) cannot delete himself", user.canDelete());
+
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
         auth.add(Jenkins.ADMINISTER, user2.getId());
-        assertFalse("User should not be able to delete because he is not saved.", user.canDelete());
-        user.save();
-        assertTrue("User should be able to delete.", user.canDelete());
+        User user3 = User.get("Random Somebody");
+        assertFalse("Storage-less temporary user cannot be deleted", user3.canDelete());
+        user3.save();
+        assertTrue("But once storage is allocated, he can be deleted", user3.canDelete());
     }
 
     @Test

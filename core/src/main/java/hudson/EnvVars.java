@@ -356,6 +356,14 @@ public class EnvVars extends TreeMap<String,String> {
         if (value==null)    throw new IllegalArgumentException("Null value not allowed as an environment variable: "+key);
         return super.put(key,value);
     }
+
+    /**
+     * Add a key/value but only if the value is not-null. Otherwise no-op.
+     */
+    public void putIfNotNull(String key, String value) {
+        if (value!=null)
+            put(key,value);
+    }
     
     /**
      * Takes a string that looks like "a=b" and adds that to this map.

@@ -59,6 +59,7 @@ import antlr.ANTLRException;
 import javax.annotation.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.Items;
+import jenkins.model.ParameterizedJobMixIn;
 
 /**
  * Triggers a {@link Build}.
@@ -246,7 +247,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
-        for (AbstractProject<?,?> p : inst.getAllItems(AbstractProject.class)) {
+        for (ParameterizedJobMixIn.ParameterizedJob p : inst.getAllItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
             for (Trigger t : p.getTriggers().values()) {
                 if (! (t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     LOGGER.fine("cron checking "+p.getName());

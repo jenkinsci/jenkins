@@ -125,14 +125,29 @@ public abstract class ParameterValue implements Serializable {
      * @param build
      *      The build for which this parameter is being used. Never null.
      * @deprecated as of 1.344
-     *      Use {@link #buildEnvVars(AbstractBuild, EnvVars)} instead.
+     *      Use {@link #buildEnvVars(Run, EnvVars)} instead.
      */
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
-        if (env instanceof EnvVars && Util.isOverridden(ParameterValue.class,getClass(),"buildEnvVars", AbstractBuild.class,EnvVars.class))
-            // if the subtype already derives buildEnvVars(AbstractBuild,Map), then delegate to it
-            buildEnvVars(build,(EnvVars)env);
-
+        if (env instanceof EnvVars) {
+            if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
+                // if the subtype already derives buildEnvironment, then delegate to it
+                buildEnvironment(build, (EnvVars) env);
+            } else if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvVars", AbstractBuild.class, EnvVars.class)) {
+                buildEnvVars(build, (EnvVars) env);
+            }
+        }
         // otherwise no-op by default
+    }
+
+    /** @deprecated Use {@link #buildEnvVars(Run, EnvVars)} instead. */
+    @Deprecated
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
+            buildEnvironment(build, env);
+        } else {
+            // for backward compatibility
+            buildEnvVars(build,(Map<String,String>)env);
+        }
     }
 
     /**
@@ -151,10 +166,13 @@ public abstract class ParameterValue implements Serializable {
      *      never null.
      * @param build
      *      The build for which this parameter is being used. Never null.
+     * @since 1.556
      */
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        // for backward compatibility
-        buildEnvVars(build,(Map<String,String>)env);
+    public void buildEnvironment(Run<?,?> build, EnvVars env) {
+        if (build instanceof AbstractBuild) {
+            buildEnvVars((AbstractBuild) build, env);
+        }
+        // else do not know how to do it
     }
 
     /**
@@ -192,6 +210,8 @@ public abstract class ParameterValue implements Serializable {
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
         return VariableResolver.NONE;
     }
+
+    // TODO should there be a Run overload of this?
 
     /**
      * Accessing {@link ParameterDefinition} is not a good idea.

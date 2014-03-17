@@ -27,29 +27,32 @@
  */
 package hudson.model;
 
-import hudson.console.ConsoleLogFilter;
-import hudson.Functions;
+import com.jcraft.jzlib.GZIPInputStream;
+import com.thoughtworks.xstream.XStream;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
+import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
 import hudson.console.AnnotatedLargeText;
+import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.security.PermissionScope;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
@@ -57,15 +60,18 @@ import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
-
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
@@ -79,23 +85,31 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.logging.Level;
+import static java.util.logging.Level.*;
 import java.util.logging.Logger;
-import com.jcraft.jzlib.GZIPInputStream;
-
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-
+import jenkins.model.ArtifactManager;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.PeepholePermalink;
+import jenkins.model.RunAction2;
+import jenkins.model.StandardArtifactManager;
+import jenkins.model.lazy.BuildReference;
+import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -105,26 +119,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import com.thoughtworks.xstream.XStream;
-import hudson.model.Run.RunExecution;
-import java.io.ByteArrayInputStream;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-
-import java.io.StringWriter;
-import static java.util.logging.Level.*;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import jenkins.model.ArtifactManager;
-import jenkins.model.ArtifactManagerConfiguration;
-import jenkins.model.ArtifactManagerFactory;
-import jenkins.model.PeepholePermalink;
-import jenkins.model.StandardArtifactManager;
-import jenkins.model.RunAction2;
-import jenkins.util.VirtualFile;
 
 /**
  * A particular execution of {@link Job}.
@@ -154,7 +149,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Previous build. Can be null.
-     * These two fields are maintained and updated by {@link RunMap}.
+     * TODO JENKINS-22052 this is not actually implemented any more
      *
      * External code should use {@link #getPreviousBuild()}
      */
@@ -773,16 +768,30 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Called by {@link RunMap} to obtain a reference to this run.
+     * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#createReference
+     * @since 1.556
+     */
+    protected BuildReference<RunT> createReference() {
+        return new BuildReference<RunT>(getId(), _this());
+    }
+
+    /**
      * Called by {@link RunMap} to drop bi-directional links in preparation for
      * deleting a build.
+     * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#dropLinks
+     * @since 1.556
      */
-    /*package*/ void dropLinks() {
+    protected void dropLinks() {
         if(nextBuild!=null)
             nextBuild.previousBuild = previousBuild;
         if(previousBuild!=null)
             previousBuild.nextBuild = nextBuild;
     }
 
+    /**
+     * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#getPreviousBuild
+     */
     public RunT getPreviousBuild() {
         return previousBuild;
     }
@@ -905,6 +914,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return builds;
     }
 
+    /**
+     * @see jenkins.model.lazy.LazyBuildMixIn.RunMixIn#getNextBuild
+     */
     public RunT getNextBuild() {
         return nextBuild;
     }

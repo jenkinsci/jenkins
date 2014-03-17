@@ -32,7 +32,6 @@ import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
-import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
@@ -42,21 +41,17 @@ import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Cause.LegacyCodeCause;
-import hudson.model.Cause.RemoteCause;
-import hudson.model.Cause.UserIdCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.RunMap.Constructor;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.SubTaskContributor;
 import hudson.node_monitors.DiskSpaceMonitor;
@@ -86,11 +81,9 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.TimeUnit2;
-import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -100,7 +93,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -113,12 +105,12 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.*;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.Uptime;
-import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
+import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
@@ -129,16 +121,13 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -154,7 +143,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob {
 
     /**
      * {@link SCM} associated with the project.
@@ -173,15 +162,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     private volatile transient SCMRevisionState pollingBaseline = null;
 
+    private transient LazyBuildMixIn<P,R> buildMixIn;
+
     /**
      * All the builds keyed by their build number.
-     *
+     * Kept here for binary compatibility only; otherwise use {@link #buildMixIn}.
      * External code should use {@link #getBuildByNumber(int)} or {@link #getLastBuild()} and traverse via
      * {@link Run#getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    protected transient RunMap<R> builds = new RunMap<R>();
+    protected transient RunMap<R> builds;
 
     /**
      * The quiet period. Null to delegate to the system default.
@@ -274,12 +264,39 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
+        buildMixIn = createBuildMixIn();
+        builds = buildMixIn.getRunMap();
 
         if(Jenkins.getInstance()!=null && !Jenkins.getInstance().getNodes().isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
             // make it roamable by default
             canRoam = true;
         }
+    }
+
+    private LazyBuildMixIn<P,R> createBuildMixIn() {
+        return new LazyBuildMixIn<P,R>() {
+            @SuppressWarnings("unchecked") // untypable
+            @Override protected P asJob() {
+                return (P) AbstractProject.this;
+            }
+            @Override protected Class<R> getBuildClass() {
+                return AbstractProject.this.getBuildClass();
+            }
+        };
+    }
+
+    @Override public LazyBuildMixIn<P,R> getLazyBuildMixIn() {
+        return buildMixIn;
+    }
+
+    private ParameterizedJobMixIn<P,R> getParameterizedJobMixIn() {
+        return new ParameterizedJobMixIn<P,R>() {
+            @SuppressWarnings("unchecked") // untypable
+            @Override protected P asJob() {
+                return (P) AbstractProject.this;
+            }
+        };
     }
 
     @Override
@@ -291,7 +308,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onCreatedFromScratch() {
         super.onCreatedFromScratch();
-        builds = createBuildRunMap();
+        buildMixIn.onCreatedFromScratch();
+        builds = buildMixIn.getRunMap();
         // solicit initial contributions, especially from TransientProjectActionFactory
         updateTransientActions();
     }
@@ -299,33 +317,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
-
-        RunMap<R> builds = createBuildRunMap();
-
-        RunMap<R> currentBuilds = this.builds;
-
-        if (currentBuilds==null && parent!=null) {
-            // are we overwriting what currently exist?
-            // this is primarily when Jenkins is getting reloaded
-            Item current;
-            try {
-                current = parent.getItem(name);
-            } catch (RuntimeException x) {
-                LOGGER.log(Level.WARNING, "failed to look up " + name + " in " + parent, x);
-                current = null;
-            }
-            if (current!=null && current.getClass()==getClass()) {
-                currentBuilds = ((AbstractProject)current).builds;
-            }
+        if (buildMixIn == null) {
+            buildMixIn = createBuildMixIn();
         }
-        if (currentBuilds !=null) {
-            // if we are reloading, keep all those that are still building intact
-            for (R r : currentBuilds.getLoadedBuilds().values()) {
-                if (r.isBuilding())
-                    builds.put(r);
-            }
-        }
-        this.builds = builds;
+        buildMixIn.onLoad(parent, name);
+        builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
         for (Trigger t : triggers()) {
             t.start(this, Items.currentlyUpdatingByXml());
@@ -336,14 +332,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
         updateTransientActions();
-    }
-
-    private RunMap<R> createBuildRunMap() {
-        return new RunMap<R>(getBuildDir(), new Constructor<R>() {
-            public R create(File dir) throws IOException {
-                return loadBuild(dir);
-            }
-        });
     }
 
     @WithBridgeMethods(List.class)
@@ -476,7 +464,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.401
      */
     public String getBuildNowText() {
-        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, isParameterized() ? Messages.AbstractProject_build_with_parameters() : Messages.AbstractProject_BuildNow());
+        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, getParameterizedJobMixIn().getBuildNowText());
     }
 
     /**
@@ -866,7 +854,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
 	 */
     public boolean scheduleBuild() {
-    	return scheduleBuild(new LegacyCodeCause());
+    	return getParameterizedJobMixIn().scheduleBuild();
     }
     
 	/**
@@ -874,7 +862,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
 	 */
     public boolean scheduleBuild(int quietPeriod) {
-    	return scheduleBuild(quietPeriod, new LegacyCodeCause());
+    	return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
     }
     
     /**
@@ -885,11 +873,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      false if the task was rejected from the queue (such as when the system is being shut down.)
      */
     public boolean scheduleBuild(Cause c) {
-        return scheduleBuild(getQuietPeriod(), c);
+        return getParameterizedJobMixIn().scheduleBuild(c);
     }
 
     public boolean scheduleBuild(int quietPeriod, Cause c) {
-        return scheduleBuild(quietPeriod, c, new Action[0]);
+        return getParameterizedJobMixIn().scheduleBuild(quietPeriod, c);
     }
 
     /**
@@ -931,44 +919,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(Future.class)
     public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
-        if (!isBuildable())
-            return null;
-
         List<Action> queueActions = new ArrayList<Action>(actions);
-        if (isParameterized() && Util.filter(queueActions, ParametersAction.class).isEmpty()) {
-            queueActions.add(new ParametersAction(getDefaultParametersValues()));
-        }
-
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
-
-        ScheduleResult i = Jenkins.getInstance().getQueue().schedule2(this, quietPeriod, queueActions);
-        if(i.isAccepted())
-            return (QueueTaskFuture)i.getItem().getFuture();
-        return null;
-    }
-
-    private List<ParameterValue> getDefaultParametersValues() {
-        ParametersDefinitionProperty paramDefProp = getProperty(ParametersDefinitionProperty.class);
-        ArrayList<ParameterValue> defValues = new ArrayList<ParameterValue>();
-        
-        /*
-         * This check is made ONLY if someone will call this method even if isParametrized() is false.
-         */
-        if(paramDefProp == null)
-            return defValues;
-        
-        /* Scan for all parameter with an associated default values */
-        for(ParameterDefinition paramDefinition : paramDefProp.getParameterDefinitions())
-        {
-           ParameterValue defaultValue  = paramDefinition.getDefaultParameterValue();
-            
-            if(defaultValue != null)
-                defValues.add(defaultValue);           
-        }
-        
-        return defValues;
+        return getParameterizedJobMixIn().scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
     }
 
     /**
@@ -1039,18 +994,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public RunMap<R> _getRuns() {
-        if (builds == null) {
-            throw new IllegalStateException("no run map created yet for " + this);
-        }
-        assert builds.baseDirInitialized() : "neither onCreatedFromScratch nor onLoad called on " + this + " yet";
-        return builds;
+        return buildMixIn._getRuns();
     }
 
     @Override
     public void removeRun(R run) {
-        if (!this.builds.remove(run)) {
-            LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {this, run});
-        }
+        buildMixIn.removeRun(run);
     }
 
     /**
@@ -1060,7 +1009,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public R getBuild(String id) {
-        return builds.getById(id);
+        return buildMixIn.getBuild(id);
     }
 
     /**
@@ -1070,7 +1019,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public R getBuildByNumber(int n) {
-        return builds.getByNumber(n);
+        return buildMixIn.getBuildByNumber(n);
     }
 
     /**
@@ -1080,22 +1029,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Override
     public R getFirstBuild() {
-        return builds.oldestBuild();
+        return buildMixIn.getFirstBuild();
     }
 
     @Override
     public @CheckForNull R getLastBuild() {
-        return builds.newestBuild();
+        return buildMixIn.getLastBuild();
     }
 
     @Override
     public R getNearestBuild(int n) {
-        return builds.search(n, Direction.ASC);
+        return buildMixIn.getNearestBuild(n);
     }
 
     @Override
     public R getNearestOldBuild(int n) {
-        return builds.search(n, Direction.DESC);
+        return buildMixIn.getNearestOldBuild(n);
     }
 
     /**
@@ -1106,61 +1055,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     protected abstract Class<R> getBuildClass();
 
-    // keep track of the previous time we started a build
-    private transient long lastBuildStartTime;
-    
     /**
      * Creates a new build of this project for immediate execution.
      */
     protected synchronized R newBuild() throws IOException {
-    	// make sure we don't start two builds in the same second
-    	// so the build directories will be different too
-    	long timeSinceLast = System.currentTimeMillis() - lastBuildStartTime;
-    	if (timeSinceLast < 1000) {
-    		try {
-				Thread.sleep(1000 - timeSinceLast);
-			} catch (InterruptedException e) {
-			}
-    	}
-    	lastBuildStartTime = System.currentTimeMillis();
-        try {
-            R lastBuild = getBuildClass().getConstructor(getClass()).newInstance(this);
-            builds.put(lastBuild);
-            return lastBuild;
-        } catch (InstantiationException e) {
-            throw new Error(e);
-        } catch (IllegalAccessException e) {
-            throw new Error(e);
-        } catch (InvocationTargetException e) {
-            throw handleInvocationTargetException(e);
-        } catch (NoSuchMethodException e) {
-            throw new Error(e);
-        }
-    }
-
-    private IOException handleInvocationTargetException(InvocationTargetException e) {
-        Throwable t = e.getTargetException();
-        if(t instanceof Error)  throw (Error)t;
-        if(t instanceof RuntimeException)   throw (RuntimeException)t;
-        if(t instanceof IOException)    return (IOException)t;
-        throw new Error(t);
+        return buildMixIn.newBuild();
     }
 
     /**
      * Loads an existing build record from disk.
      */
     protected R loadBuild(File dir) throws IOException {
-        try {
-            return getBuildClass().getConstructor(getClass(),File.class).newInstance(this,dir);
-        } catch (InstantiationException e) {
-            throw new Error(e);
-        } catch (IllegalAccessException e) {
-            throw new Error(e);
-        } catch (InvocationTargetException e) {
-            throw handleInvocationTargetException(e);
-        } catch (NoSuchMethodException e) {
-            throw new Error(e);
-        }
+        return buildMixIn.loadBuild(dir);
     }
 
     /**
@@ -1692,7 +1598,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @SuppressWarnings("unchecked")
-    public Map<TriggerDescriptor,Trigger<?>> getTriggers() {
+    @Override public Map<TriggerDescriptor,Trigger<?>> getTriggers() {
         return triggers().toMap();
     }
 
@@ -1812,19 +1718,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
-        SearchIndexBuilder sib = super.makeSearchIndex();
-        if(isBuildable() && hasPermission(Jenkins.ADMINISTER))
-            sib.add("build","build");
-        return sib;
+        return getParameterizedJobMixIn().extendSearchIndex(super.makeSearchIndex());
     }
 
     @Override
     protected HistoryWidget createHistoryWidget() {
-        return new BuildHistoryWidget<R>(this,builds,HISTORY_ADAPTER);
+        return buildMixIn.createHistoryWidget();
     }
     
     public boolean isParameterized() {
-        return getProperty(ParametersDefinitionProperty.class) != null;
+        return getParameterizedJobMixIn().isParameterized();
     }
 
 //
@@ -1836,52 +1739,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a new build command.
      */
     public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
-        if (delay==null)    delay=new TimeDuration(getQuietPeriod());
-
-        // if a build is parameterized, let that take over
-        ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
-        if (pp != null && !req.getMethod().equals("POST")) {
-            // show the parameter entry form.
-            req.getView(pp, "index.jelly").forward(req, rsp);
-            return;
-        }
-
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
-
-        if (pp != null) {
-            pp._doBuild(req,rsp,delay);
-            return;
-        }
-
-        if (!isBuildable())
-            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR,new IOException(getFullName()+" is not buildable"));
-
-        ScheduleResult r = Jenkins.getInstance().getQueue().schedule2(this, delay.getTime(), getBuildCause(req));
-        if (r.isAccepted()) {
-            rsp.sendRedirect(SC_CREATED,req.getContextPath()+'/'+r.getItem().getUrl());
-        } else
-            rsp.sendRedirect(".");
+        getParameterizedJobMixIn().doBuild(req, rsp, delay);
     }
 
     /** @deprecated use {@link #doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
     @Deprecated
     public void doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doBuild(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
-    }
-
-    /**
-     * Computes the build cause, using RemoteCause or UserCause as appropriate.
-     */
-    /*package*/ CauseAction getBuildCause(StaplerRequest req) {
-        Cause cause;
-        if (authToken != null && authToken.getToken() != null && req.getParameter("token") != null) {
-            // Optional additional cause text when starting via token
-            String causeText = req.getParameter("cause");
-            cause = new RemoteCause(req.getRemoteAddr(), causeText);
-        } else {
-            cause = new UserIdCause();
-        }
-        return new CauseAction(cause);
     }
 
     /**
@@ -1909,15 +1773,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Currently only String parameters are supported.
      */
     public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
-
-        ParametersDefinitionProperty pp = getProperty(ParametersDefinitionProperty.class);
-        if (pp != null) {
-            pp.buildWithParameters(req,rsp,delay);
-        } else {
-        	throw new IllegalStateException("This build is not parameterized!");
-        }
-    	
+        getParameterizedJobMixIn().doBuildWithParameters(req, rsp, delay);
     }
 
     /** @deprecated use {@link #doBuildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
@@ -1940,37 +1796,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @RequirePOST
     public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        checkPermission(ABORT);
-
-        Jenkins.getInstance().getQueue().cancel(this);
-        rsp.forwardToPreviousPage(req);
+        getParameterizedJobMixIn().doCancelQueue(req, rsp);
     }
 
-    /**
-     * Deletes this project.
-     */
-    @Override
-    @RequirePOST
-    public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        delete();
-        if (req == null || rsp == null)
-            return;
-        List<Ancestor> ancestors = req.getAncestors();
-        ListIterator<Ancestor> it = ancestors.listIterator(ancestors.size());
-        String url = getParent().getUrl(); // fallback but we ought to get to Jenkins.instance at the root
-        while (it.hasPrevious()) {
-            Object a = it.previous().getObject();
-            if (a instanceof View) {
-                url = ((View) a).getUrl();
-                break;
-            } else if (a instanceof ViewGroup) {
-                url = ((ViewGroup) a).getUrl();
-                break;
-            }
-        }
-        rsp.sendRedirect2(req.getContextPath() + '/' + url);
-    }
-    
     @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req,rsp);
@@ -2424,16 +2252,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          */
         @Nonnull
         public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
-    }
-
-    @Restricted(DoNotUse.class)
-    @Extension public static final class ItemListenerImpl extends ItemListener {
-        @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            if (item instanceof AbstractProject) {
-                AbstractProject p = (AbstractProject) item;
-                p.builds.updateBaseDir(p.getBuildDir());
-            }
-        }
     }
 
 }

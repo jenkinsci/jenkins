@@ -33,11 +33,14 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
+import hudson.security.UserMayOrMayNotExistException;
 import hudson.util.FormApply;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.LastGrantedAuthoritiesProperty;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
@@ -248,19 +251,31 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Creates an {@link Authentication} object that represents this user.
-     * 
+     *
+     * This method checks with {@link SecurityRealm} if the user is a valid user that can login to the security realm.
+     * If {@link SecurityRealm} is a kind that does not support querying information about other users, this will
+     * use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the last time the user has
+     * logged in.
+     *
+     * @throws UsernameNotFoundException
+     *      If this user is not a valid user in the backend {@link SecurityRealm}.
      * @since 1.419
      */
-    public Authentication impersonate() {
+    public Authentication impersonate() throws UsernameNotFoundException {
         try {
-            UserDetails u = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id);
+            UserDetails u = new ImpersonatingUserDetailsService(
+                    Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails).loadUserByUsername(id);
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
+        } catch (UserMayOrMayNotExistException e) {
+            // backend can't load information about other users. so use the stored information if available
         } catch (UsernameNotFoundException e) {
-            // ignore
+            // if the user no longer exists in the backend, we need to refuse impersonating this user
+            throw e;
         } catch (DataAccessException e) {
-            // ignore
+            // seems like it's in the same boat as UserMayOrMayNotExistException
         }
-        // TODO: use the stored GrantedAuthorities
+
+        // seems like a legitimate user we have no idea about. proceed with minimum access
         return new UsernamePasswordAuthenticationToken(id, "",
             new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
     }
@@ -378,7 +393,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         Authentication a = Jenkins.getAuthentication();
         if(a instanceof AnonymousAuthenticationToken)
             return null;
-        return get(a.getName());
+
+        // Since we already know this is a name, we can just call getOrCreate with the name directly.
+        String id = a.getName();
+        return getOrCreate(id, id, true);
     }
 
     private static volatile long lastScanned;

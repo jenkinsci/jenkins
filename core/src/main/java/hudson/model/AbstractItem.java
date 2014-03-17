@@ -52,6 +52,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.ListIterator;
 import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -71,6 +73,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import org.kohsuke.stapler.Ancestor;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -487,8 +490,23 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @RequirePOST
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         delete();
-        if (rsp != null) // null for CLI
-            rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
+        if (req == null || rsp == null) { // CLI
+            return;
+        }
+        List<Ancestor> ancestors = req.getAncestors();
+        ListIterator<Ancestor> it = ancestors.listIterator(ancestors.size());
+        String url = getParent().getUrl(); // fallback but we ought to get to Jenkins.instance at the root
+        while (it.hasPrevious()) {
+            Object a = it.previous().getObject();
+            if (a instanceof View) {
+                url = ((View) a).getUrl();
+                break;
+            } else if (a instanceof ViewGroup) {
+                url = ((ViewGroup) a).getUrl();
+                break;
+            }
+        }
+        rsp.sendRedirect2(req.getContextPath() + '/' + url);
     }
 
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -586,6 +604,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
 
             // try to reflect the changes by reloading
+            doReload();
             new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
             Items.whileUpdatingByXml(new Callable<Void,IOException>() {
                 @Override public Void call() throws IOException {
@@ -601,6 +620,34 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         } finally {
             out.abort(); // don't leave anything behind
         }
+    }
+
+    /**
+     * Reloads this job from the disk.
+     *
+     * Exposed through CLI as well.
+     *
+     * TODO: think about exposing this to UI
+     *
+     * @since 1.556
+     */
+    @CLIMethod(name="reload-job")
+    @RequirePOST
+    public void doReload() throws IOException {
+        checkPermission(CONFIGURE);
+
+        // try to reflect the changes by reloading
+        getConfigFile().unmarshal(this);
+        Items.whileUpdatingByXml(new Callable<Void, IOException>() {
+            @Override
+            public Void call() throws IOException {
+                onLoad(getParent(), getRootDir().getName());
+                return null;
+            }
+        });
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
+
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 

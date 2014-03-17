@@ -68,7 +68,7 @@ public class RunParameterValue extends ParameterValue {
      * Exposes the name/value as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    public void buildEnvironment(Run<?,?> build, EnvVars env) {
         Run run = getRun();
         
         String value = Jenkins.getInstance().getRootUrl() + run.getUrl();

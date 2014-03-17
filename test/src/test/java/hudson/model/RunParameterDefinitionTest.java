@@ -64,13 +64,13 @@ public class RunParameterDefinitionTest {
         assertEquals("dir/sub dir/some project", def.getProjectName());
         assertEquals(p, def.getProject());
         EnvVars env = new EnvVars();
-        def.getDefaultParameterValue().buildEnvVars(null, env);
+        def.getDefaultParameterValue().buildEnvironment(null, env);
         assertEquals(j.jenkins.getRootUrl() + "job/dir/job/sub%20dir/job/some%20project/3/", env.get("build"));
         RunParameterValue val = def.createValue(id);
         assertEquals(build2, val.getRun());
         assertEquals("dir/sub dir/some project", val.getJobName());
         assertEquals("2", val.getNumber());
-        val.buildEnvVars(null, env);
+        val.buildEnvironment(null, env);
         assertEquals(j.jenkins.getRootUrl() + "job/dir/job/sub%20dir/job/some%20project/2/", env.get("build"));
         assertEquals("dir/sub dir/some project", env.get("build.jobName"));
         assertEquals("dir/sub dir/some project", env.get("build_JOBNAME"));

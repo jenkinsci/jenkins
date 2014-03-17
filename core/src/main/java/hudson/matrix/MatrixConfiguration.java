@@ -248,7 +248,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
         lastBuild.number = lb.getNumber();
 
-        builds.put(lastBuild);
+        _getRuns().put(lastBuild);
         return lastBuild;
     }
 
