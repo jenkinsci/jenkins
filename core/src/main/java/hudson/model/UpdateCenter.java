@@ -630,7 +630,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
         List <Future<FormValidation>> futures = new ArrayList<Future<FormValidation>>();
         for (UpdateSite site : getSites()) {
-            Future<FormValidation> future = site.updateDirectly(true);
+            Future<FormValidation> future = site.updateDirectly(DownloadService.signatureCheck);
             if (future != null) {
                 futures.add(future);
             }
