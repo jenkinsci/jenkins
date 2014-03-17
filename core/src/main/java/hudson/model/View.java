@@ -377,7 +377,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Enables or disables automatic refreshes of the view.
      * By default, automatic refreshes are enabled.
-     * @since TODO: define a version
+     * @since 1.557
      */
     public boolean isAutomaticRefreshEnabled() {
         return true;
