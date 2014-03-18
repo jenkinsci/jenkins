@@ -34,6 +34,7 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException;
+import hudson.util.CaseInsensitiveComparator;
 import hudson.util.FormApply;
 import hudson.util.RunList;
 import hudson.util.XStream2;
@@ -49,6 +50,7 @@ import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -126,7 +128,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public int compareTo(User that) {
-        return this.id.compareTo(that.id);
+        return IdStrategy.instance().compare(this.id, that.id);
     }
 
     /**
@@ -169,11 +171,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public String getUrl() {
-        return "user/"+Util.rawEncode(id);
+        return "user/"+Util.rawEncode(IdStrategy.instance().keyFor(id));
     }
 
     public String getSearchUrl() {
-        return "/user/"+Util.rawEncode(id);
+        return "/user/"+Util.rawEncode(IdStrategy.instance().keyFor(id));
     }
 
     /**
@@ -251,31 +253,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Creates an {@link Authentication} object that represents this user.
-     *
-     * This method checks with {@link SecurityRealm} if the user is a valid user that can login to the security realm.
-     * If {@link SecurityRealm} is a kind that does not support querying information about other users, this will
-     * use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the last time the user has
-     * logged in.
-     *
-     * @throws UsernameNotFoundException
-     *      If this user is not a valid user in the backend {@link SecurityRealm}.
+     * 
      * @since 1.419
      */
-    public Authentication impersonate() throws UsernameNotFoundException {
+    public Authentication impersonate() {
         try {
-            UserDetails u = new ImpersonatingUserDetailsService(
-                    Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails).loadUserByUsername(id);
+            UserDetails u = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(id);
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
-        } catch (UserMayOrMayNotExistException e) {
-            // backend can't load information about other users. so use the stored information if available
         } catch (UsernameNotFoundException e) {
-            // if the user no longer exists in the backend, we need to refuse impersonating this user
-            throw e;
+            // ignore
         } catch (DataAccessException e) {
-            // seems like it's in the same boat as UserMayOrMayNotExistException
+            // ignore
         }
-
-        // seems like a legitimate user we have no idea about. proceed with minimum access
+        // TODO: use the stored GrantedAuthorities
         return new UsernamePasswordAuthenticationToken(id, "",
             new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
     }
@@ -354,7 +344,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * retrieve a user by its ID, and create a new one if requested
      */
     private static User getOrCreate(String id, String fullName, boolean create) {
-        String idkey = id.toLowerCase(Locale.ENGLISH);
+        String idkey = IdStrategy.instance().keyFor(id);
 
         User u = byName.get(idkey);
         if (u==null && (create || getConfigFileFor(id).exists())) {
@@ -426,8 +416,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         ArrayList<User> r = new ArrayList<User>(byName.values());
         Collections.sort(r,new Comparator<User>() {
+            IdStrategy strategy = IdStrategy.instance();
+
             public int compare(User o1, User o2) {
-                return o1.getId().compareToIgnoreCase(o2.getId());
+                return strategy.compare(o1.getId(), o2.getId());
             }
         });
         return r;
@@ -449,6 +441,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
+     * Called when changing the {@link IdStrategy}.
+     * @since 1.557
+     */
+    public static void rekey() {
+        IdStrategy strategy = IdStrategy.instance();
+        for (Map.Entry<String,User> e: byName.entrySet()) {
+            String idkey = strategy.keyFor(e.getValue().id);
+            if (!idkey.equals(e.getKey())) {
+                // need to remap
+                byName.remove(e.getKey());
+                byName.putIfAbsent(idkey, e.getValue());
+            }
+        }
+    }
+
+    /**
      * Returns the user name.
      */
     public String getDisplayName() {
@@ -463,7 +471,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         for (Cause cause : b.getCauses()) {
             if (cause instanceof Cause.UserIdCause) {
                 String userId = ((Cause.UserIdCause) cause).getUserId();
-                if (userId != null && userId.equals(getId())) {
+                if (userId != null && IdStrategy.instance().equals(userId, getId())) {
                     return true;
                 }
             }
@@ -508,7 +516,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private static final File getConfigFileFor(String id) {
-        return new File(getRootDir(),id +"/config.xml");
+        return new File(getRootDir(),IdStrategy.instance().filenameOf(id) +"/config.xml");
     }
 
     /**
@@ -534,8 +542,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      if we fail to delete.
      */
     public synchronized void delete() throws IOException {
-        byName.remove(id.toLowerCase(Locale.ENGLISH));
-        Util.deleteRecursive(new File(getRootDir(), id));
+        final IdStrategy strategy = IdStrategy.instance();
+        byName.remove(strategy.keyFor(id));
+        Util.deleteRecursive(new File(getRootDir(), strategy.filenameOf(id)));
     }
 
     /**
@@ -588,7 +597,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @RequirePOST
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
-        if (id.equals(Jenkins.getAuthentication().getName())) {
+        if (IdStrategy.instance().equals(id, Jenkins.getAuthentication().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
             return;
         }
@@ -628,7 +637,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Keyed by {@link User#id}. This map is used to ensure
      * singleton-per-id semantics of {@link User} objects.
      *
-     * The key needs to be lower cased for case insensitivity.
+     * The key needs to be generated by {@link hudson.model.User.IdStrategy#keyFor(String)}.
      */
     private static final ConcurrentMap<String,User> byName = new ConcurrentHashMap<String, User>();
 
@@ -648,7 +657,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // always allow a non-anonymous user full control of himself.
         return new ACL() {
             public boolean hasPermission(Authentication a, Permission permission) {
-                return (a.getName().equals(id) && !(a instanceof AnonymousAuthenticationToken))
+                return (IdStrategy.instance().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
                         || base.hasPermission(a, permission);
             }
         };
@@ -666,8 +675,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * With ADMINISTER permission, can delete users with persisted data but can't delete self.
      */
     public boolean canDelete() {
-        return hasPermission(Jenkins.ADMINISTER) && !id.equals(Jenkins.getAuthentication().getName())
-                && new File(getRootDir(), id).exists();
+        final IdStrategy strategy = IdStrategy.instance();
+        return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication().getName())
+                && new File(getRootDir(), strategy.filenameOf(id)).exists();
     }
 
     /**
@@ -687,7 +697,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 continue;
             }
             String n = a.getAuthority();
-            if (n != null && !n.equals(id)) {
+            if (n != null && !IdStrategy.instance().equals(n, id)) {
                 r.add(n);
             }
         }
@@ -791,5 +801,165 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return -1; // lower than default
         }
     }
+
+    /**
+     * The strategy to use for manipulating user ids.
+     * @since 1.557
+     */
+    public static class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements ExtensionPoint, Comparator<String> {
+
+        /**
+         * The default case insensitive strategy.
+         */
+        public static IdStrategy CASE_INSENSITIVE = new IdStrategy();
+
+        public String filenameOf(String id) {
+            return id.toLowerCase(Locale.ENGLISH);
+        }
+
+        public String keyFor(String id) {
+            return id.toLowerCase(Locale.ENGLISH);
+        }
+
+        public boolean equals(String id1, String id2) {
+            return compare(id1, id2) == 0;
+        }
+
+        @Override
+        public int compare(String id1, String id2) {
+            return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
+        }
+
+        @Nonnull
+        public static IdStrategy instance() {
+            return Jenkins.getInstance().getUserIdStrategy();
+        }
+
+        /**
+         * Returns all the registered {@link IdStrategy} descriptors.
+         */
+        public static DescriptorExtensionList<IdStrategy,Descriptor<IdStrategy>> all() {
+            return Jenkins.getInstance().<IdStrategy,Descriptor<IdStrategy>>getDescriptorList(IdStrategy.class);
+        }
+
+    }
+
+    /**
+     * The default case insensitive {@link hudson.model.User.IdStrategy}
+     * @since 1.557
+     */
+    public static class CaseInsensitiveIdStrategy extends IdStrategy {
+
+        public String keyFor(String id) {
+            return id.toLowerCase(Locale.ENGLISH);
+        }
+
+        @Override
+        public int compare(String id1, String id2) {
+            return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
+        }
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<IdStrategy> {
+
+            @Override
+            public String getDisplayName() {
+                return Messages.User_CaseInsensitiveIdStrategy_DisplayName();
+            }
+        }
+    }
+
+    /**
+     * The legacy case insensitive {@link hudson.model.User.IdStrategy}
+     * Only adding this because existing instances will need to recover
+     * their user configuration.
+     * @since 1.557
+     */
+    public static class LegacyIdStrategy extends IdStrategy {
+
+        @Override
+        public String filenameOf(String id) {
+            return id;
+        }
+
+        @Override
+        public boolean equals(String id1, String id2) {
+            return StringUtils.equals(id1, id2);
+        }
+
+        public String keyFor(String id) {
+            return id.toLowerCase(Locale.ENGLISH);
+        }
+
+        @Override
+        public int compare(String id1, String id2) {
+            return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
+        }
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<IdStrategy> {
+
+            @Override
+            public String getDisplayName() {
+                return Messages.User_LegacyIdStrategy_DisplayName();
+            }
+        }
+    }
+
+    /**
+     * A case sensitive {@link hudson.model.User.IdStrategy}
+     * @since 1.557
+     */
+    public static class CaseSensitiveIdStrategy extends IdStrategy {
+
+        @Override
+        public String filenameOf(String id) {
+            if (id.matches("[a-z0-9_. -]+"))
+            return id;
+            else {
+                StringBuilder buf = new StringBuilder(id.length() + 16);
+                for (char c: id.toCharArray()) {
+                    if ('a' <= c && c <= 'z') {
+                        buf.append(c);
+                    } else if ('0' <= c && c <= '9') {
+                        buf.append(c);
+                    } else if ('_' == c || '.' == c || '-' == c || ' ' == c) {
+                        buf.append(c);
+                    } else if ('A' <= c && c <= 'Z') {
+                        buf.append('^');
+                        buf.append(c);
+                    } else {
+                        buf.append('$');
+                        buf.append(StringUtils.leftPad(Integer.toHexString(c&0xffff), 4, '0'));
+                    }
+                }
+                return buf.toString();
+            }
+        }
+
+        @Override
+        public boolean equals(String id1, String id2) {
+            return StringUtils.equals(id1, id2);
+        }
+
+        public String keyFor(String id) {
+            return id;
+        }
+
+        @Override
+        public int compare(String id1, String id2) {
+            return id1.compareTo(id2);
+        }
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<IdStrategy> {
+
+            @Override
+            public String getDisplayName() {
+                return Messages.User_CaseSensitiveIdStrategy_DisplayName();
+            }
+        }
+    }
+
 }
 

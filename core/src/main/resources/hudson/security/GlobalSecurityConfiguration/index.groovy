@@ -1,5 +1,6 @@
 package hudson.security.GlobalSecurityConfiguration
 
+import hudson.model.User
 import hudson.security.SecurityRealm
 import hudson.markup.MarkupFormatterDescriptor
 import hudson.security.AuthorizationStrategy
@@ -37,8 +38,9 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
 
                 f.entry(title:_("Access Control")) {
                     table(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:SecurityRealm.all())
-                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
+                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",             instance:app.securityRealm,         descriptors:SecurityRealm.all())
+                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization",     instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
+                        f.descriptorRadioList(title:_("User ID Strategy"), varName:"userIdStrategy", instance:app.userIdStrategy,        descriptors: User.IdStrategy.all())
                     }
                 }
             }

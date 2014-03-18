@@ -160,7 +160,27 @@ public class UserTest {
         User user4 = User.get("Marie",false, Collections.EMPTY_MAP);
         assertNull("User should not be created because Marie does not exists.", user4);
     }
+
+    @Test
+    public void caseInsensitivity() {
+        j.jenkins.setUserIdStrategy(new User.CaseInsensitiveIdStrategy());
+        User user = User.get("john smith");
+        User user2 = User.get("John Smith");
+        assertSame("Users should have the same id.", user.getId(), user2.getId());
+    }
     
+    @Test
+    public void caseSensitivity() {
+        j.jenkins.setUserIdStrategy(new User.CaseSensitiveIdStrategy());
+        User user = User.get("john smith");
+        User user2 = User.get("John Smith");
+        assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
+        assertEquals("john smith", User.IdStrategy.instance().keyFor(user.getId()));
+        assertEquals("john smith", User.IdStrategy.instance().filenameOf(user.getId()));
+        assertEquals("John Smith", User.IdStrategy.instance().keyFor(user2.getId()));
+        assertEquals("^John ^Smith", User.IdStrategy.instance().filenameOf(user2.getId()));
+    }
+
     @Test
     public void testAddAndGetProperty() throws IOException {
         User user = User.get("John Smith");  

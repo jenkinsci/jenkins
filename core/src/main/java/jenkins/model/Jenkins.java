@@ -348,6 +348,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private Boolean useSecurity;
 
     /**
+     * The strategy for handling user ids. Affects case sensitivity of user ids.
+     *
+     * @since 1.557
+     */
+    private volatile User.IdStrategy userIdStrategy = User.IdStrategy.CASE_INSENSITIVE;
+
+    /**
      * Controls how the
      * <a href="http://en.wikipedia.org/wiki/Authorization">authorization</a>
      * is handled in Hudson.
@@ -2062,6 +2069,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    public void setUserIdStrategy(User.IdStrategy userIdStrategy) {
+        if (userIdStrategy == null) {
+            userIdStrategy = User.IdStrategy.CASE_INSENSITIVE;
+        }
+        if (!userIdStrategy.equals(this.userIdStrategy)) {
+            this.userIdStrategy = userIdStrategy;
+            User.rekey();
+        }
+    }
+
     public void setAuthorizationStrategy(AuthorizationStrategy a) {
         if (a == null)
             a = AuthorizationStrategy.UNSECURED;
@@ -2190,6 +2207,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Override
     public ACL getACL() {
         return authorizationStrategy.getRootACL();
+    }
+
+    /**
+     * Returns the {@link User.IdStrategy} to use when comparing / manipulating user IDs.
+     * @return the {@link User.IdStrategy} to use when comparing / manipulating user IDs.
+     */
+    @Nonnull
+    public User.IdStrategy getUserIdStrategy() {
+        return userIdStrategy;
     }
 
     /**
