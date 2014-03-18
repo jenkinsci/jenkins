@@ -39,6 +39,8 @@ import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
 import org.apache.commons.io.input.NullInputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -841,6 +843,7 @@ public abstract class Launcher {
         }
     }
 
+    @Restricted(NoExternalUse.class)
     public static class DummyLauncher extends Launcher {
 
         public DummyLauncher(TaskListener listener) {
@@ -849,14 +852,12 @@ public abstract class Launcher {
 
         @Override
         public Proc launch(ProcStarter starter) throws IOException {
-            listener.error("Can not call launch on a dummy launcher.");
-            return null;
+            throw new IOException("Can not call launch on a dummy launcher.");
         }
 
         @Override
         public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
-            listener.error("Can not call launchChannel on a dummy launcher.");
-            return null;
+            throw new IOException("Can not call launchChannel on a dummy launcher.");
         }
 
         @Override
