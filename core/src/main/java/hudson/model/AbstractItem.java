@@ -671,6 +671,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @CLIResolver
     public static AbstractItem resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+        // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
         if (item==null)
             throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
