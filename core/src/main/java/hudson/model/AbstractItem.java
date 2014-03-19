@@ -604,7 +604,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
 
             // try to reflect the changes by reloading
-            doReload();
             new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
             Items.whileUpdatingByXml(new Callable<Void,IOException>() {
                 @Override public Void call() throws IOException {
