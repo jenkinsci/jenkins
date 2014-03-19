@@ -51,7 +51,6 @@ public class CopyJobCommand extends CLICommand {
 
     protected int run() throws Exception {
         Jenkins jenkins = Jenkins.getInstance();
-        jenkins.checkPermission(Item.CREATE);
 
         if (jenkins.getItemByFullName(dst)!=null) {
             stderr.println("Job '"+dst+"' already exists");
