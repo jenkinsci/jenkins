@@ -3,34 +3,25 @@ package hudson.cli;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import hudson.matrix.MatrixConfiguration;
 import hudson.matrix.MatrixProject;
-import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
-import hudson.model.TopLevelItemDescriptor;
-import hudson.model.ViewGroup;
 import hudson.model.ViewTest.CompositeView;
 import hudson.model.View;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
@@ -41,8 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Bug;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
@@ -109,6 +98,7 @@ public class ListJobsCommandTest {
 
         final TopLevelItem job = job("job");
         final TopLevelItem nestedJob = job("nestedJob");
+        when(nestedJob.getDisplayName()).thenReturn("Nested Job");
         when(job.hasPermission(Item.READ)).thenReturn(true);
         when(nestedJob.hasPermission(Item.READ)).thenReturn(true);
         when(job.getRelativeNameFrom((ItemGroup<TopLevelItem>) folder)).thenReturn("job");
@@ -194,6 +184,7 @@ public class ListJobsCommandTest {
 
         final TopLevelItem item = mock(TopLevelItem.class);
 
+        when(item.getName()).thenReturn(name);
         when(item.getDisplayName()).thenReturn(name);
 
         return item;
