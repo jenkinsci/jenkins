@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Tracks whether any data structure changes were corrected when loading XML,
@@ -242,6 +243,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
+    @RequirePOST
     public HttpResponse doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
         if (req.hasParameter("no")) {
             disable(true);
@@ -255,6 +257,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Save all or some of the files to persist data in the new forms.
      * Remove those items from the data map.
      */
+    @RequirePOST
     public synchronized HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) throws IOException {
         String thruVerParam = req.getParameter("thruVer");
         VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
@@ -275,6 +278,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Save all files containing only unreadable data (no data upgrades), which discards this data.
      * Remove those items from the data map.
      */
+    @RequirePOST
     public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) throws IOException {
         updating = true;
         for (Iterator<Map.Entry<Saveable,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
