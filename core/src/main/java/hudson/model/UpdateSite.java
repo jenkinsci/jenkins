@@ -41,8 +41,10 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -591,6 +594,12 @@ public class UpdateSite {
         @Exported
         public final Map<String,String> optionalDependencies = new HashMap<String,String>();
 
+        /**
+         * Release date of this plugin.
+         */
+        @Exported
+        public final Date releaseDate;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -600,6 +609,7 @@ public class UpdateSite {
             this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
             this.requiredCore = get(o,"requiredCore");
             this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
+            this.releaseDate = getDate(get(o, "releaseTimestamp"));
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
                 // Make sure there's a name attribute, that that name isn't maven-plugin - we ignore that one -
@@ -615,6 +625,18 @@ public class UpdateSite {
                 
             }
 
+        }
+
+        private Date getDate(String releaseTimestamp) {
+            if (releaseTimestamp != null) {
+                try {
+                    return DateUtils.parseDate(releaseTimestamp, new String[] {"yyyy-MM-dd'T'HH:mm:ss'.00Z'"});
+                } catch (ParseException e) {
+                    LOGGER.log(Level.WARNING, "Unable to parse date " + releaseTimestamp, e);
+                    return null;
+                }
+            }
+            return null;
         }
 
         private String get(JSONObject o, String prop) {
