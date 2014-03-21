@@ -24,14 +24,17 @@
 
 package hudson.diagnosis;
 
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class OldDataMonitorTest {
@@ -58,8 +61,29 @@ public class OldDataMonitorTest {
         // did not manage to save p, but at least we are not holding onto a reference to it anymore
     }
 
+    @Bug(19544)
+    @Test public void memory() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        b.addAction(new BadAction2());
+        b.save();
+        r.jenkins.getQueue().clearLeftItems();
+        p._getRuns().purgeCache();
+        b = p.getBuildByNumber(1);
+        assertEquals(Collections.singleton(b), OldDataMonitor.get(r.jenkins).getData().keySet());
+        WeakReference<?> ref = new WeakReference<Object>(b);
+        b = null;
+        MemoryAssert.assertGC(ref);
+    }
+
     public static final class BadAction extends InvisibleAction {
         private Object writeReplace() {
+            throw new IllegalStateException("broken");
+        }
+    }
+
+    public static final class BadAction2 extends InvisibleAction {
+        private Object readResolve() {
             throw new IllegalStateException("broken");
         }
     }
