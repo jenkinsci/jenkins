@@ -68,6 +68,10 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private HashMap<Saveable,VersionRange> data = new HashMap<Saveable,VersionRange>();
     private boolean updating = false;
 
+    static OldDataMonitor get(Jenkins j) {
+        return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
+    }
+
     public OldDataMonitor() {
         super("OldData");
     }
@@ -86,7 +90,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
-        OldDataMonitor odm = (OldDataMonitor) Jenkins.getInstance().getAdministrativeMonitor("OldData");
+        OldDataMonitor odm = get(Jenkins.getInstance());
         synchronized (odm) {
             if (odm.updating) return; // Skip during doUpgrade or doDiscard
             odm.data.remove(obj);
@@ -130,7 +134,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * @param version Hudson release when the data structure changed.
      */
     public static void report(Saveable obj, String version) {
-        OldDataMonitor odm = (OldDataMonitor) Jenkins.getInstance().getAdministrativeMonitor("OldData");
+        OldDataMonitor odm = get(Jenkins.getInstance());
         synchronized (odm) {
             try {
                 VersionRange vr = odm.data.get(obj);
@@ -184,7 +188,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
             }
             return;
         }
-        OldDataMonitor odm = (OldDataMonitor) j.getAdministrativeMonitor("OldData");
+        OldDataMonitor odm = get(j);
         synchronized (odm) {
             VersionRange vr = odm.data.get(obj);
             if (vr != null) vr.extra = buf.toString();
@@ -258,7 +262,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public synchronized HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public synchronized HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
         String thruVerParam = req.getParameter("thruVer");
         VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
         updating = true;
@@ -266,8 +270,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
             Map.Entry<Saveable,VersionRange> entry = it.next();
             VersionNumber version = entry.getValue().max;
             if (version != null && (thruVer == null || !version.isNewerThan(thruVer))) {
-                entry.getKey().save();
                 it.remove();
+                try {
+                    entry.getKey().save();
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "failed to save " + entry.getKey(), x);
+                }
             }
         }
         updating = false;
@@ -279,13 +287,17 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
         updating = true;
         for (Iterator<Map.Entry<Saveable,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Saveable,VersionRange> entry = it.next();
             if (entry.getValue().max == null) {
-                entry.getKey().save();
                 it.remove();
+                try {
+                    entry.getKey().save();
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "failed to save " + entry.getKey(), x);
+                }
             }
         }
         updating = false;
