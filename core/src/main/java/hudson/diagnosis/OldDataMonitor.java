@@ -23,13 +23,13 @@
  */
 package hudson.diagnosis;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
-import hudson.model.ManagementLink;
-import jenkins.model.Jenkins;
-import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.Job;
+import hudson.model.ManagementLink;
 import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
@@ -37,22 +37,21 @@ import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.RobustReflectionConverter;
 import hudson.util.VersionNumber;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -63,9 +62,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @Extension
 public class OldDataMonitor extends AdministrativeMonitor {
-    private static Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
-    private HashMap<Saveable,VersionRange> data = new HashMap<Saveable,VersionRange>();
+    private HashMap<SaveableReference,VersionRange> data = new HashMap<SaveableReference,VersionRange>();
     private boolean updating = false;
 
     static OldDataMonitor get(Jenkins j) {
@@ -86,17 +85,24 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     public synchronized Map<Saveable,VersionRange> getData() {
-        return Collections.unmodifiableMap(data);
+        Map<Saveable,VersionRange> r = new HashMap<Saveable,VersionRange>();
+        for (Map.Entry<SaveableReference,VersionRange> entry : data.entrySet()) {
+            Saveable s = entry.getKey().get();
+            if (s != null) {
+                r.put(s, entry.getValue());
+            }
+        }
+        return r;
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
         OldDataMonitor odm = get(Jenkins.getInstance());
         synchronized (odm) {
             if (odm.updating) return; // Skip during doUpgrade or doDiscard
-            odm.data.remove(obj);
+            odm.data.remove(referTo(obj));
             if (isDelete && obj instanceof Job<?,?>)
                 for (Run r : ((Job<?,?>)obj).getBuilds())
-                    odm.data.remove(r);
+                    odm.data.remove(referTo(r));
         }
     }
 
@@ -137,9 +143,10 @@ public class OldDataMonitor extends AdministrativeMonitor {
         OldDataMonitor odm = get(Jenkins.getInstance());
         synchronized (odm) {
             try {
-                VersionRange vr = odm.data.get(obj);
+                SaveableReference ref = referTo(obj);
+                VersionRange vr = odm.data.get(ref);
                 if (vr != null) vr.add(version);
-                else            odm.data.put(obj, new VersionRange(version, null));
+                else            odm.data.put(ref, new VersionRange(version, null));
             } catch (IllegalArgumentException ex) {
                 LOGGER.log(Level.WARNING, "Bad parameter given to OldDataMonitor", ex);
             }
@@ -190,9 +197,10 @@ public class OldDataMonitor extends AdministrativeMonitor {
         }
         OldDataMonitor odm = get(j);
         synchronized (odm) {
-            VersionRange vr = odm.data.get(obj);
+            SaveableReference ref = referTo(obj);
+            VersionRange vr = odm.data.get(ref);
             if (vr != null) vr.extra = buf.toString();
-            else            odm.data.put(obj, new VersionRange(null, buf.toString()));
+            else            odm.data.put(ref, new VersionRange(null, buf.toString()));
         }
     }
 
@@ -266,16 +274,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
         String thruVerParam = req.getParameter("thruVer");
         VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
         updating = true;
-        for (Iterator<Map.Entry<Saveable,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<Saveable,VersionRange> entry = it.next();
+        for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<SaveableReference,VersionRange> entry = it.next();
             VersionNumber version = entry.getValue().max;
             if (version != null && (thruVer == null || !version.isNewerThan(thruVer))) {
                 it.remove();
-                try {
-                    entry.getKey().save();
-                } catch (Exception x) {
-                    LOGGER.log(Level.WARNING, "failed to save " + entry.getKey(), x);
-                }
+                tryToSave(entry.getKey());
             }
         }
         updating = false;
@@ -289,23 +293,84 @@ public class OldDataMonitor extends AdministrativeMonitor {
     @RequirePOST
     public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
         updating = true;
-        for (Iterator<Map.Entry<Saveable,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<Saveable,VersionRange> entry = it.next();
+        for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<SaveableReference,VersionRange> entry = it.next();
             if (entry.getValue().max == null) {
                 it.remove();
-                try {
-                    entry.getKey().save();
-                } catch (Exception x) {
-                    LOGGER.log(Level.WARNING, "failed to save " + entry.getKey(), x);
-                }
+                tryToSave(entry.getKey());
             }
         }
         updating = false;
         return HttpResponses.forwardToPreviousPage();
     }
 
+    private void tryToSave(SaveableReference ref) {
+        Saveable s = ref.get();
+        if (s != null) {
+            try {
+                s.save();
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING, "failed to save " + s, x);
+            }
+        }
+    }
+
     public HttpResponse doIndex(StaplerResponse rsp) throws IOException {
         return new HttpRedirect("manage");
+    }
+
+    /** Reference to a saveable object that need not actually hold it in heap. */
+    private interface SaveableReference {
+        @CheckForNull Saveable get();
+        // must also define equals, hashCode
+    }
+
+    private static SaveableReference referTo(Saveable s) {
+        if (s instanceof Run) {
+            return new RunSaveableReference((Run) s);
+        } else {
+            return new SimpleSaveableReference(s);
+        }
+    }
+
+    private static final class SimpleSaveableReference implements SaveableReference {
+        private final Saveable instance;
+        SimpleSaveableReference(Saveable instance) {
+            this.instance = instance;
+        }
+        @Override public Saveable get() {
+            return instance;
+        }
+        @Override public int hashCode() {
+            return instance.hashCode();
+        }
+        @Override public boolean equals(Object obj) {
+            return obj instanceof SimpleSaveableReference && instance.equals(((SimpleSaveableReference) obj).instance);
+        }
+    }
+
+    // could easily make an ItemSaveableReference, but Jenkins holds all these strongly, so why bother
+
+    private static final class RunSaveableReference implements SaveableReference {
+        private final String id;
+        RunSaveableReference(Run<?,?> r) {
+            id = r.getExternalizableId();
+        }
+        @Override public Saveable get() {
+            try {
+                return Run.fromExternalizableId(id);
+            } catch (IllegalArgumentException x) {
+                // Typically meaning the job or build was since deleted.
+                LOGGER.log(Level.FINE, null, x);
+                return null;
+            }
+        }
+        @Override public int hashCode() {
+            return id.hashCode();
+        }
+        @Override public boolean equals(Object obj) {
+            return obj instanceof RunSaveableReference && id.equals(((RunSaveableReference) obj).id);
+        }
     }
 
     @Extension
