@@ -14,6 +14,8 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertTrue;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -132,6 +134,23 @@ public class ListItemsCommandTest {
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());
         assertThat(result, listsOnlyJobs("project_in_view", "deeply_nested_project"));
+    }
+
+    @Test @SuppressWarnings("deprecation")
+    public void listJobsShouldBeDeprecatedInFavourOfListItems() {
+
+        assertTrue(new ListJobsCommand().isDeprecated());
+
+        CLICommandInvoker invoker = new CLICommandInvoker(j, new HelpCommand());
+
+        Result result = invoker.invoke();
+        assertThat(result, succeeded());
+        assertThat(result.stderr(), containsString("list-items"));
+        assertThat(result.stderr(), not(containsString("list-jobs")));
+
+        result = invoker.invokeWithArgs("list-jobs");
+        assertThat(result, succeeded());
+        assertThat(result.stderr(), containsString("Deprecated: "));
     }
 
     private TypeSafeMatcher<Result> listsOnlyJobs(final String... expected) {

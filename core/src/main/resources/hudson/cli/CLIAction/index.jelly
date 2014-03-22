@@ -40,10 +40,12 @@ THE SOFTWARE.
       <h2>${%Available Commands}</h2>
       <table>
         <j:forEach items="${h.getCLICommands()}" var="command">
-          <tr>
-            <td><a href="command/${command.name}" style="color: black; font-weight: bold">${command.name}</a></td>
-            <td>${command.shortDescription}</td>
-          </tr>
+          <j:if test="${!command.deprecated}">
+            <tr>
+              <td><a href="command/${command.name}" style="color: black; font-weight: bold">${command.name}</a></td>
+              <td>${command.shortDescription}</td>
+            </tr>
+          </j:if>
         </j:forEach>
       </table>
     </l:main-panel>

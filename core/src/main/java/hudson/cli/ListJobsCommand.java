@@ -38,8 +38,9 @@ import org.kohsuke.args4j.Argument;
  * Lists all jobs (in a specific view).
  * 
  * @author Michael Koch
+ * @deprecated Use <tt>list-items</tt> ({@link ListItemsCommand}) instead.
  */
-@Extension
+@Deprecated @Extension
 public class ListJobsCommand extends CLICommand {
     @Override
     public String getShortDescription() {
