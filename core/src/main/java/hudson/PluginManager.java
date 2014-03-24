@@ -453,6 +453,23 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (ReactorException e) {
             throw new IOException("Failed to initialize "+ sn +" plugin",e);
         }
+        
+        // recalculate dependencies of plugins optionally depending the newly deployed one.
+        for (PluginWrapper depender: plugins) {
+            if (depender.equals(p)) {
+                // skip itself.
+                continue;
+            }
+            for (Dependency d: depender.getOptionalDependencies()) {
+                if (d.shortName.equals(p.getShortName())) {
+                    // this plugin depends on the newly loaded one!
+                    // recalculate dependencies!
+                    getPluginStrategy().updateDependency(depender, p);
+                    break;
+                }
+            }
+        }
+        
         LOGGER.info("Plugin " + sn + " dynamically installed");
     }
 

@@ -41,6 +41,7 @@ import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -220,6 +221,131 @@ public class PluginManagerTest extends HudsonTestCase {
         // TODO restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
         // TODO dependencies installed or upgraded too
         // TODO required plugin installed but inactive
+    }
+
+    // plugin "depender" optionally depends on plugin "dependee".
+    // they are written like this:
+    // org.jenkinsci.plugins.dependencytest.dependee:
+    //   public class Dependee {
+    //     public static String getValue() {
+    //       return "dependee";
+    //     }
+    //   }
+    //   
+    //   public abstract class DependeeExtensionPoint implements ExtensionPoint {
+    //   }
+    //   
+    // org.jenkinsci.plugins.dependencytest.depender:
+    //   public class Depender {
+    //     public static String getValue() {
+    //       if (Jenkins.getInstance().getPlugin("dependee") != null) {
+    //         return Dependee.getValue();
+    //       }
+    //       return "depender";
+    //     }
+    //   }
+    //   
+    //   @Extension(optional=true)
+    //   public class DependerExtension extends DependeeExtensionPoint {
+    //   }
+    
+    
+    /**
+     * call org.jenkinsci.plugins.dependencytest.depender.Depender.getValue().
+     * 
+     * @return
+     * @throws Exception
+     */
+    private String callDependerValue() throws Exception {
+        Class<?> c = jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
+        Method m = c.getMethod("getValue");
+        return (String)m.invoke(null);
+    }
+    
+    /**
+     * Load "dependee" and then load "depender".
+     * Asserts that "depender" can access to "dependee".
+     * 
+     * @throws Exception
+     */
+    public void testInstallDependingPluginWithoutRestart() throws Exception {
+        // Load dependee.
+        {
+            String target = "dependee.hpi";
+            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            FileUtils.copyURLToFile(src, dest);
+            jenkins.pluginManager.dynamicLoad(dest);
+        }
+        
+        // before load depender, of course failed to call Depender.getValue()
+        try {
+            callDependerValue();
+            fail();
+        } catch (ClassNotFoundException _) {
+        }
+        
+        // No extensions exist.
+        assertTrue(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+        
+        // Load depender.
+        {
+            String target = "depender.hpi";
+            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            FileUtils.copyURLToFile(src, dest);
+            jenkins.pluginManager.dynamicLoad(dest);
+        }
+        
+        // depender successfully accesses to dependee.
+        assertEquals("dependee", callDependerValue());
+        
+        // Extension in depender is loaded.
+        assertFalse(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+    }
+    
+    /**
+     * Load "depender" and then load "dependee".
+     * Asserts that "depender" can access to "dependee".
+     * 
+     * @throws Exception
+     */
+    public void testInstallDependedPluginWithoutRestart() throws Exception {
+        // Load depender.
+        {
+            String target = "depender.hpi";
+            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            FileUtils.copyURLToFile(src, dest);
+            jenkins.pluginManager.dynamicLoad(dest);
+        }
+        
+        // before load dependee, depender does not access to dependee.
+        assertEquals("depender", callDependerValue());
+        
+        // before load dependee, of course failed to list extensions for dependee.
+        try {
+            jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
+            fail();
+        } catch( ClassNotFoundException _ ){
+        }
+        
+        // Load dependee.
+        {
+            String target = "dependee.hpi";
+            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            FileUtils.copyURLToFile(src, dest);
+            jenkins.pluginManager.dynamicLoad(dest);
+        }
+        
+        // (MUST) Not throws an exception
+        // (SHOULD) depender successfully accesses to dependee.
+        assertEquals("dependee", callDependerValue());
+        
+        // No extensions exist.
+        // extensions in depender is not loaded.
+        assertTrue(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
 
 }
