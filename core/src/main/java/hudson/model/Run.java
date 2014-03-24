@@ -422,7 +422,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     public void setResult(Result r) {
         // state can change only when we are building
-        assert state==State.BUILDING;
+        assert state==State.BUILDING : state;
 
         // result can only get worse
         if(result==null) {

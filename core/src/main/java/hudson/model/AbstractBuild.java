@@ -719,7 +719,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
                         e.printStackTrace(listener.error(msg));
                         LOGGER.log(WARNING, msg, e);
-                        setResult(Result.FAILURE);
+                        if (phase) {
+                            setResult(Result.FAILURE);
+                        }
                     }
             }
             return r;
