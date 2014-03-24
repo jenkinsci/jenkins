@@ -64,6 +64,9 @@ Upcoming changes</a>
   <li class=bug>
     <code>identity.key</code>, used to secure some communications with Jenkins, now stored encrypted with the master key.
   <li class=bug>
+    When dynamically loading a plugin which another loaded plugin already had an optional dependency on, class loading errors could result before restart.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19976">issue 19976</a>)
+  <li class=bug>
     Memory leaks in the old data monitor.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19544">issue 19544</a>)
   <li class=rfe>

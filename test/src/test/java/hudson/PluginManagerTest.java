@@ -33,13 +33,6 @@ import hudson.model.UpdateSite;
 import hudson.scm.SubversionSCM;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
-import org.apache.commons.io.FileUtils;
-import org.apache.tools.ant.filters.StringInputStream;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Url;
-import org.jvnet.hudson.test.recipes.WithPlugin;
-import org.jvnet.hudson.test.recipes.WithPluginManager;
-
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -47,6 +40,13 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.filters.StringInputStream;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Url;
+import org.jvnet.hudson.test.recipes.WithPlugin;
+import org.jvnet.hudson.test.recipes.WithPluginManager;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -310,6 +310,7 @@ public class PluginManagerTest extends HudsonTestCase {
      * 
      * @throws Exception
      */
+    @Bug(19976)
     public void testInstallDependedPluginWithoutRestart() throws Exception {
         // Load depender.
         {

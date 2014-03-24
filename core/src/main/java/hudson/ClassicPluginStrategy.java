@@ -377,15 +377,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         plugin.getPlugin().start();
     }
 
-    /**
-     * Called when a plugin is deployed, and there is a plugin optionally depending on that plugin.
-     * The class loader of the existing depending plugin should be updated
-     * to load classes from the newly deployed plugin.
-     * 
-     * @param depender the plugin to update its class loader
-     * @param dependee
-     * @see hudson.PluginStrategy#updateDependency(hudson.PluginWrapper, hudson.PluginWrapper)
-     */
     @Override
     public void updateDependency(PluginWrapper depender, PluginWrapper dependee) {
         DependencyClassLoader classLoader = findAncestorDependencyClassLoader(depender.classLoader);

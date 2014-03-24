@@ -79,10 +79,12 @@ public interface PluginStrategy extends ExtensionPoint {
 	<T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson);
     
     /**
-     * Called when a plugin that is depended by another plugin is newly deployed.
-     * 
+     * Called when a plugin is installed, but there was already a plugin installed which optionally depended on that plugin.
+     * The class loader of the existing depending plugin should be updated
+     * to load classes from the newly installed plugin.
      * @param depender plugin depending on dependee.
      * @param dependee newly loaded plugin.
+     * @since 1.557
      */
     void updateDependency(PluginWrapper depender, PluginWrapper dependee);
 }
