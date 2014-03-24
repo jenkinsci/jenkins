@@ -401,7 +401,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected void printUsageSummary(PrintStream stderr) {
         if (isDeprecated()) {
-            stderr.append(Messages.CLICommand_Deprecated());
+            stderr.append(Messages.CLICommand_Deprecated()).append(" ");
         }
         stderr.println(getShortDescription());
     }

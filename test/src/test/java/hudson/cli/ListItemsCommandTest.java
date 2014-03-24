@@ -150,7 +150,7 @@ public class ListItemsCommandTest {
 
         result = invoker.invokeWithArgs("list-jobs");
         assertThat(result, succeeded());
-        assertThat(result.stderr(), containsString("Deprecated: "));
+        assertThat(result.stderr(), containsString("This command is deprecated."));
     }
 
     @Test
