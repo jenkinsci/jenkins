@@ -701,7 +701,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     };
 
+    /**
+     * Gets the Jenkins singleton.
+     * @return the instance, or null if Jenkins has not been started, or was already shut down
+     */
     @CLIResolver
+    @CheckForNull
     public static Jenkins getInstance() {
         return HOLDER.getInstance();
     }

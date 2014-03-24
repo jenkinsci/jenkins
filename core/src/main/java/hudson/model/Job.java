@@ -787,7 +787,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see RunMap
      */
     public File getBuildDir() {
-        return Jenkins.getInstance().getBuildDirFor(this);
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return new File(getRootDir(), "builds");
+        }
+        return j.getBuildDirFor(this);
     }
 
     /**
