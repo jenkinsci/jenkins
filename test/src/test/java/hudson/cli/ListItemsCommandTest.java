@@ -68,7 +68,7 @@ public class ListItemsCommandTest {
         Result result = command.invokeWithArgs("NoSuchViewOrItemGroup");
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view or item group with the given name found"));
+        assertThat(result.stderr(), containsString("No view or item group named 'NoSuchViewOrItemGroup' found"));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class ListItemsCommandTest {
 
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view or item group with the given name found"));
+        assertThat(result.stderr(), containsString("No view or item group named 'MatrixProject' found"));
     }
 
     @Test
@@ -151,6 +151,34 @@ public class ListItemsCommandTest {
         result = invoker.invokeWithArgs("list-jobs");
         assertThat(result, succeeded());
         assertThat(result.stderr(), containsString("Deprecated: "));
+    }
+
+    @Test
+    public void showDisplayNames() throws Exception {
+
+        MockFolder folder = j.createFolder("outer_folder");
+        folder.setDisplayName("Outer Folder");
+
+        FreeStyleProject project = folder.createProject(FreeStyleProject.class, "project");
+        project.setDisplayName("A Project");
+
+        Result result = command.invokeWithArgs("--show-display-names");
+        assertThat(result, succeeded());
+        assertThat(result.stdout(), containsString("Outer Folder"));
+        assertThat(result.stdout(), not(containsString("outer_folder")));
+
+        result = command.invokeWithArgs("outer_folder", "--show-display-names", "--recursive");
+        assertThat(result, succeeded());
+        assertThat(result.stdout(), containsString("Outer Folder » A Project"));
+        assertThat(result.stdout(), not(containsString("outer_folder")));
+        assertThat(result.stdout(), not(containsString("project")));
+
+        result = command.invokeWithArgs("--show-display-names", "--recursive");
+        assertThat(result, succeeded());
+        assertThat(result.stdout(), containsString("Outer Folder"));
+        assertThat(result.stdout(), containsString("Outer Folder » A Project"));
+        assertThat(result.stdout(), not(containsString("outer_folder")));
+        assertThat(result.stdout(), not(containsString("project")));
     }
 
     private TypeSafeMatcher<Result> listsOnlyJobs(final String... expected) {

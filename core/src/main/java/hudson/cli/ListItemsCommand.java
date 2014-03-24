@@ -52,17 +52,24 @@ public class ListItemsCommand extends CLICommand {
     @Option(name = "--recursive", aliases = "-r", usage = "List jobs in nested views or folders")
     public boolean recursive = false;
 
+    @Option(name = "--show-display-names", usage = "Show display names instead of names")
+    public boolean showDisplayNames = false;
+
     @Override
     protected int run() throws Exception {
 
         final Collection<? extends Item> items = items();
         if (items == null) {
-            stderr.println("No view or item group with the given name found");
+            stderr.println("No view or item group named '" + name + "' found");
             return -1;
         }
 
         for (Item i: items) {
-            stdout.println(i.getRelativeNameFrom(Jenkins.getInstance()));
+            final String entry = showDisplayNames
+                    ? i.getFullDisplayName()
+                    : i.getFullName()
+            ;
+            stdout.println(entry);
         }
 
         return 0;
