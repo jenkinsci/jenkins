@@ -28,15 +28,16 @@ import java.util.Collection;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 
-import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import hudson.model.ViewGroup;
 
 /**
  * List items in view or folder.
@@ -46,10 +47,13 @@ import hudson.model.View;
 @Extension
 public class ListItemsCommand extends CLICommand {
 
-    @Argument(metaVar = "NAME", usage = "View or Folder to list. List all jobs if ommited.", required = false)
-    public String name;
+    @Option(name = "--folder", aliases = "-f", usage = "List items in specific folder (defaults to Jenkins)")
+    public String folder;
 
-    @Option(name = "--recursive", aliases = "-r", usage = "List jobs in nested views or folders")
+    @Option(name = "--view", aliases = "-v", usage = "List items in specific view")
+    public String view;
+
+    @Option(name = "--recursive", aliases = "-r", usage = "List items in nested views or folders")
     public boolean recursive = false;
 
     @Option(name = "--show-display-names", usage = "Show display names instead of names")
@@ -58,9 +62,11 @@ public class ListItemsCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        final Collection<? extends Item> items = items();
-        if (items == null) {
-            stderr.println("No view or item group named '" + name + "' found");
+        Collection<? extends Item> items;
+        try {
+            items = items();
+        } catch (IllegalArgumentException ex) {
+            stderr.println(ex.getMessage());
             return -1;
         }
 
@@ -78,31 +84,45 @@ public class ListItemsCommand extends CLICommand {
     private Collection<? extends Item> items() {
         Jenkins j = Jenkins.getInstance();
 
-        if (name == null) {
+        if (folder == null && view == null) {
             return recursive
                     ? j.getAllItems(TopLevelItem.class)
                     : j.getItems()
             ;
         }
 
-        View view = j.getView(name);
-        if (view != null) {
+        final ItemGroup<?> itemGroup = folder();
+        if (view == null) {
             return recursive
-                    ? view.getAllItems()
-                    : view.getItems()
+                    ? Items.getAllItems(itemGroup, TopLevelItem.class)
+                    : Util.filter(itemGroup.getItems(), TopLevelItem.class)
             ;
         }
 
-        final Item item = j.getItemByFullName(name);
-        if (item instanceof ModifiableTopLevelItemGroup) {
-            ModifiableTopLevelItemGroup i = (ModifiableTopLevelItemGroup) item;
-            return recursive
-                    ? Items.getAllItems(i, TopLevelItem.class)
-                    : Util.filter(i.getItems(), TopLevelItem.class)
-            ;
+        final View view = view(itemGroup);
+        return recursive
+                ? view.getAllItems()
+                : view.getItems()
+        ;
+    }
+
+    private ItemGroup<?> folder() {
+        Jenkins j = Jenkins.getInstance();
+
+        if (folder == null) return j;
+
+        final Item item = j.getItemByFullName(folder);
+        if (item instanceof ModifiableTopLevelItemGroup) return (ItemGroup<?>) item;
+
+        throw new IllegalArgumentException("No folder named '" + folder + "' found");
+    }
+
+    private View view(final ItemGroup<?> f) throws IllegalArgumentException {
+        if (!(f instanceof ViewGroup)) {
+            throw new IllegalArgumentException("Folder can not contain views");
         }
 
-        return null;
+        return View.getViewByFullName(this.view, (ViewGroup) f);
     }
 
     @Override

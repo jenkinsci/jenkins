@@ -30,11 +30,9 @@ import org.jvnet.hudson.test.MockViewGroup;
 public class ListItemsCommandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
-    private CLICommandInvoker command;
 
-    @Before
-    public void setUp() {
-        command = new CLICommandInvoker(j, new ListItemsCommand());
+    private CLICommandInvoker command() {
+        return new CLICommandInvoker(j, new ListItemsCommand());
     }
 
     @Test
@@ -49,13 +47,13 @@ public class ListItemsCommandTest {
         MockFolder folder = j.createFolder("folder");
         folder.createProject(FreeStyleProject.class, "project_in_folder");
 
-        Result result = command.invoke();
+        Result result = command().invoke();
 
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());
         assertThat(result, listsOnlyJobs("top_level_project", "project_in_view", "folder"));
 
-        result = command.invokeWithArgs("-r");
+        result = command().invokeWithArgs("-r");
 
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());
@@ -63,12 +61,38 @@ public class ListItemsCommandTest {
     }
 
     @Test
-    public void failForNonexistingName() {
+    public void failForNonexistingName() throws Exception {
 
-        Result result = command.invokeWithArgs("NoSuchViewOrItemGroup");
+        Result result = command().invokeWithArgs("--folder", "NoSuchItemGroup");
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view or item group named 'NoSuchViewOrItemGroup' found"));
+        assertThat(result.stderr(), containsString("No folder named 'NoSuchItemGroup' found"));
+
+        result = command().invokeWithArgs("--view", "NoSuchView");
+        assertThat(result, failedWith(-1));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("No view named NoSuchView inside view Jenkins"));
+
+        result = command().invokeWithArgs("--view", "NoSuchView", "--folder", "NoSuchItemGroup");
+        assertThat(result, failedWith(-1));
+
+        j.createFolder("folderA");
+        result = command().invokeWithArgs("--folder", "folderA", "--view", "NoSuchView");
+        assertThat(result, failedWith(-1));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("No view named NoSuchView inside view folderA"));
+
+        j.jenkins.addView(new ListView("flat_view", j.jenkins));
+        result = command().invokeWithArgs("--view", "flat_view/inner");
+        assertThat(result, failedWith(-1));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("flat_view view can not contain views"));
+
+        j.jenkins.addView(new MockViewGroup("nested_view", j.jenkins));
+        result = command().invokeWithArgs("--view", "nested_view/inner");
+        assertThat(result, failedWith(-1));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("No view named inner inside view nested_view"));
     }
 
     @Test
@@ -78,11 +102,11 @@ public class ListItemsCommandTest {
         MatrixProject project = j.createMatrixProject("MatrixProject");
         project.setAxes(new AxisList(new TextAxis("axis", "a", "b", "c")));
 
-        Result result = command.invokeWithArgs("MatrixProject");
+        Result result = command().invokeWithArgs("--folder", "MatrixProject");
 
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view or item group named 'MatrixProject' found"));
+        assertThat(result.stderr(), containsString("No folder named 'MatrixProject' found"));
     }
 
     @Test
@@ -97,14 +121,14 @@ public class ListItemsCommandTest {
                 .createProject(FreeStyleProject.class, "deeply_nested_project")
         ;
 
-        Result result = command.invokeWithArgs("MyFolder");
+        Result result = command().invokeWithArgs("--folder", "MyFolder");
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());
         assertThat(result, listsOnlyJobs(
                 "MyFolder/project_in_folder", "MyFolder/InnerFolder"
         ));
 
-        result = command.invokeWithArgs("--recursive", "MyFolder");
+        result = command().invokeWithArgs("--recursive", "--folder", "MyFolder");
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());
         assertThat(result, listsOnlyJobs(
@@ -125,12 +149,12 @@ public class ListItemsCommandTest {
         viewGroup.getViews().add(innerView);
         innerView.add(j.createFreeStyleProject("deeply_nested_project"));
 
-        Result result = command.invokeWithArgs("MyViewGroup");
+        Result result = command().invokeWithArgs("--view", "MyViewGroup");
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());
         assertThat(result, listsOnlyJobs("project_in_view"));
 
-        result = command.invokeWithArgs("--recursive", "MyViewGroup");
+        result = command().invokeWithArgs("--recursive", "--view", "MyViewGroup");
         assertThat(result, succeeded());
         assertThat(result, hasNoErrorOutput());
         assertThat(result, listsOnlyJobs("project_in_view", "deeply_nested_project"));
@@ -162,23 +186,56 @@ public class ListItemsCommandTest {
         FreeStyleProject project = folder.createProject(FreeStyleProject.class, "project");
         project.setDisplayName("A Project");
 
-        Result result = command.invokeWithArgs("--show-display-names");
+        Result result = command().invokeWithArgs("--show-display-names");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Outer Folder"));
         assertThat(result.stdout(), not(containsString("outer_folder")));
 
-        result = command.invokeWithArgs("outer_folder", "--show-display-names", "--recursive");
+        result = command().invokeWithArgs("-f", "outer_folder", "--show-display-names", "--recursive");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Outer Folder » A Project"));
         assertThat(result.stdout(), not(containsString("outer_folder")));
         assertThat(result.stdout(), not(containsString("project")));
 
-        result = command.invokeWithArgs("--show-display-names", "--recursive");
+        result = command().invokeWithArgs("--show-display-names", "--recursive");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Outer Folder"));
         assertThat(result.stdout(), containsString("Outer Folder » A Project"));
         assertThat(result.stdout(), not(containsString("outer_folder")));
         assertThat(result.stdout(), not(containsString("project")));
+    }
+
+    @Test
+    public void listViewInsideFolder() throws Exception {
+
+        MockFolder folder = j.createFolder("folder");
+
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+        view.add(folder.createProject(FreeStyleProject.class, "in_view"));
+
+        MockViewGroup nestedView = new MockViewGroup("nested_view", folder);
+        folder.addView(nestedView);
+        nestedView.getItems().add(folder.createProject(FreeStyleProject.class, "in_nested_view"));
+
+        ListView leafView = new ListView("leaf_view", nestedView);
+        nestedView.getViews().add(leafView);
+        leafView.add(folder.createProject(FreeStyleProject.class, "deeply_nested"));
+
+        Result result = command().invokeWithArgs("--folder", "folder", "--recursive");
+        assertThat(result, succeeded());
+        assertThat(result, hasNoErrorOutput());
+        assertThat(result, listsOnlyJobs("folder/in_view", "folder/in_nested_view", "folder/deeply_nested"));
+
+        result = command().invokeWithArgs("--folder", "folder", "--view", "nested_view", "--recursive");
+        assertThat(result, succeeded());
+        assertThat(result, hasNoErrorOutput());
+        assertThat(result, listsOnlyJobs("folder/in_nested_view", "folder/deeply_nested"));
+
+        result = command().invokeWithArgs("--folder", "folder", "--view", "nested_view/leaf_view");
+        assertThat(result, succeeded());
+        assertThat(result, hasNoErrorOutput());
+        assertThat(result, listsOnlyJobs("folder/deeply_nested"));
     }
 
     private TypeSafeMatcher<Result> listsOnlyJobs(final String... expected) {
