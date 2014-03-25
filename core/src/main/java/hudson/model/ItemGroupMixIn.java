@@ -206,6 +206,7 @@ public abstract class ItemGroupMixIn {
     @SuppressWarnings({"unchecked"})
     public synchronized <T extends TopLevelItem> T copy(T src, String name) throws IOException {
         acl.checkPermission(Item.CREATE);
+        src.checkPermission(Item.EXTENDED_READ);
 
         T result = (T)createProject(src.getDescriptor(),name,false);
 
@@ -235,6 +236,7 @@ public abstract class ItemGroupMixIn {
         if (parent.getItem(name) != null) {
             throw new IllegalArgumentException(parent.getDisplayName() + " already contains an item '" + name + "'");
         }
+        // TODO what if we have no DISCOVER permission on the existing job?
 
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
@@ -269,6 +271,7 @@ public abstract class ItemGroupMixIn {
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
         if(parent.getItem(name)!=null)
             throw new IllegalArgumentException("Project of the name "+name+" already exists");
+        // TODO problem with DISCOVER as noted above
 
         TopLevelItem item = type.newInstance(parent, name);
         try {

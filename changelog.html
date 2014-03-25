@@ -58,15 +58,37 @@ Upcoming changes</a>
   <li class=bug>
     Fixed a slow down in resource loading caused by fix to JENKINS-18677.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21579">issue 21579</a>)
-  <li class=rfe>
-    Option to download metadata directly from Jenkins rather than going through the browser.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19081">issue 19081</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.556>What's new in 1.556</a> <!--=DATE=--></h3>
+<h3><a name=v1.557>What's new in 1.557</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Fixed <tt>ArrayIndexOutOfBoundsException</tt> in XStream with Oracle JDK8 release version
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18537">issue 18537</a>)
+  <li class=bug>
+    Corrected permission checks for <code>copy-job</code> and <code>create-job</code> CLI commands.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22262">issue 22262</a>)
+  <li class=bug>
+    <code>identity.key</code>, used to secure some communications with Jenkins, now stored encrypted with the master key.
+  <li class=bug>
+    When dynamically loading a plugin which another loaded plugin already had an optional dependency on, class loading errors could result before restart.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19976">issue 19976</a>)
+  <li class=bug>
+    Memory leaks in the old data monitor.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19544">issue 19544</a>)
+  <li class=rfe>
+    Ability for custom view types to disable automatic refresh.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21190">issue 21190</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21191">issue 21191</a>)
+  <li class=rfe>
+    Option to download metadata directly from Jenkins rather than going through the browser.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19081">issue 19081</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.556>What's new in 1.556</a> (2014/03/23)</h3>
 <ul class=image>
   <li class=rfe>
     Access through API token and SSH key login now fully retains group memberships.
@@ -77,7 +99,6 @@ Upcoming changes</a>
   <li class=rfe>
     Job can be reloaded individually from disk with "job/FOO/reload" URL or "reload-job" CLI command
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.555>What's new in 1.555</a> (2014/03/16)</h3>
 <ul class=image>
   <li class=bug>
@@ -130,6 +151,8 @@ Upcoming changes</a>
   <li class=bug>
     Expensive symlink-related calls on Windows can be simplified.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20534">issue 20534</a>)
+  <li class=rfe>
+    Improve detection of broken reverse proxy setups.
 </ul>
 <h3><a name=v1.551>What's new in 1.551</a> (2014/02/14)</h3>
 <ul class=image>

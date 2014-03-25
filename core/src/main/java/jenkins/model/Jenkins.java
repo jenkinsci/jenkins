@@ -701,7 +701,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     };
 
+    /**
+     * Gets the Jenkins singleton.
+     * @return the instance, or null if Jenkins has not been started, or was already shut down
+     */
     @CLIResolver
+    @CheckForNull
     public static Jenkins getInstance() {
         return HOLDER.getInstance();
     }
@@ -3392,7 +3397,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the {@link Authentication} object that represents the user
      * associated with the current request.
      */
-    public static Authentication getAuthentication() {
+    public static @Nonnull Authentication getAuthentication() {
         Authentication a = SecurityContextHolder.getContext().getAuthentication();
         // on Tomcat while serving the login page, this is null despite the fact
         // that we have filters. Looking at the stack trace, Tomcat doesn't seem to

@@ -377,6 +377,36 @@ public class ClassicPluginStrategy implements PluginStrategy {
         plugin.getPlugin().start();
     }
 
+    @Override
+    public void updateDependency(PluginWrapper depender, PluginWrapper dependee) {
+        DependencyClassLoader classLoader = findAncestorDependencyClassLoader(depender.classLoader);
+        if (classLoader != null) {
+            classLoader.updateTransientDependencies();
+            LOGGER.log(Level.INFO, "Updated dependency of {0}", depender.getShortName());
+        }
+    }
+
+    private DependencyClassLoader findAncestorDependencyClassLoader(ClassLoader classLoader)
+    {
+        for (; classLoader != null; classLoader = classLoader.getParent()) {
+            if (classLoader instanceof DependencyClassLoader) {
+                return (DependencyClassLoader)classLoader;
+            }
+            
+            if (classLoader instanceof AntClassLoader) {
+                // AntClassLoaders hold parents not only as AntClassLoader#getParent()
+                // but also as AntClassLoader#getConfiguredParent()
+                DependencyClassLoader ret = findAncestorDependencyClassLoader(
+                        ((AntClassLoader)classLoader).getConfiguredParent()
+                );
+                if (ret != null) {
+                    return ret;
+                }
+            }
+        }
+        return null;
+    }
+
     private static File resolve(File base, String relative) {
         File rel = new File(relative);
         if(rel.isAbsolute())
@@ -521,6 +551,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
             super(parent);
             this._for = archive;
             this.dependencies = dependencies;
+        }
+
+        private void updateTransientDependencies() {
+            // This will be recalculated at the next time.
+            transientDependencies = null;
         }
 
         private List<PluginWrapper> getTransitiveDependencies() {
