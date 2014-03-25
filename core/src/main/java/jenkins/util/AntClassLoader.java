@@ -29,6 +29,8 @@ import org.apache.tools.ant.util.JavaEnvUtils;
 import org.apache.tools.ant.util.LoaderUtils;
 import org.apache.tools.ant.util.ReflectUtil;
 import org.apache.tools.ant.util.VectorSet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -72,6 +74,7 @@ import java.util.jar.Manifest;
  * </p>
  *
  */
+@Restricted(NoExternalUse.class)
 public class AntClassLoader extends ClassLoader implements SubBuildListener {
 
     private static final FileUtils FILE_UTILS = FileUtils.getFileUtils();
@@ -245,6 +248,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @param classpath The classpath to use to load classes.
      */
     public AntClassLoader(ClassLoader parent, Project project, Path classpath) {
+        super(parent);  // KK patch for JENKINS-21579
         setParent(parent);
         setClassPath(classpath);
         setProject(project);
@@ -330,6 +334,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      *                    load the a class through this loader.
      */
     public AntClassLoader(ClassLoader parent, boolean parentFirst) {
+        super(parent);  // KK patch for JENKINS-21579
         setParent(parent);
         project = null;
         this.parentFirst = parentFirst;
