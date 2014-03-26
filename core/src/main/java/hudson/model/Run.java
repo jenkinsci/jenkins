@@ -427,10 +427,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // result can only get worse
         if(result==null) {
             result = r;
-            LOGGER.log(FINE, this + " : result is set to " + r, new Exception());
+            LOGGER.log(FINE, this + " : result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
         } else {
             if(r.isWorseThan(result)) {
-                LOGGER.log(FINE, this + " : result is set to " + r, new Exception());
+                LOGGER.log(FINE, this + " : result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
                 result = r;
             }
         }
@@ -1452,7 +1452,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         File rootDir = getRootDir();
         if (!rootDir.isDirectory()) {
-            throw new IOException(rootDir + " looks to have already been deleted");
+            throw new IOException(this + ": " + rootDir + " looks to have already been deleted");
         }
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
@@ -1469,6 +1469,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         if(!renamingSucceeded)
             throw new IOException(rootDir+" is in use");
+        LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
 
         removeRunFromParent();
     }
