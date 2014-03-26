@@ -25,41 +25,50 @@
  */
 package hudson;
 
+import com.jcraft.jzlib.GZIPInputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.os.PosixAPI;
-import jenkins.model.Jenkins;
-import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
+import hudson.model.TaskListener;
+import hudson.org.apache.tools.tar.TarInputStream;
+import hudson.os.PosixAPI;
+import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
+import hudson.remoting.LocalChannel;
 import hudson.remoting.Pipe;
+import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
-import hudson.remoting.RemoteInputStream;
 import hudson.remoting.Which;
 import hudson.security.AccessControlled;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.DirScanner;
-import hudson.util.HeadBufferingStream;
+import hudson.util.ExceptionCatchingThreadFactory;
+import hudson.util.FileVisitor;
 import hudson.util.FormValidation;
+import hudson.util.HeadBufferingStream;
 import hudson.util.IOUtils;
-
-import static hudson.Util.*;
-import static hudson.FilePath.TarCompression.GZIP;
-import hudson.org.apache.tools.tar.TarInputStream;
+import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
+import jenkins.model.Jenkins;
+import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.VirtualFile;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.input.CountingInputStream;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
-import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.fileupload.FileItem;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
 import org.kohsuke.stapler.Stapler;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -72,37 +81,34 @@ import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
-import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
-
-import hudson.os.PosixException;
-import hudson.util.FileVisitor;
-import java.util.Enumeration;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.tools.zip.ZipFile;
-import org.apache.tools.zip.ZipEntry;
+import static hudson.FilePath.TarCompression.*;
+import static hudson.Util.*;
         
 /**
  * {@link File} like object with remoting support.
@@ -196,7 +202,7 @@ public final class FilePath implements Serializable {
      *      that's connected to that machine. If null, that means the local file path.
      */
     public FilePath(VirtualChannel channel, String remote) {
-        this.channel = channel == Jenkins.MasterComputer.localChannel ? null : channel;
+        this.channel = channel instanceof LocalChannel ? null : channel;
         this.remote = normalize(remote);
     }
 
@@ -911,7 +917,7 @@ public final class FilePath implements Serializable {
             }
         } else {
             // the file is on the local machine.
-            return callable.invoke(new File(remote), Jenkins.MasterComputer.localChannel);
+            return callable.invoke(new File(remote), localChannel);
         }
     }
 
@@ -985,7 +991,7 @@ public final class FilePath implements Serializable {
                 }
             }
 
-            return (channel!=null ? channel : Jenkins.MasterComputer.localChannel)
+            return (channel!=null ? channel : localChannel)
                 .callAsync(wrapper);
         } catch (IOException e) {
             // wrap it into a new IOException so that we get the caller's stack trace as well.
@@ -2402,7 +2408,7 @@ public final class FilePath implements Serializable {
 
     public VirtualChannel getChannel() {
         if(channel!=null)   return channel;
-        else                return Jenkins.MasterComputer.localChannel;
+        else                return localChannel;
     }
 
     /**
@@ -2544,4 +2550,11 @@ public final class FilePath implements Serializable {
 
     }
 
+    private static final ExecutorService threadPoolForRemoting = new ContextResettingExecutorService(
+            Executors.newCachedThreadPool(
+                    new ExceptionCatchingThreadFactory(
+                            new NamingThreadFactory(new DaemonThreadFactory(), "FilePath.localPool"))
+            ));
+
+    public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
 }

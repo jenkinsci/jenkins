@@ -23,51 +23,30 @@
  */
 package hudson.slaves;
 
-import hudson.model.*;
-import hudson.util.io.ReopenableRotatingFileOutputStream;
-import jenkins.model.Jenkins.MasterComputer;
-import hudson.remoting.Channel;
-import hudson.remoting.VirtualChannel;
-import hudson.remoting.Callable;
-import hudson.util.StreamTaskListener;
-import hudson.util.NullStream;
-import hudson.util.RingBufferLogHandler;
-import hudson.util.Futures;
+import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Util;
-import hudson.AbortException;
+import hudson.model.Computer;
+import hudson.model.Executor;
+import hudson.model.ExecutorListener;
+import hudson.model.Node;
+import hudson.model.Queue;
+import hudson.model.Slave;
+import hudson.model.TaskListener;
+import hudson.model.User;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
+import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
-import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import hudson.slaves.OfflineCause.ChannelTermination;
+import hudson.util.Futures;
+import hudson.util.NullStream;
+import hudson.util.RingBufferLogHandler;
 import hudson.util.Secret;
-
-import java.io.File;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.security.SecureRandom;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.logging.Handler;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.nio.charset.Charset;
-import java.util.concurrent.Future;
-import java.security.Security;
-
+import hudson.util.StreamTaskListener;
 import hudson.util.io.ReopenableFileOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.security.GeneralSecurityException;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.RequestDispatcher;
+import hudson.util.io.ReopenableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
@@ -83,9 +62,44 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.io.IOUtils;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.ResponseImpl;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.compression.FilterServletOutputStream;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+import static hudson.slaves.SlaveComputer.LogHolder.*;
 
 /**
  * {@link Computer} for {@link Slave}s.
@@ -765,7 +779,7 @@ public class SlaveComputer extends Computer {
      */
     public static VirtualChannel getChannelToMaster() {
         if (Jenkins.getInstance()!=null)
-            return MasterComputer.localChannel;
+            return FilePath.localChannel;
 
         // if this method is called from within the slave computation thread, this should work
         Channel c = Channel.current();

@@ -26,14 +26,44 @@
  */
 package jenkins.model;
 
+import antlr.ANTLRException;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
+import com.thoughtworks.xstream.XStream;
+import hudson.BulkChange;
+import hudson.DNSMultiCast;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
-import hudson.init.*;
-import hudson.model.LoadStatistics;
-import hudson.model.Messages;
-import hudson.model.Node;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.Launcher;
+import hudson.Launcher.LocalLauncher;
+import hudson.LocalPluginManager;
+import hudson.Lookup;
+import hudson.Plugin;
+import hudson.PluginManager;
+import hudson.PluginWrapper;
+import hudson.ProxyConfiguration;
+import hudson.TcpSlaveAgentListener;
+import hudson.UDPBroadcastThread;
+import hudson.Util;
+import hudson.WebAppMain;
+import hudson.XmlFile;
+import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
+import hudson.init.InitMilestone;
+import hudson.init.InitStrategy;
+import hudson.init.TerminatorFinder;
+import hudson.lifecycle.Lifecycle;
+import hudson.lifecycle.RestartNotSupportedException;
+import hudson.logging.LogRecorderManager;
+import hudson.markup.EscapedMarkupFormatter;
+import hudson.markup.MarkupFormatter;
 import hudson.model.AbstractCIBase;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -45,6 +75,7 @@ import hudson.model.ComputerSet;
 import hudson.model.DependencyGraph;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.DescriptorByNameOwner;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Failure;
@@ -56,18 +87,22 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ItemGroupMixIn;
 import hudson.model.Items;
-import hudson.model.ModifiableViewGroup;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.Label;
 import hudson.model.ListView;
 import hudson.model.LoadBalancer;
+import hudson.model.LoadStatistics;
 import hudson.model.ManagementLink;
+import hudson.model.Messages;
+import hudson.model.ModifiableViewGroup;
 import hudson.model.NoFingerprintMatch;
+import hudson.model.Node;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.PaneStatusProperties;
 import hudson.model.Project;
+import hudson.model.Queue;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -80,47 +115,11 @@ import hudson.model.UpdateCenter;
 import hudson.model.User;
 import hudson.model.View;
 import hudson.model.ViewGroupMixIn;
-import hudson.model.Descriptor.FormException;
+import hudson.model.WorkspaceCleanupThread;
 import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.Queue;
-import hudson.model.WorkspaceCleanupThread;
-
-import antlr.ANTLRException;
-import com.google.common.collect.ImmutableMap;
-import com.thoughtworks.xstream.XStream;
-import hudson.BulkChange;
-import hudson.DNSMultiCast;
-import hudson.DescriptorExtensionList;
-import hudson.Extension;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import hudson.FilePath;
-import hudson.Functions;
-import hudson.Launcher;
-import hudson.Launcher.LocalLauncher;
-import hudson.LocalPluginManager;
-import hudson.Lookup;
-import hudson.markup.MarkupFormatter;
-import hudson.Plugin;
-import hudson.PluginManager;
-import hudson.PluginWrapper;
-import hudson.ProxyConfiguration;
-import hudson.TcpSlaveAgentListener;
-import hudson.UDPBroadcastThread;
-import hudson.Util;
-import static hudson.Util.fixEmpty;
-import static hudson.Util.fixNull;
-import hudson.WebAppMain;
-import hudson.XmlFile;
-import hudson.cli.declarative.CLIMethod;
-import hudson.cli.declarative.CLIResolver;
-import hudson.lifecycle.Lifecycle;
-import hudson.logging.LogRecorderManager;
-import hudson.lifecycle.RestartNotSupportedException;
-import hudson.markup.EscapedMarkupFormatter;
 import hudson.remoting.Callable;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
@@ -132,6 +131,7 @@ import hudson.search.SearchItem;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
+import hudson.security.BasicAuthenticationFilter;
 import hudson.security.FederatedLoginService;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonFilter;
@@ -176,6 +176,7 @@ import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
 import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
+import hudson.util.NamingThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.StreamTaskListener;
@@ -194,6 +195,7 @@ import jenkins.InitReactorRunner;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
+import jenkins.security.SecurityListener;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
@@ -210,11 +212,11 @@ import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.logging.LogFactory;
 import org.jvnet.hudson.reactor.Executable;
+import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.Task;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
-import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -240,18 +242,15 @@ import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.xml.sax.InputSource;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-
-import static hudson.init.InitMilestone.*;
-import hudson.security.BasicAuthenticationFilter;
-import hudson.util.NamingThreadFactory;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -291,13 +290,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import static java.util.logging.Level.SEVERE;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import jenkins.security.SecurityListener;
+
+import static hudson.Util.*;
+import static hudson.init.InitMilestone.*;
+import static java.util.logging.Level.*;
+import static javax.servlet.http.HttpServletResponse.*;
 
 /**
  * Root object of the system.
@@ -2937,7 +2936,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
 		if (toComputer() == null) {
-			future.put("master", RemotingDiagnostics.getThreadDumpAsync(MasterComputer.localChannel));
+			future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel));
 		}
 
         // if the result isn't available in 5 sec, ignore that.
@@ -3206,7 +3205,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Obtains the heap dump.
      */
     public HeapDump getHeapDump() throws IOException {
-        return new HeapDump(this,MasterComputer.localChannel);
+        return new HeapDump(this,FilePath.localChannel);
     }
 
     /**
@@ -3413,14 +3412,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Run arbitrary Groovy script.
      */
     public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doScript(req, rsp, req.getView(this, "_script.jelly"), MasterComputer.localChannel, getACL());
+        _doScript(req, rsp, req.getView(this, "_script.jelly"), FilePath.localChannel, getACL());
     }
 
     /**
      * Run arbitrary Groovy script and return result as plain text.
      */
     public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doScript(req, rsp, req.getView(this, "_scriptText.jelly"), MasterComputer.localChannel, getACL());
+        _doScript(req, rsp, req.getView(this, "_scriptText.jelly"), FilePath.localChannel, getACL());
     }
 
     /**
@@ -3899,7 +3898,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public VirtualChannel getChannel() {
-            return localChannel;
+            return FilePath.localChannel;
         }
 
         @Override
@@ -3923,8 +3922,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         /**
          * {@link LocalChannel} instance that can be used to execute programs locally.
+         *
+         * @deprecated as of 1.558
+         *      Use {@link FilePath#localChannel}
          */
-        public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
+        public static final LocalChannel localChannel = FilePath.localChannel;
     }
 
     /**
