@@ -736,7 +736,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     @Override
     public String toString() {
-        return getFullDisplayName();
+        return project.getFullName() + " #" + number;
     }
 
     @Exported
@@ -2121,7 +2121,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // due to dependencies!
         String why = getWhyKeepLog();
         if (why!=null) {
-            sendError(Messages.Run_UnableToDelete(toString(),why),req,rsp);
+            sendError(Messages.Run_UnableToDelete(getFullDisplayName(), why), req, rsp);
             return;
         }
 

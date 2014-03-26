@@ -100,7 +100,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         // due to dependencies!
         String why = getWhyKeepLog();
         if (why!=null) {
-            sendError(hudson.model.Messages.Run_UnableToDelete(toString(),why),req,rsp);
+            sendError(hudson.model.Messages.Run_UnableToDelete(getFullDisplayName(), why), req, rsp);
             return;
         }
         
@@ -108,7 +108,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
         for(MatrixRun run : runs){
         	why = run.getWhyKeepLog();
             if (why!=null) {
-                sendError(hudson.model.Messages.Run_UnableToDelete(toString(),why),req,rsp);
+                sendError(hudson.model.Messages.Run_UnableToDelete(getFullDisplayName(), why), req, rsp);
                 return;
             }
         	run.delete();
