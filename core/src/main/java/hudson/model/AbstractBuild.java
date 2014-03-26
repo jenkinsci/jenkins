@@ -712,7 +712,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if ((bs instanceof Publisher && ((Publisher)bs).needsToRunAfterFinalized()) ^ phase)
                     try {
                         if (!perform(bs,listener)) {
-                            LOGGER.fine(MessageFormat.format("{0} : {1} failed", AbstractBuild.this.toString(), bs));
+                            LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                             r = false;
                         }
                     } catch (Exception e) {
@@ -776,7 +776,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected final boolean preBuild(BuildListener listener,Iterable<? extends BuildStep> steps) {
             for (BuildStep bs : steps)
                 if (!bs.prebuild(AbstractBuild.this,listener)) {
-                    LOGGER.fine(MessageFormat.format("{0} : {1} failed", AbstractBuild.this.toString(), bs));
+                    LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                     return false;
                 }
             return true;

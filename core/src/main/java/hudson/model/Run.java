@@ -427,10 +427,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // result can only get worse
         if(result==null) {
             result = r;
-            LOGGER.log(FINE, toString()+" : result is set to "+r,new Exception());
+            LOGGER.log(FINE, this + " : result is set to " + r, new Exception());
         } else {
             if(r.isWorseThan(result)) {
-                LOGGER.log(FINE, toString()+" : result is set to "+r,new Exception());
+                LOGGER.log(FINE, this + " : result is set to " + r, new Exception());
                 result = r;
             }
         }
@@ -1687,7 +1687,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     setResult(job.run(listener));
 
-                    LOGGER.info(toString()+" main build action completed: "+result);
+                    LOGGER.log(INFO, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
                 } catch (ThreadDeath t) {
                     throw t;
@@ -1703,7 +1703,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     result = Executor.currentExecutor().abortResult();
                     listener.getLogger().println(Messages.Run_BuildAborted());
                     Executor.currentExecutor().recordCauseOfInterruption(Run.this,listener);
-                    LOGGER.log(Level.INFO,toString()+" aborted",e);
+                    LOGGER.log(Level.INFO, this + " aborted", e);
                 } catch( Throwable e ) {
                     handleFatalBuildProblem(listener,e);
                     result = Result.FAILURE;
@@ -1843,7 +1843,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         if (result == null) {
             result = Result.FAILURE;
-            LOGGER.warning(toString() + ": No build result is set, so marking as failure. This shouldn't happen.");
+            LOGGER.log(WARNING, "{0}: No build result is set, so marking as failure. This should not happen.", this);
         }
 
         RunListener.fireFinalized(this);
