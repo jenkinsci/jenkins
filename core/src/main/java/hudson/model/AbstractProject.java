@@ -1637,18 +1637,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         if (label != null) {
-            if (label.isOffline()) {
-                return true;
-            } else {
-                return false;
-            }
+            return label.isOffline();
         } else {
             if (canRoam) {
                 for (Node n : Jenkins.getInstance().getNodes()) {
                     Computer c = n.toComputer();
-                    if (c != null && (c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
+                    if (c != null && c.isOnline() && c.isAcceptingTasks()) {
                         // Some executor is ready and this job can run anywhere
                         return false;
+                    }
                 }
             }
         }
@@ -1660,7 +1657,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Label label = getAssignedLabel();
 
         if (isAllSuitableNodesOffline(build)) {
-            // if (label.getClouds() != null) {
+            if (label.getClouds().isEmpty()) {
                 // An Ondemand slave can do this, doesnt matter if online now
                 for (  Cloud c : Jenkins.getInstance().clouds) {
                     if(c.canProvision(label)) {
@@ -1668,7 +1665,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                         return WorkspaceOfflineReason.use_ondemand_slave;
                     }
                 }
-            //}
+            }
             return WorkspaceOfflineReason.all_suitable_nodes_are_offline;
         }
 
