@@ -1786,7 +1786,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a new SCM polling command.
      */
     public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        BuildAuthorizationToken.checkPermission(this, authToken, req, rsp);
+        BuildAuthorizationToken.checkPermission((Job) this, authToken, req, rsp);
         schedulePolling();
         rsp.sendRedirect(".");
     }

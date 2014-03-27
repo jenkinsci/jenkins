@@ -62,6 +62,11 @@ public final class BuildAuthorizationToken {
         return null;
     }
 
+    @Deprecated public static void checkPermission(AbstractProject<?,?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Job<?,?> j = project;
+        checkPermission(j, token, req, rsp);
+    }
+
     public static void checkPermission(Job<?,?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
         if (!Jenkins.getInstance().isUseSecurity())
             return;    // everyone is authorized
