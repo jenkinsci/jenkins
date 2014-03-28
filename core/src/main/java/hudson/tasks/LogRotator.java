@@ -115,6 +115,9 @@ public class LogRotator extends BuildDiscarder {
         Run lstb = job.getLastStableBuild();
 
         if(numToKeep!=-1) {
+            // Note that RunList.size is deprecated, and indeed here we are loading all the builds of the job.
+            // However we would need to load the first numToKeep anyway, just to skip over them;
+            // and we would need to load the rest anyway, to delete them.
             List<? extends Run<?,?>> builds = job.getBuilds();
             for (Run r : copy(builds.subList(Math.min(builds.size(), numToKeep), builds.size()))) {
                 if (shouldKeepRun(r, lsb, lstb, null)) {
