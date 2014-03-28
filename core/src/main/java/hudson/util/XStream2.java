@@ -145,6 +145,7 @@ public class XStream2 extends XStream {
         addImmutableType(Result.class);
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
+        registerConverter(new RobustMapConverter(getMapper()), 10);
         registerConverter(new ImmutableMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableSortedSetConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableSetConverter(getMapper(),getReflectionProvider()),10);
