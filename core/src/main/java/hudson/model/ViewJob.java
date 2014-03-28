@@ -23,18 +23,17 @@
  */
 package hudson.model;
 
+import hudson.model.Descriptor.FormException;
+import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.SortedMap;
-
-import hudson.model.Descriptor.FormException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * {@link Job} that monitors activities that happen outside Hudson,
@@ -69,16 +68,12 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
      */
     private transient volatile boolean reloadingInProgress;
 
-    /**
-     * {@link ExternalJob}s that need to be reloaded.
-     *
-     * This is a set, so no {@link ExternalJob}s are scheduled twice, yet
-     * it's order is predictable, avoiding starvation.
-     */
-    private static final LinkedHashSet<ViewJob> reloadQueue = new LinkedHashSet<ViewJob>();
-    /*package*/ static final Thread reloadThread = new ReloadThread();
-    static {
-        reloadThread.start();
+    private static ReloadThread reloadThread;
+
+    static synchronized void interruptReloadThread() {
+        if (reloadThread != null) {
+            reloadThread.interrupt();
+        }
     }
 
     /**
@@ -120,6 +115,14 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
                 // we don't want to block the current thread,
                 // so reloading is done asynchronously.
                 reloadingInProgress = true;
+                Set<ViewJob> reloadQueue;
+                synchronized (ViewJob.class) {
+                    if (reloadThread == null) {
+                        reloadThread = new ReloadThread();
+                        reloadThread.start();
+                    }
+                    reloadQueue = reloadThread.reloadQueue;
+                }
                 synchronized(reloadQueue) {
                     reloadQueue.add(this);
                     reloadQueue.notify();
@@ -164,6 +167,15 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
      * Thread that reloads the {@link Run}s.
      */
     private static final class ReloadThread extends Thread {
+
+        /**
+         * {@link ExternalJob}s that need to be reloaded.
+         *
+         * This is a set, so no {@link ExternalJob}s are scheduled twice, yet
+         * it's order is predictable, avoiding starvation.
+         */
+        final Set<ViewJob> reloadQueue = new LinkedHashSet<ViewJob>();
+
         private ReloadThread() {
             setName("ViewJob reload thread");
         }
