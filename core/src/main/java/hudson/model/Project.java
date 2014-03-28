@@ -175,7 +175,8 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return null;
     }
 
-    protected void buildDependencyGraph(DependencyGraph graph) {
+    @Override protected void buildDependencyGraph(DependencyGraph graph) {
+        super.buildDependencyGraph(graph);
         getPublishersList().buildDependencyGraph(this,graph);
         getBuildersList().buildDependencyGraph(this,graph);
         getBuildWrappersList().buildDependencyGraph(this,graph);
