@@ -1712,9 +1712,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Builds the dependency graph.
-     * @see DependencyGraph
+     * Since 1.558, not abstract and by default includes dependencies contributed by {@link #triggers()}.
      */
-    protected abstract void buildDependencyGraph(DependencyGraph graph);
+    protected void buildDependencyGraph(DependencyGraph graph) {
+        triggers().buildDependencyGraph(this, graph);
+    }
 
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
