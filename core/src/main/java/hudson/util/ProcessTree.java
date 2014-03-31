@@ -549,11 +549,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                 int pid = getPid();
                 LOGGER.fine("Killing pid="+pid);
-                if (UnixReflection.isJava8()) {
-                    UnixReflection.DESTROY_PROCESS.invoke(null, pid, false);
-                } else {
-                    UnixReflection.DESTROY_PROCESS.invoke(null, pid);
-                }
+                UnixReflection.destroy(pid);
             } catch (IllegalAccessException e) {
                 // this is impossible
                 IllegalAccessError x = new IllegalAccessError();
@@ -628,7 +624,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 throw x;
             }
         }
-        public static boolean isJava8() {
+
+        public static void destroy(int pid) throws IllegalAccessException, InvocationTargetException {
+            if (isJava8()) {
+                DESTROY_PROCESS.invoke(null, pid, false);
+            } else {
+                DESTROY_PROCESS.invoke(null, pid);
+            }
+        }
+
+        private static boolean isJava8() {
             return (System.getProperty("java.version").startsWith("1.8"));
         }
 
