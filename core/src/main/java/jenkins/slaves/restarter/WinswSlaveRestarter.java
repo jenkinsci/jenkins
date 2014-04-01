@@ -2,6 +2,7 @@ package jenkins.slaves.restarter;
 
 import hudson.Extension;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -37,8 +38,12 @@ public class WinswSlaveRestarter extends SlaveRestarter {
         pb.redirectErrorStream(true);
         Process p = pb.start();
         p.getOutputStream().close();
-        copy(p.getInputStream(), System.out);
-        return p.waitFor();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        copy(p.getInputStream(), baos);
+        int r = p.waitFor();
+        if (r!=0)
+            LOGGER.info(exe+" cmd: output:\n"+baos);
+        return r;
     }
 
     public void restart() throws Exception {
