@@ -36,62 +36,65 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
         MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                try {
-                    final List<SlaveRestarter> restarters = new ArrayList<SlaveRestarter>(SlaveRestarter.all());
-
-                    VirtualChannel ch = c.getChannel();
-                    if (ch==null)   return null; // defensive check
-
-                    List<SlaveRestarter> effective = ch.call(new Callable<List<SlaveRestarter>, IOException>() {
-                        public List<SlaveRestarter> call() throws IOException {
-                            Engine e = Engine.current();
-                            if (e == null) return null;    // not running under Engine
-
-                            try {
-                                Engine.class.getMethod("addListener", EngineListener.class);
-                            } catch (NoSuchMethodException _) {
-                                return null;    // running with older version of remoting that doesn't support adding listener
-                            }
-
-                            // filter out ones that doesn't apply
-                            for (Iterator<SlaveRestarter> itr = restarters.iterator(); itr.hasNext(); ) {
-                                SlaveRestarter r =  itr.next();
-                                if (!r.canWork())
-                                    itr.remove();
-                            }
-
-                            e.addListener(new EngineListenerAdapter() {
-                                @Override
-                                public void onDisconnect() {
-                                    try {
-                                        for (SlaveRestarter r : restarters) {
-                                            try {
-                                                LOGGER.info("Restarting slave via "+r);
-                                                r.restart();
-                                            } catch (Exception x) {
-                                                LOGGER.log(SEVERE, "Failed to restart slave with "+r, x);
-                                            }
-                                        }
-                                    } finally {
-                                        // if we move on to the reconnection without restart,
-                                        // don't let the current implementations kick in when the slave loses connection again
-                                        restarters.clear();
-                                    }
-                                }
-                            });
-
-                            return restarters;
-                        }
-                    });
-
-                    // TODO: report this to GUI
-                    listener.getLogger().println("Effective SlaveRestarter on " + c.getDisplayName() + ": " + effective);
-                } catch (Throwable e) {
-                    e.printStackTrace(listener.error("Failed to install restarter"));
-                }
+                install(c, listener);
                 return null;
             }
         });
+    }
+
+    private void install(Computer c, TaskListener listener) {
+        try {
+            final List<SlaveRestarter> restarters = new ArrayList<SlaveRestarter>(SlaveRestarter.all());
+
+            VirtualChannel ch = c.getChannel();
+            if (ch==null) return;  // defensive check
+
+            List<SlaveRestarter> effective = ch.call(new Callable<List<SlaveRestarter>, IOException>() {
+                public List<SlaveRestarter> call() throws IOException {
+                    Engine e = Engine.current();
+                    if (e == null) return null;    // not running under Engine
+
+                    try {
+                        Engine.class.getMethod("addListener", EngineListener.class);
+                    } catch (NoSuchMethodException _) {
+                        return null;    // running with older version of remoting that doesn't support adding listener
+                    }
+
+                    // filter out ones that doesn't apply
+                    for (Iterator<SlaveRestarter> itr = restarters.iterator(); itr.hasNext(); ) {
+                        SlaveRestarter r =  itr.next();
+                        if (!r.canWork())
+                            itr.remove();
+                    }
+
+                    e.addListener(new EngineListenerAdapter() {
+                        @Override
+                        public void onDisconnect() {
+                            try {
+                                for (SlaveRestarter r : restarters) {
+                                    try {
+                                        LOGGER.info("Restarting slave via "+r);
+                                        r.restart();
+                                    } catch (Exception x) {
+                                        LOGGER.log(SEVERE, "Failed to restart slave with "+r, x);
+                                    }
+                                }
+                            } finally {
+                                // if we move on to the reconnection without restart,
+                                // don't let the current implementations kick in when the slave loses connection again
+                                restarters.clear();
+                            }
+                        }
+                    });
+
+                    return restarters;
+                }
+            });
+
+            listener.getLogger().println("Effective SlaveRestarter on " + c.getDisplayName() + ": " + effective);
+        } catch (Throwable e) {
+            e.printStackTrace(listener.error("Failed to install restarter"));
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(JnlpSlaveRestarterInstaller.class.getName());
