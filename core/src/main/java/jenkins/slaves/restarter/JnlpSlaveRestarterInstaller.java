@@ -33,9 +33,9 @@ import static java.util.logging.Level.*;
 public class JnlpSlaveRestarterInstaller extends ComputerListener implements Serializable {
     @Override
     public void onOnline(final Computer c, final TaskListener listener) throws IOException, InterruptedException {
-        MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Object>() {
+        MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Void>() {
             @Override
-            public Object call() throws Exception {
+            public Void call() throws Exception {
                 final List<SlaveRestarter> restarters = new ArrayList<SlaveRestarter>(SlaveRestarter.all());
 
                 VirtualChannel ch = c.getChannel();
