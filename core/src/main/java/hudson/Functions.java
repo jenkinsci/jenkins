@@ -1014,20 +1014,15 @@ public class Functions {
 
         Item i=p;
         String url = "";
-        Collection<TopLevelItem> viewItems;
-        if (view != null) {
-            viewItems = view.getItems();
-        } else {
-            viewItems = Collections.emptyList();
-        }
         while(true) {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
             if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
                 assert i instanceof TopLevelItem;
-                if(viewItems.contains((TopLevelItem)i)) {
-                    // if p and the current page belongs to the same view, then return a relative path
+                if (view != null) {
+                    // assume p and the current page belong to the same view, so return a relative path
+                    // (even if they did not, View.getItem does not by default verify ownership)
                     return normalizeURI(ancestors.get(view)+'/'+url);
                 } else {
                     // otherwise return a path from the root Hudson
