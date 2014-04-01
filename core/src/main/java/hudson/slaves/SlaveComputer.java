@@ -70,6 +70,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.RequestDispatcher;
 import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
+import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -772,6 +773,13 @@ public class SlaveComputer extends Computer {
             return c;
 
         return null;
+    }
+
+    /**
+     * Helper method for Jelly.
+     */
+    public static List<SlaveSystemInfo> getSystemInfoExtensions() {
+        return SlaveSystemInfo.all();
     }
 
     private static class SlaveLogFetcher implements Callable<List<LogRecord>,RuntimeException> {
