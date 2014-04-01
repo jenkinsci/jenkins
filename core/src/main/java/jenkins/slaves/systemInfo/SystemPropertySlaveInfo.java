@@ -5,7 +5,7 @@ import hudson.Extension;
 /**
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension(ordinal=3)
 public class SystemPropertySlaveInfo extends SlaveSystemInfo {
     @Override
     public String getDisplayName() {
