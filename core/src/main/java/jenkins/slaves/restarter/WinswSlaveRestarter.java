@@ -47,6 +47,9 @@ public class WinswSlaveRestarter extends SlaveRestarter {
     }
 
     public void restart() throws Exception {
+        // winsw 1.16 supports this operation. this file gets updated via windows-slaves-plugin,
+        // so it's possible that we end up in the situation where jenkins-slave.exe doesn't support
+        // this command. If that is the case, there's nothing we can do about it.
         int r = exec("restart!");
         throw new IOException("Restart failure. '"+exe+" restart' completed with "+r+" but I'm still alive");
     }
