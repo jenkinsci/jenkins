@@ -63,6 +63,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
                             try {
                                 for (SlaveRestarter r : restarters) {
                                     try {
+                                        LOGGER.info("Restarting slave via "+r);
                                         r.restart();
                                     } catch (Exception x) {
                                         LOGGER.log(SEVERE, "Failed to restart slave with "+r, x);
@@ -85,7 +86,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
         }
 
         // TODO: report this to GUI
-        LOGGER.fine("Effective SlaveRestarter on "+c.getDisplayName()+": "+effective);
+        listener.getLogger().println("Effective SlaveRestarter on "+c.getDisplayName()+": "+effective);
     }
 
     private static final Logger LOGGER = Logger.getLogger(JnlpSlaveRestarterInstaller.class.getName());
