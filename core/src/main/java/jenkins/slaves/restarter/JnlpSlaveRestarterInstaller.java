@@ -36,14 +36,13 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
         MasterComputer.threadPoolForRemoting.submit(new java.util.concurrent.Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final List<SlaveRestarter> restarters = new ArrayList<SlaveRestarter>(SlaveRestarter.all());
-
-                VirtualChannel ch = c.getChannel();
-                if (ch==null)   return null; // defensive check
-
-                List<SlaveRestarter> effective = null;
                 try {
-                    effective = ch.call(new Callable<List<SlaveRestarter>, IOException>() {
+                    final List<SlaveRestarter> restarters = new ArrayList<SlaveRestarter>(SlaveRestarter.all());
+
+                    VirtualChannel ch = c.getChannel();
+                    if (ch==null)   return null; // defensive check
+
+                    List<SlaveRestarter> effective = ch.call(new Callable<List<SlaveRestarter>, IOException>() {
                         public List<SlaveRestarter> call() throws IOException {
                             Engine e = Engine.current();
                             if (e == null) return null;    // not running under Engine
@@ -84,13 +83,12 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
                             return restarters;
                         }
                     });
-                } catch (IOException e) {
-                    e.printStackTrace(listener.error("Failed to install restarter"));
-                    // don't let this fail the slave connection
-                }
 
-                // TODO: report this to GUI
-                listener.getLogger().println("Effective SlaveRestarter on " + c.getDisplayName() + ": " + effective);
+                    // TODO: report this to GUI
+                    listener.getLogger().println("Effective SlaveRestarter on " + c.getDisplayName() + ": " + effective);
+                } catch (Throwable e) {
+                    e.printStackTrace(listener.error("Failed to install restarter"));
+                }
                 return null;
             }
         });
