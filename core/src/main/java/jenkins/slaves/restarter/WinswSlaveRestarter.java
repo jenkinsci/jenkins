@@ -47,7 +47,7 @@ public class WinswSlaveRestarter extends SlaveRestarter {
     }
 
     public void restart() throws Exception {
-        int r = exec("restart");
+        int r = exec("restart!");
         throw new IOException("Restart failure. '"+exe+" restart' completed with "+r+" but I'm still alive");
     }
 
