@@ -1657,7 +1657,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Label label = getAssignedLabel();
 
         if (isAllSuitableNodesOffline(build)) {
-            if (label.getClouds().isEmpty()) {
+            //We need to ask jenkins about clouds. Label can be null. 
+            if (!Jenkins.getInstance().clouds.isEmpty()) {
                 // An Ondemand slave can do this, doesnt matter if online now
                 for (  Cloud c : Jenkins.getInstance().clouds) {
                     if(c.canProvision(label)) {
@@ -1666,6 +1667,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     }
                 }
             }
+            
             return WorkspaceOfflineReason.all_suitable_nodes_are_offline;
         }
 
