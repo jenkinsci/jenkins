@@ -23,17 +23,20 @@
  */
 package hudson.tasks;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.Cause;
+import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.User;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
@@ -43,6 +46,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.security.QueueItemAuthenticator;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
+import org.acegisecurity.Authentication;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
@@ -144,20 +150,25 @@ public class BuildTriggerTest extends HudsonTestCase {
         doMavenTriggerTest(true);
     }
 
-    public void testConfigureDownstreamProjectSecurity() throws Exception {
+    public void testDownstreamProjectSecurity() throws Exception {
         jenkins.setSecurityRealm(new LegacySecurityRealm());
         ProjectMatrixAuthorizationStrategy auth = new ProjectMatrixAuthorizationStrategy();
         auth.add(Jenkins.READ, "alice");
+        auth.add(Computer.BUILD, "alice");
+        auth.add(Computer.BUILD, "anonymous");
         jenkins.setAuthorizationStrategy(auth);
-        FreeStyleProject upstream = createFreeStyleProject("upstream");
+        final FreeStyleProject upstream = createFreeStyleProject("upstream");
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new QueueItemAuthenticator() {
+            @Override public Authentication authenticate(Queue.Item item) {
+                return item.task == upstream ? User.get("alice").impersonate() : null;
+            }
+            private Object writeReplace() {return "";}
+        });
         Map<Permission,Set<String>> perms = new HashMap<Permission,Set<String>>();
         perms.put(Item.READ, Collections.singleton("alice"));
         perms.put(Item.CONFIGURE, Collections.singleton("alice"));
         upstream.addProperty(new AuthorizationMatrixProperty(perms));
         FreeStyleProject downstream = createFreeStyleProject("downstream");
-        /* Original SECURITY-55 test case:
-        downstream.addProperty(new AuthorizationMatrixProperty(Collections.singletonMap(Item.READ, Collections.singleton("alice"))));
-        */
         WebClient wc = createWebClient();
         wc.login("alice");
         HtmlPage page = wc.getPage(upstream, "configure");
@@ -166,13 +177,52 @@ public class BuildTriggerTest extends HudsonTestCase {
         page.getAnchorByText("Build other projects").click();
         HtmlTextInput childProjects = config.getInputByName("buildTrigger.childProjects");
         childProjects.setValueAttribute("downstream");
-        try {
-            submit(config);
-            fail();
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(403, x.getStatusCode());
-        }
-        assertEquals(Collections.emptyList(), upstream.getDownstreamProjects());
+        submit(config);
+        // DependencyGraph is rebuilt as SYSTEM so is always complete even if configuring user does not know it:
+        assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
+        // Downstream projects whose existence we are not aware of will silently not be triggered:
+        FreeStyleBuild b = buildAndAssertSuccess(upstream);
+        assertLogNotContains("downstream", b);
+        waitUntilNoActivity();
+        assertNull(downstream.getLastBuild());
+        Map<Permission,Set<String>> grantedPermissions = new HashMap<Permission,Set<String>>();
+        grantedPermissions.put(Item.READ, Collections.singleton("alice"));
+        AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty(grantedPermissions);
+        // If we can see them, but not build them, that is a warning (but this is in cleanUp so the build is still considered a success):
+        downstream.addProperty(amp);
+        b = buildAndAssertSuccess(upstream);
+        assertLogContains("downstream", b);
+        waitUntilNoActivity();
+        assertNull(downstream.getLastBuild());
+        // If we can build them, then great:
+        grantedPermissions.put(Item.BUILD, Collections.singleton("alice"));
+        downstream.removeProperty(amp);
+        amp = new AuthorizationMatrixProperty(grantedPermissions);
+        downstream.addProperty(amp);
+        b = buildAndAssertSuccess(upstream);
+        assertLogContains("downstream", b);
+        waitUntilNoActivity();
+        FreeStyleBuild b2 = downstream.getLastBuild();
+        assertNotNull(b2);
+        Cause.UpstreamCause cause = b2.getCause(Cause.UpstreamCause.class);
+        assertNotNull(cause);
+        assertEquals(b, cause.getUpstreamRun());
+        // Now for legacy behavior: we should run as anonymous. Which would normally have no permissions:
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().clear();
+        b = buildAndAssertSuccess(upstream);
+        assertLogNotContains("downstream", b);
+        waitUntilNoActivity();
+        assertEquals(1, downstream.getLastBuild().number);
+        // Unless we explicitly granted them:
+        grantedPermissions.put(Item.READ, Collections.singleton("anonymous"));
+        grantedPermissions.put(Item.BUILD, Collections.singleton("anonymous"));
+        downstream.removeProperty(amp);
+        amp = new AuthorizationMatrixProperty(grantedPermissions);
+        downstream.addProperty(amp);
+        b = buildAndAssertSuccess(upstream);
+        assertLogContains("downstream", b);
+        waitUntilNoActivity();
+        assertEquals(2, downstream.getLastBuild().number);
     }
 
 }

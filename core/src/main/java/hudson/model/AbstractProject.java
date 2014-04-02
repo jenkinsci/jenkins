@@ -1853,20 +1853,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         triggers.replaceBy(buildDescribable(req, Trigger.for_(this)));
         for (Trigger t : triggers())
             t.start(this,true);
-
-        for (Publisher _t : Descriptor.newInstancesFromHeteroList(req, json, "publisher", Jenkins.getInstance().getExtensionList(BuildTrigger.DescriptorImpl.class))) {
-            BuildTrigger t = (BuildTrigger) _t;
-            List<AbstractProject> childProjects;
-            SecurityContext orig = ACL.impersonate(ACL.SYSTEM);
-            try {
-                childProjects = t.getChildProjects(this);
-            } finally {
-                SecurityContextHolder.setContext(orig);
-            }
-            for (AbstractProject downstream : childProjects) {
-                downstream.checkPermission(BUILD);
-            }
-        }
     }
 
     /**

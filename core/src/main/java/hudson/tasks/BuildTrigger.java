@@ -33,10 +33,8 @@ import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
-import jenkins.model.DependencyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -46,14 +44,8 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
+import hudson.security.ACL;
 import hudson.util.FormValidation;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -65,6 +57,15 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Triggers builds of other projects.
@@ -203,8 +204,22 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             }
         });
 
+        Authentication auth = Jenkins.getAuthentication(); // from build
+        if (auth.equals(ACL.SYSTEM)) { // i.e., unspecified
+            auth = Jenkins.ANONYMOUS;
+        }
+
         for (Dependency dep : downstreamProjects) {
             AbstractProject p = dep.getDownstreamProject();
+            // TODO do we need to separately check READ on all parents?
+            // For example, by impersonating auth (if ANONYMOUS) and then checking Jenkins.instance.getItemByFullName(p.fullName) == p?
+            if (!p.getACL().hasPermission(auth, Item.READ)) {
+                continue; // do not even issue a warning (could do so if have DISCOVER)
+            }
+            if (!p.getACL().hasPermission(auth, Item.BUILD)) {
+                logger.println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(p)));
+                continue;
+            }
             if (p.isDisabled()) {
                 logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
                 continue;
@@ -331,9 +346,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                                 AbstractProject.findNearest(projectName,project.getParent()).getRelativeNameFrom(project)));
                     if(!(item instanceof AbstractProject))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
-                    if (!upstream && !item.hasPermission(Item.BUILD)) {
-                        return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
-                    }
+                    // Will require Item.BUILD on project (if upstream) or item (if !upstream) but we cannot predict what QueueItemAuthenticator will produce
                     hasProjects = true;
                 }
             }
