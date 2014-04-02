@@ -48,10 +48,12 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.QueueItemAuthenticatorDescriptor;
 import org.acegisecurity.Authentication;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * Tests for hudson.tasks.BuildTrigger
@@ -158,17 +160,13 @@ public class BuildTriggerTest extends HudsonTestCase {
         auth.add(Computer.BUILD, "anonymous");
         jenkins.setAuthorizationStrategy(auth);
         final FreeStyleProject upstream = createFreeStyleProject("upstream");
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new QueueItemAuthenticator() {
-            @Override public Authentication authenticate(Queue.Item item) {
-                return item.task == upstream ? User.get("alice").impersonate() : null;
-            }
-            private Object writeReplace() {return "";}
-        });
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new QIA(Collections.singletonMap("upstream", "alice")));
         Map<Permission,Set<String>> perms = new HashMap<Permission,Set<String>>();
         perms.put(Item.READ, Collections.singleton("alice"));
         perms.put(Item.CONFIGURE, Collections.singleton("alice"));
         upstream.addProperty(new AuthorizationMatrixProperty(perms));
-        FreeStyleProject downstream = createFreeStyleProject("downstream");
+        String downstreamName = "d0wnstr3am"; // do not clash with English messages!
+        FreeStyleProject downstream = createFreeStyleProject(downstreamName);
         WebClient wc = createWebClient();
         wc.login("alice");
         HtmlPage page = wc.getPage(upstream, "configure");
@@ -176,13 +174,13 @@ public class BuildTriggerTest extends HudsonTestCase {
         config.getButtonByCaption("Add post-build action").click(); // lib/hudson/project/config-publishers2.jelly
         page.getAnchorByText("Build other projects").click();
         HtmlTextInput childProjects = config.getInputByName("buildTrigger.childProjects");
-        childProjects.setValueAttribute("downstream");
+        childProjects.setValueAttribute(downstreamName);
         submit(config);
         // DependencyGraph is rebuilt as SYSTEM so is always complete even if configuring user does not know it:
         assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
         // Downstream projects whose existence we are not aware of will silently not be triggered:
         FreeStyleBuild b = buildAndAssertSuccess(upstream);
-        assertLogNotContains("downstream", b);
+        assertLogNotContains(downstreamName, b);
         waitUntilNoActivity();
         assertNull(downstream.getLastBuild());
         Map<Permission,Set<String>> grantedPermissions = new HashMap<Permission,Set<String>>();
@@ -191,7 +189,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         // If we can see them, but not build them, that is a warning (but this is in cleanUp so the build is still considered a success):
         downstream.addProperty(amp);
         b = buildAndAssertSuccess(upstream);
-        assertLogContains("downstream", b);
+        assertLogContains(downstreamName, b);
         waitUntilNoActivity();
         assertNull(downstream.getLastBuild());
         // If we can build them, then great:
@@ -200,17 +198,18 @@ public class BuildTriggerTest extends HudsonTestCase {
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
         b = buildAndAssertSuccess(upstream);
-        assertLogContains("downstream", b);
+        assertLogContains(downstreamName, b);
         waitUntilNoActivity();
         FreeStyleBuild b2 = downstream.getLastBuild();
         assertNotNull(b2);
         Cause.UpstreamCause cause = b2.getCause(Cause.UpstreamCause.class);
         assertNotNull(cause);
         assertEquals(b, cause.getUpstreamRun());
-        // Now for legacy behavior: we should run as anonymous. Which would normally have no permissions:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().clear();
+        // Now if we have configured some QIA’s but they are not active on this job, we should run as anonymous. Which would normally have no permissions:
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new QIA(Collections.<String,String>emptyMap()));
         b = buildAndAssertSuccess(upstream);
-        assertLogNotContains("downstream", b);
+        assertLogNotContains(downstreamName, b);
+        assertLogContains(Messages.BuildTrigger_warning_this_build_has_no_associated_aut(), b);
         waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Unless we explicitly granted them:
@@ -220,9 +219,44 @@ public class BuildTriggerTest extends HudsonTestCase {
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
         b = buildAndAssertSuccess(upstream);
-        assertLogContains("downstream", b);
+        assertLogContains(downstreamName, b);
         waitUntilNoActivity();
         assertEquals(2, downstream.getLastBuild().number);
+        FreeStyleProject simple = createFreeStyleProject("simple");
+        FreeStyleBuild b3 = buildAndAssertSuccess(simple);
+        // See discussion in BuildTrigger for why this is necessary:
+        assertLogContains(Messages.BuildTrigger_warning_this_build_has_no_associated_aut(), b3);
+        // Finally, in legacy mode we run as SYSTEM:
+        grantedPermissions.clear(); // similar behavior but different message if DescriptorImpl removed
+        downstream.removeProperty(amp);
+        amp = new AuthorizationMatrixProperty(grantedPermissions);
+        downstream.addProperty(amp);
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().clear();
+        b = buildAndAssertSuccess(upstream);
+        assertLogContains(downstreamName, b);
+        assertLogContains(Messages.BuildTrigger_warning_access_control_for_builds_in_glo(), b);
+        waitUntilNoActivity();
+        assertEquals(3, downstream.getLastBuild().number);
+        b3 = buildAndAssertSuccess(simple);
+        assertLogNotContains(Messages.BuildTrigger_warning_access_control_for_builds_in_glo(), b3);
+    }
+    public static final class QIA extends QueueItemAuthenticator {
+        private final Map<String,String> jobsToUsers;
+        public QIA(Map<String,String> jobsToUsers) {
+            this.jobsToUsers = jobsToUsers;
+        }
+        @Override public Authentication authenticate(Queue.Item item) {
+            String user = null;
+            if (item.task instanceof Item) {
+                user = jobsToUsers.get(((Item) item.task).getFullName());
+            }
+            return user != null ? User.get(user).impersonate() : null;
+        }
+        @TestExtension("testDownstreamProjectSecurity") public static final class DescriptorImpl extends QueueItemAuthenticatorDescriptor {
+            @Override public String getDisplayName() {
+                return "Test QIA";
+            }
+        }
     }
 
 }
