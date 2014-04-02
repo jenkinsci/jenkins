@@ -327,7 +327,7 @@ public abstract class Cause {
 
         @Exported(visibility=3)
         public String getUserName() {
-        	return User.get(authenticationName, true).getDisplayName();
+        	return User.get(authenticationName).getDisplayName();
         }
 
         @Override
@@ -368,7 +368,8 @@ public abstract class Cause {
 
         @Exported(visibility = 3)
         public String getUserName() {
-            return User.get(userId, true).getDisplayName();
+            User userName = User.get(userId);
+            return (userName == null) ? "anonymous" : userName.getDisplayName();
         }
 
         @Override
