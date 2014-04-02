@@ -41,6 +41,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
+import hudson.console.ModelHyperlinkNote;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.Descriptor.FormException;
@@ -112,6 +113,7 @@ import jenkins.model.lazy.BuildReference;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
@@ -1681,6 +1683,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener = new StreamBuildListener(logger,charset);
 
                     listener.started(getCauses());
+
+                    Authentication auth = Jenkins.getAuthentication();
+                    if (!auth.equals(ACL.SYSTEM)) {
+                        String name = auth.getName();
+                        if (!auth.equals(Jenkins.ANONYMOUS)) {
+                            name = ModelHyperlinkNote.encodeTo(User.get(name));
+                        }
+                        listener.getLogger().println(Messages.Run_running_as_(name));
+                    }
 
                     RunListener.fireStarted(this,listener);
 

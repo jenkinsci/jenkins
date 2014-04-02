@@ -386,6 +386,7 @@ public abstract class Cause {
         @Override
         public void print(TaskListener listener) {
             listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                    // TODO better to use ModelHyperlinkNote.encodeTo(User), or User.getUrl, since it handles URL escaping
                     ModelHyperlinkNote.encodeTo("/user/"+getUserId(), getUserName())));
         }
 
