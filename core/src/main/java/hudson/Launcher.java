@@ -39,6 +39,8 @@ import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
 import org.apache.commons.io.input.NullInputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -840,6 +842,30 @@ public abstract class Launcher {
             };
         }
     }
+
+    @Restricted(NoExternalUse.class)
+    public static class DummyLauncher extends Launcher {
+
+        public DummyLauncher(TaskListener listener) {
+            super(listener, null);
+        }
+
+        @Override
+        public Proc launch(ProcStarter starter) throws IOException {
+            throw new IOException("Can not call launch on a dummy launcher.");
+        }
+
+        @Override
+        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
+            throw new IOException("Can not call launchChannel on a dummy launcher.");
+        }
+
+        @Override
+        public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
+            // Kill method should do nothing.
+        }
+    }
+
 
     /**
      * Launches processes remotely by using the given channel.
