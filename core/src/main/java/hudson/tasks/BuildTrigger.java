@@ -44,6 +44,7 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
+import hudson.model.queue.Tasks;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import java.io.IOException;
@@ -63,6 +64,8 @@ import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorDescriptor;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -231,22 +234,21 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
 
         for (Dependency dep : downstreamProjects) {
-            AbstractProject p = dep.getDownstreamProject();
-            // TODO do we need to separately check READ on all parents?
-            // For example, by impersonating auth (if ANONYMOUS) and then checking Jenkins.instance.getItemByFullName(p.fullName) == p?
-            if (!p.getACL().hasPermission(auth, Item.READ)) {
-                continue; // do not even issue a warning (could do so if have DISCOVER)
-            }
-            if (!p.getACL().hasPermission(auth, Item.BUILD)) {
-                logger.println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(p)));
-                continue;
-            }
-            if (p.isDisabled()) {
-                logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
-                continue;
-            }
             List<Action> buildActions = new ArrayList<Action>();
-            if (dep.shouldTriggerBuild(build, listener, buildActions)) {
+            boolean result;
+            SecurityContext orig = ACL.impersonate(auth);
+            try {
+                result = dep.shouldTriggerBuild(build, listener, buildActions);
+            } finally {
+                SecurityContextHolder.setContext(orig);
+            }
+            if (result) {
+                AbstractProject p = dep.getDownstreamProject();
+                // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
+                if (p.isDisabled()) {
+                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
+                    continue;
+                }
                 // this is not completely accurate, as a new build might be triggered
                 // between these calls
                 String name = ModelHyperlinkNote.encodeTo(p)+" #"+p.getNextBuildNumber();
@@ -268,6 +270,14 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 @Override
                 public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                                   List<Action> actions) {
+                    AbstractProject downstream = getDownstreamProject();
+                    if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
+                        return false; // do not even issue a warning
+                    }
+                    if (!downstream.hasPermission(Item.BUILD)) {
+                        listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
+                        return false;
+                    }
                     return build.getResult().isBetterOrEqualTo(threshold);
                 }
             });
@@ -352,7 +362,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         /**
          * Form validation method.
          */
-        public FormValidation doCheck(@AncestorInPath Item project, @QueryParameter String value, @QueryParameter boolean upstream) {
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value, @QueryParameter boolean upstream) {
             // Require CONFIGURE permission on this project
             if(!project.hasPermission(Item.CONFIGURE))      return FormValidation.ok();
 
@@ -362,12 +372,22 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
                     Item item = Jenkins.getInstance().getItem(projectName,project,Item.class);
-                    if(item==null)
-                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName,
-                                AbstractProject.findNearest(projectName,project.getParent()).getRelativeNameFrom(project)));
+                    if (item == null) {
+                        AbstractProject nearest = AbstractProject.findNearest(projectName,project.getParent());
+                        String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
+                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName, alternative));
+                    }
                     if(!(item instanceof AbstractProject))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
-                    // Will require Item.BUILD on project (if upstream) or item (if !upstream) but we cannot predict what QueueItemAuthenticator will produce
+                    if (!upstream) { // check whether the supposed user is expected to be able to build
+                        Authentication auth = Tasks.getAuthenticationOf(project);
+                        if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
+                            auth = Jenkins.ANONYMOUS; // compare behavior in execute, above
+                        }
+                        if (!item.getACL().hasPermission(auth, Item.BUILD)) {
+                            return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
+                        }
+                    }
                     hasProjects = true;
                 }
             }

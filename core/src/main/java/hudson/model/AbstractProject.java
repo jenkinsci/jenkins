@@ -2155,7 +2155,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Finds a {@link AbstractProject} that has the name closest to the given name.
      * @see Items#findNearest
      */
-    public static AbstractProject findNearest(String name) {
+    public static @CheckForNull AbstractProject findNearest(String name) {
         return findNearest(name,Jenkins.getInstance());
     }
 
@@ -2165,7 +2165,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.419
      * @see Items#findNearest
      */
-    public static AbstractProject findNearest(String name, ItemGroup context) {
+    public static @CheckForNull AbstractProject findNearest(String name, ItemGroup context) {
         return Items.findNearest(AbstractProject.class, name, context);
     }
 

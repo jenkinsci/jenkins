@@ -28,6 +28,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Cause;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
@@ -37,19 +38,24 @@ import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
+import hudson.security.ACL;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
+import hudson.util.FormValidation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorDescriptor;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
@@ -179,15 +185,18 @@ public class BuildTriggerTest extends HudsonTestCase {
         // DependencyGraph is rebuilt as SYSTEM so is always complete even if configuring user does not know it:
         assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
         // Downstream projects whose existence we are not aware of will silently not be triggered:
+        Authentication alice = User.get("alice").impersonate();
+        assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName, false);
         FreeStyleBuild b = buildAndAssertSuccess(upstream);
         assertLogNotContains(downstreamName, b);
         waitUntilNoActivity();
         assertNull(downstream.getLastBuild());
+        // If we can see them, but not build them, that is a warning (but this is in cleanUp so the build is still considered a success):
         Map<Permission,Set<String>> grantedPermissions = new HashMap<Permission,Set<String>>();
         grantedPermissions.put(Item.READ, Collections.singleton("alice"));
         AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty(grantedPermissions);
-        // If we can see them, but not build them, that is a warning (but this is in cleanUp so the build is still considered a success):
         downstream.addProperty(amp);
+        assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName, false);
         b = buildAndAssertSuccess(upstream);
         assertLogContains(downstreamName, b);
         waitUntilNoActivity();
@@ -197,6 +206,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         downstream.removeProperty(amp);
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
+        assertDoCheck(alice, null, upstream, downstreamName, false);
         b = buildAndAssertSuccess(upstream);
         assertLogContains(downstreamName, b);
         waitUntilNoActivity();
@@ -207,6 +217,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         assertEquals(b, cause.getUpstreamRun());
         // Now if we have configured some QIA’s but they are not active on this job, we should run as anonymous. Which would normally have no permissions:
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new QIA(Collections.<String,String>emptyMap()));
+        assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName, false);
         b = buildAndAssertSuccess(upstream);
         assertLogNotContains(downstreamName, b);
         assertLogContains(Messages.BuildTrigger_warning_this_build_has_no_associated_aut(), b);
@@ -218,6 +229,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         downstream.removeProperty(amp);
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
+        assertDoCheck(alice, null, upstream, downstreamName, false);
         b = buildAndAssertSuccess(upstream);
         assertLogContains(downstreamName, b);
         waitUntilNoActivity();
@@ -232,6 +244,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().clear();
+        assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName, false);
         b = buildAndAssertSuccess(upstream);
         assertLogContains(downstreamName, b);
         assertLogContains(Messages.BuildTrigger_warning_access_control_for_builds_in_glo(), b);
@@ -256,6 +269,21 @@ public class BuildTriggerTest extends HudsonTestCase {
             @Override public String getDisplayName() {
                 return "Test QIA";
             }
+        }
+    }
+    private void assertDoCheck(Authentication auth, @CheckForNull String expectedError, AbstractProject project, String value, boolean upstream) {
+        FormValidation result;
+        SecurityContext orig = ACL.impersonate(auth);
+        try {
+            result = jenkins.getDescriptorByType(BuildTrigger.DescriptorImpl.class).doCheck(project, value, upstream);
+        } finally {
+            SecurityContextHolder.setContext(orig);
+        }
+        if (expectedError == null) {
+            assertEquals(result.renderHtml(), FormValidation.Kind.OK, result.kind);
+        } else {
+            assertEquals(result.renderHtml(), FormValidation.Kind.ERROR, result.kind);
+            assertEquals(result.renderHtml(), expectedError);
         }
     }
 

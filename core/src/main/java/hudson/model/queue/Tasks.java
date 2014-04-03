@@ -29,6 +29,9 @@ import org.acegisecurity.Authentication;
 
 import java.util.Collection;
 import java.util.Collections;
+import javax.annotation.Nonnull;
+import jenkins.security.QueueItemAuthenticator;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
 
 /**
  * Convenience methods around {@link Task} and {@link SubTask}.
@@ -105,6 +108,24 @@ public class Tasks {
         } catch (AbstractMethodError e) {
             return ACL.SYSTEM;
         }
+    }
+
+    /**
+     * Finds what authentication a task is likely to be run under when scheduled.
+     * The actual authentication after scheduling ({@link hudson.model.Queue.Item#authenticate}) might differ,
+     * in case some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Item)} takes (for example) actions into consideration.
+     * @param t a task
+     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Task)}; else {@link #getDefaultAuthenticationOf}
+     * @since TODO
+     */
+    public static @Nonnull Authentication getAuthenticationOf(@Nonnull Task t) {
+        for (QueueItemAuthenticator qia : QueueItemAuthenticatorConfiguration.get().getAuthenticators()) {
+            Authentication a = qia.authenticate(t);
+            if (a != null) {
+                return a;
+            }
+        }
+        return getDefaultAuthenticationOf(t);
     }
 
 }
