@@ -388,6 +388,7 @@ public class JDKInstaller extends ToolInstaller {
         int authCount=0, totalPageCount=0;  // counters for avoiding infinite loop
 
         HttpMethodBase m = new GetMethod(primary.filepath);
+        hc.getState().addCookie(new Cookie(".oracle.com","gpw_e24",".", "/", -1, false));
         hc.getState().addCookie(new Cookie(".oracle.com","oraclelicense","accept-securebackup-cookie", "/", -1, false));
         try {
             while (true) {
