@@ -102,7 +102,9 @@ public abstract class ItemGroupMixIn {
                 // Try to retain the identity of an existing child object if we can.
                 V item = (V) parent.getItem(subdir.getName());
                 if (item == null) {
-                    item = (V) Items.load(parent,subdir);
+                    if (Items.getConfigFile( subdir ).exists()) {
+                        item = (V) Items.load( parent, subdir );
+                    }
                 } else {
                     item.onLoad(parent, subdir.getName());
                 }

@@ -274,12 +274,7 @@ public class Items {
      *      The directory that contains the config file, not the config file itself.
      */
     public static Item load(ItemGroup parent, File dir) throws IOException {
-        XmlFile xmlFile = getConfigFile(dir);
-        if (!xmlFile.getFile().exists()) {
-            Logger.getLogger( Items.class.getName() ).log( Level.WARNING, "could not find file " + xmlFile.getFile());
-            return null;
-        }
-        Item item = (Item)xmlFile.read();
+        Item item = (Item)getConfigFile(dir).read();
         item.onLoad(parent,dir.getName());
         return item;
     }
