@@ -93,7 +93,7 @@ public abstract class ItemGroupMixIn {
 
         File[] subdirs = modulesDir.listFiles(new FileFilter() {
             public boolean accept(File child) {
-                return child.isDirectory() && new File(child,"config.xml").exists();
+                return child.isDirectory();
             }
         });
         CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<K,V>();

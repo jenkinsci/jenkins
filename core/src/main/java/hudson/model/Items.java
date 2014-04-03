@@ -42,6 +42,8 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import org.apache.commons.io.FileUtils;
@@ -272,7 +274,12 @@ public class Items {
      *      The directory that contains the config file, not the config file itself.
      */
     public static Item load(ItemGroup parent, File dir) throws IOException {
-        Item item = (Item)getConfigFile(dir).read();
+        XmlFile xmlFile = getConfigFile(dir);
+        if (!xmlFile.getFile().exists()) {
+            Logger.getLogger( Items.class.getName() ).log( Level.WARNING, "could not find file " + xmlFile.getFile());
+            return null;
+        }
+        Item item = (Item)xmlFile.read();
         item.onLoad(parent,dir.getName());
         return item;
     }
