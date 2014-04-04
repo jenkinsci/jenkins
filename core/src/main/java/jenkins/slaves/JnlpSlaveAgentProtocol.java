@@ -5,6 +5,8 @@ import hudson.Extension;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.Engine;
+import hudson.remoting.SocketInputStream;
+import hudson.remoting.SocketOutputStream;
 import hudson.slaves.SlaveComputer;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
@@ -119,7 +121,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
             logw.println("JNLP agent connected from "+ socket.getInetAddress());
 
             try {
-                computer.setChannel(new BufferedInputStream(socket.getInputStream()), new BufferedOutputStream(socket.getOutputStream()), log,
+                computer.setChannel(new BufferedInputStream(new SocketInputStream(socket)), new BufferedOutputStream(new SocketOutputStream(socket)), log,
                     new Listener() {
                         @Override
                         public void onClosed(Channel channel, IOException cause) {
