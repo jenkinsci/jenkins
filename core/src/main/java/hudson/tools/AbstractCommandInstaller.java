@@ -32,7 +32,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 /**
  * A generic script-based installer.
- * @since TODO: define a version
+ * @since 1.549
  * @see BatchCommandInstaller
  * @see CommandInstaller
  * @author Oleg Nenashev

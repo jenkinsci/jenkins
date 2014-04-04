@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Display link to the failed test.
-    @since TODO
+    @since 1.538
     <st:attribute name="url" type="String">
       Path to the failed test.
     </st:attribute>
