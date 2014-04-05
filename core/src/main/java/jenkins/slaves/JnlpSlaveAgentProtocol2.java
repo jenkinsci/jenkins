@@ -7,6 +7,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.Engine;
 import hudson.slaves.SlaveComputer;
 import jenkins.model.Jenkins;
+import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,12 +41,20 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
 
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
-        new Handler2(socket).run();
+        new Handler2(hub.getHub(),socket).run();
     }
 
     protected static class Handler2 extends Handler {
+        /**
+         * @deprecated as of 1.559
+         *      Use {@link #Handler2(NioChannelHub, Socket)}
+         */
         public Handler2(Socket socket) throws IOException {
             super(socket);
+        }
+
+        public Handler2(NioChannelHub hub, Socket socket) throws IOException {
+            super(hub, socket);
         }
 
         /**
