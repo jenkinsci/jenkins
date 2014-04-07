@@ -42,6 +42,8 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import org.apache.commons.io.FileUtils;
