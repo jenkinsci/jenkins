@@ -1656,19 +1656,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         FilePath ws = build.getWorkspace();
         Label label = getAssignedLabel();
 
-        if (isAllSuitableNodesOffline(build)) {
-            //We need to ask jenkins about clouds. Label can be null. 
-            if (!Jenkins.getInstance().clouds.isEmpty()) {
-                // An Ondemand slave can do this, doesnt matter if online now
-                for (  Cloud c : Jenkins.getInstance().clouds) {
-                    if(c.canProvision(label)) {
-                        // OnDemand slave will be provisioned
-                        return WorkspaceOfflineReason.use_ondemand_slave;
-                    }
-                }
-            }
-            
-            return WorkspaceOfflineReason.all_suitable_nodes_are_offline;
+        if (isAllSuitableNodesOffline(build)) {            
+            Collection<Cloud> applicableClouds = label == null ? Jenkins.getInstance().clouds : label.getClouds();
+            return applicableClouds.isEmpty() ? WorkspaceOfflineReason.all_suitable_nodes_are_offline : WorkspaceOfflineReason.use_ondemand_slave;            
         }
 
         if (ws==null || !ws.exists()) {
