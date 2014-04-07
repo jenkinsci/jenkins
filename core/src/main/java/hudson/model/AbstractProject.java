@@ -1578,8 +1578,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             } else {
                 WorkspaceList l = b.getBuiltOn().toComputer().getWorkspaceList();
                 return pollWithWorkspace(listener, scm, b, ws, l);
-
             }
+			
         } else {
             // polling without workspace
             LOGGER.fine("Polling SCM changes of " + getName());
