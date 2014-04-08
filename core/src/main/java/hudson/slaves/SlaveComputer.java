@@ -652,16 +652,19 @@ public class SlaveComputer extends Computer {
     private void closeChannel() {
         // TODO: race condition between this and the setChannel method.
         Channel c = channel;
-        channel = null;
-        isUnix = null;
         if (c != null) {
+        	for (ComputerListener cl : ComputerListener.all()){
+        		cl.onOffline(this);
+        	}
+                
+        	channel = null;
+            isUnix = null;
+            
             try {
                 c.close();
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
-            for (ComputerListener cl : ComputerListener.all())
-                cl.onOffline(this);
         }
     }
 
