@@ -67,6 +67,7 @@ import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.Permission;
+import hudson.slaves.Cloud;
 import hudson.slaves.WorkspaceList;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
@@ -1445,12 +1446,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // At this point we start thinking about triggering a build just to get a workspace,
                 // because otherwise there's no way we can detect changes.
                 // However, first there are some conditions in which we do not want to do so.
-
                 // give time for slaves to come online if we are right after reconnection (JENKINS-8408)
                 long running = Jenkins.getInstance().getInjector().getInstance(Uptime.class).getUptime();
                 long remaining = TimeUnit2.MINUTES.toMillis(10)-running;
                 if (remaining>0) {
                     listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(remaining/1000));
+                    listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
+                    return NO_CHANGES;
+                }
+
+                // Do not trigger build, if no suitable slave is online
+                if (workspaceOfflineReason.equals(WorkspaceOfflineReason.all_suitable_nodes_are_offline)) {
+                    // No suitable executor is online
+                    listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(running/1000));
                     listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return NO_CHANGES;
                 }
@@ -1479,12 +1487,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             } else {
                 WorkspaceList l = b.getBuiltOn().toComputer().getWorkspaceList();
                 return pollWithWorkspace(listener, scm, b, ws, l);
-
             }
+			
         } else {
             // polling without workspace
             LOGGER.fine("Polling SCM changes of " + getName());
-
             if (pollingBaseline==null) // see NOTE-NO-BASELINE above
                 calcPollingBaseline(getLastBuild(),null,listener);
             PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
@@ -1519,11 +1526,50 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     enum WorkspaceOfflineReason {
         nonexisting_workspace,
         builton_node_gone,
-        builton_node_no_executors
+        builton_node_no_executors,
+        all_suitable_nodes_are_offline,
+        use_ondemand_slave
+    }
+
+    /**
+     * Returns true if all suitable nodes for the job are offline.
+     *
+     */
+
+    private boolean isAllSuitableNodesOffline(R build) {
+        Label label = getAssignedLabel();
+        List<Node> allNodes = Jenkins.getInstance().getNodes();
+
+        if (allNodes.isEmpty() && !(label == Jenkins.getInstance().getSelfLabel())) {
+            // no master/slave. pointless to talk about nodes
+            label = null;
+        }
+
+        if (label != null) {
+            return label.isOffline();
+        } else {
+            if (canRoam) {
+                for (Node n : Jenkins.getInstance().getNodes()) {
+                    Computer c = n.toComputer();
+                    if (c != null && c.isOnline() && c.isAcceptingTasks()) {
+                        // Some executor is ready and this job can run anywhere
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     private WorkspaceOfflineReason workspaceOffline(R build) throws IOException, InterruptedException {
         FilePath ws = build.getWorkspace();
+        Label label = getAssignedLabel();
+
+        if (isAllSuitableNodesOffline(build)) {            
+            Collection<Cloud> applicableClouds = label == null ? Jenkins.getInstance().clouds : label.getClouds();
+            return applicableClouds.isEmpty() ? WorkspaceOfflineReason.all_suitable_nodes_are_offline : WorkspaceOfflineReason.use_ondemand_slave;            
+        }
+
         if (ws==null || !ws.exists()) {
             return WorkspaceOfflineReason.nonexisting_workspace;
         }
