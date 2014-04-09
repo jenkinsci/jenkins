@@ -31,7 +31,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
-        <f:entry title="${%Your name}" help="/help/user/fullName.html">
+        <f:entry title="${%Full name}" help="/help/user/fullName.html">
           <f:textbox name="fullName" value="${it.fullName}" />
         </f:entry>
         <f:entry title="${%Description}" help="/help/user/description.html">

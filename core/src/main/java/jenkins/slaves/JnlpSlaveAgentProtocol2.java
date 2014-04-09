@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  * <p>
  * This protocol extends the version 1 protocol by adding a per-client cookie,
  * so that we can detect a reconnection from the slave and take appropriate action,
- * when the connection disappered without the master noticing.
+ * when the connection disappeared without the master noticing.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.467

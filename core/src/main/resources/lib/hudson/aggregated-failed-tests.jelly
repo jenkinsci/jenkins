@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Display links to failed test from all child reports.
-    @since TODO
+    @since 1.538
     <st:attribute name="it" type="AggregatedTestResultAction">
       Aggregated action.
     </st:attribute>

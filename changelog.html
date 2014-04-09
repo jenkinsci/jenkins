@@ -55,18 +55,26 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=rfe>
-    Slaves connected via Java Web Start now restart themselves when a connection to Jenkins is lost.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19055">issue 19055</a>)
-  <li class=bug>
-    Faster rendering of views containing many items.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18364">issue 18364</a>)
+  <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.558>What's new in 1.558</a> <!--=DATE=--></h3>
+<h3><a name=v1.559>What's new in 1.559</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+    Slaves connected via Java Web Start now restart themselves when a connection to Jenkins is lost.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19055">issue 19055</a>)
+  <li class=bug>
+    Fixed NPE from <code>Slave.createLauncher</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21999">issue 21999</a>)
+  <li class=bug>
+    Faster rendering of views containing many items.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18364">issue 18364</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.558>What's new in 1.558</a> (2014/04/06)</h3>
 <ul class=image>
   <li class=rfe>
     Cron-style trigger configuration will now display expected prior and subsequent run times.
@@ -98,7 +106,6 @@ Upcoming changes</a>
     Fixed NPE executing <tt>Pipe.EOF</tt> with <tt>ProxyWriter</tt>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20769">issue 20769</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.557>What's new in 1.557</a> (2014/03/31)</h3>
 <ul class=image>
   <li class=bug>
