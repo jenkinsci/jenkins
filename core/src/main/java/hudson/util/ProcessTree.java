@@ -428,15 +428,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     public synchronized EnvVars getEnvironmentVariables() {
                         if(env !=null)
                           return env;
-                        env = new EnvVars();   
-                        
-                        try 
+                        env = new EnvVars();
+
+                        try
                         {
                            env.putAll(p.getEnvironmentVariables());
                         } catch (WinpException e)
                         {
                            LOGGER.log(FINE, "Failed to get environment variable ", e);
-                        }                          
+                        }
                         return env;
                     }
                 });
@@ -604,10 +604,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 PID_FIELD = clazz.getDeclaredField("pid");
                 PID_FIELD.setAccessible(true);
 
-                if (isJava8()) {
-                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class, boolean.class);
-                }   else {
+                if (isPreJava8()) {
                     DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                } else {
+                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class, boolean.class);
                 }
                 DESTROY_PROCESS.setAccessible(true);
             } catch (ClassNotFoundException e) {
@@ -626,17 +626,17 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         public static void destroy(int pid) throws IllegalAccessException, InvocationTargetException {
-            if (isJava8()) {
-                DESTROY_PROCESS.invoke(null, pid, false);
-            } else {
+            if (isPreJava8()) {
                 DESTROY_PROCESS.invoke(null, pid);
+            } else {
+                DESTROY_PROCESS.invoke(null, pid, false);
             }
         }
 
-        private static boolean isJava8() {
-            return (System.getProperty("java.version").startsWith("1.8"));
+        private static boolean isPreJava8() {
+            int javaVersionAsAnInteger = Integer.parseInt(System.getProperty("java.version").replaceAll("\\.", "").replaceAll("_", "").substring(0, 2));
+            return javaVersionAsAnInteger < 18;
         }
-
     }
 
 
