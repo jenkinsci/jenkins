@@ -47,7 +47,6 @@ import hudson.model.PageDecorator;
 import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
-import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
@@ -409,7 +408,7 @@ public class Functions {
         return Node.Mode.values();
     }
 
-    public static String getProjectListString(List<Project> projects) {
+    public static String getProjectListString(List<AbstractProject> projects) {
         return Items.toNameList(projects);
     }
 
