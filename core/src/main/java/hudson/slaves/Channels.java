@@ -30,8 +30,7 @@ import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
-import hudson.remoting.SocketInputStream;
-import hudson.remoting.SocketOutputStream;
+import hudson.remoting.SocketChannelStream;
 import hudson.util.ClasspathBuilder;
 import hudson.util.JVMBuilder;
 import hudson.util.StreamCopyThread;
@@ -205,8 +204,8 @@ public class Channels {
         serverSocket.close();
 
         return forProcess("Channel to "+displayName, Computer.threadPoolForRemoting,
-                new BufferedInputStream(new SocketInputStream(s)),
-                new BufferedOutputStream(new SocketOutputStream(s)),null,p);
+                new BufferedInputStream(SocketChannelStream.in(s)),
+                new BufferedOutputStream(SocketChannelStream.out(s)),null,p);
     }
 
 

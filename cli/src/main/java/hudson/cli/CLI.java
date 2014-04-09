@@ -29,7 +29,7 @@ import hudson.remoting.PingThread;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
-import hudson.remoting.SocketInputStream;
+import hudson.remoting.SocketChannelStream;
 import hudson.remoting.SocketOutputStream;
 
 import javax.crypto.SecretKey;
@@ -201,7 +201,7 @@ public class CLI {
         } else {
             s = new Socket();
             s.connect(clip.endpoint,3000);
-            out = new SocketOutputStream(s);
+            out = SocketChannelStream.out(s);
         }
 
         closables.add(new Closeable() {
@@ -210,7 +210,7 @@ public class CLI {
             }
         });
 
-        Connection c = new Connection(new SocketInputStream(s),out);
+        Connection c = new Connection(SocketChannelStream.in(s),out);
 
         switch (clip.version) {
         case 1:
