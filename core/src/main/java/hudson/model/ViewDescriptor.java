@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.views.ListViewColumn;
 import hudson.views.ListViewColumnDescriptor;
 import hudson.views.ViewJobFilter;
-import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.QueryParameter;
@@ -72,7 +71,6 @@ public abstract class ViewDescriptor extends Descriptor<View> {
 
     /**
      * Auto-completion for the "copy from" field in the new job page.
-     * @since 1.553
      */
     @Restricted(DoNotUse.class)
     public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup container) {
