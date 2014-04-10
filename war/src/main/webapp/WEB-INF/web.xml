@@ -160,6 +160,14 @@ THE SOFTWARE.
       <role-name>*</role-name>
     </auth-constraint>
   </security-constraint>
+  
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>other</web-resource-name>
+      <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <!-- no security constraint --> 
+  </security-constraint>
 
   <login-config>
     <auth-method>FORM</auth-method>
