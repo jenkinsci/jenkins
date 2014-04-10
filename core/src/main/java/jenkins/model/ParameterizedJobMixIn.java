@@ -75,12 +75,12 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     /** @see BuildableItem#scheduleBuild() */
     @SuppressWarnings("deprecation")
     public final boolean scheduleBuild() {
-        return scheduleBuild(Jenkins.getInstance().getQuietPeriod(), new Cause.LegacyCodeCause());
+        return scheduleBuild(asJob().getQuietPeriod(), new Cause.LegacyCodeCause());
     }
 
     /** @see BuildableItem#scheduleBuild(Cause) */
     public final boolean scheduleBuild(Cause c) {
-        return scheduleBuild(Jenkins.getInstance().getQuietPeriod(), c);
+        return scheduleBuild(asJob().getQuietPeriod(), c);
     }
 
     /** @see BuildableItem#scheduleBuild(int) */
