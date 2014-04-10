@@ -1865,13 +1865,14 @@ function buildFormTree(form) {
                 r=0;
                 while (e.name.substring(r,r+8)=='removeme')
                     r = e.name.indexOf('_',r+8)+1;
+                p = findParent(e);
                 if(e.groupingNode) {
-                    p = findParent(e);
                     addProperty(p, e.name.substring(r), e.formDom = { value: e.value });
-                    break;
+                } else {
+                    addProperty(p, e.name.substring(r), e.value);
                 }
+                break;
 
-                // otherwise fall through
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);
