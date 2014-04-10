@@ -1814,6 +1814,7 @@ function buildFormTree(form) {
             }
                 
             var p;
+            var r;
             var type = e.getAttribute("type");
             if(type==null)  type="";
             switch(type.toLowerCase()) {
@@ -1861,15 +1862,17 @@ function buildFormTree(form) {
                 break;
             case "radio":
                 if(!e.checked)  break;
-                while (e.name.substring(0,8)=='removeme')
-                    e.name = e.name.substring(e.name.indexOf('_',8)+1);
+                r=0;
+                while (e.name.substring(r,r+8)=='removeme')
+                    r = e.name.indexOf('_',r+8)+1;
+                p = findParent(e);
                 if(e.groupingNode) {
-                    p = findParent(e);
-                    addProperty(p, e.name, e.formDom = { value: e.value });
-                    break;
+                    addProperty(p, e.name.substring(r), e.formDom = { value: e.value });
+                } else {
+                    addProperty(p, e.name.substring(r), e.value);
                 }
+                break;
 
-                // otherwise fall through
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);

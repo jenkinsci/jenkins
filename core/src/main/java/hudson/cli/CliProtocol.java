@@ -4,9 +4,13 @@ import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Mode;
+import hudson.remoting.ChannelBuilder;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
+import jenkins.slaves.NioChannelSelector;
+import org.jenkinsci.remoting.nio.NioChannelHub;
 
+import javax.inject.Inject;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
@@ -23,6 +27,9 @@ import java.net.Socket;
  */
 @Extension
 public class CliProtocol extends AgentProtocol {
+    @Inject
+    NioChannelSelector nio;
+
     @Override
     public String getName() {
         return "CLI-connect";
@@ -30,13 +37,23 @@ public class CliProtocol extends AgentProtocol {
 
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
-        new Handler(socket).run();
+        new Handler(nio.getHub(),socket).run();
     }
 
     protected static class Handler {
+        protected final NioChannelHub hub;
         protected final Socket socket;
 
+        /**
+         * @deprecated as of 1.559
+         *      Use {@link #Handler(NioChannelHub, Socket)}
+         */
         public Handler(Socket socket) {
+            this(null,socket);
+        }
+
+        public Handler(NioChannelHub hub, Socket socket) {
+            this.hub = hub;
             this.socket = socket;
         }
 
@@ -47,9 +64,21 @@ public class CliProtocol extends AgentProtocol {
         }
 
         protected void runCli(Connection c) throws IOException, InterruptedException {
-            Channel channel = new Channel("CLI channel from " + socket.getInetAddress(),
-                    Computer.threadPoolForRemoting, Mode.BINARY,
-                    new BufferedInputStream(c.in), new BufferedOutputStream(c.out), null, true, Jenkins.getInstance().pluginManager.uberClassLoader);
+            ChannelBuilder cb;
+            String name = "CLI channel from " + socket.getInetAddress();
+
+            // Connection can contain cipher wrapper, which can't be NIO-ed.
+//            if (hub!=null)
+//                cb = hub.newChannelBuilder(name, Computer.threadPoolForRemoting);
+//            else
+                cb = new ChannelBuilder(name, Computer.threadPoolForRemoting);
+
+            Channel channel = cb
+                    .withMode(Mode.BINARY)
+                    .withRestricted(true)
+                    .withBaseLoader(Jenkins.getInstance().pluginManager.uberClassLoader)
+                    .build(new BufferedInputStream(c.in), new BufferedOutputStream(c.out));
+
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
             channel.join();
         }
