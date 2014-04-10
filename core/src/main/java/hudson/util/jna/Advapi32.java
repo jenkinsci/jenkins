@@ -23,6 +23,9 @@ import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.IntByReference;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * @author TB
@@ -324,6 +327,12 @@ typedef struct _SERVICE_STATUS {
     public int dwServiceSpecificExitCode;
     public int dwCheckPoint;
     public int dwWaitHint;
+
+    @Override
+    protected List getFieldOrder() {
+        return Arrays.asList("dwServiceType", "dwCurrentState", "dwControlsAccepted",
+                "dwWin32ExitCode", "dwServiceSpecificExitCode", "dwCheckPoint", "dwWaitHint");
+    }
   }
 
 /*
@@ -335,9 +344,18 @@ typedef struct _SERVICE_TABLE_ENTRY {
   class SERVICE_TABLE_ENTRY extends Structure {
     public String lpServiceName;
     public SERVICE_MAIN_FUNCTION lpServiceProc;
+
+    @Override
+    protected List getFieldOrder() {
+        return Arrays.asList("lpServiceName", "lpServiceProc");
+    }
   }
 
   class ChangeServiceConfig2Info extends Structure {
+      @Override
+      protected List getFieldOrder() {
+          return Arrays.asList();
+      }
   }
 
 /*
