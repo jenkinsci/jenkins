@@ -280,7 +280,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
 
     /**
      * Accompanying helper for the run type.
-     * Stateful but should be held in a {@code transient} field.
+     * Stateful but should be held in a {@code transient final} field.
      */
     public static abstract class RunMixIn<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyLoadingRun<JobT,RunT>> {
 

@@ -1445,17 +1445,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @throws IOException
      *      if we fail to delete.
      */
-    public synchronized void delete() throws IOException {
-        RunListener.fireDeleted(this);
-
-        // if we have a symlink, delete it, too
-        File link = new File(project.getBuildDir(), String.valueOf(getNumber()));
-        link.delete();
-
+    public void delete() throws IOException {
         File rootDir = getRootDir();
         if (!rootDir.isDirectory()) {
             throw new IOException(this + ": " + rootDir + " looks to have already been deleted");
         }
+        
+        RunListener.fireDeleted(this);
+
+        synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
+        // if we have a symlink, delete it, too
+        File link = new File(project.getBuildDir(), String.valueOf(getNumber()));
+        link.delete();
+
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
         if (tmp.exists()) {
@@ -1474,6 +1476,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
 
         removeRunFromParent();
+        }
     }
 
     @SuppressWarnings("unchecked") // seems this is too clever for Java's type system?

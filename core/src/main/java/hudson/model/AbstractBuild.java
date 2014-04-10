@@ -71,7 +71,6 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -156,7 +155,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     protected transient List<Environment> buildEnvironments;
 
-    private transient LazyBuildMixIn.RunMixIn<P,R> runMixIn;
+    private transient final LazyBuildMixIn.RunMixIn<P,R> runMixIn = new LazyBuildMixIn.RunMixIn<P,R>() {
+        @Override protected R asRun() {
+            return _this();
+        }
+    };
 
     protected AbstractBuild(P job) throws IOException {
         super(job);
@@ -174,14 +177,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent();
     }
 
-    @Override public final synchronized LazyBuildMixIn.RunMixIn<P,R> getRunMixIn() {
-        if (runMixIn == null) {
-            runMixIn = new LazyBuildMixIn.RunMixIn<P,R>() {
-                @Override protected R asRun() {
-                    return _this();
-                }
-            };
-        }
+    @Override public final LazyBuildMixIn.RunMixIn<P,R> getRunMixIn() {
         return runMixIn;
     }
 
