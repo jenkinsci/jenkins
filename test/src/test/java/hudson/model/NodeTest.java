@@ -266,8 +266,7 @@ public class NodeTest {
         }
     }
     
-    @TestExtension
-    public static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
+    private static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
         @Override
         public Authentication authenticate(Queue.Item item) {
             return new UsernamePasswordAuthenticationToken("John ","John",new GrantedAuthority[0]);

@@ -83,7 +83,6 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.TestExtension;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -439,8 +438,7 @@ public class QueueTest extends HudsonTestCase {
         assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 
-    @TestExtension
-    public static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
+    private static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
         @Override
         public Authentication authenticate(Queue.Item item) {
             return alice;
