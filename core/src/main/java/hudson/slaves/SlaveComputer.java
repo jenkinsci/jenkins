@@ -43,52 +43,30 @@ import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
-import hudson.util.Secret;
 import hudson.util.StreamTaskListener;
 import hudson.util.io.ReopenableFileOutputStream;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
+import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponseWrapper;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.ResponseImpl;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.compression.FilterServletOutputStream;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponseWrapper;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -598,40 +576,8 @@ public class SlaveComputer extends Computer {
     }
 
     @WebMethod(name="slave-agent.jnlp")
-    public void doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
-        RequestDispatcher view = req.getView(this, "slave-agent.jnlp.jelly");
-        if ("true".equals(req.getParameter("encrypt"))) {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            StaplerResponse temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
-                @Override public ServletOutputStream getOutputStream() throws IOException {
-                    return new FilterServletOutputStream(baos);
-                }
-                @Override public PrintWriter getWriter() throws IOException {
-                    throw new IllegalStateException();
-                }
-            });
-            view.forward(req, temp);
-
-            byte[] iv = new byte[128/8];
-            new SecureRandom().nextBytes(iv);
-
-            byte[] jnlpMac = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName().getBytes("UTF-8"));
-            SecretKey key = new SecretKeySpec(jnlpMac, 0, /* export restrictions */ 128 / 8, "AES");
-            byte[] encrypted;
-            try {
-                Cipher c = Secret.getCipher("AES/CFB8/NoPadding");
-                c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-                encrypted = c.doFinal(baos.toByteArray());
-            } catch (GeneralSecurityException x) {
-                throw new IOException(x);
-            }
-            res.setContentType("application/octet-stream");
-            res.getOutputStream().write(iv);
-            res.getOutputStream().write(encrypted);
-        } else {
-            checkPermission(CONNECT);
-            view.forward(req, res);
-        }
+    public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
+        return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
     }
 
     @Override
