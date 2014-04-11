@@ -35,8 +35,9 @@ import hudson.matrix.MatrixRun;
 import hudson.matrix.TextAxis;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
-import hudson.model.Queue.*;
 import hudson.model.Queue.BlockedItem;
+import hudson.model.Queue.Executable;
+import hudson.model.Queue.WaitingItem;
 import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
@@ -69,7 +70,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
-import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
@@ -81,9 +81,9 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.TestExtension;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -427,8 +427,8 @@ public class QueueTest extends HudsonTestCase {
      */
     public void testAccessControl() throws Exception {
         configureUserRealm();
-        qac.getAuthenticators().add(new QueueItemAuthenticatorImpl());
         FreeStyleProject p = createFreeStyleProject();
+        qac.getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -437,14 +437,6 @@ public class QueueTest extends HudsonTestCase {
             }
         });
         assertBuildStatusSuccess(p.scheduleBuild2(0));
-    }
-
-    @TestExtension
-    public static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
-        @Override
-        public Authentication authenticate(Queue.Item item) {
-            return alice;
-        }
     }
 
     private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice",new GrantedAuthority[0]);
@@ -462,8 +454,8 @@ public class QueueTest extends HudsonTestCase {
         DumbSlave s2 = createSlave();
 
         configureUserRealm();
-        qac.getAuthenticators().add(new QueueItemAuthenticatorImpl());
         FreeStyleProject p = createFreeStyleProject();
+        qac.getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {

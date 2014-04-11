@@ -90,7 +90,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -117,8 +116,6 @@ import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -775,78 +772,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         updateTransientActions();
 
-        Set<AbstractProject> upstream = Collections.emptySet();
-        if(req.getParameter("pseudoUpstreamTrigger")!=null) {
-            upstream = new HashSet<AbstractProject>(Items.fromNameList(getParent(),req.getParameter("upstreamProjects"),AbstractProject.class));
-        }
-
-        convertUpstreamBuildTrigger(upstream);
-
         // notify the queue as the project might be now tied to different node
         Jenkins.getInstance().getQueue().scheduleMaintenance();
 
         // this is to reflect the upstream build adjustments done above
         Jenkins.getInstance().rebuildDependencyGraphAsync();
-    }
-
-    /**
-     * Reflect the submission of the pseudo 'upstream build trigger'.
-     */
-    /* package */ void convertUpstreamBuildTrigger(Set<AbstractProject> upstream) throws IOException {
-
-        SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
-        try {
-            for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
-                // Don't consider child projects such as MatrixConfiguration:
-                if (!p.isConfigurable()) continue;
-                boolean isUpstream = upstream.contains(p);
-                synchronized(p) {
-                    // does 'p' include us in its BuildTrigger?
-                    DescribableList<Publisher,Descriptor<Publisher>> pl = p.getPublishersList();
-                    BuildTrigger trigger = pl.get(BuildTrigger.class);
-                    List<AbstractProject> newChildProjects = trigger == null ? new ArrayList<AbstractProject>():trigger.getChildProjects(p);
-                    if(isUpstream) {
-                        if(!newChildProjects.contains(this))
-                            newChildProjects.add(this);
-                    } else {
-                        newChildProjects.remove(this);
-                    }
-
-                    if(newChildProjects.isEmpty()) {
-                        pl.remove(BuildTrigger.class);
-                    } else {
-                        // here, we just need to replace the old one with the new one,
-                        // but there was a regression (we don't know when it started) that put multiple BuildTriggers
-                        // into the list. For us not to lose the data, we need to merge them all.
-                        List<BuildTrigger> existingList = pl.getAll(BuildTrigger.class);
-                        BuildTrigger existing;
-                        switch (existingList.size()) {
-                        case 0:
-                            existing = null;
-                            break;
-                        case 1:
-                            existing = existingList.get(0);
-                            break;
-                        default:
-                            pl.removeAll(BuildTrigger.class);
-                            Set<AbstractProject> combinedChildren = new HashSet<AbstractProject>();
-                            for (BuildTrigger bt : existingList)
-                                combinedChildren.addAll(bt.getChildProjects(p));
-                            existing = new BuildTrigger(new ArrayList<AbstractProject>(combinedChildren),existingList.get(0).getThreshold());
-                            pl.add(existing);
-                            break;
-                        }
-
-                        if(existing!=null && existing.hasSame(p,newChildProjects))
-                            continue;   // no need to touch
-                        pl.replace(new BuildTrigger(newChildProjects,
-                            existing==null? Result.SUCCESS:existing.getThreshold()));
-                    }
-                }
-            }
-        } finally {
-            SecurityContextHolder.setContext(saveCtx);
-        }
     }
 
     /**
@@ -1640,7 +1570,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Returns only those upstream projects that defines {@link BuildTrigger} to this project.
      * This is a subset of {@link #getUpstreamProjects()}
-     *
+     * <p>No longer used in the UI.
      * @return A List of upstream projects that has a {@link BuildTrigger} to this project.
      */
     public final List<AbstractProject> getBuildTriggerUpstreamProjects() {
@@ -1853,20 +1783,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         triggers.replaceBy(buildDescribable(req, Trigger.for_(this)));
         for (Trigger t : triggers())
             t.start(this,true);
-
-        for (Publisher _t : Descriptor.newInstancesFromHeteroList(req, json, "publisher", Jenkins.getInstance().getExtensionList(BuildTrigger.DescriptorImpl.class))) {
-            BuildTrigger t = (BuildTrigger) _t;
-            List<AbstractProject> childProjects;
-            SecurityContext orig = ACL.impersonate(ACL.SYSTEM);
-            try {
-                childProjects = t.getChildProjects(this);
-            } finally {
-                SecurityContextHolder.setContext(orig);
-            }
-            for (AbstractProject downstream : childProjects) {
-                downstream.checkPermission(BUILD);
-            }
-        }
     }
 
     /**
@@ -2169,7 +2085,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Finds a {@link AbstractProject} that has the name closest to the given name.
      * @see Items#findNearest
      */
-    public static AbstractProject findNearest(String name) {
+    public static @CheckForNull AbstractProject findNearest(String name) {
         return findNearest(name,Jenkins.getInstance());
     }
 
@@ -2179,7 +2095,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.419
      * @see Items#findNearest
      */
-    public static AbstractProject findNearest(String name, ItemGroup context) {
+    public static @CheckForNull AbstractProject findNearest(String name, ItemGroup context) {
         return Items.findNearest(AbstractProject.class, name, context);
     }
 

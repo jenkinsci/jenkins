@@ -23,41 +23,38 @@
  */
 package hudson.model;
 
+import hudson.FilePath;
+import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import org.jvnet.hudson.test.TestExtension;
-import java.util.List;
-import java.util.ArrayList;
-import hudson.util.TagCloud.Entry;
-import hudson.util.TagCloud;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.Permission;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.OfflineCause.UserCause;
-
+import hudson.util.TagCloud;
+import hudson.util.TagCloud.Entry;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.List;
+import jenkins.model.Jenkins;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
+import org.acegisecurity.context.SecurityContextHolder;
+import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.*;
-import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContextHolder;
-import jenkins.security.QueueItemAuthenticator;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import hudson.FilePath;
-import hudson.model.Node.Mode;
-import hudson.security.Permission;
-import hudson.slaves.DumbSlave;
-import org.junit.Before;
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  *
@@ -181,8 +178,9 @@ public class NodeTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
+        realm.createAccount("John", "");
         notTake = false;
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new QueueItemAuthenticatorImpl());
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(project.getFullName(), user.impersonate())));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
         message = Messages._Node_LackingBuildPermission(item.authenticate().getName(),node.getNodeName()).toString();
         assertEquals("Cause of blockage should be bussy label.", message, node.canTake(item).getShortDescription());
@@ -266,11 +264,4 @@ public class NodeTest {
         }
     }
     
-    @TestExtension
-    public static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
-        @Override
-        public Authentication authenticate(Queue.Item item) {
-            return new UsernamePasswordAuthenticationToken("John ","John",new GrantedAuthority[0]);
-        }
-    }
 }

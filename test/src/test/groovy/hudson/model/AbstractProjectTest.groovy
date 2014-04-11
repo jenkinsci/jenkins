@@ -289,41 +289,6 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
     */
 
-    @Bug(13502)
-    public void testHandleBuildTrigger() {
-        Project u = createFreeStyleProject("u"),
-                d = createFreeStyleProject("d"),
-                e = createFreeStyleProject("e");
-
-        u.addPublisher(new BuildTrigger("d", Result.SUCCESS));
-
-        jenkins.setSecurityRealm(createDummySecurityRealm());
-        ProjectMatrixAuthorizationStrategy authorizations = new ProjectMatrixAuthorizationStrategy();
-        jenkins.setAuthorizationStrategy(authorizations);
-
-        authorizations.add(Jenkins.ADMINISTER, "admin");
-        authorizations.add(Jenkins.READ, "user");
-
-        // user can READ u and CONFIGURE e
-        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
-        permissions.put(Job.READ, Collections.singleton("user"));
-        u.addProperty(new AuthorizationMatrixProperty(permissions));
-
-        permissions = new HashMap<Permission, Set<String>>();
-        permissions.put(Job.CONFIGURE, Collections.singleton("user"));
-        e.addProperty(new AuthorizationMatrixProperty(permissions));
-
-        User user = User.get("user");
-        SecurityContext sc = ACL.impersonate(user.impersonate());
-        try {
-            e.convertUpstreamBuildTrigger(Collections.<AbstractProject> emptySet());
-        } finally {
-            SecurityContextHolder.setContext(sc);
-        }
-
-        assert 1 == u.getPublishersList().size();
-    }
-
     @Bug(17137)
     public void testExternalBuildDirectorySymlinks() {
         // TODO when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
