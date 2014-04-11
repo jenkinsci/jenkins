@@ -25,7 +25,6 @@ package hudson.tasks;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractProject;
@@ -174,6 +173,9 @@ public class BuildTriggerTest extends HudsonTestCase {
         upstream.addProperty(new AuthorizationMatrixProperty(perms));
         String downstreamName = "d0wnstr3am"; // do not clash with English messages!
         FreeStyleProject downstream = createFreeStyleProject(downstreamName);
+        upstream.getPublishersList().add(new BuildTrigger(downstreamName, Result.SUCCESS));
+        jenkins.rebuildDependencyGraph();
+        /* The long way:
         WebClient wc = createWebClient();
         wc.login("alice");
         HtmlPage page = wc.getPage(upstream, "configure");
@@ -183,6 +185,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         HtmlTextInput childProjects = config.getInputByName("buildTrigger.childProjects");
         childProjects.setValueAttribute(downstreamName);
         submit(config);
+        */
         // DependencyGraph is rebuilt as SYSTEM so is always complete even if configuring user does not know it:
         assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
         // Downstream projects whose existence we are not aware of will silently not be triggered:
