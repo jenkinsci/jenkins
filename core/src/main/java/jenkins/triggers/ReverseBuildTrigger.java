@@ -185,7 +185,11 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             while(tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
-                    Job item = Jenkins.getInstance().getItem(projectName, project, Job.class);
+                    Jenkins jenkins = Jenkins.getInstance();
+                    if (jenkins == null) {
+                        return FormValidation.ok();
+                    }
+                    Job item = jenkins.getItem(projectName, project, Job.class);
                     if (item == null) {
                         Job nearest = Items.findNearest(Job.class, projectName, project.getParent());
                         String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
@@ -203,12 +207,12 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     }
 
-    @Extension public static final class RunListenerImpl extends RunListener {
+    @Extension public static final class RunListenerImpl extends RunListener<Run> {
         @Override public void onCompleted(Run r, TaskListener listener) {
             Collection<ReverseBuildTrigger> triggers;
             synchronized (upstream2Trigger) {
                 Collection<ReverseBuildTrigger> _triggers = upstream2Trigger.get(r.getParent());
-                if (_triggers.isEmpty()) {
+                if (_triggers == null || _triggers.isEmpty()) {
                     return;
                 }
                 triggers = new ArrayList<ReverseBuildTrigger>(_triggers);
