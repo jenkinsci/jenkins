@@ -61,11 +61,9 @@ import hudson.FilePath;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.EnvVars;
 import hudson.tasks.Shell;
-import org.jvnet.hudson.test.MilliSecLogFormatter;
 import org.jvnet.hudson.test.TestExtension;
 import java.util.List;
 import java.util.ArrayList;
-import hudson.util.HudsonIsLoading;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -75,6 +73,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.BuildTrigger;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -342,7 +341,7 @@ public class ProjectTest {
 
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
         downstream.getBuildersList().add(new Shell("sleep 10"));
-        downstream.convertUpstreamBuildTrigger(Collections.<AbstractProject>singleton(p));
+        p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
         Jenkins.getInstance().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b2 = waitForStart(downstream);

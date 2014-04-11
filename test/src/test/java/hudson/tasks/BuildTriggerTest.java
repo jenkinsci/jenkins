@@ -158,6 +158,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         doMavenTriggerTest(true);
     }
 
+    // TODO need a matching test for ReverseBuildTrigger
     public void testDownstreamProjectSecurity() throws Exception {
         jenkins.setSecurityRealm(new LegacySecurityRealm());
         ProjectMatrixAuthorizationStrategy auth = new ProjectMatrixAuthorizationStrategy();
@@ -186,7 +187,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
         // Downstream projects whose existence we are not aware of will silently not be triggered:
         Authentication alice = User.get("alice").impersonate();
-        assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName, false);
+        assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName);
         FreeStyleBuild b = buildAndAssertSuccess(upstream);
         assertLogNotContains(downstreamName, b);
         waitUntilNoActivity();
@@ -196,7 +197,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         grantedPermissions.put(Item.READ, Collections.singleton("alice"));
         AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
-        assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName, false);
+        assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName);
         b = buildAndAssertSuccess(upstream);
         assertLogContains(downstreamName, b);
         waitUntilNoActivity();
@@ -206,7 +207,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         downstream.removeProperty(amp);
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
-        assertDoCheck(alice, null, upstream, downstreamName, false);
+        assertDoCheck(alice, null, upstream, downstreamName);
         b = buildAndAssertSuccess(upstream);
         assertLogContains(downstreamName, b);
         waitUntilNoActivity();
@@ -217,7 +218,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         assertEquals(b, cause.getUpstreamRun());
         // Now if we have configured some QIA’s but they are not active on this job, we should run as anonymous. Which would normally have no permissions:
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new QIA(Collections.<String,String>emptyMap()));
-        assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName, false);
+        assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName);
         b = buildAndAssertSuccess(upstream);
         assertLogNotContains(downstreamName, b);
         assertLogContains(Messages.BuildTrigger_warning_this_build_has_no_associated_aut(), b);
@@ -229,7 +230,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         downstream.removeProperty(amp);
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
-        assertDoCheck(alice, null, upstream, downstreamName, false);
+        assertDoCheck(alice, null, upstream, downstreamName);
         b = buildAndAssertSuccess(upstream);
         assertLogContains(downstreamName, b);
         waitUntilNoActivity();
@@ -244,7 +245,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().clear();
-        assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName, false);
+        assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName);
         b = buildAndAssertSuccess(upstream);
         assertLogContains(downstreamName, b);
         assertLogContains(Messages.BuildTrigger_warning_access_control_for_builds_in_glo(), b);
@@ -271,11 +272,11 @@ public class BuildTriggerTest extends HudsonTestCase {
             }
         }
     }
-    private void assertDoCheck(Authentication auth, @CheckForNull String expectedError, AbstractProject project, String value, boolean upstream) {
+    private void assertDoCheck(Authentication auth, @CheckForNull String expectedError, AbstractProject project, String value) {
         FormValidation result;
         SecurityContext orig = ACL.impersonate(auth);
         try {
-            result = jenkins.getDescriptorByType(BuildTrigger.DescriptorImpl.class).doCheck(project, value, upstream);
+            result = jenkins.getDescriptorByType(BuildTrigger.DescriptorImpl.class).doCheck(project, value);
         } finally {
             SecurityContextHolder.setContext(orig);
         }

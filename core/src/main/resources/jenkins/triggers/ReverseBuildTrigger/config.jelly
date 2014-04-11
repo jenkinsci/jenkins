@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright 2014 Jesse Glick.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +23,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Config page
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <st:include page="configure-common.jelly" />
-
-  <p:config-trigger/>
-
-  <p:config-buildWrappers />
-  <p:config-builders />
-  <p:config-publishers2 />
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry field="upstreamProjects" title="${%Projects to watch}">
+        <f:textbox autoCompleteDelimChar=","/>
+    </f:entry>
+    <f:entry title="">
+        <f:radio name="threshold" checked="${instance.threshold==null || instance.threshold.toString()=='SUCCESS'}"
+               title="${%Trigger only if build is stable}" value="SUCCESS"/>
+    </f:entry>
+    <f:entry title="">
+        <f:radio name="threshold" checked="${instance.threshold.toString()=='UNSTABLE'}"
+               title="${%Trigger even if the build is unstable}" value="UNSTABLE"/>
+    </f:entry>
+    <f:entry title="">
+        <f:radio name="threshold" checked="${instance.threshold.toString()=='FAILURE'}"
+               title="${%Trigger even if the build fails}" value="FAILURE"/>
+    </f:entry>
 </j:jelly>

@@ -62,6 +62,7 @@ import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorDescriptor;
+import jenkins.triggers.ReverseBuildTrigger;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -84,6 +85,8 @@ import org.kohsuke.stapler.StaplerRequest;
  * <p>
  * This class, however, does provide the {@link #execute(AbstractBuild, BuildListener, BuildTrigger)}
  * method as a convenience method to invoke downstream builds.
+ *
+ * <p>Its counterpart is {@link ReverseBuildTrigger}.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -272,7 +275,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                                                   List<Action> actions) {
                     AbstractProject downstream = getDownstreamProject();
                     if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
-                        return false; // do not even issue a warning
+                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
+                        return false; // do not even issue a warning to build log
                     }
                     if (!downstream.hasPermission(Item.BUILD)) {
                         listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
@@ -362,7 +366,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         /**
          * Form validation method.
          */
-        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value, @QueryParameter boolean upstream) {
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) {
             // Require CONFIGURE permission on this project
             if(!project.hasPermission(Item.CONFIGURE))      return FormValidation.ok();
 
@@ -379,14 +383,13 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                     }
                     if(!(item instanceof AbstractProject))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
-                    if (!upstream) { // check whether the supposed user is expected to be able to build
-                        Authentication auth = Tasks.getAuthenticationOf(project);
-                        if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-                            auth = Jenkins.ANONYMOUS; // compare behavior in execute, above
-                        }
-                        if (!item.getACL().hasPermission(auth, Item.BUILD)) {
-                            return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
-                        }
+                    // check whether the supposed user is expected to be able to build
+                    Authentication auth = Tasks.getAuthenticationOf(project);
+                    if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
+                        auth = Jenkins.ANONYMOUS; // compare behavior in execute, above
+                    }
+                    if (!item.getACL().hasPermission(auth, Item.BUILD)) {
+                        return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
                     }
                     hasProjects = true;
                 }

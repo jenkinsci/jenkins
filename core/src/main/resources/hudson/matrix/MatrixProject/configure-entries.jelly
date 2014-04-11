@@ -58,9 +58,7 @@ THE SOFTWARE.
 
   <p:config-scm/>
 
-  <p:config-trigger>
-    <p:config-upstream-pseudo-trigger />
-  </p:config-trigger>
+  <p:config-trigger/>
 
   <f:section title="${%Configuration Matrix}">
     <!-- Needed for LabelAxis, but including these from LabelAxis/config.jelly is too late -->
