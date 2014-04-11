@@ -30,8 +30,7 @@ import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
-import hudson.remoting.SocketInputStream;
-import hudson.remoting.SocketOutputStream;
+import hudson.remoting.SocketChannelStream;
 import hudson.util.ClasspathBuilder;
 import hudson.util.JVMBuilder;
 import hudson.util.StreamCopyThread;
@@ -73,7 +72,7 @@ public class Channels {
              * Kill the process when the channel is severed.
              */
             @Override
-            protected synchronized void terminate(IOException e) {
+            public synchronized void terminate(IOException e) {
                 super.terminate(e);
                 try {
                     proc.kill();
@@ -109,7 +108,7 @@ public class Channels {
              * Kill the process when the channel is severed.
              */
             @Override
-            protected synchronized void terminate(IOException e) {
+            public synchronized void terminate(IOException e) {
                 super.terminate(e);
                 proc.destroy();
                 // the stderr copier should exit by itself
@@ -205,8 +204,8 @@ public class Channels {
         serverSocket.close();
 
         return forProcess("Channel to "+displayName, Computer.threadPoolForRemoting,
-                new BufferedInputStream(new SocketInputStream(s)),
-                new BufferedOutputStream(new SocketOutputStream(s)),null,p);
+                new BufferedInputStream(SocketChannelStream.in(s)),
+                new BufferedOutputStream(SocketChannelStream.out(s)),null,p);
     }
 
 

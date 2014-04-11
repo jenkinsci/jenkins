@@ -2,6 +2,7 @@ package hudson.cli;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -28,12 +29,20 @@ public class CliProtocol2 extends CliProtocol {
 
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
-        new Handler2(socket).run();
+        new Handler2(nio.getHub(), socket).run();
     }
 
     protected static class Handler2 extends Handler {
+        /**
+         * @deprecated as of 1.559
+         *      Use {@link #Handler2(NioChannelHub, Socket)}
+         */
         public Handler2(Socket socket) {
             super(socket);
+        }
+
+        public Handler2(NioChannelHub hub, Socket socket) {
+            super(hub, socket);
         }
 
         @Override

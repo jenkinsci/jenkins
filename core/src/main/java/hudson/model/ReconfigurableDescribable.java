@@ -25,6 +25,8 @@ package hudson.model;
 
 import hudson.model.Descriptor.FormException;
 import hudson.slaves.NodeProperty;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -77,5 +79,5 @@ public interface ReconfigurableDescribable<T extends ReconfigurableDescribable<T
      * @return
      *      The new instance. To not to create an instance of a describable, return null.
      */
-    T reconfigure(StaplerRequest req, JSONObject form) throws FormException;
+    @CheckForNull T reconfigure(@Nonnull StaplerRequest req, @CheckForNull JSONObject form) throws FormException;
 }

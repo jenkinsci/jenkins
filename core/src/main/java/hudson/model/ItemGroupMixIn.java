@@ -108,6 +108,7 @@ public abstract class ItemGroupMixIn {
                         item = (V) Items.load( parent, subdir );
                     }else{
                         Logger.getLogger( ItemGroupMixIn.class.getName() ).log( Level.WARNING, "could not find file " + xmlFile.getFile());
+                        continue;
                     }
                 } else {
                     item.onLoad(parent, subdir.getName());

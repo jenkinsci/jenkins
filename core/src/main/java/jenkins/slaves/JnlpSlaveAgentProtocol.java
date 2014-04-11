@@ -2,18 +2,18 @@ package jenkins.slaves;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
+import hudson.remoting.ChannelBuilder;
 import hudson.remoting.Engine;
-import hudson.remoting.SocketInputStream;
-import hudson.remoting.SocketOutputStream;
 import hudson.slaves.SlaveComputer;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
+import org.jenkinsci.remoting.nio.NioChannelHub;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import javax.inject.Inject;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -55,6 +55,9 @@ import java.util.logging.Logger;
  */
 @Extension
 public class JnlpSlaveAgentProtocol extends AgentProtocol {
+    @Inject
+    NioChannelSelector hub;
+
     @Override
     public String getName() {
         return "JNLP-connect";
@@ -62,10 +65,11 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
 
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
-        new Handler(socket).run();
+        new Handler(hub.getHub(),socket).run();
     }
 
     protected static class Handler {
+        protected final NioChannelHub hub;
         protected final Socket socket;
 
         /**
@@ -82,7 +86,16 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
          */
         protected final PrintWriter out;
 
+        /**
+         * @deprecated as of 1.559
+         *      Use {@link #Handler(NioChannelHub, Socket)}
+         */
         public Handler(Socket socket) throws IOException {
+            this(null,socket);
+        }
+
+        public Handler(NioChannelHub hub, Socket socket) throws IOException {
+            this.hub = hub;
             this.socket = socket;
             in = new DataInputStream(socket.getInputStream());
             out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),"UTF-8")),true);
@@ -121,7 +134,14 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
             logw.println("JNLP agent connected from "+ socket.getInetAddress());
 
             try {
-                computer.setChannel(new BufferedInputStream(new SocketInputStream(socket)), new BufferedOutputStream(new SocketOutputStream(socket)), log,
+                ChannelBuilder cb;
+
+                if (hub==null)
+                    cb = new ChannelBuilder(nodeName, Computer.threadPoolForRemoting);
+                else
+                    cb = hub.newChannelBuilder(nodeName, Computer.threadPoolForRemoting);
+
+                computer.setChannel(cb.withHeaderStream(log).build(socket), log,
                     new Listener() {
                         @Override
                         public void onClosed(Channel channel, IOException cause) {

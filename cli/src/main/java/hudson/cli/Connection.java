@@ -23,8 +23,7 @@
  */
 package hudson.cli;
 
-import hudson.remoting.SocketInputStream;
-import hudson.remoting.SocketOutputStream;
+import hudson.remoting.SocketChannelStream;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
@@ -63,7 +62,7 @@ public class Connection {
     public final DataOutputStream dout;
 
     public Connection(Socket socket) throws IOException {
-        this(new SocketInputStream(socket),new SocketOutputStream(socket));
+        this(SocketChannelStream.in(socket),SocketChannelStream.out(socket));
     }
 
     public Connection(InputStream in, OutputStream out) {

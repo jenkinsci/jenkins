@@ -26,7 +26,8 @@ package hudson.model;
 import hudson.views.ListViewColumn;
 import hudson.views.ListViewColumnDescriptor;
 import hudson.views.ViewJobFilter;
-import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.AncestorInPath;
 
@@ -68,35 +69,10 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     protected ViewDescriptor() {
     }
 
-    @Deprecated
-    public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(final String prefix) {
-        final AutoCompletionCandidates r = new AutoCompletionCandidates();
-
-        new ItemVisitor() {
-            @Override
-            public void onItemGroup(ItemGroup<?> group) {
-                // only dig deep when the path matches what's typed.
-                // for example, if 'foo/bar' is typed, we want to show 'foo/barcode'
-                if (prefix.startsWith(group.getFullName()))
-                    super.onItemGroup(group);
-            }
-
-            @Override
-            public void onItem(Item i) {
-                if (i.getFullName().startsWith(prefix)) {
-                    r.add((i.getFullName()));
-                    super.onItem(i);
-                }
-            }
-        }.onItemGroup(Jenkins.getInstance());
-
-        return r;
-    }
-
     /**
      * Auto-completion for the "copy from" field in the new job page.
-     * @since 1.553
      */
+    @Restricted(DoNotUse.class)
     public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup container) {
         return AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
     }
