@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.triggers.ReverseBuildTriggerTest;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -154,7 +155,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         doMavenTriggerTest(true);
     }
 
-    // TODO need a matching test for ReverseBuildTrigger
+    /** @see ReverseBuildTriggerTest#upstreamProjectSecurity */
     public void testDownstreamProjectSecurity() throws Exception {
         jenkins.setSecurityRealm(new LegacySecurityRealm());
         ProjectMatrixAuthorizationStrategy auth = new ProjectMatrixAuthorizationStrategy();
@@ -184,7 +185,6 @@ public class BuildTriggerTest extends HudsonTestCase {
         childProjects.setValueAttribute(downstreamName);
         submit(config);
         */
-        // DependencyGraph is rebuilt as SYSTEM so is always complete even if configuring user does not know it:
         assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
         // Downstream projects whose existence we are not aware of will silently not be triggered:
         assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName);

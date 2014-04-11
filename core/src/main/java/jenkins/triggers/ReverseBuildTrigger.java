@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -99,18 +100,29 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         return threshold;
     }
 
-    private boolean shouldTrigger(Run upstreamBuild) {
+    private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null) {
+            return false;
+        }
+        // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
+        boolean downstreamVisible = jenkins.getItemByFullName(job.getFullName()) == job;
+        Authentication originalAuth = Jenkins.getAuthentication();
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
-        if (auth.equals(ACL.SYSTEM)) {
-            auth = Jenkins.ANONYMOUS; // do not print a warning since that could leak information
+        if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
+            auth = Jenkins.ANONYMOUS; // cf. BuildTrigger
         }
         SecurityContext orig = ACL.impersonate(auth);
         try {
-            Jenkins jenkins = Jenkins.getInstance();
-            if (jenkins != null && jenkins.getItemByFullName(upstream.getFullName()) != upstream) { // this checks Item.READ also on parent folders
-                LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {auth.getName(), upstream, job});
-                return false; // do not even issue a warning to build log
+            if (jenkins.getItemByFullName(upstream.getFullName()) != upstream) {
+                if (downstreamVisible) {
+                    // TODO ModelHyperlink
+                    listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(), upstream.getFullName(), job.getFullName()));
+                } else {
+                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2} (but cannot tell {3} that)", new Object[] {auth.getName(), upstream, job, originalAuth.getName()});
+                }
+                return false;
             }
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
         } finally {
@@ -124,7 +136,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), upstreamProjects, AbstractProject.class)) {
             graph.addDependency(new DependencyGraph.Dependency(upstream, downstream) {
                 @Override public boolean shouldTriggerBuild(AbstractBuild upstreamBuild, TaskListener listener, List<Action> actions) {
-                    return shouldTrigger(upstreamBuild);
+                    return shouldTrigger(upstreamBuild, listener);
                 }
             });
         }
@@ -218,7 +230,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                 triggers = new ArrayList<ReverseBuildTrigger>(_triggers);
             }
             for (final ReverseBuildTrigger trigger : triggers) {
-                if (trigger.shouldTrigger(r)) {
+                if (trigger.shouldTrigger(r, listener)) {
                     if (!trigger.job.isBuildable()) {
                         listener.getLogger().println(hudson.tasks.Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(trigger.job)));
                         continue;

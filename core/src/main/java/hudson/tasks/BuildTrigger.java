@@ -238,29 +238,29 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
         for (Dependency dep : downstreamProjects) {
             List<Action> buildActions = new ArrayList<Action>();
-            boolean result;
             SecurityContext orig = ACL.impersonate(auth);
             try {
-                result = dep.shouldTriggerBuild(build, listener, buildActions);
+                if (dep.shouldTriggerBuild(build, listener, buildActions)) {
+                    AbstractProject p = dep.getDownstreamProject();
+                    // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
+                    if (p.isDisabled()) {
+                        logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
+                        continue;
+                    }
+                    // this is not completely accurate, as a new build might be triggered
+                    // between these calls
+                    boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
+                    if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
+                        String name = ModelHyperlinkNote.encodeTo(p) + " #" + p.getNextBuildNumber();
+                        if (scheduled) {
+                            logger.println(Messages.BuildTrigger_Triggering(name));
+                        } else {
+                            logger.println(Messages.BuildTrigger_InQueue(name));
+                        }
+                    } // otherwise upstream users should not know that it happened
+                }
             } finally {
                 SecurityContextHolder.setContext(orig);
-            }
-            if (result) {
-                AbstractProject p = dep.getDownstreamProject();
-                // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
-                if (p.isDisabled()) {
-                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
-                    continue;
-                }
-                // this is not completely accurate, as a new build might be triggered
-                // between these calls
-                String name = ModelHyperlinkNote.encodeTo(p)+" #"+p.getNextBuildNumber();
-                if(p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build),
-                                   buildActions.toArray(new Action[buildActions.size()]))) {
-                    logger.println(Messages.BuildTrigger_Triggering(name));
-                } else {
-                    logger.println(Messages.BuildTrigger_InQueue(name));
-                }
             }
         }
 
