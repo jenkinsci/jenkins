@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.maven.MavenModuleSet;
@@ -33,7 +34,6 @@ import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
-import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
@@ -49,16 +49,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
-import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import jenkins.security.QueueItemAuthenticatorDescriptor;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
-import org.jvnet.hudson.test.TestExtension;
 
 /**
  * Tests for hudson.tasks.BuildTrigger
@@ -166,7 +163,8 @@ public class BuildTriggerTest extends HudsonTestCase {
         auth.add(Computer.BUILD, "anonymous");
         jenkins.setAuthorizationStrategy(auth);
         final FreeStyleProject upstream = createFreeStyleProject("upstream");
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new QIA(Collections.singletonMap("upstream", "alice")));
+        Authentication alice = User.get("alice").impersonate();
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap("upstream", alice)));
         Map<Permission,Set<String>> perms = new HashMap<Permission,Set<String>>();
         perms.put(Item.READ, Collections.singleton("alice"));
         perms.put(Item.CONFIGURE, Collections.singleton("alice"));
@@ -189,7 +187,6 @@ public class BuildTriggerTest extends HudsonTestCase {
         // DependencyGraph is rebuilt as SYSTEM so is always complete even if configuring user does not know it:
         assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
         // Downstream projects whose existence we are not aware of will silently not be triggered:
-        Authentication alice = User.get("alice").impersonate();
         assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName);
         FreeStyleBuild b = buildAndAssertSuccess(upstream);
         assertLogNotContains(downstreamName, b);
@@ -220,7 +217,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         assertNotNull(cause);
         assertEquals(b, cause.getUpstreamRun());
         // Now if we have configured some QIA’s but they are not active on this job, we should run as anonymous. Which would normally have no permissions:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new QIA(Collections.<String,String>emptyMap()));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(Collections.<String,Authentication>emptyMap()));
         assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName);
         b = buildAndAssertSuccess(upstream);
         assertLogNotContains(downstreamName, b);
@@ -256,24 +253,6 @@ public class BuildTriggerTest extends HudsonTestCase {
         assertEquals(3, downstream.getLastBuild().number);
         b3 = buildAndAssertSuccess(simple);
         assertLogNotContains(Messages.BuildTrigger_warning_access_control_for_builds_in_glo(), b3);
-    }
-    public static final class QIA extends QueueItemAuthenticator {
-        private final Map<String,String> jobsToUsers;
-        public QIA(Map<String,String> jobsToUsers) {
-            this.jobsToUsers = jobsToUsers;
-        }
-        @Override public Authentication authenticate(Queue.Item item) {
-            String user = null;
-            if (item.task instanceof Item) {
-                user = jobsToUsers.get(((Item) item.task).getFullName());
-            }
-            return user != null ? User.get(user).impersonate() : null;
-        }
-        @TestExtension("testDownstreamProjectSecurity") public static final class DescriptorImpl extends QueueItemAuthenticatorDescriptor {
-            @Override public String getDisplayName() {
-                return "Test QIA";
-            }
-        }
     }
     private void assertDoCheck(Authentication auth, @CheckForNull String expectedError, AbstractProject project, String value) {
         FormValidation result;
