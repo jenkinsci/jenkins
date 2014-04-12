@@ -60,6 +60,12 @@ import java.io.File;
 import hudson.FilePath;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.EnvVars;
+import hudson.model.labels.LabelAtom;
+import hudson.slaves.Cloud;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.DummyCloudImpl;
+import hudson.slaves.NodeProvisioner;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.Shell;
 import org.jvnet.hudson.test.TestExtension;
 import java.util.List;
@@ -74,12 +80,17 @@ import static org.junit.Assert.*;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildTrigger;
+import hudson.util.OneShotEvent;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
+import org.jvnet.localizer.Localizable;
+import sun.awt.image.OffScreenImage;
 
 /**
  *
@@ -637,6 +648,110 @@ public class ProjectTest {
        assertFalse("Project should be enabled.", project.isDisabled());
     }
     
+    /**
+     * Job is un-restricted (no nabel), this is submitted to queue, which spawns an on demand slave
+     * @throws Exception 
+     */
+    @Test
+    public void testJobSubmittedShouldSpawnCloud() throws Exception {
+        /**
+         * Setup a project with an SCM. Jenkins should have no executors in itself. 
+         */
+        FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-spawn");        
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
+        proj.setScm(requiresWorkspaceScm);        
+        j.jenkins.setNumExecutors(0);        
+        /*
+         * We have a cloud
+         */
+        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
+        c2.label = new LabelAtom("test-cloud-label");        
+        j.jenkins.clouds.add(c2);
+        
+        SCMTrigger t = new SCMTrigger("@daily", true);
+        t.start(proj, true);
+        proj.addTrigger(t);
+        t.new Runner().run();
+        
+        Thread.sleep(1000);
+        //Assert that the job IS submitted to Queue.
+        assertEquals(1, j.jenkins.getQueue().getItems().length);        
+    }
+    
+    /**
+     * Job is restricted, but label can not be provided by any cloud, only normal slaves. Then job will not submit, because no slave is available.
+     * @throws Exception
+     */
+    @Test
+    public void testUnrestrictedJobNoLabelByCloudNoQueue() throws Exception {
+        assertTrue(j.jenkins.clouds.isEmpty());
+        //Create slave. (Online)
+        Slave s1 = j.createOnlineSlave();
+        
+        //Create a project, and bind the job to the created slave
+        FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-noqueue");
+        proj.setAssignedLabel(s1.getSelfLabel());
+                        
+        //Add an SCM to the project. We require a workspace for the poll
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
+        proj.setScm(requiresWorkspaceScm);
+ 
+        j.buildAndAssertSuccess(proj);        
+
+        //Now create another slave. And restrict the job to that slave. The slave is offline, leaving the job with no assignable nodes.
+        //We tell our mock SCM to return that it has got changes. But since there are no slaves, we get the desired result. 
+        Slave s2 = j.createSlave();
+        proj.setAssignedLabel(s2.getSelfLabel());
+        requiresWorkspaceScm.hasChange = true;
+        
+        //Poll (We now should have NO online slaves, this should now return NO_CHANGES.
+        PollingResult pr = proj.poll(j.createTaskListener());
+        assertFalse(pr.hasChanges());
+        
+        SCMTrigger t = new SCMTrigger("@daily", true);
+        t.start(proj, true);
+        proj.addTrigger(t);
+        
+        t.new Runner().run();
+        
+        /**
+         * Assert that the log contains the correct message.
+         */
+        HtmlPage log = j.createWebClient().getPage(proj, "scmPollLog");
+        String logastext = log.asText();
+        assertTrue(logastext.contains("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
+        
+    }
+    
+    /**
+     * Job is restricted. Label is on slave that can be started in cloud. Job is submitted to queue, which spawns an on demand slave.
+     * @throws Exception 
+     */
+    @Test
+    public void testRestrictedLabelOnSlaveYesQueue() throws Exception {        
+        FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yesqueue");
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
+        proj.setScm(requiresWorkspaceScm);        
+        j.jenkins.setNumExecutors(0);
+        
+        /*
+         * We have a cloud
+         */
+        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
+        c2.label = new LabelAtom("test-cloud-label");        
+        j.jenkins.clouds.add(c2);
+        proj.setAssignedLabel(c2.label);
+        
+        SCMTrigger t = new SCMTrigger("@daily", true);
+        t.start(proj, true);
+        proj.addTrigger(t);
+        t.new Runner().run();
+        
+        Thread.sleep(1000);
+        //The job should be in queue
+        assertEquals(1, j.jenkins.getQueue().getItems().length);    
+    }
+    
     public static class TransientAction extends InvisibleAction{
         
     }
@@ -654,6 +769,36 @@ public class ProjectTest {
         
     }
     
+    @TestExtension 
+    public static class RequiresWorkspaceSCM extends NullSCM {
+        
+        public boolean hasChange = false;
+        
+        public RequiresWorkspaceSCM() { } 
+        
+        public RequiresWorkspaceSCM(boolean hasChange) {
+            this.hasChange = hasChange;
+        }
+        
+        @Override
+        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+            return true;
+        }
+                       
+        @Override
+        public boolean requiresWorkspaceForPolling(){
+            return true;
+        }
+        
+        @Override
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {            
+            if(!hasChange) {
+                return PollingResult.NO_CHANGES;
+            }
+            return PollingResult.SIGNIFICANT;
+        }
+    }
+    
     @TestExtension
     public static class AlwaysChangedSCM extends NullSCM{
 
@@ -661,6 +806,7 @@ public class ProjectTest {
         public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
             return true;
         }
+        
         @Override
         public boolean requiresWorkspaceForPolling(){
             return false;
@@ -747,5 +893,95 @@ public class ProjectTest {
     
     public class ActionImpl extends InvisibleAction{
         
+    }
+    
+    @TestExtension
+    public static class DummyCloudImpl2 extends Cloud {
+        private final transient JenkinsRule caller;
+
+        /**
+         * Configurable delay between the {@link Cloud#provision(Label,int)} and the actual launch of a slave,
+         * to emulate a real cloud that takes some time for provisioning a new system.
+         *
+         * <p>
+         * Number of milliseconds.
+         */
+        private final int delay;
+
+        // stats counter to perform assertions later
+        public int numProvisioned;
+
+        /**
+         * Only reacts to provisioning for this label.
+         */
+        public Label label;
+        
+        public DummyCloudImpl2() { 
+            super("test");
+            this.delay = 0;
+            this.caller = null;
+        }
+
+        public DummyCloudImpl2(JenkinsRule caller, int delay) {
+            super("test");
+            this.caller = caller;
+            this.delay = delay;
+        }
+
+        @Override
+        public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
+            List<NodeProvisioner.PlannedNode> r = new ArrayList<NodeProvisioner.PlannedNode>();
+
+            //Always provision...even if there is no workload.
+            while(excessWorkload >= 0) {
+                System.out.println("Provisioning");
+                numProvisioned++;
+                Future<Node> f = Computer.threadPoolForRemoting.submit(new ProjectTest.DummyCloudImpl2.Launcher(delay));
+                r.add(new NodeProvisioner.PlannedNode(name+" #"+numProvisioned,f,1));
+                excessWorkload-=1;
+            }
+            return r;
+        }
+
+        @Override
+        public boolean canProvision(Label label) {
+            //This cloud can ALWAYS provision 
+           return true;
+            /* return label==this.label; */
+        }
+
+        private final class Launcher implements Callable<Node> {
+            private final long time;
+            /**
+             * This is so that we can find out the status of Callable from the debugger.
+             */
+            private volatile Computer computer;
+
+            private Launcher(long time) {
+                this.time = time;
+            }
+
+            @Override
+            public Node call() throws Exception {
+                // simulate the delay in provisioning a new slave,
+                // since it's normally some async operation.
+                Thread.sleep(time);
+
+                System.out.println("launching slave");
+                DumbSlave slave = caller.createSlave(label);
+                computer = slave.toComputer();
+                computer.connect(false).get();
+                synchronized (ProjectTest.DummyCloudImpl2.this) {
+                    System.out.println(computer.getName()+" launch"+(computer.isOnline()?"ed successfully":" failed"));
+                    System.out.println(computer.getLog());
+                }
+                return slave;
+            }
+        }
+
+        @Override
+        public Descriptor<Cloud> getDescriptor() {
+            throw new UnsupportedOperationException();
+        }
     }
 }
