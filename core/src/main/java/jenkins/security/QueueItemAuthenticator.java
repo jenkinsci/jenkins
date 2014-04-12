@@ -55,7 +55,7 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
      *      returning non-null will determine the identity. If null is returned, the next
      *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate
      *      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
-     * @since TODO
+     * @since 1.560
      */
     public @CheckForNull Authentication authenticate(Queue.Task task) {
         if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Item.class)) {

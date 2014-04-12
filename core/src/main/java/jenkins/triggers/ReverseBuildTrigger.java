@@ -77,6 +77,7 @@ import org.kohsuke.stapler.QueryParameter;
  * so run implicitly at the end of the upstream build,
  * when used on a pair of {@link AbstractProject}s.
  * Otherwise directly listens for the upstream build to complete.
+ * @since 1.560
  */
 @SuppressWarnings("rawtypes")
 public final class ReverseBuildTrigger extends Trigger<Job> implements DependencyDeclarer {

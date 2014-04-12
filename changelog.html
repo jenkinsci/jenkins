@@ -55,6 +55,12 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class='major rfe'>
+    Enforcing build trigger authentication at runtime by checking authentication associated with a build, rather than at configuration time.
+    For compatibility, enforcement is skipped by default; you must install the Authorize Project plugin or similar for this to take effect.
+    The “upstream pseudo trigger” was also removed in favor of a true trigger configured on the downstream project;
+    you may use either the post-build action or the trigger according to where you want this configuration stored, and who is authorized to change it.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16956">issue 16956</a>)
   <li class=bug>
     Fixed NPE from view new job name autocompletion since 1.553.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22142">issue 22142</a>)
