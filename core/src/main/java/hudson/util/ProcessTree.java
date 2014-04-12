@@ -428,15 +428,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     public synchronized EnvVars getEnvironmentVariables() {
                         if(env !=null)
                           return env;
-                        env = new EnvVars();   
-                        
-                        try 
+                        env = new EnvVars();
+
+                        try
                         {
                            env.putAll(p.getEnvironmentVariables());
                         } catch (WinpException e)
                         {
                            LOGGER.log(FINE, "Failed to get environment variable ", e);
-                        }                          
+                        }
                         return env;
                     }
                 });
@@ -549,7 +549,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                 int pid = getPid();
                 LOGGER.fine("Killing pid="+pid);
-                UnixReflection.DESTROY_PROCESS.invoke(null, pid);
+                UnixReflection.destroy(pid);
             } catch (IllegalAccessException e) {
                 // this is impossible
                 IllegalAccessError x = new IllegalAccessError();
@@ -604,7 +604,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 PID_FIELD = clazz.getDeclaredField("pid");
                 PID_FIELD.setAccessible(true);
 
-                DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                if (isPreJava8()) {
+                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                } else {
+                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class, boolean.class);
+                }
                 DESTROY_PROCESS.setAccessible(true);
             } catch (ClassNotFoundException e) {
                 LinkageError x = new LinkageError();
@@ -619,6 +623,19 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 x.initCause(e);
                 throw x;
             }
+        }
+
+        public static void destroy(int pid) throws IllegalAccessException, InvocationTargetException {
+            if (isPreJava8()) {
+                DESTROY_PROCESS.invoke(null, pid);
+            } else {
+                DESTROY_PROCESS.invoke(null, pid, false);
+            }
+        }
+
+        private static boolean isPreJava8() {
+            int javaVersionAsAnInteger = Integer.parseInt(System.getProperty("java.version").replaceAll("\\.", "").replaceAll("_", "").substring(0, 2));
+            return javaVersionAsAnInteger < 18;
         }
     }
 
