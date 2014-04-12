@@ -303,7 +303,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                         cgd.run(getPlugins());
 
                                         // obtain topologically sorted list and overwrite the list
-                                        ListIterator<PluginWrapper> litr = plugins.listIterator();
+                                        ListIterator<PluginWrapper> litr = getPlugins().listIterator();
                                         for (PluginWrapper p : cgd.getSorted()) {
                                             litr.next();
                                             litr.set(p);
@@ -576,7 +576,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Exported
     public List<PluginWrapper> getPlugins() {
-        return plugins;
+        List<PluginWrapper> out = new ArrayList<PluginWrapper>(plugins.size());
+        out.addAll(plugins);
+        return out;
     }
 
     public List<FailedPlugin> getFailedPlugins() {
@@ -589,7 +591,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return The plugin singleton or <code>null</code> if a plugin with the given short name does not exist.
      */
     public PluginWrapper getPlugin(String shortName) {
-        for (PluginWrapper p : plugins) {
+        for (PluginWrapper p : getPlugins()) {
             if(p.getShortName().equals(shortName))
                 return p;
         }
@@ -603,7 +605,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return The plugin singleton or <code>null</code> if for some reason the plugin is not loaded.
      */
     public PluginWrapper getPlugin(Class<? extends Plugin> pluginClazz) {
-        for (PluginWrapper p : plugins) {
+        for (PluginWrapper p : getPlugins()) {
             if(pluginClazz.isInstance(p.getPlugin()))
                 return p;
         }
@@ -618,7 +620,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     public List<PluginWrapper> getPlugins(Class<? extends Plugin> pluginSuperclass) {
         List<PluginWrapper> result = new ArrayList<PluginWrapper>();
-        for (PluginWrapper p : plugins) {
+        for (PluginWrapper p : getPlugins()) {
             if(pluginSuperclass.isInstance(p.getPlugin()))
                 result.add(p);
         }
