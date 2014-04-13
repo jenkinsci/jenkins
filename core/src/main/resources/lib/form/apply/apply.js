@@ -81,7 +81,7 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                 f.submit();
             } finally {
                 f.elements['core:apply'].value = null;
-                f.target = null;
+                f.target = '_self';
             }
         });
 });
