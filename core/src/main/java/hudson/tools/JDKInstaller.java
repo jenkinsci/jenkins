@@ -48,6 +48,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -83,6 +84,13 @@ import static hudson.tools.JDKInstaller.Preference.*;
  * @since 1.305
  */
 public class JDKInstaller extends ToolInstaller {
+
+    static {
+        // this socket factory will not attempt to bind to the client interface
+        Protocol.registerProtocol("http", new Protocol("http", new hudson.util.NoClientBindProtocolSocketFactory(), 80));
+        Protocol.registerProtocol("https", new Protocol("https", new hudson.util.NoClientBindSSLProtocolSocketFactory(), 443));
+    }
+
     /**
      * The release ID that Sun assigns to each JDK, such as "jdk-6u13-oth-JPR@CDS-CDS_Developer"
      *
