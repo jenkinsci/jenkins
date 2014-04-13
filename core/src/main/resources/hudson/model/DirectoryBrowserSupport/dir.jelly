@@ -75,10 +75,12 @@ THE SOFTWARE.
                     </td>
                     <td>
                       <j:if test="${x.readable}">
-                        <a href="${x.href}/*fingerprint*/">
-                          <img src="${imagesURL}/16x16/fingerprint.png" alt="fingerprint" height="16" width="16" />
-                        </a>
-                        <st:nbsp/>
+                        <j:if test="${app.fingerprintMap.ready}">
+                          <a href="${x.href}/*fingerprint*/">
+                            <img src="${imagesURL}/16x16/fingerprint.png" alt="fingerprint" height="16" width="16" />
+                          </a>
+                          <st:nbsp/>
+                        </j:if>
                         <a href="${x.href}/*view*/">${%view}</a>
                       </j:if>                      
                     </td>
