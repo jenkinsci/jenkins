@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jenkins.model.IconSizeProperty;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -54,7 +55,10 @@ import javax.annotation.CheckForNull;
  */
 public abstract class UserAvatarResolver implements ExtensionPoint {
 
-    /** Regex pattern for splitting up the icon size string that is used in jelly pages. */
+    /**
+     * Regex pattern for splitting up the icon size string that is used in jelly pages.
+     * @deprecated validated in {@link IconSizeProperty}
+     */
     static Pattern iconSizeRegex = Pattern.compile("(\\d+)x(\\d+)");
     
     /**
@@ -93,6 +97,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
     /**
      * Like {@link #resolve} but returns null rather than a fallback URL in case there is no special avatar.
      * @since 1.518
+     * @deprecated use {@link UserAvatarResolver#resolveOrNull(User)}
      */
     public static @CheckForNull String resolveOrNull(User u, String avatarSize) {
         Matcher matcher = iconSizeRegex.matcher(avatarSize);
@@ -107,6 +112,15 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
             LOGGER.warning(String.format("Could not split up the avatar size (%s) into a width and height.", avatarSize));
         }
 
+        return null;
+    }
+
+    public static @CheckForNull String resolveOrNull(User user) {
+        IconSizeProperty iconSize = user.getProperty(IconSizeProperty.class);
+        for (UserAvatarResolver resolver : all()) {
+            String name = resolver.findAvatarFor(user, iconSize.getWidth(), iconSize.getHeight());
+            if (name != null) return name;
+        }
         return null;
     }
 
