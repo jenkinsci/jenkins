@@ -28,9 +28,6 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.matrix.MatrixAggregatable;
-import hudson.matrix.MatrixAggregator;
-import hudson.matrix.MatrixBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -44,7 +41,6 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.tasks.junit.TestResultAction.Data;
-import hudson.tasks.test.TestResultAggregator;
 import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -67,7 +63,7 @@ import java.util.List;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class JUnitResultArchiver extends Recorder implements MatrixAggregatable {
+public class JUnitResultArchiver extends Recorder {
 
     /**
      * {@link FileSet} "includes" string, like "foo/bar/*.xml"
@@ -211,11 +207,6 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 	@Override
 	public Collection<Action> getProjectActions(AbstractProject<?, ?> project) {
 		return Collections.<Action>singleton(new TestResultProjectAction(project));
-	}
-
-	public MatrixAggregator createAggregator(MatrixBuild build,
-			Launcher launcher, BuildListener listener) {
-		return new TestResultAggregator(build, launcher, listener);
 	}
 
 	/**
