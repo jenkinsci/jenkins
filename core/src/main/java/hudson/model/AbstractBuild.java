@@ -712,15 +712,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             r = false;
                         }
                     } catch (Exception e) {
-                        String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
-                        e.printStackTrace(listener.error(msg));
-                        LOGGER.log(WARNING, msg, e);
-                        if (phase) {
-                            setResult(Result.FAILURE);
-                        }
+                        reportError(bs, e, listener, phase);
+                    } catch (LinkageError e) {
+                        reportError(bs, e, listener, phase);
                     }
             }
             return r;
+        }
+
+        private void reportError(BuildStep bs, Throwable e, BuildListener listener, boolean phase) {
+            String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
+            e.printStackTrace(listener.error(msg));
+            LOGGER.log(WARNING, msg, e);
+            if (phase) {
+                setResult(Result.FAILURE);
+            }
         }
 
         /**
