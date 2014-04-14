@@ -348,13 +348,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private Boolean useSecurity;
 
     /**
-     * The strategy for handling user ids. Affects case sensitivity of user ids.
-     *
-     * @since 1.557
-     */
-    private volatile User.IdStrategy userIdStrategy = User.IdStrategy.CASE_INSENSITIVE;
-
-    /**
      * Controls how the
      * <a href="http://en.wikipedia.org/wiki/Authorization">authorization</a>
      * is handled in Hudson.
@@ -2050,6 +2043,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(securityRealm==null)
             securityRealm= SecurityRealm.NO_AUTHENTICATION;
         this.useSecurity = true;
+        IdStrategy oldUserIdStrategy = this.securityRealm == null
+                ? securityRealm.getUserIdStrategy() // don't trigger rekey on Jenkins load
+                : this.securityRealm.getUserIdStrategy();
         this.securityRealm = securityRealm;
         // reset the filters and proxies for the new SecurityRealm
         try {
@@ -2063,19 +2059,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 filter.reset(securityRealm);
                 LOGGER.fine("Security is now fully set up");
             }
+            if (!oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
+                User.rekey();
+            }
         } catch (ServletException e) {
             // for binary compatibility, this method cannot throw a checked exception
             throw new AcegiSecurityException("Failed to configure filter",e) {};
-        }
-    }
-
-    public void setUserIdStrategy(User.IdStrategy userIdStrategy) {
-        if (userIdStrategy == null) {
-            userIdStrategy = User.IdStrategy.CASE_INSENSITIVE;
-        }
-        if (!userIdStrategy.equals(this.userIdStrategy)) {
-            this.userIdStrategy = userIdStrategy;
-            User.rekey();
         }
     }
 
@@ -2207,15 +2196,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Override
     public ACL getACL() {
         return authorizationStrategy.getRootACL();
-    }
-
-    /**
-     * Returns the {@link User.IdStrategy} to use when comparing / manipulating user IDs.
-     * @return the {@link User.IdStrategy} to use when comparing / manipulating user IDs.
-     */
-    @Nonnull
-    public User.IdStrategy getUserIdStrategy() {
-        return userIdStrategy;
     }
 
     /**

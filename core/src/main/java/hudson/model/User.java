@@ -34,10 +34,10 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException;
-import hudson.util.CaseInsensitiveComparator;
 import hudson.util.FormApply;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.security.ImpersonatingUserDetailsService;
@@ -50,7 +50,6 @@ import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -59,6 +58,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -71,11 +71,12 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -127,8 +128,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         load();
     }
 
+    /**
+     * Returns the {@link jenkins.model.IdStrategy} for use with {@link User} instances. See
+     * {@link hudson.security.SecurityRealm#getUserIdStrategy()}
+     *
+     * @return the {@link jenkins.model.IdStrategy} for use with {@link User} instances.
+     * @since 1.560
+     */
+    @Nonnull
+    public static IdStrategy idStrategy() {
+        SecurityRealm realm = Jenkins.getInstance().getSecurityRealm();
+        return realm == null ? IdStrategy.CASE_INSENSITIVE : realm.getUserIdStrategy();
+    }
+
     public int compareTo(User that) {
-        return IdStrategy.instance().compare(this.id, that.id);
+        return idStrategy().compare(this.id, that.id);
     }
 
     /**
@@ -171,11 +185,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public String getUrl() {
-        return "user/"+Util.rawEncode(IdStrategy.instance().keyFor(id));
+        return "user/"+Util.rawEncode(idStrategy().keyFor(id));
     }
 
     public String getSearchUrl() {
-        return "/user/"+Util.rawEncode(IdStrategy.instance().keyFor(id));
+        return "/user/"+Util.rawEncode(idStrategy().keyFor(id));
     }
 
     /**
@@ -356,12 +370,24 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * retrieve a user by its ID, and create a new one if requested
      */
     private static User getOrCreate(String id, String fullName, boolean create) {
-        String idkey = IdStrategy.instance().keyFor(id);
+        String idkey = idStrategy().keyFor(id);
 
-        User u = byName.get(idkey);
+        byNameLock.readLock().lock();
+        User u;
+        try {
+            u = byName.get(idkey);
+        } finally {
+            byNameLock.readLock().unlock();
+        }
         if (u==null && (create || getConfigFileFor(id).exists())) {
             User tmp = new User(id, fullName);
-            User prev = byName.putIfAbsent(idkey, u = tmp);
+            User prev;
+            byNameLock.readLock().lock();
+            try {
+                prev = byName.putIfAbsent(idkey, u = tmp);
+            } finally {
+                byNameLock.readLock().unlock();
+            }
             if (prev != null) {
                 u = prev; // if some has already put a value in the map, use it
                 if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
@@ -426,9 +452,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             lastScanned = System.currentTimeMillis();
         }
 
-        ArrayList<User> r = new ArrayList<User>(byName.values());
+        byNameLock.readLock().lock();
+        ArrayList<User> r;
+        try {
+            r = new ArrayList<User>(byName.values());
+        } finally {
+            byNameLock.readLock().unlock();
+        }
         Collections.sort(r,new Comparator<User>() {
-            IdStrategy strategy = IdStrategy.instance();
+            IdStrategy strategy = idStrategy();
 
             public int compare(User o1, User o2) {
                 return strategy.compare(o1.getId(), o2.getId());
@@ -441,15 +473,26 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Reloads the configuration from disk.
      */
     public static void reload() {
-        for( User u : byName.values() )
-            u.load();
+        byNameLock.readLock().lock();
+        try {
+            for (User u : byName.values()) {
+                u.load();
+            }
+        } finally {
+            byNameLock.readLock().unlock();
+        }
     }
 
     /**
      * Stop gap hack. Don't use it. To be removed in the trunk.
      */
     public static void clear() {
-        byName.clear();
+        byNameLock.writeLock().lock();
+        try {
+            byName.clear();
+        } finally {
+            byNameLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -457,14 +500,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.560
      */
     public static void rekey() {
-        IdStrategy strategy = IdStrategy.instance();
-        for (Map.Entry<String,User> e: byName.entrySet()) {
-            String idkey = strategy.keyFor(e.getValue().id);
-            if (!idkey.equals(e.getKey())) {
-                // need to remap
-                byName.remove(e.getKey());
-                byName.putIfAbsent(idkey, e.getValue());
+        final IdStrategy strategy = idStrategy();
+        byNameLock.writeLock().lock();
+        try {
+            for (Map.Entry<String, User> e : byName.entrySet()) {
+                String idkey = strategy.keyFor(e.getValue().id);
+                if (!idkey.equals(e.getKey())) {
+                    // need to remap
+                    byName.remove(e.getKey());
+                    byName.putIfAbsent(idkey, e.getValue());
+                }
             }
+        } finally {
+            byNameLock.writeLock().unlock();
         }
     }
 
@@ -483,7 +531,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         for (Cause cause : b.getCauses()) {
             if (cause instanceof Cause.UserIdCause) {
                 String userId = ((Cause.UserIdCause) cause).getUserId();
-                if (userId != null && IdStrategy.instance().equals(userId, getId())) {
+                if (userId != null && idStrategy().equals(userId, getId())) {
                     return true;
                 }
             }
@@ -528,7 +576,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private static final File getConfigFileFor(String id) {
-        return new File(getRootDir(),IdStrategy.instance().filenameOf(id) +"/config.xml");
+        return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
     }
 
     /**
@@ -554,8 +602,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      if we fail to delete.
      */
     public synchronized void delete() throws IOException {
-        final IdStrategy strategy = IdStrategy.instance();
-        byName.remove(strategy.keyFor(id));
+        final IdStrategy strategy = idStrategy();
+        byNameLock.readLock().lock();
+        try {
+            byName.remove(strategy.keyFor(id));
+        } finally {
+            byNameLock.readLock().unlock();
+        }
         Util.deleteRecursive(new File(getRootDir(), strategy.filenameOf(id)));
     }
 
@@ -609,7 +662,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @RequirePOST
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
-        if (IdStrategy.instance().equals(id, Jenkins.getAuthentication().getName())) {
+        if (idStrategy().equals(id, Jenkins.getAuthentication().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
             return;
         }
@@ -649,9 +702,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Keyed by {@link User#id}. This map is used to ensure
      * singleton-per-id semantics of {@link User} objects.
      *
-     * The key needs to be generated by {@link hudson.model.User.IdStrategy#keyFor(String)}.
+     * The key needs to be generated by {@link IdStrategy#keyFor(String)}.
      */
+    @GuardedBy("byNameLock")
     private static final ConcurrentMap<String,User> byName = new ConcurrentHashMap<String, User>();
+
+    /**
+     * This lock is used to guard access to the {@link #byName} map. Use
+     * {@link java.util.concurrent.locks.ReadWriteLock#readLock()} for normal access and
+     * {@link java.util.concurrent.locks.ReadWriteLock#writeLock()} for {@link #rekey()} or any other operation
+     * that requires operating on the map as a whole.
+     * @since 1.560
+     */
+    private static final ReadWriteLock byNameLock = new ReentrantReadWriteLock();
 
     /**
      * Used to load/save user configuration.
@@ -669,7 +732,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // always allow a non-anonymous user full control of himself.
         return new ACL() {
             public boolean hasPermission(Authentication a, Permission permission) {
-                return (IdStrategy.instance().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
+                return (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
                         || base.hasPermission(a, permission);
             }
         };
@@ -687,7 +750,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * With ADMINISTER permission, can delete users with persisted data but can't delete self.
      */
     public boolean canDelete() {
-        final IdStrategy strategy = IdStrategy.instance();
+        final IdStrategy strategy = idStrategy();
         return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication().getName())
                 && new File(getRootDir(), strategy.filenameOf(id)).exists();
     }
@@ -709,7 +772,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 continue;
             }
             String n = a.getAuthority();
-            if (n != null && !IdStrategy.instance().equals(n, id)) {
+            if (n != null && !idStrategy().equals(n, id)) {
                 r.add(n);
             }
         }
@@ -811,179 +874,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         @Override
         public int getPriority() {
             return -1; // lower than default
-        }
-    }
-
-    /**
-     * The strategy to use for manipulating user ids.
-     * @since 1.560
-     */
-    public static class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements ExtensionPoint, Comparator<String> {
-
-        /**
-         * The default case insensitive strategy.
-         */
-        public static IdStrategy CASE_INSENSITIVE = new IdStrategy();
-
-        public String filenameOf(String id) {
-            return id.toLowerCase(Locale.ENGLISH);
-        }
-
-        public String keyFor(String id) {
-            return id.toLowerCase(Locale.ENGLISH);
-        }
-
-        public boolean equals(String id1, String id2) {
-            return compare(id1, id2) == 0;
-        }
-
-        @Override
-        public int compare(String id1, String id2) {
-            return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
-        }
-
-        @Nonnull
-        public static IdStrategy instance() {
-            return Jenkins.getInstance().getUserIdStrategy();
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public IdStrategyDescriptor getDescriptor() {
-            return (IdStrategyDescriptor)super.getDescriptor();
-        }
-
-        /**
-         * Returns all the registered {@link IdStrategy} descriptors.
-         */
-        public static DescriptorExtensionList<IdStrategy,IdStrategyDescriptor> all() {
-            return Jenkins.getInstance().getDescriptorList(IdStrategy.class);
-        }
-
-    }
-
-    /**
-     * The {@link Descriptor} for {@link IdStrategy}
-     * @since 1.560
-     */
-    public abstract static class IdStrategyDescriptor extends Descriptor<IdStrategy> {
-
-    }
-
-    /**
-     * The default case insensitive {@link hudson.model.User.IdStrategy}
-     * @since 1.560
-     */
-    public static class CaseInsensitiveIdStrategy extends IdStrategy {
-
-        public String keyFor(String id) {
-            return id.toLowerCase(Locale.ENGLISH);
-        }
-
-        @Override
-        public int compare(String id1, String id2) {
-            return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
-        }
-
-        @Extension
-        public static class DescriptorImpl extends IdStrategyDescriptor {
-
-            @Override
-            public String getDisplayName() {
-                return Messages.User_CaseInsensitiveIdStrategy_DisplayName();
-            }
-        }
-    }
-
-    /**
-     * The legacy case insensitive {@link hudson.model.User.IdStrategy}
-     * Only adding this because existing instances will need to recover
-     * their user configuration.
-     * @since 1.560
-     */
-    public static class LegacyIdStrategy extends IdStrategy {
-
-        @Override
-        public String filenameOf(String id) {
-            return id;
-        }
-
-        @Override
-        public boolean equals(String id1, String id2) {
-            return StringUtils.equals(id1, id2);
-        }
-
-        public String keyFor(String id) {
-            return id.toLowerCase(Locale.ENGLISH);
-        }
-
-        @Override
-        public int compare(String id1, String id2) {
-            return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
-        }
-
-        @Extension
-        public static class DescriptorImpl extends IdStrategyDescriptor {
-
-            @Override
-            public String getDisplayName() {
-                return Messages.User_LegacyIdStrategy_DisplayName();
-            }
-        }
-    }
-
-    /**
-     * A case sensitive {@link hudson.model.User.IdStrategy}
-     * @since 1.560
-     */
-    public static class CaseSensitiveIdStrategy extends IdStrategy {
-
-        @Override
-        public String filenameOf(String id) {
-            if (id.matches("[a-z0-9_. -]+"))
-            return id;
-            else {
-                StringBuilder buf = new StringBuilder(id.length() + 16);
-                for (char c: id.toCharArray()) {
-                    if ('a' <= c && c <= 'z') {
-                        buf.append(c);
-                    } else if ('0' <= c && c <= '9') {
-                        buf.append(c);
-                    } else if ('_' == c || '.' == c || '-' == c || ' ' == c) {
-                        buf.append(c);
-                    } else if ('A' <= c && c <= 'Z') {
-                        buf.append('^');
-                        buf.append(c);
-                    } else {
-                        buf.append('$');
-                        buf.append(StringUtils.leftPad(Integer.toHexString(c&0xffff), 4, '0'));
-                    }
-                }
-                return buf.toString();
-            }
-        }
-
-        @Override
-        public boolean equals(String id1, String id2) {
-            return StringUtils.equals(id1, id2);
-        }
-
-        public String keyFor(String id) {
-            return id;
-        }
-
-        @Override
-        public int compare(String id1, String id2) {
-            return id1.compareTo(id2);
-        }
-
-        @Extension
-        public static class DescriptorImpl extends IdStrategyDescriptor {
-
-            @Override
-            public String getDisplayName() {
-                return Messages.User_CaseSensitiveIdStrategy_DisplayName();
-            }
         }
     }
 

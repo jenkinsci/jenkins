@@ -73,10 +73,6 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.getInstance().isDisableRememberMe();
     }
 
-    public User.IdStrategy getUserIdStrategy() {
-        return Jenkins.getInstance().getUserIdStrategy();
-    }
-
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         BulkChange bc = new BulkChange(Jenkins.getInstance());
@@ -99,7 +95,6 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
             j.setDisableRememberMe(security.optBoolean("disableRememberMe", false));
             j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
             j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
-            j.setUserIdStrategy(User.IdStrategy.all().newInstanceFromRadioList(security, "userIdStrategy"));
             try {
                 j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
             } catch (IOException e) {
