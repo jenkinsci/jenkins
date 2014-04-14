@@ -26,10 +26,7 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.matrix.MatrixProject;
-import hudson.matrix.MatrixConfiguration;
 import hudson.XmlFile;
-import hudson.matrix.Axis;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.Callable;
 import hudson.triggers.Trigger;
@@ -404,8 +401,5 @@ public class Items {
 
     static {
         XSTREAM.alias("project",FreeStyleProject.class);
-        XSTREAM.alias("matrix-project",MatrixProject.class);
-        XSTREAM.alias("axis", Axis.class);
-        XSTREAM.alias("matrix-config",MatrixConfiguration.class);
     }
 }
