@@ -9,8 +9,11 @@ fi
 # Set up build tools
 PACKAGEMAKER_APP=$(mdfind "kMDItemCFBundleIdentifier == com.apple.PackageMaker")
 if [ -z "$PACKAGEMAKER_APP" ]; then
-    echo "Error: PackageMaker.app not found" >&2
-    exit 1
+    PACKAGEMAKER_APP=/Applications/PackageMaker.app
+    if [ ! -d "$PACKAGEMAKER_APP" ]; then
+        echo "Error: PackageMaker.app not found" >&2
+        exit 1
+    fi
 fi
 
 PACKAGEMAKER="${PACKAGEMAKER_APP}/Contents/MacOS/PackageMaker"
