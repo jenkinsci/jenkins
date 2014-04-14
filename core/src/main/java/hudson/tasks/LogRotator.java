@@ -118,9 +118,11 @@ public class LogRotator extends BuildDiscarder {
             // Note that RunList.size is deprecated, and indeed here we are loading all the builds of the job.
             // However we would need to load the first numToKeep anyway, just to skip over them;
             // and we would need to load the rest anyway, to delete them.
+            // (Using RunMap.headMap would not suffice, since we do not know if some recent builds have been deleted for other reasons,
+            // so simply subtracting numToKeep from the currently last build number might cause us to delete too many.)
             List<? extends Run<?,?>> builds = job.getBuilds();
             for (Run r : copy(builds.subList(Math.min(builds.size(), numToKeep), builds.size()))) {
-                if (shouldKeepRun(r, lsb, lstb, null)) {
+                if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be removed", r);
@@ -131,19 +133,23 @@ public class LogRotator extends BuildDiscarder {
         if(daysToKeep!=-1) {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-daysToKeep);
-            for( Run r : copy(job.getBuilds()) ) {
-                if (shouldKeepRun(r, lsb, lstb, cal)) {
-                    continue;
+            Run r = job.getFirstBuild();
+            while (r != null) {
+                if (tooNew(r, cal)) {
+                    break;
                 }
-                LOGGER.log(FINE, "{0} is to be removed", r);
-                r.delete();
+                if (!shouldKeepRun(r, lsb, lstb)) {
+                    LOGGER.log(FINE, "{0} is to be removed", r);
+                    r.delete();
+                }
+                r = r.getNextBuild();
             }
         }
 
         if(artifactNumToKeep!=null && artifactNumToKeep!=-1) {
             List<? extends Run<?,?>> builds = job.getBuilds();
             for (Run r : copy(builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size()))) {
-                if (shouldKeepRun(r, lsb, lstb, null)) {
+                if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
                 LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
@@ -154,17 +160,21 @@ public class LogRotator extends BuildDiscarder {
         if(artifactDaysToKeep!=null && artifactDaysToKeep!=-1) {
             Calendar cal = new GregorianCalendar();
             cal.add(Calendar.DAY_OF_YEAR,-artifactDaysToKeep);
-            for( Run r : copy(job.getBuilds())) {
-                if (shouldKeepRun(r, lsb, lstb, cal)) {
-                    continue;
+            Run r = job.getFirstBuild();
+            while (r != null) {
+                if (tooNew(r, cal)) {
+                    break;
                 }
-                LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
-                r.deleteArtifacts();
+                if (!shouldKeepRun(r, lsb, lstb)) {
+                    LOGGER.log(FINE, "{0} is to be purged of artifacts", r);
+                    r.deleteArtifacts();
+                }
+                r = r.getNextBuild();
             }
         }
     }
 
-    private boolean shouldKeepRun(Run r, Run lsb, Run lstb, Calendar cal) {
+    private boolean shouldKeepRun(Run r, Run lsb, Run lstb) {
         if (r.isKeepLog()) {
             LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s marked as a keeper", r);
             return true;
@@ -177,11 +187,16 @@ public class LogRotator extends BuildDiscarder {
             LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s the last stable build", r);
             return true;
         }
-        if (cal != null && !r.getTimestamp().before(cal)) {
+        return false;
+    }
+
+    private boolean tooNew(Run r, Calendar cal) {
+        if (!r.getTimestamp().before(cal)) {
             LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s still new", r);
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     /**
