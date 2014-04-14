@@ -24,14 +24,12 @@
 package hudson;
 
 import hudson.FilePath.TarCompression;
-import hudson.matrix.MatrixBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
-import hudson.util.DirScanner.Glob;
 import hudson.util.io.ArchiverFactory;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.RunListener;
@@ -158,7 +156,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * <p>
      * The state of the build when this method is invoked depends on
      * the project type. Most would call this at the end of the build,
-     * but for example {@link MatrixBuild} would call this after
+     * but for example {@code MatrixBuild} would call this after
      * SCM check out so that the state of the fresh workspace
      * can be then propagated to elsewhere.
      *
