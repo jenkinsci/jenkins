@@ -30,7 +30,6 @@ import hudson.FilePath;
 import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.matrix.MatrixConfiguration;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -169,7 +168,8 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                         }
 
                         AbstractProject p = key;
-                        if (key instanceof MatrixConfiguration) {
+                        // TODO is this harmful to call unconditionally, so it would apply also to MavenModule for example?
+                        if (key.getClass().getName().equals("hudson.matrix.MatrixConfiguration")) {
                             p = key.getRootProject();
                         }
 
