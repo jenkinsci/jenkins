@@ -454,7 +454,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Called when changing the {@link IdStrategy}.
-     * @since 1.557
+     * @since 1.560
      */
     public static void rekey() {
         IdStrategy strategy = IdStrategy.instance();
@@ -600,7 +600,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         save();
 
-        FormApply.success(".").generateResponse(req,rsp,this);
+        FormApply.success(".").generateResponse(req, rsp, this);
     }
 
     /**
@@ -816,7 +816,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * The strategy to use for manipulating user ids.
-     * @since 1.557
+     * @since 1.560
      */
     public static class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements ExtensionPoint, Comparator<String> {
 
@@ -847,18 +847,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return Jenkins.getInstance().getUserIdStrategy();
         }
 
+        @Override
+        @SuppressWarnings("unchecked")
+        public IdStrategyDescriptor getDescriptor() {
+            return (IdStrategyDescriptor)super.getDescriptor();
+        }
+
         /**
          * Returns all the registered {@link IdStrategy} descriptors.
          */
-        public static DescriptorExtensionList<IdStrategy,Descriptor<IdStrategy>> all() {
-            return Jenkins.getInstance().<IdStrategy,Descriptor<IdStrategy>>getDescriptorList(IdStrategy.class);
+        public static DescriptorExtensionList<IdStrategy,IdStrategyDescriptor> all() {
+            return Jenkins.getInstance().getDescriptorList(IdStrategy.class);
         }
 
     }
 
     /**
+     * The {@link Descriptor} for {@link IdStrategy}
+     * @since 1.560
+     */
+    public abstract static class IdStrategyDescriptor extends Descriptor<IdStrategy> {
+
+    }
+
+    /**
      * The default case insensitive {@link hudson.model.User.IdStrategy}
-     * @since 1.557
+     * @since 1.560
      */
     public static class CaseInsensitiveIdStrategy extends IdStrategy {
 
@@ -872,7 +886,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
 
         @Extension
-        public static class DescriptorImpl extends Descriptor<IdStrategy> {
+        public static class DescriptorImpl extends IdStrategyDescriptor {
 
             @Override
             public String getDisplayName() {
@@ -885,7 +899,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * The legacy case insensitive {@link hudson.model.User.IdStrategy}
      * Only adding this because existing instances will need to recover
      * their user configuration.
-     * @since 1.557
+     * @since 1.560
      */
     public static class LegacyIdStrategy extends IdStrategy {
 
@@ -909,7 +923,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
 
         @Extension
-        public static class DescriptorImpl extends Descriptor<IdStrategy> {
+        public static class DescriptorImpl extends IdStrategyDescriptor {
 
             @Override
             public String getDisplayName() {
@@ -920,7 +934,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * A case sensitive {@link hudson.model.User.IdStrategy}
-     * @since 1.557
+     * @since 1.560
      */
     public static class CaseSensitiveIdStrategy extends IdStrategy {
 
@@ -964,7 +978,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
 
         @Extension
-        public static class DescriptorImpl extends Descriptor<IdStrategy> {
+        public static class DescriptorImpl extends IdStrategyDescriptor {
 
             @Override
             public String getDisplayName() {
