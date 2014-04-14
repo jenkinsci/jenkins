@@ -176,7 +176,9 @@ public final class WorkspaceList {
      * Just record that this workspace is being used, without paying any attention to the synchronization support.
      */
     public synchronized Lease record(FilePath p) {
-        log("recorded  "+p);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "recorded " + p, new Throwable("from " + this));
+        }
         Entry old = inUse.put(p, new Entry(p, false));
         if (old!=null)
             throw new AssertionError("Tried to record a workspace already owned: "+old);
@@ -190,6 +192,9 @@ public final class WorkspaceList {
         Entry old = inUse.get(p);
         if (old==null)
             throw new AssertionError("Releasing unallocated workspace "+p);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "releasing " + p + " with lock count " + old.lockCount, new Throwable("from " + this));
+        }
         old.lockCount--;
         if (old.lockCount==0)
             inUse.remove(p);
@@ -240,7 +245,9 @@ public final class WorkspaceList {
         } finally {
             t.setName(oldName);
         }
-        log("acquired "+p);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "acquired " + p + (e == null ? "" : " with lock count " + e.lockCount), new Throwable("from " + this));
+        }
         
         if (e!=null)    e.lockCount++;
         else            inUse.put(p,new Entry(p,quick,context));
@@ -256,11 +263,6 @@ public final class WorkspaceList {
                 _release(path);
             }
         };
-    }
-
-    private void log(String msg) {
-        if (LOGGER.isLoggable(Level.FINE))
-            LOGGER.fine(Thread.currentThread().getName() + " " + msg);
     }
 
     private static final Logger LOGGER = Logger.getLogger(WorkspaceList.class.getName());
