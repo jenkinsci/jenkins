@@ -26,10 +26,7 @@ package hudson.model;
 import com.thoughtworks.xstream.XStream;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.matrix.MatrixProject;
-import hudson.matrix.MatrixConfiguration;
 import hudson.XmlFile;
-import hudson.matrix.Axis;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.Callable;
 import hudson.triggers.Trigger;
@@ -42,8 +39,6 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import org.apache.commons.io.FileUtils;
@@ -406,8 +401,5 @@ public class Items {
 
     static {
         XSTREAM.alias("project",FreeStyleProject.class);
-        XSTREAM.alias("matrix-project",MatrixProject.class);
-        XSTREAM.alias("axis", Axis.class);
-        XSTREAM.alias("matrix-config",MatrixConfiguration.class);
     }
 }

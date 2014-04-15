@@ -27,18 +27,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
 import hudson.XmlFile;
-import hudson.matrix.MatrixRun;
 import hudson.model.Result;
 import hudson.model.Run;
 import java.io.File;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.model.CauseOfInterruption;
-import jenkins.model.InterruptedBuildAction;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
@@ -259,24 +255,6 @@ public class XStream2Test extends TestCase {
 
     public static class Point {
         public int x,y;
-    }
-
-    /**
-     * Unmarshall a matrix build.xml result.
-     */
-    @Bug(10903)
-    public void testUnMarshalRunMatrix() {
-        InputStream is = XStream2Test.class.getResourceAsStream("runMatrix.xml");
-        MatrixRun result = (MatrixRun) Run.XSTREAM.fromXML(is);
-        assertNotNull(result);
-        assertNotNull(result.getPersistentActions());
-        assertEquals(2, result.getPersistentActions().size());
-        InterruptedBuildAction action = (InterruptedBuildAction) result.getPersistentActions().get(1);
-        assertNotNull(action.getCauses());
-        assertEquals(1, action.getCauses().size());
-        CauseOfInterruption.UserInterruption cause =
-            (CauseOfInterruption.UserInterruption) action.getCauses().get(0);
-        assertNotNull(cause);
     }
 
     public static class Foo2 {
