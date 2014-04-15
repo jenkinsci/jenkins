@@ -42,8 +42,6 @@ import hudson.console.AnnotatedLargeText;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.console.ModelHyperlinkNote;
-import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixRun;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
@@ -2290,8 +2288,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     static {
         XSTREAM.alias("build",FreeStyleBuild.class);
-        XSTREAM.alias("matrix-build",MatrixBuild.class);
-        XSTREAM.alias("matrix-run",MatrixRun.class);
         XSTREAM.registerConverter(Result.conv);
     }
 

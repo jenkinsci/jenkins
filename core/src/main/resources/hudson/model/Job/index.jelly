@@ -28,7 +28,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1 class="job-index-headline page-headline">${it.pronoun} <l:breakable value="${it.displayName}"/></h1>
-      <j:if test="${(it.name!=it.displayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}">
+      <j:if test="${(it.name!=it.displayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}"> <!-- TODO rather check for TopLevelItem (how to do this from Jelly?) -->
         ${%Project name}: ${it.fullName}
       </j:if>
       <t:editableDescription permission="${it.CONFIGURE}"/>
