@@ -42,7 +42,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
-
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
 import hudson.DNSMultiCast;
@@ -113,58 +112,6 @@ import hudson.util.PersistedList;
 import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.GNUCLibrary;
-import jenkins.model.Jenkins;
-import jenkins.model.JenkinsAdaptor;
-import net.sf.json.JSONObject;
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
-
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.hamcrest.Matchers;
-import org.junit.rules.MethodRule;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.Statement;
-import org.jvnet.hudson.test.recipes.Recipe;
-import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
-import org.kohsuke.stapler.ClassDescriptor;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.Dispatcher;
-import org.kohsuke.stapler.MetaClass;
-import org.kohsuke.stapler.MetaClassLoader;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.mortbay.jetty.MimeTypes;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.security.HashUserRealm;
-import org.mortbay.jetty.security.UserRealm;
-import org.mortbay.jetty.webapp.Configuration;
-import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.jetty.webapp.WebXmlConfiguration;
-import org.mozilla.javascript.tools.debugger.Dim;
-import org.mozilla.javascript.tools.shell.Global;
-import org.springframework.dao.DataAccessException;
-import org.w3c.css.sac.CSSException;
-import org.w3c.css.sac.CSSParseException;
-import org.w3c.css.sac.ErrorHandler;
-import org.xml.sax.SAXException;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-
 import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.File;
@@ -178,6 +125,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -209,19 +157,64 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import jenkins.model.Jenkins;
+import jenkins.model.JenkinsAdaptor;
 import jenkins.model.JenkinsLocationConfiguration;
-
+import net.sf.json.JSONObject;
+import net.sourceforge.htmlunit.corejs.javascript.Context;
+import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
+import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.BadCredentialsException;
+import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
-
+import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 import org.junit.internal.AssumptionViolatedException;
 import static org.junit.matchers.JUnitMatchers.containsString;
-
+import org.junit.rules.MethodRule;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.Statement;
+import org.jvnet.hudson.test.recipes.Recipe;
+import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
+import org.kohsuke.stapler.ClassDescriptor;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Dispatcher;
+import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.MetaClassLoader;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.mortbay.jetty.MimeTypes;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.bio.SocketConnector;
+import org.mortbay.jetty.security.HashUserRealm;
+import org.mortbay.jetty.security.UserRealm;
+import org.mortbay.jetty.webapp.Configuration;
+import org.mortbay.jetty.webapp.WebAppContext;
+import org.mortbay.jetty.webapp.WebXmlConfiguration;
+import org.mozilla.javascript.tools.debugger.Dim;
+import org.mozilla.javascript.tools.shell.Global;
+import org.springframework.dao.DataAccessException;
+import org.w3c.css.sac.CSSException;
+import org.w3c.css.sac.CSSParseException;
+import org.w3c.css.sac.ErrorHandler;
+import org.xml.sax.SAXException;
 
 /**
  * JUnit rule to allow test cases to fire up a Jenkins instance.
@@ -1979,8 +1972,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             try {
                 p = super.getPage(getContextPath() + relative);
             } catch (IOException x) {
-                if (x.getCause() != null) {
-                    x.getCause().printStackTrace();
+                Throwable cause = x.getCause();
+                if (cause instanceof SocketTimeoutException) {
+                    throw new AssumptionViolatedException("failed to get " + relative + " due to read timeout", cause);
+                } else if (cause != null) {
+                    cause.printStackTrace(); // SUREFIRE-1067 workaround
                 }
                 throw x;
             }
