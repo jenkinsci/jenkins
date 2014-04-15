@@ -93,11 +93,11 @@ public final class Problem {
 
     @Override
     public String toString() {
-        return job.getFullDisplayName()+" "+ Util.join(offenders);
+        return job.getFullName() + " " + Util.join(offenders);
     }
 
     public void fix(TaskListener listener) throws IOException, InterruptedException {
-        listener.getLogger().println("Fixing problems in "+job.getFullDisplayName());
+        listener.getLogger().println("Fixing problems in " + job.getFullName());
         for (BuildPtr o : offenders) {
             o.fix(listener);
         }
