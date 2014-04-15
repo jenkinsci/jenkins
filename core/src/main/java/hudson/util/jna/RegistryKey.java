@@ -15,6 +15,9 @@ Lesser General Public License for more details.
  */
 package hudson.util.jna;
 
+import com.sun.jna.platform.win32.Advapi32;
+import com.sun.jna.platform.win32.WinBase;
+import com.sun.jna.platform.win32.WinReg;
 import com.sun.jna.ptr.IntByReference;
 
 import java.io.UnsupportedEncodingException;
@@ -102,7 +105,7 @@ public class RegistryKey {
 
         OUTER:
         while(true) {
-            int r = Advapi32.INSTANCE.RegQueryValueEx(handle, valueName, null, pType, lpData, lpcbData);
+            int r = Advapi32.INSTANCE.RegQueryValueEx(new WinReg.HKEY(handle), valueName, 0, pType, lpData, lpcbData);
             switch (r) {
             case WINERROR.ERROR_MORE_DATA:
                 lpData = new byte[lpcbData.getValue()];
@@ -116,7 +119,7 @@ public class RegistryKey {
     }
 
     public void deleteValue(String valueName) {
-        check(Advapi32.INSTANCE.RegDeleteValue(handle, valueName));
+        check(Advapi32.INSTANCE.RegDeleteValue(new WinReg.HKEY(handle), valueName));
     }
 
     private void check(int r) {
@@ -133,7 +136,7 @@ public class RegistryKey {
             int newLength = bytes.length+2; // for 0 padding
             byte[] with0 = new byte[newLength];
             System.arraycopy(bytes, 0, with0, 0, newLength);
-            check(Advapi32.INSTANCE.RegSetValueEx(handle, name, 0, WINNT.REG_SZ, with0, with0.length));
+            check(Advapi32.INSTANCE.RegSetValueEx(new WinReg.HKEY(handle), name, 0, WINNT.REG_SZ, with0, with0.length));
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
@@ -149,7 +152,7 @@ public class RegistryKey {
         data[2] = (byte) ((value >> 16) & 0xff);
         data[3] = (byte) ((value >> 24) & 0xff);
 
-        check(Advapi32.INSTANCE.RegSetValueEx(handle, name, 0, WINNT.REG_DWORD, data, data.length));
+        check(Advapi32.INSTANCE.RegSetValueEx(new WinReg.HKEY(handle), name, 0, WINNT.REG_DWORD, data, data.length));
     }
 
     /**
@@ -164,7 +167,7 @@ public class RegistryKey {
 
         OUTER:
         while(true) {
-            int r = Advapi32.INSTANCE.RegQueryValueEx(handle, name, null, pType, lpData, lpcbData);
+            int r = Advapi32.INSTANCE.RegQueryValueEx(new WinReg.HKEY(handle), name, 0, pType, lpData, lpcbData);
             switch(r) {
             case WINERROR.ERROR_MORE_DATA:
                 lpData = new byte[lpcbData.getValue()];
@@ -183,7 +186,7 @@ public class RegistryKey {
      * Deletes this key (and disposes the key.)
      */
     public void delete() {
-        check(Advapi32.INSTANCE.RegDeleteKey(handle, path));
+        check(Advapi32.INSTANCE.RegDeleteKey(new WinReg.HKEY(handle), path));
         dispose();
     }
 
@@ -193,14 +196,14 @@ public class RegistryKey {
      * @return array with all sub key names
      */
     public Collection<String> getSubKeys() {
-        WINBASE.FILETIME lpftLastWriteTime;
+        WinBase.FILETIME lpftLastWriteTime;
         TreeSet<String> subKeys = new TreeSet<String>();
         char[] lpName = new char[256];
         IntByReference lpcName = new IntByReference(256);
-        lpftLastWriteTime = new WINBASE.FILETIME();
+        lpftLastWriteTime = new WinBase.FILETIME();
         int dwIndex = 0;
 
-        while (Advapi32.INSTANCE.RegEnumKeyEx(handle, dwIndex, lpName, lpcName, null,
+        while (Advapi32.INSTANCE.RegEnumKeyEx(new WinReg.HKEY(handle), dwIndex, lpName, lpcName, null,
                 null, null, lpftLastWriteTime) == WINERROR.ERROR_SUCCESS) {
             subKeys.add(new String(lpName, 0, lpcName.getValue()));
             lpcName.setValue(256);
@@ -220,7 +223,8 @@ public class RegistryKey {
 
     public RegistryKey open(String subKeyName, int access) {
         IntByReference pHandle = new IntByReference();
-        check(Advapi32.INSTANCE.RegOpenKeyEx(handle, subKeyName, 0, access, pHandle));
+        check(Advapi32.INSTANCE.RegOpenKeyEx(new WinReg.HKEY(handle), subKeyName, 0, access,
+                new WinReg.HKEYByReference(new WinReg.HKEY(pHandle.getValue()))));
         return new RegistryKey(this,subKeyName,pHandle.getValue());
     }
 
@@ -248,7 +252,7 @@ public class RegistryKey {
 
         OUTER:
         while (true) {
-            result = Advapi32.INSTANCE.RegEnumValue(handle, dwIndex, lpValueName, lpcchValueName, null,
+            result = Advapi32.INSTANCE.RegEnumValue(new WinReg.HKEY(handle), dwIndex, lpValueName, lpcchValueName, null,
                     lpType, lpData, lpcbData);
             switch (result) {
             case WINERROR.ERROR_NO_MORE_ITEMS:
@@ -291,7 +295,7 @@ public class RegistryKey {
 
     public void dispose() {
         if(handle!=0)
-            Advapi32.INSTANCE.RegCloseKey(handle);
+            Advapi32.INSTANCE.RegCloseKey(new WinReg.HKEY(handle));
         handle = 0;
     }
 

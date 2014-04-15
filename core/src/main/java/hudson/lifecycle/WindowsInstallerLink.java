@@ -24,13 +24,15 @@
 package hudson.lifecycle;
 
 import com.sun.jna.Native;
+import com.sun.jna.platform.win32.Shell32;
+import com.sun.jna.platform.win32.WinDef;
+import com.sun.jna.platform.win32.WinReg;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.model.ManagementLink;
 import hudson.model.TaskListener;
 import hudson.util.jna.Kernel32Utils;
 import hudson.util.jna.SHELLEXECUTEINFO;
-import hudson.util.jna.Shell32;
 import jenkins.model.Jenkins;
 import hudson.AbortException;
 import hudson.Extension;
@@ -54,8 +56,6 @@ import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URL;
-
-import static hudson.util.jna.SHELLEXECUTEINFO.*;
 
 /**
  * {@link ManagementLink} that allows the installation as a Windows service.
@@ -293,13 +293,14 @@ public class WindowsInstallerLink extends ManagementLink {
         // error code 740 is ERROR_ELEVATION_REQUIRED, indicating that
         // we run in UAC-enabled Windows and we need to run this in an elevated privilege
         SHELLEXECUTEINFO sei = new SHELLEXECUTEINFO();
-        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+        sei.fMask = SHELLEXECUTEINFO.SEE_MASK_NOCLOSEPROCESS;
         sei.lpVerb = "runas";
         sei.lpFile = jenkinsExe.getAbsolutePath();
         sei.lpParameters = "/redirect redirect.log "+command;
         sei.lpDirectory = pwd.getAbsolutePath();
-        sei.nShow = SW_HIDE;
-        if (!Shell32.INSTANCE.ShellExecuteEx(sei))
+        sei.nShow = SHELLEXECUTEINFO.SW_HIDE;
+        // ShellExecute returns a number > 32 if the command succeeds, otherwise it indicates that it is a failure.
+        if (Shell32.INSTANCE.ShellExecute(new WinDef.HWND(sei.hwnd), sei.lpVerb, sei.lpFile, sei.lpParameters, sei.lpDirectory, sei.nShow).intValue() < 32)
             throw new IOException("Failed to shellExecute: "+ Native.getLastError());
 
         try {
