@@ -176,6 +176,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -217,6 +218,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
+import org.junit.internal.AssumptionViolatedException;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 import org.junit.rules.TemporaryFolder;
@@ -1894,8 +1896,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             try {
                 p = super.getPage(getContextPath() + relative);
             } catch (IOException x) {
-                if (x.getCause() != null) {
-                    x.getCause().printStackTrace();
+                Throwable cause = x.getCause();
+                if (cause instanceof SocketTimeoutException) {
+                    throw new AssumptionViolatedException("failed to get " + relative + " due to read timeout", cause);
+                } else if (cause != null) {
+                    cause.printStackTrace(); // SUREFIRE-1067 workaround
                 }
                 throw x;
             }
