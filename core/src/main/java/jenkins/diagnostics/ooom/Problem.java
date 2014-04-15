@@ -256,7 +256,7 @@ public final class Problem {
                         BuildPtr o = builds.put(n, b);
                         if (o != null) {
                             LOGGER.log(WARNING, "Multiple builds have the same number: {0} vs. {1}", new Object[] {o, b});
-                            offenders.add(o);
+                            offenders.add(b.compareTo(o) > 0 ? o : b);
                         }
                     }
                 } catch (XPathExpressionException e) {
