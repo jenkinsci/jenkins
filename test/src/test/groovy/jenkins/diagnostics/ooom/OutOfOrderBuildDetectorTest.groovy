@@ -1,10 +1,14 @@
 package jenkins.diagnostics.ooom
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage
+import hudson.model.FreeStyleProject
 import hudson.model.Job
+import hudson.model.TaskListener
 import hudson.util.StreamTaskListener
+import static org.junit.Assert.*;
 import org.junit.Rule
 import org.junit.Test
+import org.jvnet.hudson.test.Bug
 import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.recipes.LocalData
 
@@ -103,4 +107,38 @@ class OutOfOrderBuildDetectorTest {
         j.assertBuildStatusSuccess(f.scheduleBuild2(0));
         assert Problem.find(f)==null;
     }
+
+    @Bug(22631)
+    @LocalData
+    @Test public void buildNumberClash() throws Exception {
+        j.jenkins.injector.injectMembers(this);
+        FreeStyleProject p = j.jenkins.getItemByFullName("problematic", FreeStyleProject.class);
+        assertNotNull(p);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        TaskListener l = new StreamTaskListener(baos);
+        oobd.execute(l, 0);
+        String log = baos.toString();
+        String idA = "2014-04-15_11-22-11";
+        String idB = "2014-04-15_11-22-14";
+        assertEquals(idB, p.getBuildByNumber(2).getId());
+        assertEquals(3, p.getLastBuild().getNumber());
+        File dir = p.getBuildDir();
+        File buildDirA = new File(dir, idA);
+        File buildDirB = new File(dir, idB);
+        BuildPtr b2A = new BuildPtr(p, buildDirA, 2);
+        BuildPtr b2B = new BuildPtr(p, buildDirB, 2);
+        String expected = "[" + b2A + "]";
+        assertTrue("Should see " + expected + " in:\n" + log, log.contains(expected));
+        baos = new ByteArrayOutputStream();
+        l = new StreamTaskListener(baos);
+        oobm.fix(l);
+        log = baos.toString();
+        assertTrue(buildDirB.isDirectory());
+        assertTrue("Should see " + buildDirA + " in:\n" + log, log.contains(buildDirA.toString()));
+        File dest = new File(new File(p.getRootDir(), "outOfOrderBuilds"), idA);
+        assertTrue("Should see " + dest + " in:\n" + log, log.contains(dest.toString()));
+        assertFalse(buildDirA.isDirectory());
+        assertTrue(dest.isDirectory());
+    }
+
 }

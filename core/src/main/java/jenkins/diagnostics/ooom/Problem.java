@@ -146,7 +146,7 @@ public final class Problem {
             }
 
             byId = new ArrayList<BuildPtr>(byN);
-            Collections.sort(byId, BuildPtr.BY_ID);
+            Collections.sort(byId);
             i=0;
             for (BuildPtr b : byId) {
                 b.posByID = i++;
