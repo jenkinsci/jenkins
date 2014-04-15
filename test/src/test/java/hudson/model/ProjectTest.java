@@ -63,9 +63,7 @@ import hudson.EnvVars;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.Cloud;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProvisioner;
-import hudson.slaves.OfflineCause;
 import hudson.tasks.Shell;
 import org.jvnet.hudson.test.TestExtension;
 import java.util.List;
@@ -80,7 +78,6 @@ import static org.junit.Assert.*;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildTrigger;
-import hudson.util.OneShotEvent;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -89,8 +86,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
-import org.jvnet.localizer.Localizable;
-import sun.awt.image.OffScreenImage;
 
 /**
  *
