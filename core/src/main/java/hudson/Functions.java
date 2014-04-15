@@ -191,7 +191,7 @@ public class Functions {
     
     @Deprecated
     public static boolean isMatrixProject(Object o) {
-        return o.getClass().getName().equals("hudson.matrix.MatrixProject");
+        return o != null && o.getClass().getName().equals("hudson.matrix.MatrixProject");
     }
 
     public static String xsDate(Calendar cal) {
