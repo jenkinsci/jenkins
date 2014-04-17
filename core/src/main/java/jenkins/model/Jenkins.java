@@ -279,6 +279,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -2954,7 +2955,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 r.put(e.getKey(), Collections.singletonMap("Failed to retrieve thread dump",sw.toString()));
             }
         }
-        return r;
+        return Collections.unmodifiableSortedMap(new TreeMap<String, Map<String, String>>(r));
     }
 
     public synchronized TopLevelItem doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
