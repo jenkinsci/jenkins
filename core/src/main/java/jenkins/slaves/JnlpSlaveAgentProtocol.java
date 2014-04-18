@@ -2,7 +2,6 @@ package jenkins.slaves;
 
 import hudson.AbortException;
 import hudson.Extension;
-import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.ChannelBuilder;
@@ -16,7 +15,6 @@ import org.jenkinsci.remoting.nio.NioChannelHub;
 import javax.inject.Inject;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -68,23 +66,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
         new Handler(hub.getHub(),socket).run();
     }
 
-    protected static class Handler {
-        protected final NioChannelHub hub;
-        protected final Socket socket;
-
-        /**
-         * Wrapping Socket input stream.
-         */
-        protected final DataInputStream in;
-
-        /**
-         * For writing handshaking response.
-         *
-         * This is a poor design choice that we just carry forward for compatibility.
-         * For better protocol design, {@link DataOutputStream} is preferred for newer
-         * protocols.
-         */
-        protected final PrintWriter out;
+    protected static class Handler extends JnlpSlaveHandshake {
 
         /**
          * @deprecated as of 1.559
@@ -95,10 +77,9 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
         }
 
         public Handler(NioChannelHub hub, Socket socket) throws IOException {
-            this.hub = hub;
-            this.socket = socket;
-            in = new DataInputStream(socket.getInputStream());
-            out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),"UTF-8")),true);
+            super(hub,socket,
+                    new DataInputStream(socket.getInputStream()),
+                    new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),"UTF-8")),true));
         }
 
         protected void run() throws IOException, InterruptedException {
@@ -106,19 +87,19 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
             final String nodeName = in.readUTF();
 
             if(!SLAVE_SECRET.mac(nodeName).equals(secret)) {
-                error(out, "Unauthorized access");
+                error("Unauthorized access");
                 return;
             }
 
 
             SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer==null) {
-                error(out, "No such slave: "+nodeName);
+                error("No such slave: "+nodeName);
                 return;
             }
 
             if(computer.getChannel()!=null) {
-                error(out, nodeName+" is already connected to this master. Rejecting this connection.");
+                error(nodeName+" is already connected to this master. Rejecting this connection.");
                 return;
             }
 
@@ -134,12 +115,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
             logw.println("JNLP agent connected from "+ socket.getInetAddress());
 
             try {
-                ChannelBuilder cb;
-
-                if (hub==null)
-                    cb = new ChannelBuilder(nodeName, Computer.threadPoolForRemoting);
-                else
-                    cb = hub.newChannelBuilder(nodeName, Computer.threadPoolForRemoting);
+                ChannelBuilder cb = createChannelBuilder(nodeName);
 
                 computer.setChannel(cb.withHeaderStream(log).build(socket), log,
                     new Listener() {
@@ -164,12 +140,6 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
                 e.printStackTrace(logw);
                 throw e;
             }
-        }
-
-        protected void error(PrintWriter out, String msg) throws IOException {
-            out.println(msg);
-            LOGGER.log(Level.WARNING,Thread.currentThread().getName()+" is aborted: "+msg);
-            socket.close();
         }
     }
 
