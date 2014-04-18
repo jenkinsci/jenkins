@@ -56,6 +56,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                 f.apply()
             }
         }
+
+        st.adjunct(includes: "lib.form.confirm")
     }
 }
 
