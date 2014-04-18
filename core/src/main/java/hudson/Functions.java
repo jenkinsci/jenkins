@@ -1830,7 +1830,7 @@ public class Functions {
     public static String breakableString(final String plain) {
 
         return plain.replaceAll("([\\p{Punct}&&[^;]]+\\w)", "<wbr>$1")
-                .replaceAll("([^\\p{Punct}\\s-]{10})(?=[^\\p{Punct}\\s-]{3})", "$1<wbr>")
+                .replaceAll("([^\\p{Punct}\\s-]{20})(?=[^\\p{Punct}\\s-]{10})", "$1<wbr>")
         ;
     }
 
