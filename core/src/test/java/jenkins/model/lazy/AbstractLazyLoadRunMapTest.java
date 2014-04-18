@@ -149,6 +149,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertNull(a.search(-99, Direction.DESC));
     }
 
+    @Bug(19418)
     @Test
     public void searchExactWhenIndexedButSoftReferenceExpired() throws IOException {
         final FakeMap m = localExpiredBuilder.add(1, "A").add(2, "B").make();
@@ -159,6 +160,24 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         m.search(1, Direction.EXACT).asserts(1, "A");
         assertNull(m.search(3, Direction.EXACT));
         assertNull(m.search(0, Direction.EXACT));
+    }
+
+    @Bug(22681)
+    @Test public void exactSearchShouldNotReload() throws Exception {
+        FakeMap m = localBuilder.add(1, "A").add(2, "B").make();
+        assertNull(m.search(0, Direction.EXACT));
+        Build a = m.search(1, Direction.EXACT);
+        a.asserts(1, "A");
+        Build b = m.search(2, Direction.EXACT);
+        b.asserts(2, "B");
+        assertNull(m.search(0, Direction.EXACT));
+        assertSame(a, m.search(1, Direction.EXACT));
+        assertSame(b, m.search(2, Direction.EXACT));
+        assertNull(m.search(3, Direction.EXACT));
+        assertNull(m.search(0, Direction.EXACT));
+        assertSame(a, m.search(1, Direction.EXACT));
+        assertSame("#2 should not have been reloaded by searching for #3", b, m.search(2, Direction.EXACT));
+        assertNull(m.search(3, Direction.EXACT));
     }
 
     /**
