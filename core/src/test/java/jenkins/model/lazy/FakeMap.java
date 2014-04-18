@@ -82,4 +82,9 @@ class Build {
         assert this.n==n;
         assert this.id.equals(id);
     }
+
+    @Override public String toString() {
+        return "Build #" + n + " [" + id + "] @" + hashCode();
+    }
+
 }

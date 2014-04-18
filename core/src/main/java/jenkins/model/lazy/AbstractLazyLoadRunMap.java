@@ -509,7 +509,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             return getById(idOnDisk.get(lo-1));
         case EXACT:
             if (hi<=0)                 return null;
-            R r = load(idOnDisk.get(hi-1), null);
+            R r = getById(idOnDisk.get(hi-1));
             if (r==null)               return null;
 
             int found = getNumberOf(r);
