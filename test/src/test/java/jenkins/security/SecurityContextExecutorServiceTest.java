@@ -55,7 +55,7 @@ public class SecurityContextExecutorServiceTest {
     private volatile SecurityContext runnableThreadContext;
     @Rule
     public JenkinsRule j = new JenkinsRule() {
-        protected void before() throws Throwable {
+        public void before() throws Throwable {
             setPluginManager(null);
             super.before();
 
@@ -72,7 +72,7 @@ public class SecurityContextExecutorServiceTest {
             nullContext = SecurityContextHolder.getContext();
 
             // Create a wrapped service 
-            wrappedService = SecurityContextExecutorService.wrapExecutorWithSecurityContext(service);
+            wrappedService = new SecurityContextExecutorService(service);
         }
     };
 
