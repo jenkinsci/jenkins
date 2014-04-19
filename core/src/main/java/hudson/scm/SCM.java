@@ -41,6 +41,7 @@ import hudson.model.Describable;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.model.WorkspaceCleanupThread;
+import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Api;
@@ -578,14 +579,17 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 //
 
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
+        FileWriter w = null;
         try {
-            FileWriter w = new FileWriter(changelogFile);
+            w = new FileWriter(changelogFile);
             w.write("<"+rootTag +"/>");
             w.close();
             return true;
         } catch (IOException e) {
             e.printStackTrace(listener.error(e.getMessage()));
             return false;
+        } finally {
+            IOUtils.closeQuietly(w);
         }
     }
 

@@ -31,6 +31,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Cause;
+import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Project;
@@ -337,8 +338,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             rsp.setContentType("text/plain;charset=UTF-8");
             // Prevent jelly from flushing stream so Content-Length header can be added afterwards
             FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-            getPollingLogText().writeLogTo(0, out);
-            out.close();
+            try {
+                getPollingLogText().writeLogTo(0, out);
+            } finally {
+                IOUtils.closeQuietly(out);
+            }
         }
 
         public AnnotatedLargeText getPollingLogText() {

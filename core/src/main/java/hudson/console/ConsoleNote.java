@@ -171,16 +171,22 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
     private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
-        oos.writeObject(this);
-        oos.close();
+        try {
+            oos.writeObject(this);
+        } finally {
+            oos.close();
+        }
 
         ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
 
         DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
-        buf2.write(PREAMBLE);
-        dos.writeInt(buf.size());
-        buf.writeTo(dos);
-        dos.close();
+        try {
+            buf2.write(PREAMBLE);
+            dos.writeInt(buf.size());
+            buf.writeTo(dos);
+        } finally {
+            dos.close();
+        }
         buf2.write(POSTAMBLE);
         return buf2;
     }

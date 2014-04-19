@@ -2082,8 +2082,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 			} finally {
 				IOUtils.closeQuietly(input);
 			}
-		}
-        out.close();
+		} finally {
+            IOUtils.closeQuietly(out);
+        }
     }
 
     /**

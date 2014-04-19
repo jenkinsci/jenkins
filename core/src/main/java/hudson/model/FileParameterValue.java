@@ -197,12 +197,16 @@ public class FileParameterValue extends ParameterValue {
             File fileParameter = getLocationUnderBuild(build);
             if (fileParameter.isFile()) {
                 InputStream data = new FileInputStream(fileParameter);
-                long lastModified = fileParameter.lastModified();
-                long contentLength = fileParameter.length();
-                if (request.hasParameter("view")) {
-                    response.serveFile(request, data, lastModified, contentLength, "plain.txt");
-                } else {
-                    response.serveFile(request, data, lastModified, contentLength, originalFileName);
+                try {
+                    long lastModified = fileParameter.lastModified();
+                    long contentLength = fileParameter.length();
+                    if (request.hasParameter("view")) {
+                        response.serveFile(request, data, lastModified, contentLength, "plain.txt");
+                    } else {
+                        response.serveFile(request, data, lastModified, contentLength, originalFileName);
+                    }
+                } finally {
+                    IOUtils.closeQuietly(data);
                 }
             }
         }

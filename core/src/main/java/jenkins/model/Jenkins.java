@@ -172,6 +172,7 @@ import hudson.util.FormValidation;
 import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
+import hudson.util.IOUtils;
 import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
 import hudson.util.Memoizer;
@@ -3981,12 +3982,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static void computeVersion(ServletContext context) {
         // set the version
         Properties props = new Properties();
+        InputStream is = null;
         try {
-            InputStream is = Jenkins.class.getResourceAsStream("jenkins-version.properties");
+            is = Jenkins.class.getResourceAsStream("jenkins-version.properties");
             if(is!=null)
                 props.load(is);
         } catch (IOException e) {
             e.printStackTrace(); // if the version properties is missing, that's OK.
+        } finally {
+            IOUtils.closeQuietly(is);
         }
         String ver = props.getProperty("version");
         if(ver==null)   ver="?";

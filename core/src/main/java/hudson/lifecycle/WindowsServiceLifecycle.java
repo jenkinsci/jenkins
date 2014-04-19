@@ -111,8 +111,11 @@ public class WindowsServiceLifecycle extends Lifecycle {
         File copyFiles = new File(rootDir,baseName+".copies");
 
         FileWriter w = new FileWriter(copyFiles, true);
-        w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
-        w.close();
+        try {
+            w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
+        } finally {
+            w.close();
+        }
     }
 
     @Override

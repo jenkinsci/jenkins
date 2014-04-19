@@ -137,23 +137,27 @@ public class Main {
             FileOutputStream os = new FileOutputStream(tmpFile);
 
             Writer w = new OutputStreamWriter(os,"UTF-8");
-            w.write("<?xml version='1.0' encoding='UTF-8'?>");
-            w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
-            w.flush();
+            int ret;
+            try {
+                w.write("<?xml version='1.0' encoding='UTF-8'?>");
+                w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
+                w.flush();
 
-            // run the command
-            long start = System.currentTimeMillis();
+                // run the command
+                long start = System.currentTimeMillis();
 
-            List<String> cmd = new ArrayList<String>();
-            for( int i=1; i<args.length; i++ )
-                cmd.add(args[i]);
-            Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
-                new DualOutputStream(System.out,new EncodingStream(os)));
+                List<String> cmd = new ArrayList<String>();
+                for( int i=1; i<args.length; i++ )
+                    cmd.add(args[i]);
+                Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
+                    new DualOutputStream(System.out,new EncodingStream(os)));
 
-            int ret = proc.join();
+                ret = proc.join();
 
-            w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
-            w.close();
+                w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
+            } finally {
+                IOUtils.closeQuietly(w);
+            }
 
             URL location = new URL(jobURL, "postBuildResult");
             while(true) {
@@ -170,8 +174,11 @@ public class Main {
                     con.connect();
                     // send the data
                     FileInputStream in = new FileInputStream(tmpFile);
-                    Util.copyStream(in,con.getOutputStream());
-                    in.close();
+                    try {
+                        Util.copyStream(in,con.getOutputStream());
+                    } finally {
+                        IOUtils.closeQuietly(in);
+                    }
 
                     if(con.getResponseCode()!=200) {
                         Util.copyStream(con.getErrorStream(),System.err);
