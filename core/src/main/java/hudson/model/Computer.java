@@ -474,7 +474,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @Exported
     public LoadStatistics getLoadStatistics() {
-        return LabelAtom.get(nodeName != null ? nodeName : "").loadStatistics;
+        return LabelAtom.get(nodeName != null ? nodeName : Jenkins.getInstance().getSelfLabel().toString()).loadStatistics;
     }
 
     public BuildTimelineWidget getTimeline() {
