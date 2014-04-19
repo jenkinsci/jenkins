@@ -756,19 +756,13 @@ public class Queue extends ResourceController implements Saveable {
     public synchronized int countBuildableItemsFor(Label l) {
         int r = 0;
         for (BuildableItem bi : buildables.values())
-            if(null==l || bi.getAssignedLabel()==l) {
-                r++;
-                for (SubTask st : bi.task.getSubTasks())
-                    if (st != bi.task && (null==l || st.getAssignedLabel()==l))
-                        r++;
-            }
+            for (SubTask st : bi.task.getSubTasks())
+                if (null==l || st.getAssignedLabel()==l)
+                    r++;
         for (BuildableItem bi : pendings.values())
-            if(bi.getAssignedLabel()==l) {
-                r++;
-                for (SubTask st : bi.task.getSubTasks())
-                    if (st != bi.task && (null==l || st.getAssignedLabel()==l))
-                        r++;
-            }
+            for (SubTask st : bi.task.getSubTasks())
+                if (null==l || st.getAssignedLabel()==l)
+                    r++;
         return r;
     }
 
