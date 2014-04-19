@@ -547,6 +547,12 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>4.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>findbugs</groupId>
       <artifactId>annotations</artifactId>
       <version>1.0.0</version>
