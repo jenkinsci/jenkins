@@ -23,12 +23,13 @@
  */
 package hudson.model;
 
-import java.util.Locale;
-
 import hudson.EnvVars;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
+
+import javax.annotation.CheckForNull;
+import java.util.Locale;
 
 public class RunParameterValue extends ParameterValue {
 
@@ -45,7 +46,10 @@ public class RunParameterValue extends ParameterValue {
         this.runId = runId;
     }
 
-    public Run getRun() {
+    /**
+     * Can be null if the {@link Run} that this was pointing to no longer exists.
+     */
+    public @CheckForNull Run getRun() {
         return Run.fromExternalizableId(runId);
     }
 
