@@ -259,6 +259,19 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     /**
+     * Filter the list to completed builds.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.561
+     */
+    public RunList<R> completedOnly() {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return !r.isBuilding();
+            }
+        });
+    }
+
+    /**
      * Filter the list to builds on a single node only
      * <em>Warning:</em> this method mutates the original list and then returns it.
      */
