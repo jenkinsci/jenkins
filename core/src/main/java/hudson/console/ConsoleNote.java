@@ -174,8 +174,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
         try {
             oos.writeObject(this);
-        }
-        finally {
+        } finally {
             oos.close();
         }
 
@@ -186,8 +185,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             buf2.write(PREAMBLE);
             dos.writeInt(buf.size());
             buf.writeTo(dos);
-        }
-        finally {
+        } finally {
             dos.close();
         }
         buf2.write(POSTAMBLE);

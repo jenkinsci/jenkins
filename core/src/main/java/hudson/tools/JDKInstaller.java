@@ -172,14 +172,8 @@ public class JDKInstaller extends ToolInstaller {
                 DataInputStream in = new DataInputStream(fs.read(jdkBundle));
                 try {
                     in.readFully(header);
-                }
-                finally {
-                    try {
-                        in.close();
-                    }
-                    catch (IOException ioe) {
-                        // swallow exception
-                    }
+                } finally {
+                    IOUtils.closeQuietly(in);
                 }
             }
 

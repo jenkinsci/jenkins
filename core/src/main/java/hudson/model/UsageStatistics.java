@@ -28,6 +28,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.util.IOUtils;
 import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
 
@@ -174,14 +175,8 @@ public class UsageStatistics extends PageDecorator {
             OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getKey(),"AES")), "UTF-8");
             try {
                 o.write(w);
-            }
-            finally {
-                try {
-                    w.close();
-                }
-                catch (IOException ioe) {
-                    // swallow exception
-                }
+            } finally {
+                IOUtils.closeQuietly(w);
             }
 
             return new String(Base64.encode(baos.toByteArray()));

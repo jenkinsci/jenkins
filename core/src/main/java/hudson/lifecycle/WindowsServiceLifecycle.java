@@ -113,8 +113,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         FileWriter w = new FileWriter(copyFiles, true);
         try {
             w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
-        }
-        finally {
+        } finally {
             w.close();
         }
     }

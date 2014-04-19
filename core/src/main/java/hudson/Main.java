@@ -156,14 +156,8 @@ public class Main {
                 ret = proc.join();
 
                 w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
-            }
-            finally {
-                try {
-                    w.close();
-                }
-                catch (IOException ioe) {
-                    // swallow exception
-                }
+            } finally {
+                IOUtils.closeQuietly(w);
             }
 
             String location = home+"job/"+projectNameEnc+"/postBuildResult";
@@ -183,14 +177,8 @@ public class Main {
                     FileInputStream in = new FileInputStream(tmpFile);
                     try {
                         Util.copyStream(in,con.getOutputStream());
-                    }
-                    finally {
-                        try {
-                            in.close();
-                        }
-                        catch (IOException ioe) {
-                            // swallow exception
-                        }
+                    } finally {
+                        IOUtils.closeQuietly(in);
                     }
 
                     if(con.getResponseCode()!=200) {

@@ -178,18 +178,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                     cw.write(target);
                     cw.commit();
                 } finally {
-                    try {
-                        cw.abort();
-                    }
-                    catch (IOException ioe) {
-                        // swallow exception
-                    }
-                    try {
-                        cw.close();
-                    }
-                    catch (IOException ioe) {
-                        // swallow exception
-                    }
+                    cw.abort();
                 }
             } else {
                 cache.delete();

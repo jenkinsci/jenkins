@@ -72,10 +72,9 @@ final class ZipArchiver extends Archiver {
             FileInputStream in = new FileInputStream(f);
             try {
                 int len;
-                while((len=in.read(buf))>0)
+                while((len=in.read(buf))>=0)
                     zip.write(buf,0,len);
-            }
-            finally {
+            } finally {
                 in.close();
             }
             zip.closeEntry();

@@ -45,6 +45,7 @@ import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
@@ -791,24 +792,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return tmp;
             } catch (IOException e) {
                 throw new IOException2("Failed to download from "+src,e);
-            }
-            finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    }
-                    catch (IOException ioe) {
-                        // swallow exception
-                    }
-                }
-                if (out != null) {
-                    try {
-                        out.close();
-                    }
-                    catch (IOException ioe) {
-                        // swallow exception
-                    }
-                }
+            } finally {
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(out);
             }
         }
 

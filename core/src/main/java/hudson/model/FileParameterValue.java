@@ -205,14 +205,8 @@ public class FileParameterValue extends ParameterValue {
                     } else {
                         response.serveFile(request, data, lastModified, contentLength, originalFileName);
                     }
-                }
-                finally {
-                    try {
-                        data.close();
-                    }
-                    catch (IOException ioe) {
-                        // swallow exception
-                    }
+                } finally {
+                    IOUtils.closeQuietly(data);
                 }
             }
         }

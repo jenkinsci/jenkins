@@ -31,6 +31,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Cause;
+import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.Project;
@@ -324,14 +325,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
             try {
                 getPollingLogText().writeLogTo(0, out);
-            }
-            finally {
-                try {
-                    out.close();
-                }
-                catch (IOException ioe) {
-                    // swallow exception
-                }
+            } finally {
+                IOUtils.closeQuietly(out);
             }
         }
 

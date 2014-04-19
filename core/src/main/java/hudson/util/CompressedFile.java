@@ -120,14 +120,8 @@ public class CompressedFile {
             int len;
             while((len=r.read(buf,0,buf.length))>0)
                 str.append(buf,0,len);
-        }
-        finally {
-            try {
-                r.close();
-            }
-            catch (IOException ioe) {
-                // swallow exception
-            }
+        } finally {
+            IOUtils.closeQuietly(r);
         }
 
         return str.toString();

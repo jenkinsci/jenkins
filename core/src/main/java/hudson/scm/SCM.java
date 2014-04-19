@@ -41,6 +41,7 @@ import hudson.model.Describable;
 import hudson.model.TaskListener;
 import hudson.model.Node;
 import hudson.model.WorkspaceCleanupThread;
+import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Api;
@@ -586,15 +587,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         } catch (IOException e) {
             e.printStackTrace(listener.error(e.getMessage()));
             return false;
-        }
-        finally {
-            if (w != null) {
-                try {
-                    w.close();
-                } catch (IOException e) {
-                    // swallow exception
-                }
-            }
+        } finally {
+            IOUtils.closeQuietly(w);
         }
     }
 
