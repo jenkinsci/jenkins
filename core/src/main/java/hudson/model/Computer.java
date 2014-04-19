@@ -143,6 +143,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected volatile OfflineCause offlineCause;
     
     private long connectTime = 0;
+    private long offlineTime = 0;
 
     /**
      * True if Jenkins shouldn't start new builds on this node.
@@ -335,6 +336,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public final Future<?> connect(boolean forceReconnect) {
     	connectTime = System.currentTimeMillis();
+    	offlineTime = 0;
     	return _connect(forceReconnect);
     }
     
@@ -376,6 +378,24 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public final long getConnectTime() {
     	return connectTime;
     }
+
+    /**
+     * Gets the time (since epoch) when this computer was taken offline.
+     *  
+     * @return The time in ms since epoch when this computer was last taken offline.
+     */
+    public final long getOfflineTime() {
+        return connectTime;
+    }
+
+    /**
+     * Gets the timestamp when this computer was taken offline.
+     *  
+     * @return The time when this computer was last taken offline.
+     */
+    public final Date getOfflineTimeStamp() {
+        return new Date(offlineTime);
+    }
     
     /**
      * Disconnect this computer.
@@ -397,6 +417,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             return disconnect();    // legacy subtypes that extend disconnect().
 
         connectTime=0;
+        offlineTime = System.currentTimeMillis();
         return Futures.precomputed(null);
     }
 
@@ -412,6 +433,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             return disconnect(null);
 
         connectTime=0;
+        offlineTime = System.currentTimeMillis();
         return Futures.precomputed(null);
     }
 
@@ -584,8 +606,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      offline. 
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
-        offlineCause = temporarilyOffline ? cause : null;
+        if (temporarilyOffline) {
+            offlineCause = cause;
+            offlineTime = System.currentTimeMillis();
+        } else {
+            offlineCause = null;
+            offlineTime = 0;
+        }
         this.temporarilyOffline = temporarilyOffline;
+
         Node node = getNode();
         if (node != null) {
             node.setTemporaryOfflineCause(offlineCause);

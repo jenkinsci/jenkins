@@ -61,6 +61,12 @@ THE SOFTWARE.
 
       <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
         <st:include it="${it.offlineCause}" page="cause.jelly" />
+        <j:if test="${it.offlineTime!=0}">
+          <p>
+            ${%Offline since:}
+            <i:formatDate value="${it.offlineTimeStamp}" type="both" dateStyle="medium" timeStyle="medium"/>
+          </p>
+        </j:if>
       </j:if>
 
       <j:if test="${it.manualLaunchAllowed}">
