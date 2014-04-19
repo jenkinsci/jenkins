@@ -49,7 +49,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.stapler.export.Flavor;
 
 /**
  * Keeps a list of the parameters defined for a project.
@@ -187,12 +186,6 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
         } else {
             rsp.sendRedirect(".");
         }
-    }
-
-    private boolean requestWantsJson(StaplerRequest req) {
-        String a = req.getHeader("Accept");
-        if (a==null)    return false;
-        return !a.contains("text/html") && a.contains("application/json");
     }
 
     /**
