@@ -46,6 +46,12 @@ import java.util.*;
  * @author Kohsuke Kawaguchi
  */
 public class NoOverlapCategoryAxis extends CategoryAxis {
+
+    /**
+     * Minimum distance between labels.
+     */
+    private static final double MIN_DISTANCE = 6.0;
+
     public NoOverlapCategoryAxis(String label) {
         super(label);
     }
@@ -140,6 +146,11 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                         }
                     }
                     r = bounds.getBounds2D();
+                    // add margins in all directions
+                    r.add(r.getMaxX() + MIN_DISTANCE, r.getCenterY());
+                    r.add(r.getMinX() - MIN_DISTANCE, r.getCenterY());
+                    r.add(r.getCenterX(), r.getMinY() - MIN_DISTANCE);
+                    r.add(r.getCenterX(), r.getMaxX() + MIN_DISTANCE);
                 }
 
                 categoryIndex++;
