@@ -140,8 +140,10 @@ THE SOFTWARE.
         <j:if test="${!empty(list)}">
           <div id="bottom-sticker" >
             <div class="bottom-sticker-inner">
-              <f:submit value="${%Install without restart}" name="dynamicLoad" />
-              <span style="margin-left:2em;"></span>
+              <j:if test="${!isUpdates}">
+                <f:submit value="${%Install without restart}" name="dynamicLoad" />
+                <span style="margin-left:2em;"></span>
+              </j:if>
               <f:submit value="${%Download now and install after restart}" />
             </div>
           </div>
