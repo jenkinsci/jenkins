@@ -2837,6 +2837,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the node configuration page.
      */
+    @RequirePOST
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(ADMINISTER);
 
@@ -2861,10 +2862,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         getPrimaryView().doSubmitDescription(req, rsp);
     }
 
+    @RequirePOST // TODO does not seem to work on _either_ overload!
     public synchronized HttpRedirect doQuietDown() throws IOException {
         try {
             return doQuietDown(false,0);
@@ -2874,6 +2877,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @CLIMethod(name="quiet-down")
+    @RequirePOST
     public HttpRedirect doQuietDown(
             @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
             @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException, IOException {
@@ -2893,6 +2897,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @CLIMethod(name="cancel-quiet-down")
+    @RequirePOST // TODO the cancel link needs to be updated accordingly
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(ADMINISTER);
         isQuietingDown = false;
@@ -2956,6 +2961,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return r;
     }
 
+    @RequirePOST
     public synchronized TopLevelItem doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         return itemGroupMixIn.createTopLevelItem(req, rsp);
     }
@@ -2979,6 +2985,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return (T)copy((TopLevelItem)src,name);
     }
 
+    @RequirePOST
     public synchronized void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(View.CREATE);
         addView(View.create(req,rsp, this));
@@ -3166,6 +3173,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * For debugging. Expose URL to perform GC.
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("DM_GC")
+    @RequirePOST
     public void doGc(StaplerResponse rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         System.gc();
@@ -3212,6 +3220,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Simulates OutOfMemoryError.
      * Useful to make sure OutOfMemoryHeapDump setting.
      */
+    @RequirePOST
     public void doSimulateOutOfMemory() throws IOException {
         checkPermission(ADMINISTER);
 
@@ -3340,6 +3349,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.161
      */
     @CLIMethod(name="shutdown")
+    @RequirePOST
     public void doExit( StaplerRequest req, StaplerResponse rsp ) throws IOException {
         checkPermission(ADMINISTER);
         LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
@@ -3361,6 +3371,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.332
      */
     @CLIMethod(name="safe-shutdown")
+    @RequirePOST
     public HttpResponse doSafeExit(StaplerRequest req) throws IOException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
@@ -3485,6 +3496,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         rsp.sendRedirect2(ref);
     }
 
+    @RequirePOST
     public void doFingerprintCleanup(StaplerResponse rsp) throws IOException {
         FingerprintCleanupThread.invoke();
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -3492,6 +3504,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         rsp.getWriter().println("Invoked");
     }
 
+    @RequirePOST
     public void doWorkspaceCleanup(StaplerResponse rsp) throws IOException {
         WorkspaceCleanupThread.invoke();
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -3910,6 +3923,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return logRecords;
         }
 
+        @RequirePOST
         public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             // this computer never returns null from channel, so
             // this method shall never be invoked.

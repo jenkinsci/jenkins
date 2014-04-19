@@ -1084,6 +1084,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
+    @RequirePOST
     public HttpResponse doToggleOffline(@QueryParameter String offlineMessage) throws IOException, ServletException {
         if(!temporarilyOffline) {
             checkPermission(DISCONNECT);
@@ -1097,6 +1098,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return HttpResponses.redirectToDot();
     }
 
+    @RequirePOST
     public HttpResponse doChangeOfflineCause(@QueryParameter String offlineMessage) throws IOException, ServletException {
         checkPermission(DISCONNECT);
         offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
@@ -1240,6 +1242,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Really deletes the slave.
      */
     @CLIMethod(name="delete-node")
+    @RequirePOST
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
         Node node = getNode();
