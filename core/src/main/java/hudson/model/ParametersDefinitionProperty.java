@@ -122,7 +122,7 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
     /** @deprecated use {@link #_doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
     @Deprecated
     public void _doBuild(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doBuild(req,rsp,TimeDuration.fromString(req.getParameter("delay")));
+        _doBuild(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
     }
 
     /**
@@ -179,14 +179,12 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
         }
         if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
 
-        Jenkins.getInstance().getQueue().schedule(
-                getJob(), delay.getTime(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req));
+        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
+                getJob(), delay.getTime(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
 
-        if (requestWantsJson(req)) {
-            rsp.setContentType("application/json");
-            rsp.serveExposedBean(req, owner, Flavor.JSON);
+        if (item != null) {
+            rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
         } else {
-            // send the user back to the job top page.
             rsp.sendRedirect(".");
         }
     }
