@@ -1766,14 +1766,20 @@ public final class FilePath implements Serializable {
         act(new FileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
+                // JENKINS-16846: if f.getName() is the same as one of the files/directories in f,
+                // then the rename op will fail
+                File tmp = new File(f.getAbsolutePath()+".__rename");
+                if (!f.renameTo(tmp))
+                    throw new IOException("Failed to rename "+f+" to "+tmp);
+
                 File t = new File(target.getRemote());
                 
-                for(File child : f.listFiles()) {
+                for(File child : tmp.listFiles()) {
                     File target = new File(t, child.getName());
                     if(!child.renameTo(target))
                         throw new IOException("Failed to rename "+child+" to "+target);
                 }
-                f.delete();
+                tmp.delete();
                 return null;
             }
         });
