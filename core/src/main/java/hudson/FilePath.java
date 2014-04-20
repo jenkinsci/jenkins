@@ -1657,40 +1657,21 @@ public final class FilePath implements Serializable {
         }
         act(new FileCallable<Void>() {
             private static final long serialVersionUID = 1L;
-            private void recursive_invoke(final File t, final File f ) throws IOException {
-                for(File child : f.listFiles()) {
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
+                // JENKINS-16846: if f.getName() is the same as one of the files/directories in f,
+                // then the rename op will fail
+                File tmp = new File(f.getAbsolutePath()+".__rename");
+                if (!f.renameTo(tmp))
+                    throw new IOException("Failed to rename "+f+" to "+tmp);
+
+                File t = new File(target.getRemote());
+                
+                for(File child : tmp.listFiles()) {
                     File target = new File(t, child.getName());
-                    LOGGER.log(Level.FINE,"child=" + child.getAbsolutePath() + "\ntarget=" + target.getAbsolutePath() );
-                    if ( child.isDirectory() && target.isDirectory() )
-                    {
-                        final String childName = child.getName();
-                        final String targetName = target.getName();
-                        if ( null != childName && null != targetName )
-                        {
-                            if ( 0 == childName.compareTo( targetName ) )
-                            {
-                                if ( Util.isSymlink( child ) ) {
-                                    if(!child.renameTo(target)) {
-                                        throw new IOException("Failed to rename "+child+" to "+target);
-                                    }
-                                } else {
-                                    // avoid fail to exec child.renameTo(taget)
-                                    recursive_invoke( target, child );
-                                }
-                                continue;
-                            }
-                        }
-                    }
                     if(!child.renameTo(target))
                         throw new IOException("Failed to rename "+child+" to "+target);
                 }
-                f.delete();
-            }
-            public Void invoke(File f, VirtualChannel channel) throws IOException {
-                File t = new File(target.getRemote());
-
-                recursive_invoke( t, f );
-
+                tmp.delete();
                 return null;
             }
         });
