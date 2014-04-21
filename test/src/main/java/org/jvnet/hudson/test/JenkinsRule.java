@@ -1667,7 +1667,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 // need to search multiple group IDs
                 // TODO: extend manifest to include groupID:artifactID:version
                 Exception resolutionError=null;
-                for (String groupId : new String[]{"org.jvnet.hudson.plugins","org.jvnet.hudson.main"}) {
+                for (String groupId : PLUGIN_GROUPIDS) {
 
                     // first try to find it on the classpath.
                     // this takes advantage of Maven POM located in POM
@@ -2237,4 +2237,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     public Description getTestDescription() {
         return testDescription;
     }
+
+    public static final List<String> PLUGIN_GROUPIDS = new ArrayList<String>(Arrays.asList("org.jvnet.hudson.plugins", "org.jvnet.hudson.main"));
 }
