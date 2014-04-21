@@ -177,7 +177,6 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -1586,9 +1585,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                     // For transitive dependencies, we could evaluate Plugin-Dependencies transitively.
                     String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
                     if(dependencies!=null) {
-                        MavenEmbedder embedder = MavenUtil
-                                .createEmbedder(new StreamTaskListener(System.out, Charset.defaultCharset()),
-                                        (File) null, null);
                         DEPENDENCY:
                         for( String dep : dependencies.split(",")) {
                             String suffix = ";resolution:=optional";
@@ -1605,7 +1601,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                                     continue DEPENDENCY;    // resolved from another JPL file
                             }
 
-                            File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
+                            File dependencyJar=resolveDependencyJar(artifactId,version);
                             if (dependencyJar == null) {
                                 if (optional) {
                                     System.err.println("cannot resolve optional dependency " + dep + " of " + shortName + "; skipping");
@@ -1623,7 +1619,19 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 }
             }
 
-            private @CheckForNull File resolveDependencyJar(MavenEmbedder embedder, String artifactId, String version) throws Exception {
+            /**
+             * Lazily created embedder.
+             */
+            private MavenEmbedder embedder;
+
+            private MavenEmbedder getMavenEmbedder() throws MavenEmbedderException, IOException {
+                if (embedder==null)
+                    embedder = MavenUtil.createEmbedder(new StreamTaskListener(System.out, Charset.defaultCharset()),
+                                                    (File) null, null);
+                return embedder;
+            }
+
+            private @CheckForNull File resolveDependencyJar(String artifactId, String version) throws Exception {
                 // try to locate it from manifest
                 Enumeration<URL> manifests = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
                 while (manifests.hasMoreElements()) {
@@ -1671,11 +1679,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
                     	try {
                     		// currently the most of the plugins are still hpi
-                            return resolvePluginFile(embedder, artifactId, version, groupId, "hpi");
+                            return resolvePluginFile(artifactId, version, groupId, "hpi");
                     	} catch(AbstractArtifactResolutionException x){
                     		try {
                     			// but also try with the new jpi
-                    		    return resolvePluginFile(embedder, artifactId, version, groupId, "jpi");
+                    		    return resolvePluginFile(artifactId, version, groupId, "jpi");
                     		} catch(AbstractArtifactResolutionException x2){
                                 // could be a wrong groupId
                                 resolutionError = x;
@@ -1688,10 +1696,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 throw new Exception("Failed to resolve plugin: "+artifactId+" version "+version,resolutionError);
             }
             
-            private @CheckForNull File resolvePluginFile(MavenEmbedder embedder, String artifactId, String version, String groupId, String type)
-					throws MavenEmbedderException, ComponentLookupException, AbstractArtifactResolutionException {
-				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
-				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
+            private @CheckForNull File resolvePluginFile(String artifactId, String version, String groupId, String type) throws Exception {
+				final Artifact jpi = getMavenEmbedder().createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
+                getMavenEmbedder().resolve(jpi,
+                        Arrays.asList(getMavenEmbedder().createRepository("http://maven.glassfish.org/content/groups/public/", "repo")), embedder.getLocalRepository());
 				return jpi.getFile();
 				
 			}
