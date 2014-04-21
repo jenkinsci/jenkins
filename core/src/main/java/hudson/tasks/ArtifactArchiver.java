@@ -74,16 +74,26 @@ public class ArtifactArchiver extends Recorder {
     @Nonnull
     private Boolean allowEmptyArchive;
 
+    /**
+     * Archive only if build is successful, skip archiving on failed builds.
+     */
+    private boolean onlyIfSuccessful;
+
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
-        this(artifacts, excludes, latestOnly, false);
+        this(artifacts, excludes, latestOnly, false, false);
+    }
+
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
+        this(artifacts, excludes, latestOnly, allowEmptyArchive, false);
     }
 
     @DataBoundConstructor
-    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive, boolean onlyIfSuccessful) {
         this.artifacts = artifacts.trim();
         this.excludes = Util.fixEmptyAndTrim(excludes);
         this.latestOnly = latestOnly;
         this.allowEmptyArchive = allowEmptyArchive;
+        this.onlyIfSuccessful = onlyIfSuccessful;
     }
 
     // Backwards compatibility for older builds
@@ -106,6 +116,10 @@ public class ArtifactArchiver extends Recorder {
         return latestOnly;
     }
 
+    public boolean isOnlyIfSuccessful() {
+        return onlyIfSuccessful;
+    }
+
     public boolean getAllowEmptyArchive() {
         return allowEmptyArchive;
     }
@@ -123,6 +137,11 @@ public class ArtifactArchiver extends Recorder {
         if(artifacts.length()==0) {
             listener.error(Messages.ArtifactArchiver_NoIncludes());
             build.setResult(Result.FAILURE);
+            return true;
+        }
+
+        if (build.getResult().isWorseThan(Result.UNSTABLE) && onlyIfSuccessful) {
+            listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
             return true;
         }
 
