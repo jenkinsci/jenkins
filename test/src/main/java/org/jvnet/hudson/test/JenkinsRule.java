@@ -159,6 +159,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
+
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsAdaptor;
 import jenkins.model.JenkinsLocationConfiguration;
@@ -1540,54 +1541,75 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         
         recipes.add(new JenkinsRecipe.Runner() {
             @Override
-            public void decorateHome(JenkinsRule testCase, File home) throws Exception {
-            	
-            	for (URL hpl : all) {
+            public void decorateHome(JenkinsRule testCase, final File home) throws Exception {
+                class Jpl {
+                    final URL jpl;
+                    Manifest m;
+                    private String shortName;
 
-                    // make the plugin itself available
-                    Manifest m = new Manifest(hpl.openStream());
-                    String shortName = m.getMainAttributes().getValue("Short-Name");
-                    if(shortName==null)
-                        throw new Error(hpl+" doesn't have the Short-Name attribute");
-                    FileUtils.copyURLToFile(hpl, new File(home, "plugins/" + shortName + ".jpl"));
+                    Jpl(URL jpl) {
+                        this.jpl = jpl;
+                    }
 
-                    // make dependency plugins available
-                    // TODO: probably better to read POM, but where to read from?
-                    // TODO: this doesn't handle transitive dependencies
+                    void loadManifest() throws IOException {
+                        m = new Manifest(jpl.openStream());
+                        shortName = m.getMainAttributes().getValue("Short-Name");
+                        if(shortName ==null)
+                            throw new Error(jpl +" doesn't have the Short-Name attribute");
+                        FileUtils.copyURLToFile(jpl, new File(home, "plugins/" + shortName + ".jpl"));
+                    }
 
-                    // Tom: plugins are now searched on the classpath first. They should be available on
-                    // the compile or test classpath. As a backup, we do a best-effort lookup in the Maven repository
-                    // For transitive dependencies, we could evaluate Plugin-Dependencies transitively.
+                    void resolveDependencies() throws Exception {
+                        // make dependency plugins available
+                        // TODO: probably better to read POM, but where to read from?
+                        // TODO: this doesn't handle transitive dependencies
 
-                    String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
-                    if(dependencies!=null) {
-                        MavenEmbedder embedder = MavenUtil
-                                .createEmbedder(new StreamTaskListener(System.out, Charset.defaultCharset()),
-                                        (File) null, null);
-                        for( String dep : dependencies.split(",")) {
-                            String suffix = ";resolution:=optional";
-                            boolean optional = dep.endsWith(suffix);
-                            if (optional) {
-                                dep = dep.substring(0, dep.length() - suffix.length());
-                            }
-                            String[] tokens = dep.split(":");
-                            String artifactId = tokens[0];
-                            String version = tokens[1];
-                            File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
-                            if (dependencyJar == null) {
+                        // Tom: plugins are now searched on the classpath first. They should be available on
+                        // the compile or test classpath. As a backup, we do a best-effort lookup in the Maven repository
+                        // For transitive dependencies, we could evaluate Plugin-Dependencies transitively.
+                        String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
+                        if(dependencies!=null) {
+                            MavenEmbedder embedder = MavenUtil
+                                    .createEmbedder(new StreamTaskListener(System.out, Charset.defaultCharset()),
+                                            (File) null, null);
+                            for( String dep : dependencies.split(",")) {
+                                String suffix = ";resolution:=optional";
+                                boolean optional = dep.endsWith(suffix);
                                 if (optional) {
-                                    System.err.println("cannot resolve optional dependency " + dep + " of " + shortName + "; skipping");
-                                    continue;
+                                    dep = dep.substring(0, dep.length() - suffix.length());
                                 }
-                                throw new IOException("Could not resolve " + dep + " in " + System.getProperty("java.class.path"));
-                            }
+                                String[] tokens = dep.split(":");
+                                String artifactId = tokens[0];
+                                String version = tokens[1];
+                                File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
+                                if (dependencyJar == null) {
+                                    if (optional) {
+                                        System.err.println("cannot resolve optional dependency " + dep + " of " + shortName + "; skipping");
+                                        continue;
+                                    }
+                                    throw new IOException("Could not resolve " + dep + " in " + System.getProperty("java.class.path"));
+                                }
 
-                            File dst = new File(home, "plugins/" + artifactId + ".jpi");
-                            if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
-                                FileUtils.copyFile(dependencyJar, dst);
+                                File dst = new File(home, "plugins/" + artifactId + ".jpi");
+                                if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
+                                    FileUtils.copyFile(dependencyJar, dst);
+                                }
                             }
                         }
                     }
+                }
+
+
+                List<Jpl> jpls = new ArrayList<Jpl>();
+
+            	for (URL hpl : all) {
+                    Jpl jpl = new Jpl(hpl);
+                    jpl.loadManifest();
+                    jpls.add(jpl);
+                }
+
+                for (Jpl jpl : jpls) {
+                    jpl.resolveDependencies();
                 }
             }
 
