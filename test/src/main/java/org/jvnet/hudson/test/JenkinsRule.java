@@ -1540,67 +1540,13 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         if(all.isEmpty())    return; // nope
         
         recipes.add(new JenkinsRecipe.Runner() {
+            private File home;
+            private final List<Jpl> jpls = new ArrayList<Jpl>();
+
             @Override
-            public void decorateHome(JenkinsRule testCase, final File home) throws Exception {
-                class Jpl {
-                    final URL jpl;
-                    Manifest m;
-                    private String shortName;
-
-                    Jpl(URL jpl) {
-                        this.jpl = jpl;
-                    }
-
-                    void loadManifest() throws IOException {
-                        m = new Manifest(jpl.openStream());
-                        shortName = m.getMainAttributes().getValue("Short-Name");
-                        if(shortName ==null)
-                            throw new Error(jpl +" doesn't have the Short-Name attribute");
-                        FileUtils.copyURLToFile(jpl, new File(home, "plugins/" + shortName + ".jpl"));
-                    }
-
-                    void resolveDependencies() throws Exception {
-                        // make dependency plugins available
-                        // TODO: probably better to read POM, but where to read from?
-                        // TODO: this doesn't handle transitive dependencies
-
-                        // Tom: plugins are now searched on the classpath first. They should be available on
-                        // the compile or test classpath. As a backup, we do a best-effort lookup in the Maven repository
-                        // For transitive dependencies, we could evaluate Plugin-Dependencies transitively.
-                        String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
-                        if(dependencies!=null) {
-                            MavenEmbedder embedder = MavenUtil
-                                    .createEmbedder(new StreamTaskListener(System.out, Charset.defaultCharset()),
-                                            (File) null, null);
-                            for( String dep : dependencies.split(",")) {
-                                String suffix = ";resolution:=optional";
-                                boolean optional = dep.endsWith(suffix);
-                                if (optional) {
-                                    dep = dep.substring(0, dep.length() - suffix.length());
-                                }
-                                String[] tokens = dep.split(":");
-                                String artifactId = tokens[0];
-                                String version = tokens[1];
-                                File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
-                                if (dependencyJar == null) {
-                                    if (optional) {
-                                        System.err.println("cannot resolve optional dependency " + dep + " of " + shortName + "; skipping");
-                                        continue;
-                                    }
-                                    throw new IOException("Could not resolve " + dep + " in " + System.getProperty("java.class.path"));
-                                }
-
-                                File dst = new File(home, "plugins/" + artifactId + ".jpi");
-                                if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
-                                    FileUtils.copyFile(dependencyJar, dst);
-                                }
-                            }
-                        }
-                    }
-                }
-
-
-                List<Jpl> jpls = new ArrayList<Jpl>();
+            public void decorateHome(JenkinsRule testCase, File home) throws Exception {
+                this.home = home;
+                this.jpls.clear();
 
             	for (URL hpl : all) {
                     Jpl jpl = new Jpl(hpl);
@@ -1610,6 +1556,70 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
                 for (Jpl jpl : jpls) {
                     jpl.resolveDependencies();
+                }
+            }
+
+            class Jpl {
+                final URL jpl;
+                Manifest m;
+                private String shortName;
+
+                Jpl(URL jpl) {
+                    this.jpl = jpl;
+                }
+
+                void loadManifest() throws IOException {
+                    m = new Manifest(jpl.openStream());
+                    shortName = m.getMainAttributes().getValue("Short-Name");
+                    if(shortName ==null)
+                        throw new Error(jpl +" doesn't have the Short-Name attribute");
+                    FileUtils.copyURLToFile(jpl, new File(home, "plugins/" + shortName + ".jpl"));
+                }
+
+                void resolveDependencies() throws Exception {
+                    // make dependency plugins available
+                    // TODO: probably better to read POM, but where to read from?
+                    // TODO: this doesn't handle transitive dependencies
+
+                    // Tom: plugins are now searched on the classpath first. They should be available on
+                    // the compile or test classpath. As a backup, we do a best-effort lookup in the Maven repository
+                    // For transitive dependencies, we could evaluate Plugin-Dependencies transitively.
+                    String dependencies = m.getMainAttributes().getValue("Plugin-Dependencies");
+                    if(dependencies!=null) {
+                        MavenEmbedder embedder = MavenUtil
+                                .createEmbedder(new StreamTaskListener(System.out, Charset.defaultCharset()),
+                                        (File) null, null);
+                        DEPENDENCY:
+                        for( String dep : dependencies.split(",")) {
+                            String suffix = ";resolution:=optional";
+                            boolean optional = dep.endsWith(suffix);
+                            if (optional) {
+                                dep = dep.substring(0, dep.length() - suffix.length());
+                            }
+                            String[] tokens = dep.split(":");
+                            String artifactId = tokens[0];
+                            String version = tokens[1];
+
+                            for (Jpl other : jpls) {
+                                if (other.shortName.equals(artifactId))
+                                    continue DEPENDENCY;    // resolved from another JPL file
+                            }
+
+                            File dependencyJar=resolveDependencyJar(embedder,artifactId,version);
+                            if (dependencyJar == null) {
+                                if (optional) {
+                                    System.err.println("cannot resolve optional dependency " + dep + " of " + shortName + "; skipping");
+                                    continue;
+                                }
+                                throw new IOException("Could not resolve " + dep + " in " + System.getProperty("java.class.path"));
+                            }
+
+                            File dst = new File(home, "plugins/" + artifactId + ".jpi");
+                            if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
+                                FileUtils.copyFile(dependencyJar, dst);
+                            }
+                        }
+                    }
                 }
             }
 
