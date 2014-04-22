@@ -112,8 +112,7 @@ var breadcrumbs = (function() {
             this.style.visibility = "hidden";
         };
         menuSelector.observe("click",function () {
-            this.hide();
-            handleHover(this.target);
+            invokeContextMenu(this.target);
         });
 
         // if the mouse leaves the selector, hide it
@@ -136,14 +135,18 @@ var breadcrumbs = (function() {
     })();
 
     /**
-     * Called when the mouse cursor comes into the context menu hot spot.
+     * Called when the user clicks a mouse to show a context menu.
      *
      * If the mouse stays there for a while, a context menu gets displayed.
      *
      * @param {HTMLElement} e
      *      anchor tag
+     * @param {String} contextMenuUrl
+     *      The URL that renders JSON for context menu. Optional.
      */
-    function handleHover(e) {
+    function invokeContextMenu(e,contextMenuUrl) {
+        contextMenuUrl = contextMenuUrl || "contextMenu";
+
         function showMenu(items) {
             menu.hide();
             var pos = [e, "tl", "bl"];
@@ -162,7 +165,7 @@ var breadcrumbs = (function() {
         if (e.items) {// use what's already loaded
             showMenu(e.items());
         } else {// fetch menu on demand
-            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),"contextMenu"), {
+            xhr = new Ajax.Request(combinePath(e.getAttribute("href"),contextMenuUrl), {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
@@ -188,12 +191,11 @@ var breadcrumbs = (function() {
         return false;
     }
 
-    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
-        // when the mouse hovers over LI, activate the menu
-        e = $(e);
-        if (e.hasClassName("no-context-menu"))  return;
-        e.observe("mouseover", function () { handleHover(e.firstChild) });
-    });
+//    Behaviour.specify("#breadcrumbs LI", 'breadcrumbs', 0, function (e) {
+//        // when the mouse hovers over LI, activate the menu
+//        if (e.hasClassName("no-context-menu"))  return;
+//        e.observe("mouseover", function () { handleHover(e.firstChild) });
+//    });
 
     Behaviour.specify("A.model-link", 'breadcrumbs', 0, function (a) {
         // ditto for model-link, but give it a larger delay to avoid unintended menus to be displayed
@@ -208,6 +210,15 @@ var breadcrumbs = (function() {
             logger("mouse left model-link %s",this.href);
             menuSelector.canceller.schedule();
         });
+    });
+
+    Behaviour.specify("#breadcrumbs LI.children", 'breadcrumbs', 0, function (a) {
+        a.observe("mouseover",function() {
+            menuSelector.hide();
+        });
+        a.observe("click",function() {
+            invokeContextMenu(this,"childrenContextMenu");
+        })
     });
 
     /**
