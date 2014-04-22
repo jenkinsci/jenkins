@@ -69,6 +69,10 @@ public class AtmostOneTaskExecutor<V> {
     }
 
     private synchronized void run() {
+        // the only situation where we can submit the task for execution
+        assert inprogress==null;
+        assert pending!=null;
+
         base.submit(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
