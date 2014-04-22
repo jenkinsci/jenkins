@@ -433,14 +433,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         assert state==State.BUILDING : state;
 
         // result can only get worse
-        if(result==null) {
+        if (result==null || r.isWorseThan(result)) {
             result = r;
             LOGGER.log(FINE, this + " : result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
-        } else {
-            if(r.isWorseThan(result)) {
-                LOGGER.log(FINE, this + " : result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
-                result = r;
-            }
         }
     }
 
