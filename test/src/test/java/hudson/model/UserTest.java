@@ -207,7 +207,7 @@ public class UserTest {
         assertEquals("john.smith@acme.org", User.idStrategy().keyFor(user.getId()));
         assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user.getId()));
         assertEquals("John.Smith@acme.org", User.idStrategy().keyFor(user2.getId()));
-        assertEquals("~john.~smith$0040acme.org", User.idStrategy().filenameOf(user2.getId()));
+        assertEquals("~john.~smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
         user2 = User.get("john.smith@ACME.ORG");
         assertEquals("Users should have the same id.", user.getId(), user2.getId());
         assertEquals("john.smith@acme.org", User.idStrategy().keyFor(user2.getId()));
