@@ -1362,6 +1362,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
     public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
+    /**
+     * @since 1.560
+     */
+    public static final Permission VIEW = new Permission(PERMISSIONS, "View",
+            Messages._Computer_ViewPermission_Description(), Permission.READ,
+            Boolean.getBoolean("hudson.model.Computer.VIEW.enabled"), new PermissionScope[]{PermissionScope.COMPUTER});
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }

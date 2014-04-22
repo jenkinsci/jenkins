@@ -189,7 +189,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         if(this.matches(h))
             r.add(h);
         for (Node n : h.getNodes()) {
-            if(this.matches(n))
+            if(this.matches(n) && (!Computer.VIEW.getEnabled() || n.hasPermission(Computer.VIEW)))
                 r.add(n);
         }
         return this.nodes = Collections.unmodifiableSet(r);

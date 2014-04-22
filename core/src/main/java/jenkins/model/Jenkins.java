@@ -1539,7 +1539,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the read-only list of all {@link Computer}s.
      */
     public Computer[] getComputers() {
-        Computer[] r = computers.values().toArray(new Computer[computers.size()]);
+        Collection<Computer> computers = new ArrayList<Computer>(this.computers.size());
+        for (Computer c: this.computers.values()) {
+            if (!Computer.VIEW.getEnabled() || c.hasPermission(Computer.VIEW))
+                computers.add(c);
+        }
+        Computer[] r = computers.toArray(new Computer[computers.size()]);
         Arrays.sort(r,new Comparator<Computer>() {
             final Collator collator = Collator.getInstance();
             public int compare(Computer lhs, Computer rhs) {
@@ -1558,7 +1563,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         for (Computer c : computers.values()) {
             if(c.getName().equals(name))
-                return c;
+                return !Computer.VIEW.getEnabled() || c.hasPermission(Computer.VIEW) ? c : null;
         }
         return null;
     }
