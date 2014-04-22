@@ -204,7 +204,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * This is where the log from the remote agent goes.
-     *
+     * The method also creates a log directory if required.
      * @see #relocateOldLogs()
      */
     protected File getLogFile() {
@@ -1348,7 +1348,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
                 newLocation.getParentFile().mkdirs();
-                f.renameTo(newLocation);
+                boolean relocationSuccessfull=f.renameTo(newLocation);
+                if (relocationSuccessfull) { // The operation will fail if mkdir fails 
+                    LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                } else {
+                    LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                }
             } else {
                 assert false;
             }

@@ -418,7 +418,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Sets up the connection through an exsting channel.
+     * Sets up the connection through an existing channel.
      *
      * @since 1.444
      */
