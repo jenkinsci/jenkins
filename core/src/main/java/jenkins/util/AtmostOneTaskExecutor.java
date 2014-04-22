@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import com.google.common.util.concurrent.SettableFuture;
 import hudson.remoting.AtmostOneThreadExecutor;
 
 import java.util.concurrent.Callable;
@@ -41,7 +42,9 @@ public class AtmostOneTaskExecutor<V> {
      * If a task is already submitted and pending execution, non-null.
      * Guarded by "synchronized(this)"
      */
-    private Future<V> pending;
+    private SettableFuture<V> pending;
+
+    private SettableFuture<V> inprogress;
 
     public AtmostOneTaskExecutor(ExecutorService base, Callable<V> task) {
         this.base = base;
@@ -57,18 +60,39 @@ public class AtmostOneTaskExecutor<V> {
             // if a task is already pending, just join that
             return pending;
 
-        pending = base.submit(new Callable<V>() {
+        pending = SettableFuture.create();
+        if (inprogress==null) {
+            // if the task isn't currently running, schedule one
+            run();
+        }
+        return pending;
+    }
+
+    private synchronized void run() {
+        base.submit(new Callable<Void>() {
             @Override
-            public V call() throws Exception {
+            public Void call() throws Exception {
                 // before we get going, everyone who submits after this
                 // should form a next batch
                 synchronized (AtmostOneTaskExecutor.this) {
+                    inprogress = pending;
                     pending = null;
                 }
 
-                return task.call();
+                try {
+                    inprogress.set(task.call());
+                } catch (Throwable t) {
+                    inprogress.setException(t);
+                } finally {
+                    synchronized (AtmostOneTaskExecutor.this) {
+                        // if next one is pending, get that scheduled
+                        inprogress = null;
+                        if (pending!=null)
+                            run();
+                    }
+                }
+                return null;
             }
         });
-        return pending;
     }
 }

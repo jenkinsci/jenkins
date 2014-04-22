@@ -1,5 +1,6 @@
 package jenkins.util
 
+import hudson.util.OneShotEvent
 import org.junit.Test
 
 import java.util.concurrent.Callable
@@ -14,29 +15,33 @@ import java.util.concurrent.atomic.AtomicInteger
 class AtmostOneTaskExecutorTest {
     def counter = new AtomicInteger()
 
-    def lock = new Object()
+    def lock = new OneShotEvent()
 
     @Test
     public void doubleBooking() {
-        synchronized (lock) {
-            def base = Executors.newCachedThreadPool()
-            def es = new AtmostOneTaskExecutor(base,
-                    { ->
-                        counter.incrementAndGet()
-                        synchronized (lock) {
-                            lock.wait()
-                        }
-                    } as Callable);
-            es.submit()
-            while (counter.get()==0)
-                ;   // spin lock until executor gets to the choking point
+        def f1,f2;
 
-            def f = es.submit() // this should hang
-            Thread.sleep(500)   // make sure the 2nd task is hanging
-            assert counter.get()==1
-            assert !f.isDone()
+        def base = Executors.newCachedThreadPool()
+        def es = new AtmostOneTaskExecutor(base,
+                { ->
+                    counter.incrementAndGet()
+                    lock.block()
+                } as Callable);
+        f1 = es.submit()
+        while (counter.get() == 0)
+        ;   // spin lock until executor gets to the choking point
 
-            notifyAll() // let the first one go
-        }
+        f2 = es.submit() // this should hang
+        Thread.sleep(500)   // make sure the 2nd task is hanging
+        assert counter.get() == 1
+        assert !f2.isDone()
+
+        lock.signal() // let the first one go
+
+        f1.get();   // first one should complete
+
+        // now 2nd one gets going and hits the choke point
+        f2.get()
+        assert counter.get()==2
     }
 }
