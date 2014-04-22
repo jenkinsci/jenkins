@@ -24,6 +24,17 @@ import java.util.concurrent.Future;
  * submits the same task. Thus {@link #submit()} method does not take {@link Callable} as a parameter,
  * instead you pass that in the constructor.
  *
+ *
+ * <h2>Implementation</h2>
+ * <p>
+ * This instance has two independent states. One is {@link #pending}, which indicates that
+ * the task execution is requested but not yet scheduled. The other is {@link #inprogress},
+ * which indicates that the task execution is scheduled but not yet completed.
+ *
+ * <p>
+ * All the internal state transition is guarded by the monitor of 'this'. {@link #pending}
+ * is non-null only if {@link #inprogress} is non-null.
+ *
  * @author Kohsuke Kawaguchi
  * @see AtmostOneThreadExecutor
  */
@@ -56,47 +67,43 @@ public class AtmostOneTaskExecutor<V> {
     }
 
     public synchronized Future<V> submit() {
-        if (pending!=null)
-            // if a task is already pending, just join that
-            return pending;
-
-        pending = SettableFuture.create();
-        if (inprogress==null) {
-            // if the task isn't currently running, schedule one
-            run();
+        if (pending==null) {
+            pending = SettableFuture.create();
+            maybeRun();
         }
         return pending;
     }
 
-    private synchronized void run() {
-        // the only situation where we can submit the task for execution
-        assert inprogress==null;
-        assert pending!=null;
-
-        base.submit(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                // before we get going, everyone who submits after this
-                // should form a next batch
-                synchronized (AtmostOneTaskExecutor.this) {
-                    inprogress = pending;
-                    pending = null;
-                }
-
-                try {
-                    inprogress.set(task.call());
-                } catch (Throwable t) {
-                    inprogress.setException(t);
-                } finally {
+    /**
+     * If {@link #pending} is non-null (meaning someone requested the task to be kicked),
+     * but {@link #inprogress} is null (meaning none is executing right now),
+     * get one going.
+     */
+    private synchronized void maybeRun() {
+        if (inprogress==null && pending!=null) {
+            base.submit(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
                     synchronized (AtmostOneTaskExecutor.this) {
-                        // if next one is pending, get that scheduled
-                        inprogress = null;
-                        if (pending!=null)
-                            run();
+                        // everyone who submits after this should form a next batch
+                        inprogress = pending;
+                        pending = null;
                     }
+
+                    try {
+                        inprogress.set(task.call());
+                    } catch (Throwable t) {
+                        inprogress.setException(t);
+                    } finally {
+                        synchronized (AtmostOneTaskExecutor.this) {
+                            // if next one is pending, get that scheduled
+                            inprogress = null;
+                            maybeRun();
+                        }
+                    }
+                    return null;
                 }
-                return null;
-            }
-        });
+            });
+        }
     }
 }
