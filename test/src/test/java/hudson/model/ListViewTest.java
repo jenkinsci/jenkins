@@ -119,6 +119,7 @@ public class ListViewTest {
         FreeStyleProject p2 = sub.createProject(FreeStyleProject.class, "p2");
         FreeStyleProject p3 = top.createProject(FreeStyleProject.class, "p3");
         ListView v = new ListView("v");
+        v.setRecurse(true);
         top.addView(v);
         v.add(p1);
         v.add(p2);
