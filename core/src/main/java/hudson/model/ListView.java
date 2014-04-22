@@ -170,7 +170,13 @@ public class ListView extends View implements Saveable {
         includeItems(parent, parentItems, names);
 
         Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
-        for (TopLevelItem item : Items.getAllItems(getOwnerItemGroup(), TopLevelItem.class)) {
+        Iterable<? extends TopLevelItem> candidates;
+        if (recurse) {
+            candidates = Items.getAllItems(parent, TopLevelItem.class);
+        } else {
+            candidates = parent.getItems();
+        }
+        for (TopLevelItem item : candidates) {
             if (!names.contains(item.getRelativeNameFrom(getOwnerItemGroup()))) continue;
             // Add if no status filter or filter matches enabled/disabled status:
             if(statusFilter == null || !(item instanceof AbstractProject)
