@@ -3,6 +3,7 @@ package hudson.security.GlobalSecurityConfiguration
 import hudson.security.SecurityRealm
 import hudson.markup.MarkupFormatterDescriptor
 import hudson.security.AuthorizationStrategy
+import jenkins.model.GlobalConfiguration
 import hudson.Functions
 import hudson.model.Descriptor
 
@@ -36,8 +37,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
 
                 f.entry(title:_("Access Control")) {
                     table(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",             instance:app.securityRealm,         descriptors:SecurityRealm.all())
-                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization",     instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
+                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:SecurityRealm.all())
+                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
                     }
                 }
             }

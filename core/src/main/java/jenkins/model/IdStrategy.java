@@ -30,6 +30,7 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.util.CaseInsensitiveComparator;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.Locale;
 
@@ -38,13 +39,13 @@ import java.util.Locale;
  *
  * @since 1.560
  */
-public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements ExtensionPoint,
+public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements ExtensionPoint,
         Comparator<String> {
 
     /**
      * The default case insensitive strategy.
      */
-    public static IdStrategy CASE_INSENSITIVE = new IdStrategy();
+    public static IdStrategy CASE_INSENSITIVE = new CaseInsensitive();
 
     /**
      * Converts an ID into a name that for use as a filename.
@@ -52,9 +53,8 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
      * @param id the id. Note, this method assumes that the id does not contain any filesystem unsafe characters.
      * @return the name.
      */
-    public String filenameOf(String id) {
-        return id.toLowerCase(Locale.ENGLISH);
-    }
+    @Nonnull
+    public abstract String filenameOf(@Nonnull String id);
 
     /**
      * Converts an ID into a key for use in a Java Map.
@@ -62,18 +62,19 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
      * @param id the id.
      * @return the key.
      */
-    public String keyFor(String id) {
-        return id.toLowerCase(Locale.ENGLISH);
-    }
+    @Nonnull
+    public abstract String keyFor(@Nonnull String id);
 
     /**
-     * Compare two IDs and return {@code true} IFF the two ids are the same.
+     * Compare two IDs and return {@code true} IFF the two ids are the same. Normally we expect that this should be
+     * the same as {@link #compare(String, String)} being equal to {@code 0}, however there may be a specific reason
+     * for going beyond that, such as sorting id's case insensitively while treating them as case sensitive.
      *
      * @param id1 the first id.
      * @param id2 the second id.
      * @return {@code true} if and only if the two ids are the same.
      */
-    public boolean equals(String id1, String id2) {
+    public boolean equals(@Nonnull String id1, @Nonnull String id2) {
         return compare(id1, id2) == 0;
     }
 
@@ -87,9 +88,7 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
      * @return the sorting order of the two IDs.
      */
     @Override
-    public int compare(String id1, String id2) {
-        return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
-    }
+    public abstract int compare(@Nonnull String id1, @Nonnull String id2);
 
     /**
      * {@inheritDoc}
@@ -141,10 +140,17 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
      */
     public static class CaseInsensitive extends IdStrategy {
 
+        @Override
+        @Nonnull
+        public String filenameOf(@Nonnull String id) {
+            return id.toLowerCase(Locale.ENGLISH);
+        }
+
         /**
          * {@inheritDoc}
          */
-        public String keyFor(String id) {
+        @Nonnull
+        public String keyFor(@Nonnull String id) {
             return id.toLowerCase(Locale.ENGLISH);
         }
 
@@ -152,7 +158,7 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
          * {@inheritDoc}
          */
         @Override
-        public int compare(String id1, String id2) {
+        public int compare(@Nonnull String id1, @Nonnull String id2) {
             return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
         }
 
@@ -180,7 +186,8 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
          * {@inheritDoc}
          */
         @Override
-        public String filenameOf(String id) {
+        @Nonnull
+        public String filenameOf(@Nonnull String id) {
             if (id.matches("[a-z0-9_. -]+")) {
                 return id;
             } else {
@@ -190,10 +197,10 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
                         buf.append(c);
                     } else if ('0' <= c && c <= '9') {
                         buf.append(c);
-                    } else if ('_' == c || '.' == c || '-' == c || ' ' == c) {
+                    } else if ('_' == c || '.' == c || '-' == c || ' ' == c || '@' == c) {
                         buf.append(c);
                     } else if ('A' <= c && c <= 'Z') {
-                        buf.append('^');
+                        buf.append('~');
                         buf.append(Character.toLowerCase(c));
                     } else {
                         buf.append('$');
@@ -208,14 +215,15 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
          * {@inheritDoc}
          */
         @Override
-        public boolean equals(String id1, String id2) {
+        public boolean equals(@Nonnull String id1, @Nonnull String id2) {
             return StringUtils.equals(id1, id2);
         }
 
         /**
          * {@inheritDoc}
          */
-        public String keyFor(String id) {
+        @Nonnull
+        public String keyFor(@Nonnull String id) {
             return id;
         }
 
@@ -223,7 +231,7 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
          * {@inheritDoc}
          */
         @Override
-        public int compare(String id1, String id2) {
+        public int compare(@Nonnull String id1, @Nonnull String id2) {
             return id1.compareTo(id2);
         }
 
@@ -241,8 +249,9 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
     }
 
     /**
-     * A case sensitive email address {@link IdStrategy}. Providing this by default as given the history of
-     * misunderstanding in the Jenkins code base around ID case sensitivity, if not provided people will get this wrong.
+     * A case sensitive email address {@link IdStrategy}. Providing this implementation among the set of default
+     * implementations as given the history of misunderstanding in the Jenkins code base around ID case sensitivity,
+     * if not provided people will get this wrong.
      * <p/>
      * Note: Not all email addresses are case sensitive. It is knowledge that belongs to the server that holds the
      * mailbox. Most sane system administrators do not configure their accounts using case sensitive mailboxes
@@ -256,7 +265,8 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
          * {@inheritDoc}
          */
         @Override
-        public String filenameOf(String id) {
+        @Nonnull
+        public String filenameOf(@Nonnull String id) {
             return super.filenameOf(keyFor(id));
         }
 
@@ -264,14 +274,15 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
          * {@inheritDoc}
          */
         @Override
-        public boolean equals(String id1, String id2) {
+        public boolean equals(@Nonnull String id1, @Nonnull String id2) {
             return StringUtils.equals(keyFor(id1), keyFor(id2));
         }
 
         /**
          * {@inheritDoc}
          */
-        public String keyFor(String id) {
+        @Nonnull
+        public String keyFor(@Nonnull String id) {
             int index = id.lastIndexOf('@'); // The @ can be used in local-part if quoted correctly
             // => the last @ is the one used to separate the domain and local-part
             return index == -1 ? id : id.substring(0, index) + (id.substring(index).toLowerCase(Locale.ENGLISH));
@@ -281,7 +292,7 @@ public class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements E
          * {@inheritDoc}
          */
         @Override
-        public int compare(String id1, String id2) {
+        public int compare(@Nonnull String id1, @Nonnull String id2) {
             return keyFor(id1).compareTo(keyFor(id2));
         }
 

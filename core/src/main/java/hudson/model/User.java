@@ -653,7 +653,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         save();
 
-        FormApply.success(".").generateResponse(req, rsp, this);
+        FormApply.success(".").generateResponse(req,rsp,this);
     }
 
     /**

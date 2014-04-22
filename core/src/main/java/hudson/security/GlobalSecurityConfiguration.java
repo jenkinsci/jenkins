@@ -32,7 +32,6 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Describable;
 import hudson.model.ManagementLink;
-import hudson.model.User;
 import hudson.util.FormApply;
 
 import java.io.IOException;
