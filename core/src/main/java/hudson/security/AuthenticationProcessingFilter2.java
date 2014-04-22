@@ -103,6 +103,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
         LOGGER.log(Level.FINE, "Login attempt failed", failed);
         Authentication auth = failed.getAuthentication();
         if (auth != null) {
+            LOGGER.log(Level.FINE, "User " + auth.getName() + " failed to login.");
             SecurityListener.fireFailedToLogIn(auth.getName());
         }
     }
