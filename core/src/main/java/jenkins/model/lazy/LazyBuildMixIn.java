@@ -183,6 +183,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
         try {
             RunT lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
             builds.put(lastBuild);
+            lastBuild.getPreviousBuild(); // JENKINS-20662: create connection to previous build
             return lastBuild;
         } catch (InstantiationException e) {
             throw new Error(e);
