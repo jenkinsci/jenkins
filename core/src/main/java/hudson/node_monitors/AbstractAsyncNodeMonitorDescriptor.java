@@ -12,11 +12,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.Level.WARNING;
 
 /**
@@ -112,7 +112,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
      * Controls the time out of monitoring.
      */
     protected long getMonitoringTimeOut() {
-        return TimeUnit.SECONDS.toMillis(30);
+        return Long.getLong(AbstractAsyncNodeMonitorDescriptor.class.getName()+".defaultTimeout", SECONDS.toMillis(30));
     }
 
     private static final Logger LOGGER = Logger.getLogger(AbstractAsyncNodeMonitorDescriptor.class.getName());

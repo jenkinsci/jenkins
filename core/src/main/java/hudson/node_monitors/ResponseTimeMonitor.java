@@ -23,6 +23,8 @@
  */
 package hudson.node_monitors;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import hudson.Util;
 import hudson.Extension;
 import hudson.slaves.OfflineCause;
@@ -41,7 +43,41 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Monitors the round-trip response time to this slave.
- *
+ * <p>The monitor working flow is as follows:
+ * <pre>
+ *  Server       Step1                Step2   Slave    Step3               Data
+ *    | create     |                    |       |        |                   |
+ *    |-------->   |                    |       |        |                   |
+ *    | serialize  |                    |       |        |                   |
+ *    |----------->|--+                 |       |        |                   |
+ *    |            |  | writeReplace()  |       |        |                   |
+ *    |            |  |                 |       |        |                   |
+ *    |            |  |     create      |       |        |                   |
+ *    |            |  |---------------->|       |        |                   |
+ *    |            |<-+                 |       |        |                   |
+ *    |<-----------+                    |       |        |                   |
+ *    |                  Step2          |       |        |                   |
+ *    |---------------------------------|------>|        |                   |
+ *    |                                 | call  |        |                   |
+ *    |                                 |<------|        |                   |
+ *    |                                 |     create     |                   |
+ *    |                                 |-------|------->|                   |
+ *    |                                 |       |        |                   |
+ *    |                                 +------>|        |                   |
+ *    |                  Step3                  |        |                   |
+ *    |<----------------------------------------+        |                   |
+ *    |                    deserialize                   |                   |
+ *    |------------------------------------------------->|--+                |
+ *    |                                                  |  | readResolve()  |
+ *    |                                                  |  |                |
+ *    |                                                  |  |      create    |
+ *    |                                                  |  |--------------->|
+ *    |                                                  |<-+
+ *    |<-------------------------------------------------+
+ * </pre>
+ * <p>The timeout is calculated between the <code>writeReplace</code>
+ * and the <code>readResolve</code>. This timeout is then stored in
+ * a histogram to compute the average time.
  * @author Kohsuke Kawaguchi
  */
 public class ResponseTimeMonitor extends NodeMonitor {
@@ -113,7 +149,6 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
 
         public Step3 call() {
-            // this method must be being invoked locally, which means the roundtrip time is zero and zero forever
             return new Step3(cur,start);
         }
 
@@ -146,16 +181,16 @@ public class ResponseTimeMonitor extends NodeMonitor {
          * Record of the past 5 times. -1 if time out. Otherwise in milliseconds.
          * Old ones first.
          */
-        private final long[] past5;
+        private final long[] histogram;
 
         private Data(Data old, long newDataPoint) {
             if(old==null)
-                past5 = new long[] {newDataPoint};
+                histogram = new long[] {newDataPoint};
             else {
-                past5 = new long[Math.min(5,old.past5.length+1)];
-                int copyLen = past5.length - 1;
-                System.arraycopy(old.past5, old.past5.length-copyLen, this.past5, 0, copyLen);
-                past5[past5.length-1] = newDataPoint;
+                histogram = new long[Math.min(getHistogramDataPoints(),old.histogram.length+1)];
+                int copyLen = histogram.length - 1;
+                System.arraycopy(old.histogram, old.histogram.length-copyLen, this.histogram, 0, copyLen);
+                histogram[histogram.length-1] = newDataPoint;
             }
         }
 
@@ -164,7 +199,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
          */
         private int failureCount() {
             int cnt=0;
-            for(int i=past5.length-1; i>=0 && past5[i]<0; i--, cnt++)
+            for(int i=histogram.length-1; i>=0 && histogram[i]<0; i--, cnt++)
                 ;
             return cnt;
         }
@@ -175,15 +210,15 @@ public class ResponseTimeMonitor extends NodeMonitor {
         @Exported
         public long getAverage() {
             long total=0;
-            for (long l : past5) {
-                if(l<0)     total += TIMEOUT;
+            for (long l : histogram) {
+                if(l<0)     total += getResponseTimeout();
                 else        total += l;
             }
-            return total/past5.length;
+            return total/histogram.length;
         }
 
         public boolean hasTooManyTimeouts() {
-            return failureCount()>=5;
+            return failureCount()>=getHistogramDataPoints();
         }
 
         /**
@@ -191,12 +226,6 @@ public class ResponseTimeMonitor extends NodeMonitor {
          */
         @Override
         public String toString() {
-//            StringBuilder buf = new StringBuilder();
-//            for (long l : past5) {
-//                if(buf.length()>0)  buf.append(',');
-//                buf.append(l);
-//            }
-//            return buf.toString();
             int fc = failureCount();
             if(fc>0)
                 return Util.wrapToErrorSpan(Messages.ResponseTimeMonitor_TimeOut(fc));
@@ -209,7 +238,13 @@ public class ResponseTimeMonitor extends NodeMonitor {
     /**
      * Time out interval in milliseconds.
      */
-    private static final long TIMEOUT = 5000;
+    private static long getResponseTimeout() {
+        return Long.getLong(ResponseTimeMonitor.class.getName()+".timeout", SECONDS.toMillis(5));
+    }
+
+    private static int getHistogramDataPoints() {
+        return Integer.getInteger(ResponseTimeMonitor.class.getName()+".histogramDataPoints", 5);
+    }
 
     private static final Logger LOGGER = Logger.getLogger(ResponseTimeMonitor.class.getName());
 }
