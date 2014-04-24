@@ -25,15 +25,19 @@ case "$1" in
         : ${JENKINS_USER:=jenkins}
         : ${JENKINS_GROUP:=jenkins}
 
-        # Create jenkins user if it doesn't exist.
+        # Create jenkins group and user if they don't exist.
         # sometimes tools that users want Jenkins to run need a shell,
         # so use /bin/bash. See JENKINS-4830
-        addgroup --system --quiet $JENKINS_GROUP
-        adduser --system --quiet --home /var/lib/jenkins --no-create-home \
-            --ingroup $JENKINS_GROUP --disabled-password --shell /bin/bash \
-            --gecos 'Jenkins' \
-            $JENKINS_USER
-	
+        if ! getent group "$JENKINS_GROUP" > /dev/null; then
+            addgroup --system --quiet "$JENKINS_GROUP"
+        fi
+        if ! id "$JENKINS_USER" >/dev/null 2>&1 ; then
+            adduser --system --quiet --home /var/lib/jenkins --no-create-home \
+                --ingroup "$JENKINS_GROUP" --disabled-password --shell /bin/bash \
+                --gecos 'Jenkins' \
+                "$JENKINS_USER"
+        fi
+
         # If we have an old hudson install, rename it to jenkins
         if test -d /var/lib/hudson -a \! \( -e /var/lib/hudson/.for-jenkins \) ; then
             # leave a marker to indicate this came from Hudson.
