@@ -41,6 +41,8 @@ import java.util.List;
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import jenkins.model.Jenkins;
 
 /**
@@ -152,7 +154,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * Performs a necessary variable/environment/context expansion.
      *
      * @param node
-     *      Node that this tool is used in.
+     *      Node that this tool is used in. Should not be null
      * @param envs
      *      Set of environment variables to expand any references.
      * @param listener
@@ -163,7 +165,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * @see EnvironmentSpecific
      * @since 1.460
      */
-    public ToolInstallation translate(Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+    public ToolInstallation translate(@Nonnull Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
         ToolInstallation t = this;
         if (t instanceof NodeSpecific) {
             NodeSpecific n = (NodeSpecific) t;
