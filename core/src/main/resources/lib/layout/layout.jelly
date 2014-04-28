@@ -81,12 +81,12 @@ ${h.initPageVariables(context)}
     ${h.checkPermission(it,permission)}
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
-    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css">
+    <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css">
     <j:if test="${attrs.css!=null}">
-      <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
+      <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css">
     </j:if>
-    <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
+    <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon">
 
     <!-- are we running as an unit test? -->
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
@@ -125,24 +125,24 @@ ${h.initPageVariables(context)}
         crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
     </script>
     
-    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
-    <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
-    <link rel="stylesheet" href="${resURL}/scripts/yui/button/assets/skins/sam/button.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
-    <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
+    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css">
+    <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css">
+    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css">
+    <link rel="stylesheet" href="${resURL}/scripts/yui/button/assets/skins/sam/button.css" type="text/css">
+    <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css">
+    <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" -->
 
     <l:hasPermission permission="${app.READ}">
-      <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
+      <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins">
     </l:hasPermission>
-    <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
+    <meta name="ROBOTS" content="INDEX,NOFOLLOW">
     <j:set var="mode" value="header" />
     <d:invokeBody />
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="header.jelly" optional="true" />
     </j:forEach>
   </head>
-  <body id="jenkins jenkins-${h.version}" class="yui-skin-sam">
+  <body id="jenkins-${h.version}" class="yui-skin-sam">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
