@@ -27,7 +27,6 @@ import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import jenkins.model.Jenkins;
@@ -90,9 +89,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Exported(name="actions")
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = new ArrayList<Action>(getActions());
-        for (TransientActionFactory<?> taf : Jenkins.getInstance().getExtensionList(TransientActionFactory.class)) {
-            if (taf.type().isInstance(this)) {
-                _actions.addAll(createFor(taf));
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins != null) {
+            for (TransientActionFactory<?> taf : jenkins.getExtensionList(TransientActionFactory.class)) {
+                if (taf.type().isInstance(this)) {
+                    _actions.addAll(createFor(taf));
+                }
             }
         }
         return Collections.unmodifiableList(_actions);
@@ -175,7 +177,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return null;
     }
 
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this,request,response);
     }
 }
