@@ -194,14 +194,22 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     public static class Cron extends PeriodicWork {
         private final Calendar cal = new GregorianCalendar();
 
+        public Cron() {
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+        }
+
         public long getRecurrencePeriod() {
             return MIN;
         }
 
-        public void doRun() {
-            while(new Date().getTime()-cal.getTimeInMillis()>1000) {
-                LOGGER.log(Level.FINE, "cron checking {0}", cal.getTime());
+        public long getInitialDelay() {
+            return MIN - (Calendar.getInstance().get(Calendar.SECOND) * 1000);
+        }
 
+        public void doRun() {
+            while(new Date().getTime() >= cal.getTimeInMillis()) {
+                LOGGER.log(Level.FINE, "cron checking {0}", cal.getTime());
                 try {
                     checkTriggers(cal);
                 } catch (Throwable e) {
