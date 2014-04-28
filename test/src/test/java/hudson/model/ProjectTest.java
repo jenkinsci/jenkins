@@ -747,6 +747,22 @@ public class ProjectTest {
         assertEquals(1, j.jenkins.getQueue().getItems().length);    
     }
     
+    @Test
+    public void testMasterJobPutInQueue() throws Exception {
+        j.jenkins.setQuietPeriod(3);
+        FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yes-master-queue");
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
+        proj.setAssignedLabel(null);
+        proj.setScm(requiresWorkspaceScm);        
+        j.jenkins.setNumExecutors(1);
+        
+        SCMTrigger t = new SCMTrigger("@daily", true);
+        t.start(proj, true);
+        proj.addTrigger(t);
+        t.new Runner().run();
+        assertFalse(j.jenkins.getQueue().isEmpty());
+    }
+    
     public static class TransientAction extends InvisibleAction{
         
     }

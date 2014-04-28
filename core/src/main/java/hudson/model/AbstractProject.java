@@ -1465,26 +1465,27 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Returns true if all suitable nodes for the job are offline.
      *
      */
-
     private boolean isAllSuitableNodesOffline(R build) {
-        Label label = getAssignedLabel();
+        Label label = getAssignedLabel();        
         List<Node> allNodes = Jenkins.getInstance().getNodes();
 
-        if (allNodes.isEmpty() && !(label == Jenkins.getInstance().getSelfLabel())) {
-            // no master/slave. pointless to talk about nodes
-            label = null;
-        }
-
         if (label != null) {
+            //Invalid label. Put in queue to make administrator fix
+            if(label.getNodes().isEmpty()) {
+                return false;
+            }
+            //Returns true, if all suitable nodes are offline
             return label.isOffline();
         } else {
-            if (canRoam) {
-                for (Node n : Jenkins.getInstance().getNodes()) {
-                    Computer c = n.toComputer();
-                    if (c != null && c.isOnline() && c.isAcceptingTasks()) {
-                        // Some executor is ready and this job can run anywhere
-                        return false;
-                    }
+            if (allNodes.isEmpty()) {
+                // no master/slave. pointless to talk about nodes
+                return false;
+            }                  
+            for (Node n : Jenkins.getInstance().getNodes()) {                
+                Computer c = n.toComputer();
+                if (c != null && c.isOnline() && c.isAcceptingTasks()) {
+                    // Some executor is ready and this job can run anywhere
+                    return false;
                 }
             }
         }
