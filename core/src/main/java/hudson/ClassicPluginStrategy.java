@@ -273,7 +273,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         new DetachedPlugin("matrix-auth","1.535.*","1.0.2"),
         new DetachedPlugin("windows-slaves","1.547.*","1.0"),
         new DetachedPlugin("antisamy-markup-formatter","1.553.*","1.0"),
-        new DetachedPlugin("matrix-project","1.561.*","1.0-beta-1")
+        new DetachedPlugin("matrix-project","1.561.*","1.0")
     );
 
     /**
