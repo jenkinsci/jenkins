@@ -263,7 +263,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1543,11 +1542,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public Computer[] getComputers() {
         Computer[] r = computers.values().toArray(new Computer[computers.size()]);
         Arrays.sort(r,new Comparator<Computer>() {
-            final Collator collator = Collator.getInstance();
-            public int compare(Computer lhs, Computer rhs) {
+            @Override public int compare(Computer lhs, Computer rhs) {
                 if(lhs.getNode()==Jenkins.this)  return -1;
                 if(rhs.getNode()==Jenkins.this)  return 1;
-                return collator.compare(lhs.getDisplayName(), rhs.getDisplayName());
+                return lhs.getName().compareTo(rhs.getName());
             }
         });
         return r;
