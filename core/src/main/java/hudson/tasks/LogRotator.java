@@ -108,7 +108,7 @@ public class LogRotator extends BuildDiscarder {
 
     @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
-        LOGGER.log(FINE, "Running the log rotation for {0}", job);
+        LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
         
         // always keep the last successful and the last stable builds
         Run lsb = job.getLastSuccessfulBuild();

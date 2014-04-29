@@ -32,6 +32,8 @@ import hudson.model.Run;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.util.VirtualFile;
 
 /**
@@ -40,6 +42,8 @@ import jenkins.util.VirtualFile;
  * @since 1.532
  */
 public class StandardArtifactManager extends ArtifactManager {
+
+    private static final Logger LOG = Logger.getLogger(StandardArtifactManager.class.getName());
 
     protected transient Run<?,?> build;
 
@@ -60,8 +64,10 @@ public class StandardArtifactManager extends ArtifactManager {
     @Override public final boolean delete() throws IOException, InterruptedException {
         File ad = getArtifactsDir();
         if (!ad.exists()) {
+            LOG.log(Level.FINE, "no such directory {0} to delete for {1}", new Object[] {ad, build});
             return false;
         }
+        LOG.log(Level.FINE, "deleting {0} for {1}", new Object[] {ad, build});
         Util.deleteRecursive(ad);
         return true;
     }

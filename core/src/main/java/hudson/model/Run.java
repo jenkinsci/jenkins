@@ -435,7 +435,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // result can only get worse
         if (result==null || r.isWorseThan(result)) {
             result = r;
-            LOGGER.log(FINE, this + " : result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
+            LOGGER.log(FINE, this + " in " + getRootDir() + ": result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
         }
     }
 
@@ -1451,7 +1451,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public void delete() throws IOException {
         File rootDir = getRootDir();
         if (!rootDir.isDirectory()) {
-            throw new IOException(this + ": " + rootDir + " looks to have already been deleted");
+            throw new IOException(this + ": " + rootDir + " looks to have already been deleted; siblings: " + Arrays.toString(project.getBuildDir().list()));
         }
         
         RunListener.fireDeleted(this);
