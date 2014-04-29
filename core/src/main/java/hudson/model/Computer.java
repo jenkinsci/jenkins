@@ -98,6 +98,7 @@ import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static javax.servlet.http.HttpServletResponse.*;
@@ -455,7 +456,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Returns {@link Node#getNodeName() the name of the node}.
      */
-    public String getName() {
+    public @Nonnull String getName() {
         return nodeName;
     }
 
@@ -616,7 +617,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @Exported
-    public String getDisplayName() {
+    @Override public @Nonnull String getDisplayName() {
         return nodeName;
     }
 
