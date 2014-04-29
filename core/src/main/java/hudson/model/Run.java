@@ -287,7 +287,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected Run(JobT job) throws IOException {
         this(job, new GregorianCalendar());
         this.number = project.assignBuildNumber();
-        LOGGER.log(FINE, "new {0} @{1}", new Object[] {this, hashCode()});
+        LOGGER.log(FINER, "new {0} @{1}", new Object[] {this, hashCode()});
     }
 
     /**
@@ -326,7 +326,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         getDataFile().unmarshal(this); // load the rest of the data
 
         if (state == State.COMPLETED) {
-            LOGGER.log(FINE, "reload {0} @{1}", new Object[] {this, hashCode()});
+            LOGGER.log(FINER, "reload {0} @{1}", new Object[] {this, hashCode()});
         } else {
             LOGGER.log(WARNING, "reload {0} @{1} with anomalous state {2}", new Object[] {this, hashCode(), state});
         }
@@ -1722,7 +1722,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 // will now see this build as completed.
                 // things like triggering other builds requires this as pre-condition.
                 // see issue #980.
-                LOGGER.log(FINE, "moving into POST_PRODUCTION on {0}", this);
+                LOGGER.log(FINER, "moving into POST_PRODUCTION on {0}", this);
                 state = State.POST_PRODUCTION;
 
                 if (listener != null) {
@@ -1818,7 +1818,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Called when a job started building.
      */
     protected void onStartBuilding() {
-        LOGGER.log(FINE, "moving to BUILDING on {0}", this);
+        LOGGER.log(FINER, "moving to BUILDING on {0}", this);
         state = State.BUILDING;
         startTime = System.currentTimeMillis();
         if (runner!=null)
@@ -1831,7 +1831,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected void onEndBuilding() {
         // signal that we've finished building.
         state = State.COMPLETED;
-        LOGGER.log(FINE, "moving to COMPLETED on {0}", this);
+        LOGGER.log(FINER, "moving to COMPLETED on {0}", this);
         if (runner!=null) {
             // MavenBuilds may be created without their corresponding runners.
             runner.checkpoints.allDone();
