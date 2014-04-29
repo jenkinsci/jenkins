@@ -1435,9 +1435,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.350
      */
     public synchronized void deleteArtifacts() throws IOException {
-        File artifactsDir = getArtifactsDir();
-
-        Util.deleteContentsRecursive(artifactsDir);
+        try {
+            getArtifactManager().delete();
+        } catch (InterruptedException x) {
+            throw new IOException(x);
+        }
     }
 
     /**
