@@ -1828,7 +1828,9 @@ public class Functions {
      * @since 1.517
      */
     public static String breakableString(final String plain) {
-
+        if (plain == null) {
+            return null;
+        }
         return plain.replaceAll("([\\p{Punct}&&[^;]]+\\w)", "<wbr>$1")
                 .replaceAll("([^\\p{Punct}\\s-]{20})(?=[^\\p{Punct}\\s-]{10})", "$1<wbr>")
         ;

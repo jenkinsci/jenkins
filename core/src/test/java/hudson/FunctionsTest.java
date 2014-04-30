@@ -36,7 +36,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -322,6 +322,7 @@ public class FunctionsTest {
         assertBrokenAs("&lt;&lt;a&lt;bc&lt;def&lt;ghi&lt;", "", "&lt;", "&lt;a", "&lt;bc", "&lt;def", "&lt;ghi", "&lt;");
         assertBrokenAs("H,e.l/l:o=w_o+|d", "H", ",e", ".l", "/l", ":o", "=w", "_o", "+|d");
         assertBrokenAs("a¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷ", "a¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷa¶‱ﻷ", "a¶‱ﻷa¶‱ﻷa¶‱ﻷ");
+        assertNull(Functions.breakableString(null));
     }
 
     private void assertBrokenAs(String plain, String... chunks) {
