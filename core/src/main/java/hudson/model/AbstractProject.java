@@ -43,6 +43,7 @@ import hudson.cli.declarative.CLIResolver;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.Node.Mode;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
@@ -1477,14 +1478,18 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             //Returns true, if all suitable nodes are offline
             return label.isOffline();
         } else {
-            if (allNodes.isEmpty()) {
-                // no master/slave. pointless to talk about nodes
-                return false;
-            }                  
-            for (Node n : Jenkins.getInstance().getNodes()) {                
-                Computer c = n.toComputer();
-                if (c != null && c.isOnline() && c.isAcceptingTasks()) {
-                    // Some executor is ready and this job can run anywhere
+            if(canRoam) {                 
+                for (Node n : Jenkins.getInstance().getNodes()) {                
+                    Computer c = n.toComputer();
+                    if (c != null && c.isOnline() && c.isAcceptingTasks() && n.getMode() == Mode.NORMAL) {
+                        // Some executor is online that  is ready and this job can run anywhere
+                        return false;
+                    }
+                }                
+                //We can roam, check that the master is set to be used as much as possible, and not tied jobs only.
+                if(Jenkins.getInstance().getMode() == Mode.EXCLUSIVE) {
+                    return true;
+                } else {
                     return false;
                 }
             }

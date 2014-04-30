@@ -86,6 +86,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
+import org.jvnet.hudson.test.Bug;
 
 /**
  *
@@ -746,23 +747,29 @@ public class ProjectTest {
         //The job should be in queue
         assertEquals(1, j.jenkins.getQueue().getItems().length);    
     }
-    
+
+    @Bug(22750)
     @Test
     public void testMasterJobPutInQueue() throws Exception {
-        j.jenkins.setQuietPeriod(3);
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yes-master-queue");
         RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
-        proj.setAssignedLabel(null);
+        proj.setAssignedLabel(null);        
         proj.setScm(requiresWorkspaceScm);        
-        j.jenkins.setNumExecutors(1);
+        j.jenkins.setNumExecutors(1);    
+        proj.setScm(requiresWorkspaceScm);
         
+        //First build is not important
+        j.buildAndAssertSuccess(proj);
+
         SCMTrigger t = new SCMTrigger("@daily", true);
         t.start(proj, true);
         proj.addTrigger(t);
         t.new Runner().run();
+
+
         assertFalse(j.jenkins.getQueue().isEmpty());
     }
-    
+
     public static class TransientAction extends InvisibleAction{
         
     }
@@ -785,15 +792,15 @@ public class ProjectTest {
         
         public boolean hasChange = false;
         
-        public RequiresWorkspaceSCM() { } 
-        
+        public RequiresWorkspaceSCM() { }
+         
         public RequiresWorkspaceSCM(boolean hasChange) {
             this.hasChange = hasChange;
         }
         
         @Override
         public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
-            return true;
+            return hasChange;
         }
                        
         @Override
@@ -811,7 +818,7 @@ public class ProjectTest {
     }
     
     @TestExtension
-    public static class AlwaysChangedSCM extends NullSCM{
+    public static class AlwaysChangedSCM extends NullSCM {
 
         @Override
         public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
