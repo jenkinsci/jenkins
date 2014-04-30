@@ -93,7 +93,7 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <slf4jVersion>1.7.4</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
+    <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <maven-plugin.version>2.3</maven-plugin.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
