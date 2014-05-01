@@ -35,12 +35,14 @@ import java.util.logging.LogRecord;
  */
 public class RingBufferLogHandler extends Handler {
 
+    private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
+
     private int start = 0;
     private final LogRecord[] records;
     private volatile int size = 0;
 
     public RingBufferLogHandler() {
-        this(256);
+        this(DEFAULT_RING_BUFFER_SIZE);
     }
 
     public RingBufferLogHandler(int ringSize) {
