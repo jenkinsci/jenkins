@@ -57,6 +57,11 @@ public class RingBufferLogHandler extends Handler {
         }
     }
 
+    public synchronized void clear() {
+        size = 0;
+        start = 0;
+    }
+
     /**
      * Returns the list view of {@link LogRecord}s in the ring buffer.
      *

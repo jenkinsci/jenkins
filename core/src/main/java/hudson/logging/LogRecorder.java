@@ -297,6 +297,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         rsp.sendRedirect2(redirect);
     }
 
+    @RequirePOST
+    public void doClear(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        handler.clear();
+        rsp.sendRedirect2(".");
+    }
+
     /**
      * Loads the settings from a file.
      */
