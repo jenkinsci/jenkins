@@ -1478,7 +1478,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (label != null) {
             return label.isOffline();
         } else {
-            if (canRoam) {
+            if (allNodes.isEmpty()) {
+                // no master/slave. pointless to talk about nodes
+            	return false;
+            } else if (canRoam) {
                 for (Node n : Jenkins.getInstance().getNodes()) {
                     Computer c = n.toComputer();
                     if (c != null && c.isOnline() && c.isAcceptingTasks()) {
