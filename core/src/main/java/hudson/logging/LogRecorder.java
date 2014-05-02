@@ -31,6 +31,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
 import hudson.model.Computer;
+import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
@@ -44,6 +45,7 @@ import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -298,9 +300,9 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     @RequirePOST
-    public void doClear(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public HttpResponse doClear() throws IOException {
         handler.clear();
-        rsp.sendRedirect2(".");
+        return HttpResponses.redirectToDot();
     }
 
     /**
