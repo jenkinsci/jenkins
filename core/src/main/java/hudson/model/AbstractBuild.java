@@ -469,7 +469,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param wsl
          *      Passed in for the convenience. The returned path must be registered to this object.
          */
-        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+        protected Lease decideWorkspace(@Nonnull Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null) {
                 // we allow custom workspaces to be concurrently used between jobs.
@@ -482,7 +482,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         public Result run(@Nonnull BuildListener listener) throws Exception {
             final Node node = getCurrentNode();
             if (node == null) {
-                throw new AbortException(Messages.AbstractBuild_NoExecutorError());
+                throw new IllegalStateException("Cannot run the build outside executor threads");
             }
             
             assert builtOn==null;
@@ -576,7 +576,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected Launcher createLauncher(@Nonnull BuildListener listener) throws IOException, InterruptedException {
             final Node currentNode = getCurrentNode();
             if (currentNode == null) {
-                throw new AbortException(Messages.AbstractBuild_NoExecutorError());
+                throw new IllegalStateException("Launchers can be created inside executor threads only");
             }
             Launcher l = currentNode.createLauncher(listener);
 

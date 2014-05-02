@@ -57,7 +57,7 @@ public class AbstractCloudComputer<T extends AbstractCloudSlave> extends SlaveCo
         checkPermission(DELETE);
         try {
             T node = getNode();
-            if (node != null) { // Node need to terminate nodes again
+            if (node != null) { // No need to terminate nodes again
                 node.terminate();
             }
             return new HttpRedirect("..");
