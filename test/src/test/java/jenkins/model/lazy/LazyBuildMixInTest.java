@@ -34,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestExtension;
 
 public class LazyBuildMixInTest {
@@ -94,4 +95,13 @@ public class LazyBuildMixInTest {
         }
     }
 
+    @Bug(20662)
+    @Test public void newRunningBuildRelationFromPrevious() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.getBuildersList().add(new SleepBuilder(1000));
+        FreeStyleBuild b1 = p.scheduleBuild2(0).get();
+        assertNull(b1.getNextBuild());
+        FreeStyleBuild b2 = p.scheduleBuild2(0).waitForStart();
+        assertSame(b2, b1.getNextBuild());
+    }
 }
