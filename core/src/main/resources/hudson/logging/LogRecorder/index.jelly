@@ -37,6 +37,10 @@ THE SOFTWARE.
       <t:logRecords logRecords="${entry.value}"/>
     </j:forEach>
 
+    <form method="post" id='clear-logrecorder' action="clear">
+      <f:submit value="${%Clear This Log}" />
+    </form>
+
     <st:include it="${it.parent}" page="feeds.jelly" />    
   </l:main-panel>
 </l:layout>

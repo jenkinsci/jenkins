@@ -54,6 +54,21 @@ public class LogRecorderTest {
         assertFalse(matches("", "hudson.model.Hudson", Level.FINE));
     }
 
+    @Test public void testClearing() {
+        LogRecorder lr = new LogRecorder("foo");
+        LogRecorder.Target t = new LogRecorder.Target("", Level.FINE);
+        lr.targets.add(t);
+
+        LogRecord record = createLogRecord("jenkins", Level.INFO, "message");
+        lr.handler.publish(record);
+        assertEquals(lr.handler.getView().get(0), record);
+        assertTrue(lr.handler.getView().size() == 1);
+
+        lr.handler.clear();
+
+        assertTrue(lr.handler.getView().size() == 0);
+    }
+
     @Test public void testSpecificExclusion() {
         LogRecorder lr = new LogRecorder("foo");
 
