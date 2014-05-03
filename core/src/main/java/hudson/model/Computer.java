@@ -1198,7 +1198,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             rsp.setContentType("application/xml");
             Node node = getNode();
             if (node == null) {
-                HttpResponses.notFound();
+                throw HttpResponses.notFound();
             }
             Jenkins.XSTREAM2.toXMLUTF8(node, rsp.getOutputStream());
             return;
