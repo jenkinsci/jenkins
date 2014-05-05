@@ -257,7 +257,12 @@ public class FileParameterValue extends ParameterValue {
 
         public byte[] get() {
             try {
-                return IOUtils.toByteArray(new FileInputStream(file));
+                FileInputStream inputStream = new FileInputStream(file);
+                try {
+                    return IOUtils.toByteArray(inputStream);
+                } finally {
+                    inputStream.close();
+                }
             } catch (IOException e) {
                 throw new Error(e);
             }
@@ -293,6 +298,7 @@ public class FileParameterValue extends ParameterValue {
         public void setFormField(boolean state) {
         }
 
+        @Deprecated
         public OutputStream getOutputStream() throws IOException {
             return new FileOutputStream(file);
         }
