@@ -75,6 +75,7 @@ import static hudson.util.jna.GNUCLibrary.LIBC;
 import java.security.DigestInputStream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -126,7 +127,7 @@ public class Util {
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
      *
      */
-    @CheckForNull
+    @Nullable
     public static String replaceMacro( @CheckForNull String s, @Nonnull Map<String,String> properties) {
         return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
     }
@@ -137,7 +138,7 @@ public class Util {
      * <p>
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
      */
-    @CheckForNull
+    @Nullable
     public static String replaceMacro(@CheckForNull String s, @Nonnull VariableResolver<String> resolver) {
     	if (s == null) {
     		return null;
@@ -548,7 +549,7 @@ public class Util {
      *         case subject was null and subject + suffix otherwise.
      * @since 1.505
      */
-    @CheckForNull
+    @Nullable
     public static String ensureEndsWith(@CheckForNull String subject, @CheckForNull String suffix) {
 
         if (subject == null) return null;
@@ -1410,8 +1411,9 @@ public class Util {
 
     /**
      * Null-safe String intern method.
+     * @return A canonical representation for the string object. Null for null input strings
      */
-    @CheckForNull
+    @Nullable
     public static String intern(@CheckForNull String s) {
         return s==null ? s : s.intern();
     }
