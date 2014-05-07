@@ -596,6 +596,7 @@ public class UpdateSite {
 
         /**
          * Release date of this plugin.
+         * @since TODO
          */
         @Exported
         public final Date releaseDate;
