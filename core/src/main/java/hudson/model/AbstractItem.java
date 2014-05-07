@@ -661,8 +661,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return getName();
     }
 
-    public String toString() {
-        return super.toString()+'['+getFullName()+']';
+    @Override public String toString() {
+        return super.toString() + '[' + (parent != null ? getFullName() : "?/" + name) + ']';
     }
 
     /**
