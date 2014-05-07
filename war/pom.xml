@@ -364,7 +364,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>1.0</version>
+                  <version>1.2</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
