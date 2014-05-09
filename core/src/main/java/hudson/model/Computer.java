@@ -457,7 +457,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns {@link Node#getNodeName() the name of the node}.
      */
     public @Nonnull String getName() {
-        return nodeName;
+        return nodeName != null ? nodeName : "";
     }
 
     /**

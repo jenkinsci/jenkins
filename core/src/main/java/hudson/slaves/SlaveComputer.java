@@ -170,7 +170,13 @@ public class SlaveComputer extends Computer {
 
     @Override
     public Slave getNode() {
-        return (Slave)super.getNode();
+        Node node = super.getNode();
+        if (node == null || node instanceof Slave) {
+            return (Slave)node;
+        } else {
+            logger.log(Level.WARNING, "found an unexpected kind of node {0} from {1} with nodeName={2}", new Object[] {node, this, nodeName});
+            return null;
+        }
     }
 
     @Override

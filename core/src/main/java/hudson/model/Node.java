@@ -117,7 +117,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      "" if this is master
      */
     @Exported(visibility=999)
-    public abstract String getNodeName();
+    public abstract @Nonnull String getNodeName();
 
     /**
      * When the user clones a {@link Node}, Hudson uses this method to change the node name right after

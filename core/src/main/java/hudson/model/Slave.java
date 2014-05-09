@@ -56,8 +56,8 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 
-import hudson.util.TimeUnit2;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.slaves.WorkspaceLocator;
 
@@ -149,7 +149,7 @@ public abstract class Slave extends Node implements Serializable {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
     
-    public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
+    public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;
