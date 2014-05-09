@@ -345,7 +345,6 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         Authentication identity = item.authenticate();
         if (!getACL().hasPermission(identity,Computer.BUILD)) {
             // doesn't have a permission
-            // TODO: does it make more sense to define a separate permission?
             return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(),getNodeName()));
         }
 
