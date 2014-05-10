@@ -32,9 +32,20 @@ THE SOFTWARE.
       but for example you can specify a sublist after some filtering to narrow down
       the list.
     </st:attribute>
+    <st:attribute name="filtered" use="optional">
+      Indicates that the queue has been filtered, i.e. might not show all items.
+    </st:attribute>
   </st:documentation>
   <t:setIconSize/>
-  <l:pane title="${%Build Queue(items.size())}" width="2" id="buildQueue">
+  <j:choose>
+    <j:when test="${filtered}">
+      <j:set var="title" value="${%Filtered Build Queue(items.size())}" />
+    </j:when>
+    <j:otherwise>
+      <j:set var="title" value="${%Build Queue(items.size())}" />
+    </j:otherwise>
+  </j:choose>
+  <l:pane title="${title}" width="2" id="buildQueue">
     <j:if test="${app.quietingDown}">
       <tr>
         <td class="pane" colspan="2" style="white-space: normal;">
