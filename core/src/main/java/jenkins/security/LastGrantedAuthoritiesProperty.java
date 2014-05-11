@@ -49,8 +49,10 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
 
         GrantedAuthority[] r = new GrantedAuthority[roles==null ? 1 : roles.length+1];
         r[0] = SecurityRealm.AUTHENTICATED_AUTHORITY;
-        for (int i = 1; i < r.length; i++) {
-            r[i] = new GrantedAuthorityImpl(roles[i-1]);
+        if (roles != null) {
+            for (int i = 1; i < roles.length; i++) {
+                r[i] = new GrantedAuthorityImpl(roles[i - 1]);
+            }
         }
         return r;
     }
