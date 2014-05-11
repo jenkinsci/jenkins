@@ -63,7 +63,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ListView extends View {
+public class ListView extends DirectlyModifiableView {
 
     /**
      * List of job names. This is what gets serialized.
@@ -237,8 +237,6 @@ public class ListView extends View {
         return jobNames.contains(item.getRelativeNameFrom(getOwnerItemGroup()));
     }
 
-    
-
     /**
      * Adds the given item to this view.
      *
@@ -250,6 +248,21 @@ public class ListView extends View {
             jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
         }
         save();
+    }
+
+    /**
+     * Removes given item from this view.
+     *
+     * @since TODO
+     */
+    @Override
+    public boolean remove(TopLevelItem item) throws IOException {
+        synchronized (this) {
+            String name = item.getRelativeNameFrom(getOwnerItemGroup());
+            if (!jobNames.remove(name)) return false;
+        }
+        save();
+        return true;
     }
 
     public String getIncludeRegex() {
@@ -290,33 +303,6 @@ public class ListView extends View {
             return item;
         }
         return null;
-    }
-
-    @RequirePOST
-    public HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException {
-        checkPermission(View.CONFIGURE);
-        if(name==null)
-            throw new Failure("Query parameter 'name' is required");
-
-        if (getOwnerItemGroup().getItem(name) == null)
-            throw new Failure("Query parameter 'name' does not correspond to a known item");
-
-        if (jobNames.add(name))
-            owner.save();
-
-        return HttpResponses.ok();
-    }
-
-    @RequirePOST
-    public HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException {
-        checkPermission(View.CONFIGURE);
-        if(name==null)
-            throw new Failure("Query parameter 'name' is required");
-
-        if (jobNames.remove(name))
-            owner.save();
-
-        return HttpResponses.ok();
     }
 
     /**
