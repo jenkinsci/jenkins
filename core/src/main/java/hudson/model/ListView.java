@@ -63,7 +63,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ListView extends View implements Saveable {
+public class ListView extends View {
 
     /**
      * List of job names. This is what gets serialized.
@@ -146,6 +146,7 @@ public class ListView extends View implements Saveable {
     	return jobFilters;
     }
 
+    @Override
     public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
@@ -157,6 +158,7 @@ public class ListView extends View implements Saveable {
      * This method returns a separate copy each time to avoid
      * concurrent modification issue.
      */
+    @Override
     public List<TopLevelItem> getItems() {
         SortedSet<String> names;
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
@@ -242,6 +244,7 @@ public class ListView extends View implements Saveable {
      *
      * @since 1.389
      */
+    @Override
     public void add(TopLevelItem item) throws IOException {
         synchronized (this) {
             jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
@@ -272,6 +275,7 @@ public class ListView extends View implements Saveable {
         return statusFilter;
     }
 
+    @Override
     @RequirePOST
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
@@ -367,6 +371,7 @@ public class ListView extends View implements Saveable {
 
     @Extension
     public static class DescriptorImpl extends ViewDescriptor {
+        @Override
         public String getDisplayName() {
             return Messages.ListView_DisplayName();
         }
@@ -391,6 +396,7 @@ public class ListView extends View implements Saveable {
      * @deprecated as of 1.391
      *  Use {@link ListViewColumn#createDefaultInitialColumnList()}
      */
+    @Deprecated
     public static List<ListViewColumn> getDefaultColumns() {
         return ListViewColumn.createDefaultInitialColumnList();
     }
