@@ -27,6 +27,7 @@ import hudson.util.HttpResponses;
 
 import java.io.IOException;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.HttpResponse;
@@ -54,15 +55,17 @@ public abstract class DirectlyModifiableView extends View {
      *
      * @return false if item not present in view, true if removed.
      * @throws IOException Removal failed.
+     * @throws IllegalArgumentException View rejected to remove an item.
      */
-    public abstract boolean remove(TopLevelItem item) throws IOException;
+    public abstract boolean remove(@Nonnull TopLevelItem item) throws IOException, IllegalArgumentException;
 
     /**
      * Add item to this view.
      *
      * @throws IOException Adding failed.
+     * @throws IllegalArgumentException View rejected to add an item.
      */
-    public abstract void add(TopLevelItem item) throws IOException;
+    public abstract void add(@Nonnull TopLevelItem item) throws IOException, IllegalArgumentException;
 
     /**
      * Handle addJobToView web method.
