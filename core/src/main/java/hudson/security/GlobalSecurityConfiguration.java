@@ -99,13 +99,14 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
             } catch (IOException e) {
                 throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
             }
-            if (security.has("markupFormatter")) {
-                j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, security.getJSONObject("markupFormatter")));
-            } else {
-                j.setMarkupFormatter(null);
-            }
         } else {
             j.disableSecurity();
+        }
+
+        if (json.has("markupFormatter")) {
+            j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, json.getJSONObject("markupFormatter")));
+        } else {
+            j.setMarkupFormatter(null);
         }
 
         // persist all the additional security configs
