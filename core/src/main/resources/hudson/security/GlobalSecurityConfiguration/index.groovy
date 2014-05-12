@@ -33,8 +33,6 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                     f.checkbox()
                 }
 
-                f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
-
                 f.entry(title:_("Access Control")) {
                     table(style:"width:100%") {
                         f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:SecurityRealm.all())
@@ -42,6 +40,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                     }
                 }
             }
+
+            f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
 
             Functions.getSortedDescriptorsForGlobalConfig(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
