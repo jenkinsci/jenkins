@@ -2081,7 +2081,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         useSecurity = null;
         setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
         authorizationStrategy = AuthorizationStrategy.UNSECURED;
-        markupFormatter = null;
     }
 
     public void setProjectNamingStrategy(ProjectNamingStrategy ns) {
