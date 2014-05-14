@@ -35,20 +35,12 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
- * View its items can be modified.
+ * Marker interface for {@link View} its items can be modified.
  *
  * @author ogondza
  * @since TODO
  */
-public abstract class DirectlyModifiableView extends View {
-
-    public DirectlyModifiableView(String name) {
-        super(name);
-    }
-
-    public DirectlyModifiableView(String name, ViewGroup owner) {
-        super(name, owner);
-    }
+public interface DirectlyModifiableView {
 
     /**
      * Remove item from this view.
@@ -57,7 +49,7 @@ public abstract class DirectlyModifiableView extends View {
      * @throws IOException Removal failed.
      * @throws IllegalArgumentException View rejected to remove an item.
      */
-    public abstract boolean remove(@Nonnull TopLevelItem item) throws IOException, IllegalArgumentException;
+    boolean remove(@Nonnull TopLevelItem item) throws IOException, IllegalArgumentException;
 
     /**
      * Add item to this view.
@@ -65,46 +57,23 @@ public abstract class DirectlyModifiableView extends View {
      * @throws IOException Adding failed.
      * @throws IllegalArgumentException View rejected to add an item.
      */
-    public abstract void add(@Nonnull TopLevelItem item) throws IOException, IllegalArgumentException;
+    void add(@Nonnull TopLevelItem item) throws IOException, IllegalArgumentException;
 
     /**
      * Handle addJobToView web method.
      *
+     * This method should @RequirePOST.
+     *
      * @param name Item name.
      */
-    @RequirePOST
-    public HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException {
-        checkPermission(View.CONFIGURE);
-        if(name==null)
-            throw new Failure("Query parameter 'name' is required");
-
-        TopLevelItem item = getOwnerItemGroup().getItem(name);
-        if (item == null)
-            throw new Failure("Query parameter 'name' does not correspond to a known item");
-
-        if (contains(item)) return HttpResponses.ok();
-
-        add(item);
-        owner.save();
-
-        return HttpResponses.ok();
-    }
+    HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException;
 
     /**
      * Handle removeJobFromView web method.
      *
+     * This method should @RequirePOST.
+     *
      * @param name Item name.
      */
-    @RequirePOST
-    public HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException {
-        checkPermission(View.CONFIGURE);
-        if(name==null)
-            throw new Failure("Query parameter 'name' is required");
-
-        TopLevelItem item = getOwnerItemGroup().getItem(name);
-        if (remove(item))
-            owner.save();
-
-        return HttpResponses.ok();
-    }
+    HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException;
 }

@@ -63,7 +63,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ListView extends DirectlyModifiableView {
+public class ListView extends View implements DirectlyModifiableView {
 
     /**
      * List of job names. This is what gets serialized.
@@ -303,6 +303,39 @@ public class ListView extends DirectlyModifiableView {
             return item;
         }
         return null;
+    }
+
+    @Override
+    @RequirePOST
+    public HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException {
+        checkPermission(View.CONFIGURE);
+        if(name==null)
+            throw new Failure("Query parameter 'name' is required");
+
+        TopLevelItem item = getOwnerItemGroup().getItem(name);
+        if (item == null)
+            throw new Failure("Query parameter 'name' does not correspond to a known item");
+
+        if (contains(item)) return HttpResponses.ok();
+
+        add(item);
+        owner.save();
+
+        return HttpResponses.ok();
+    }
+
+    @Override
+    @RequirePOST
+    public HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException {
+        checkPermission(View.CONFIGURE);
+        if(name==null)
+            throw new Failure("Query parameter 'name' is required");
+
+        TopLevelItem item = getOwnerItemGroup().getItem(name);
+        if (remove(item))
+            owner.save();
+
+        return HttpResponses.ok();
     }
 
     /**
