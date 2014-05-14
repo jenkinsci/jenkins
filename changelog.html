@@ -61,6 +61,9 @@ Upcoming changes</a>
   <li class='major bug'>
     When Jenkins had a lot of jobs, submitting a view configuration change could overload the web server, even if few of the jobs were selected.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20327">issue 20327</a>)
+  <li class="bug">
+    SSH slave connections die after the slave outputs 4MB of stderr, usually during findbugs analysis
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22938">issue 22938</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
