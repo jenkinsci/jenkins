@@ -96,6 +96,8 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import static javax.servlet.http.HttpServletResponse.*;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -356,7 +358,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      Node to eventually run a process on. The implementation must cope with this parameter being null
      *      (in which case none of the node specific properties would be reflected in the resulting override.)
      */
-    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+    public @Nonnull EnvVars getEnvironment(@CheckForNull Node node, @Nonnull TaskListener listener) throws IOException, InterruptedException {
         EnvVars env;
 
         if (node!=null) {

@@ -918,7 +918,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see ProcStarter#envs(Map)
      * @since 1.489
      */
-    public EnvVars buildEnvironment(TaskListener listener) throws IOException, InterruptedException {
+    public @Nonnull EnvVars buildEnvironment(@Nonnull TaskListener listener) throws IOException, InterruptedException {
         EnvVars env = new EnvVars();
 
         Node node = getNode();
