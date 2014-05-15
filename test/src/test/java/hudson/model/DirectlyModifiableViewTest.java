@@ -28,10 +28,14 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.annotation.Nonnull;
+
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockFolder;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -90,6 +94,51 @@ public class DirectlyModifiableViewTest {
     }
 
     @Test
+    public void doAddNestedJobToRecursiveView() throws Exception {
+        ListView view = new ListView("a_view", j.jenkins);
+        view.setRecurse(true);
+        j.jenkins.addView(view);
+
+        MockFolder folder = j.createFolder("folder");
+        FreeStyleProject np = folder.createProject(FreeStyleProject.class, "nested_project");
+
+        view.add(np);
+        assertTrue(view.contains(np));
+        view.remove(np);
+        assertFalse(view.contains(np));
+
+        Page page = doPost(view, "addJobToView?name=folder/nested_project");
+        j.assertGoodStatus(page);
+        assertTrue(view.contains(np));
+
+        page = doPost(view, "removeJobFromView?name=folder/nested_project");
+        j.assertGoodStatus(page);
+        assertFalse(view.contains(np));
+
+        MockFolder nf = folder.createProject(MockFolder.class, "nested_folder");
+        FreeStyleProject nnp = nf.createProject(FreeStyleProject.class, "nested_nested_project");
+        ListView nestedView = new ListView("nested_view", folder);
+        nestedView.setRecurse(true);
+        folder.addView(nestedView);
+
+        page = doPost(nestedView, "addJobToView?name=nested_folder/nested_nested_project");
+        j.assertGoodStatus(page);
+        assertTrue(nestedView.contains(nnp));
+
+        page = doPost(nestedView, "removeJobFromView?name=nested_folder/nested_nested_project");
+        j.assertGoodStatus(page);
+        assertFalse(nestedView.contains(nnp));
+
+        page = doPost(nestedView, "addJobToView?name=/folder/nested_folder/nested_nested_project");
+        j.assertGoodStatus(page);
+        assertTrue(nestedView.contains(nnp));
+
+        page = doPost(nestedView, "removeJobFromView?name=/folder/nested_folder/nested_nested_project");
+        j.assertGoodStatus(page);
+        assertFalse(nestedView.contains(nnp));
+    }
+
+    @Test
     public void doRemoveJobFromView() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("a_project");
         ListView view = new ListView("a_view", j.jenkins);
@@ -124,6 +173,15 @@ public class DirectlyModifiableViewTest {
                 doPost(view, "removeJobFromView"),
                 "Query parameter 'name' is required"
         );
+
+        MockFolder folder = j.createFolder("folder");
+        ListView folderView = new ListView("folder_view", folder);
+        folder.addView(folderView);
+
+        assertBadStatus( // Item is scoped to different ItemGroup
+                doPost(folderView, "addJobToView?name=top_project"),
+                "Query parameter 'name' does not correspond to a known item"
+        );
     }
 
     private Page doPost(View view, String path) throws Exception {
@@ -140,6 +198,6 @@ public class DirectlyModifiableViewTest {
     private void assertBadStatus(Page page, String message) {
         WebResponse rsp = page.getWebResponse();
         assertFalse("Status: " + rsp.getStatusCode(), j.isGoodHttpStatus(rsp.getStatusCode()));
-        assertTrue(rsp.getContentAsString().contains(message));
+        assertThat(rsp.getContentAsString(), Matchers.containsString(message));
     }
 }

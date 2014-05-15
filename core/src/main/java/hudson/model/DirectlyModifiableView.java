@@ -62,18 +62,18 @@ public interface DirectlyModifiableView {
     /**
      * Handle addJobToView web method.
      *
-     * This method should @RequirePOST.
+     * This method should {@link RequirePOST}.
      *
-     * @param name Item name.
+     * @param name Item name. This can be either full name relative to owner item group or full item name prefixed with '/'.
      */
     HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException;
 
     /**
      * Handle removeJobFromView web method.
      *
-     * This method should @RequirePOST.
+     * This method should {@link RequirePOST}.
      *
-     * @param name Item name.
+     * @param name Item name. This can be either full name relative to owner item group or full item name prefixed with '/'.
      */
     HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException;
 }

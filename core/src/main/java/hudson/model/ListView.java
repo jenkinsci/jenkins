@@ -312,7 +312,7 @@ public class ListView extends View implements DirectlyModifiableView {
         if(name==null)
             throw new Failure("Query parameter 'name' is required");
 
-        TopLevelItem item = getOwnerItemGroup().getItem(name);
+        TopLevelItem item = resolveName(name);
         if (item == null)
             throw new Failure("Query parameter 'name' does not correspond to a known item");
 
@@ -331,11 +331,20 @@ public class ListView extends View implements DirectlyModifiableView {
         if(name==null)
             throw new Failure("Query parameter 'name' is required");
 
-        TopLevelItem item = getOwnerItemGroup().getItem(name);
+        TopLevelItem item = resolveName(name);
         if (remove(item))
             owner.save();
 
         return HttpResponses.ok();
+    }
+
+    private TopLevelItem resolveName(String name) {
+        TopLevelItem item = getOwnerItemGroup().getItem(name);
+        if (item == null) {
+            name = Items.getCanonicalName(getOwnerItemGroup(), name);
+            item = Jenkins.getInstance().getItemByFullName(name, TopLevelItem.class);
+        }
+        return item;
     }
 
     /**
