@@ -721,7 +721,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     String pluginName = n.substring(0, index);
                     String siteName = n.substring(index + 1);
                     UpdateSite updateSite = Jenkins.getInstance().getUpdateCenter().getById(siteName);
-                    if (siteName != null) {
+                    if (updateSite == null) {
+                        throw new Failure("No such update center: " + siteName);
+                    } else {
                         UpdateSite.Plugin plugin = updateSite.getPlugin(pluginName);
                         if (plugin != null) {
                             if (p != null) {
