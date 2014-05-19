@@ -749,8 +749,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public File download(DownloadJob job, URL src) throws IOException {
             CountingInputStream in = null;
             OutputStream out = null;
+            URLConnection con = null;
             try {
-                URLConnection con = connect(job,src);
+                con = connect(job,src);
                 int total = con.getContentLength();
                 in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
@@ -779,7 +780,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 return tmp;
             } catch (IOException e) {
-                throw new IOException2("Failed to download from "+src,e);
+                // assist troubleshooting in case of e.g. "too many redirects" by printing actual URL
+                String extraMessage = "";
+                if (con != null && con.getURL() != null && !src.toString().equals(con.getURL().toString())) {
+                    // Two URLs are considered equal if different hosts resolve to same IP. Prefer to log in case of string inequality,
+                    // because who knows how the server responds to different host name in the request header?
+                    // Also, since it involved name resolution, it'd be an expensive operation.
+                    extraMessage = " (redirected to: " + con.getURL() + ")";
+                }
+                throw new IOException2("Failed to download from "+src+extraMessage,e);
             } finally {
                 IOUtils.closeQuietly(in);
                 IOUtils.closeQuietly(out);
