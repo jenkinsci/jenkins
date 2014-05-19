@@ -146,7 +146,6 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 return;
             }
         }
-        throw new IllegalStateException("Trying to remove unknown computer");
     }
 
     /*package*/ @CheckForNull Computer getComputer(Node n) {
