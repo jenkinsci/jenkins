@@ -56,6 +56,9 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class="bug">
+    Misleading error message trying to dynamically update a plugin (which is impossible) on an NFS filesystem.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12753">issue 12753</a>)
+  <li class="bug">
     Updated component used by the swap space monitor to better support Debian and AIX.
   <li class="bug">
     SSH slave connections die after the slave outputs 4MB of stderr, usually during findbugs analysis

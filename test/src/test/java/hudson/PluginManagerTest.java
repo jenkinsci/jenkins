@@ -40,6 +40,7 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import jenkins.RestartRequiredException;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.junit.Assert.*;
@@ -354,6 +355,24 @@ public class PluginManagerTest {
         // No extensions exist.
         // extensions in depender is not loaded.
         assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+    }
+
+    @Bug(12753)
+    @WithPlugin("tasks.jpi")
+    @Test public void dynamicLoadRestartRequiredException() throws Exception {
+        File jpi = new File(r.jenkins.getRootDir(), "plugins/tasks.jpi");
+        assertTrue(jpi.isFile());
+        FileUtils.touch(jpi);
+        File timestamp = new File(r.jenkins.getRootDir(), "plugins/tasks/.timestamp2");
+        assertTrue(timestamp.isFile());
+        long lastMod = timestamp.lastModified();
+        try {
+            r.jenkins.getPluginManager().dynamicLoad(jpi);
+            fail("should not have worked");
+        } catch (RestartRequiredException x) {
+            // good
+        }
+        assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
 }

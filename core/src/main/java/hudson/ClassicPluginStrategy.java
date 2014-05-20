@@ -66,6 +66,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,15 +93,26 @@ public class ClassicPluginStrategy implements PluginStrategy {
         this.pluginManager = pluginManager;
     }
 
-    public PluginWrapper createPluginWrapper(File archive) throws IOException {
-        final Manifest manifest;
-        URL baseResourceURL;
+    @Override public String getShortName(File archive) throws IOException {
+        Manifest manifest;
+        if (isLinked(archive)) {
+            manifest = loadLinkedManifest(archive);
+        } else {
+            JarFile jf = new JarFile(archive, false);
+            try {
+                manifest = jf.getManifest();
+            } finally {
+                jf.close();
+            }
+        }
+        return PluginWrapper.computeShortName(manifest, archive);
+    }
 
-        File expandDir = null;
-        // if .hpi, this is the directory where war is expanded
+    private static boolean isLinked(File archive) {
+        return archive.getName().endsWith(".hpl") || archive.getName().endsWith(".jpl");
+    }
 
-        boolean isLinked = archive.getName().endsWith(".hpl") || archive.getName().endsWith(".jpl");
-        if (isLinked) {
+    private static Manifest loadLinkedManifest(File archive) throws IOException {
             // resolve the .hpl file to the location of the manifest file
             final String firstLine = IOUtils.readFirstLine(new FileInputStream(archive), "UTF-8");
             if (firstLine.startsWith("Manifest-Version:")) {
@@ -112,12 +124,24 @@ public class ClassicPluginStrategy implements PluginStrategy {
             // then parse manifest
             FileInputStream in = new FileInputStream(archive);
             try {
-                manifest = new Manifest(in);
+                return new Manifest(in);
             } catch (IOException e) {
                 throw new IOException("Failed to load " + archive, e);
             } finally {
                 in.close();
             }
+    }
+
+    @Override public PluginWrapper createPluginWrapper(File archive) throws IOException {
+        final Manifest manifest;
+        URL baseResourceURL;
+
+        File expandDir = null;
+        // if .hpi, this is the directory where war is expanded
+
+        boolean isLinked = isLinked(archive);
+        if (isLinked) {
+            manifest = loadLinkedManifest(archive);
         } else {
             if (archive.isDirectory()) {// already expanded
                 expandDir = archive;
