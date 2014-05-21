@@ -63,7 +63,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ListView extends View implements Saveable {
+public class ListView extends View implements DirectlyModifiableView {
 
     /**
      * List of job names. This is what gets serialized.
@@ -146,6 +146,7 @@ public class ListView extends View implements Saveable {
     	return jobFilters;
     }
 
+    @Override
     public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
@@ -157,6 +158,7 @@ public class ListView extends View implements Saveable {
      * This method returns a separate copy each time to avoid
      * concurrent modification issue.
      */
+    @Override
     public List<TopLevelItem> getItems() {
         SortedSet<String> names;
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
@@ -235,18 +237,32 @@ public class ListView extends View implements Saveable {
         return jobNames.contains(item.getRelativeNameFrom(getOwnerItemGroup()));
     }
 
-    
-
     /**
      * Adds the given item to this view.
      *
      * @since 1.389
      */
+    @Override
     public void add(TopLevelItem item) throws IOException {
         synchronized (this) {
             jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
         }
         save();
+    }
+
+    /**
+     * Removes given item from this view.
+     *
+     * @since TODO
+     */
+    @Override
+    public boolean remove(TopLevelItem item) throws IOException {
+        synchronized (this) {
+            String name = item.getRelativeNameFrom(getOwnerItemGroup());
+            if (!jobNames.remove(name)) return false;
+        }
+        save();
+        return true;
     }
 
     public String getIncludeRegex() {
@@ -272,6 +288,7 @@ public class ListView extends View implements Saveable {
         return statusFilter;
     }
 
+    @Override
     @RequirePOST
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
@@ -288,31 +305,46 @@ public class ListView extends View implements Saveable {
         return null;
     }
 
+    @Override
     @RequirePOST
     public HttpResponse doAddJobToView(@QueryParameter String name) throws IOException, ServletException {
         checkPermission(View.CONFIGURE);
         if(name==null)
             throw new Failure("Query parameter 'name' is required");
 
-        if (getOwnerItemGroup().getItem(name) == null)
+        TopLevelItem item = resolveName(name);
+        if (item == null)
             throw new Failure("Query parameter 'name' does not correspond to a known item");
 
-        if (jobNames.add(name))
-            owner.save();
+        if (contains(item)) return HttpResponses.ok();
+
+        add(item);
+        owner.save();
 
         return HttpResponses.ok();
     }
 
+    @Override
     @RequirePOST
     public HttpResponse doRemoveJobFromView(@QueryParameter String name) throws IOException, ServletException {
         checkPermission(View.CONFIGURE);
         if(name==null)
             throw new Failure("Query parameter 'name' is required");
 
-        if (jobNames.remove(name))
+        TopLevelItem item = resolveName(name);
+        if (remove(item))
             owner.save();
 
         return HttpResponses.ok();
+    }
+
+    private TopLevelItem resolveName(String name) {
+        TopLevelItem item = getOwnerItemGroup().getItem(name);
+        if (item == null) {
+            name = Items.getCanonicalName(getOwnerItemGroup(), name);
+            item = Jenkins.getInstance().getItemByFullName(name, TopLevelItem.class);
+        }
+        return item;
     }
 
     /**
@@ -367,6 +399,7 @@ public class ListView extends View implements Saveable {
 
     @Extension
     public static class DescriptorImpl extends ViewDescriptor {
+        @Override
         public String getDisplayName() {
             return Messages.ListView_DisplayName();
         }
@@ -391,6 +424,7 @@ public class ListView extends View implements Saveable {
      * @deprecated as of 1.391
      *  Use {@link ListViewColumn#createDefaultInitialColumnList()}
      */
+    @Deprecated
     public static List<ListViewColumn> getDefaultColumns() {
         return ListViewColumn.createDefaultInitialColumnList();
     }
