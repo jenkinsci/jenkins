@@ -38,7 +38,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * Marker interface for {@link View} its items can be modified.
  *
  * @author ogondza
- * @since TODO
+ * @since 1.566
  */
 public interface DirectlyModifiableView {
 

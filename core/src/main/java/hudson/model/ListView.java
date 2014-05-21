@@ -253,7 +253,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Removes given item from this view.
      *
-     * @since TODO
+     * @since 1.566
      */
     @Override
     public boolean remove(TopLevelItem item) throws IOException {
