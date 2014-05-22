@@ -37,6 +37,7 @@ import hudson.security.UserMayOrMayNotExistException;
 import hudson.util.FormApply;
 import hudson.util.RunList;
 import hudson.util.XStream2;
+import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.security.ImpersonatingUserDetailsService;
@@ -57,6 +58,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -69,11 +71,12 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -125,8 +128,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         load();
     }
 
+    /**
+     * Returns the {@link jenkins.model.IdStrategy} for use with {@link User} instances. See
+     * {@link hudson.security.SecurityRealm#getUserIdStrategy()}
+     *
+     * @return the {@link jenkins.model.IdStrategy} for use with {@link User} instances.
+     * @since 1.560
+     */
+    @Nonnull
+    public static IdStrategy idStrategy() {
+        SecurityRealm realm = Jenkins.getInstance().getSecurityRealm();
+        return realm == null ? IdStrategy.CASE_INSENSITIVE : realm.getUserIdStrategy();
+    }
+
     public int compareTo(User that) {
-        return this.id.compareTo(that.id);
+        return idStrategy().compare(this.id, that.id);
     }
 
     /**
@@ -169,11 +185,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public String getUrl() {
-        return "user/"+Util.rawEncode(id);
+        return "user/"+Util.rawEncode(idStrategy().keyFor(id));
     }
 
     public String getSearchUrl() {
-        return "/user/"+Util.rawEncode(id);
+        return "/user/"+Util.rawEncode(idStrategy().keyFor(id));
     }
 
     /**
@@ -354,12 +370,24 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * retrieve a user by its ID, and create a new one if requested
      */
     private static User getOrCreate(String id, String fullName, boolean create) {
-        String idkey = id.toLowerCase(Locale.ENGLISH);
+        String idkey = idStrategy().keyFor(id);
 
-        User u = byName.get(idkey);
+        byNameLock.readLock().lock();
+        User u;
+        try {
+            u = byName.get(idkey);
+        } finally {
+            byNameLock.readLock().unlock();
+        }
         if (u==null && (create || getConfigFileFor(id).exists())) {
             User tmp = new User(id, fullName);
-            User prev = byName.putIfAbsent(idkey, u = tmp);
+            User prev;
+            byNameLock.readLock().lock();
+            try {
+                prev = byName.putIfAbsent(idkey, u = tmp);
+            } finally {
+                byNameLock.readLock().unlock();
+            }
             if (prev != null) {
                 u = prev; // if some has already put a value in the map, use it
                 if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
@@ -424,10 +452,18 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             lastScanned = System.currentTimeMillis();
         }
 
-        ArrayList<User> r = new ArrayList<User>(byName.values());
+        byNameLock.readLock().lock();
+        ArrayList<User> r;
+        try {
+            r = new ArrayList<User>(byName.values());
+        } finally {
+            byNameLock.readLock().unlock();
+        }
         Collections.sort(r,new Comparator<User>() {
+            IdStrategy strategy = idStrategy();
+
             public int compare(User o1, User o2) {
-                return o1.getId().compareToIgnoreCase(o2.getId());
+                return strategy.compare(o1.getId(), o2.getId());
             }
         });
         return r;
@@ -437,15 +473,47 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Reloads the configuration from disk.
      */
     public static void reload() {
-        for( User u : byName.values() )
-            u.load();
+        byNameLock.readLock().lock();
+        try {
+            for (User u : byName.values()) {
+                u.load();
+            }
+        } finally {
+            byNameLock.readLock().unlock();
+        }
     }
 
     /**
      * Stop gap hack. Don't use it. To be removed in the trunk.
      */
     public static void clear() {
-        byName.clear();
+        byNameLock.writeLock().lock();
+        try {
+            byName.clear();
+        } finally {
+            byNameLock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Called when changing the {@link IdStrategy}.
+     * @since 1.560
+     */
+    public static void rekey() {
+        final IdStrategy strategy = idStrategy();
+        byNameLock.writeLock().lock();
+        try {
+            for (Map.Entry<String, User> e : byName.entrySet()) {
+                String idkey = strategy.keyFor(e.getValue().id);
+                if (!idkey.equals(e.getKey())) {
+                    // need to remap
+                    byName.remove(e.getKey());
+                    byName.putIfAbsent(idkey, e.getValue());
+                }
+            }
+        } finally {
+            byNameLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -463,7 +531,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         for (Cause cause : b.getCauses()) {
             if (cause instanceof Cause.UserIdCause) {
                 String userId = ((Cause.UserIdCause) cause).getUserId();
-                if (userId != null && userId.equals(getId())) {
+                if (userId != null && idStrategy().equals(userId, getId())) {
                     return true;
                 }
             }
@@ -508,7 +576,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     private static final File getConfigFileFor(String id) {
-        return new File(getRootDir(),id +"/config.xml");
+        return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
     }
 
     /**
@@ -534,8 +602,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      if we fail to delete.
      */
     public synchronized void delete() throws IOException {
-        byName.remove(id.toLowerCase(Locale.ENGLISH));
-        Util.deleteRecursive(new File(getRootDir(), id));
+        final IdStrategy strategy = idStrategy();
+        byNameLock.readLock().lock();
+        try {
+            byName.remove(strategy.keyFor(id));
+        } finally {
+            byNameLock.readLock().unlock();
+        }
+        Util.deleteRecursive(new File(getRootDir(), strategy.filenameOf(id)));
     }
 
     /**
@@ -588,7 +662,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @RequirePOST
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
-        if (id.equals(Jenkins.getAuthentication().getName())) {
+        if (idStrategy().equals(id, Jenkins.getAuthentication().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
             return;
         }
@@ -628,9 +702,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Keyed by {@link User#id}. This map is used to ensure
      * singleton-per-id semantics of {@link User} objects.
      *
-     * The key needs to be lower cased for case insensitivity.
+     * The key needs to be generated by {@link IdStrategy#keyFor(String)}.
      */
+    @GuardedBy("byNameLock")
     private static final ConcurrentMap<String,User> byName = new ConcurrentHashMap<String, User>();
+
+    /**
+     * This lock is used to guard access to the {@link #byName} map. Use
+     * {@link java.util.concurrent.locks.ReadWriteLock#readLock()} for normal access and
+     * {@link java.util.concurrent.locks.ReadWriteLock#writeLock()} for {@link #rekey()} or any other operation
+     * that requires operating on the map as a whole.
+     * @since 1.560
+     */
+    private static final ReadWriteLock byNameLock = new ReentrantReadWriteLock();
 
     /**
      * Used to load/save user configuration.
@@ -648,7 +732,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // always allow a non-anonymous user full control of himself.
         return new ACL() {
             public boolean hasPermission(Authentication a, Permission permission) {
-                return (a.getName().equals(id) && !(a instanceof AnonymousAuthenticationToken))
+                return (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
                         || base.hasPermission(a, permission);
             }
         };
@@ -666,8 +750,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * With ADMINISTER permission, can delete users with persisted data but can't delete self.
      */
     public boolean canDelete() {
-        return hasPermission(Jenkins.ADMINISTER) && !id.equals(Jenkins.getAuthentication().getName())
-                && new File(getRootDir(), id).exists();
+        final IdStrategy strategy = idStrategy();
+        return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication().getName())
+                && new File(getRootDir(), strategy.filenameOf(id)).exists();
     }
 
     /**
@@ -687,7 +772,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 continue;
             }
             String n = a.getAuthority();
-            if (n != null && !n.equals(id)) {
+            if (n != null && !idStrategy().equals(n, id)) {
                 r.add(n);
             }
         }
@@ -791,5 +876,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return -1; // lower than default
         }
     }
+
 }
 

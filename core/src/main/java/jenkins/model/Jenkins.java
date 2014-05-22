@@ -2043,6 +2043,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(securityRealm==null)
             securityRealm= SecurityRealm.NO_AUTHENTICATION;
         this.useSecurity = true;
+        IdStrategy oldUserIdStrategy = this.securityRealm == null
+                ? securityRealm.getUserIdStrategy() // don't trigger rekey on Jenkins load
+                : this.securityRealm.getUserIdStrategy();
         this.securityRealm = securityRealm;
         // reset the filters and proxies for the new SecurityRealm
         try {
@@ -2055,6 +2058,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 LOGGER.fine("HudsonFilter has been previously initialized: Setting security up");
                 filter.reset(securityRealm);
                 LOGGER.fine("Security is now fully set up");
+            }
+            if (!oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
+                User.rekey();
             }
         } catch (ServletException e) {
             // for binary compatibility, this method cannot throw a checked exception

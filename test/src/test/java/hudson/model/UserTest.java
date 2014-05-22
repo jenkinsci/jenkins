@@ -36,6 +36,8 @@ import hudson.tasks.MailAddressResolver;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
+
+import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -160,7 +162,58 @@ public class UserTest {
         User user4 = User.get("Marie",false, Collections.EMPTY_MAP);
         assertNull("User should not be created because Marie does not exists.", user4);
     }
+
+    @Test
+    public void caseInsensitivity() {
+        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null){
+            @Override
+            public IdStrategy getUserIdStrategy() {
+                return new IdStrategy.CaseInsensitive();
+            }
+        });
+        User user = User.get("john smith");
+        User user2 = User.get("John Smith");
+        assertSame("Users should have the same id.", user.getId(), user2.getId());
+    }
     
+    @Test
+    public void caseSensitivity() {
+        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null){
+            @Override
+            public IdStrategy getUserIdStrategy() {
+                return new IdStrategy.CaseSensitive();
+            }
+        });
+        User user = User.get("john smith");
+        User user2 = User.get("John Smith");
+        assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
+        assertEquals("john smith", User.idStrategy().keyFor(user.getId()));
+        assertEquals("john smith", User.idStrategy().filenameOf(user.getId()));
+        assertEquals("John Smith", User.idStrategy().keyFor(user2.getId()));
+        assertEquals("~john ~smith", User.idStrategy().filenameOf(user2.getId()));
+    }
+
+    @Test
+    public void caseSensitivityEmail() {
+        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null){
+            @Override
+            public IdStrategy getUserIdStrategy() {
+                return new IdStrategy.CaseSensitiveEmailAddress();
+            }
+        });
+        User user = User.get("john.smith@acme.org");
+        User user2 = User.get("John.Smith@acme.org");
+        assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
+        assertEquals("john.smith@acme.org", User.idStrategy().keyFor(user.getId()));
+        assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user.getId()));
+        assertEquals("John.Smith@acme.org", User.idStrategy().keyFor(user2.getId()));
+        assertEquals("~john.~smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
+        user2 = User.get("john.smith@ACME.ORG");
+        assertEquals("Users should have the same id.", user.getId(), user2.getId());
+        assertEquals("john.smith@acme.org", User.idStrategy().keyFor(user2.getId()));
+        assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
+    }
+
     @Test
     public void testAddAndGetProperty() throws IOException {
         User user = User.get("John Smith");  
