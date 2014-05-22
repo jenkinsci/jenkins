@@ -156,7 +156,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *
      * @return the {@link IdStrategy} that should be used for turning
      *         {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
-     * @since 1.560
+     * @since 1.566
      */
     public IdStrategy getUserIdStrategy() {
         return IdStrategy.CASE_INSENSITIVE;
@@ -170,7 +170,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *
      * @return the {@link IdStrategy} that should be used for turning {@link hudson.security.GroupDetails#getName()}
      *         into an ID.
-     * @since 1.560
+     * @since 1.566
      */
     public IdStrategy getGroupIdStrategy() {
         return getUserIdStrategy();

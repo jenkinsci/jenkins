@@ -28,7 +28,7 @@ import hudson.model.Descriptor;
 /**
  * The {@link hudson.model.Descriptor} for {@link jenkins.model.IdStrategy}
  *
- * @since 1.560
+ * @since 1.566
  */
 public abstract class IdStrategyDescriptor extends Descriptor<IdStrategy> {
 

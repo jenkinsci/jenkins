@@ -133,7 +133,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * {@link hudson.security.SecurityRealm#getUserIdStrategy()}
      *
      * @return the {@link jenkins.model.IdStrategy} for use with {@link User} instances.
-     * @since 1.560
+     * @since 1.566
      */
     @Nonnull
     public static IdStrategy idStrategy() {
@@ -497,7 +497,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Called when changing the {@link IdStrategy}.
-     * @since 1.560
+     * @since 1.566
      */
     public static void rekey() {
         final IdStrategy strategy = idStrategy();
@@ -712,7 +712,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * {@link java.util.concurrent.locks.ReadWriteLock#readLock()} for normal access and
      * {@link java.util.concurrent.locks.ReadWriteLock#writeLock()} for {@link #rekey()} or any other operation
      * that requires operating on the map as a whole.
-     * @since 1.560
      */
     private static final ReadWriteLock byNameLock = new ReentrantReadWriteLock();
 

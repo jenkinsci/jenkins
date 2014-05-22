@@ -37,7 +37,7 @@ import java.util.Locale;
 /**
  * The strategy to use for manipulating converting names (e.g. user names, group names, etc) into ids.
  *
- * @since 1.560
+ * @since 1.566
  */
 public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> implements ExtensionPoint,
         Comparator<String> {
@@ -135,8 +135,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
     /**
      * The default case insensitive {@link IdStrategy}
-     *
-     * @since 1.560
      */
     public static class CaseInsensitive extends IdStrategy {
 
@@ -177,8 +175,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
     /**
      * A case sensitive {@link IdStrategy}
-     *
-     * @since 1.560
      */
     public static class CaseSensitive extends IdStrategy {
 
@@ -256,8 +252,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * Note: Not all email addresses are case sensitive. It is knowledge that belongs to the server that holds the
      * mailbox. Most sane system administrators do not configure their accounts using case sensitive mailboxes
      * but the RFC does allow them the option to configure that way. Domain names are always case insensitive per RFC.
-     *
-     * @since 1.560
      */
     public static class CaseSensitiveEmailAddress extends CaseSensitive {
 
