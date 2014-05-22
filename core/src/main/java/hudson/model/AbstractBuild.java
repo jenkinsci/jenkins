@@ -915,6 +915,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public Calendar due() {
         return getTimestamp();
     }
+
+    /**
+     * {@inheritDoc}
+     * The action may have a {@code summary.jelly} view containing a {@code <t:summary>} or other {@code <tr>}.
+     */
+    @Override public void addAction(Action a) {
+        super.addAction(a);
+    }
       
     @SuppressWarnings("deprecation")
     public List<Action> getPersistentActions(){

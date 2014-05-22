@@ -362,7 +362,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         return Collections.unmodifiableList(actions);
     }
-   
+
+    /**
+     * {@inheritDoc}
+     * A {@link RunAction2} is handled specially.
+     */
     @SuppressWarnings("deprecation")
     @Override
     public void addAction(Action a) {
