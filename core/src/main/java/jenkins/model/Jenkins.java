@@ -296,6 +296,7 @@ import java.util.logging.Logger;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
+import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import static javax.servlet.http.HttpServletResponse.*;
 
@@ -854,7 +855,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 Computer c = toComputer();
                 if(c!=null)
                     for (ComputerListener cl : ComputerListener.all())
-                        cl.onOnline(c,StreamTaskListener.fromStdout());
+                        cl.onOnline(c, new LogTaskListener(LOGGER, INFO));
             }
 
             for (ItemListener l : ItemListener.all()) {
