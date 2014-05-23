@@ -46,6 +46,8 @@ import hudson.util.TimeUnit2;
 import hudson.util.SequentialExecutionQueue;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -71,6 +73,8 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import static java.util.logging.Level.*;
 import jenkins.model.RunAction2;
+
+import javax.annotation.Nonnull;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -536,6 +540,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         private String pollingLog;
 
+        private transient AbstractBuild<?, ?>  build;
+
         public SCMTriggerCause(File logFile) throws IOException {
             // TODO: charset of this log file?
             this(FileUtils.readFileToString(logFile));
@@ -554,7 +560,13 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         @Override
+        public void onLoad(@Nonnull AbstractBuild<?, ?> build) {
+            this.build = build;
+        }
+
+        @Override
         public void onAddedTo(AbstractBuild build) {
+            this.build = build;
             try {
                 BuildAction a = new BuildAction(build);
                 FileUtils.writeStringToFile(a.getPollingLogFile(),pollingLog);
@@ -568,6 +580,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         @Override
         public String getShortDescription() {
             return Messages.SCMTrigger_SCMTriggerCause_ShortDescription();
+        }
+
+        @Restricted(DoNotUse.class)
+        public AbstractBuild<?, ?> getBuild() {
+            return this.build;
         }
 
         @Override
