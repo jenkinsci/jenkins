@@ -76,6 +76,7 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      *      method is invoked. Never null. {@link MarkupText#getText()} on this instance
      *      will return the same string as {@link Entry#getMsgEscaped()}.
      */
+    // TODO switch to Run
     public abstract void annotate(AbstractBuild<?,?> build, Entry change, MarkupText text );
 
     /**

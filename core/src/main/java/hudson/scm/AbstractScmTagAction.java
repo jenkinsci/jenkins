@@ -23,7 +23,6 @@
  */
 package hudson.scm;
 
-import hudson.model.AbstractBuild;
 import hudson.model.TaskAction;
 import hudson.model.BuildBadgeAction;
 import hudson.model.Run;
@@ -47,9 +46,9 @@ import jenkins.model.RunAction2;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction, RunAction2 {
-    protected transient /*final*/ AbstractBuild build;
+    protected transient /*final*/ Run build;
 
-    protected AbstractScmTagAction(AbstractBuild build) {
+    protected AbstractScmTagAction(Run build) {
         this.build = build;
     }
 
@@ -65,7 +64,8 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         return SCM.TAG;
     }
 
-    public AbstractBuild getBuild() {
+    // TODO binary compatibility for AbstractBuild
+    public Run getBuild() {
         return build;
     }
 
@@ -100,7 +100,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     }
 
     @Override public void onLoad(Run<?, ?> r) {
-        build = (AbstractBuild) r;
+        build = r;
     }
 
 }

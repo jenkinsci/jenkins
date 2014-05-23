@@ -40,5 +40,6 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public abstract class ChangeLogParser {
+    // TODO switch to Run
     public abstract ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile) throws IOException, SAXException;
 }

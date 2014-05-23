@@ -48,6 +48,7 @@ public abstract class SCMPollListener implements ExtensionPoint {
      * @param listener
      *      Connected to the polling log.
      */
+    // TODO switch to Job
 	public void onBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {}
 
     /**

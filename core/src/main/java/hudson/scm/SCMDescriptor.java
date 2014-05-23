@@ -23,14 +23,15 @@
  */
 package hudson.scm;
 
-import hudson.model.Descriptor;
+import hudson.Util;
 import hudson.model.AbstractProject;
-
-import java.util.List;
-import java.util.Collections;
-import java.util.logging.Logger;
-import static java.util.logging.Level.WARNING;
+import hudson.model.Descriptor;
+import hudson.model.Job;
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
 
 /**
  * {@link Descriptor} for {@link SCM}.
@@ -111,12 +112,25 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      *
      * <p>
      * When this method returns false, this {@link SCM} will not appear in the configuration screen
-     * for the given project. The default method always return true.
+     * for the given project. The default is true for {@link AbstractProject} but false for {@link Job}.
      *
      * @since 1.294
      */
+    public boolean isApplicable(Job project) {
+        if (project instanceof AbstractProject) {
+            return isApplicable((AbstractProject) project);
+        } else {
+            return false;
+        }
+    }
+
+    @Deprecated
     public boolean isApplicable(AbstractProject project) {
-        return true;
+        if (Util.isOverridden(SCMDescriptor.class, getClass(), "isApplicable", Job.class)) {
+            return isApplicable((Job) project);
+        } else {
+            return true;
+        }
     }
 
     /**

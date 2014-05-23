@@ -24,37 +24,37 @@
 package hudson.scm;
 
 import hudson.AbortException;
+import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.DescriptorExtensionList;
-import hudson.Extension;
 import hudson.Util;
-import hudson.security.PermissionGroup;
-import hudson.security.Permission;
-import hudson.security.PermissionScope;
-import hudson.tasks.Builder;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Api;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.TaskListener;
-import hudson.model.Node;
-import hudson.model.WorkspaceCleanupThread;
-import hudson.util.IOUtils;
-import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
-import hudson.model.Api;
-import hudson.model.Action;
-import hudson.model.AbstractProject.AbstractProjectDescriptor;
-
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItemDescriptor;
+import hudson.model.WorkspaceCleanupThread;
+import hudson.security.Permission;
+import hudson.security.PermissionGroup;
+import hudson.security.PermissionScope;
+import hudson.tasks.Builder;
+import hudson.util.IOUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
-
+import java.util.List;
+import java.util.Map;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -211,8 +211,21 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * 
      * @since 1.246
      */
+    public boolean processWorkspaceBeforeDeletion(Job<?,?> project, FilePath workspace, Node node) throws IOException, InterruptedException {
+        if (project instanceof AbstractProject) {
+            return processWorkspaceBeforeDeletion((AbstractProject) project, workspace, node);
+        } else {
+            return true;
+        }
+    }
+
+    @Deprecated
     public boolean processWorkspaceBeforeDeletion(AbstractProject<?,?> project, FilePath workspace, Node node) throws IOException, InterruptedException {
-        return true;
+        if (Util.isOverridden(SCM.class, getClass(), "processWorkspaceBeforeDeletion", Job.class, FilePath.class, Node.class)) {
+            return processWorkspaceBeforeDeletion((Job) project, workspace, node);
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -284,6 +297,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      The calculated {@link SCMRevisionState} is for the files checked out in this build. Never null.
      *      If {@link #requiresWorkspaceForPolling()} returns true, Hudson makes sure that the workspace of this
      *      build is available and accessible by the callee.
+     * @param workspace the location of the checkout
      * @param launcher
      *      Abstraction of the machine where the polling will take place. If SCM declares
      *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace},
@@ -297,12 +311,24 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up. 
      */
-    public abstract SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+    public SCMRevisionState calcRevisionsFromBuild(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && Util.isOverridden(SCM.class, getClass(), "calcRevisionsFromBuild", AbstractBuild.class, Launcher.class, TaskListener.class)) {
+            return calcRevisionsFromBuild((AbstractBuild) build, launcher, listener);
+        } else {
+            throw new AbstractMethodError("you must override the new calcRevisionsFromBuild overload");
+        }
+    }
+
+    @Deprecated
+    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        return calcRevisionsFromBuild(build, build.getWorkspace(), launcher, listener);
+    }
 
     /**
      * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
      * on BugParade for more details.
      */
+    @Deprecated
     public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return calcRevisionsFromBuild(build, launcher, listener);
     }
@@ -347,14 +373,17 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up.
      */
-    protected abstract PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException;
+    public PollingResult compareRemoteRevisionWith(Job<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        if (project instanceof AbstractProject && Util.isOverridden(SCM.class, getClass(), "compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class)) {
+            return compareRemoteRevisionWith((AbstractProject) project, launcher, workspace, listener, baseline);
+        } else {
+            throw new AbstractMethodError("you must override the new overload of compareRemoteRevisionWith");
+        }
+    }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private PollingResult _compareRemoteRevisionWith(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline2) throws IOException, InterruptedException {
-        return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
+    @Deprecated
+    protected PollingResult compareRemoteRevisionWith(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+        return compareRemoteRevisionWith((Job) project, launcher, workspace, listener, baseline);
     }
 
     /**
@@ -371,7 +400,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
                 baseline2 = _calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
             }
 
-            return _compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
+            return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);
         } else {
             return pollChanges(project,launcher,workspace,listener) ? PollingResult.SIGNIFICANT : PollingResult.NO_CHANGES;
         }
@@ -419,13 +448,34 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to be aborted.
      */
-    public abstract boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException;
+    public boolean checkout(Run<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
+            return checkout((AbstractBuild) build, launcher, workspace, listener, changelogFile);
+        } else {
+            throw new AbstractMethodError("you must override the new overload of checkout");
+        }
+    }
+
+    @Deprecated
+    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
+        return checkout((Run) build, launcher, workspace, listener, changelogFile);
+    }
 
     /**
      * Get a chance to do operations after the workspace i checked out and the changelog is written.
      * @since 1.534, 1.532.1
      */
+    public void postCheckout(Run<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild) {
+            postCheckout((AbstractBuild) build, launcher, workspace, listener);
+        }
+    }
+
+    @Deprecated
     public void postCheckout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException, InterruptedException {
+        if (Util.isOverridden(SCM.class, getClass(), "postCheckout", Run.class, Launcher.class, FilePath.class, BuildListener.class)) {
+            postCheckout((Run) build, launcher, workspace, listener);
+        }
         /* Default implementation is noop */
     }
 
@@ -442,6 +492,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * check out (like SVN revision number that was checked out), be prepared for the possibility that the
      * check out hasn't happened yet.
      */
+    // TODO is an equivalent for Run needed?
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
         // default implementation is noop.
     }
@@ -493,6 +544,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @since 1.382
      */
+    // TODO perhaps deprecate all replace with a single getModuleRoots(FilePath, Run)
     public FilePath getModuleRoot(FilePath workspace, AbstractBuild build) {
         // For backwards compatibility, call the one argument version of the method.
         return getModuleRoot(workspace);
@@ -616,7 +668,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     /**
      * Returns the list of {@link SCMDescriptor}s that are applicable to the given project.
      */
-    public static List<SCMDescriptor<?>> _for(final AbstractProject project) {
+    public static List<SCMDescriptor<?>> _for(final Job project) {
         if(project==null)   return all();
         
         final Descriptor pd = Jenkins.getInstance().getDescriptor((Class) project.getClass());
@@ -624,8 +676,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         for (SCMDescriptor<?> scmDescriptor : all()) {
             if(!scmDescriptor.isApplicable(project))    continue;
 
-            if (pd instanceof AbstractProjectDescriptor) {
-                AbstractProjectDescriptor apd = (AbstractProjectDescriptor) pd;
+            if (pd instanceof TopLevelItemDescriptor) {
+                TopLevelItemDescriptor apd = (TopLevelItemDescriptor) pd;
                 if(!apd.isApplicable(scmDescriptor))    continue;
             }
 
