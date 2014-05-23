@@ -721,7 +721,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     public BallColor getIconColor() {
         if(isDisabled())
-            return BallColor.DISABLED;
+            return isBuilding() ? BallColor.DISABLED_ANIME : BallColor.DISABLED;
         else
             return super.getIconColor();
     }
