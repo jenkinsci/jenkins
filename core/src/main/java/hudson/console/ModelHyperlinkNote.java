@@ -6,6 +6,7 @@ import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.User;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -49,7 +50,8 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     }
 
     public static String encodeTo(Node node) {
-        return encodeTo("/computer/"+ node.getNodeName(), node.getDisplayName());
+        String nodePath = node == Jenkins.getInstance() ? "(master)" : node.getNodeName();
+        return encodeTo("/computer/"+ nodePath, node.getDisplayName());
     }
 
     public static String encodeTo(String url, String text) {
