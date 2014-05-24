@@ -38,7 +38,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     }
 
     public static String encodeTo(Item item) {
-        return encodeTo(item,item.getDisplayName());
+        return encodeTo(item,item.getFullDisplayName());
     }
 
     public static String encodeTo(Item item, String text) {
