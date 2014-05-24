@@ -1773,14 +1773,45 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         public FormValidation doCheckRawBuildsDir(@QueryParameter String value) {
-            if (!value.contains("${")) {
-                File d = new File(value);
-                if (!d.isDirectory() && (d.getParentFile() == null || !d.getParentFile().canWrite())) {
+            // do essentially what expandVariablesForDirectory does, without an Item
+            String replacedValue = Util.replaceMacro(value, ImmutableMap.of(
+                "JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath(),
+                "ITEM_ROOTDIR", Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo",
+                "ITEM_FULLNAME", "doCheckRawBuildsDir-Marker:foo",   // legacy, deprecated
+                "ITEM_FULL_NAME", "doCheckRawBuildsDir-Marker$foo")); // safe, see JENKINS-12251
+
+            File replacedFile = new File(replacedValue);
+            if (!replacedFile.isAbsolute()) {
+                return FormValidation.error(value + " does not resolve to an absolute path");
+            }
+
+            if (!replacedValue.contains("doCheckRawBuildsDir-Marker")) {
+                return FormValidation.error(value + " does not contain ${ITEM_FULL_NAME} or ${ITEM_ROOTDIR}, cannot distinguish between projects");
+            }
+
+            if (replacedValue.contains("doCheckRawBuildsDir-Marker:foo")) {
+                // make sure platform can handle colon
+                try {
+                    File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
+                    tmp.delete();
+                } catch (IOException e) {
+                    return FormValidation.error(value + " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
+                }
+            }
+
+            File d = new File(replacedValue);
+            if (!d.isDirectory()) {
+                // if dir does not exist (almost guaranteed) need to make sure nearest existing ancestor can be written to
+                d = d.getParentFile();
+                while (!d.exists()) {
+                    d = d.getParentFile();
+                }
+                if (!d.canWrite()) {
                     return FormValidation.error(value + " does not exist and probably cannot be created");
                 }
-                // TODO failure to use either ITEM_* variable might be an error too?
             }
-            return FormValidation.ok(); // TODO assumes it will be OK after substitution, but can we be sure?
+
+            return FormValidation.ok();
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
