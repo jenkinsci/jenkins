@@ -78,7 +78,7 @@ public class JUnitResultArchiver extends Recorder {
 
     /**
      * If true, ignore timstamp of junit reports.
-     * @since 1.362
+     * @since 1.566
      */
     private final boolean ignoreResultFileTimestamps;
 
