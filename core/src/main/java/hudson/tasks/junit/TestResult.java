@@ -92,24 +92,27 @@ public final class TestResult extends MetaTabulatedResult {
     private transient List<CaseResult> failedTests;
 
     private final boolean keepLongStdio;
+    
+    private final boolean ignoreResultFileTimestamps;
 
     /**
      * Creates an empty result.
      */
     public TestResult() {
-        this(false);
+        this(false, false);
     }
 
     /**
      * @since 1.522
      */
-    public TestResult(boolean keepLongStdio) {
+    public TestResult(boolean keepLongStdio, boolean ignoreResultFileTimestamps) {
         this.keepLongStdio = keepLongStdio;
+        this.ignoreResultFileTimestamps = ignoreResultFileTimestamps;
     }
 
     @Deprecated
     public TestResult(long buildTime, DirectoryScanner results) throws IOException {
-        this(buildTime, results, false);
+        this(buildTime, results, false, false);
     }
 
     /**
@@ -118,8 +121,9 @@ public final class TestResult extends MetaTabulatedResult {
      * @param keepLongStdio if true, retain a suite's complete stdout/stderr even if this is huge and the suite passed
      * @since 1.358
      */
-    public TestResult(long buildTime, DirectoryScanner results, boolean keepLongStdio) throws IOException {
+    public TestResult(long buildTime, DirectoryScanner results, boolean keepLongStdio, boolean ignoreResultFileTimestamps) throws IOException {
         this.keepLongStdio = keepLongStdio;
+        this.ignoreResultFileTimestamps = ignoreResultFileTimestamps;
         parse(buildTime, results);
     }
 

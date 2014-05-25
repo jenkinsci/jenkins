@@ -69,12 +69,18 @@ public class JUnitResultArchiver extends Recorder {
      * {@link FileSet} "includes" string, like "foo/bar/*.xml"
      */
     private final String testResults;
-
+    
     /**
      * If true, retain a suite's complete stdout/stderr even if this is huge and the suite passed.
      * @since 1.358
      */
     private final boolean keepLongStdio;
+
+    /**
+     * If true, ignore timstamp of junit reports.
+     * @since 1.362
+     */
+    private final boolean ignoreResultFileTimestamps;
 
     /**
      * {@link TestDataPublisher}s configured for this archiver, to process the recorded data.
@@ -89,23 +95,24 @@ public class JUnitResultArchiver extends Recorder {
 	 */
 	@Deprecated
 	public JUnitResultArchiver(String testResults) {
-		this(testResults, false, null);
+		this(testResults, false, true, null);
 	}
 
     @Deprecated
     public JUnitResultArchiver(String testResults,
             DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers) {
-        this(testResults, false, testDataPublishers);
+        this(testResults, false, true, testDataPublishers);
     }
 	
 	@DataBoundConstructor
 	public JUnitResultArchiver(
 			String testResults,
-            boolean keepLongStdio,
+            boolean keepLongStdio, boolean ignoreResultFileTimestamps,
 			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers) {
 		this.testResults = testResults;
-        this.keepLongStdio = keepLongStdio;
+                this.keepLongStdio = keepLongStdio;
 		this.testDataPublishers = testDataPublishers;
+                this.ignoreResultFileTimestamps = ignoreResultFileTimestamps;
 	}
 
     /**
@@ -114,7 +121,7 @@ public class JUnitResultArchiver extends Recorder {
     protected TestResult parse(String expandedTestResults, AbstractBuild build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException
     {
-        return new JUnitParser(isKeepLongStdio()).parse(expandedTestResults, build, launcher, listener);
+        return new JUnitParser(isKeepLongStdio(), isIgnoreResultFileTimestamp()).parse(expandedTestResults, build, launcher, listener);
     }
 
     @Override
@@ -215,6 +222,10 @@ public class JUnitResultArchiver extends Recorder {
 	public boolean isKeepLongStdio() {
 		return keepLongStdio;
 	}
+        
+        public boolean isIgnoreResultFileTimestamp() {
+                return ignoreResultFileTimestamps;
+        }
 
 	/**
 	 * Test result tracks the diff from the previous run, hence the checkpoint.
@@ -240,6 +251,7 @@ public class JUnitResultArchiver extends Recorder {
 				throws hudson.model.Descriptor.FormException {
 			String testResults = formData.getString("testResults");
             boolean keepLongStdio = formData.getBoolean("keepLongStdio");
+            boolean ignoreResultFileTimestamps = formData.getBoolean("ignoreResultFileTimestamps");
 			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers = new DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>>(Saveable.NOOP);
             try {
                 testDataPublishers.rebuild(req, formData, TestDataPublisher.all());
@@ -247,7 +259,7 @@ public class JUnitResultArchiver extends Recorder {
                 throw new FormException(e,null);
             }
 
-            return new JUnitResultArchiver(testResults, keepLongStdio, testDataPublishers);
+            return new JUnitResultArchiver(testResults, keepLongStdio, ignoreResultFileTimestamps, testDataPublishers);
 		}
 
 		/**

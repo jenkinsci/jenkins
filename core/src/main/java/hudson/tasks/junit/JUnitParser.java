@@ -43,19 +43,21 @@ import org.apache.tools.ant.DirectoryScanner;
 public class JUnitParser extends TestResultParser {
 
     private final boolean keepLongStdio;
+    private final boolean ignoreResultFileTimestamps;
 
     /** TODO TestResultParser.all does not seem to ever be called so why must this be an Extension? */
     @Deprecated
     public JUnitParser() {
-        this(false);
+        this(false, false);
     }
 
     /**
      * @param keepLongStdio if true, retain a suite's complete stdout/stderr even if this is huge and the suite passed
      * @since 1.358
      */
-    public JUnitParser(boolean keepLongStdio) {
+    public JUnitParser(boolean keepLongStdio, boolean ignoreResultFileTimestamps) {
         this.keepLongStdio = keepLongStdio;
+        this.ignoreResultFileTimestamps = ignoreResultFileTimestamps;
     }
 
     @Override
@@ -84,7 +86,7 @@ public class JUnitParser extends TestResultParser {
         if (workspace == null) {
             throw new AbortException(Messages.JUnitParser_no_workspace_found(build));
         }
-        return workspace.act(new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio));
+        return workspace.act(new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio, ignoreResultFileTimestamps));
     }
 
     private static final class ParseResultCallable implements
@@ -93,12 +95,14 @@ public class JUnitParser extends TestResultParser {
         private final String testResults;
         private final long nowMaster;
         private final boolean keepLongStdio;
+        private final boolean ignoreResultFileTimestamps;
 
-        private ParseResultCallable(String testResults, long buildTime, long nowMaster, boolean keepLongStdio) {
+        private ParseResultCallable(String testResults, long buildTime, long nowMaster, boolean keepLongStdio, boolean ignoreResultFileTimestamps) {
             this.buildTime = buildTime;
             this.testResults = testResults;
             this.nowMaster = nowMaster;
             this.keepLongStdio = keepLongStdio;
+            this.ignoreResultFileTimestamps = ignoreResultFileTimestamps;
         }
 
         public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
@@ -114,7 +118,7 @@ public class JUnitParser extends TestResultParser {
                 throw new AbortException(Messages.JUnitResultArchiver_NoTestReportFound());
             }
 
-            TestResult result = new TestResult(buildTime + (nowSlave - nowMaster), ds, keepLongStdio);
+            TestResult result = new TestResult(buildTime + (nowSlave - nowMaster), ds, keepLongStdio, ignoreResultFileTimestamps);
             result.tally();
             return result; 
         }
