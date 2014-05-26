@@ -55,11 +55,20 @@ public class JUnitParser extends TestResultParser {
      * @param keepLongStdio if true, retain a suite's complete stdout/stderr even if this is huge and the suite passed
      * @since 1.358
      */
+    public JUnitParser(boolean keepLongStdio) {
+        this(keepLongStdio, false);
+    }
+    
+    /**
+     * @param keepLongStdio if true, retain a suite's complete stdout/stderr even if this is huge and the suite passed
+     * @param ignoreResultFileTimestamps if true, ignore timestamps of junit report files.
+     * @since 1.358
+     */
     public JUnitParser(boolean keepLongStdio, boolean ignoreResultFileTimestamps) {
         this.keepLongStdio = keepLongStdio;
         this.ignoreResultFileTimestamps = ignoreResultFileTimestamps;
     }
-
+    
     @Override
     public String getDisplayName() {
         return Messages.JUnitParser_DisplayName();

@@ -105,6 +105,12 @@ public final class TestResult extends MetaTabulatedResult {
     /**
      * @since 1.522
      */
+    public TestResult(boolean keepLongStdio) {
+        this(keepLongStdio, false);
+    }
+    /**
+     * @since 1.522
+     */
     public TestResult(boolean keepLongStdio, boolean ignoreResultFileTimestamps) {
         this.keepLongStdio = keepLongStdio;
         this.ignoreResultFileTimestamps = ignoreResultFileTimestamps;
