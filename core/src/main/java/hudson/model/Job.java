@@ -938,7 +938,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @SuppressWarnings("unchecked")
     protected List<RunT> getEstimatedDurationCandidates() {
         List<RunT> candidates = new ArrayList<RunT>(3);
-        RunT lastSuccessful = (RunT) Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
+        RunT lastSuccessful = getLastSuccessfulBuild();
         int lastSuccessfulNumber = -1;
         if (lastSuccessful != null) {
             candidates.add(lastSuccessful);
@@ -946,7 +946,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         int i = 0;
-        RunT r = (RunT) Permalink.LAST_BUILD.resolve(this);
+        RunT r = getLastBuild();
         List<RunT> fallbackCandidates = new ArrayList<RunT>(3);
         while (r != null && candidates.size() < 3 && i < 6) {
             if (!r.isBuilding() && r.getResult() != null && r.getNumber() != lastSuccessfulNumber) {
