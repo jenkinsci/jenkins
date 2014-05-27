@@ -126,7 +126,8 @@ THE SOFTWARE.
     <div class="prototypes to-be-removed">
       <!-- render one prototype for each type -->
       <j:set var="instance" value="${null}" />
-      <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
+      <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
+      <j:forEach var="descriptor" items="${descriptors}" varStatus="loop">
         <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
           <j:set var="capture" value="${attrs.capture?:''}" />
           <local:body deleteCaption="${attrs.deleteCaption}">
