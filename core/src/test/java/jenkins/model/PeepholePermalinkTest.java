@@ -39,6 +39,7 @@ public class PeepholePermalinkTest {
     @Test public void symlinks() throws Exception {
         File link = new File(tmp.getRoot(), "link");
         PeepholePermalink.writeSymlink(link, "stuff");
+        PeepholePermalink.symlinks.clear(); // so we actually test the filesystem
         assertEquals("stuff", PeepholePermalink.readSymlink(link));
     }
 
