@@ -271,9 +271,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         // up until 1.336, this method was abstract, so everyone should have overridden this method
         // without calling super.pollChanges. So the compatibility implementation is purely for
         // new implementations that doesn't override this method.
-
-        // not sure if this can be implemented any better
-        return false;
+        throw new AbstractMethodError("you must override compareRemoteRevisionWith");
     }
 
     /**
@@ -411,7 +409,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             try {
                 c.getDeclaredMethod("compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
                 return true;
-            } catch (NoSuchMethodException e) { }
+            } catch (NoSuchMethodException e) {
+                try {
+                    c.getDeclaredMethod("compareRemoteRevisionWith", Job.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class);
+                    return true;
+                } catch (NoSuchMethodException e2) {}
+            }
         }
         return false;
     }
