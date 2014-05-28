@@ -689,4 +689,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
         return r;
     }
+
+    @Deprecated
+    public static List<SCMDescriptor<?>> _for(final AbstractProject project) {
+        return _for((Job) project);
+    }
 }
