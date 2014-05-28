@@ -55,6 +55,28 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class="bug">
+    Fixed a reference counting bug in the remoting layer.
+    (<a href="https://github.com/jenkinsci/remoting/commit/387433c98b66bf453e27198973daa758787095b3">commit</a>)
+  <li class="bug">
+    Avoid repeatedly reading symlinks from disk to resolve build permalinks.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22822">issue 22822</a>)
+  <li class="bug">
+    Show custom build display name in executors widget.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10477">issue 10477</a>)
+  <li class="bug">
+    CodeMirror support for shell steps broke initial configuration.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23151">issue 23151</a>)
+  <li class="bug">
+    Jenkins on Linux can not restart after plugin update when started without full path to java executable
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22818">issue 22818</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.566>What's new in 1.566</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class="rfe">
     Configurable case sensitivity mode for user IDs.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22247">issue 22247</a>)
@@ -68,11 +90,8 @@ Upcoming changes</a>
     Jenkins cannot restart Windows service
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22685">issue 22685</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.565>What's new in 1.565</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.565>What's new in 1.565</a> (2014/05/26)</h3>
 <ul class=image>
   <li class="bug">
     Misleading error message trying to dynamically update a plugin (which is impossible) on an NFS filesystem.
@@ -86,7 +105,6 @@ Upcoming changes</a>
     Polling no longer triggers builds (regression 1.560)
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22750">issue 22750</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.564>What's new in 1.564</a> (2014/05/19)</h3>
 <ul class=image>
   <li class="rfe">

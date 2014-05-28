@@ -10,16 +10,17 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import hudson.util.AtomicFileWriter;
 import hudson.util.StreamTaskListener;
-import org.apache.commons.io.FileUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Convenient base implementation for {@link Permalink}s that satisfy
@@ -59,6 +60,10 @@ import java.util.logging.Logger;
  * @since 1.507
  */
 public abstract class PeepholePermalink extends Permalink implements Predicate<Run<?,?>> {
+
+    /** JENKINS-22822: avoids rereading symlinks */
+    static final Map<File,String> symlinks = new HashMap<File,String>();
+
     /**
      * Checks if the given build satisfies the peep-hole criteria.
      *
@@ -139,7 +144,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
                 // (re)create the build Number->Id symlink
                 Util.createSymlink(job.getBuildDir(),b.getId(),target,TaskListener.NULL);
             }
-            writeSymlink(cache, String.valueOf(n));
+            writeSymlink(cache, target);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to update "+job+" "+getId()+" permalink for " + b, e);
             cache.delete();
@@ -156,15 +161,30 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     }
 
     static String readSymlink(File cache) throws IOException, InterruptedException {
+        synchronized (symlinks) {
+            String target = symlinks.get(cache);
+            if (target != null) {
+                LOGGER.log(Level.FINE, "readSymlink cached {0} → {1}", new Object[] {cache, target});
+                return target;
+            }
+        }
         String target = Util.resolveSymlink(cache);
         if (target==null && cache.exists()) {
             // if this file isn't a symlink, it must be a regular file
             target = FileUtils.readFileToString(cache,"UTF-8").trim();
         }
+        LOGGER.log(Level.FINE, "readSymlink {0} → {1}", new Object[] {cache, target});
+        synchronized (symlinks) {
+            symlinks.put(cache, target);
+        }
         return target;
     }
 
     static void writeSymlink(File cache, String target) throws IOException, InterruptedException {
+        LOGGER.log(Level.FINE, "writeSymlink {0} → {1}", new Object[] {cache, target});
+        synchronized (symlinks) {
+            symlinks.put(cache, target);
+        }
         StringWriter w = new StringWriter();
         StreamTaskListener listener = new StreamTaskListener(w);
         Util.createSymlink(cache.getParentFile(),target,cache.getName(),listener);
