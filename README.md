@@ -6,7 +6,7 @@ Copyright © 2004–, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number of
 
 About
 -----
-In a nutshell Jenkins CI is the leading open-source continuous integration server. Built with Java, it provides over 300 plugins to support building and testing virtually any project.
+In a nutshell Jenkins CI is the leading open-source continuous integration server. Built with Java, it provides over 930 plugins to support building and testing virtually any project.
 
 Downloads
 ---------
