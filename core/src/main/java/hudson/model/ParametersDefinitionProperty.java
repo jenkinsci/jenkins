@@ -132,7 +132,11 @@ public class ParametersDefinitionProperty extends JobProperty<AbstractProject<?,
             if(d==null)
                 throw new IllegalArgumentException("No such parameter definition: " + name);
             ParameterValue parameterValue = d.createValue(req, jo);
-            values.add(parameterValue);
+            if (parameterValue != null) {
+                values.add(parameterValue);
+            } else {
+                throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+            }
         }
 
     	Jenkins.getInstance().getQueue().schedule(
