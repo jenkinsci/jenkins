@@ -222,6 +222,7 @@ import org.xml.sax.SAXException;
  * @see <a href="http://wiki.jenkins-ci.org/display/JENKINS/Unit+Test">Wiki article about unit testing in Jenkins</a>
  * @author Stephen Connolly
  * @since 1.436
+ * @see RestartableJenkinsRule
  */
 @SuppressWarnings({"deprecation","rawtypes"})
 public class JenkinsRule implements TestRule, MethodRule, RootAction {
