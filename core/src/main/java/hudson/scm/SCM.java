@@ -284,7 +284,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This method is called after source code is checked out for the given build (that is, after
-     * {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} has finished successfully.)
+     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File)} has finished successfully.)
      *
      * <p>
      * The obtained object is added to the build as an {@link Action} for later retrieval. As an optimization,
@@ -438,7 +438,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @param changelogFile
      *      Upon a successful return, this file should capture the changelog.
      *      When there's no change, this file should contain an empty entry.
-     *      See {@link #createEmptyChangeLog(File, BuildListener, String)}.
+     *      See {@link #createEmptyChangeLog(File, TaskListener, String)}.
      * @return
      *      false if the operation fails. The error should be reported to the listener.
      *      Otherwise return the changes included in this update (if this was an update.)
@@ -451,9 +451,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to be aborted.
      */
-    public boolean checkout(Run<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
-        if (build instanceof AbstractBuild && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
-            return checkout((AbstractBuild) build, launcher, workspace, listener, changelogFile);
+    public boolean checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, File changelogFile) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
+            return checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile);
         } else {
             throw new AbstractMethodError("you must override the new overload of checkout");
         }
@@ -468,15 +468,15 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Get a chance to do operations after the workspace i checked out and the changelog is written.
      * @since 1.534, 1.532.1
      */
-    public void postCheckout(Run<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException, InterruptedException {
-        if (build instanceof AbstractBuild) {
-            postCheckout((AbstractBuild) build, launcher, workspace, listener);
+    public void postCheckout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && listener instanceof BuildListener) {
+            postCheckout((AbstractBuild) build, launcher, workspace, (BuildListener) listener);
         }
     }
 
     @Deprecated
     public void postCheckout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException, InterruptedException {
-        if (Util.isOverridden(SCM.class, getClass(), "postCheckout", Run.class, Launcher.class, FilePath.class, BuildListener.class)) {
+        if (Util.isOverridden(SCM.class, getClass(), "postCheckout", Run.class, Launcher.class, FilePath.class, TaskListener.class)) {
             postCheckout((Run) build, launcher, workspace, listener);
         }
         /* Default implementation is noop */
@@ -633,7 +633,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 // convenience methods
 //
 
+    @Deprecated
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
+        return createEmptyChangeLog(changelogFile, (TaskListener) listener, rootTag);
+    }
+
+    protected final boolean createEmptyChangeLog(File changelogFile, TaskListener listener, String rootTag) {
         FileWriter w = null;
         try {
             w = new FileWriter(changelogFile);

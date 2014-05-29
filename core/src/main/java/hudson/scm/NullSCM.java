@@ -26,7 +26,6 @@ package hudson.scm;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.BuildListener;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -49,7 +48,7 @@ public class NullSCM extends SCM {
         return PollingResult.NO_CHANGES;
     }
 
-    @Override public boolean checkout(Run<?,?> build, Launcher launcher, FilePath remoteDir, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+    @Override public boolean checkout(Run<?,?> build, Launcher launcher, FilePath remoteDir, TaskListener listener, File changeLogFile) throws IOException, InterruptedException {
         return createEmptyChangeLog(changeLogFile, listener, "log");
     }
 
