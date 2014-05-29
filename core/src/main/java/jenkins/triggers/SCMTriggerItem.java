@@ -30,7 +30,12 @@ import hudson.model.Job;
 import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.PollingResult;
+import hudson.scm.SCM;
 import hudson.triggers.SCMTrigger;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.ParameterizedJobMixIn;
@@ -62,9 +67,82 @@ public interface SCMTriggerItem {
      */
     @Nonnull PollingResult poll(@Nonnull TaskListener listener);
 
+    @CheckForNull SCMTrigger getSCMTrigger();
+
     /**
-     * Provides a display name that indicates what SCM is being used here.
+     * Obtains all active SCMs.
+     * May be used for informational purposes, or to determine whether to initiate polling.
+     * @return a possibly empty collection
      */
-    String getSCMDisplayName();
+    @Nonnull Collection<? extends SCM> getSCMs();
+
+    /**
+     * Utilities.
+     */
+    class SCMTriggerItems {
+
+        /**
+         * See whether an item can be coerced to {@link SCMTriggerItem}.
+         * @param item any item
+         * @return itself, if a {@link SCMTriggerItem}, or an adapter, if an {@link hudson.model.SCMedItem}, else null
+         * @since TODO
+         */
+        @SuppressWarnings("deprecation")
+        public static @CheckForNull SCMTriggerItem asSCMTriggerItem(Item item) {
+            if (item instanceof SCMTriggerItem) {
+                return (SCMTriggerItem) item;
+            } else if (item instanceof hudson.model.SCMedItem) {
+                return new Bridge((hudson.model.SCMedItem) item);
+            } else {
+                return null;
+            }
+        }
+
+        private static final class Bridge implements SCMTriggerItem {
+            private final hudson.model.SCMedItem delegate;
+            Bridge(hudson.model.SCMedItem delegate) {
+                this.delegate = delegate;
+            }
+            @Override public Item asItem() {
+                return delegate.asProject();
+            }
+            @Override public int getNextBuildNumber() {
+                return delegate.asProject().getNextBuildNumber();
+            }
+            @Override public int getQuietPeriod() {
+                return delegate.asProject().getQuietPeriod();
+            }
+            @Override public QueueTaskFuture<?> scheduleBuild2(int quietPeriod, Action... actions) {
+                return delegate.asProject().scheduleBuild2(quietPeriod, null, actions);
+            }
+            @Override public PollingResult poll(TaskListener listener) {
+                return delegate.poll(listener);
+            }
+            @Override public SCMTrigger getSCMTrigger() {
+                return delegate.asProject().getTrigger(SCMTrigger.class);
+            }
+            @Override public Collection<? extends SCM> getSCMs() {
+                return resolveMultiScmIfConfigured(delegate.asProject().getScm());
+            }
+        }
+
+        public static @Nonnull Collection<? extends SCM> resolveMultiScmIfConfigured(@CheckForNull SCM scm) {
+            if (scm == null) {
+                return Collections.emptySet();
+            } else if (scm.getClass().getName().equals("org.jenkinsci.plugins.multiplescms.MultiSCM")) {
+                try {
+                    return (Collection<? extends SCM>) scm.getClass().getMethod("getConfiguredSCMs").invoke(scm);
+                } catch (Exception x) {
+                    Logger.getLogger(SCMTriggerItem.class.getName()).log(Level.WARNING, null, x);
+                    return Collections.singleton(scm);
+                }
+            } else {
+                return Collections.singleton(scm);
+            }
+        }
+
+        private SCMTriggerItems() {}
+
+    }
 
 }

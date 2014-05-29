@@ -34,10 +34,8 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
 import hudson.model.Run;
-import hudson.model.SCMedItem;
-import hudson.model.TaskListener;
-import hudson.model.queue.QueueTaskFuture;
-import hudson.scm.PollingResult;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
 import hudson.util.IOUtils;
@@ -54,12 +52,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
-
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -193,9 +192,8 @@ public class SCMTrigger extends Trigger<Item> {
             resizeThreadPool();
         }
 
-        @SuppressWarnings("deprecation")
         public boolean isApplicable(Item item) {
-            return item instanceof SCMTriggerItem || item instanceof SCMedItem;
+            return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(item) != null;
         }
 
         public ExecutorService getExecutor() {
@@ -384,7 +382,11 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         public String getDisplayName() {
-            return Messages.SCMTrigger_getDisplayName(job().getSCMDisplayName());
+            Set<SCMDescriptor<?>> descriptors = new HashSet<SCMDescriptor<?>>();
+            for (SCM scm : job().getSCMs()) {
+                descriptors.add(scm.getDescriptor());
+            }
+            return Messages.SCMTrigger_getDisplayName(descriptors.size() == 1 ? descriptors.iterator().next().getDisplayName() : "?");
         }
 
         public String getUrlName() {
@@ -536,33 +538,7 @@ public class SCMTrigger extends Trigger<Item> {
 
     @SuppressWarnings("deprecation")
     private SCMTriggerItem job() {
-        return job instanceof SCMTriggerItem ? (SCMTriggerItem) job : new Bridge((SCMedItem) job);
-    }
-
-    @SuppressWarnings("deprecation")
-    private static final class Bridge implements SCMTriggerItem {
-        private final SCMedItem delegate;
-        Bridge(SCMedItem delegate) {
-            this.delegate = delegate;
-        }
-        @Override public Item asItem() {
-            return delegate.asProject();
-        }
-        @Override public int getNextBuildNumber() {
-            return delegate.asProject().getNextBuildNumber();
-        }
-        @Override public int getQuietPeriod() {
-            return delegate.asProject().getQuietPeriod();
-        }
-        @Override public QueueTaskFuture<?> scheduleBuild2(int quietPeriod, Action... actions) {
-            return delegate.asProject().scheduleBuild2(quietPeriod, null, actions);
-        }
-        @Override public PollingResult poll(TaskListener listener) {
-            return delegate.poll(listener);
-        }
-        @Override public String getSCMDisplayName() {
-            return delegate.getScm().getDescriptor().getDisplayName();
-        }
+        return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
     }
 
     public static class SCMTriggerCause extends Cause {

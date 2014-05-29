@@ -27,6 +27,7 @@ package hudson.model;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.scm.SCM;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -36,6 +37,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
 import net.sf.json.JSONObject;
@@ -44,6 +46,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -107,8 +110,12 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return scheduleBuild2(quietPeriod, null, actions);
     }
 
-    @Override public String getSCMDisplayName() {
-        return getScm().getDescriptor().getDisplayName();
+    @Override public SCMTrigger getSCMTrigger() {
+        return getTrigger(SCMTrigger.class);
+    }
+
+    @Override public Collection<? extends SCM> getSCMs() {
+        return SCMTriggerItem.SCMTriggerItems.resolveMultiScmIfConfigured(getScm());
     }
 
     public List<Builder> getBuilders() {
