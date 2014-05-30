@@ -23,6 +23,7 @@
  */
 package hudson.model.listeners;
 
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -36,6 +37,10 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
@@ -113,20 +118,36 @@ public abstract class SCMListener implements ExtensionPoint {
         onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog);
     }
 
-    /**
-     * Registers this {@link SCMListener} so that it will start receiving events.
-     */
-    public final void register() {
-        Jenkins.getInstance().getSCMListeners().add(this);
+    @SuppressWarnings("deprecation")
+    public static Collection<? extends SCMListener> all() {
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return Collections.emptySet();
+        }
+        List<SCMListener> r = new ArrayList<SCMListener>(j.getExtensionList(SCMListener.class));
+        for (SCMListener l : j.getSCMListeners()) {
+            r.add(l);
+        }
+        return r;
     }
 
-    /**
-     * Unregisters this {@link SCMListener} so that it will never receive further events.
-     *
-     * <p>
-     * Unless {@link SCMListener} is unregistered, it will never be a subject of GC.
-     */
+    /** @deprecated Use {@link Extension} instead. */
+    @Deprecated
+    public final void register() {
+        Jenkins j = Jenkins.getInstance();
+        if (j != null) {
+            j.getSCMListeners().add(this);
+        }
+    }
+
+    /** @deprecated Use {@link Extension} instead. */
+    @Deprecated
     public final boolean unregister() {
-        return Jenkins.getInstance().getSCMListeners().remove(this);
+        Jenkins j = Jenkins.getInstance();
+        if (j != null) {
+            return j.getSCMListeners().remove(this);
+        } else {
+            return false;
+        }
     }
 }

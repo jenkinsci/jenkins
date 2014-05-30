@@ -1220,9 +1220,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         updateComputerList(AUTOMATIC_SLAVE_LAUNCH);
     }
 
-    /**
-     * Gets all the installed {@link SCMListener}s.
-     */
+    /** @deprecated Use {@link SCMListener#all} instead. */
+    @Deprecated
     public CopyOnWriteList<SCMListener> getSCMListeners() {
         return scmListeners;
     }
