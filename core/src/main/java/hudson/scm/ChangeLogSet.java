@@ -26,6 +26,7 @@ package hudson.scm;
 import hudson.MarkupText;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.User;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -36,6 +37,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import org.jenkinsci.bytecode.AdaptField;
 
 /**
  * Represents SCM change list.
@@ -54,13 +56,22 @@ import java.util.logging.Logger;
 public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iterable<T> {
 
     /**
-     * {@link AbstractBuild} whose change log this object represents.
+     * Build whose change log this object represents.
      */
-    // TODO switch to Run
-    public final AbstractBuild<?,?> build;
+    private final Run<?,?> build;
 
-    protected ChangeLogSet(AbstractBuild<?, ?> build) {
+    protected ChangeLogSet(Run<?, ?> build) {
         this.build = build;
+    }
+
+    @Deprecated
+    protected ChangeLogSet(AbstractBuild<?, ?> build) {
+        this((Run) build);
+    }
+
+    @AdaptField(name="build", was=AbstractBuild.class)
+    public Run<?,?> getBuild() {
+        return build;
     }
 
     /**
@@ -93,8 +104,13 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     /**
      * Constant instance that represents no changes.
      */
-    public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {
+    public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(Run build) {
         return new EmptyChangeLogSet(build);
+    }
+
+    @Deprecated
+    public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {
+        return createEmpty((Run) build);
     }
 
     @ExportedBean(defaultVisibility=999)

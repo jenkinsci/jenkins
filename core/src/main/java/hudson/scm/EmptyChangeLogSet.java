@@ -1,6 +1,6 @@
 package hudson.scm;
 
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -11,7 +11,7 @@ import java.util.Iterator;
  * @author Kohsuke Kawaguchi
  */
 final class EmptyChangeLogSet extends ChangeLogSet<ChangeLogSet.Entry> {
-    /*package*/ EmptyChangeLogSet(AbstractBuild<?, ?> build) {
+    /*package*/ EmptyChangeLogSet(Run<?, ?> build) {
         super(build);
     }
 
