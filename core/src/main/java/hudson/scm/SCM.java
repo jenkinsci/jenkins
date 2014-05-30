@@ -442,29 +442,27 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      When there's no change, this file should contain an empty entry.
      *      See {@link #createEmptyChangeLog(File, TaskListener, String)}.
      *      May be null, in which case no changelog was requested.
-     * @return
-     *      false if the operation fails. The error should be reported to the listener.
-     *      Otherwise return the changes included in this update (if this was an update.)
-     *      <p>
-     *      Using the return value to indicate success/failure should
-     *      be considered deprecated, and implementations are encouraged
-     *      to throw {@link AbortException} to indicate a failure.
      *
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to be aborted.
+     * @throws AbortException in case of a routine failure
      */
-    public boolean checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile) throws IOException, InterruptedException {
+    public void checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
             if (changelogFile == null) {
                 changelogFile = File.createTempFile("changelog", ".xml");
                 try {
-                    return checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile);
+                    if (!checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile)) {
+                        throw new AbortException();
+                    }
                 } finally {
                     Util.deleteFile(changelogFile);
                 }
             } else {
-                return checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile);
+                if (!checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile)) {
+                    throw new AbortException();
+                }
             }
         } else {
             throw new AbstractMethodError("you must override the new overload of checkout");
@@ -473,7 +471,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     @Deprecated
     public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, @Nonnull File changelogFile) throws IOException, InterruptedException {
-        return checkout((Run) build, launcher, workspace, listener, changelogFile);
+        checkout((Run) build, launcher, workspace, listener, changelogFile);
+        return true;
     }
 
     /**
@@ -647,19 +646,21 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     @Deprecated
     protected final boolean createEmptyChangeLog(File changelogFile, BuildListener listener, String rootTag) {
-        return createEmptyChangeLog(changelogFile, (TaskListener) listener, rootTag);
+        try {
+            createEmptyChangeLog(changelogFile, (TaskListener) listener, rootTag);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace(listener.error(e.getMessage()));
+            return false;
+        }
     }
 
-    protected final boolean createEmptyChangeLog(File changelogFile, TaskListener listener, String rootTag) {
+    protected final void createEmptyChangeLog(File changelogFile, TaskListener listener, String rootTag) throws IOException {
         FileWriter w = null;
         try {
             w = new FileWriter(changelogFile);
             w.write("<"+rootTag +"/>");
             w.close();
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace(listener.error(e.getMessage()));
-            return false;
         } finally {
             IOUtils.closeQuietly(w);
         }
