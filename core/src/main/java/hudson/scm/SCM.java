@@ -54,6 +54,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -439,6 +441,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      Upon a successful return, this file should capture the changelog.
      *      When there's no change, this file should contain an empty entry.
      *      See {@link #createEmptyChangeLog(File, TaskListener, String)}.
+     *      May be null, in which case no changelog was requested.
      * @return
      *      false if the operation fails. The error should be reported to the listener.
      *      Otherwise return the changes included in this update (if this was an update.)
@@ -451,16 +454,25 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to be aborted.
      */
-    public boolean checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, File changelogFile) throws IOException, InterruptedException {
+    public boolean checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
-            return checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile);
+            if (changelogFile == null) {
+                changelogFile = File.createTempFile("changelog", ".xml");
+                try {
+                    return checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile);
+                } finally {
+                    Util.deleteFile(changelogFile);
+                }
+            } else {
+                return checkout((AbstractBuild) build, launcher, workspace, (BuildListener) listener, changelogFile);
+            }
         } else {
             throw new AbstractMethodError("you must override the new overload of checkout");
         }
     }
 
     @Deprecated
-    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changelogFile) throws IOException, InterruptedException {
+    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, @Nonnull File changelogFile) throws IOException, InterruptedException {
         return checkout((Run) build, launcher, workspace, listener, changelogFile);
     }
 

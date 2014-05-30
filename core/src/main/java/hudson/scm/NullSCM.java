@@ -49,7 +49,11 @@ public class NullSCM extends SCM {
     }
 
     @Override public boolean checkout(Run<?,?> build, Launcher launcher, FilePath remoteDir, TaskListener listener, File changeLogFile) throws IOException, InterruptedException {
-        return createEmptyChangeLog(changeLogFile, listener, "log");
+        if (changeLogFile != null) {
+            return createEmptyChangeLog(changeLogFile, listener, "log");
+        } else {
+            return true;
+        }
     }
 
     @Override public ChangeLogParser createChangeLogParser() {
