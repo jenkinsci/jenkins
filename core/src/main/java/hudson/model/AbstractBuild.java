@@ -601,9 +601,17 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 build.scm = NullChangeLogParser.INSTANCE;
 
                 try {
-                    if (project.checkout(build, launcher,listener,new File(build.getRootDir(),"changelog.xml"))) {
+                    File changeLogFile = new File(build.getRootDir(), "changelog.xml");
+                    if (project.checkout(build, launcher,listener, changeLogFile)) {
                         // check out succeeded
                         SCM scm = project.getScm();
+                        for (SCMListener l : Jenkins.getInstance().getSCMListeners()) {
+                            try {
+                                l.onCheckout(build, scm, build.getWorkspace(), listener, changeLogFile, project.pollingBaseline);
+                            } catch (Exception e) {
+                                throw new IOException(e);
+                            }
+                        }
 
                         build.scm = scm.createChangeLogParser();
                         build.changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(build.calcChangeSet());

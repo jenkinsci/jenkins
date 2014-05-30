@@ -24,6 +24,8 @@
 package hudson.model.listeners;
 
 import hudson.ExtensionPoint;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
@@ -32,6 +34,9 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
+import hudson.scm.SCMRevisionState;
+import java.io.File;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -48,6 +53,15 @@ import jenkins.model.Jenkins;
  * @since 1.70
  */
 public abstract class SCMListener implements ExtensionPoint {
+
+    /**
+     * Should be called immediately after {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File)} is called.
+     * @param pollingBaseline information about what actually was checked out, if that is available, and this checkout is intended to be included in the build’s polling (if it does any at all)
+     * @throws Exception if the checkout should be considered failed
+     * @since TODO
+     */
+    public void onCheckout(Run<?,?> build, SCM scm, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState pollingBaseline) throws Exception {}
+
     /**
      * Called once the changelog is determined.
      *
@@ -88,7 +102,7 @@ public abstract class SCMListener implements ExtensionPoint {
      *      If any exception is thrown from this method, it will be recorded
      *      and causes the build to fail. 
      */
-    public void onChangeLogParsed(Run<?,?> build, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
+    public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
         if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", AbstractBuild.class, BuildListener.class, ChangeLogSet.class)) {
             onChangeLogParsed((AbstractBuild) build, (BuildListener) listener, changelog);
         }
@@ -96,7 +110,7 @@ public abstract class SCMListener implements ExtensionPoint {
 
     @Deprecated
     public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
-        onChangeLogParsed((Run) build, listener, changelog);
+        onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog);
     }
 
     /**
