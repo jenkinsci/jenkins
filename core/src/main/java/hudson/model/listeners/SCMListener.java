@@ -23,13 +23,16 @@
  */
 package hudson.model.listeners;
 
+import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import jenkins.model.Jenkins;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
-import hudson.ExtensionPoint;
+import jenkins.model.Jenkins;
 
 /**
  * Receives notifications about SCM activities in Hudson.
@@ -85,7 +88,15 @@ public abstract class SCMListener implements ExtensionPoint {
      *      If any exception is thrown from this method, it will be recorded
      *      and causes the build to fail. 
      */
+    public void onChangeLogParsed(Run<?,?> build, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
+        if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", AbstractBuild.class, BuildListener.class, ChangeLogSet.class)) {
+            onChangeLogParsed((AbstractBuild) build, (BuildListener) listener, changelog);
+        }
+    }
+
+    @Deprecated
     public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
+        onChangeLogParsed((Run) build, listener, changelog);
     }
 
     /**
