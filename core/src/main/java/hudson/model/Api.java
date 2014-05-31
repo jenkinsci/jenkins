@@ -154,16 +154,21 @@ public class Api extends AbstractModelObject {
             throw new IOException("Failed to do XPath/wrapper handling. Turn on FINER logging to view XML.",e);
         }
 
+
+        if (isSimpleOutput(result) && !permit(req)) {
+            // simple output prohibited
+            rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "primitive XPath result sets forbidden; implement jenkins.security.SecureRequester");
+            return;
+        }
+
+        // switch to gzipped output
         OutputStream o = rsp.getCompressedOutputStream(req);
         try {
-            if (result instanceof CharacterData || result instanceof String || result instanceof Number || result instanceof Boolean) {
-                if (permit(req)) {
-                    rsp.setContentType("text/plain;charset=UTF-8");
-                    String text = result instanceof CharacterData ? ((CharacterData) result).getText() : result.toString();
-                    o.write(text.getBytes("UTF-8"));
-                } else {
-                    rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "primitive XPath result sets forbidden; implement jenkins.security.SecureRequester");
-                }
+            if (isSimpleOutput(result)) {
+                // simple output allowed
+                rsp.setContentType("text/plain;charset=UTF-8");
+                String text = result instanceof CharacterData ? ((CharacterData) result).getText() : result.toString();
+                o.write(text.getBytes("UTF-8"));
                 return;
             }
 
@@ -173,6 +178,10 @@ public class Api extends AbstractModelObject {
         } finally {
             o.close();
         }
+    }
+
+    private boolean isSimpleOutput(Object result) {
+        return result instanceof CharacterData || result instanceof String || result instanceof Number || result instanceof Boolean;
     }
 
     /**
