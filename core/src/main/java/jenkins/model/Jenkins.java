@@ -1774,11 +1774,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         public FormValidation doCheckRawBuildsDir(@QueryParameter String value) {
             // do essentially what expandVariablesForDirectory does, without an Item
-            String replacedValue = Util.replaceMacro(value, ImmutableMap.of(
-                "JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath(),
-                "ITEM_ROOTDIR", Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo",
-                "ITEM_FULLNAME", "doCheckRawBuildsDir-Marker:foo",   // legacy, deprecated
-                "ITEM_FULL_NAME", "doCheckRawBuildsDir-Marker$foo")); // safe, see JENKINS-12251
+            String replacedValue = expandVariablesForDirectory(value,
+                    "doCheckRawBuildsDir-Marker:foo",
+                    Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
 
             File replacedFile = new File(replacedValue);
             if (!replacedFile.isAbsolute()) {
@@ -1979,11 +1977,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private File expandVariablesForDirectory(String base, Item item) {
-        return new File(Util.replaceMacro(base, ImmutableMap.of(
-                "JENKINS_HOME", getRootDir().getPath(),
-                "ITEM_ROOTDIR", item.getRootDir().getPath(),
-                "ITEM_FULLNAME", item.getFullName(),   // legacy, deprecated
-                "ITEM_FULL_NAME", item.getFullName().replace(':','$')))); // safe, see JENKINS-12251
+        return new File(expandVariablesForDirectory(base, item.getFullName(), item.getRootDir().getPath()));
+    }
+
+    private static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
+        return Util.replaceMacro(base, ImmutableMap.of(
+                "JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath(),
+                "ITEM_ROOTDIR", itemRootDir,
+                "ITEM_FULLNAME", itemFullName,   // legacy, deprecated
+                "ITEM_FULL_NAME", itemFullName.replace(':','$'))); // safe, see JENKINS-12251
+
     }
     
     public String getRawWorkspaceDir() {
