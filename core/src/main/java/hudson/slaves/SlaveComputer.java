@@ -653,11 +653,11 @@ public class SlaveComputer extends Computer {
         // TODO: race condition between this and the setChannel method.
         Channel c = channel;
         if (c != null) {
-            for (ComputerListener cl : ComputerListener.all()){
-                cl.onOffline(this);
-            }
+        	for (ComputerListener cl : ComputerListener.all()){
+        		cl.onOffline(this);
+        	}
                 
-            channel = null;
+        	channel = null;
             isUnix = null;
             
             try {
