@@ -24,8 +24,12 @@
 package hudson.cli
 
 import org.apache.commons.io.output.TeeOutputStream
+
+import static org.hamcrest.Matchers.*;
+import static hudson.cli.CLICommandInvoker.Matcher.*;
 import static org.junit.Assert.*
 import hudson.Extension
+
 import org.junit.Rule
 import org.junit.Test
 import org.jvnet.hudson.test.Bug
@@ -37,6 +41,7 @@ import org.jvnet.hudson.test.TestExtension
 import org.kohsuke.stapler.StaplerRequest
 
 import hudson.Launcher
+import hudson.cli.CLICommandInvoker;
 import hudson.model.AbstractBuild
 import hudson.model.Action
 import hudson.model.BuildListener
@@ -54,7 +59,9 @@ import hudson.model.StringParameterValue
 import hudson.model.labels.LabelAtom
 import hudson.tasks.Shell
 import hudson.util.OneShotEvent
+
 import java.util.concurrent.Executor
+
 import net.sf.json.JSONObject
 
 /**
@@ -194,8 +201,8 @@ public class BuildCommandTest {
         def invoker = new CLICommandInvoker(j, new BuildCommand());
         def result = invoker.invokeWithArgs("the-project");
 
-        assertTrue("Error message missing", result.stderr().contains("Cannot build the-project because it is disabled."));
-        assertEquals("Command is expected to fail", -1, result.returnCode());
+        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("Cannot build the-project because it is disabled."));
         assertNull("Project should not be built", project.getBuildByNumber(1));
     }
 
@@ -206,8 +213,8 @@ public class BuildCommandTest {
         def invoker = new CLICommandInvoker(j, new BuildCommand());
         def result = invoker.invokeWithArgs("new-one");
 
-        assertTrue("Error message missing", result.stderr().contains("Cannot build new-one because its configuration has not been saved."));
-        assertEquals("Command is expected to fail", -1, result.returnCode());
+        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("Cannot build new-one because its configuration has not been saved."));
         assertNull("Project should not be built", newOne.getBuildByNumber(1));
     }
 
@@ -221,7 +228,7 @@ public class BuildCommandTest {
         def invoker = new CLICommandInvoker(j, new BuildCommand());
         def result = invoker.invokeWithArgs("the-project", "-p", "expr=a=b", "-s");
 
-        assertEquals("Command is expected to succeed", 0, result.returnCode());
+        assertThat(result, succeeded());
         assertEquals("a=b", project.getBuildByNumber(1).getBuildVariables().get("expr"));
     }
     
@@ -249,17 +256,13 @@ public class BuildCommandTest {
         
         // Create CLI & run command
         def invoker = new CLICommandInvoker(j, new BuildCommand());
-        def result = invoker
-                .authorizedTo(jenkins.model.Jenkins.ADMINISTER)
-                .invokeWithArgs("foo","-p","string=value");
-        assertEquals("Command is expected to fail with -1 code. \nSTDOUT="+result.stdout()
-            +"\nSTDERR: "+result.stderr(), -1, result.returnCode());
-        assertTrue("Unexpected error message", 
-            result.stderr().startsWith("No default value for the parameter \'FOO\'."));        
+        def result = invoker.invokeWithArgs("foo","-p","string=value");
+        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("No default value for the parameter \'FOO\'."));
         
-        // Give the job 5 seconds to be submitted
-        def q = j.jenkins.getQueue().getItem(project);
-        Thread.sleep(5000);
+        Thread.sleep(5000); // Give the job 5 seconds to be submitted
+        assertNull("Build should not be scheduled", j.jenkins.getQueue().getItem(project));
+        assertNull("Build should not be scheduled", project.getBuildByNumber(2));
         
         // Check executors health after a timeout
         for (def exec : slave.toComputer().getExecutors()) {
