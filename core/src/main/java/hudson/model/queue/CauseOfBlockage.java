@@ -114,7 +114,11 @@ public abstract class CauseOfBlockage {
         }
 
         public String getShortDescription() {
-            return Messages.Queue_AllNodesOffline(label.getName());
+            if (label.isEmpty()) {
+                return Messages.Queue_LabelHasNoNodes(label.getName());
+            } else {
+                return Messages.Queue_AllNodesOffline(label.getName());
+            }
         }
     }
 
