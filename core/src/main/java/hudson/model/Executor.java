@@ -63,7 +63,9 @@ import javax.annotation.CheckForNull;
 
 /**
  * Thread that executes builds.
- *
+ * Since 1.536, {@link Executor}s start threads on-demand. 
+ * The entire logic should use {@link #isActive()} instead of {@link #isAlive()} 
+ * in order to check if the {@link Executor} it ready to take tasks.
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
@@ -345,6 +347,15 @@ public class Executor extends Thread implements ModelObject {
         return executable!=null;
     }
 
+    /**
+     * Check if executor is ready to accept tasks.
+     * This method becomes the critical one since 1.536, which introduces the
+     * on-demand creation of executor threads. The entire logic should use 
+     * this method instead of {@link #isAlive()}, because it provides wrong
+     * information for non-started threads.
+     * @return True if the executor is available for tasks
+     * @since 1.536
+     */
     public boolean isActive() {
         return !started || isAlive();
     }
