@@ -37,5 +37,8 @@ THE SOFTWARE.
     <f:entry field="allowEmptyArchive" >
       <f:checkbox title="${%allowEmptyArchive}"/>
     </f:entry>
+    <f:entry field="onlyIfSuccessful" >
+      <f:checkbox title="${%onlyIfSuccessful}"/>
+    </f:entry>
   </f:advanced>
 </j:jelly>
