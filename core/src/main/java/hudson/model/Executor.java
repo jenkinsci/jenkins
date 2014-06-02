@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 
 /**
@@ -68,7 +69,7 @@ import javax.annotation.CheckForNull;
  */
 @ExportedBean
 public class Executor extends Thread implements ModelObject {
-    protected final Computer owner;
+    protected final @Nonnull Computer owner;
     private final Queue queue;
 
     private long startTime;
@@ -109,7 +110,7 @@ public class Executor extends Thread implements ModelObject {
      */
     private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
 
-    public Executor(Computer owner, int n) {
+    public Executor(@Nonnull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
         this.queue = Jenkins.getInstance().getQueue();
@@ -523,7 +524,7 @@ public class Executor extends Thread implements ModelObject {
         return e!=null && Tasks.getOwnerTaskOf(getParentOf(e)).hasAbortPermission();
     }
 
-    public Computer getOwner() {
+    public @Nonnull Computer getOwner() {
         return owner;
     }
 
