@@ -70,6 +70,48 @@ Upcoming changes</a>
   <li class="bug">
     Jenkins on Linux can not restart after plugin update when started without full path to java executable
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22818">issue 22818</a>)
+  <li class="bug">
+    Fixed <code>NullPointerException</code> when a build triggering returns null cause
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20499">issue 20499</a>)
+  <li class="bug">
+    Fixed <code>NullPointerException</code> on plugin installations when invalid update center is set
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20031">issue 20031</a>)  
+  <li class="bug">
+    Use DISABLED_ANIME icon while building a disabled project
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8358">issue 8358</a>)
+  <li class="bug">
+    Process the items hierarchy when displaying the Show Poll Thread Count option
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22934">issue 22934</a>)
+  <li class="bug">
+    Properly close input streams in <code>FileParameterValue</code>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22693">issue 22693</a>)      
+  <li class="bug">
+    Incorrect failure age in the JUnit test results
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18626">issue 18626</a>)  
+  <li class="bug">
+    Fixed deletion links for JVM Crash error logs
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22617">issue 22617</a>)  
+  <li class="rfe">
+    Distinguish &quot;nodes for label offline&quot; from &quot;no nodes for label&quot;
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17114">issue 17114</a>)  
+  <li class="rfe">
+    Add causes to queue item tool tip
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19250">issue 19250</a>)  
+  <li class="rfe">
+    RPM: added JENKINS_HTTPS_KEYSTORE and JENKINS_HTTPS_KEYSTORE_PASSWORD options to Jenkins sysconfig file
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11673">issue 11673</a>)  
+  <li class="bug">
+    RPM: Do not install jenkins.repo file
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22690">issue 22690</a>)
+  <li class="rfe">
+    Don't advertise POSTing config.xml on master
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16264">issue 16264</a>)
+  <li class="major bug">
+    Handle null parameter values to avoid massive executor deaths
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15094">issue 15094</a>)
+  <li class="rfe">
+    Added an option to archive artifacts only when the build is successful
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22699">issue 22699</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 

@@ -67,6 +67,8 @@ import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -257,6 +259,16 @@ public class SCMTrigger extends Trigger<Item> {
             maximumThreads = n;
 
             resizeThreadPool();
+        }
+
+        @Restricted(NoExternalUse.class)
+        public boolean isPollingThreadCountOptionVisible() {
+            // unless you have a fair number of projects, this option is likely pointless.
+            // so let's hide this option for new users to avoid confusing them
+            // unless it was already changed
+            // TODO switch to check for SCMTriggerItem
+            return Jenkins.getInstance().getAllItems(AbstractProject.class).size() > 10
+                    || getPollingThreadCount() != 0;
         }
 
         /**

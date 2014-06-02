@@ -101,8 +101,10 @@ public class CauseAction implements FoldableAction, RunAction2 {
     public Map<Cause,Integer> getCauseCounts() {
         Map<Cause,Integer> result = new LinkedHashMap<Cause,Integer>();
         for (Cause c : causes) {
-            Integer i = result.get(c);
-            result.put(c, i == null ? 1 : i.intValue() + 1);
+            if (c != null) {
+                Integer i = result.get(c);
+                result.put(c, i == null ? 1 : i.intValue() + 1);
+            }
         }
         return result;
     }
@@ -118,7 +120,9 @@ public class CauseAction implements FoldableAction, RunAction2 {
 
     @Override public void onLoad(Run<?,?> owner) {
         for (Cause c : causes) {
-            c.onLoad(owner);
+            if (c != null) {
+                c.onLoad(owner);
+            }
         }
     }
 
@@ -127,7 +131,9 @@ public class CauseAction implements FoldableAction, RunAction2 {
      */
     @Override public void onAttached(Run<?,?> owner) {
         for (Cause c : causes) {
-            c.onAddedTo(owner);
+            if (c != null) {
+                c.onAddedTo(owner);
+            }
         }
     }
 

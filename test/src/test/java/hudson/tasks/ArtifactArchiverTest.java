@@ -24,6 +24,7 @@
 
 package hudson.tasks;
 
+import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -251,6 +252,27 @@ public class ArtifactArchiverTest {
             build.getWorkspace().child("f").write("content", "UTF-8");
             return true;
         }
+    }
+
+    static class CreateArtifactAndFail extends TestBuilder {
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            build.getWorkspace().child("f").write("content", "UTF-8");
+            throw new AbortException("failing the build");
+        }
+    }
+
+    @Test
+    @Bug(22698)
+    public void testArchivingSkippedWhenOnlyIfSuccessfulChecked() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", false, false, false)));
+        project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifactAndFail()));
+        assertEquals(Result.FAILURE, build(project));
+        assertTrue(project.getBuildByNumber(1).getHasArtifacts());
+        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", false, false, true)));
+        assertEquals(Result.FAILURE, build(project));
+        assertTrue(project.getBuildByNumber(1).getHasArtifacts());
+        assertFalse(project.getBuildByNumber(2).getHasArtifacts());
     }
 
 }

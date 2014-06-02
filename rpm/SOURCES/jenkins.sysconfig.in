@@ -67,6 +67,24 @@ JENKINS_HTTPS_PORT=""
 ## Default:     ""
 ## ServiceRestart: jenkins
 #
+# Path to the keystore in JKS format (as created by the JDK 'keytool').
+# Default is disabled.
+#
+JENKINS_HTTPS_KEYSTORE=""
+
+## Type:        string
+## Default:     ""
+## ServiceRestart: jenkins
+#
+# Password to access the keystore defined in JENKINS_HTTPS_KEYSTORE.
+# Default is disabled.
+#
+JENKINS_HTTPS_KEYSTORE_PASSWORD=""
+
+## Type:        string
+## Default:     ""
+## ServiceRestart: jenkins
+#
 # IP address Jenkins listens on for HTTPS requests.
 # Default is disabled.
 #
