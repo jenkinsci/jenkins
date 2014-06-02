@@ -87,6 +87,7 @@ import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static java.util.logging.Level.WARNING;
+import javax.annotation.Nonnull;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 
@@ -435,9 +436,19 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         /**
          * Returns the current {@link Node} on which we are building.
+         * @throws IllegalStateException if that cannot be determined
          */
-        protected final Node getCurrentNode() {
-            return Executor.currentExecutor().getOwner().getNode();
+        protected final @Nonnull Node getCurrentNode() throws IllegalStateException {
+            Executor exec = Executor.currentExecutor();
+            if (exec == null) {
+                throw new IllegalStateException("not being called from an executor thread");
+            }
+            Computer c = exec.getOwner();
+            Node node = c.getNode();
+            if (node == null) {
+                throw new IllegalStateException("no longer a configured node for " + c.getName());
+            }
+            return node;
         }
 
         public Launcher getLauncher() {
