@@ -180,7 +180,6 @@ import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
-import hudson.util.StreamTaskListener;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
 import hudson.util.VersionNumber;
@@ -1855,25 +1854,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Gets the absolute URL of Jenkins,
-     * such as "http://localhost/jenkins/".
+     * Gets the absolute URL of Jenkins, such as {@code http://localhost/jenkins/}.
      *
      * <p>
      * This method first tries to use the manually configured value, then
-     * fall back to {@link StaplerRequest#getRootPath()}.
+     * fall back to {@link #getRootUrlFromRequest}.
      * It is done in this order so that it can work correctly even in the face
      * of a reverse proxy.
      *
-     * @return
-     *      This method returns null if this parameter is not configured by the user.
-     *      The caller must gracefully deal with this situation.
-     *      The returned URL will always have the trailing '/'.
+     * @return null if this parameter is not configured by the user and the calling thread is not in an HTTP request; otherwise the returned URL will always have the trailing {@code /}
      * @since 1.66
-     * @see Descriptor#getCheckUrl(String)
-     * @see #getRootUrlFromRequest()
      * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML">Hyperlinks in HTML</a>
      */
-    public String getRootUrl() {
+    public @Nullable String getRootUrl() {
         String url = JenkinsLocationConfiguration.get().getUrl();
         if(url!=null) {
             return Util.ensureEndsWith(url,"/");
@@ -1896,7 +1889,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Gets the absolute URL of Hudson top page, such as "http://localhost/hudson/".
+     * Gets the absolute URL of Hudson top page, such as {@code http://localhost/hudson/}.
      *
      * <p>
      * Unlike {@link #getRootUrl()}, which uses the manually configured value,
@@ -1905,16 +1898,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * correctly, especially when a migration is involved), but the downside
      * is that unless you are processing a request, this method doesn't work.
      *
-     * Please note that this will not work in all cases if Jenkins is running behind a
-     * reverse proxy (e.g. when user has switched off ProxyPreserveHost, which is
-     * default setup or the actual url uses https) and you should use getRootUrl if
-     * you want to be sure you reflect user setup.
-     * See https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache
-     *
+     * <p>Please note that this will not work in all cases if Jenkins is running behind a
+     * reverse proxy which has not been fully configured.
+     * Specifically the {@code Host} and {@code X-Forwarded-Proto} headers must be set.
+     * <a href="https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache">Running Jenkins behind Apache</a>
+     * shows some examples of configuration.
      * @since 1.263
      */
-    public String getRootUrlFromRequest() {
+    public @Nonnull String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
+        if (req == null) {
+            throw new IllegalStateException("cannot call getRootUrlFromRequest from outside a request handling thread");
+        }
         StringBuilder buf = new StringBuilder();
         String scheme = req.getScheme();
         String forwardedScheme = req.getHeader("X-Forwarded-Proto");
@@ -1923,8 +1918,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         buf.append(scheme+"://");
         buf.append(req.getServerName());
-        if(req.getServerPort()!=80)
-            buf.append(':').append(req.getServerPort());
+        int forwardedPort = req.getIntHeader("X-Forwarded-Port");
+        int port = forwardedPort == -1 ? req.getServerPort() : forwardedPort;
+        if (port != ("https".equals(scheme) ? 443 : 80)) {
+            buf.append(':').append(port);
+        }
         buf.append(req.getContextPath()).append('/');
         return buf.toString();
     }
