@@ -84,10 +84,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static java.util.logging.Level.WARNING;
-import javax.annotation.Nonnull;
+
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 
@@ -436,6 +437,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         /**
          * Returns the current {@link Node} on which we are building.
+         * @return Returns the current {@link Node}
          * @throws IllegalStateException if that cannot be determined
          */
         protected final @Nonnull Node getCurrentNode() throws IllegalStateException {
@@ -467,7 +469,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param wsl
          *      Passed in for the convenience. The returned path must be registered to this object.
          */
-        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+        protected Lease decideWorkspace(@Nonnull Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null) {
                 // we allow custom workspaces to be concurrently used between jobs.
@@ -477,8 +479,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()), getBuild());
         }
 
-        public Result run(BuildListener listener) throws Exception {
-            Node node = getCurrentNode();
+        public Result run(@Nonnull BuildListener listener) throws Exception {
+            final Node node = getCurrentNode();
+            
             assert builtOn==null;
             builtOn = node.getNodeName();
             hudsonVersion = Jenkins.VERSION;
@@ -566,8 +569,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param listener
          *      Always non-null. Connected to the main build output.
          */
-        protected Launcher createLauncher(BuildListener listener) throws IOException, InterruptedException {
-            Launcher l = getCurrentNode().createLauncher(listener);
+        @Nonnull
+        protected Launcher createLauncher(@Nonnull BuildListener listener) throws IOException, InterruptedException {
+            final Node currentNode = getCurrentNode();
+            Launcher l = currentNode.createLauncher(listener);
 
             if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
@@ -591,7 +596,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 }
             }
 
-            for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
+            for (NodeProperty nodeProperty: currentNode.getNodeProperties()) {
                 Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
                 if (environment != null) {
                     buildEnvironments.add(environment);
