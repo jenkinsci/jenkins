@@ -153,7 +153,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * Performs a necessary variable/environment/context expansion.
      *
      * @param node
-     *      Node that this tool is used in. Should not be null
+     *      Node that this tool is used in.
      * @param envs
      *      Set of environment variables to expand any references.
      * @param listener

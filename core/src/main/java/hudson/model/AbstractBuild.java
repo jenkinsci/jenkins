@@ -437,7 +437,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         /**
          * Returns the current {@link Node} on which we are building.
-         * @return Returns the current {@link Node} or null if current thread is not an executor.
+         * @return Returns the current {@link Node}
          * @throws IllegalStateException if that cannot be determined
          */
         protected final @Nonnull Node getCurrentNode() throws IllegalStateException {
@@ -481,9 +481,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         public Result run(@Nonnull BuildListener listener) throws Exception {
             final Node node = getCurrentNode();
-            if (node == null) {
-                throw new IllegalStateException("Cannot run the build outside executor threads");
-            }
             
             assert builtOn==null;
             builtOn = node.getNodeName();
@@ -575,9 +572,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         @Nonnull
         protected Launcher createLauncher(@Nonnull BuildListener listener) throws IOException, InterruptedException {
             final Node currentNode = getCurrentNode();
-            if (currentNode == null) {
-                throw new IllegalStateException("Launchers can be created inside executor threads only");
-            }
             Launcher l = currentNode.createLauncher(listener);
 
             if (project instanceof BuildableItemWithBuildWrappers) {
