@@ -359,8 +359,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public List<Action> getTransientActions() {
         List<Action> actions = new ArrayList<Action>();
         for (TransientBuildActionFactory factory: TransientBuildActionFactory.all()) {
-            actions.addAll(factory.createFor(this));
-            assert !actions.contains(null) : "null action added by " + factory;
+            for (Action created : factory.createFor(this)) {
+                if (created == null) {
+                    LOGGER.log(WARNING, "null action added by {0}", factory);
+                    continue;
+                }
+                actions.add(created);
+            }
         }
         return Collections.unmodifiableList(actions);
     }
