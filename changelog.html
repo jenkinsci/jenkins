@@ -55,7 +55,12 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+    Fixed <code>NullPointerException</code> caused by the uninitialized <code>ProcessStarter</code> environment in build wrappers
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20559">issue 20559</a>)
+  <li class=rfe>
+    API changes allowing to create nested launchers (<code>DecoratedLauncher</code>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19454">issue 19454</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
