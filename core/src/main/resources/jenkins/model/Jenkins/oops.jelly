@@ -31,10 +31,10 @@ THE SOFTWARE.
   <l:layout title="Jenkins" norefresh="true">
     <l:header />
     <l:side-panel>
-      <l:task title="${%Jenkins project}" href="http://jenkins-ci.org/" icon="images/24x24/next.png" />
-      <l:task title="${%Bug tracker}" href="http://issues.jenkins-ci.org/" icon="images/24x24/gear2.png" />
-      <l:task title="${%Mailing Lists}" href="http://jenkins-ci.org/content/mailing-lists" icon="images/24x24/search.png"/>
-      <l:task title="${%Twitter: @jenkinsci}" href="https://twitter.com/jenkinsci" icon="images/24x24/user.png"/>
+      <l:task title="${%Jenkins project}" href="http://jenkins-ci.org/" icon="next-24x24" />
+      <l:task title="${%Bug tracker}" href="http://issues.jenkins-ci.org/" icon="gear2-24x24" />
+      <l:task title="${%Mailing Lists}" href="http://jenkins-ci.org/content/mailing-lists" icon="search-24x24"/>
+      <l:task title="${%Twitter: @jenkinsci}" href="https://twitter.com/jenkinsci" icon="user-24x24"/>
 
     </l:side-panel>
     <l:main-panel>

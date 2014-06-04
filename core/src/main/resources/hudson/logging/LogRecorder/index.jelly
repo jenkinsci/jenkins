@@ -26,11 +26,11 @@ THE SOFTWARE.
   Log view
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
 <l:layout title="Log" permission="${app.ADMINISTER}">
-  <st:include page="sidepanel.jelly" />
+  <st:include page="sidepanel.jelly"/>
   <l:main-panel>
-    <h1><img src="${rootURL}/images/48x48/clipboard.png" alt="" height="48" width="48"/>${it.displayName}</h1>
+    <h1><l:icon name="clipboard-48x48"/>${it.displayName}</h1>
     <t:logRecords logRecords="${it.logRecords}"/>
     <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
       <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
@@ -38,10 +38,10 @@ THE SOFTWARE.
     </j:forEach>
 
     <form method="post" id='clear-logrecorder' action="clear">
-      <f:submit value="${%Clear This Log}" />
+      <f:submit value="${%Clear This Log}"/>
     </form>
 
-    <st:include it="${it.parent}" page="feeds.jelly" />    
+    <st:include it="${it.parent}" page="feeds.jelly"/>
   </l:main-panel>
 </l:layout>
 </j:jelly>

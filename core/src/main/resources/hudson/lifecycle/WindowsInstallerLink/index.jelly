@@ -23,14 +23,14 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <l:layout permission="${app.ADMINISTER}" title="${%Install as Windows Service}">
-    <st:include it="${app}" page="sidepanel.jelly" />
+    <st:include it="${app}" page="sidepanel.jelly"/>
     <l:main-panel>
       <j:choose>
         <j:when test="${!it.installed}">
           <h1>
-            <img src="${imagesURL}/48x48/installer.png" alt="" height="48" width="48"/>
+            <l:icon name="installer-48x48"/>
             ${%Install as Windows Service}
           </h1>
 
@@ -39,10 +39,10 @@ THE SOFTWARE.
           <form action="doInstall" method="post">
             <table>
               <f:entry title="${%Installation Directory}">
-                <f:textbox name="dir" value="${app.rootDir}" /><!-- checkUrl="'/install/checkDir?value='+encodeURIComponent(this.value)" -->
+                <f:textbox name="dir" value="${app.rootDir}"/><!-- checkUrl="'/install/checkDir?value='+encodeURIComponent(this.value)" -->
               </f:entry>
               <f:block>
-                <f:submit value="${%Install}" />
+                <f:submit value="${%Install}"/>
               </f:block>
             </table>
           </form>
@@ -51,14 +51,14 @@ THE SOFTWARE.
         <!-- already installed -->
         <j:otherwise>
           <h1>
-            <img src="${imagesURL}/48x48/blue.png" alt="" height="48" width="48"/>
+            <l:icon name="blue-48x48"/>
             ${%Installation Complete}
           </h1>
 
           <p>${%restartBlurb}</p>
 
           <form action="restart" method="post">
-            <f:submit value="${%Yes}" />
+            <f:submit value="${%Yes}"/>
           </form>
         </j:otherwise>
       </j:choose>

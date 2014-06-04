@@ -43,18 +43,17 @@ THE SOFTWARE.
   </st:documentation>
   <j:if test="${h.hasPermission(it,attrs.permission)}">
     <j:if test="${attrs.icon!=null}">
+      <j:set var="resolvedIcon" value="${icon.startsWith('/') ? icon : '/images/48x48/'+icon}"/>
       <tr>
         <td>
           <j:choose>
             <j:when test="${attrs.href!=null}">
               <a href="${attrs.href}">
-                <img src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
-                     alt="" width="48" height="48" style="margin-right:1em" />
+                <l:icon name="${h.toIconName(resolvedIcon, '48x48')}" style="margin-right:1em; width: 48px; height: 48px;" />
               </a>
             </j:when>
             <j:otherwise>
-              <img src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
-                   alt="" width="48" height="48" style="margin-right:1em" />
+              <l:icon name="${h.toIconName(resolvedIcon, '48x48')}" style="margin-right:1em; width: 48px; height: 48px;" />
             </j:otherwise>
           </j:choose>
         </td>

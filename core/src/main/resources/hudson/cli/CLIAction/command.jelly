@@ -23,12 +23,12 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <l:layout norefresh="true">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/terminal.png" alt="" height="48" width="48"/>
+        <l:icon name="terminal-48x48"/>
         Command ${command.name}
       </h1>
       <j:set var="commandArgs" value="${command.name}${command.singleLineSummary}"/>

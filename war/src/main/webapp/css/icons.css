@@ -1,0 +1,278 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Stephen Connolly
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+/*
+ * 16x16 icons.
+ */
+.jenkins-icon.accept-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/accept.png" );}
+.jenkins-icon.attribute-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/attribute.png" );}
+.jenkins-icon.collapse-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/collapse.png" );}
+.jenkins-icon.computer-x-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/computer-x.png" );}
+.jenkins-icon.computer-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/computer.png" );}
+.jenkins-icon.document_add-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/document_add.png" );}
+.jenkins-icon.document_delete-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/document_delete.png" );}
+.jenkins-icon.document_edit-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/document_edit.png" );}
+.jenkins-icon.edit-delete-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/edit-delete.png" );}
+.jenkins-icon.edit-select-all-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/edit-select-all.png" );}
+.jenkins-icon.empty-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/empty.png" );}
+.jenkins-icon.error-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/error.png" );}
+.jenkins-icon.expand-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/expand.png" );}
+.jenkins-icon.fingerprint-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/fingerprint.png" );}
+.jenkins-icon.folder-error-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/folder-error.png" );}
+.jenkins-icon.folder-open-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/folder-open.png" );}
+.jenkins-icon.folder-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/folder.png" );}
+.jenkins-icon.gear2-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/gear2.png" );}
+.jenkins-icon.go-next-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/go-next.png" );}
+.jenkins-icon.health-00to19-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/health-00to19.png" );}
+.jenkins-icon.health-20to39-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/health-20to39.png" );}
+.jenkins-icon.health-40to59-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/health-40to59.png" );}
+.jenkins-icon.health-60to79-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/health-60to79.png" );}
+.jenkins-icon.health-80plus-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/health-80plus.png" );}
+.jenkins-icon.help-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/help.png" );}
+.jenkins-icon.hourglass-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/hourglass.png" );}
+.jenkins-icon.lock-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/lock.png" );}
+.jenkins-icon.notepad-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/notepad.png" );}
+.jenkins-icon.orange-square-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/orange-square.png" );}
+.jenkins-icon.package-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/package.png" );}
+.jenkins-icon.person-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/person.png" );}
+.jenkins-icon.plugin-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/plugin.png" );}
+.jenkins-icon.redo-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/redo.png" );}
+.jenkins-icon.save-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/save.png" );}
+.jenkins-icon.search-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/search.png" );}
+.jenkins-icon.secure-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/secure.png" );}
+.jenkins-icon.setting-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/setting.png" );}
+.jenkins-icon.star-gold-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/star-gold.png" );}
+.jenkins-icon.star-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/star.png" );}
+.jenkins-icon.stop-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/stop.png" );}
+.jenkins-icon.terminal-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/terminal.png" );}
+.jenkins-icon.text-error-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/text-error.png" );}
+.jenkins-icon.text-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/text.png" );}
+.jenkins-icon.user-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/user.png" );}
+.jenkins-icon.warning-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/warning.png" );}
+
+.jenkins-icon.aborted-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/aborted.gif" );}
+.jenkins-icon.aborted_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/aborted_anime.gif" );}
+.jenkins-icon.blue-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/blue.gif" );}
+.jenkins-icon.blue_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/blue_anime.gif" );}
+.jenkins-icon.clock-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/clock.gif" );}
+.jenkins-icon.clock_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/clock_anime.gif" );}
+.jenkins-icon.disabled-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/disabled.gif" );}
+.jenkins-icon.disabled_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/disabled_anime.gif" );}
+.jenkins-icon.green-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/green.gif" );}
+.jenkins-icon.green_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/green_anime.gif" );}
+.jenkins-icon.grey-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/grey.gif" );}
+.jenkins-icon.grey_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/grey_anime.gif" );}
+.jenkins-icon.nobuilt-16x16, .jenkins-icon.notbuilt-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/nobuilt.gif" );}
+.jenkins-icon.nobuilt_anime-16x16, .jenkins-icon.notbuilt_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/nobuilt_anime.gif" );}
+.jenkins-icon.red-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/red.gif" );}
+.jenkins-icon.red_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/red_anime.gif" );}
+.jenkins-icon.yellow-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/yellow.gif" );}
+.jenkins-icon.yellow_anime-16x16 {width: 16px; height: 16px; background-image: url("../images/16x16/yellow_anime.gif" );}
+
+/*
+ * 24x24 icons.
+ */
+.jenkins-icon.accept-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/accept.png" );}
+.jenkins-icon.attribute-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/attribute.png" );}
+.jenkins-icon.clipboard-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/clipboard.png" );}
+.jenkins-icon.computer-x-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/computer-x.png" );}
+.jenkins-icon.computer-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/computer.png" );}
+.jenkins-icon.delete-document-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/delete-document.png" );}
+.jenkins-icon.document-properties-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/document-properties.png" );}
+.jenkins-icon.document-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/document.png" );}
+.jenkins-icon.edit-delete-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/edit-delete.png" );}
+.jenkins-icon.empty-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/empty.png" );}
+.jenkins-icon.fingerprint-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/fingerprint.png" );}
+.jenkins-icon.folder-delete-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/folder-delete.png" );}
+.jenkins-icon.folder-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/folder.png" );}
+.jenkins-icon.gear-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/gear.png" );}
+.jenkins-icon.gear2-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/gear2.png" );}
+.jenkins-icon.graph-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/graph.png" );}
+.jenkins-icon.health-00to19-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/health-00to19.png" );}
+.jenkins-icon.health-20to39-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/health-20to39.png" );}
+.jenkins-icon.health-40to59-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/health-40to59.png" );}
+.jenkins-icon.health-60to79-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/health-60to79.png" );}
+.jenkins-icon.health-80plus-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/health-80plus.png" );}
+.jenkins-icon.help-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/help.png" );}
+.jenkins-icon.installer-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/installer.png" );}
+.jenkins-icon.lock-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/lock.png" );}
+.jenkins-icon.monitor-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/monitor.png" );}
+.jenkins-icon.new-computer-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/new-computer.png" );}
+.jenkins-icon.new-document-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/new-document.png" );}
+.jenkins-icon.new-package-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/new-package.png" );}
+.jenkins-icon.new-user-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/new-user.png" );}
+.jenkins-icon.next-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/next.png" );}
+.jenkins-icon.notepad-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/notepad.png" );}
+.jenkins-icon.orange-square-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/orange-square.png" );}
+.jenkins-icon.package-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/package.png" );}
+.jenkins-icon.plugin-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/plugin.png" );}
+.jenkins-icon.previous-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/previous.png" );}
+.jenkins-icon.redo-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/redo.png" );}
+.jenkins-icon.refresh-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/refresh.png" );}
+.jenkins-icon.save-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/save.png" );}
+.jenkins-icon.search-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/search.png" );}
+.jenkins-icon.secure-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/secure.png" );}
+.jenkins-icon.setting-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/setting.png" );}
+.jenkins-icon.star-gold-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/star-gold.png" );}
+.jenkins-icon.star-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/star.png" );}
+.jenkins-icon.terminal-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/terminal.png" );}
+.jenkins-icon.up-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/up.png" );}
+.jenkins-icon.user-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/user.png" );}
+
+.jenkins-icon.aborted-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/aborted.gif" );}
+.jenkins-icon.aborted_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/aborted_anime.gif" );}
+.jenkins-icon.blue-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/blue.gif" );}
+.jenkins-icon.blue_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/blue_anime.gif" );}
+.jenkins-icon.clock-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/clock.gif" );}
+.jenkins-icon.clock_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/clock_anime.gif" );}
+.jenkins-icon.disabled-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/disabled.gif" );}
+.jenkins-icon.disabled_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/disabled_anime.gif" );}
+.jenkins-icon.green-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/green.gif" );}
+.jenkins-icon.green_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/green_anime.gif" );}
+.jenkins-icon.grey-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/grey.gif" );}
+.jenkins-icon.grey_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/grey_anime.gif" );}
+.jenkins-icon.nobuilt-24x24, .jenkins-icon.notbuilt-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/nobuilt.gif" );}
+.jenkins-icon.nobuilt_anime-24x24, .jenkins-icon.notbuilt_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/nobuilt_anime.gif" );}
+.jenkins-icon.red-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/red.gif" );}
+.jenkins-icon.red_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/red_anime.gif" );}
+.jenkins-icon.yellow-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/yellow.gif" );}
+.jenkins-icon.yellow_anime-24x24 {width: 24px; height: 24px; background-image: url("../images/24x24/yellow_anime.gif" );}
+
+/*
+ * 32x32 icons.
+ */
+.jenkins-icon.accept-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/accept.png" );}
+.jenkins-icon.attribute-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/attribute.png" );}
+.jenkins-icon.clipboard-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/clipboard.png" );}
+.jenkins-icon.computer-x-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/computer-x.png" );}
+.jenkins-icon.computer-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/computer.png" );}
+.jenkins-icon.empty-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/empty.png" );}
+.jenkins-icon.error-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/error.png" );}
+.jenkins-icon.folder-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/folder.png" );}
+.jenkins-icon.gear2-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/gear2.png" );}
+.jenkins-icon.graph-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/graph.png" );}
+.jenkins-icon.health-00to19-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/health-00to19.png" );}
+.jenkins-icon.health-20to39-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/health-20to39.png" );}
+.jenkins-icon.health-40to59-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/health-40to59.png" );}
+.jenkins-icon.health-60to79-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/health-60to79.png" );}
+.jenkins-icon.health-80plus-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/health-80plus.png" );}
+.jenkins-icon.lock-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/lock.png" );}
+.jenkins-icon.orange-square-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/orange-square.png" );}
+.jenkins-icon.package-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/package.png" );}
+.jenkins-icon.plugin-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/plugin.png" );}
+.jenkins-icon.secure-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/secure.png" );}
+.jenkins-icon.setting-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/setting.png" );}
+.jenkins-icon.star-gold-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/star-gold.png" );}
+.jenkins-icon.star-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/star.png" );}
+.jenkins-icon.user-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/user.png" );}
+
+.jenkins-icon.aborted-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/aborted.gif" );}
+.jenkins-icon.aborted_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/aborted_anime.gif" );}
+.jenkins-icon.blue-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/blue.gif" );}
+.jenkins-icon.blue_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/blue_anime.gif" );}
+.jenkins-icon.clock-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/clock.gif" );}
+.jenkins-icon.clock_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/clock_anime.gif" );}
+.jenkins-icon.disabled-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/disabled.gif" );}
+.jenkins-icon.disabled_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/disabled_anime.gif" );}
+.jenkins-icon.green-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/green.gif" );}
+.jenkins-icon.green_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/green_anime.gif" );}
+.jenkins-icon.grey-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/grey.gif" );}
+.jenkins-icon.grey_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/grey_anime.gif" );}
+.jenkins-icon.nobuilt-32x32, .jenkins-icon.notbuilt-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/nobuilt.gif" );}
+.jenkins-icon.nobuilt_anime-32x32, .jenkins-icon.notbuilt_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/nobuilt_anime.gif" );}
+.jenkins-icon.red-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/red.gif" );}
+.jenkins-icon.red_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/red_anime.gif" );}
+.jenkins-icon.yellow-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/yellow.gif" );}
+.jenkins-icon.yellow_anime-32x32 {width: 32px; height: 32px; background-image: url("../images/32x32/yellow_anime.gif" );}
+
+/*
+ * 48x48 icons.
+ */
+.jenkins-icon.accept-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/accept.png" );}
+.jenkins-icon.attribute-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/attribute.png" );}
+.jenkins-icon.clipboard-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/clipboard.png" );}
+.jenkins-icon.computer-x-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/computer-x.png" );}
+.jenkins-icon.computer-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/computer.png" );}
+.jenkins-icon.document-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/document.png" );}
+.jenkins-icon.empty-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/empty.png" );}
+.jenkins-icon.error-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/error.png" );}
+.jenkins-icon.fingerprint-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/fingerprint.png" );}
+.jenkins-icon.folder-delete-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/folder-delete.png" );}
+.jenkins-icon.folder-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/folder.png" );}
+.jenkins-icon.gear2-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/gear2.png" );}
+.jenkins-icon.graph-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/graph.png" );}
+.jenkins-icon.health-00to19-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/health-00to19.png" );}
+.jenkins-icon.health-20to39-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/health-20to39.png" );}
+.jenkins-icon.health-40to59-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/health-40to59.png" );}
+.jenkins-icon.health-60to79-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/health-60to79.png" );}
+.jenkins-icon.health-80plus-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/health-80plus.png" );}
+.jenkins-icon.help-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/help.png" );}
+.jenkins-icon.installer-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/installer.png" );}
+.jenkins-icon.lock-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/lock.png" );}
+.jenkins-icon.monitor-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/monitor.png" );}
+.jenkins-icon.network-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/network.png" );}
+.jenkins-icon.notepad-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/notepad.png" );}
+.jenkins-icon.orange-square-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/orange-square.png" );}
+.jenkins-icon.package-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/package.png" );}
+.jenkins-icon.plugin-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/plugin.png" );}
+.jenkins-icon.redo-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/redo.png" );}
+.jenkins-icon.refresh-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/refresh.png" );}
+.jenkins-icon.search-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/search.png" );}
+.jenkins-icon.secure-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/secure.png" );}
+.jenkins-icon.setting-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/setting.png" );}
+.jenkins-icon.star-gold-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/star-gold.png" );}
+.jenkins-icon.star-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/star.png" );}
+.jenkins-icon.system-log-out-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/system-log-out.png" );}
+.jenkins-icon.terminal-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/terminal.png" );}
+.jenkins-icon.user-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/user.png" );}
+.jenkins-icon.warning-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/warning.png" );}
+
+.jenkins-icon.aborted-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/aborted.gif" );}
+.jenkins-icon.aborted_anime-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/aborted_anime.gif" );}
+.jenkins-icon.blue-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/blue.gif" );}
+.jenkins-icon.blue_anime-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/blue_anime.gif" );}
+.jenkins-icon.disabled-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/disabled.gif" );}
+.jenkins-icon.disabled_anime-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/disabled_anime.gif" );}
+.jenkins-icon.green-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/green.gif" );}
+.jenkins-icon.green_anime-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/green_anime.gif" );}
+.jenkins-icon.grey-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/grey.gif" );}
+.jenkins-icon.grey_anime-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/grey_anime.gif" );}
+.jenkins-icon.nobuilt-48x48, .jenkins-icon.notbuilt-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/nobuilt.gif" );}
+.jenkins-icon.nobuilt_anime-48x48, .jenkins-icon.notbuilt_anime-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/nobuilt_anime.gif" );}
+.jenkins-icon.red-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/red.gif" );}
+.jenkins-icon.red_anime-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/red_anime.gif" );}
+.jenkins-icon.yellow-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/yellow.gif" );}
+.jenkins-icon.yellow_anime-48x48 {width: 48px; height: 48px; background-image: url("../images/48x48/yellow_anime.gif" );}
+
+/*
+    Unanimated icons.  All colors based on colors from the BallColor class colors.
+ */
+.jenkins-icon.NO_ANIME {
+    border-radius: 50%;
+}
+
+.jenkins-icon {
+    display: inline-block;
+    vertical-align: middle;
+}

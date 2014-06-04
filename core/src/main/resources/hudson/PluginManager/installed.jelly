@@ -101,7 +101,7 @@ THE SOFTWARE.
                 <td class="center pane" id='unpin-${p.shortName}'>
                   <j:if test="${p.isPinned()}">
                     <input type="button" onclick="unpin(this,'${p.shortName}')" value="${%Unpin}" class="yui-button" />
-                    <a href="${%wiki.url}" target="_blank"><img style="vertical-align:top" src="${imagesURL}/16x16/help.png"/></a>
+                    <a href="${%wiki.url}" target="_blank"><l:icon name="help-16x16" style="vertical-align:top"/></a>
                   </j:if>
                 </td>
                 <td class="center pane">
@@ -121,14 +121,14 @@ THE SOFTWARE.
             <!-- failed ones -->
             <j:forEach var="p" items="${it.pluginManager.failedPlugins}">
               <tr class="hoverback">
-                <td class="pane" />
+                <td class="pane"/>
                 <td class="pane">
                   <h4 class="error">Failed : ${p.name}</h4>
                   <div stlyle="padding-left: 1em">
                     <pre>${p.exceptionString}</pre>
                   </div>
                 </td>
-                <td class="pane" />
+                <td class="pane"/>
               </tr>
             </j:forEach>
           </j:otherwise>
@@ -139,7 +139,7 @@ THE SOFTWARE.
         <form method="post" action="${rootURL}/safeRestart">
           ${%Changes will take effect when you restart Jenkins}
           <j:if test="${app.lifecycle.canRestart()}">
-            <s:submit value="${%Restart Once No Jobs Are Running}" />
+            <s:submit value="${%Restart Once No Jobs Are Running}"/>
           </j:if>
         </form>
       </div>

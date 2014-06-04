@@ -43,8 +43,8 @@ THE SOFTWARE.
 	      </tr></table>
 	    </div>
 	  </j:if>
-	  
-	  <img class="build-caption-status-icon" src="${imagesURL}/48x48/${it.buildStatusUrl}" width="48" height="48" alt="${it.iconColor.description}" tooltip="${it.iconColor.description}" />
+
+      <l:icon name="${it.iconColor.name}-48x48" tooltip="${it.iconColor.description}"/>
 	  <d:invokeBody />
 	</h1>
 </j:jelly>

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Simon Wiest
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,7 +37,7 @@ import java.util.Locale;
  *
  * <p>
  * There are four basic colors, plus their animated "bouncy" versions.
- * {@link #ordinal()} is the sort order. 
+ * {@link #ordinal()} is the sort order.
  *
  * <p>
  * Note that multiple {@link BallColor} instances may map to the same
@@ -72,26 +72,44 @@ public enum BallColor implements StatusIcon {
     ;
 
     private final Localizable description;
-    private final String image;
+    private final String iconName;
+    private final String imageFile;
     private final Color baseColor;
 
-    BallColor(String image, Localizable description, Color baseColor) {
+    BallColor(String iconName, Localizable description, Color baseColor) {
+        this.iconName = iconName;
         this.baseColor = baseColor;
         // name() is not usable in the constructor, so I have to repeat the name twice
         // in the constants definition.
-        this.image = image+ (image.endsWith("_anime")?".gif":".png");
+        this.imageFile = iconName + (iconName.endsWith("_anime")?".gif":".png");
         this.description = description;
+    }
+
+    /**
+     * Get the ball/orb icon name.
+     * @return The ball/orb icon name.
+     */
+    public String getIconName() {
+        return iconName;
     }
 
     /**
      * String like "red.png" that represents the file name of the image.
      */
     public String getImage() {
-        return image;
+        return imageFile;
     }
 
     public String getImageOf(String size) {
-        return Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/"+size+'/'+image;
+        return Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/"+size+'/'+imageFile;
+    }
+
+    /**
+     * Get the name.
+     * @return The name, as with {@link Enum#name()}.
+     */
+    public String getName() {
+        return name();
     }
 
     /**

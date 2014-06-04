@@ -40,6 +40,9 @@ FORM {
 td {
   vertical-align: top;
 }
+.abstractBuildMain table td.no-wrap a {
+    vertical-align: top;
+}
 
 dt {
   font-weight: bold;
@@ -287,6 +290,10 @@ pre.console {
   white-space: nowrap;
 }
 
+.task-icon-link .jenkins-icon {
+    margin: 2px;
+}
+
 .subtasks {
   padding-left: 1em;
 }
@@ -506,6 +513,15 @@ LABEL.attach-previous {
     padding:0;
 }
 
+.text-align.top {
+    vertical-align: top;
+}
+.text-align.bottom {
+    vertical-align: bottom;
+}
+.text-align.middle {
+    vertical-align: middle;
+}
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {

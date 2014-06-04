@@ -107,9 +107,11 @@ import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -165,6 +167,15 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @SuppressWarnings("rawtypes")
 public class Functions {
     private static final AtomicLong iota = new AtomicLong();
+
+    private static final Set<String> iconDims = new HashSet<String>();
+    static {
+        iconDims.add("16x16");
+        iconDims.add("24x24");
+        iconDims.add("32x32");
+        iconDims.add("48x48");
+    }
+    private static final String ICON_CLASS_SIZE_SUFFIX_FORMAT = "-XXxXX";
 
     public Functions() {
     }
@@ -292,6 +303,10 @@ public class Functions {
         else
             buf.append(plural);
         return buf.toString();
+    }
+
+    public static boolean isIconAlias(String iconConfigVal) {
+        return (iconConfigVal != null && !iconConfigVal.contains("/"));
     }
 
     public static RunUrl decompose(StaplerRequest req) {
@@ -967,6 +982,7 @@ public class Functions {
             return this.hierarchy.compareTo(that.hierarchy);
         }
     }
+
     /**
      * Computes the path to the icon of the given action
      * from the context path.
@@ -978,6 +994,59 @@ public class Functions {
             return name.substring(1);
         else
             return "images/24x24/"+name;
+    }
+
+    /**
+     * Computes the icon name of the given action
+     * from the context path.
+     * @return The icon name/alias.
+     */
+    public static String getIconName(Action a) {
+        return toIconName(a.getIconFileName());
+    }
+
+    public static String toIconName(String iconFilePath) {
+        return toIconName(iconFilePath, "24x24");
+    }
+
+    /**
+     * Computes the icon name from the given icon file path.
+     * @return The icon name/alias.
+     */
+    public static String toIconName(String iconFilePath, String defaultSize) {
+        if (iconFilePath ==null) {
+            return null;
+        }
+
+        String[] fileNameToks;
+        if (iconFilePath.startsWith("/")) {
+            fileNameToks = iconFilePath.substring(1).split("/");
+        } else {
+            fileNameToks = iconFilePath.split("/");
+        }
+
+        if (fileNameToks.length == 1) {
+            String iconName = fileNameToks[0];
+            if (iconName.length() > ICON_CLASS_SIZE_SUFFIX_FORMAT.length()
+                    && iconDims.contains(iconName.substring(iconName.length() - ICON_CLASS_SIZE_SUFFIX_FORMAT.length() + 1))) {
+                // Icon name already has the size fixed to the end of it i.e. it's a fully formed CSS class,
+                // so we can return it as is.
+                return iconName;
+            } else {
+                return removeFileExt(iconName) + "-" + defaultSize;
+            }
+        }
+
+        if (fileNameToks.length == 3 && fileNameToks[0].equals("images")) {
+            String iconFolderName = fileNameToks[1];
+            if (iconDims.contains(iconFolderName)) {
+                // Looks like it's one of the core icon's
+                return removeFileExt(fileNameToks[2]) + "-" + iconFolderName;
+            }
+        }
+
+        // Can't recognise it as a core icon.  Return as is.
+        return iconFilePath;
     }
 
     /**
@@ -1866,4 +1935,12 @@ public class Functions {
         }
     }
 
+    private static String removeFileExt(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf(".");
+        if (lastDotIndex != -1) {
+            return fileName.substring(0, lastDotIndex);
+        } else {
+            return fileName;
+        }
+    }
 }

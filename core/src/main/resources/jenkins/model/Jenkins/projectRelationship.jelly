@@ -28,9 +28,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout norefresh="true" title="${%Project Relationship}">
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly"/>
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/search.png" alt="" height="48" width="48"/>${%Project Relationship}</h1>
+      <h1><l:icon name="search-48x48"/>${%Project Relationship}</h1>
       <form action="projectRelationship" method="get">
         <table width="100%">
           <tr>
@@ -39,7 +39,7 @@ THE SOFTWARE.
               ${%upstream project}:
               <f:editableComboBox id="lhs" name="lhs" value="${request.getParameter('lhs')}" items="${names}" />
             </td>
-            <td style="width:32px; text-align:center;"><img src="${imagesURL}/24x24/next.png" alt="->" height="24" width="24"/></td>
+            <td style="width:32px; text-align:center;"><l:icon name="next-24x24"/></td>
             <td>
               ${%downstream project}:
               <f:editableComboBox id="rhs" name="rhs" value="${request.getParameter('rhs')}" items="${names}" />
@@ -47,8 +47,8 @@ THE SOFTWARE.
           </tr>
           <tr>
             <td colspan="3" style="text-align:right">
-              <f:submit value="${%Compare}" />
-              <a href="projectRelationship-help"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
+              <f:submit value="${%Compare}"/>
+              <a href="projectRelationship-help"><l:icon name="help-16x16"/></a>
             </td>
           </tr>
 

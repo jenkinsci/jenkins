@@ -25,61 +25,61 @@ THE SOFTWARE.
 
 <!-- show the icon legend -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:s="/lib/form" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <l:layout>
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <table cellpadding="5" id="legend-table">
         <tr><td>
-          <img src="images/48x48/grey.png" alt="" height="48" width="48"/>
+          <l:icon name="grey-48x48"/>
           ${%grey}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/grey_anime.gif" alt="" height="48" width="48"/>
+          <l:icon name="grey_anime-48x48"/>
           ${%grey_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/blue.png" alt="" height="48" width="48"/>
+          <l:icon name="blue-48x48"/>
           ${%blue}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/blue_anime.gif" alt="" height="48" width="48"/>
+          <l:icon name="blue_anime-48x48"/>
           ${%blue_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/yellow.png" alt="" height="48" width="48"/>
+          <l:icon name="yellow-48x48"/>
           ${%yellow}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/yellow_anime.gif" alt="" height="48" width="48"/>
+          <l:icon name="yellow_anime-48x48"/>
           ${%yellow_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/red.png" alt="" height="48" width="48"/>
+          <l:icon name="red-48x48"/>
           ${%red}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/red_anime.gif" alt="" height="48" width="48"/>
+          <l:icon name="red_anime-48x48"/>
           ${%red_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-80plus.png" alt="" height="48" width="48"/>
+          <l:icon name="health-80plus-48x48"/>
           ${%health-81plus}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-60to79.png" alt="" height="48" width="48"/>
+          <l:icon name="health-60to79-48x48"/>
           ${%health-61to80}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-40to59.png" alt="" height="48" width="48"/>
+          <l:icon name="health-40to59-48x48"/>
           ${%health-41to60}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-20to39.png" alt="" height="48" width="48"/>
+          <l:icon name="health-20to39-48x48"/>
           ${%health-21to40}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-00to19.png" alt="" height="48" width="48"/>
+          <l:icon name="health-00to19-48x48"/>
           ${%health-00to20}
         </td></tr>
       </table>

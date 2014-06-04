@@ -35,7 +35,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Represents health of something (typically project).
@@ -47,13 +46,20 @@ import java.util.Locale;
 @ExportedBean(defaultVisibility = 2)
 // this is always exported as a part of Job and never on its own, so start with 2.
 public class HealthReport implements Serializable, Comparable<HealthReport> {
+    private static final String HEALTH_OVER_80 = "health-80plus";
+    private static final String HEALTH_61_TO_80 = "health-60to79";
+    private static final String HEALTH_41_TO_60 = "health-40to59";
+    private static final String HEALTH_21_TO_40 = "health-20to39";
+    private static final String HEALTH_0_TO_20 = "health-00to19";
+    private static final String HEALTH_UNKNOWN = "empty";
+
     // These are now 0-20, 21-40, 41-60, 61-80, 81+ but filenames unchanged for compatibility
-    private static final String HEALTH_OVER_80 = "health-80plus.png";
-    private static final String HEALTH_61_TO_80 = "health-60to79.png";
-    private static final String HEALTH_41_TO_60 = "health-40to59.png";
-    private static final String HEALTH_21_TO_40 = "health-20to39.png";
-    private static final String HEALTH_0_TO_20 = "health-00to19.png";
-    private static final String HEALTH_UNKNOWN = "empty.png";
+    private static final String HEALTH_OVER_80_FILENAME = HEALTH_OVER_80 + ".png";
+    private static final String HEALTH_61_TO_80_FILENAME = HEALTH_61_TO_80 + ".png";
+    private static final String HEALTH_41_TO_60_FILENAME = HEALTH_41_TO_60 + ".png";
+    private static final String HEALTH_21_TO_40_FILENAME = HEALTH_21_TO_40 + ".png";
+    private static final String HEALTH_0_TO_20_FILENAME = HEALTH_0_TO_20 + ".png";
+    private static final String HEALTH_UNKNOWN_FILENAME = HEALTH_UNKNOWN + ".png";
 
     /**
      * The percentage health score (from 0 to 100 inclusive).
@@ -122,15 +128,15 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
         this.score = score;
         if (iconUrl == null) {
             if (score <= 20) {
-                this.iconUrl = HEALTH_0_TO_20;
+                this.iconUrl = HEALTH_0_TO_20_FILENAME;
             } else if (score <= 40) {
-                this.iconUrl = HEALTH_21_TO_40;
+                this.iconUrl = HEALTH_21_TO_40_FILENAME;
             } else if (score <= 60) {
-                this.iconUrl = HEALTH_41_TO_60;
+                this.iconUrl = HEALTH_41_TO_60_FILENAME;
             } else if (score <= 80) {
-                this.iconUrl = HEALTH_61_TO_80;
+                this.iconUrl = HEALTH_61_TO_80_FILENAME;
             } else {
-                this.iconUrl = HEALTH_OVER_80;
+                this.iconUrl = HEALTH_OVER_80_FILENAME;
             }
         } else {
             this.iconUrl = iconUrl;
@@ -166,7 +172,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * Create a new HealthReport.
      */
     public HealthReport() {
-        this(100, HEALTH_UNKNOWN, Messages._HealthReport_EmptyString());
+        this(100, HEALTH_UNKNOWN_FILENAME, Messages._HealthReport_EmptyString());
     }
 
     /**
@@ -206,12 +212,32 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      */
     public String getIconUrl(String size) {
         if (iconUrl == null) {
-            return Jenkins.RESOURCE_PATH + "/images/" + size + "/" + HEALTH_UNKNOWN;
+            return Jenkins.RESOURCE_PATH + "/images/" + size + "/" + HEALTH_UNKNOWN_FILENAME;
         }
         if (iconUrl.startsWith("/")) {
             return iconUrl.replace("/32x32/", "/" + size + "/");
         }
         return Jenkins.RESOURCE_PATH + "/images/" + size + "/" + iconUrl;
+    }
+
+    /**
+     * Get the health icon name for this report, given the size.
+     *
+     * @param size The size, e.g. 32x32, 24x24 or 16x16.
+     * @return The icon name/alias.
+     */
+    public String getIconName(String size) {
+        if (score <= 20) {
+            return HEALTH_0_TO_20 + "-" + size;
+        } else if (score <= 40) {
+            return HEALTH_21_TO_40 + "-" + size;
+        } else if (score <= 60) {
+            return HEALTH_41_TO_60 + "-" + size;
+        } else if (score <= 80) {
+            return HEALTH_61_TO_80 + "-" + size;
+        } else {
+            return HEALTH_OVER_80 + "-" + size;
+        }
     }
 
     /**

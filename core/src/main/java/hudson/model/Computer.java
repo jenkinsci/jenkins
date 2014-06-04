@@ -602,11 +602,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @Exported
-    public String getIcon() {
+    public String getIconName() {
         if(isOffline())
-            return "computer-x.png";
+            return "computer-x";
         else
-            return "computer.png";
+            return "computer";
+    }
+
+    @Exported
+    public String getIcon() {
+        return getIconName() + ".png";
     }
 
     public String getIconAltText() {
