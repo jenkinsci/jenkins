@@ -247,11 +247,9 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                         logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
                         continue;
                     }
-                    // this is not completely accurate, as a new build might be triggered
-                    // between these calls
                     boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
                     if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
-                        String name = ModelHyperlinkNote.encodeTo(p) + " #" + p.getNextBuildNumber();
+                        String name = ModelHyperlinkNote.encodeTo(p);
                         if (scheduled) {
                             logger.println(Messages.BuildTrigger_Triggering(name));
                         } else {
