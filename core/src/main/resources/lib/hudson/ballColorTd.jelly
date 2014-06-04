@@ -34,8 +34,7 @@ THE SOFTWARE.
   </st:documentation>
   <td data="${it.ordinal()}">
     <j:if test="${attrs.it!=null}">
-      <img src="${it.getImageOf(iconSize)}" alt="${it.description}"
-           tooltip="${it.description}" style="${attrs.style}" class="icon${iconSize}"/>
+      <div class="jenkins-orb orb-size-${iconSize}" orb-status="${it.name}"></div>
     </j:if>
   </td>
 </j:jelly>

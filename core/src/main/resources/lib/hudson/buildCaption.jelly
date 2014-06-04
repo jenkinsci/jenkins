@@ -44,7 +44,7 @@ THE SOFTWARE.
 	    </div>
 	  </j:if>
 	  
-	  <img class="build-caption-status-icon" src="${imagesURL}/48x48/${it.buildStatusUrl}" width="48" height="48" alt="${it.iconColor.description}" tooltip="${it.iconColor.description}" />
+      <div class="jenkins-orb orb-size-48x48" orb-status="${it.iconColor.name}" tooltip="${it.iconColor.description}"></div>
 	  <d:invokeBody />
 	</h1>
 </j:jelly>

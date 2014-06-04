@@ -48,8 +48,10 @@ THE SOFTWARE.
       </div>
 
       <t:buildCaption>
+        <span class="displayName">
         ${%Build} ${it.displayName}
         (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)
+        </span>
       </t:buildCaption>
 
       <div>
@@ -113,7 +115,9 @@ THE SOFTWARE.
         </j:forEach>
       </table>
 
-      <st:include page="main.jelly" optional="true" />
+      <div class="abstractBuildMain">
+        <st:include page="main.jelly" optional="true" />
+      </div>
 
       <!-- upstream/downstream builds -->
       <j:set var="upstream" value="${it.upstreamBuilds}" />

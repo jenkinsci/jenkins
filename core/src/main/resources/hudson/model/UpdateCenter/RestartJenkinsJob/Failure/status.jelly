@@ -24,5 +24,5 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <img src="${imagesURL}/24x24/red.png" alt="" height="24" width="24"/> ${%Failure}
+    <div class="jenkins-orb orb-size-24x24" orb-status="RED" /><st:nbsp /><span class="text-align top">${%Failure}</span>
 </j:jelly>
