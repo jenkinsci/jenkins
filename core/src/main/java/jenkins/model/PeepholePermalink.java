@@ -210,10 +210,11 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         public void onDeleted(Run run) {
             Job<?, ?> j = run.getParent();
             for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
-                if (pp.apply(run)) {
-                    if (pp.resolve(j)==run) {
-                        pp.updateCache(j,pp.find(run.getPreviousBuild()));
-                    }
+                if (pp.resolve(j)==run) {
+                    Run<?,?> r = pp.find(run.getPreviousBuild());
+                    if (LOGGER.isLoggable(Level.FINE))
+                        LOGGER.fine("Updating "+pp.getPermalinkFile(j).getName()+" permalink from deleted "+run.getNumber()+" to "+(r == null ? -1 : r.getNumber()));
+                    pp.updateCache(j,r);
                 }
             }
         }
@@ -227,8 +228,11 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
                 if (pp.apply(run)) {
                     Run<?, ?> cur = pp.resolve(j);
-                    if (cur==null || cur.getNumber()<run.getNumber())
+                    if (cur==null || cur.getNumber()<run.getNumber()) {
+                        if (LOGGER.isLoggable(Level.FINE))
+                            LOGGER.fine("Updating "+pp.getPermalinkFile(j).getName()+" permalink to completed "+run.getNumber());
                         pp.updateCache(j,run);
+                    }
                 }
             }
         }

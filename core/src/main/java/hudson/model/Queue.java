@@ -283,6 +283,7 @@ public class Queue extends ResourceController implements Saveable {
             return workUnit == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
         }
 
+        @CheckForNull
         public Node getNode() {
             return executor.getOwner().getNode();
         }
@@ -739,6 +740,8 @@ public class Queue extends ResourceController implements Saveable {
 
     private void _getBuildableItems(Computer c, ItemList<BuildableItem> col, List<BuildableItem> result) {
         Node node = c.getNode();
+        if (node == null)   // Deleted computers cannot take build items... 
+            return;
         for (BuildableItem p : col.values()) {
             if (node.canTake(p) == null)
                 result.add(p);

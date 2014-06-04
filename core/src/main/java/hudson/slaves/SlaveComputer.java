@@ -78,7 +78,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.annotation.CheckForNull;
+import jenkins.model.Jenkins;
 import static hudson.slaves.SlaveComputer.LogHolder.*;
+
 
 /**
  * {@link Computer} for {@link Slave}s.
@@ -168,6 +171,7 @@ public class SlaveComputer extends Computer {
         return isUnix;
     }
 
+    @CheckForNull
     @Override
     public Slave getNode() {
         Node node = super.getNode();
@@ -418,7 +422,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Sets up the connection through an exsting channel.
+     * Sets up the connection through an existing channel.
      *
      * @since 1.444
      */
@@ -454,10 +458,15 @@ public class SlaveComputer extends Computer {
 
         String defaultCharsetName = channel.call(new DetectDefaultCharset());
 
-        String remoteFs = getNode().getRemoteFS();
+        Slave node = getNode();
+        if (node == null) { // Node has been disabled/removed during the connection
+            throw new IOException("Node "+nodeName+" has been deleted during the channel setup");
+        }
+        
+        String remoteFs = node.getRemoteFS();
         if(_isUnix && !remoteFs.contains("/") && remoteFs.contains("\\"))
             log.println("WARNING: "+remoteFs+" looks suspiciously like Windows path. Maybe you meant "+remoteFs.replace('\\','/')+"?");
-        FilePath root = new FilePath(channel,getNode().getRemoteFS());
+        FilePath root = new FilePath(channel,remoteFs);
 
         // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
         // we pin the base classloader so that it'll never get GCed. When this classloader gets released,

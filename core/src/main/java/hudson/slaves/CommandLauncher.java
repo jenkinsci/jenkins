@@ -23,10 +23,12 @@
  */
 package hudson.slaves;
 
+import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import hudson.model.Slave;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -87,6 +89,11 @@ public class CommandLauncher extends ComputerLauncher {
         EnvVars _cookie = null;
         Process _proc = null;
         try {
+            Slave node = computer.getNode();
+            if (node == null) { 
+                throw new AbortException("Cannot launch commands on deleted nodes");
+            }
+            
             listener.getLogger().println(hudson.model.Messages.Slave_Launching(getTimestamp()));
             if(getCommand().trim().length()==0) {
                 listener.getLogger().println(Messages.CommandLauncher_NoLaunchCommand());
@@ -96,8 +103,8 @@ public class CommandLauncher extends ComputerLauncher {
 
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
             final EnvVars cookie = _cookie = EnvVars.createCookie();
-            pb.environment().putAll(cookie);
-            pb.environment().put("WORKSPACE", computer.getNode().getRemoteFS()); //path for local slave log
+            pb.environment().putAll(cookie);      
+            pb.environment().put("WORKSPACE", node.getRemoteFS()); //path for local slave log
 
             {// system defined variables
                 String rootUrl = Jenkins.getInstance().getRootUrl();

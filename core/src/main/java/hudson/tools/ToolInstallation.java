@@ -41,6 +41,7 @@ import java.util.List;
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
@@ -163,7 +164,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * @see EnvironmentSpecific
      * @since 1.460
      */
-    public ToolInstallation translate(Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+    public ToolInstallation translate(@Nonnull Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
         ToolInstallation t = this;
         if (t instanceof NodeSpecific) {
             NodeSpecific n = (NodeSpecific) t;
