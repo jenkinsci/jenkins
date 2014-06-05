@@ -204,7 +204,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * This is where the log from the remote agent goes.
-     *
+     * The method also creates a log directory if required.
      * @see #relocateOldLogs()
      */
     protected File getLogFile() {
@@ -1196,7 +1196,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             // read
             checkPermission(EXTENDED_READ);
             rsp.setContentType("application/xml");
-            Jenkins.XSTREAM2.toXMLUTF8(getNode(), rsp.getOutputStream());
+            Node node = getNode();
+            if (node == null) {
+                throw HttpResponses.notFound();
+            }
+            Jenkins.XSTREAM2.toXMLUTF8(node, rsp.getOutputStream());
             return;
         }
         if (req.getMethod().equals("POST")) {
@@ -1218,7 +1222,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         // replace the old Node object by the new one
         synchronized (app) {
             List<Node> nodes = new ArrayList<Node>(app.getNodes());
-            int i = nodes.indexOf(getNode());
+            Node node = getNode();
+            int i  = (node != null) ? nodes.indexOf(node) : -1;
             if(i<0) {
                 throw new IOException("This slave appears to be removed while you were editing the configuration");
             }
@@ -1348,7 +1353,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
                 newLocation.getParentFile().mkdirs();
-                f.renameTo(newLocation);
+                boolean relocationSuccessfull=f.renameTo(newLocation);
+                if (relocationSuccessfull) { // The operation will fail if mkdir fails 
+                    LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                } else {
+                    LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                }
             } else {
                 assert false;
             }

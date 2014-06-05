@@ -122,6 +122,9 @@ public class InstallToolCommand extends CLICommand {
             throw new AbortException(b.getFullDisplayName()+" is not building");
 
         Node node = exec.getOwner().getNode();
+        if (node == null) {
+            throw new AbortException("The node " + exec.getOwner().getDisplayName() + " has been deleted");
+        }
 
         t = t.translate(node, EnvVars.getRemote(checkChannel()), new StreamTaskListener(stderr));
         stdout.println(t.getHome());

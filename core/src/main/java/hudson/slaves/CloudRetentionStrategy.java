@@ -23,10 +23,12 @@
  */
 package hudson.slaves;
 
+import hudson.model.Node;
 import java.io.IOException;
 import java.util.logging.Logger;
 
 import static hudson.util.TimeUnit2.*;
+import java.util.logging.Level;
 import static java.util.logging.Level.*;
 
 /**
@@ -43,13 +45,15 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
         this.idleMinutes = idleMinutes;
     }
 
+    @Override
     public synchronized long check(AbstractCloudComputer c) {
-        if (c.isIdle() && !disabled) {
+        AbstractCloudSlave computerNode = c.getNode();
+        if (c.isIdle() && !disabled && computerNode != null) {
             final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
             if (idleMilliseconds > MINUTES.toMillis(idleMinutes)) {
-                LOGGER.info("Disconnecting "+c.getName());
+                LOGGER.log(Level.INFO, "Disconnecting {0}",c.getName());
                 try {
-                    c.getNode().terminate();
+                    computerNode.terminate();
                 } catch (InterruptedException e) {
                     LOGGER.log(WARNING,"Failed to terminate "+c.getName(),e);
                 } catch (IOException e) {
