@@ -398,7 +398,7 @@ public class SCMTrigger extends Trigger<Item> {
             for (SCM scm : job().getSCMs()) {
                 descriptors.add(scm.getDescriptor());
             }
-            return Messages.SCMTrigger_getDisplayName(descriptors.size() == 1 ? descriptors.iterator().next().getDisplayName() : "?");
+            return descriptors.size() == 1 ? Messages.SCMTrigger_getDisplayName(descriptors.iterator().next().getDisplayName()) : Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
         public String getUrlName() {
