@@ -29,6 +29,7 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.scm.NullSCM;
 import hudson.scm.PollingResult;
 import hudson.scm.SCM;
 import hudson.triggers.SCMTrigger;
@@ -127,7 +128,7 @@ public interface SCMTriggerItem {
         }
 
         public static @Nonnull Collection<? extends SCM> resolveMultiScmIfConfigured(@CheckForNull SCM scm) {
-            if (scm == null) {
+            if (scm == null || scm instanceof NullSCM) {
                 return Collections.emptySet();
             } else if (scm.getClass().getName().equals("org.jenkinsci.plugins.multiplescms.MultiSCM")) {
                 try {
