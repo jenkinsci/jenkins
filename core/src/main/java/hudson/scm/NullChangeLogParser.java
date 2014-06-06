@@ -37,7 +37,7 @@ public class NullChangeLogParser extends ChangeLogParser {
     
     public static final NullChangeLogParser INSTANCE = new NullChangeLogParser();
     
-    @Override public ChangeLogSet<? extends ChangeLogSet.Entry> parse(Run build, File changelogFile) throws IOException, SAXException {
+    @Override public ChangeLogSet<? extends ChangeLogSet.Entry> parse(Run build, RepositoryBrowser<?> browser, File changelogFile) throws IOException, SAXException {
         return ChangeLogSet.createEmpty(build);
     }
     

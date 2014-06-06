@@ -59,19 +59,25 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
      * Build whose change log this object represents.
      */
     private final Run<?,?> build;
+    private final RepositoryBrowser</* ideally T */?> browser;
 
-    protected ChangeLogSet(Run<?, ?> build) {
+    protected ChangeLogSet(Run<?,?> build, RepositoryBrowser<?> browser) {
         this.build = build;
+        this.browser = browser;
     }
 
     @Deprecated
     protected ChangeLogSet(AbstractBuild<?, ?> build) {
-        this((Run) build);
+        this((Run) build, build.getParent().getScm().getEffectiveBrowser());
     }
 
     @AdaptField(name="build", was=AbstractBuild.class)
     public Run<?,?> getBuild() {
         return build;
+    }
+
+    public RepositoryBrowser<?> getBrowser() {
+        return browser;
     }
 
     /**
