@@ -65,9 +65,13 @@ public class StringParameterValue extends ParameterValue {
             }
         };
     }
-    
 
-	@Override
+    @Override
+    public Object getValue() {
+        return value;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

@@ -96,6 +96,11 @@ public class FileParameterValue extends ParameterValue {
         return location;
     }
 
+    @Override
+    public Object getValue() {
+        return file;
+    }
+
     /**
      * Exposes the originalFileName as an environment variable.
      */

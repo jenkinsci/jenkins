@@ -66,7 +66,11 @@ public class RunParameterValue extends ParameterValue {
     public String getNumber() {
     	return runId.split("#")[1];
     }
-    
+
+    @Override
+    public Run getValue() {
+        return getRun();
+    }
 
     /**
      * Exposes the name/value as an environment variable.

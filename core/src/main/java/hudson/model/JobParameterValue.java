@@ -37,6 +37,11 @@ public class JobParameterValue extends ParameterValue {
         this.job = job;
     }
 
+    @Override
+    public Job getValue() {
+        return job;
+    }
+
     /**
      * Exposes the name/value as an environment variable.
      */
