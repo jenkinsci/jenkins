@@ -46,7 +46,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Defines a parameter for a build.
  *
  * <p>
- * In Hudson, a user can configure a job to require parameters for a build.
+ * In Jenkins, a user can configure a job to require parameters for a build.
  * For example, imagine a test job that takes the bits to be tested as a parameter.
  *
  * <p>
