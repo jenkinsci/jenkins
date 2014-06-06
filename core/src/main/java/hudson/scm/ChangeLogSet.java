@@ -46,7 +46,7 @@ import java.util.logging.Logger;
  * For the change list at project level, see {@link SCM}.
  *
  * <p>
- * {@link Iterator} is expected to return recent changes first.
+ * {@link Iterator} is expected to return newer changes first then older changes later.
  *
  * @author Kohsuke Kawaguchi
  */
