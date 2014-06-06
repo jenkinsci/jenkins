@@ -35,6 +35,8 @@ import hudson.tasks.Publisher
 import hudson.tasks.Recorder;
 import hudson.tasks.Shell;
 import hudson.scm.NullSCM;
+import hudson.scm.SCM
+import hudson.scm.SCMDescriptor
 import hudson.Launcher;
 import hudson.FilePath;
 import hudson.Functions;
@@ -191,6 +193,13 @@ public class AbstractProjectTest extends HudsonTestCase {
 
             @Override public boolean requiresWorkspaceForPolling() {
                 return true;
+            }
+            @Override public SCMDescriptor<?> getDescriptor() {
+                return new SCMDescriptor<SCM>(null) {
+                    @Override public String getDisplayName() {
+                        return "";
+                    }
+                };
             }
         };
         Thread t = new Thread() {
