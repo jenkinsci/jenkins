@@ -91,6 +91,8 @@ import static java.util.logging.Level.WARNING;
 
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -868,6 +870,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(cs);
         return cs;
+    }
+
+    @Restricted(DoNotUse.class) // for project-changes.jelly
+    public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
+        ChangeLogSet<? extends Entry> cs = getChangeSet();
+        return cs.isEmptySet() ? Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>emptyList() : Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>singletonList(cs);
     }
 
     /**

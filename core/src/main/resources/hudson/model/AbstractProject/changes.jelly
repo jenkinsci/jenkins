@@ -32,7 +32,7 @@ THE SOFTWARE.
     <l:main-panel>
       <j:set var="from" value="${request.getParameter('from')}"/>
       <j:set var="to" value="${request.getParameter('to')}"/>
-      <j:set var="browser" value="${it.scm.effectiveBrowser}"/>
+      <j:set var="browser" value="${it.scm.effectiveBrowser}"/> <!-- for compatibility; newer project-changes.jelly override this -->
 
       <h1>
         ${%Changes}
