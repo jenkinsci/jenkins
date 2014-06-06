@@ -105,7 +105,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * @see #getEffectiveBrowser()
      */
-    public RepositoryBrowser<?> getBrowser() {
+    public @CheckForNull RepositoryBrowser<?> getBrowser() {
         return null;
     }
 
@@ -126,7 +126,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @see SCMDescriptor#isBrowserReusable
      */
     @Exported(name="browser")
-    public final RepositoryBrowser<?> getEffectiveBrowser() {
+    public final @CheckForNull RepositoryBrowser<?> getEffectiveBrowser() {
         RepositoryBrowser<?> b = getBrowser();
         if(b!=null)
             return b;
