@@ -122,10 +122,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     /**
      * Returns the applicable {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
-     *
-     * <p>
-     * This method attempts to find applicable browser
-     * from other job configurations.
+     * @see #guessBrowser
+     * @see SCMDescriptor#isBrowserReusable
      */
     @Exported(name="browser")
     public final RepositoryBrowser<?> getEffectiveBrowser() {
@@ -712,4 +710,15 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public static List<SCMDescriptor<?>> _for(final AbstractProject project) {
         return _for((Job) project);
     }
+
+    /**
+     * Try to guess how a repository browser should be configured, based on URLs and the like.
+     * Used when {@link #getBrowser} has not been explicitly configured.
+     * @return a reasonable default value for {@link #getEffectiveBrowser}, or null
+     * @since TODO
+     */
+    public @CheckForNull RepositoryBrowser<?> guessBrowser() {
+        return null;
+    }
+
 }

@@ -50,7 +50,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
 
     /**
      * Incremented every time a new {@link SCM} instance is created from this descriptor. 
-     * This is used to invalidate cache. Due to the lack of synchronization and serialization,
+     * This is used to invalidate cache of {@link SCM#getEffectiveBrowser}. Due to the lack of synchronization and serialization,
      * this field doesn't really count the # of instances created to date,
      * but it's good enough for the cache invalidation.
      */
@@ -98,7 +98,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * <p>
      * Implementing this method allows Hudson to reuse {@link RepositoryBrowser}
      * configured for one project to be used for other "compatible" projects.
-     * 
+     * <p>{@link SCM#guessBrowser} is more robust since it does not require another project.
      * @return
      *      true if the two given SCM configurations are similar enough
      *      that they can reuse {@link RepositoryBrowser} between them.
