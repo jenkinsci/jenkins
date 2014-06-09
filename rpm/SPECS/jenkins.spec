@@ -143,8 +143,8 @@ exit 0
 /usr/sbin/rc%{name}
 
 %changelog
-* Wed Sep 28 2011 kk@kohsuke.org
-- See [http://jenkins-ci.org/changelog] for complete details
 * Sat Apr 19 2014 mbarr@mbarr.net
 - Removed the jenkins.repo installation.  Per https://issues.jenkins-ci.org/browse/JENKINS-22690
+* Wed Sep 28 2011 kk@kohsuke.org
+- See [http://jenkins-ci.org/changelog] for complete details
 
