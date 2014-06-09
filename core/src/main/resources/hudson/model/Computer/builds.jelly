@@ -35,7 +35,7 @@ THE SOFTWARE.
       <st:include page="control.jelly" it="${it.timeline}" />
       <div style="height:2em"/><!-- spacer -->
 
-      <t:buildListTable builds="${it.builds}" jobBaseUrl="${rootURL}/" />
+      <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

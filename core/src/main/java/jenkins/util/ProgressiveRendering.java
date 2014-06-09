@@ -25,16 +25,28 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import hudson.model.AbstractItem;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.RequestImpl;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.TokenList;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 /**
@@ -68,13 +80,11 @@ public abstract class ProgressiveRendering {
     private double status = 0;
     private long lastNewsTime;
     /** just for logging */
-    private final String uri;
+    private String uri;
     private long start;
 
     /** Constructor for subclasses. */
     protected ProgressiveRendering() {
-        StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        uri = currentRequest != null ? currentRequest.getRequestURI() : "?";
     }
 
     /**
@@ -83,9 +93,12 @@ public abstract class ProgressiveRendering {
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public final void start() {
         final SecurityContext securityContext = SecurityContextHolder.getContext();
+        final RequestImpl request = createMockRequest();
+        uri = request.getRequestURI();
         executorService().submit(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 lastNewsTime = start = System.currentTimeMillis();
+                setCurrentRequest(request);
                 SecurityContext orig = SecurityContextHolder.getContext();
                 try {
                     SecurityContextHolder.setContext(securityContext);
@@ -98,6 +111,7 @@ public abstract class ProgressiveRendering {
                     status = ERROR;
                 } finally {
                     SecurityContextHolder.setContext(orig);
+                    setCurrentRequest(null);
                     LOG.log(Level.FINE, "{0} finished in {1}msec with status {2}", new Object[] {uri, System.currentTimeMillis() - start, status});
                 }
             }
@@ -105,8 +119,59 @@ public abstract class ProgressiveRendering {
     }
 
     /**
+     * Copies important fields from the current HTTP request and makes them available during {@link #compute}.
+     * This is necessary because some model methods such as {@link AbstractItem#getUrl} behave differently when called from a request.
+     */
+    @java.lang.SuppressWarnings({"rawtypes", "unchecked"}) // public RequestImpl ctor requires List<AncestorImpl> yet AncestorImpl is not public! API design flaw
+    private static RequestImpl createMockRequest() {
+        RequestImpl currentRequest = (RequestImpl) Stapler.getCurrentRequest();
+        HttpServletRequest original = (HttpServletRequest) currentRequest.getRequest();
+        final Map<String,Object> getters = new HashMap<String,Object>();
+        for (Method method : HttpServletRequest.class.getMethods()) {
+            String m = method.getName();
+            if ((m.startsWith("get") || m.startsWith("is")) && method.getParameterTypes().length == 0) {
+                Class<?> type = method.getReturnType();
+                // TODO could add other types which are known to be safe to copy: Cookie[], Principal, HttpSession, etc.
+                if (type.isPrimitive() || type == String.class || type == Locale.class) {
+                    try {
+                        getters.put(m, method.invoke(original));
+                    } catch (Exception x) {
+                        LOG.log(Level.WARNING, "cannot mock Stapler request " + method, x);
+                    }
+                }
+            }
+        }
+        List/*<AncestorImpl>*/ ancestors = currentRequest.ancestors;
+        LOG.log(Level.FINE, "mocking ancestors {0} using {1}", new Object[] {ancestors, getters});
+        TokenList tokens = currentRequest.tokens;
+        return new RequestImpl(Stapler.getCurrent(), (HttpServletRequest) Proxy.newProxyInstance(ProgressiveRendering.class.getClassLoader(), new Class<?>[] {HttpServletRequest.class}, new InvocationHandler() {
+            @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                String m = method.getName();
+                if (getters.containsKey(m)) {
+                    return getters.get(m);
+                } else { // TODO implement other methods as needed
+                    throw new UnsupportedOperationException(m);
+                }
+            }
+        }), ancestors, tokens);
+    }
+
+    @java.lang.SuppressWarnings("unchecked")
+    private static void setCurrentRequest(RequestImpl request) {
+        try {
+            Field field = Stapler.class.getDeclaredField("CURRENT_REQUEST");
+            field.setAccessible(true);
+            ((ThreadLocal<RequestImpl>) field.get(null)).set(request);
+        } catch (Exception x) {
+            LOG.log(Level.WARNING, "cannot mock Stapler request", x);
+        }
+    }
+
+    /**
      * Actually do the work.
      * <p>The security context will be that in effect when the web request was made.
+     * {@link Stapler#getCurrentRequest} will also be similar to that in effect when the web request was made;
+     * at least, {@link Ancestor}s and basic request properties (URI, locale, and so on) will be available.
      * @throws Exception whenever you like; the progress bar will indicate that an error occurred but details go to the log only
      */
     protected abstract void compute() throws Exception;

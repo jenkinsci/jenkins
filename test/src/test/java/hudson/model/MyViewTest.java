@@ -25,15 +25,18 @@ package hudson.model;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.HudsonPrivateSecurityRealm;
 import java.io.IOException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -49,6 +52,14 @@ public class MyViewTest {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
     }
     
+    private static final Logger logger = Logger.getLogger(AbstractItem.class.getName());
+    @BeforeClass public static void logging() {
+        logger.setLevel(Level.ALL);
+        Handler handler = new ConsoleHandler();
+        handler.setLevel(Level.ALL);
+        logger.addHandler(handler);
+    }
+
     @Test
     public void testContains() throws IOException, Exception{
         
