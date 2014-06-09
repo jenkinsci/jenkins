@@ -46,7 +46,7 @@ dt {
 }
 
 .fixed-width {
-  font-family: Courier, monospace;
+  font-family: Consolas, Menlo, monospace;
 }
 
 .center {
@@ -217,6 +217,19 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 
 pre.console {
   overflow: auto;
+}
+
+.console-output {
+    background-color: #111;
+    color: #eee;
+    padding: 10px 10px 30px;
+    border-radius: 3px;
+    font-size: 1.1em;
+}
+
+.console-output a,
+.console-output a:visited {
+    color: #ED4A6A;
 }
 
 .setting-leftspace {
