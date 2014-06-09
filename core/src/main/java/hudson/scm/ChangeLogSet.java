@@ -26,6 +26,7 @@ package hudson.scm;
 import hudson.MarkupText;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.User;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -54,12 +55,36 @@ import java.util.logging.Logger;
 public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iterable<T> {
 
     /**
-     * {@link AbstractBuild} whose change log this object represents.
+     * Build whose change log this object represents.
      */
+    private final Run<?,?> run;
+    @Deprecated
     public final AbstractBuild<?,?> build;
+    private final RepositoryBrowser</* ideally T */?> browser;
 
+    protected ChangeLogSet(Run<?,?> run, RepositoryBrowser<?> browser) {
+        this.run = run;
+        build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
+        this.browser = browser;
+    }
+
+    @Deprecated
     protected ChangeLogSet(AbstractBuild<?, ?> build) {
-        this.build = build;
+        this((Run) build, browserFromBuild(build));
+    }
+    private static RepositoryBrowser<?> browserFromBuild(AbstractBuild<?,?> build) {
+        if (build == null) { // not generally allowed, but sometimes done in unit tests
+            return null;
+        }
+        return build.getParent().getScm().getEffectiveBrowser();
+    }
+
+    public Run<?,?> getRun() {
+        return run;
+    }
+
+    public RepositoryBrowser<?> getBrowser() {
+        return browser;
     }
 
     /**
@@ -92,8 +117,13 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     /**
      * Constant instance that represents no changes.
      */
-    public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {
+    public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(Run build) {
         return new EmptyChangeLogSet(build);
+    }
+
+    @Deprecated
+    public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(AbstractBuild build) {
+        return createEmpty((Run) build);
     }
 
     @ExportedBean(defaultVisibility=999)
@@ -209,7 +239,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
             MarkupText markup = new MarkupText(getMsg());
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
                 try {
-                    a.annotate(parent.build,this,markup);
+                    a.annotate(parent.run, this, markup);
                 } catch(Exception e) {
                     LOGGER.info("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
                 } catch(Error e) {

@@ -34,6 +34,7 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import hudson.Util;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -69,21 +70,40 @@ public abstract class Cause {
     public abstract String getShortDescription();
 
     /**
-     * Called when the cause is registered to {@link AbstractBuild}.
-     *
-     * @param build
-     *      never null
-     * @since 1.376
+     * Called when the cause is registered.
+     * @since TODO
      */
-    public void onAddedTo(AbstractBuild build) {}
+    public void onAddedTo(@Nonnull Run build) {
+        if (build instanceof AbstractBuild) {
+            onAddedTo((AbstractBuild) build);
+        }
+    }
+
+    @Deprecated
+    public void onAddedTo(AbstractBuild build) {
+        if (Util.isOverridden(Cause.class, getClass(), "onAddedTo", Run.class)) {
+            onAddedTo((Run) build);
+        }
+    }
 
     /**
      * Called when a build is loaded from disk.
      * Useful in case the cause needs to keep a build reference;
      * this ought to be {@code transient}.
-     * @since 1.540
+     * @since TODO
      */
-    public void onLoad(@Nonnull AbstractBuild<?,?> build) {}
+    public void onLoad(@Nonnull Run<?,?> build) {
+        if (build instanceof AbstractBuild) {
+            onLoad((AbstractBuild) build);
+        }
+    }
+
+    @Deprecated
+    public void onLoad(AbstractBuild<?,?> build) {
+        if (Util.isOverridden(Cause.class, getClass(), "onLoad", Run.class)) {
+            onLoad((Run) build);
+        }
+    }
 
     /**
      * Report a line to the listener about this cause.

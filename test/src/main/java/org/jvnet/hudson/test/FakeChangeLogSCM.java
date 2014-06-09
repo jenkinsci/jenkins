@@ -33,6 +33,8 @@ import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -72,6 +74,14 @@ public class FakeChangeLogSCM extends NullSCM {
     @Override
     public ChangeLogParser createChangeLogParser() {
         return new FakeChangeLogParser();
+    }
+
+    @Override public SCMDescriptor<?> getDescriptor() {
+        return new SCMDescriptor<SCM>(null) {
+            @Override public String getDisplayName() {
+                return "";
+            }
+        };
     }
 
     public static class ChangelogAction extends InvisibleAction {

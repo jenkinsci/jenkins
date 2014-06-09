@@ -61,6 +61,7 @@ import hudson.FilePath;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.EnvVars;
 import hudson.model.labels.LabelAtom;
+import hudson.scm.SCMDescriptor;
 import hudson.slaves.Cloud;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProvisioner;
@@ -806,6 +807,13 @@ public class ProjectTest {
         @Override
         public boolean requiresWorkspaceForPolling(){
             return true;
+        }
+        @Override public SCMDescriptor<?> getDescriptor() {
+            return new SCMDescriptor<SCM>(null) {
+                @Override public String getDisplayName() {
+                    return "";
+                }
+            };
         }
         
         @Override

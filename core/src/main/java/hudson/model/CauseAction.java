@@ -119,11 +119,9 @@ public class CauseAction implements FoldableAction, RunAction2 {
     }
 
     @Override public void onLoad(Run<?,?> owner) {
-        if (owner instanceof AbstractBuild) { // cf. onAttached
-            AbstractBuild<?,?> b = (AbstractBuild) owner;
-            for (Cause c : causes) {
-                if (c != null)
-                    c.onLoad(b);
+        for (Cause c : causes) {
+            if (c != null) {
+                c.onLoad(owner);
             }
         }
     }
@@ -132,11 +130,9 @@ public class CauseAction implements FoldableAction, RunAction2 {
      * When hooked up to build, notify {@link Cause}s.
      */
     @Override public void onAttached(Run<?,?> owner) {
-        if (owner instanceof AbstractBuild) {// this should be always true but being defensive here
-            AbstractBuild b = (AbstractBuild) owner;
-            for (Cause c : causes) {
-                if (c != null)
-                    c.onAddedTo(b);
+        for (Cause c : causes) {
+            if (c != null) {
+                c.onAddedTo(owner);
             }
         }
     }
