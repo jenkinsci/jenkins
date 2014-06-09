@@ -231,9 +231,9 @@ THE SOFTWARE.
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
