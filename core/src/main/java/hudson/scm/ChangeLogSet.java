@@ -58,11 +58,14 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     /**
      * Build whose change log this object represents.
      */
-    private final Run<?,?> build;
+    private final Run<?,?> run;
+    @Deprecated
+    public final AbstractBuild<?,?> build;
     private final RepositoryBrowser</* ideally T */?> browser;
 
-    protected ChangeLogSet(Run<?,?> build, RepositoryBrowser<?> browser) {
-        this.build = build;
+    protected ChangeLogSet(Run<?,?> run, RepositoryBrowser<?> browser) {
+        this.run = run;
+        build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         this.browser = browser;
     }
 
@@ -77,9 +80,8 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         return build.getParent().getScm().getEffectiveBrowser();
     }
 
-    @AdaptField(name="build", was=AbstractBuild.class)
-    public Run<?,?> getBuild() {
-        return build;
+    public Run<?,?> getRun() {
+        return run;
     }
 
     public RepositoryBrowser<?> getBrowser() {
@@ -238,7 +240,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
             MarkupText markup = new MarkupText(getMsg());
             for (ChangeLogAnnotator a : ChangeLogAnnotator.all())
                 try {
-                    a.annotate(parent.build,this,markup);
+                    a.annotate(parent.run, this, markup);
                 } catch(Exception e) {
                     LOGGER.info("ChangeLogAnnotator " + a.toString() + " failed to annotate message '" + getMsg() + "'; " + e.getMessage());
                 } catch(Error e) {

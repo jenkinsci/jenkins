@@ -68,7 +68,6 @@ import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
-import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -318,11 +317,13 @@ public class SCMTrigger extends Trigger<Item> {
      * @since 1.376
      */
     public static class BuildAction implements RunAction2 {
-        
-        private transient /*final*/ Run<?,?> build;
+        private transient /*final*/ Run<?,?> run;
+        @Deprecated
+        public transient /*final*/ AbstractBuild build;
 
-        public BuildAction(Run<?,?> build) {
-            this.build = build;
+        public BuildAction(Run<?,?> run) {
+            this.run = run;
+            build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         }
         
         @Deprecated
@@ -330,16 +331,15 @@ public class SCMTrigger extends Trigger<Item> {
             this((Run) build);
         }
 
-        @AdaptField(name="build", was=AbstractBuild.class)
-        public Run<?,?> getBuild() {
-            return build;
+        public Run<?,?> getRun() {
+            return run;
         }
 
         /**
          * Polling log that triggered the build.
          */
         public File getPollingLogFile() {
-            return new File(build.getRootDir(),"polling.log");
+            return new File(run.getRootDir(),"polling.log");
         }
 
         public String getIconFileName() {
@@ -385,7 +385,8 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         @Override public void onLoad(Run<?, ?> r) {
-            build = r;
+            run = r;
+            build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         }
     }
 

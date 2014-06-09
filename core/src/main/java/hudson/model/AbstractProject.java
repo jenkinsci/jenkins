@@ -1940,7 +1940,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
 
             AbstractBuild<?,?> getBuild() {
-                return (AbstractBuild) e.getParent().getBuild();
+                return e.getParent().build;
             }
         }
 

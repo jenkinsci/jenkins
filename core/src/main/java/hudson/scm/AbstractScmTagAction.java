@@ -23,7 +23,6 @@
  */
 package hudson.scm;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskAction;
 import hudson.model.BuildBadgeAction;
@@ -36,7 +35,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import jenkins.model.RunAction2;
-import org.jenkinsci.bytecode.AdaptField;
 
 /**
  * Common part of <tt>CVSSCM.TagAction</tt> and <tt>SubversionTagAction</tt>.
@@ -50,10 +48,13 @@ import org.jenkinsci.bytecode.AdaptField;
  */
 public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction, RunAction2 {
 
-    private transient /*final*/ Run<?,?> build;
+    private transient /*final*/ Run<?,?> run;
+    @Deprecated
+    protected transient /*final*/ AbstractBuild build;
 
-    protected AbstractScmTagAction(Run<?,?> build) {
-        this.build = build;
+    protected AbstractScmTagAction(Run<?,?> run) {
+        this.run = run;
+        this.build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
     }
 
     @Deprecated
@@ -73,9 +74,12 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         return SCM.TAG;
     }
 
-    @AdaptField(name="build", was=AbstractBuild.class)
-    @WithBridgeMethods(value=AbstractBuild.class, castRequired=true)
-    public Run getBuild() {
+    public Run<?,?> getRun() {
+        return run;
+    }
+
+    @Deprecated
+    public AbstractBuild getBuild() {
         return build;
     }
 
@@ -92,7 +96,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     public abstract boolean isTagged();
 
     protected ACL getACL() {
-        return build.getACL();
+        return run.getACL();
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -110,7 +114,8 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     }
 
     @Override public void onLoad(Run<?, ?> r) {
-        build = r;
+        run = r;
+        build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
     }
 
 }
