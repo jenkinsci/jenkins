@@ -273,10 +273,10 @@ public class ListView extends View implements DirectlyModifiableView {
         return recurse;
     }
     
-    /*
-     * For testing purposes
+    /**
+     * @since 1.568
      */
-    void setRecurse(boolean recurse) {
+    public void setRecurse(boolean recurse) {
         this.recurse = recurse;
     }
 
