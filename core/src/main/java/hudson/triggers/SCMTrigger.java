@@ -27,6 +27,7 @@ import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.Util;
 import hudson.console.AnnotatedLargeText;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.AdministrativeMonitor;
@@ -67,6 +68,7 @@ import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -316,10 +318,21 @@ public class SCMTrigger extends Trigger<Item> {
      * @since 1.376
      */
     public static class BuildAction implements RunAction2 {
-        public transient /*final*/ Run build;
+        
+        private transient /*final*/ Run<?,?> build;
 
-        public BuildAction(Run build) {
+        public BuildAction(Run<?,?> build) {
             this.build = build;
+        }
+        
+        @Deprecated
+        public BuildAction(AbstractBuild build) {
+            this((Run) build);
+        }
+
+        @AdaptField(name="build", was=AbstractBuild.class)
+        public Run<?,?> getBuild() {
+            return build;
         }
 
         /**

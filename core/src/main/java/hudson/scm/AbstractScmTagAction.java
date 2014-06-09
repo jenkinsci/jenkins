@@ -23,6 +23,8 @@
  */
 package hudson.scm;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.model.AbstractBuild;
 import hudson.model.TaskAction;
 import hudson.model.BuildBadgeAction;
 import hudson.model.Run;
@@ -34,6 +36,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import jenkins.model.RunAction2;
+import org.jenkinsci.bytecode.AdaptField;
 
 /**
  * Common part of <tt>CVSSCM.TagAction</tt> and <tt>SubversionTagAction</tt>.
@@ -46,10 +49,16 @@ import jenkins.model.RunAction2;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction, RunAction2 {
-    protected transient /*final*/ Run build;
 
-    protected AbstractScmTagAction(Run build) {
+    private transient /*final*/ Run<?,?> build;
+
+    protected AbstractScmTagAction(Run<?,?> build) {
         this.build = build;
+    }
+
+    @Deprecated
+    protected AbstractScmTagAction(AbstractBuild build) {
+        this((Run) build);
     }
 
     public final String getUrlName() {
@@ -64,7 +73,8 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         return SCM.TAG;
     }
 
-    // TODO binary compatibility for AbstractBuild
+    @AdaptField(name="build", was=AbstractBuild.class)
+    @WithBridgeMethods(value=AbstractBuild.class, castRequired=true)
     public Run getBuild() {
         return build;
     }
