@@ -41,8 +41,7 @@ THE SOFTWARE.
       <div>
           <a href="cc.xml">${%Export as plain XML}</a>
       </div>
-      <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
-      <t:buildListTable builds="${it.builds}" jobBaseUrl="" />
+      <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

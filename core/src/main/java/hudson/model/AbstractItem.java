@@ -54,6 +54,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -84,6 +86,9 @@ import org.kohsuke.stapler.Ancestor;
 // Java doesn't let multiple inheritance.
 @ExportedBean
 public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner {
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
+
     /**
      * Project name.
      */
@@ -395,16 +400,41 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public final String getUrl() {
         // try to stick to the current view if possible
         StaplerRequest req = Stapler.getCurrentRequest();
+        String shortUrl = getShortUrl();
+        String uri = req == null ? null : req.getRequestURI();
         if (req != null) {
             String seed = Functions.getNearestAncestorUrl(req,this);
+            LOGGER.log(Level.FINER, "seed={0} for {1} from {2}", new Object[] {seed, this, uri});
             if(seed!=null) {
                 // trim off the context path portion and leading '/', but add trailing '/'
                 return seed.substring(req.getContextPath().length()+1)+'/';
             }
+            List<Ancestor> ancestors = req.getAncestors();
+            if (!ancestors.isEmpty()) {
+                Ancestor last = ancestors.get(ancestors.size() - 1);
+                if (last.getObject() instanceof View) {
+                    View view = (View) last.getObject();
+                    if (view.getOwnerItemGroup() == getParent() && !view.isDefault()) {
+                        // Showing something inside a view, so should use that as the base URL.
+                        String base = last.getUrl().substring(req.getContextPath().length() + 1) + '/';
+                        LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
+                        return base + shortUrl;
+                    } else {
+                        LOGGER.log(Level.FINER, "irrelevant {0} for {1} from {2}", new Object[] {last.getObject(), this, uri});
+                    }
+                } else {
+                    LOGGER.log(Level.FINER, "inapplicable {0} for {1} from {2}", new Object[] {last.getObject(), this, uri});
+                }
+            } else {
+                LOGGER.log(Level.FINER, "no ancestors for {0} from {1}", new Object[] {this, uri});
+            }
+        } else {
+            LOGGER.log(Level.FINER, "no current request for {0}", this);
         }
-
         // otherwise compute the path normally
-        return getParent().getUrl()+getShortUrl();
+        String base = getParent().getUrl();
+        LOGGER.log(Level.FINER, "falling back to {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
+        return base + shortUrl;
     }
 
     public String getShortUrl() {

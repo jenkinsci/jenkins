@@ -32,7 +32,6 @@ import java.net.URI;
 import java.net.URL;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -42,7 +41,6 @@ public class BuildListTableTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Ignore("TODO")
     @Issue("JENKINS-19310")
     @Test public void linksFromFolders() throws Exception {
         MockFolder d = r.createFolder("d");
@@ -62,8 +60,15 @@ public class BuildListTableTest {
         HtmlAnchor anchor = page.getAnchorByText("d » d2 » p");
         String href = anchor.getHrefAttribute();
         URL target = URI.create(page.getDocumentURI()).resolve(href).toURL();
-        assertEquals(href, r.getURL() + "view/v1/job/d/view/v2/job/d2/job/p/", target.toString());
         wc.getPage(target);
+        assertEquals(href, r.getURL() + "view/v1/job/d/view/v2/job/d2/job/p/", target.toString());
+        page = wc.goTo("job/d/view/All/builds?suppressTimelineControl=true");
+        assertEquals(0, wc.waitForBackgroundJavaScript(120000));
+        anchor = page.getAnchorByText("d » d2 » p");
+        href = anchor.getHrefAttribute();
+        target = URI.create(page.getDocumentURI()).resolve(href).toURL();
+        wc.getPage(target);
+        assertEquals(href, r.getURL() + "job/d/job/d2/job/p/", target.toString());
     }
 
 }
