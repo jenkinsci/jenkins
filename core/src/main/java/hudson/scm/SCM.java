@@ -209,7 +209,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      true if {@link SCM} is OK to let Hudson proceed with deleting the workspace.
      *      False to veto the workspace deletion.
      * 
-     * @since 1.246
+     * @since 1.568
      */
     public boolean processWorkspaceBeforeDeletion(Job<?,?> project, FilePath workspace, Node node) throws IOException, InterruptedException {
         if (project instanceof AbstractProject) {
@@ -308,6 +308,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up. 
+     * @since 1.568
      */
     public SCMRevisionState calcRevisionsFromBuild(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && Util.isOverridden(SCM.class, getClass(), "calcRevisionsFromBuild", AbstractBuild.class, Launcher.class, TaskListener.class)) {
@@ -370,6 +371,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up.
+     * @since 1.568
      */
     public PollingResult compareRemoteRevisionWith(Job<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         if (project instanceof AbstractProject && Util.isOverridden(SCM.class, getClass(), "compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class)) {
@@ -445,6 +447,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to be aborted.
      * @throws AbortException in case of a routine failure
+     * @since 1.568
      */
     public void checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
@@ -475,7 +478,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     /**
      * Get a chance to do operations after the workspace i checked out and the changelog is written.
-     * @since 1.534, 1.532.1
+     * @since 1.568
      */
     public void postCheckout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && listener instanceof BuildListener) {
@@ -653,6 +656,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         }
     }
 
+    /**
+     * @since 1.568
+     */
     protected final void createEmptyChangeLog(File changelogFile, TaskListener listener, String rootTag) throws IOException {
         FileWriter w = null;
         try {
@@ -686,6 +692,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     /**
      * Returns the list of {@link SCMDescriptor}s that are applicable to the given project.
+     * @since 1.568
      */
     public static List<SCMDescriptor<?>> _for(final Job project) {
         if(project==null)   return all();
@@ -715,7 +722,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Try to guess how a repository browser should be configured, based on URLs and the like.
      * Used when {@link #getBrowser} has not been explicitly configured.
      * @return a reasonable default value for {@link #getEffectiveBrowser}, or null
-     * @since TODO
+     * @since 1.568
      */
     public @CheckForNull RepositoryBrowser<?> guessBrowser() {
         return null;

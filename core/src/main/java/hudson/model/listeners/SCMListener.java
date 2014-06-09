@@ -63,7 +63,7 @@ public abstract class SCMListener implements ExtensionPoint {
      * Should be called immediately after {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File)} is called.
      * @param pollingBaseline information about what actually was checked out, if that is available, and this checkout is intended to be included in the build’s polling (if it does any at all)
      * @throws Exception if the checkout should be considered failed
-     * @since TODO
+     * @since 1.568
      */
     public void onCheckout(Run<?,?> build, SCM scm, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState pollingBaseline) throws Exception {}
 
@@ -106,6 +106,7 @@ public abstract class SCMListener implements ExtensionPoint {
      * @throws Exception
      *      If any exception is thrown from this method, it will be recorded
      *      and causes the build to fail. 
+     * @since 1.568
      */
     public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
         if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", AbstractBuild.class, BuildListener.class, ChangeLogSet.class)) {
@@ -118,6 +119,9 @@ public abstract class SCMListener implements ExtensionPoint {
         onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog);
     }
 
+    /**
+     * @since 1.568
+     */
     @SuppressWarnings("deprecation")
     public static Collection<? extends SCMListener> all() {
         Jenkins j = Jenkins.getInstance();

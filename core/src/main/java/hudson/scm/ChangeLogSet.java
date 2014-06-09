@@ -62,6 +62,9 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     public final AbstractBuild<?,?> build;
     private final RepositoryBrowser</* ideally T */?> browser;
 
+    /**
+     * @since 1.568
+     */
     protected ChangeLogSet(Run<?,?> run, RepositoryBrowser<?> browser) {
         this.run = run;
         build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
@@ -79,10 +82,16 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         return build.getParent().getScm().getEffectiveBrowser();
     }
 
+    /**
+     * @since 1.568
+     */
     public Run<?,?> getRun() {
         return run;
     }
 
+    /**
+     * @since 1.568
+     */
     public RepositoryBrowser<?> getBrowser() {
         return browser;
     }
@@ -116,6 +125,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
 
     /**
      * Constant instance that represents no changes.
+     * @since 1.568
      */
     public static ChangeLogSet<? extends ChangeLogSet.Entry> createEmpty(Run build) {
         return new EmptyChangeLogSet(build);

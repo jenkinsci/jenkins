@@ -76,6 +76,7 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      *      are registered, the object may already contain some markups when this
      *      method is invoked. Never null. {@link MarkupText#getText()} on this instance
      *      will return the same string as {@link Entry#getMsgEscaped()}.
+     * @since 1.568
      */
     public void annotate(Run<?,?> build, Entry change, MarkupText text) {
         if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogAnnotator.class, getClass(), "annotate", AbstractBuild.class, Entry.class, MarkupText.class)) {

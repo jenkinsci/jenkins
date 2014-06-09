@@ -43,7 +43,7 @@ import jenkins.model.ParameterizedJobMixIn;
 
 /**
  * The item type accepted by {@link SCMTrigger}.
- * @since TODO
+ * @since 1.568
  */
 public interface SCMTriggerItem {
 
@@ -86,7 +86,6 @@ public interface SCMTriggerItem {
          * See whether an item can be coerced to {@link SCMTriggerItem}.
          * @param item any item
          * @return itself, if a {@link SCMTriggerItem}, or an adapter, if an {@link hudson.model.SCMedItem}, else null
-         * @since TODO
          */
         @SuppressWarnings("deprecation")
         public static @CheckForNull SCMTriggerItem asSCMTriggerItem(Item item) {

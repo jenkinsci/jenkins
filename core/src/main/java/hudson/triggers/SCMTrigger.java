@@ -321,6 +321,9 @@ public class SCMTrigger extends Trigger<Item> {
         @Deprecated
         public transient /*final*/ AbstractBuild build;
 
+        /**
+         * @since 1.568
+         */
         public BuildAction(Run<?,?> run) {
             this.run = run;
             build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
@@ -331,6 +334,9 @@ public class SCMTrigger extends Trigger<Item> {
             this((Run) build);
         }
 
+        /**
+         * @since 1.568
+         */
         public Run<?,?> getRun() {
             return run;
         }
@@ -399,6 +405,9 @@ public class SCMTrigger extends Trigger<Item> {
             return item instanceof AbstractProject ? ((AbstractProject) item) : null;
         }
 
+        /**
+         * @since 1.568
+         */
         public Item getItem() {
             return job().asItem();
         }
@@ -467,6 +476,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         /**
          * For which {@link Item} are we polling?
+         * @since 1.568
          */
         public SCMTriggerItem getTarget() {
             return job();

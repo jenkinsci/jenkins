@@ -52,6 +52,9 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     @Deprecated
     protected transient /*final*/ AbstractBuild build;
 
+    /**
+     * @since 1.568
+     */
     protected AbstractScmTagAction(Run<?,?> run) {
         this.run = run;
         this.build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
@@ -74,6 +77,9 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         return SCM.TAG;
     }
 
+    /**
+     * @since 1.568
+     */
     public Run<?,?> getRun() {
         return run;
     }

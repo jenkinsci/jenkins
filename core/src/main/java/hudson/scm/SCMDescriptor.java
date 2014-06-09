@@ -114,7 +114,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * When this method returns false, this {@link SCM} will not appear in the configuration screen
      * for the given project. The default is true for {@link AbstractProject} but false for {@link Job}.
      *
-     * @since 1.294
+     * @since 1.568
      */
     public boolean isApplicable(Job project) {
         if (project instanceof AbstractProject) {

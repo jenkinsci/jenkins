@@ -41,6 +41,9 @@ import org.xml.sax.SAXException;
  */
 public abstract class ChangeLogParser {
 
+    /**
+     * @since 1.568
+     */
     public ChangeLogSet<? extends Entry> parse(Run build, RepositoryBrowser<?> browser, File changelogFile) throws IOException, SAXException {
         if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parse", AbstractBuild.class, File.class)) {
             return parse((AbstractBuild) build, changelogFile);
