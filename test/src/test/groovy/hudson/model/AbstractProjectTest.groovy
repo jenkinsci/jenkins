@@ -372,6 +372,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert "job/d/" == deleteRedirectTarget("job/d/job/j3");
         assert "job/d/view/v2/" == deleteRedirectTarget("job/d/view/v2/job/j4");
         assert "view/v1/job/d/" == deleteRedirectTarget("view/v1/job/d/job/j5");
+        assert "view/v1/" == deleteRedirectTarget("view/v1/job/d"); // JENKINS-23375
     }
 
     private String deleteRedirectTarget(String job) {

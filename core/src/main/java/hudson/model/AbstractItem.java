@@ -501,7 +501,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             if (a instanceof View) {
                 url = ((View) a).getUrl();
                 break;
-            } else if (a instanceof ViewGroup) {
+            } else if (a instanceof ViewGroup && a != this) {
                 url = ((ViewGroup) a).getUrl();
                 break;
             }
