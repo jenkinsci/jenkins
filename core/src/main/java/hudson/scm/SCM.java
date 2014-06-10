@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -201,7 +202,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      The project that owns this {@link SCM}. This is always the same object for a particular instance
      *      of {@link SCM}. Just passed in here so that {@link SCM} itself doesn't have to remember the value.
      * @param workspace
-     *      The workspace which is about to be deleted. Never null. This can be a remote file path.
+     *      The workspace which is about to be deleted. This can be a remote file path.
      * @param node
      *      The node that hosts the workspace. SCM can use this information to determine the course of action.
      *
@@ -211,7 +212,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * 
      * @since 1.568
      */
-    public boolean processWorkspaceBeforeDeletion(Job<?,?> project, FilePath workspace, Node node) throws IOException, InterruptedException {
+    public boolean processWorkspaceBeforeDeletion(@Nonnull Job<?,?> project, @Nonnull FilePath workspace, @Nonnull Node node) throws IOException, InterruptedException {
         if (project instanceof AbstractProject) {
             return processWorkspaceBeforeDeletion((AbstractProject) project, workspace, node);
         } else {
@@ -292,25 +293,22 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * during check out, in which case this method will not called. 
      *
      * @param build
-     *      The calculated {@link SCMRevisionState} is for the files checked out in this build. Never null.
+     *      The calculated {@link SCMRevisionState} is for the files checked out in this build.
      *      If {@link #requiresWorkspaceForPolling()} returns true, Hudson makes sure that the workspace of this
      *      build is available and accessible by the callee.
-     * @param workspace the location of the checkout
+     * @param workspace the location of the checkout; normally not null, since this will normally be called immediately after checkout,
+     *                  though could be null if data is being loaded from a very old version of Jenkins and the SCM declares that it does not require a workspace for polling
      * @param launcher
-     *      Abstraction of the machine where the polling will take place. If SCM declares
-     *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace},
-     *      this parameter is null. Otherwise never null.
+     *      Abstraction of the machine where the polling will take place. Nullness matches that of {@code workspace}.
      * @param listener
      *      Logs during the polling should be sent here.
-     *
-     * @return can be null.
      *
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the computation.
      *      this exception should be simply propagated all the way up. 
      * @since 1.568
      */
-    public SCMRevisionState calcRevisionsFromBuild(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+    public @CheckForNull SCMRevisionState calcRevisionsFromBuild(@Nonnull Run<?,?> build, @Nullable FilePath workspace, @Nullable Launcher launcher, @Nonnull TaskListener listener) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && Util.isOverridden(SCM.class, getClass(), "calcRevisionsFromBuild", AbstractBuild.class, Launcher.class, TaskListener.class)) {
             return calcRevisionsFromBuild((AbstractBuild) build, launcher, listener);
         } else {
@@ -320,7 +318,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     @Deprecated
     public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        return calcRevisionsFromBuild(build, build.getWorkspace(), launcher, listener);
+        return calcRevisionsFromBuild(build, launcher != null ? build.getWorkspace() : null, launcher, listener);
     }
 
     /**
@@ -373,7 +371,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      this exception should be simply propagated all the way up.
      * @since 1.568
      */
-    public PollingResult compareRemoteRevisionWith(Job<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
+    public PollingResult compareRemoteRevisionWith(@Nonnull Job<?,?> project, @Nullable Launcher launcher, @Nullable FilePath workspace, @Nonnull TaskListener listener, @Nonnull SCMRevisionState baseline) throws IOException, InterruptedException {
         if (project instanceof AbstractProject && Util.isOverridden(SCM.class, getClass(), "compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class)) {
             return compareRemoteRevisionWith((AbstractProject) project, launcher, workspace, listener, baseline);
         } else {
@@ -449,7 +447,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @throws AbortException in case of a routine failure
      * @since 1.568
      */
-    public void checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile) throws IOException, InterruptedException {
+    public void checkout(@Nonnull Run<?,?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace, @Nonnull TaskListener listener, @CheckForNull File changelogFile) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
             if (changelogFile == null) {
                 changelogFile = File.createTempFile("changelog", ".xml");
@@ -480,7 +478,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Get a chance to do operations after the workspace i checked out and the changelog is written.
      * @since 1.568
      */
-    public void postCheckout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    public void postCheckout(@Nonnull Run<?,?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace, @Nonnull TaskListener listener) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && listener instanceof BuildListener) {
             postCheckout((AbstractBuild) build, launcher, workspace, (BuildListener) listener);
         }
@@ -659,7 +657,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     /**
      * @since 1.568
      */
-    protected final void createEmptyChangeLog(File changelogFile, TaskListener listener, String rootTag) throws IOException {
+    protected final void createEmptyChangeLog(@Nonnull File changelogFile, @Nonnull TaskListener listener, @Nonnull String rootTag) throws IOException {
         FileWriter w = null;
         try {
             w = new FileWriter(changelogFile);
@@ -694,7 +692,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns the list of {@link SCMDescriptor}s that are applicable to the given project.
      * @since 1.568
      */
-    public static List<SCMDescriptor<?>> _for(final Job project) {
+    public static List<SCMDescriptor<?>> _for(@Nonnull final Job project) {
         if(project==null)   return all();
         
         final Descriptor pd = Jenkins.getInstance().getDescriptor((Class) project.getClass());
