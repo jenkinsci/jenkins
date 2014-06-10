@@ -420,7 +420,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
                         return base + shortUrl;
                     } else {
-                        LOGGER.log(Level.FINER, "irrelevant {0} for {1} from {2}", new Object[] {last.getObject(), this, uri});
+                        LOGGER.log(Level.FINER, "irrelevant {0} for {1} from {2}", new Object[] {view.getViewName(), this, uri});
                     }
                 } else {
                     LOGGER.log(Level.FINER, "inapplicable {0} for {1} from {2}", new Object[] {last.getObject(), this, uri});
