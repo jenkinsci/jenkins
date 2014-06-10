@@ -159,7 +159,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * State returned from {@link SCM#poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)}.
      */
-    volatile transient SCMRevisionState pollingBaseline = null;
+    private volatile transient SCMRevisionState pollingBaseline = null;
 
     private transient LazyBuildMixIn<P,R> buildMixIn;
 
