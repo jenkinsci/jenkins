@@ -225,6 +225,7 @@ pre.console {
     padding: 10px 10px 30px;
     border-radius: 3px;
     font-size: 1.1em;
+    font-family: Consolas, Menlo, monospace;
 }
 
 .console-output a,
