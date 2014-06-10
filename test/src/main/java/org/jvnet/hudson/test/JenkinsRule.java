@@ -291,7 +291,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     /**
      * Number of seconds until the test times out.
      */
-    public int timeout = Integer.getInteger("jenkins.test.timeout", 180);
+    public int timeout = Integer.getInteger("jenkins.test.timeout", System.getProperty("maven.surefire.debug") == null ? 180 : 0);
 
     private volatile Timer timeoutTimer;
 
@@ -383,8 +383,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     }
     
     protected void setUpTimeout() {
-        if (timeout<=0)     return; // no timeout
-
+        if (timeout <= 0) {
+            System.out.println("Test timeout disabled.");
+            return;
+        }
         final Thread testThread = Thread.currentThread();
         timeoutTimer = new Timer();
         timeoutTimer.schedule(new TimerTask() {
