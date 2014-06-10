@@ -29,7 +29,7 @@ body {
 
 body, table, form, input, td, th, p, textarea, select
 {
-  font-family: Verdana, Helvetica, sans serif;
+  font-family: Verdana, Helvetica, sans-serif;
   font-size: 11px;
 }
 
@@ -235,13 +235,23 @@ pre.console {
 }
 
 .setting-input {
-  width: 100%;
+  /* Setting it to 100% causes overlap with the help buttons. */
+  width: 96%;
+  font-size: 14px;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  padding: 6px;
 }
 
 .setting-description {
   font-size: 0.8em;
   margin-top: 0;
   padding-top: 0;
+}
+
+#disable-project {
+    margin-top: 6px;
 }
 
 /* div that looks like a hyperlink */
@@ -469,8 +479,8 @@ LABEL.attach-previous {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
 }
 .bottom-sticker-inner {
-    background:white;
-    padding:1em;
+    background: white;
+    padding: 1em 0;
 }
 .bottom-sticker-edge {
     height:16px;
@@ -903,6 +913,26 @@ DIV.yahooTree td {
   margin-bottom: 1em;
 }
 
+#jenkins .yuimenuitem {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  padding: 3px;
+}
+
+#jenkins .yuimenuitem, 
+#jenkins .yuimenuitemlabel {
+  cursor: pointer;
+}
+
+#jenkins .yuimenu .bd {
+    border: 1px solid #ccc;
+    box-shadow: 0px 3px 10px #bbb;
+}
+
+#jenkins .yui-menu-shadow {
+    display: none;
+}
+
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
   background: white url(../images/16x16/search.png) no-repeat 2px center;
@@ -966,6 +996,11 @@ DIV.textarea-handle {
     border: 1px solid #BABDB6;
     border-top: none;
     cursor: s-resize;
+    /* TODO: Align this with the textarea field. Chrome shows a margin-right
+     * property on this object which doesn't seem to be being set with CSS
+     * anywhere. Setting both setting-input and this field to 100% causes
+     * overlap with the setting-help field. */
+    width: 97%;
 }
 TEXTAREA.rich-editor {
   visibility: hidden;
@@ -1142,4 +1177,126 @@ td.matrix-cell {
 /* ========================= legend.jelly ================== */
 table#legend-table td {
 	vertical-align: middle;
+}
+
+/* ========================= Button styles ================= */
+
+#bottom-sticker .yui-button {
+    margin-right: 20px;
+}
+
+/* This level of nesting is technically unnecessary, but to override the
+ * default Yahoo styles. */
+#jenkins .yui-button {
+  border-width: 0;
+  border-style: none;
+  border-color: transparent;
+  background: none;
+}
+
+#jenkins .yui-button .first-child {
+    border-width: 0;
+    border-style: none;
+    border-color: transparent;
+}
+
+#jenkins .yui-button button {
+  font-size: 12px;
+  padding: 3px 20px;
+  *border: 0;
+  border-radius: 1px;
+
+  border: 1px solid #cccccc;
+  background-color: #e0e0e0;
+  font-family: Arial, Helvetica, sans-serif;
+  
+
+  color: #505050;
+  font-weight: bold;
+}
+
+#jenkins .yui-button .hetero-list-add {
+    padding-right: 35px;
+}
+
+#jenkins .yui-button button:hover,
+#jenkins .yui-button .hover 
+{
+    background-color: #d0d0d0;
+    border: 1px solid #c0c0c0;
+}
+
+#jenkins .yui-button button:active,
+#jenkins .yui-button .active {
+    background-color: #bbb;
+    box-shadow: inset 0px 1px 6px 2px #929292;
+    border: 1px solid #bbb;
+}
+
+#jenkins .yui-button button[disabled],
+#jenkins .yui-button button[disabled]:hover,
+#jenkins .yui-button button[disabled]:active,
+#jenkins .yui-button .disabled {
+    background-color: #e5e5e5;
+    color: #999;
+    border: 1px solid #d2d2d2;
+}
+
+/* Color overrides */
+#jenkins .yui-button.primary button {
+    background-color: #4b758b;
+    color: #eee;
+    border: 1px solid #5788a1;
+}
+
+#jenkins .yui-button.primary button:hover,
+#jenkins .yui-button.primary .hover
+{
+    background-color: #3f6275;
+    border: 1px solid #5788a1;
+}
+
+#jenkins .yui-button.primary button:active,
+#jenkins .yui-button.primary .active
+{
+    background-color: #33505f;
+    border: 1px solid #3f6275;
+    box-shadow: inset 0px 1px 6px 2px #1b2b33;
+}
+
+#jenkins .yui-button.primary button:disabled,
+#jenkins .yui-button.primary .disabled
+{
+    background-color: #adc6d3;
+    color: #fff;
+    border: 1px solid #a2becd;
+}
+
+#jenkins .yui-button.danger button {
+    background-color: #d24939;
+    color: #eee;
+    border: 1px solid #be3a2b;
+}
+
+#jenkins .yui-button.danger button:hover,
+#jenkins .yui-button.danger .hover
+{
+    background-color: #a23225;
+    border: 1px solid #942e22;
+}
+
+#jenkins .yui-button.danger button:active,
+#jenkins .yui-button.danger .active
+{
+    background-color: #942e22;
+    border: 1px solid #6b2118;
+    box-shadow: inset 0px 1px 6px 2px #79251b;
+}
+
+#jenkins .yui-button.danger button:disabled,
+#jenkins .yui-button.danger .disabled
+{
+    background-color: #e5958c;
+    color: #f8f8f8;
+    border: 1px solid #e39280;
 }
