@@ -43,6 +43,7 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullChangeLogParser;
 import hudson.scm.SCM;
+import hudson.scm.SCMRevisionState;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
@@ -625,7 +626,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         SCM scm = project.getScm();
                         for (SCMListener l : SCMListener.all()) {
                             try {
-                                l.onCheckout(build, scm, build.getWorkspace(), listener, changeLogFile, project.pollingBaseline);
+                                l.onCheckout(build, scm, build.getWorkspace(), listener, changeLogFile, build.getAction(SCMRevisionState.class));
                             } catch (Exception e) {
                                 throw new IOException(e);
                             }

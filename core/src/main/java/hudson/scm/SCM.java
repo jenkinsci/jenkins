@@ -420,6 +420,20 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
+     * Should create a key by which this SCM configuration might be distinguished from others in the same project.
+     * Should be invariable across builds but otherwise as distinctive as possible.
+     * <p>Could include information such as the relative paths used in {@link #getModuleRoots(FilePath, AbstractBuild)},
+     * and/or configured repository URLs and branch names, and/or labels set for this purpose by the user.
+     * <p>The result may be used for various purposes, but it may be long and/or include URL-unsafe characters,
+     * so to use in a URL path component you may need to first wrap it in {@link Util#getDigestOf(String)} or otherwise encode it.
+     * @return by default, just {@link #getType}
+     * @since 1.568
+     */
+    public @Nonnull String getKey() {
+        return getType();
+    }
+
+    /**
      * Obtains a fresh workspace of the module(s) into the specified directory
      * of the specified machine.
      *
@@ -440,14 +454,14 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      When there's no change, this file should contain an empty entry.
      *      See {@link #createEmptyChangeLog(File, TaskListener, String)}.
      *      May be null, in which case no changelog was requested.
-     *
+     * @param  baseline version from the previous build to use for changelog creation, if requested and available
      * @throws InterruptedException
      *      interruption is usually caused by the user aborting the build.
      *      this exception will cause the build to be aborted.
      * @throws AbortException in case of a routine failure
      * @since 1.568
      */
-    public void checkout(@Nonnull Run<?,?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace, @Nonnull TaskListener listener, @CheckForNull File changelogFile) throws IOException, InterruptedException {
+    public void checkout(@Nonnull Run<?,?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace, @Nonnull TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState baseline) throws IOException, InterruptedException {
         if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCM.class, getClass(), "checkout", AbstractBuild.class, Launcher.class, FilePath.class, BuildListener.class, File.class)) {
             if (changelogFile == null) {
                 changelogFile = File.createTempFile("changelog", ".xml");
@@ -470,7 +484,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     @Deprecated
     public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, @Nonnull File changelogFile) throws IOException, InterruptedException {
-        checkout((Run) build, launcher, workspace, listener, changelogFile);
+        AbstractBuild<?,?> prev = build.getPreviousBuild();
+        checkout((Run) build, launcher, workspace, listener, changelogFile, prev != null ? prev.getAction(SCMRevisionState.class) : null);
         return true;
     }
 
