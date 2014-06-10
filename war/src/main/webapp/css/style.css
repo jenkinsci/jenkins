@@ -29,7 +29,7 @@ body {
 
 body, table, form, input, td, th, p, textarea, select
 {
-  font-family: Verdana, Helvetica, sans serif;
+  font-family: Verdana, Helvetica, sans-serif;
   font-size: 11px;
 }
 
@@ -46,7 +46,7 @@ dt {
 }
 
 .fixed-width {
-  font-family: Consolas, Menlo, monospace;
+  font-family: Consolas, "Deja Vu Sans Mono", Menlo, monospace;
 }
 
 .center {
@@ -230,7 +230,7 @@ pre.console {
 
 .console-output a,
 .console-output a:visited {
-    color: #ED4A6A;
+    color: #d24939;
 }
 
 .setting-leftspace {
@@ -428,6 +428,11 @@ th.pane {
 
 .disabledJob {
   color: gray;
+}
+
+/* XXX - have console output page use .spinner class */
+#spinner {
+    margin-top: 5px;
 }
 
 .spinner {
