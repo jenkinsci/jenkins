@@ -219,7 +219,7 @@ pre.console {
   overflow: auto;
 }
 
-.console-output {
+.console-output-dark {
     background-color: #111;
     color: #d0d0d0;
     padding: 10px 10px 30px;
@@ -228,8 +228,8 @@ pre.console {
     font-family: Consolas, Menlo, monospace;
 }
 
-.console-output a,
-.console-output a:visited {
+.console-output-dark a,
+.console-output-dark a:visited {
     color: #d24939;
 }
 
