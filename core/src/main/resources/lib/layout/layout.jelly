@@ -118,9 +118,11 @@ ${h.initPageVariables(context)}
     <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
+    <script src="${resURL}/scripts/progress-circle.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
+    <st:adjunct includes="lib.layout.orb"/>
     <script>
         crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
     </script>

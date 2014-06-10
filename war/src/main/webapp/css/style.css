@@ -40,6 +40,9 @@ FORM {
 td {
   vertical-align: top;
 }
+.abstractBuildMain table td.no-wrap a {
+    vertical-align: top;
+}
 
 dt {
   font-weight: bold;
@@ -499,6 +502,15 @@ LABEL.attach-previous {
     padding:0;
 }
 
+.text-align.top {
+    vertical-align: top;
+}
+.text-align.bottom {
+    vertical-align: bottom;
+}
+.text-align.middle {
+    vertical-align: middle;
+}
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
@@ -556,6 +568,36 @@ LABEL.attach-previous {
 .icon32x32 {
     width: 32px;
     height: 32px;
+}
+
+/* ====================== orb styles =============================== */
+
+.jenkins-orb.orb-size-16x16 {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+}
+.jenkins-orb.orb-size-24x24 {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+}
+.jenkins-orb.orb-size-32x32 {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+}
+.jenkins-orb.orb-size-48x48 {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+}
+
+/*
+    Unanimated orbs.  All colors based on colors from the BallColor class colors.
+ */
+.jenkins-orb.NO_ANIME {
+    border-radius: 50%;
 }
 
 /* ====================== help ===================================== */
@@ -695,6 +737,12 @@ table.parameters > tbody:hover {
 #buildHistory td.desc {
     padding: 0;
     white-space: normal;
+}
+
+/* ========================= build details ========================= */
+.build-caption .displayName {
+    position: relative;
+    top: -10px;
 }
 
 /* ========================= editable combobox style ========================= */

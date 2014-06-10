@@ -31,8 +31,8 @@ THE SOFTWARE.
   <j:set var="transitive" value="${(it.firstTransientBuildKey!=null and (it.adapter.compare(build,it.firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
   <tr class="build-row no-wrap ${transitive}">
     <td>
-      <a class="build-status-link" href="${link}console"><img class="build-status-icon" width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description} &gt; ${%Console Output}" tooltip="${build.iconColor.description} &gt; ${%Console Output}" /></a><st:nbsp/>
-      ${build.displayName}
+      <a class="build-status-link" href="${link}console"><div class="jenkins-orb orb-size-16x16" orb-status="${build.iconColor.name}"></div></a><st:nbsp/>
+        ${build.displayName}
     </td>
     <td style="padding-right:0">
       <a class="tip model-link inside" href="${link}">

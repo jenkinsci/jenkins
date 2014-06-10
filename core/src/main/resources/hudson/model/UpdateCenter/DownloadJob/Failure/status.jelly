@@ -1,4 +1,5 @@
 <!--
+<!--
 The MIT License
 
 Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
@@ -25,7 +26,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div>
-    <img src="${imagesURL}/24x24/red.png" alt="" height="24" width="24"/> ${%Failure}
+    <div class="jenkins-orb orb-size-24x24" orb-status="RED" /><st:nbsp /><span class="text-align top">${%Failure}</span>
     -
     <a href="" onclick="var n=findNext(this,function(e){return e.tagName=='PRE'});
                n.style.display='block';this.style.display='none';return false">${%Details}</a>

@@ -35,11 +35,13 @@ THE SOFTWARE.
       <j:set var="id" value="${h.generateId()}"/>
       <tr class="build-row transitive" id="${id}">
         <td nowrap="nowrap">
-          <img width="16" height="16" src="${imagesURL}/16x16/grey.png" alt="${%pending}"/>
+          <div class="jenkins-orb orb-size-16x16" orb-status="GREY" />
           <st:nbsp/>
           <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
+          <span class="text-align top">
           #${queuedItems.size()==1 ? it.owner.nextBuildNumber
              : it.owner.nextBuildNumber+queuedItems.size()-i-1}
+          </span>
         </td>
         <td style="white-space:normal;" colspan="2">
           <div style="float:right">
