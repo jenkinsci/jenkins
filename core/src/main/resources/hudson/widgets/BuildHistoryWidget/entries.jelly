@@ -47,6 +47,7 @@ THE SOFTWARE.
               <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%cancel this build}"/>
             </j:if>
           </div>
+          <div class="itemsummary" id="${id}">
           <j:set var="cause" value="${item.getCauseOfBlockage()}"/>
           <j:choose>
             <j:when test="${cause!=null}">
@@ -57,6 +58,8 @@ THE SOFTWARE.
             </j:otherwise>
           </j:choose>
           ${item.params}
+          </div>
+          <div class="itemparams" id="${id}">${item.params}</div>
         </td>
       </tr>
     </j:forEach>
