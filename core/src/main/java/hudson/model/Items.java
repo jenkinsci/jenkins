@@ -320,13 +320,13 @@ public class Items {
             }
         });
         for (Item i : items) {
-            if (i instanceof ItemGroup) {
-                getAllItems((ItemGroup) i, type, r);
-            }
             if (type.isInstance(i)) {
                 if (i.hasPermission(Item.READ)) {
                     r.add(type.cast(i));
                 }
+            }
+            if (i instanceof ItemGroup) {
+                getAllItems((ItemGroup) i, type, r);
             }
         }
     }

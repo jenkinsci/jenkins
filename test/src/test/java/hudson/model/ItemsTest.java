@@ -53,6 +53,7 @@ public class ItemsTest {
         FreeStyleProject sub2BRAVO = sub2.createProject(FreeStyleProject.class, "BRAVO");
         FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
         assertEquals(Arrays.asList(dp, sub1p, sub1q, sub2ap, sub2alpha, sub2bp, sub2BRAVO, sub2cp, sub2charlie), Items.getAllItems(d, FreeStyleProject.class));
+        assertEquals(Arrays.<Item>asList(sub2a, sub2ap, sub2alpha, sub2b, sub2bp, sub2BRAVO, sub2c, sub2cp, sub2charlie), Items.getAllItems(sub2, Item.class));
     }
 
 }
