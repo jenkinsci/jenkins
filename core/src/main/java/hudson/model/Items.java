@@ -38,7 +38,13 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Stack;
+import java.util.StringTokenizer;
 import javax.annotation.CheckForNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import org.apache.commons.io.FileUtils;
@@ -296,39 +302,33 @@ public class Items {
      */
     public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type) {
         List<T> r = new ArrayList<T>();
-
-        Stack<ItemGroup> q = new Stack<ItemGroup>();
-        q.push(root);
-
-        while(!q.isEmpty()) {
-            ItemGroup<?> parent = q.pop();
-            for (Item i : parent.getItems()) {
-                if(type.isInstance(i)) {
-                    if (i.hasPermission(Item.READ))
-                        r.add(type.cast(i));
+        getAllItems(root, type, r);
+        return r;
+    }
+    private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r) {
+        List<Item> items = new ArrayList<Item>(((ItemGroup<?>) root).getItems());
+        Collections.sort(items, new Comparator<Item>() {
+            @Override public int compare(Item i1, Item i2) {
+                return name(i1).compareToIgnoreCase(name(i2));
+            }
+            String name(Item i) {
+                String n = i.getName();
+                if (i instanceof ItemGroup) {
+                    n += '/';
                 }
-                if(i instanceof ItemGroup)
-                    q.push((ItemGroup)i);
+                return n;
+            }
+        });
+        for (Item i : items) {
+            if (i instanceof ItemGroup) {
+                getAllItems((ItemGroup) i, type, r);
+            }
+            if (type.isInstance(i)) {
+                if (i.hasPermission(Item.READ)) {
+                    r.add(type.cast(i));
+                }
             }
         }
-        // sort by relative name, ignoring case
-        Collections.sort(r, new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                if (o1 == null) {
-                    if (o2 == null) {
-                        return 0;
-                    }
-                    return 1;
-                }
-                if (o2 == null) {
-                    return -1;
-                }
-                return o1.getRelativeNameFrom(root).compareToIgnoreCase(o2.getRelativeNameFrom(root));
-            }
-            
-        });
-        return r;
     }
 
     /**
