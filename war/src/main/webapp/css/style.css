@@ -233,6 +233,11 @@ pre.console {
     color: #d24939;
 }
 
+/* For backwards compatibility with the Collapsing Console Section Plugin */
+.collapseHeader {
+    color: #111;
+}
+
 .setting-leftspace {
   width: 2em;
 }
