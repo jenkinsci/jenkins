@@ -182,6 +182,7 @@ public class ListJobsCommandTest {
 
         final TopLevelItem item = mock(TopLevelItem.class);
 
+        when(item.getName()).thenReturn(name);
         when(item.getDisplayName()).thenReturn(name);
 
         return item;
