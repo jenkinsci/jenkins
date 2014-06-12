@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.annotation.CheckForNull;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
@@ -331,14 +332,20 @@ public class ListView extends View implements DirectlyModifiableView {
         if(name==null)
             throw new Failure("Query parameter 'name' is required");
 
-        TopLevelItem item = resolveName(name);
-        if (remove(item))
-            owner.save();
-
+        synchronized (this) {
+            TopLevelItem item = resolveName(name);
+            if (item == null) {
+                throw new Failure("Cannot discover the item by name: '"+name+"'");
+            }
+            
+            if (remove(item))
+                owner.save();
+        }
+        
         return HttpResponses.ok();
     }
 
-    private TopLevelItem resolveName(String name) {
+    private @CheckForNull TopLevelItem resolveName(String name) {
         TopLevelItem item = getOwnerItemGroup().getItem(name);
         if (item == null) {
             name = Items.getCanonicalName(getOwnerItemGroup(), name);
