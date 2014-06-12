@@ -35,8 +35,6 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.userdetails.UserDetails;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Listener notified of various significant events related to security.
@@ -87,6 +85,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     // TODO event for new user signed up (e.g. in HudsonPrivateSecurityRealm)
     // TODO event for CAPTCHA failure
 
+    /** @since 1.569 */
     public static void fireAuthenticated(@Nonnull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {
             List<String> groups = new ArrayList<String>();
@@ -102,6 +101,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
+    /** @since 1.569 */
     public static void fireFailedToAuthenticate(@Nonnull String username) {
         LOGGER.log(Level.FINE, "failed to authenticate: {0}", username);
         for (SecurityListener l : all()) {
@@ -109,6 +109,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
+    /** @since 1.569 */
     public static void fireLoggedIn(@Nonnull String username) {
         LOGGER.log(Level.FINE, "logged in: {0}", username);
         for (SecurityListener l : all()) {
@@ -116,6 +117,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
+    /** @since 1.569 */
     public static void fireFailedToLogIn(@Nonnull String username) {
         LOGGER.log(Level.FINE, "failed to log in: {0}", username);
         for (SecurityListener l : all()) {
@@ -123,6 +125,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
+    /** @since 1.569 */
     public static void fireLoggedOut(@Nonnull String username) {
         LOGGER.log(Level.FINE, "logged out: {0}", username);
         for (SecurityListener l : all()) {
