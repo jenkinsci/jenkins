@@ -98,6 +98,9 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "Failed to read permalink cache:" + f, e);
             // if we fail to read the cache, fall back to the re-computation
+        } catch (NumberFormatException e) { 
+            LOGGER.log(Level.WARNING, "Failed to parse the build number in the permalink cache:" + f, e);
+            // if we fail to read the cache, fall back to the re-computation
         } catch (IOException e) {
             // this happens when the symlink doesn't exist
             // (and it cannot be distinguished from the case when the actual I/O error happened
