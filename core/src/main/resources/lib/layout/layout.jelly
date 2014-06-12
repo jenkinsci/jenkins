@@ -141,6 +141,11 @@ ${h.initPageVariables(context)}
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="header.jelly" optional="true" />
     </j:forEach>
+
+    <!-- itemparams == Pending Job Build Parameters -->
+    <style type="text/css"> div.itemparams { display:none; overflow: hidden; text-overflow: ellipsis; } </style>
+    <script>jQuery(document).ready(function() { jQuery('div.itemsummary').live( "click", function() { jQuery('#'+this.id+'.itemparams').toggle(); }); });</script>
+
   </head>
   <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
