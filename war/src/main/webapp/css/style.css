@@ -237,11 +237,15 @@ pre.console {
 .setting-input {
   /* Setting it to 100% causes overlap with the help buttons. */
   width: 96%;
-  font-size: 14px;
+  font-size: 13px;
   border-radius: 3px;
   border: 1px solid #ccc;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   padding: 6px;
+}
+
+textarea.setting-input {
+    font-size: 12px;
 }
 
 .setting-description {
