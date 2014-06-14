@@ -1144,7 +1144,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 logRotator = null;
 
             DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
-            t.rebuild(req,json.optJSONObject("properties"),JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+            JSONObject jsonProperties = json.optJSONObject("properties");
+            if (jsonProperties != null) {
+              t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+            } else {
+              t.clear();
+            }
             properties.clear();
             for (JobProperty p : t) {
                 p.setOwner(this);
