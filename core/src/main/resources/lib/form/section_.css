@@ -1,6 +1,8 @@
 .section-header {
     font-weight: bold;
-    border-bottom: 1px solid black;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #e0e0e0;
     margin-bottom: 0.2em;
-    margin-top: 0.4em;
+    margin-top: 1.0em;
+    font-size: 1.6em;
 }
