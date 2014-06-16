@@ -34,6 +34,8 @@ import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.File;
+
+import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.AncestorInPath;
@@ -79,6 +81,14 @@ public class ArtifactArchiver extends Recorder {
      */
     private boolean onlyIfSuccessful;
 
+
+    /**
+     * Default ant exclusion
+     */
+    @Nonnull
+    private Boolean defaultExcludes;
+
+
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
         this(artifacts, excludes, latestOnly, false, false);
     }
@@ -87,19 +97,29 @@ public class ArtifactArchiver extends Recorder {
         this(artifacts, excludes, latestOnly, allowEmptyArchive, false);
     }
 
-    @DataBoundConstructor
+
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive, boolean onlyIfSuccessful) {
+        this(artifacts, excludes , latestOnly , allowEmptyArchive, onlyIfSuccessful , true);
+    }
+
+
+    @DataBoundConstructor
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive, boolean onlyIfSuccessful, Boolean defaultExcludes) {
         this.artifacts = artifacts.trim();
         this.excludes = Util.fixEmptyAndTrim(excludes);
         this.latestOnly = latestOnly;
         this.allowEmptyArchive = allowEmptyArchive;
         this.onlyIfSuccessful = onlyIfSuccessful;
+        this.defaultExcludes = defaultExcludes;
     }
 
     // Backwards compatibility for older builds
     public Object readResolve() {
         if (allowEmptyArchive == null) {
             this.allowEmptyArchive = Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
+        }
+        if (defaultExcludes == null){
+            defaultExcludes = true;
         }
         return this;
     }
@@ -123,7 +143,11 @@ public class ArtifactArchiver extends Recorder {
     public boolean getAllowEmptyArchive() {
         return allowEmptyArchive;
     }
-    
+
+    public boolean isDefaultExcludes() {
+        return defaultExcludes;
+    }
+
     private void listenerWarnOrError(BuildListener listener, String message) {
     	if (allowEmptyArchive) {
     		listener.getLogger().println(String.format("WARN: %s", message));
@@ -154,7 +178,7 @@ public class ArtifactArchiver extends Recorder {
 
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
-            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes));
+            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes));
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(ws, launcher, listener, files);
             } else {
@@ -191,13 +215,20 @@ public class ArtifactArchiver extends Recorder {
     private static final class ListFiles implements FilePath.FileCallable<Map<String,String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
-        ListFiles(String includes, String excludes) {
+        private final boolean defaultExcludes;
+
+        ListFiles(String includes, String excludes, boolean defaultExcludes) {
             this.includes = includes;
             this.excludes = excludes;
+            this.defaultExcludes = defaultExcludes;
         }
         @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
             Map<String,String> r = new HashMap<String,String>();
-            for (String f : Util.createFileSet(basedir, includes, excludes).getDirectoryScanner().getIncludedFiles()) {
+
+            FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
+            fileSet.setDefaultexcludes(defaultExcludes);
+
+            for (String f : fileSet.getDirectoryScanner().getIncludedFiles()) {
                 f = f.replace(File.separatorChar, '/');
                 r.put(f, f);
             }
