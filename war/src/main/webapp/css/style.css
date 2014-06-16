@@ -21,11 +21,96 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+/* General page layout */
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
   background: white;
+  margin-right: auto;
+  margin-left: auto;
 }
+
+#header {
+  background-color: #000000;
+  height: 45px;
+}
+
+#header div {
+  display: inline-block;
+  height: inherit;
+}
+#header .logo {
+  margin-left: 20px;
+}
+
+#jenkins-head-icon {
+  position: relative;
+  top: 2px;
+  width: 40px;
+  height: 40px;
+}
+#jenkins-name-icon {
+  position: relative;
+  top: 4px;
+}
+
+#header div.searchbox, #header div.login {
+  float: right;
+  padding: 5px;
+}
+
+#breadcrumbBar {
+  background-color: #e5e9e1;
+}
+
+#side-panel, #main-panel {
+  display: inline-block;
+  float: left;
+  padding-top: 10px;
+  margin-bottom: 40px;
+  margin-left: 1%;
+  margin-right: 1%;
+}
+#side-panel {
+  width: 18%;
+  max-width: 350px;
+}
+#main-panel {
+  width: 78%;
+}
+
+#tasks {
+  margin: 10px 0px 20px 0px;
+}
+
+#footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  font-size: 8pt;
+  margin-top: 10em;
+  padding: 10px 0px;
+  border-top: 1px solid #d3d7cf;
+  background-color: #e5e9e1;
+}
+
+#l10n-footer {
+  margin-left: 15px;
+}
+
+#footer span {
+  margin-right: 15px;
+}
+
+/* Fonts etc */
 
 body, table, form, input, td, th, p, textarea, select
 {
@@ -79,24 +164,6 @@ dt {
   text-decoration: none;
 }
 
-#main-panel {
-  padding: 10px;
-    padding-top: 0px;
-}
-
-#side-panel {
-  padding: 4px;
-  width: 220px;
-}
-
-#footer {
-  text-align: right;
-  font-size: 8pt;
-  margin-top: 10em;
-  padding: 10px;
-  border-top: 1px solid #bbb;
-}
-
 #tasks {
   padding: 4px;
 }
@@ -116,6 +183,16 @@ dt {
     margin-bottom: 0.5em;
     padding: 0.5em;
     -moz-border-radius: 0.5em;
+}
+
+#header .login {
+  color: white;
+  margin-right: 10px;
+}
+
+#header .login a {
+  position: relative;
+  top: 10px;
 }
 
 a:link {
@@ -168,6 +245,17 @@ a.tip:hover span {
   background-color:#fffff0;
   color:#000;
   text-align: left
+}
+
+.call-to-action {
+  display: inline-block;
+  padding: 10px;
+  background-color: #cdf0f2;
+  border-left: 4px solid #577baa;
+}
+
+.call-to-action a, .call-to-action a:visited {
+  color: #000000;
 }
 
 img {
@@ -487,7 +575,6 @@ LABEL.attach-previous {
     z-index: 999;
 }
 .top-sticker-inner {
-    background:white;
     padding:1em;
 }
 .top-sticker-edge {
@@ -910,6 +997,7 @@ DIV.yahooTree td {
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
   background: white url(../images/16x16/search.png) no-repeat 2px center;
+  height: 30px;
   padding-left: 20px;
   width: 15em;
   position: static; 

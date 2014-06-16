@@ -1159,7 +1159,13 @@ var jenkinsRules = {
             var pos = DOM.getRegion(shadow);
 
             sticker.style.position = "fixed";
-            sticker.style.bottom = Math.max(0, viewport.bottom - pos.bottom) + "px"
+
+            var bottomPos = Math.max(0, viewport.bottom - pos.bottom);
+            if (bottomPos === 0) {
+                bottomPos = 25;
+            }
+
+            sticker.style.bottom = bottomPos + "px"
             sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
         }
 
