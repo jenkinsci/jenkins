@@ -36,6 +36,7 @@ import hudson.model.User;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildTriggerTest;
 import hudson.triggers.Trigger;
 import java.util.Arrays;
@@ -56,6 +57,24 @@ import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 public class ReverseBuildTriggerTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
+
+    @Test public void configRoundtrip() throws Exception {
+        r.createFreeStyleProject("upstream");
+        FreeStyleProject downstream = r.createFreeStyleProject("downstream");
+        FreeStyleProject wayDownstream = r.createFreeStyleProject("wayDownstream");
+        downstream.addTrigger(new ReverseBuildTrigger("upstream", Result.SUCCESS));
+        downstream.getPublishersList().add(new BuildTrigger(Collections.singleton(wayDownstream), Result.SUCCESS));
+        downstream.save();
+        r.configRoundtrip(downstream);
+        ReverseBuildTrigger rbt = downstream.getTrigger(ReverseBuildTrigger.class);
+        assertNotNull(rbt);
+        assertEquals("upstream", rbt.getUpstreamProjects());
+        assertEquals(Result.SUCCESS, rbt.getThreshold());
+        BuildTrigger bt = downstream.getPublishersList().get(BuildTrigger.class);
+        assertNotNull(bt);
+        assertEquals(Collections.singletonList(wayDownstream), bt.getChildProjects(downstream));
+        assertEquals(Result.SUCCESS, bt.getThreshold());
+    }
 
     /** @see BuildTriggerTest#testDownstreamProjectSecurity */
     @Test public void upstreamProjectSecurity() throws Exception {
