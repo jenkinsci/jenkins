@@ -39,6 +39,10 @@
     line-height: 2em;
 }
 
+#breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
+  background-color: #e0e4dc;
+}
+
 #breadcrumbs LI A:link, #breadcrumbs LI A:visited {
     text-decoration:none;
     color:#555753;
@@ -80,6 +84,6 @@
   z-index: 2000;
 }
 
-A.model-link.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
+A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
   padding-right: 16px;
 }

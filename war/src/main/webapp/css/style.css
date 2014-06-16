@@ -21,11 +21,98 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+/* General page layout */
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
   background: white;
+  margin-right: auto;
+  margin-left: auto;
 }
+
+#header {
+  background-color: #000000;
+  height: 50px;
+}
+
+#header div {
+  display: inline-block;
+  height: inherit;
+}
+#header .logo {
+  margin-left: 20px;
+}
+
+#jenkins-head-icon {
+  position: relative;
+  top: 5px;
+  width: 40px;
+  height: 40px;
+}
+#jenkins-name-icon {
+  position: relative;
+  top: 6px;
+}
+
+#header div.searchbox, #header div.login {
+  float: right;
+  padding: 11px;
+}
+
+#breadcrumbBar, #footer-container, .top-sticker-inner {
+  background-color: #f6faf2;
+}
+
+#side-panel, #main-panel {
+  margin: 0px 0px 40px 0px;
+  padding: 0px;
+}
+
+#side-panel-content, #main-panel-content {
+  margin: 15px
+}
+
+#tasks {
+  margin-bottom: 20px;
+}
+
+#side-panel-content .pane {
+  margin-bottom: 15px;
+}
+
+#side-panel-content .task {
+  margin-bottom: 3px;
+}
+#side-panel-content .task-link {
+  font-size: 1.3em;
+  vertical-align: middle;
+}
+
+#footer-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px 0px;
+  border-top: 1px solid #d3d7cf;
+}
+#footer {
+  margin: 0px 15px 0px 15px;
+  text-align: right;
+  font-size: 8pt;
+}
+
+#footer span {
+  margin-left: 15px;
+}
+
+/* Fonts etc */
 
 body, table, form, input, td, th, p, textarea, select
 {
@@ -79,28 +166,6 @@ dt {
   text-decoration: none;
 }
 
-#main-panel {
-  padding: 10px;
-    padding-top: 0px;
-}
-
-#side-panel {
-  padding: 4px;
-  width: 220px;
-}
-
-#footer {
-  text-align: right;
-  font-size: 8pt;
-  margin-top: 10em;
-  padding: 10px;
-  border-top: 1px solid #bbb;
-}
-
-#tasks {
-  padding: 4px;
-}
-
 .skiplink {
     position: absolute;
     left: -20000px;
@@ -116,6 +181,16 @@ dt {
     margin-bottom: 0.5em;
     padding: 0.5em;
     -moz-border-radius: 0.5em;
+}
+
+#header .login {
+  color: white;
+  margin-right: 10px;
+}
+
+#header .login a {
+  position: relative;
+  top: 10px;
 }
 
 a:link {
@@ -168,6 +243,19 @@ a.tip:hover span {
   background-color:#fffff0;
   color:#000;
   text-align: left
+}
+
+.call-to-action {
+  display: inline-block;
+  padding: 10px;
+  background-color: #cdf0f2;
+  border-left: 4px solid #577baa;
+}
+
+.call-to-action a, .call-to-action a:visited {
+  color: #000000;
+  font-weight: bold;
+  font-size: larger;
 }
 
 img {
@@ -232,6 +320,7 @@ pre.console {
 }
 .setting-help {
   width: 16px;
+  vertical-align: middle;
 }
 
 .setting-input {
@@ -490,7 +579,6 @@ LABEL.attach-previous {
     z-index: 999;
 }
 .top-sticker-inner {
-    background:white;
     padding:1em;
 }
 .top-sticker-edge {
@@ -604,7 +692,10 @@ LABEL.attach-previous {
 }
 #viewList td.inactive a {
   text-decoration: none;
-  color: #444
+  color: #444;
+}
+#viewList td.inactive a:hover {
+  color: #f1f1f1;
 }
 #viewList td.noleft {
   border-left: none;
@@ -932,6 +1023,7 @@ DIV.yahooTree td {
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
   background: white url(../images/16x16/search.png) no-repeat 2px center;
+  height: 24px;
   padding-left: 20px;
   width: 15em;
   position: static; 

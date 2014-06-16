@@ -92,6 +92,8 @@ var breadcrumbs = (function() {
      */
     var menuSelector = (function() {
         var menuSelector = $(document.createElement("div"));
+        var menuSelectorTarget;
+
         document.body.appendChild(menuSelector);
         menuSelector.id = 'menuSelector';
 
@@ -109,9 +111,12 @@ var breadcrumbs = (function() {
             this.target = target;
 
             this.style.visibility = "visible";
+
+            menuSelectorTarget = target;
         };
         menuSelector.hide = function() {
             this.style.visibility = "hidden";
+            menuSelectorTarget = undefined;
         };
         menuSelector.observe("click",function () {
             invokeContextMenu(this.target);
@@ -125,11 +130,17 @@ var breadcrumbs = (function() {
 
         menuSelector.observe("mouseover",function () {
             logger("mouse entered 'v'");
+            if (menuSelectorTarget) {
+                menuSelectorTarget.addClassName('mouseIsOverMenuSelector');
+            }
             canceller.cancel();
         });
         menuSelector.observe("mouseout",function () {
             logger("mouse left 'v'");
             canceller.schedule();
+            if (menuSelectorTarget) {
+                menuSelectorTarget.removeClassName('mouseIsOverMenuSelector');
+            }
         });
         menuSelector.canceller = canceller;
 
@@ -221,6 +232,10 @@ var breadcrumbs = (function() {
         a.observe("click",function() {
             invokeContextMenu(this,"childrenContextMenu");
         })
+    });
+
+    Behaviour.specify("#breadcrumbs A", 'breadcrumbs', 0, function (a) {
+        $(a).addClassName('breadcrumbBarAnchor');
     });
 
     /**
