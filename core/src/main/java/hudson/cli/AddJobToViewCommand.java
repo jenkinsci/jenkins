@@ -35,7 +35,7 @@ import org.kohsuke.args4j.CmdLineException;
 
 /**
  * @author ogondza
- * @since TODO
+ * @since 1.570
  */
 @Extension
 public class AddJobToViewCommand extends CLICommand {
