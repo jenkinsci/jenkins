@@ -549,9 +549,9 @@ public class SCMTrigger extends Trigger<Item> {
                     queueActions[0] = new CauseAction(cause);
                     System.arraycopy(additionalActions, 0, queueActions, 1, additionalActions.length);
                     if (p.scheduleBuild2(p.getQuietPeriod(), queueActions) != null) {
-                        LOGGER.info("SCM changes detected in "+ job.getName()+". Triggering "+name);
+                        LOGGER.info("SCM changes detected in "+ job.getFullDisplayName()+". Triggering "+name);
                     } else {
-                        LOGGER.info("SCM changes detected in "+ job.getName()+". Job is already in the queue");
+                        LOGGER.info("SCM changes detected in "+ job.getFullDisplayName()+". Job is already in the queue");
                     }
                 }
             } finally {
