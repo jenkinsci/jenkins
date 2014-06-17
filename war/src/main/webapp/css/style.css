@@ -240,6 +240,9 @@ pre.console {
   border: 1px solid #ccc;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   padding: 6px;
+  box-sizing: border-box;
+  -webkit-box-sizing:border-box;
+  -moz-box-sizing: border-box;
 }
 
 .setting-description {
