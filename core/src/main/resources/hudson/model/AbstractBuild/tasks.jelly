@@ -32,16 +32,9 @@ THE SOFTWARE.
       <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/changes" title="${%Changes}" />
       <j:choose>
         <j:when test="${it.logFile.length() > 200000}">
-          <!-- Show raw link directly so user need not click through live console page. -->
-          <div class="task">
-            <a href="${buildUrl.baseUrl}/console">
-              <img width="24" height="24" style="margin: 2px;" src="${imagesURL}/24x24/terminal.png" alt=""/>
-            </a>
-            <st:nbsp />
-            <a href="${buildUrl.baseUrl}/console">${%Console Output}</a>
-            <st:nbsp />
-            <a href="${buildUrl.baseUrl}/consoleText">[${%raw}]</a>
-          </div>
+          <!-- Show raw link directly so user need not click through live console page, though this is not so bad now as they would just see: Skipping nnn KB.. Full Log. -->
+          <l:task icon="images/24x24/terminal.png" href="${buildUrl.baseUrl}/console" title="${%Console Output}"/>
+          <l:task icon="images/24x24/document.png" href="${buildUrl.baseUrl}/consoleText" title="${%View as plain text}"/>
         </j:when>
         <j:otherwise>
           <l:task icon="images/24x24/terminal.png" href="${buildUrl.baseUrl}/console" title="${%Console Output}" >
