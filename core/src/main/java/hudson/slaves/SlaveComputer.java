@@ -625,7 +625,7 @@ public class SlaveComputer extends Computer {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
             for (ComputerListener cl : ComputerListener.all())
-                cl.onOffline(this);
+                cl.onOffline(this, offlineCause);
         }
     }
 
