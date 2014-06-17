@@ -67,7 +67,10 @@ dt {
 
 #main-table {
   padding: 0;
+  background-repeat: no-repeat; 
+  background-position: bottom left;
   border-collapse: collapse;
+  background-image: url(../images/jenkins_grayscale.png);
 }
 
 #top-panel {
@@ -286,9 +289,6 @@ pre.console {
 
 .subtasks {
   padding-left: 1em;
-}
-
-.main-table {
 }
 
 div.dashboard {

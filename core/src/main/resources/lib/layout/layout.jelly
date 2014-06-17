@@ -206,9 +206,7 @@ ${h.initPageVariables(context)}
         <d:invokeBody />
       </l:breadcrumbBar>
     </table>
-    <table id="main-table" width="100%" height="70%" border="0"
-        style="background-image: url(${imagesURL}/jenkins.png);
-               background-repeat: no-repeat; background-position: bottom left;">
+    <table id="main-table" width="100%" height="70%" border="0" >
       <tr>
         <td id="side-panel" width="20%">
           <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
