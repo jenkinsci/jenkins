@@ -58,7 +58,7 @@ public class NullSCM extends SCM {
         return NullChangeLogParser.INSTANCE;
     }
 
-    @Extension
+    @Extension(ordinal = Integer.MAX_VALUE)
     public static class DescriptorImpl extends SCMDescriptor<NullSCM> {
         public DescriptorImpl() {
             super(null);
