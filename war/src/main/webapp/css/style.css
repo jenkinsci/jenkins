@@ -29,8 +29,9 @@ body {
 
 body, table, form, input, td, th, p, textarea, select
 {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-size: 11px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  color: #333;
 }
 
 FORM {
@@ -75,6 +76,21 @@ dt {
   height: 34px;
   background: url(../images/topbar.png) repeat-x;
 }
+
+#jenkins-title {
+    margin: 0 5px;
+    font-size: 25px;
+}
+
+#jenkins-home-link,
+#jenkins-home-link:visited {
+    color: #eee;
+}
+
+#jenkins-home-link:hover {
+    color: #fff;
+}
+
 #top-panel a {
   text-decoration: none;
 }
@@ -379,7 +395,7 @@ th.pane {
   padding: 4px 0;
   margin-left: 0;
   border-bottom: 1px solid #090;
-  font: bold 12px Verdana, sans-serif;
+  font: bold 12px Helvetica, Arial, sans-serif;
 }
 
 #foldertab li {
@@ -1203,7 +1219,7 @@ table#legend-table td {
 
   border: 1px solid #cccccc;
   background-color: #e0e0e0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
 
 
   color: #505050;
