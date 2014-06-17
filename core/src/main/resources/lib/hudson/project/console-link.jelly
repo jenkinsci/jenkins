@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+Copyright 2014 Jesse Glick.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +22,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Side panel for the build view.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/hudson/project">
-      <l:task icon="images/24x24/up.png" href="${it.upUrl}" title="${%Back to Project}" contextMenu="false"/>
-      <l:task icon="images/24x24/search.png" href="${buildUrl.baseUrl}/" title="${%Status}" contextMenu="false"/>
-      <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/changes" title="${%Changes}" />
-      <p:console-link/>
-      <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/configure" title="${h.hasPermission(it,it.UPDATE)?'%Edit Build Information':'%View Build Information'}"/>
+<!-- Displays a console link for a build. -->
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <j:choose>
+        <j:when test="${it.logFile.length() > 200000}">
+            <!-- Show raw link directly so user need not click through live console page, though this is not so bad now as they would just see: Skipping nnn KB.. Full Log. -->
+            <l:task icon="images/24x24/terminal.png" href="${buildUrl.baseUrl}/console" title="${%Console Output}"/>
+            <l:task icon="images/24x24/document.png" href="${buildUrl.baseUrl}/consoleText" title="${%View as plain text}"/>
+        </j:when>
+        <j:otherwise>
+            <l:task icon="images/24x24/terminal.png" href="${buildUrl.baseUrl}/console" title="${%Console Output}">
+                <l:task icon="images/24x24/document.png" href="${buildUrl.baseUrl}/consoleText" title="${%View as plain text}"/>
+            </l:task>
+        </j:otherwise>
+    </j:choose>
 </j:jelly>
