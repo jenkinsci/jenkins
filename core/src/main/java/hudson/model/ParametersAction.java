@@ -86,7 +86,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         for (ParameterValue p : parameters) {
             if (p == null) continue;
-            p.buildEnvironment(build, env); 
+            p.buildEnvVars(build, env); 
         }
     }
 

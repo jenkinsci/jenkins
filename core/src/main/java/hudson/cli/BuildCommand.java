@@ -33,6 +33,7 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.ParameterDefinition;
 import hudson.Extension;
 import hudson.AbortException;
+import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Item;
 import hudson.model.TaskListener;
