@@ -910,6 +910,25 @@ DIV.yahooTree td {
   margin-bottom: 1em;
 }
 
+#jenkins .yuimenuitem {
+    font-size: 12px;
+    padding: 3px;
+}
+
+#jenkins .yuimenuitem, 
+#jenkins .yuimenuitemlabel {
+    cursor: pointer;
+}
+
+#jenkins .yuimenu .bd {
+    border: 1px solid #ccc;
+    box-shadow: 0px 3px 10px #bbb;
+}
+
+#jenkins .yui-menu-shadow {
+    display: none;
+}
+
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
   background: white url(../images/16x16/search.png) no-repeat 2px center;
