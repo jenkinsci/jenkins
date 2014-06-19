@@ -1895,17 +1895,42 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
         StringBuilder buf = new StringBuilder();
-        String scheme = req.getScheme();
-        String forwardedScheme = req.getHeader("X-Forwarded-Proto");
-        if (forwardedScheme != null) {
-            scheme = forwardedScheme;
+        String scheme = getXForwardedHeader(req, "X-Forwarded-Proto", req.getScheme());
+        buf.append(scheme).append("://");
+        String host = getXForwardedHeader(req, "X-Forwarded-Host", req.getServerName());
+        buf.append(host);
+        int port = req.getServerPort();
+        String forwardedPort = getXForwardedHeader(req, "X-Forwarded-Port", null);
+        if (forwardedPort != null) {
+            try {
+                port = Integer.parseInt(forwardedPort);
+            } catch (NumberFormatException e) {
+                // ignore
+            }
         }
-        buf.append(scheme+"://");
-        buf.append(req.getServerName());
-        if(req.getServerPort()!=80)
-            buf.append(':').append(req.getServerPort());
+        if(("http".equals(scheme) && port != 80) || ("https".equals(scheme) && port != 443)) {
+            buf.append(':').append(port);
+        }
         buf.append(req.getContextPath()).append('/');
         return buf.toString();
+    }
+
+    /**
+     * Gets the originating "X-Forwarded-..." header from the request. If there are multiple headers the originating
+     * header is the first header. If the originating header contains a comma separated list, the originating entry
+     * is the first one.
+     * @param req the request
+     * @param header the header name
+     * @param defaultValue the value to return if the header is absent.
+     * @return the originating entry of the header or the default value if the header was not present.
+     */
+    private static String getXForwardedHeader(StaplerRequest req, String header, String defaultValue) {
+        String value = req.getHeader(header);
+        if (value != null) {
+            int index = value.indexOf(',');
+            return index == -1 ? value.trim() : value.substring(0,index).trim();
+        }
+        return defaultValue;
     }
 
     public File getRootDir() {
