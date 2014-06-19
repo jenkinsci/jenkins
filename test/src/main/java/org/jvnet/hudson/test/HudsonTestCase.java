@@ -1815,6 +1815,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
+            while (relative.startsWith("/")) relative = relative.substring(1);
             Page p;
             try {
                 p = super.getPage(getContextPath() + relative);
