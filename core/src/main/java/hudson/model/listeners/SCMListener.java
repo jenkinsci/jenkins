@@ -109,14 +109,18 @@ public abstract class SCMListener implements ExtensionPoint {
      * @since 1.568
      */
     public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
-        if (build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", AbstractBuild.class, BuildListener.class, ChangeLogSet.class)) {
+        onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog, false);
+    }
+
+    private void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog, boolean blockCircularCall) throws Exception {
+        if (!blockCircularCall && build instanceof AbstractBuild && listener instanceof BuildListener && Util.isOverridden(SCMListener.class, getClass(), "onChangeLogParsed", AbstractBuild.class, BuildListener.class, ChangeLogSet.class)) {
             onChangeLogParsed((AbstractBuild) build, (BuildListener) listener, changelog);
         }
     }
 
     @Deprecated
     public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
-        onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog);
+        onChangeLogParsed((Run) build, build.getProject().getScm(), listener, changelog, true);
     }
 
     /**
