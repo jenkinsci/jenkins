@@ -109,7 +109,7 @@ public abstract class SCMListener implements ExtensionPoint {
      * @since 1.568
      */
     public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
-        onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog, false);
+        onChangeLogParsed(build, scm, listener, changelog, false);
     }
 
     private void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog, boolean blockCircularCall) throws Exception {
