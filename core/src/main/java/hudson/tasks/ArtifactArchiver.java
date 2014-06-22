@@ -140,7 +140,7 @@ public class ArtifactArchiver extends Recorder {
             return true;
         }
 
-        if (build.getResult().isWorseThan(Result.UNSTABLE) && onlyIfSuccessful) {
+        if (onlyIfSuccessful && build.getResult() != null && build.getResult().isWorseThan(Result.UNSTABLE)) {
             listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
             return true;
         }
