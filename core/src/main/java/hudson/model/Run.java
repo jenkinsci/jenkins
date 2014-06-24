@@ -2201,11 +2201,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * @deprecated as of 1.292
-     *      Use {@link #getEnvironment()} instead.
+     *      Use {@link #getEnvironment(TaskListener)} instead.
      */
     public Map<String,String> getEnvVars() {
+        LOGGER.log(WARNING, "deprecated call to Run.getEnvVars\n\tat {0}", new Throwable().getStackTrace()[1]);
         try {
-            return getEnvironment();
+            return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
         } catch (IOException e) {
             return new EnvVars();
         } catch (InterruptedException e) {
@@ -2217,6 +2218,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @deprecated as of 1.305 use {@link #getEnvironment(TaskListener)}
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
+        LOGGER.log(WARNING, "deprecated call to Run.getEnvironment\n\tat {0}", new Throwable().getStackTrace()[1]);
         return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));
     }
 
