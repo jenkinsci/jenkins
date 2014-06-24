@@ -32,7 +32,7 @@ THE SOFTWARE.
     </j:invoke>
     <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
       <div style="float:right"><a href="${it.baseUrl}/buildTimeTrend">${%trend}</a></div>
-      <t:buildHealth job="${it.owner}" iconSize="16x16" link="${it.baseUrl}/lastBuild"/>
+      <t:buildHealth job="${it.owner}" iconSizeClass="icon-sm" link="${it.baseUrl}/lastBuild"/>
     </j:if>
   </j:parse>
 

@@ -28,7 +28,7 @@ THE SOFTWARE.
     <l:header title="Jenkins" />
     <l:side-panel />
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/error.png" alt="[!]" height="48" width="48"/><st:nbsp/>${%Error}</h1>
+      <h1><l:icon class="icon-error icon-xlg"/><st:nbsp/>${%Error}</h1>
       <p>
         ${%errorMessage}
       </p>

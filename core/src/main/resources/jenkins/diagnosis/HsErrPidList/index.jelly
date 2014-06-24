@@ -40,7 +40,7 @@ THE SOFTWARE.
         <j:forEach var="f" items="${it.files}" varStatus="idx">
           <tr>
             <td style="padding-right:3em">
-              <img src="${imagesURL}/32x32/clipboard.png" style="margin-right:1em"/>
+              <l:icon class="icon-clipboard icon-lg" style="margin-right:1em"/>
               <a href="files/${idx.index}/download/${f.name}">
                 ${f.path}
               </a>

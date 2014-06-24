@@ -50,6 +50,11 @@ THE SOFTWARE.
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>ui-ext-icon-module</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
       <!-- specified in the parent -->
     </dependency>

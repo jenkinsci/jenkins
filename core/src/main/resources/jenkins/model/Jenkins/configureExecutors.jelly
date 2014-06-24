@@ -32,7 +32,7 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1>
-      <img src="${imagesURL}/48x48/error.png" alt="" height="48" width="48"/>
+      <l:icon class="icon-error icon-xlg"/>
       This page has moved
     </h1>
     <p>

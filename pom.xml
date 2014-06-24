@@ -47,11 +47,14 @@ THE SOFTWARE.
   </licenses>
 
   <modules>
+    <module>ui-ext</module>
+    <module>ui-ext/icon/module</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
     <module>cli</module>
     <module>plugins</module>
+    <module>ui-ext/icon/shim-plugin</module>
   </modules>
 
   <scm>

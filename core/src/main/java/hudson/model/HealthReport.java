@@ -35,7 +35,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Represents health of something (typically project).
@@ -48,17 +47,28 @@ import java.util.Locale;
 // this is always exported as a part of Job and never on its own, so start with 2.
 public class HealthReport implements Serializable, Comparable<HealthReport> {
     // These are now 0-20, 21-40, 41-60, 61-80, 81+ but filenames unchanged for compatibility
-    private static final String HEALTH_OVER_80 = "health-80plus.png";
-    private static final String HEALTH_61_TO_80 = "health-60to79.png";
-    private static final String HEALTH_41_TO_60 = "health-40to59.png";
-    private static final String HEALTH_21_TO_40 = "health-20to39.png";
-    private static final String HEALTH_0_TO_20 = "health-00to19.png";
-    private static final String HEALTH_UNKNOWN = "empty.png";
+    private static final String HEALTH_OVER_80 = "icon-health-80plus";
+    private static final String HEALTH_61_TO_80 = "icon-health-60to79";
+    private static final String HEALTH_41_TO_60 = "icon-health-40to59";
+    private static final String HEALTH_21_TO_40 = "icon-health-20to39";
+    private static final String HEALTH_0_TO_20 = "icon-health-00to19";
+
+    private static final String HEALTH_OVER_80_IMG = "health-80plus.png";
+    private static final String HEALTH_61_TO_80_IMG = "health-60to79.png";
+    private static final String HEALTH_41_TO_60_IMG = "health-40to59.png";
+    private static final String HEALTH_21_TO_40_IMG = "health-20to39.png";
+    private static final String HEALTH_0_TO_20_IMG = "health-00to19.png";
+    private static final String HEALTH_UNKNOWN_IMG = "empty.png";
 
     /**
      * The percentage health score (from 0 to 100 inclusive).
      */
     private int score;
+
+    /**
+     * Icon class.
+     */
+    private String iconClassName;
 
     /**
      * The path to the icon corresponding to this health score or <code>null</code> to use the default icon
@@ -120,17 +130,28 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      */
     public HealthReport(int score, String iconUrl, Localizable description) {
         this.score = score;
+        if (score <= 20) {
+            this.iconClassName = HEALTH_0_TO_20;
+        } else if (score <= 40) {
+            this.iconClassName = HEALTH_21_TO_40;
+        } else if (score <= 60) {
+            this.iconClassName = HEALTH_41_TO_60;
+        } else if (score <= 80) {
+            this.iconClassName = HEALTH_61_TO_80;
+        } else {
+            this.iconClassName = HEALTH_OVER_80;
+        }
         if (iconUrl == null) {
             if (score <= 20) {
-                this.iconUrl = HEALTH_0_TO_20;
+                this.iconUrl = HEALTH_0_TO_20_IMG;
             } else if (score <= 40) {
-                this.iconUrl = HEALTH_21_TO_40;
+                this.iconUrl = HEALTH_21_TO_40_IMG;
             } else if (score <= 60) {
-                this.iconUrl = HEALTH_41_TO_60;
+                this.iconUrl = HEALTH_41_TO_60_IMG;
             } else if (score <= 80) {
-                this.iconUrl = HEALTH_61_TO_80;
+                this.iconUrl = HEALTH_61_TO_80_IMG;
             } else {
-                this.iconUrl = HEALTH_OVER_80;
+                this.iconUrl = HEALTH_OVER_80_IMG;
             }
         } else {
             this.iconUrl = iconUrl;
@@ -166,7 +187,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * Create a new HealthReport.
      */
     public HealthReport() {
-        this(100, HEALTH_UNKNOWN, Messages._HealthReport_EmptyString());
+        this(100, HEALTH_UNKNOWN_IMG, Messages._HealthReport_EmptyString());
     }
 
     /**
@@ -188,6 +209,8 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
         this.score = score;
     }
 
+
+
     /**
      * Getter for property 'iconUrl'.
      *
@@ -199,6 +222,16 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     }
 
     /**
+     * Get health status icon class.
+     *
+     * @return The health status icon class.
+     */
+    @Exported
+    public String getIconClassName() {
+        return iconClassName;
+    }
+
+    /**
      * Get's the iconUrl relative to the hudson root url, for the correct size.
      *
      * @param size The size, e.g. 32x32, 24x24 or 16x16.
@@ -206,7 +239,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      */
     public String getIconUrl(String size) {
         if (iconUrl == null) {
-            return Jenkins.RESOURCE_PATH + "/images/" + size + "/" + HEALTH_UNKNOWN;
+            return Jenkins.RESOURCE_PATH + "/images/" + size + "/" + HEALTH_UNKNOWN_IMG;
         }
         if (iconUrl.startsWith("/")) {
             return iconUrl.replace("/32x32/", "/" + size + "/");

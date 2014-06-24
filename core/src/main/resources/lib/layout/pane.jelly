@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     Used in the &lt;l:side-panel> to draw a box with a title.
 
@@ -48,15 +48,12 @@ THE SOFTWARE.
       Footer of the box. Can include HTML.
     </st:attribute>
   </st:documentation>
-
   <div class="container-fluid pane-frame" id="${attrs.id}">
     <div class="row">
       <div class="col-xs-24 pane-header">
         <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
            title="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}">
-          <img src="${imagesURL}/16x16/${h.isCollapsed(attrs.id) ? 'expand' : 'collapse'}.png"
-               class="icon16x16"
-               alt="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}"/>
+          <l:icon alt="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}" class="${h.isCollapsed(attrs.id) ? 'icon-expand' : 'icon-collapse'} icon-sm"/>
         </a>
         <j:out value="${title}"/>
       </div>

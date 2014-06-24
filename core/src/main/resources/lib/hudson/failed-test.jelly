@@ -85,10 +85,10 @@ THE SOFTWARE.
   <j:set var="open" value="javascript:showFailureSummary('test-${id}','${url}/summary')"/>
   <j:set var="close" value="javascript:hideFailureSummary('test-${id}')"/>
   <a id="test-${id}-showlink" href="${open}" title="${%Show details}">
-    <img src="${imagesURL}/16x16/document_add.png"/>
+    <l:icon class="icon-document-add icon-sm"/>
   </a>
   <a id="test-${id}-hidelink" href="${close}" title="${%Hide details}" style="display:none">
-    <img src="${imagesURL}/16x16/document_delete.png"/>
+    <l:icon class="icon-document-delete icon-sm"/>
   </a>
   <st:nbsp/>
   <a href="${url}" class="model-link inside"><st:out value="${result.fullDisplayName}"/></a>

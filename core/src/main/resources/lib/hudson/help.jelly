@@ -27,5 +27,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <a href="${href}">
-  <img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/>
+  <l:icon class="icon-help icon-sm" xmlns:l="/lib/layout"/>
 </a>

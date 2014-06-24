@@ -1,0 +1,5 @@
+<FindBugsFilter>
+    <Match>
+        <Class name="~.*\.Messages"/>
+    </Match>
+</FindBugsFilter>

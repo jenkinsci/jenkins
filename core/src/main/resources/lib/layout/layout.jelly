@@ -203,7 +203,7 @@ ${h.initPageVariables(context)}
           <div id="searchform">
             <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" value="${request.getParameter('q')}" />
             <st:nbsp />
-            <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" height="16" width="16" /></a>
+            <a href="${%searchBox.url}"><l:icon class="icon-help icon-sm" /></a>
             <div id="search-box-completion" />
             <script>createSearchBox("${searchURL}");</script>
           </div>
@@ -213,7 +213,7 @@ ${h.initPageVariables(context)}
     <div id="breadcrumbBar">
       <l:breadcrumbBar>
         <j:set var="mode" value="breadcrumbs" />
-        <d:invokeBody />
+        <d:invokeBody/>
       </l:breadcrumbBar>
     </div>
 
