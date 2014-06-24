@@ -1234,6 +1234,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return getIconColor().getImage();
     }
 
+    public String getBuildStatusIconClassName() {
+        return getIconColor().getIconClassName();
+    }
+
     public Graph getBuildTimeGraph() {
         return new Graph(getLastBuildTime(),500,400) {
             @Override

@@ -56,8 +56,8 @@ import hudson.tasks.test.TestResultProjectAction;
  * Jenkins show the option to wipe out the workspace inside the workspace link:
  *
  * <pre>
- * &lt;l:task icon="images/24x24/folder.gif"  href="${url}/ws/" title="${%Workspace}">
- *   &lt;l:task icon="images/24x24/folder-delete.gif"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
+ * &lt;l:task icon="icon-folder icon-md"  href="${url}/ws/" title="${%Workspace}">
+ *   &lt;l:task icon="icon-delete icon-md"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" />
  * &lt;/l:task>
  * </pre>
  *

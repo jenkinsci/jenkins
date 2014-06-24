@@ -1972,6 +1972,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return getIconColor().getImage();
     }
 
+    public String getBuildStatusIconClassName() {
+        return getIconColor().getIconClassName();
+    }
+
     public static class Summary {
         /**
          * Is this build worse or better, compared to the previous build?

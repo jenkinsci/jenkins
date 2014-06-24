@@ -30,7 +30,7 @@ THE SOFTWARE.
       <j:choose>
         <j:when test="${!it.installed}">
           <h1>
-            <img src="${imagesURL}/48x48/installer.png" alt="" height="48" width="48"/>
+            <l:icon class="icon-installer icon-xlg"/>
             ${%Install as Windows Service}
           </h1>
 
@@ -51,7 +51,7 @@ THE SOFTWARE.
         <!-- already installed -->
         <j:otherwise>
           <h1>
-            <img src="${imagesURL}/48x48/blue.png" alt="" height="48" width="48"/>
+            <l:icon class="icon-blue icon-xlg"/>
             ${%Installation Complete}
           </h1>
 

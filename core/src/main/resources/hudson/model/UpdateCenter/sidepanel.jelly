@@ -30,10 +30,10 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
+      <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
       <l:isAdmin>
-        <l:task icon="images/24x24/setting.png" href="${rootURL}/manage" title="${%Manage Jenkins}" />
-        <l:task icon="images/32x32/plugin.png" href="${rootURL}/pluginManager/" title="${%Manage Plugins}" />
+        <l:task href="${rootURL}/manage" icon="icon-setting icon-md" title="${%Manage Jenkins}"/>
+        <l:task href="${rootURL}/pluginManager/" icon="icon-plugin icon-lg" title="${%Manage Plugins}"/>
       </l:isAdmin>
     </l:tasks>
   </l:side-panel>

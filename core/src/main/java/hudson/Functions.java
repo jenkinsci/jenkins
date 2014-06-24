@@ -139,6 +139,7 @@ import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
@@ -225,6 +226,7 @@ public class Functions {
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
 
         context.setVariable("userAgent", currentRequest.getHeader("User-Agent"));
+        IconSet.initPageVariables(context);
     }
 
     /**
