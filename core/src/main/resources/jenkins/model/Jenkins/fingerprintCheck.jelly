@@ -26,12 +26,12 @@ THE SOFTWARE.
   New View page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <l:layout norefresh="true" title="${%Check File Fingerprint}">
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>
+        <l:icon name="fingerprint-48x48"/>
         ${%Check File Fingerprint}
       </h1>
       <f:form method="post" action="doFingerprintCheck" enctype="multipart/form-data">
@@ -44,7 +44,7 @@ THE SOFTWARE.
           <input type="file" name="name" class="setting-input" />
         </f:entry>
         <f:block>
-          <f:submit value="${%Check}" />
+          <f:submit value="${%Check}"/>
         </f:block>
       </f:form>
     </l:main-panel>

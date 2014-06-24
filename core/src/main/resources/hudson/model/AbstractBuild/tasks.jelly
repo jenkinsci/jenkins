@@ -27,9 +27,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/hudson/project">
-      <l:task icon="images/24x24/up.png" href="${it.upUrl}" title="${%Back to Project}" contextMenu="false"/>
-      <l:task icon="images/24x24/search.png" href="${buildUrl.baseUrl}/" title="${%Status}" contextMenu="false"/>
-      <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/changes" title="${%Changes}" />
+      <l:task icon="up-24x24" href="${it.upUrl}" title="${%Back to Project}" contextMenu="false"/>
+      <l:task icon="search-24x24" href="${buildUrl.baseUrl}/" title="${%Status}" contextMenu="false"/>
+      <l:task icon="notepad-24x24" href="${buildUrl.baseUrl}/changes" title="${%Changes}" />
       <p:console-link/>
-      <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/configure" title="${h.hasPermission(it,it.UPDATE)?'%Edit Build Information':'%View Build Information'}"/>
+      <l:task icon="notepad-24x24" href="${buildUrl.baseUrl}/configure" title="${h.hasPermission(it,it.UPDATE)?'%Edit Build Information':'%View Build Information'}"/>
 </j:jelly>

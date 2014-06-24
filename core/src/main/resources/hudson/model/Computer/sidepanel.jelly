@@ -30,13 +30,13 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.png" href=".." title="${%Back to List}" contextMenu="false"/>
-      <l:task icon="images/24x24/search.png" href="${rootURL}/${it.url}" title="${%Status}" contextMenu="false"/>
-      <l:task icon="images/24x24/edit-delete.png" href="delete" title="${%Delete Slave}" permission="${it.DELETE}" />
-      <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" permission="${it.CONFIGURE}" />
-      <l:task icon="images/24x24/notepad.png" href="builds" title="${%Build History}" />
-      <l:task icon="images/24x24/monitor.png" href="load-statistics" title="${%Load Statistics}" />
-      <l:task icon="images/24x24/terminal.png" href="script" title="${%Script Console}" permission="${app.RUN_SCRIPTS}" />
+      <l:task icon="up-24x24" href=".." title="${%Back to List}" contextMenu="false"/>
+      <l:task icon="search-24x24" href="${rootURL}/${it.url}" title="${%Status}" contextMenu="false"/>
+      <l:task icon="edit-delete-24x24" href="delete" title="${%Delete Slave}" permission="${it.DELETE}" />
+      <l:task icon="setting-24x24" href="configure" title="${%Configure}" permission="${it.CONFIGURE}" />
+      <l:task icon="notepad-24x24" href="builds" title="${%Build History}" />
+      <l:task icon="monitor-24x24" href="load-statistics" title="${%Load Statistics}" />
+      <l:task icon="terminal-24x24" href="script" title="${%Script Console}" permission="${app.RUN_SCRIPTS}" />
       <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
       <t:actions />
     </l:tasks>

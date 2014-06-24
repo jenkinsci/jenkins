@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     Used in the &lt;l:side-panel> to draw a box with a title.
 
@@ -48,9 +48,7 @@ THE SOFTWARE.
       <j:out value="${title}"/>
       <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}" 
          title="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}">
-        <img src="${imagesURL}/16x16/${h.isCollapsed(attrs.id) ? 'expand' : 'collapse'}.png" 
-             class="icon16x16" 
-             alt="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}" />
+        <l:icon name="${h.isCollapsed(attrs.id) ? 'expand' : 'collapse'}-16x16" />
       </a>
       </div>
     </td></tr>

@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <!--  this is loaded on demand in the failed test results summary -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:local="local" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <d:taglib uri="local">
     <d:tag name="item">
       <j:if test="${value!=null and !empty value}">
@@ -35,10 +35,10 @@ THE SOFTWARE.
         <j:set var="close" value="javascript:hideFailureSummary('${id}')"/>
         <h4>
           <a id="${id}-showlink" href="${open}" title="Show ${title}" style="display: ${idisplay}">
-            <img src="${imagesURL}/16x16/document_add.png"/><st:nbsp/>${title}
+            <l:icon name="document_add-16x16"/><st:nbsp/>${title}
           </a>
           <a id="${id}-hidelink" href="${close}" title="Hide ${title}" style="display: ${display}">
-            <img src="${imagesURL}/16x16/document_delete.png"/><st:nbsp/>${title}
+            <l:icon name="document_delete-16x16"/><st:nbsp/>${title}
           </a>
         </h4>
         <pre id="${id}" style="display: ${display}">

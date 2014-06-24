@@ -22,6 +22,6 @@
  * THE SOFTWARE.
  */
 
-img(src:"${imagesURL}/24x24/yellow.png",height:24,width:24)
-text(" ");
-text(my.message)
+raw("<div class='jenkins-icon yellow-24x24' icon-name='yellow-24x24'></div>");
+raw("&nbsp;")
+raw("<span class='text-align top'>" + my.message + '</span>')

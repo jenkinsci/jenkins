@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Side panel
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:header />
-  <l:side-panel>
-    <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
-    <l:tasks>
-      <l:task icon="up-24x24" href="${rootURL}/" title="${%Back to Dashboard}" />
-      <l:task icon="setting-24x24" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" />
-      <l:task icon="new-computer-24x24" href="new" title="${%New Node}" permission="${createPermission}" />
-      <l:task icon="setting-24x24" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
-    </l:tasks>
-    <t:queue items="${app.queue.approximateItemsQuickly}" />
-    <t:executors />
-  </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+
+  <st:documentation>
+    <st:attribute name="name" use="required">Icon name.</st:attribute>
+    <st:attribute name="tooltip">Tooltip (optional)</st:attribute>
+    <st:attribute name="style">Inline styles</st:attribute>
+    <st:attribute name="onclick">On-click Javascript.</st:attribute>
+  </st:documentation>
+
+  <j:choose>
+    <j:when test="${!name.contains('/')}">
+        <j:set var="normalizedIconName" value="${attrs.name.toLowerCase()}" />
+        <j:set var="normalizedIconName" value="${normalizedIconName.replace('.gif', '')}" />
+        <j:set var="normalizedIconName" value="${normalizedIconName.replace('.png', '')}" />
+        <div class="jenkins-icon ${normalizedIconName}" icon-name="${normalizedIconName}" tooltip="${attrs.tooltip}" style="${attrs.style}" onclick="${attrs.onclick}"/>
+    </j:when>
+    <j:otherwise>
+        <img src="${rootURL}${name}" style="${attrs.style}" onclick="${attrs.onclick}" alt="" />
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

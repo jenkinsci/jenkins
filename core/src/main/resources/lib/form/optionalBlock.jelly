@@ -73,22 +73,22 @@ THE SOFTWARE.
         </td>
         <j:if test="${attrs.help!=null}">
           <td>
-            <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
+            <a class="help-button" helpURL="${rootURL}${attrs.help}" href="#"><l:icon name="help-16x16"/></a>
           </td>
         </j:if>
       </tr>
       <j:if test="${attrs.help!=null}">
-        <f:helpArea />
+        <f:helpArea/>
       </j:if>
-      <tr class="rowvg-start" />
-      <d:invokeBody />
+      <tr class="rowvg-start"/>
+      <d:invokeBody/>
       <!-- end marker -->
-      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end" />
+      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end"/>
     </j:when>
 
     <j:otherwise>
       <f:rowSet name="${attrs.name}">
-        <d:invokeBody />
+        <d:invokeBody/>
       </f:rowSet>
     </j:otherwise>
   </j:choose>

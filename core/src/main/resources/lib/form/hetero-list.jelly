@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:local="local" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <st:documentation>
     Outer most tag for creating a heterogeneous list, where the user can choose arbitrary number of
     arbitrary items from the given list of descriptors, and configure them independently.
@@ -83,13 +83,13 @@ THE SOFTWARE.
             </td>
             <j:if test="${help!=null}">
               <td>
-                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
+                <a class="help-button" helpURL="${rootURL}${help}" href="#"><l:icon name="help-16x16"/></a>
               </td>
             </j:if>
           </tr>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
-            <f:helpArea />
+            <f:helpArea/>
           </j:if>
         </j:if>
 
@@ -98,7 +98,7 @@ THE SOFTWARE.
         <f:block>
           <div align="right">
             <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
-            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+            <f:repeatableDeleteButton value="${attrs.deleteCaption}"/>
           </div>
         </f:block>
       </table>
@@ -121,7 +121,7 @@ THE SOFTWARE.
       </div>
     </j:forEach>
 
-    <div class="repeatable-insertion-point" />
+    <div class="repeatable-insertion-point"/>
 
     <div class="prototypes to-be-removed">
       <!-- render one prototype for each type -->

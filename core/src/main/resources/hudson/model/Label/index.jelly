@@ -28,7 +28,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/attribute.png" width="48" height="48" alt=""/>
+        <l:icon name="attribute-48x48" />
         ${it.name}
       </h1>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
           <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
           <j:set var="url" value="${rootURL}/computer/${n.nodeName}"/>
           <nobr>
-            <a href="${url}"><img src="${imagesURL}/16x16/${c.icon}" width="16" height="16" alt=""/></a>
+            <a href="${url}"><l:icon name="${c.iconName}-16x16" /></a>
             <st:nbsp/>
             <a href="${url}" class="model-link inside">${c.displayName}</a>
           </nobr>

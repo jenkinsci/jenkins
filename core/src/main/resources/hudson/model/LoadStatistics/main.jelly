@@ -24,9 +24,9 @@ THE SOFTWARE.
 
 <!-- renders an HTML fragment that shows trend graph -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <h1>
-    <img src="${imagesURL}/48x48/monitor.png" alt="" height="48" width="48"/>
+    <l:icon name="monitor-48x48"/>
     ${%title(it.displayName)}
   </h1>
   <j:set var="type" value="${request.getParameter('type') ?: 'min'}" />
@@ -40,7 +40,7 @@ THE SOFTWARE.
         ${%Short}
       </j:otherwise>
     </j:choose>
-    <st:nbsp />
+    <st:nbsp/>
     <j:choose>
       <j:when test="${type != 'min'}">
         <a href="?type=min">${%Medium}</a>
@@ -49,7 +49,7 @@ THE SOFTWARE.
         ${%Medium}
       </j:otherwise>
     </j:choose>
-    <st:nbsp />
+    <st:nbsp/>
     <j:choose>
       <j:when test="${type != 'hour'}">
         <a href="?type=hour">${%Long}</a>

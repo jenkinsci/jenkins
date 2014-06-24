@@ -38,11 +38,8 @@ THE SOFTWARE.
                           <j:set var="onclick" value="return build_${id}(this)"/>
                       </j:otherwise>
                   </j:choose>
-                  <j:set var="icon" value="${app.queue.contains(job) ? 'clock_anime.gif' : 'clock.png'}"/>
-                  <img src="${imagesURL}/${subIconSize}/${icon}"
-                         title="${title}" alt="${title}"
-                         onclick="${onclick}"
-                         border="0"/>
+                  <j:set var="icon" value="${app.queue.contains(job) ? 'clock_anime' : 'clock'}"/>
+                  <l:icon name="${icon}-${subIconSize}" tooltip="${title}" onclick="${onclick}" />
               </a>
               <script>
                 function build_${id}(img) {

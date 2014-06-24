@@ -26,13 +26,13 @@ THE SOFTWARE.
   Display upstream/downstream projects
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:local="local" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <d:taglib uri="local">
     <d:tag name="relationship">
       <j:if test="${lhs.fingerprintConfigured and rhs.fingerprintConfigured}">
         <st:nbsp/>
         <a href="${rootURL}/projectRelationship?lhs=${lhs.name}&amp;rhs=${rhs.name}">
-          <img src="${imagesURL}/16x16/fingerprint.png" alt="check relationship" height="16" width="16"/>
+          <l:icon name="fingerprint-16x16"/>
         </a>
       </j:if>
     </d:tag>

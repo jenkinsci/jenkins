@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <st:documentation>
     Displays the build queue as &lt;l:pane>
 
@@ -80,7 +80,7 @@ THE SOFTWARE.
                   <j:if test="${stuck}">
                     &#160;
                     <a href="http://wiki.jenkins-ci.org/display/JENKINS/Executor+Starvation">
-                      <img src="${imagesURL}/16x16/hourglass.gif" height="16" width="16"/>
+                      <l:icon name="hourglass-16x16"/>
                     </a>
                   </j:if>
                 </j:when>

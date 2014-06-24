@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:i="jelly:fmt" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
   <st:documentation>
     Outer-most tag for a normal (non-AJAX) HTML rendering.
     This is used with nested &lt;header>, &lt;side-panel>, and &lt;main-panel>
@@ -53,11 +53,11 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
   </st:documentation>
-<st:setHeader name="Expires" value="0" />
-<st:setHeader name="Cache-Control" value="no-cache,must-revalidate" />
-<st:setHeader name="X-Hudson-Theme" value="default" />
-<st:setHeader name="X-Frame-Options" value="sameorigin" />
-<st:contentType value="text/html;charset=UTF-8" />
+<st:setHeader name="Expires" value="0"/>
+<st:setHeader name="Cache-Control" value="no-cache,must-revalidate"/>
+<st:setHeader name="X-Hudson-Theme" value="default"/>
+<st:setHeader name="X-Frame-Options" value="sameorigin"/>
+<st:contentType value="text/html;charset=UTF-8"/>
 
   <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
 ${h.initPageVariables(context)}
@@ -75,13 +75,14 @@ ${h.initPageVariables(context)}
       <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
     </j:forEach>
   </j:if>
-<x:doctype name="html" />
+<x:doctype name="html"/>
 <html>
   <head>
     ${h.checkPermission(it,permission)}
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/icons.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
@@ -95,27 +96,26 @@ ${h.initPageVariables(context)}
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
     <!-- we include our own prototype.js, so don't let stapler pull in another. -->
-    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"
-                includes="org.kohsuke.stapler.bind"/>
+    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype" includes="org.kohsuke.stapler.bind"/>
 
     <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
-    <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
-    <l:yui module="yahoo" />
-    <l:yui module="dom" />
-    <l:yui module="event" />
+    <j:set value="${h.yuiSuffix}" var="yuiSuffix"/>
+    <l:yui module="yahoo"/>
+    <l:yui module="dom"/>
+    <l:yui module="event"/>
     <j:if test="${h.yuiSuffix=='debug'}">
-      <l:yui module="logger" />
+      <l:yui module="logger"/>
     </j:if>
-    <l:yui module="animation" />
-    <l:yui module="dragdrop" />
-    <l:yui module="container" />
-    <l:yui module="connection" />
-    <l:yui module="datasource" />
-    <l:yui module="autocomplete" />
-    <l:yui module="menu" />
-    <l:yui module="element" />
-    <l:yui module="button" />
-    <l:yui module="storage" />
+    <l:yui module="animation"/>
+    <l:yui module="dragdrop"/>
+    <l:yui module="container"/>
+    <l:yui module="connection"/>
+    <l:yui module="datasource"/>
+    <l:yui module="autocomplete"/>
+    <l:yui module="menu"/>
+    <l:yui module="element"/>
+    <l:yui module="button"/>
+    <l:yui module="storage"/>
     <!--l:yui module="editor" suffix="-beta" /-->
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
@@ -137,7 +137,7 @@ ${h.initPageVariables(context)}
     </l:hasPermission>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
-    <d:invokeBody />
+    <d:invokeBody/>
     <j:forEach var="pd" items="${h.pageDecorators}">
       <st:include it="${pd}" page="header.jelly" optional="true" />
     </j:forEach>
@@ -163,9 +163,9 @@ ${h.initPageVariables(context)}
                 <div id="search-box-sizer"/>
                 <div id="searchform">
                   <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" value="${request.getParameter('q')}" />
-                  <st:nbsp />
-                  <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" height="16" width="16" /></a>
-                  <div id="search-box-completion" />
+                  <st:nbsp/>
+                  <a href="${%searchBox.url}"><l:icon name="help-16x16"/></a>
+                  <div id="search-box-completion"/>
                   <script>createSearchBox("${searchURL}");</script>
                 </div>
               </form>
@@ -193,7 +193,7 @@ ${h.initPageVariables(context)}
                     </span>
                   </j:when>
                   <j:otherwise>
-                    <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+                    <st:include it="${app.securityRealm}" page="loginLink.jelly"/>
                   </j:otherwise>
                 </j:choose>
               </j:if>
@@ -203,7 +203,7 @@ ${h.initPageVariables(context)}
       </tr>
       <l:breadcrumbBar>
         <j:set var="mode" value="breadcrumbs" />
-        <d:invokeBody />
+        <d:invokeBody/>
       </l:breadcrumbBar>
     </table>
     <table id="main-table" width="100%" height="70%" border="0"
@@ -213,7 +213,7 @@ ${h.initPageVariables(context)}
         <td id="side-panel" width="20%">
           <div id="navigation" style="min-height: 323px; height: auto !important; height: 323px;">
             <j:set var="mode" value="side-panel" />
-            <d:invokeBody />
+            <d:invokeBody/>
 
             <!-- add YUI logger if debugging YUI -->
             <j:if test="${h.yuiSuffix=='debug'}">

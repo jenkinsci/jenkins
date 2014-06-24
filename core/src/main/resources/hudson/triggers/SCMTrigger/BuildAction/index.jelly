@@ -26,21 +26,21 @@ THE SOFTWARE.
   Displays the polling log output
 -->
 <?jelly escape-by-default='true'?>
-<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.run.parent.displayName} #${it.run.number} ${%Polling Log}" norefresh="true">
-    <st:include it="${it.run}" page="sidepanel.jelly" />
+<st:compress xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <l:layout norefresh="true" title="${it.run.parent.displayName} #${it.run.number} ${%Polling Log}">
+    <st:include it="${it.run}" page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>${%Polling Log}</h1>
       <l:rightspace>
         <a href="pollingLog">
-          <img src="${imagesURL}/24x24/document.png" alt="" height="24" width="24" />${%View as plain text}
+          <l:icon name="document-24x24"/>${%View as plain text}
         </a>
       </l:rightspace>
 
       <p>${%blurb}</p>
       
       <pre>
-        <st:getOutput var="output" />
+        <st:getOutput var="output"/>
         <j:whitespace>${it.writePollingLogTo(0,output)}</j:whitespace>
       </pre>
     </l:main-panel>

@@ -44,14 +44,11 @@ THE SOFTWARE.
               <j:when  test="${!empty(healthReports)}">
                 <a class="build-health-link" href="${empty(link)?'#':link}" 
                     style="${attrs.style}">
-                    <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                         alt="${buildHealth.score}%" 
-                         class="build-health-icon icon${iconSize}"/>
+                    <l:icon name="${buildHealth.getIconName(iconSize)}" />
                 </a>
               </j:when>
               <j:otherwise>
-                 <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                      alt="${buildHealth.score}%" class="build-health-icon icon${iconSize}"/>
+                 <l:icon name="${buildHealth.getIconName(iconSize)}" />
                </j:otherwise>
              </j:choose>  
         </j:if>
@@ -69,8 +66,7 @@ THE SOFTWARE.
                         <j:forEach var="rpt" items="${job.buildHealthReports}">
                             <tr>
                                 <td align="left">
-                                    <img src="${rootURL}${rpt.getIconUrl('16x16')}" alt=""
-                                         title=""/>
+                                    <l:icon name="${rpt.getIconName('16x16')}" />
                                 </td>
                                 <td>${rpt.localizableDescription}</td>
                                 <td align="right">${rpt.score}</td>

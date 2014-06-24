@@ -23,9 +23,9 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <l:layout permission="${app.ADMINISTER}" title="${%Users}">
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>${%Users}</h1>
       <p>${%blurb}</p>
@@ -43,9 +43,9 @@ THE SOFTWARE.
             <td><a href="${user.url}/">${user.id}</a></td>
             <td><a href="${user.url}/">${user}</a></td>
             <td>
-              <a href="${user.url}/configure"><img src="${imagesURL}/32x32/setting.png" alt="Setting" height="32" width="32"/></a>
+              <a href="${user.url}/configure"><l:icon name="setting-32x32"/></a>
               <j:if test="${user.canDelete()}">
-                <a href="${user.url}/delete"><img src="${imagesURL}/24x24/edit-delete.png" alt="Delete" height="24" width="24"/></a>
+                <a href="${user.url}/delete"><l:icon name="edit-delete-24x24"/></a>
               </j:if>
             </td>
           </tr>

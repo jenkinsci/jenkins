@@ -1585,6 +1585,8 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                         pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
                     }
 
+                    layoutUpdateCallback.call();
+
                     // next update
                     bh.headers = ["n",rsp.getResponseHeader("n")];
                     window.setTimeout(updateBuilds, 5000);

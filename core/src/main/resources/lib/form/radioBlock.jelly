@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <st:documentation>on
     Radio button with a label that hides additional controls.
     When checked, those additional controls are displayed. This is useful
@@ -64,14 +64,14 @@ THE SOFTWARE.
     </td>
     <j:if test="${attrs.help!=null}">
       <td>
-        <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
+        <a class="help-button" helpURL="${rootURL}${help}" href="#"><l:icon name="help-16x16"/></a>
       </td>
     </j:if>
 	</tr>
   <j:if test="${attrs.help!=null}">
-    <f:helpArea />
+    <f:helpArea/>
   </j:if>
-	<d:invokeBody />
+	<d:invokeBody/>
 	<!-- end marker -->
-	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none" />
+	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none"/>
 </j:jelly>

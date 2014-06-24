@@ -24,156 +24,157 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
-  <st:documentation>
-    This tag inside &lt;l:tasks> tag renders the left navigation bar of Hudson.
-    Each &lt;task> tag gets an icon and link.
+    <st:documentation>
+        This tag inside &lt;l:tasks> tag renders the left navigation bar of Hudson.
+        Each &lt;task> tag gets an icon and link.
 
-    <st:attribute name="href" use="required">
-      Link target. Relative to the current page.
-    </st:attribute>
-    <st:attribute name="icon" use="required">
-      URL to the icon, which should be 24x24 in size.
-      It's relative to the context path of Hudson.
+        <st:attribute name="href" use="required">
+            Link target. Relative to the current page.
+        </st:attribute>
+        <st:attribute name="icon" use="required">
+            URL to the icon, which should be 24x24 in size.
+            It's relative to the context path of Hudson.
 
-      The common values include:
+            The common values include:
 
-      # "images/24x24/..." then points to the stock icon resources
-      # "plugin/foobar/abc/def.png" that points to "src/main/webapp/abc/def.png" in your plugin resources
-    </st:attribute>
-    <st:attribute name="title" use="required">
-      Human readable text that follows the icon.
-    </st:attribute>
-    <st:attribute name="enabled">
-      If specified, then this controls whether the task is enabled or not.
-    </st:attribute>
-    <st:attribute name="contextMenu" type="boolean">
-      If "false", remove this item from the context menu.
-    </st:attribute>
-    <st:attribute name="permission">
-      If specified, the link will be only displayed when the current user
-      has the specified permission against the "it" object.
+            # "images/24x24/..." then points to the stock icon resources
+            # "plugin/foobar/abc/def.png" that points to "src/main/webapp/abc/def.png" in your plugin resources
+        </st:attribute>
+        <st:attribute name="title" use="required">
+            Human readable text that follows the icon.
+        </st:attribute>
+        <st:attribute name="enabled">
+            If specified, then this controls whether the task is enabled or not.
+        </st:attribute>
+        <st:attribute name="contextMenu" type="boolean">
+            If "false", remove this item from the context menu.
+        </st:attribute>
+        <st:attribute name="permission">
+            If specified, the link will be only displayed when the current user
+            has the specified permission against the "it" object.
 
-      This is useful for showing links to restricted pages, as showing
-      them to unprivileged users don't make sense.
-    </st:attribute>
-    <st:attribute name="post" type="boolean">
-      If true, send a POST rather than a GET request.
-      (onclick supersedes this except in the context menu.)
-      (since 1.504)
-    </st:attribute>
-    <st:attribute name="requiresConfirmation" type="boolean">
-      If true, require confirmation before clicking.
-      Generally used with post="true".
-      (onclick supersedes this except in the context menu.)
-      (since 1.512)
-    </st:attribute>
-    <st:attribute name="confirmationMessage">
-      Message to use for confirmation, if requested; defaults to title.
-      (since 1.512)
-    </st:attribute>
-  </st:documentation>
+            This is useful for showing links to restricted pages, as showing
+            them to unprivileged users don't make sense.
+        </st:attribute>
+        <st:attribute name="post" type="boolean">
+            If true, send a POST rather than a GET request.
+            (onclick supersedes this except in the context menu.)
+            (since 1.504)
+        </st:attribute>
+        <st:attribute name="requiresConfirmation" type="boolean">
+            If true, require confirmation before clicking.
+            Generally used with post="true".
+            (onclick supersedes this except in the context menu.)
+            (since 1.512)
+        </st:attribute>
+        <st:attribute name="confirmationMessage">
+            Message to use for confirmation, if requested; defaults to title.
+            (since 1.512)
+        </st:attribute>
+    </st:documentation>
 
-  <!--
-    Much of the following horrible code is to implement hierarchy support in <task> tag.
-    The semantics is that when one of the nested <task> matches, the parent is also considered as a match
-    and thus gets a highlight.
-  -->
-  <j:set var="match" value="${h.hyperlinkMatchesCurrentPage(href)}" />
-  <j:scope>
-    <j:set var="taskMatching" value="${context.parent}"/>
-    <d:invokeBody />
-  </j:scope>
+    <!--
+      Much of the following horrible code is to implement hierarchy support in <task> tag.
+      The semantics is that when one of the nested <task> matches, the parent is also considered as a match
+      and thus gets a highlight.
+    -->
+    <j:set var="match" value="${h.hyperlinkMatchesCurrentPage(href)}" />
+    <j:scope>
+        <j:set var="taskMatching" value="${context.parent}"/>
+        <d:invokeBody />
+    </j:scope>
 
-  <j:if test="${attrs.permission==null or h.hasPermission(it,attrs.permission)}">
-    <j:choose>
-      <j:when test="${taskMatching!=null}">
-        <j:if test="${match}">
-          <j:set target="${taskMatching.variables}" property="match" value="true"/>
-        </j:if>
-      </j:when>
-      <j:when test="${enabled==false}">
-        <div class="task disabled">
-          <span>
-            <img width="24" height="24" style="margin: 2px;" alt="" src="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
-          </span>
-          <st:nbsp />
+    <j:if test="${attrs.permission==null or h.hasPermission(it,attrs.permission)}">
+        <j:choose>
+            <j:when test="${taskMatching!=null}">
+                <j:if test="${match}">
+                    <j:set target="${taskMatching.variables}" property="match" value="true"/>
+                </j:if>
+            </j:when>
+            <j:when test="${enabled==false}">
+                <div class="task disabled">
+                    <span>
+                        <j:set var="icon" value="${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
+                        <l:icon name="${h.toIconName(icon, '24x24')}" style="width: 24px; height: 24px" />
+                    </span>
+                    <st:nbsp />
 
-          <span>
-            <j:choose>
-              <j:when test="${match}">
-                <b>${title}</b>
-              </j:when>
-              <j:otherwise>
-                ${title}
-              </j:otherwise>
-            </j:choose>
-          </span>
-        </div>
-      </j:when>
-      <j:otherwise>
-        <div class="task">
-          <j:set var="icon" value="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
-          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
-
-          <j:set var="id" value="${h.generateId()}"/>
-          <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
-              <script>
-                  function postRequest_${id}(a) {
-                      new Ajax.Request(a.href);
-                      hoverNotification('${%Done.}', a.parentNode);
-                      return false;
-                  }
-              </script>
-          </j:if>
-
-          <j:choose>
-            <j:when test="${requiresConfirmation and not attrs.onClick}">
-              <l:confirmationLink href="${href}" post="${post}" message="${confirmationMessage ?: title}">
-                <img class="task-icon" width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
-              </l:confirmationLink>
+                    <span>
+                        <j:choose>
+                            <j:when test="${match}">
+                                <b>${title}</b>
+                            </j:when>
+                            <j:otherwise>
+                                ${title}
+                            </j:otherwise>
+                        </j:choose>
+                    </span>
+                </div>
             </j:when>
             <j:otherwise>
-              <a href="${href}" class="task-icon-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
-                <img class="task-icon" width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
-              </a>
-            </j:otherwise>
-          </j:choose>
-          <st:nbsp />
+                <div class="task">
+                    <j:set var="icon" value="${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
+                    ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
 
-          <j:choose>
-            <j:when test="${requiresConfirmation and not attrs.onClick}">
-              <l:confirmationLink class="task-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
-                <j:choose>
-                  <j:when test="${match}">
-                    <b>${title}</b>
-                  </j:when>
-                  <j:otherwise>
-                    ${title}
-                  </j:otherwise>
-                </j:choose>
-              </l:confirmationLink>
-            </j:when>
-            <j:otherwise>
-              <a href="${href}" class="task-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
-                <j:choose>
-                  <j:when test="${match}">
-                    <b>${title}</b>
-                  </j:when>
-                  <j:otherwise>
-                    ${title}
-                  </j:otherwise>
-                </j:choose>
-              </a>
-            </j:otherwise>
-          </j:choose>
+                    <j:set var="id" value="${h.generateId()}"/>
+                    <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
+                        <script>
+                            function postRequest_${id}(a) {
+                                new Ajax.Request(a.href);
+                                hoverNotification('${%Done.}', a.parentNode);
+                                return false;
+                            }
+                        </script>
+                    </j:if>
 
-          <j:if test="${match}">
-            <div class="subtasks">
-              <d:invokeBody />
-            </div>
-          </j:if>
-        </div>
-      </j:otherwise>
-    </j:choose>
-  </j:if>
+                    <j:choose>
+                        <j:when test="${requiresConfirmation and not attrs.onClick}">
+                            <l:confirmationLink href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                                <l:icon name="${h.toIconName(icon, '24x24')}" style="margin: 2px; width: 24px; height: 24px" />
+                            </l:confirmationLink>
+                        </j:when>
+                        <j:otherwise>
+                            <a href="${href}" class="task-icon-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
+                                <l:icon name="${h.toIconName(icon, '24x24')}" style="margin: 2px; width: 24px; height: 24px" />
+                            </a>
+                        </j:otherwise>
+                    </j:choose>
+                    <st:nbsp />
+
+                    <j:choose>
+                        <j:when test="${requiresConfirmation and not attrs.onClick}">
+                            <l:confirmationLink class="task-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                                <j:choose>
+                                    <j:when test="${match}">
+                                        <b>${title}</b>
+                                    </j:when>
+                                    <j:otherwise>
+                                        ${title}
+                                    </j:otherwise>
+                                </j:choose>
+                            </l:confirmationLink>
+                        </j:when>
+                        <j:otherwise>
+                            <a href="${href}" class="task-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
+                                <j:choose>
+                                    <j:when test="${match}">
+                                        <b>${title}</b>
+                                    </j:when>
+                                    <j:otherwise>
+                                        ${title}
+                                    </j:otherwise>
+                                </j:choose>
+                            </a>
+                        </j:otherwise>
+                    </j:choose>
+
+                    <j:if test="${match}">
+                        <div class="subtasks">
+                            <d:invokeBody />
+                        </div>
+                    </j:if>
+                </div>
+            </j:otherwise>
+        </j:choose>
+    </j:if>
 </j:jelly>

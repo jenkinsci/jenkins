@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <st:documentation>
     Expandable section that shows "advanced..." button by default.
     Upon clicking it, a section unfolds, and the HTML rendered by the body of this tag
@@ -47,7 +47,7 @@ THE SOFTWARE.
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
               <j:set var="id" value="${h.generateId()}"/>
               <span style="display: none" id="${id}">
-                <img src="${imagesURL}/16x16/document_edit.png" style="vertical-align: super" alt="${%customizedFields}" tooltip="${%customizedFields}"/>
+                <l:icon name="document_edit-16x16" style="vertical-align: super" tooltip="${%customizedFields}"/>
               </span>
 	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->
 	    </div>

@@ -44,6 +44,8 @@ import org.jvnet.hudson.test.Bug;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+
+import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -339,4 +341,11 @@ public class FunctionsTest {
         assertEquals("Bad input &lt;xml/>\n", Functions.printLogRecordHtml(lr, null)[3]);
     }
 
+    @Test
+    public void testToIconName() {
+        assertEquals("computer-24x24", Functions.toIconName("computer.png"));
+        assertEquals("computer-16x16", Functions.toIconName("computer-16x16"));
+        assertEquals("computer-16x16", Functions.toIconName("images/16x16/computer.png"));
+        assertEquals("blue_anime-16x16", Functions.toIconName("images/16x16/blue_anime.gif"));
+    }
 }

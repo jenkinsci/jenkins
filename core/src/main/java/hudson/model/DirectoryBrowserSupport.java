@@ -412,11 +412,20 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             return title;
         }
 
-        public String getIconName() {
+        public String getIconBaseName() {
             if (isReadable)
-                return isFolder?"folder.png":"text.png";
+                return isFolder?"folder":"text";
             else
-                return isFolder?"folder-error.png":"text-error.png";
+                return isFolder?"folder-error":"text-error";
+        }
+
+        public String getIconFileName() {
+            return getIconBaseName() + ".png";
+        }
+
+        @Deprecated()
+        public String getIconName() {
+            return getIconFileName();
         }
 
         public long getSize() {
