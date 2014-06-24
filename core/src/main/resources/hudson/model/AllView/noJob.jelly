@@ -27,7 +27,9 @@ THE SOFTWARE.
   <!--
     This is a good place to add "welcome" materials, like pointers to the website and etc
   -->
-  ${%Welcome to Jenkins!}
+  <h1>${%Welcome to Jenkins!}</h1>
+
+  <div class="call-to-action">
   <j:choose xmlns:j="jelly:core">
     <!-- Only show the create new jobs link to those users that have permission to use it. -->
     <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
@@ -45,5 +47,6 @@ THE SOFTWARE.
       </j:if>
     </j:otherwise>
   </j:choose>
+  </div>
 
 </div>
