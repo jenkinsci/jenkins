@@ -28,9 +28,11 @@ import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Failure;
+import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
@@ -41,6 +43,8 @@ import hudson.model.FreeStyleProject;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
+import hudson.slaves.ComputerListener;
+import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 
 import org.junit.Assert;
@@ -51,6 +55,9 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.JenkinsRule.DummySecurityRealm;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -384,4 +391,17 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         return new Failure("My car is black");
     }
 
+    @Bug(23551)
+    public void testComputerListenerNotifiedOnRestart() {
+        // Simulate restart calling listeners
+        for (RestartListener listener : RestartListener.all())
+            listener.onRestart();
+
+        ArgumentCaptor<OfflineCause> captor = ArgumentCaptor.forClass(OfflineCause.class);
+        Mockito.verify(listenerMock).onOffline(Mockito.eq(jenkins.toComputer()), captor.capture());
+        assertTrue(captor.getValue().toString().contains("restart"));
+    }
+
+    @TestExtension(value = "testComputerListenerNotifiedOnRestart")
+    public static final ComputerListener listenerMock = Mockito.mock(ComputerListener.class);
 }

@@ -3329,6 +3329,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }.start();
     }
 
+    @Extension @Restricted(NoExternalUse.class)
+    public static class MasterRestartNotifyier extends RestartListener {
+
+        @Override
+        public void onRestart() {
+            Computer computer = Jenkins.getInstance().toComputer();
+            if (computer == null) return;
+            RestartCause cause = new RestartCause();
+            for (ComputerListener listener: ComputerListener.all()) {
+                listener.onOffline(computer, cause);
+            }
+        }
+
+        @Override
+        public boolean isReadyToRestart() throws IOException, InterruptedException {
+            return true;
+        }
+
+        private static class RestartCause extends OfflineCause.SimpleOfflineCause {
+            protected RestartCause() {
+                super(Messages._Jenkins_IsRestarting());
+            }
+        }
+    }
+
     /**
      * Shutdown the system.
      * @since 1.161
