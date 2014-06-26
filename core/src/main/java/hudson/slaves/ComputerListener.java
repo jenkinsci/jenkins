@@ -165,7 +165,7 @@ public abstract class ComputerListener implements ExtensionPoint {
     /**
      * Called right after a {@link Computer} went offline.
      *
-     * @deprecated since TODO. Use {@link #onOffline(Computer, OfflineCause)} instead.
+     * @deprecated since 1.571. Use {@link #onOffline(Computer, OfflineCause)} instead.
      */
     @Deprecated
     public void onOffline(Computer c) {}
@@ -173,7 +173,7 @@ public abstract class ComputerListener implements ExtensionPoint {
     /**
      * Called right after a {@link Computer} went offline.
      *
-     * @since TODO
+     * @since 1.571
      */
     public void onOffline(@Nonnull Computer c, @CheckForNull OfflineCause cause) {
         onOffline(c);
