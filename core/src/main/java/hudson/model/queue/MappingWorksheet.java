@@ -159,9 +159,12 @@ public class MappingWorksheet {
             assert capacity() >= wc.size();
             int e = 0;
             for (SubTask s : wc) {
-                while (!get(e).isAvailable())
+                while (e < size() && !get(e).isAvailable()) {
                     e++;
-                get(e++).set(wuc.createWorkUnit(s));
+		}
+		if (e < size()) {
+                    get(e++).set(wuc.createWorkUnit(s));
+		}
             }
         }
     }
