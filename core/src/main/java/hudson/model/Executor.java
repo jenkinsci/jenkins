@@ -59,16 +59,19 @@ import java.util.logging.Logger;
 import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 
 /**
  * Thread that executes builds.
- *
+ * Since 1.536, {@link Executor}s start threads on-demand. 
+ * The entire logic should use {@link #isActive()} instead of {@link #isAlive()} 
+ * in order to check if the {@link Executor} it ready to take tasks.
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
 public class Executor extends Thread implements ModelObject {
-    protected final Computer owner;
+    protected final @Nonnull Computer owner;
     private final Queue queue;
 
     private long startTime;
@@ -109,7 +112,7 @@ public class Executor extends Thread implements ModelObject {
      */
     private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
 
-    public Executor(Computer owner, int n) {
+    public Executor(@Nonnull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
         this.queue = Jenkins.getInstance().getQueue();
@@ -345,6 +348,15 @@ public class Executor extends Thread implements ModelObject {
         return executable!=null;
     }
 
+    /**
+     * Check if executor is ready to accept tasks.
+     * This method becomes the critical one since 1.536, which introduces the
+     * on-demand creation of executor threads. The entire logic should use 
+     * this method instead of {@link #isAlive()}, because it provides wrong
+     * information for non-started threads.
+     * @return True if the executor is available for tasks
+     * @since 1.536
+     */
     public boolean isActive() {
         return !started || isAlive();
     }
@@ -523,7 +535,7 @@ public class Executor extends Thread implements ModelObject {
         return e!=null && Tasks.getOwnerTaskOf(getParentOf(e)).hasAbortPermission();
     }
 
-    public Computer getOwner() {
+    public @Nonnull Computer getOwner() {
         return owner;
     }
 

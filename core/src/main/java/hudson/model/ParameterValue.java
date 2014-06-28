@@ -279,6 +279,16 @@ public abstract class ParameterValue implements Serializable {
     }
 
     /**
+     * Returns the most natural Java object that represents the actual value, like
+     * boolean, string, etc.
+     *
+     * If there's nothing that really fits the bill, the callee can return {@code this}.
+     */
+    public Object getValue() {
+        return null;
+    }
+
+    /**
      * Controls where the build (that this parameter is submitted to) will happen.
      *
      * @return

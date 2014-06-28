@@ -9,6 +9,9 @@ import jenkins.model.Jenkins;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 /**
  * Hides {@link Descriptor}s from users.
  *
@@ -17,6 +20,8 @@ import java.util.List;
  * @see ExtensionFilter
  */
 public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(DescriptorVisibilityFilter.class.getName());
 
     /**
      * Decides if the given descriptor should be visible to the user.
@@ -46,9 +51,19 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
         
         OUTER:
         for (T d : source) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Determining visibility of " + d + " in context " + context);
+            }
             for (DescriptorVisibilityFilter f : filters) {
-                if (!f.filter(context,d))
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("Querying " + f + " for visibility of " + d + " in " + context);
+                }
+                if (!f.filter(context,d)) {
+                    if (LOGGER.isLoggable(Level.CONFIG)) {
+                       LOGGER.config("Filter " + f + " hides " + d + " in context " + context);
+                    }
                     continue OUTER; // veto-ed. not shown
+                }
             }
             r.add(d);
         }

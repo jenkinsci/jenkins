@@ -847,6 +847,7 @@ var jenkinsRules = {
                 editor.DOMReady=true;
                 editor.fireQueue();
                 editor.render();
+                layoutUpdateCallback.call();
             } catch(e) {
                 alert(e);
             }
@@ -873,6 +874,7 @@ var jenkinsRules = {
                 ev = Event.getEvent(ev);
                 function max(a,b) { if(a<b) return b; else return a; }
                 s.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
+                layoutUpdateCallback.call();
                 return false;
             };
             document.onmouseup = function() {

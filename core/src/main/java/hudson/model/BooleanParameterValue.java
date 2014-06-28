@@ -48,6 +48,11 @@ public class BooleanParameterValue extends ParameterValue {
         this.value = value;
     }
 
+    @Override
+    public Boolean getValue() {
+        return value;
+    }
+
     /**
      * Exposes the name/value as an environment variable.
      */

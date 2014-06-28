@@ -114,6 +114,9 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import javax.annotation.CheckForNull;
@@ -280,6 +283,7 @@ public class Queue extends ResourceController implements Saveable {
             return workUnit == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
         }
 
+        @CheckForNull
         public Node getNode() {
             return executor.getOwner().getNode();
         }
@@ -736,6 +740,8 @@ public class Queue extends ResourceController implements Saveable {
 
     private void _getBuildableItems(Computer c, ItemList<BuildableItem> col, List<BuildableItem> result) {
         Node node = c.getNode();
+        if (node == null)   // Deleted computers cannot take build items... 
+            return;
         for (BuildableItem p : col.values()) {
             if (node.canTake(p) == null)
                 result.add(p);
@@ -1401,6 +1407,16 @@ public class Queue extends ResourceController implements Saveable {
             if (ca!=null)
                 return Collections.unmodifiableList(ca.getCauses());
             return Collections.emptyList();
+        }
+
+        @Restricted(DoNotUse.class) // used from Jelly
+        public String getCausesDescription() {
+            List<Cause> causes = getCauses();
+            StringBuilder s = new StringBuilder();
+            for (Cause c : causes) {
+                s.append(c.getShortDescription()).append('\n');
+            }
+            return s.toString();
         }
 
         protected Item(Task task, List<Action> actions, int id, FutureImpl future) {

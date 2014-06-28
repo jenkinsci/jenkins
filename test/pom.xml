@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.564-SNAPSHOT</version>
+    <version>1.571-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -103,9 +103,9 @@ THE SOFTWARE.
       <version>6.1.26</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
       <scope>compile</scope>
       <!-- in this module we need this as a compile scope, whereas in the parent it's test -->
     </dependency>
@@ -192,7 +192,7 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>-Dfile.encoding=UTF-8 -XX:MaxPermSize=128m</argLine>
+          <argLine>-Dfile.encoding=UTF-8 -Xmx256m -XX:MaxPermSize=128m</argLine>
           <systemPropertyVariables>
               <!-- use AntClassLoader that supports predictable file handle release -->
               <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>

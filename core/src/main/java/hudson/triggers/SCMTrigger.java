@@ -24,26 +24,26 @@
 package hudson.triggers;
 
 import antlr.ANTLRException;
-import hudson.Util;
 import hudson.Extension;
+import hudson.Util;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Cause;
-import hudson.util.IOUtils;
-import jenkins.model.Jenkins;
-import hudson.model.Item;
-import hudson.model.Project;
-import hudson.model.SCMedItem;
 import hudson.model.AdministrativeMonitor;
+import hudson.model.Cause;
+import hudson.model.CauseAction;
+import hudson.model.Item;
 import hudson.model.Run;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
+import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
+import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
-import hudson.util.SequentialExecutionQueue;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.kohsuke.accmod.Restricted;
@@ -55,19 +55,25 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.text.DateFormat;
 import java.util.concurrent.ThreadFactory;
-
+import java.util.logging.Level;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import jenkins.model.RunAction2;
+import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -87,7 +93,7 @@ import javax.annotation.Nonnull;
  *
  * @author Kohsuke Kawaguchi
  */
-public class SCMTrigger extends Trigger<SCMedItem> {
+public class SCMTrigger extends Trigger<Item> {
     
     private boolean ignorePostCommitHooks;
     
@@ -197,7 +203,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public boolean isApplicable(Item item) {
-            return item instanceof SCMedItem;
+            return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(item) != null;
         }
 
         public ExecutorService getExecutor() {
@@ -227,11 +233,9 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             return Util.filter(queue.getInProgress(),Runner.class);
         }
 
-        /**
-         * Gets the snapshot of {@link SCMedItem}s that are being polled at this very moment.
-         */
-        public List<SCMedItem> getItemsBeingPolled() {
-            List<SCMedItem> r = new ArrayList<SCMedItem>();
+         // originally List<SCMedItem> but known to be used only for logging, in which case the instances are not actually cast to SCMedItem anyway
+        public List<SCMTriggerItem> getItemsBeingPolled() {
+            List<SCMTriggerItem> r = new ArrayList<SCMTriggerItem>();
             for (Runner i : getRunners())
                 r.add(i.getTarget());
             return r;
@@ -263,6 +267,16 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             maximumThreads = n;
 
             resizeThreadPool();
+        }
+
+        @Restricted(NoExternalUse.class)
+        public boolean isPollingThreadCountOptionVisible() {
+            // unless you have a fair number of projects, this option is likely pointless.
+            // so let's hide this option for new users to avoid confusing them
+            // unless it was already changed
+            // TODO switch to check for SCMTriggerItem
+            return Jenkins.getInstance().getAllItems(AbstractProject.class).size() > 10
+                    || getPollingThreadCount() != 0;
         }
 
         /**
@@ -304,23 +318,41 @@ public class SCMTrigger extends Trigger<SCMedItem> {
     }
 
     /**
-     * Associated with {@link AbstractBuild} to show the polling log
+     * Associated with {@link Run} to show the polling log
      * that triggered that build.
      *
      * @since 1.376
      */
     public static class BuildAction implements RunAction2 {
+        private transient /*final*/ Run<?,?> run;
+        @Deprecated
         public transient /*final*/ AbstractBuild build;
 
+        /**
+         * @since 1.568
+         */
+        public BuildAction(Run<?,?> run) {
+            this.run = run;
+            build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
+        }
+        
+        @Deprecated
         public BuildAction(AbstractBuild build) {
-            this.build = build;
+            this((Run) build);
+        }
+
+        /**
+         * @since 1.568
+         */
+        public Run<?,?> getRun() {
+            return run;
         }
 
         /**
          * Polling log that triggered the build.
          */
         public File getPollingLogFile() {
-            return new File(build.getRootDir(),"polling.log");
+            return new File(run.getRootDir(),"polling.log");
         }
 
         public String getIconFileName() {
@@ -366,16 +398,25 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         @Override public void onLoad(Run<?, ?> r) {
-            build = (AbstractBuild) r;
+            run = r;
+            build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         }
     }
 
     /**
-     * Action object for {@link Project}. Used to display the last polling log.
+     * Action object for job. Used to display the last polling log.
      */
     public final class SCMAction implements Action {
         public AbstractProject<?,?> getOwner() {
-            return job.asProject();
+            Item item = getItem();
+            return item instanceof AbstractProject ? ((AbstractProject) item) : null;
+        }
+
+        /**
+         * @since 1.568
+         */
+        public Item getItem() {
+            return job().asItem();
         }
 
         public String getIconFileName() {
@@ -383,7 +424,11 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         public String getDisplayName() {
-            return Messages.SCMTrigger_getDisplayName(job.getScm().getDescriptor().getDisplayName());
+            Set<SCMDescriptor<?>> descriptors = new HashSet<SCMDescriptor<?>>();
+            for (SCM scm : job().getSCMs()) {
+                descriptors.add(scm.getDescriptor());
+            }
+            return descriptors.size() == 1 ? Messages.SCMTrigger_getDisplayName(descriptors.iterator().next().getDisplayName()) : Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
         public String getUrlName() {
@@ -438,9 +483,10 @@ public class SCMTrigger extends Trigger<SCMedItem> {
 
         /**
          * For which {@link Item} are we polling?
+         * @since 1.568
          */
-        public SCMedItem getTarget() {
-            return job;
+        public SCMTriggerItem getTarget() {
+            return job();
         }
 
         /**
@@ -467,7 +513,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                     PrintStream logger = listener.getLogger();
                     long start = System.currentTimeMillis();
                     logger.println("Started on "+ DateFormat.getDateTimeInstance().format(new Date()));
-                    boolean result = job.poll(listener).hasChanges();
+                    boolean result = job().poll(listener).hasChanges();
                     logger.println("Done. Took "+ Util.getTimeSpanString(System.currentTimeMillis()-start));
                     if(result)
                         logger.println("Changes found");
@@ -497,7 +543,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             try {
                 startTime = System.currentTimeMillis();
                 if(runPolling()) {
-                    AbstractProject p = job.asProject();
+                    SCMTriggerItem p = job();
                     String name = " #"+p.getNextBuildNumber();
                     SCMTriggerCause cause;
                     try {
@@ -506,10 +552,13 @@ public class SCMTrigger extends Trigger<SCMedItem> {
                         LOGGER.log(WARNING, "Failed to parse the polling log",e);
                         cause = new SCMTriggerCause();
                     }
-                    if(p.scheduleBuild(p.getQuietPeriod(), cause, additionalActions)) {
-                        LOGGER.info("SCM changes detected in "+ job.getName()+". Triggering "+name);
+                    Action[] queueActions = new Action[additionalActions.length + 1];
+                    queueActions[0] = new CauseAction(cause);
+                    System.arraycopy(additionalActions, 0, queueActions, 1, additionalActions.length);
+                    if (p.scheduleBuild2(p.getQuietPeriod(), queueActions) != null) {
+                        LOGGER.info("SCM changes detected in "+ job.getFullDisplayName()+". Triggering "+name);
                     } else {
-                        LOGGER.info("SCM changes detected in "+ job.getName()+". Job is already in the queue");
+                        LOGGER.info("SCM changes detected in "+ job.getFullDisplayName()+". Job is already in the queue");
                     }
                 }
             } finally {
@@ -517,20 +566,22 @@ public class SCMTrigger extends Trigger<SCMedItem> {
             }
         }
 
-        private SCMedItem job() {
-            return job;
-        }
-
         // as per the requirement of SequentialExecutionQueue, value equality is necessary
         @Override
         public boolean equals(Object that) {
-            return that instanceof Runner && job()==((Runner)that).job();
+            return that instanceof Runner && job == ((Runner) that)._job();
         }
+        private Item _job() {return job;}
 
         @Override
         public int hashCode() {
             return job.hashCode();
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    private SCMTriggerItem job() {
+        return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
     }
 
     public static class SCMTriggerCause extends Cause {
@@ -540,7 +591,7 @@ public class SCMTrigger extends Trigger<SCMedItem> {
          */
         private String pollingLog;
 
-        private transient AbstractBuild<?, ?>  build;
+        private transient Run run;
 
         public SCMTriggerCause(File logFile) throws IOException {
             // TODO: charset of this log file?
@@ -560,13 +611,13 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         @Override
-        public void onLoad(@Nonnull AbstractBuild<?, ?> build) {
-            this.build = build;
+        public void onLoad(Run run) {
+            this.run = run;
         }
 
         @Override
-        public void onAddedTo(AbstractBuild build) {
-            this.build = build;
+        public void onAddedTo(Run build) {
+            this.run = build;
             try {
                 BuildAction a = new BuildAction(build);
                 FileUtils.writeStringToFile(a.getPollingLogFile(),pollingLog);
@@ -583,8 +634,8 @@ public class SCMTrigger extends Trigger<SCMedItem> {
         }
 
         @Restricted(DoNotUse.class)
-        public AbstractBuild<?, ?> getBuild() {
-            return this.build;
+        public Run getRun() {
+            return this.run;
         }
 
         @Override

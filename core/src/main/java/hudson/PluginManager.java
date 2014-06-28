@@ -412,11 +412,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     public void dynamicLoad(File arc) throws IOException, InterruptedException, RestartRequiredException {
         LOGGER.info("Attempting to dynamic load "+arc);
-        final PluginWrapper p = strategy.createPluginWrapper(arc);
-        String sn = p.getShortName();
+        PluginWrapper p = null;
+        String sn;
+        try {
+            sn = strategy.getShortName(arc);
+        } catch (AbstractMethodError x) {
+            LOGGER.log(WARNING, "JENKINS-12753 fix not active: {0}", x.getMessage());
+            p = strategy.createPluginWrapper(arc);
+            sn = p.getShortName();
+        }
         if (getPlugin(sn)!=null)
             throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
 
+        if (p == null) {
+            p = strategy.createPluginWrapper(arc);
+        }
         if (p.supportsDynamicLoad()== YesNoMaybe.NO)
             throw new RestartRequiredException(Messages._PluginManager_PluginDoesntSupportDynamicLoad_RestartRequired(sn));
 
@@ -442,10 +452,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         // run initializers in the added plugin
         Reactor r = new Reactor(InitMilestone.ordering());
-        r.addAll(new InitializerFinder(p.classLoader) {
+        final ClassLoader loader = p.classLoader;
+        r.addAll(new InitializerFinder(loader) {
             @Override
             protected boolean filter(Method e) {
-                return e.getDeclaringClass().getClassLoader()!=p.classLoader || super.filter(e);
+                return e.getDeclaringClass().getClassLoader() != loader || super.filter(e);
             }
         }.discoverTasks(r));
         try {
@@ -721,7 +732,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     String pluginName = n.substring(0, index);
                     String siteName = n.substring(index + 1);
                     UpdateSite updateSite = Jenkins.getInstance().getUpdateCenter().getById(siteName);
-                    if (siteName != null) {
+                    if (updateSite == null) {
+                        throw new Failure("No such update center: " + siteName);
+                    } else {
                         UpdateSite.Plugin plugin = updateSite.getPlugin(pluginName);
                         if (plugin != null) {
                             if (p != null) {

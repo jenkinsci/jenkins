@@ -30,6 +30,7 @@ import com.jcraft.jzlib.GZIPOutputStream;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.AbstractProject;
+import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.org.apache.tools.tar.TarInputStream;
@@ -69,6 +70,7 @@ import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.kohsuke.stapler.Stapler;
 
+import javax.annotation.CheckForNull;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -1054,6 +1056,22 @@ public final class FilePath implements Serializable {
      */
     public VirtualFile toVirtualFile() {
         return VirtualFile.forFilePath(this);
+    }
+
+    /**
+     * If this {@link FilePath} represents a file on a particular {@link Computer}, return it.
+     * Otherwise null.
+     */
+    public @CheckForNull Computer toComputer() {
+        Jenkins j = Jenkins.getInstance();
+        if (j != null) {
+            for (Computer c : j.getComputers()) {
+                if (getChannel()==c.getChannel()) {
+                    return c;
+                }
+            }
+        }
+        return null;
     }
 
     /**

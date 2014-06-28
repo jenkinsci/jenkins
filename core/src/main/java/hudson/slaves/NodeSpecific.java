@@ -24,6 +24,7 @@
 
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Node;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.TaskListener;
@@ -44,5 +45,5 @@ public interface NodeSpecific<T extends NodeSpecific<T>> {
     /**
      * Returns a specialized copy of T for functioning in the given node.
      */
-    T forNode(Node node, TaskListener log) throws IOException, InterruptedException;
+    T forNode(@NonNull Node node, TaskListener log) throws IOException, InterruptedException;
 }

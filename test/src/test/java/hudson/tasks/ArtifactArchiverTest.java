@@ -24,6 +24,7 @@
 
 package hudson.tasks;
 
+import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -44,6 +45,7 @@ import java.util.List;
 import jenkins.util.VirtualFile;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -253,4 +255,74 @@ public class ArtifactArchiverTest {
         }
     }
 
+    static class CreateArtifactAndFail extends TestBuilder {
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            build.getWorkspace().child("f").write("content", "UTF-8");
+            throw new AbortException("failing the build");
+        }
+    }
+
+    @Test
+    @Bug(22698)
+    public void testArchivingSkippedWhenOnlyIfSuccessfulChecked() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", false, false, false)));
+        project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifactAndFail()));
+        assertEquals(Result.FAILURE, build(project));
+        assertTrue(project.getBuildByNumber(1).getHasArtifacts());
+        project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", false, false, true)));
+        assertEquals(Result.FAILURE, build(project));
+        assertTrue(project.getBuildByNumber(1).getHasArtifacts());
+        assertFalse(project.getBuildByNumber(2).getHasArtifacts());
+    }
+
+
+
+
+    static class CreateDefaultExcludesArtifact extends TestBuilder {
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            FilePath dir = build.getWorkspace().child("dir");
+            FilePath subSvnDir = dir.child(".svn");
+            subSvnDir.mkdirs();
+            subSvnDir.child("file").write("content", "UTF-8");
+
+            FilePath svnDir = build.getWorkspace().child(".svn");
+            svnDir.mkdirs();
+            svnDir.child("file").write("content", "UTF-8");
+
+            dir.child("file").write("content", "UTF-8");
+            return true;
+        }
+    }
+
+    @Test
+    @Bug(20086)
+    public void testDefaultExcludesOn() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+
+        Publisher artifactArchiver = new ArtifactArchiver("**", "", false, false, true, true);
+        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
+        project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
+
+        assertEquals(Result.SUCCESS, build(project)); // #1
+        VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
+        assertFalse(artifacts.child(".svn").child("file").exists());
+        assertFalse(artifacts.child("dir").child(".svn").child("file").exists());
+
+    }
+
+    @Test
+    @Bug(20086)
+    public void testDefaultExcludesOff() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+
+        Publisher artifactArchiver = new ArtifactArchiver("**", "", false, false, true, false);
+        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
+        project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
+
+        assertEquals(Result.SUCCESS, build(project)); // #1
+        VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
+        assertTrue(artifacts.child(".svn").child("file").exists());
+        assertTrue(artifacts.child("dir").child(".svn").child("file").exists());
+    }
 }

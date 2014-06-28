@@ -30,6 +30,7 @@ import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
@@ -63,7 +64,6 @@ import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -147,6 +147,34 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * overriding {@link #createFilter(FilterConfig)}.
      */
     public abstract SecurityComponents createSecurityComponents();
+
+    /**
+     * Returns the {@link IdStrategy} that should be used for turning
+     * {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
+     * Mostly this should be {@link IdStrategy.CaseInsensitive} but there may be occasions when either
+     * {@link IdStrategy.CaseSensitive} or {@link IdStrategy.CaseSensitiveEmailAddress} are the correct approach.
+     *
+     * @return the {@link IdStrategy} that should be used for turning
+     *         {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
+     * @since 1.566
+     */
+    public IdStrategy getUserIdStrategy() {
+        return IdStrategy.CASE_INSENSITIVE;
+    }
+
+    /**
+     * Returns the {@link IdStrategy} that should be used for turning {@link hudson.security.GroupDetails#getName()}
+     * into an ID.
+     * Note: Mostly this should be the same as {@link #getUserIdStrategy()} but some security realms may have legitimate
+     * reasons for a different strategy.
+     *
+     * @return the {@link IdStrategy} that should be used for turning {@link hudson.security.GroupDetails#getName()}
+     *         into an ID.
+     * @since 1.566
+     */
+    public IdStrategy getGroupIdStrategy() {
+        return getUserIdStrategy();
+    }
 
     /**
      * Creates a {@link CliAuthenticator} object that authenticates an invocation of a CLI command.

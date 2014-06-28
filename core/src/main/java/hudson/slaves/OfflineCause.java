@@ -55,7 +55,10 @@ public abstract class OfflineCause {
     public static class SimpleOfflineCause extends OfflineCause {
         public final Localizable description;
 
-        private SimpleOfflineCause(Localizable description) {
+        /**
+         * @since 1.571
+         */
+        protected SimpleOfflineCause(Localizable description) {
             this.description = description;
         }
 

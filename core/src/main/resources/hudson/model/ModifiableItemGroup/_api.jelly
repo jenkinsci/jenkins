@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The MIT License
+
+Copyright 2014 Jesse Glick.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    <h2>Create Job</h2>
+    <p>
+        To create a new job, post <tt>config.xml</tt> to <a href="../createItem">this URL</a> with
+        query parameter <tt>name=<i>JOBNAME</i></tt>. You need to send a <tt>Content-Type: application/xml</tt>
+        header. You will get a 200 status code if the creation is successful,
+        or 4xx/5xx code if it fails. <tt>config.xml</tt> is the format Jenkins uses to store the project
+        in the file system, so you can see examples of them in the Jenkins home directory, or by retrieving
+        the XML configuration of existing jobs from <tt>/job/<i>JOBNAME</i>/config.xml</tt>.
+    </p>
+
+    <h2>Copy Job</h2>
+    <p>
+        To copy a job, send a POST request to <a href="../createItem">this URL</a> with
+        three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copy&amp;from=<i>FROMJOBNAME</i></tt>
+    </p>
+</j:jelly>

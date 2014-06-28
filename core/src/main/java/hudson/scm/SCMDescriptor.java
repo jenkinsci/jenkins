@@ -23,14 +23,15 @@
  */
 package hudson.scm;
 
-import hudson.model.Descriptor;
+import hudson.Util;
 import hudson.model.AbstractProject;
-
-import java.util.List;
-import java.util.Collections;
-import java.util.logging.Logger;
-import static java.util.logging.Level.WARNING;
+import hudson.model.Descriptor;
+import hudson.model.Job;
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
 
 /**
  * {@link Descriptor} for {@link SCM}.
@@ -49,7 +50,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
 
     /**
      * Incremented every time a new {@link SCM} instance is created from this descriptor. 
-     * This is used to invalidate cache. Due to the lack of synchronization and serialization,
+     * This is used to invalidate cache of {@link SCM#getEffectiveBrowser}. Due to the lack of synchronization and serialization,
      * this field doesn't really count the # of instances created to date,
      * but it's good enough for the cache invalidation.
      */
@@ -97,7 +98,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * <p>
      * Implementing this method allows Hudson to reuse {@link RepositoryBrowser}
      * configured for one project to be used for other "compatible" projects.
-     * 
+     * <p>{@link SCM#guessBrowser} is more robust since it does not require another project.
      * @return
      *      true if the two given SCM configurations are similar enough
      *      that they can reuse {@link RepositoryBrowser} between them.
@@ -111,12 +112,25 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      *
      * <p>
      * When this method returns false, this {@link SCM} will not appear in the configuration screen
-     * for the given project. The default method always return true.
+     * for the given project. The default is true for {@link AbstractProject} but false for {@link Job}.
      *
-     * @since 1.294
+     * @since 1.568
      */
+    public boolean isApplicable(Job project) {
+        if (project instanceof AbstractProject) {
+            return isApplicable((AbstractProject) project);
+        } else {
+            return false;
+        }
+    }
+
+    @Deprecated
     public boolean isApplicable(AbstractProject project) {
-        return true;
+        if (Util.isOverridden(SCMDescriptor.class, getClass(), "isApplicable", Job.class)) {
+            return isApplicable((Job) project);
+        } else {
+            return true;
+        }
     }
 
     /**

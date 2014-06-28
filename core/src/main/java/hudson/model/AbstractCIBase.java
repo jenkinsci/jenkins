@@ -146,7 +146,6 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 return;
             }
         }
-        throw new IllegalStateException("Trying to remove unknown computer");
     }
 
     /*package*/ @CheckForNull Computer getComputer(Node n) {
@@ -166,9 +165,10 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         synchronized(updateComputerLock) {// just so that we don't have two code updating computer list at the same time
             Map<String,Computer> byName = new HashMap<String,Computer>();
             for (Computer c : computers.values()) {
-                if(c.getNode()==null)
+                Node node = c.getNode();
+                if (node == null)
                     continue;   // this computer is gone
-                byName.put(c.getNode().getNodeName(),c);
+                byName.put(node.getNodeName(),c);
             }
 
             Set<Computer> old = new HashSet<Computer>(computers.values());

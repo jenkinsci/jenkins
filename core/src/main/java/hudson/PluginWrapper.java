@@ -238,7 +238,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return idx != null && idx.toString().contains(shortName) ? idx : null;
     }
 
-    private String computeShortName(Manifest manifest, File archive) {
+    static String computeShortName(Manifest manifest, File archive) {
         // use the name captured in the manifest, as often plugins
         // depend on the specific short name in its URLs.
         String n = manifest.getMainAttributes().getValue("Short-Name");

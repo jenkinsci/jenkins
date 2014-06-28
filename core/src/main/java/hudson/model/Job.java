@@ -96,6 +96,8 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import static javax.servlet.http.HttpServletResponse.*;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -356,7 +358,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      Node to eventually run a process on. The implementation must cope with this parameter being null
      *      (in which case none of the node specific properties would be reflected in the resulting override.)
      */
-    public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
+    public @Nonnull EnvVars getEnvironment(@CheckForNull Node node, @Nonnull TaskListener listener) throws IOException, InterruptedException {
         EnvVars env;
 
         if (node!=null) {
@@ -936,7 +938,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @SuppressWarnings("unchecked")
     protected List<RunT> getEstimatedDurationCandidates() {
         List<RunT> candidates = new ArrayList<RunT>(3);
-        RunT lastSuccessful = (RunT) Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
+        RunT lastSuccessful = getLastSuccessfulBuild();
         int lastSuccessfulNumber = -1;
         if (lastSuccessful != null) {
             candidates.add(lastSuccessful);
@@ -944,7 +946,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
 
         int i = 0;
-        RunT r = (RunT) Permalink.LAST_BUILD.resolve(this);
+        RunT r = getLastBuild();
         List<RunT> fallbackCandidates = new ArrayList<RunT>(3);
         while (r != null && candidates.size() < 3 && i < 6) {
             if (!r.isBuilding() && r.getResult() != null && r.getNumber() != lastSuccessfulNumber) {
@@ -1142,7 +1144,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 logRotator = null;
 
             DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
-            t.rebuild(req,json.optJSONObject("properties"),JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+            JSONObject jsonProperties = json.optJSONObject("properties");
+            if (jsonProperties != null) {
+              t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+            } else {
+              t.clear();
+            }
             properties.clear();
             for (JobProperty p : t) {
                 p.setOwner(this);

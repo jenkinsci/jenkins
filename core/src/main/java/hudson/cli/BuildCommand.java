@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 
@@ -101,15 +102,21 @@ public class BuildCommand extends CLICommand {
             if (pdp==null)
                 throw new AbortException(job.getFullDisplayName()+" is not parameterized but the -p option was specified");
 
+            //TODO: switch to type annotations after the migration to Java 1.8
             List<ParameterValue> values = new ArrayList<ParameterValue>();
 
             for (Entry<String, String> e : parameters.entrySet()) {
                 String name = e.getKey();
                 ParameterDefinition pd = pdp.getParameterDefinition(name);
-                if (pd==null)
+                if (pd==null) {
                     throw new AbortException(String.format("\'%s\' is not a valid parameter. Did you mean %s?",
                             name, EditDistance.findNearest(name, pdp.getParameterDefinitionNames())));
-                values.add(pd.createValue(this, Util.fixNull(e.getValue())));
+                }
+                ParameterValue val = pd.createValue(this, Util.fixNull(e.getValue()));
+                if (val == null) {
+                    throw new AbortException(String.format("Cannot resolve the value for the parameter \'%s\'.",name));
+                }
+                values.add(val);
             }
 
             // handle missing parameters by adding as default values ISSUE JENKINS-7162
@@ -118,7 +125,11 @@ public class BuildCommand extends CLICommand {
                     continue;
 
                 // not passed in use default
-                values.add(pd.getDefaultParameterValue());
+                ParameterValue defaultValue = pd.getDefaultParameterValue();
+                if (defaultValue == null) {
+                    throw new AbortException(String.format("No default value for the parameter \'%s\'.",pd.getName()));
+                }
+                values.add(defaultValue);
             }
 
             a = new ParametersAction(values);

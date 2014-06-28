@@ -12,7 +12,6 @@ Source:		jenkins.war
 Source1:	jenkins.init.in
 Source2:	jenkins.sysconfig.in
 Source3:	jenkins.logrotate
-Source4:	jenkins.repo
 URL:		http://jenkins-ci.org/
 Group:		Development/Tools/Building
 License:	MIT/X License, GPL/CDDL, ASL2
@@ -84,7 +83,6 @@ rm -rf "%{buildroot}"
 %__sed -i 's,@@HOME@@,%{workdir},g' "%{buildroot}/etc/sysconfig/%{name}"
 
 %__install -D -m0644 "%{SOURCE3}" "%{buildroot}/etc/logrotate.d/%{name}"
-%__install -D -m0644 "%{SOURCE4}" "%{buildroot}/etc/yum.repos.d/jenkins.repo"
 
 %pre
 /usr/sbin/groupadd -r jenkins &>/dev/null || :
@@ -142,9 +140,11 @@ exit 0
 %config /etc/logrotate.d/%{name}
 %config(noreplace) /etc/init.d/%{name}
 %config(noreplace) /etc/sysconfig/%{name}
-%config(noreplace) /etc/yum.repos.d/jenkins.repo
 /usr/sbin/rc%{name}
 
 %changelog
+* Sat Apr 19 2014 mbarr@mbarr.net
+- Removed the jenkins.repo installation.  Per https://issues.jenkins-ci.org/browse/JENKINS-22690
 * Wed Sep 28 2011 kk@kohsuke.org
 - See [http://jenkins-ci.org/changelog] for complete details
+

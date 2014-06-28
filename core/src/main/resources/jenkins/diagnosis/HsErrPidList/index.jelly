@@ -51,7 +51,7 @@ THE SOFTWARE.
               (${%ago(f.timeSpanString)})
             </td>
             <td>
-              <form method="post" action="files/${idx.index}/${f.name}/delete" name="${idx}">
+              <form method="post" action="files/${idx.index}/delete" name="${idx}">
                 <f:submit value="${%Delete}"/>
               </form>
             </td>

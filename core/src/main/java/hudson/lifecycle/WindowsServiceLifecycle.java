@@ -132,7 +132,8 @@ public class WindowsServiceLifecycle extends Lifecycle {
         else            executable = new File(home, "hudson.exe");
         if (!executable.exists())   executable = new File(home, "jenkins.exe");
 
-        int r = new LocalLauncher(task).launch().cmds(executable, "restart")
+        // use restart! to run hudson/jenkins.exe restart in a separate process, so it doesn't kill itself
+        int r = new LocalLauncher(task).launch().cmds(executable, "restart!")
                 .stdout(task).pwd(home).join();
         if(r!=0)
             throw new IOException(baos.toString());

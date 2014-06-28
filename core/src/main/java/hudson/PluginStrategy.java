@@ -24,11 +24,10 @@
 package hudson;
 
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * Pluggability point for how to create {@link PluginWrapper}.
@@ -49,6 +48,13 @@ public interface PluginStrategy extends ExtensionPoint {
 	 */
 	PluginWrapper createPluginWrapper(File archive)
 			throws IOException;
+
+    /**
+     * Finds the plugin name without actually unpacking anything {@link #createPluginWrapper} would.
+     * Needed by {@link PluginManager#dynamicLoad} to decide whether such a plugin is already installed.
+     * @return the {@link PluginWrapper#getShortName}
+     */
+    @Nonnull String getShortName(File archive) throws IOException;
 
 	/**
 	 * Loads the plugin and starts it.

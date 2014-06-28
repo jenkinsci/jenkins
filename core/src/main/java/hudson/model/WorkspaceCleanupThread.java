@@ -116,6 +116,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
         // TODO could also be good to add checkbox that lets users configure a workspace to never be auto-cleaned.
 
+        // TODO check instead for SCMTriggerItem:
         if (item instanceof AbstractProject<?,?>) {
             AbstractProject<?,?> p = (AbstractProject<?,?>) item;
             Node lb = p.getLastBuiltOn();

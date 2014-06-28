@@ -180,7 +180,6 @@ import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
-import hudson.util.StreamTaskListener;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
 import hudson.util.VersionNumber;
@@ -223,7 +222,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -296,6 +294,7 @@ import java.util.logging.Logger;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
+import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import static javax.servlet.http.HttpServletResponse.*;
 
@@ -665,24 +664,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         protected File getRootDirFor(String name) {
             return Jenkins.this.getRootDirFor(name);
         }
-
-        /**
-         * Send the browser to the config page.
-         * use View to trim view/{default-view} from URL if possible
-         */
-        @Override
-        protected String redirectAfterCreateItem(StaplerRequest req, TopLevelItem result) throws IOException {
-            String redirect = result.getUrl()+"configure";
-            List<Ancestor> ancestors = req.getAncestors();
-            for (int i = ancestors.size() - 1; i >= 0; i--) {
-                Object o = ancestors.get(i).getObject();
-                if (o instanceof View) {
-                    redirect = req.getContextPath() + '/' + ((View)o).getUrl() + redirect;
-                    break;
-                }
-            }
-            return redirect;
-        }
     };
 
 
@@ -854,7 +835,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 Computer c = toComputer();
                 if(c!=null)
                     for (ComputerListener cl : ComputerListener.all())
-                        cl.onOnline(c,StreamTaskListener.fromStdout());
+                        cl.onOnline(c, new LogTaskListener(LOGGER, INFO));
             }
 
             for (ItemListener l : ItemListener.all()) {
@@ -1219,9 +1200,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         updateComputerList(AUTOMATIC_SLAVE_LAUNCH);
     }
 
-    /**
-     * Gets all the installed {@link SCMListener}s.
-     */
+    /** @deprecated Use {@link SCMListener#all} instead. */
+    @Deprecated
     public CopyOnWriteList<SCMListener> getSCMListeners() {
         return scmListeners;
     }
@@ -1552,7 +1532,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @CLIResolver
-    public Computer getComputer(@Argument(required=true,metaVar="NAME",usage="Node name") String name) {
+    public @CheckForNull Computer getComputer(@Argument(required=true,metaVar="NAME",usage="Node name") @Nonnull String name) {
         if(name.equals("(master)"))
             name = "";
 
@@ -2043,6 +2023,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(securityRealm==null)
             securityRealm= SecurityRealm.NO_AUTHENTICATION;
         this.useSecurity = true;
+        IdStrategy oldUserIdStrategy = this.securityRealm == null
+                ? securityRealm.getUserIdStrategy() // don't trigger rekey on Jenkins load
+                : this.securityRealm.getUserIdStrategy();
         this.securityRealm = securityRealm;
         // reset the filters and proxies for the new SecurityRealm
         try {
@@ -2055,6 +2038,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 LOGGER.fine("HudsonFilter has been previously initialized: Setting security up");
                 filter.reset(securityRealm);
                 LOGGER.fine("Security is now fully set up");
+            }
+            if (!oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
+                User.rekey();
             }
         } catch (ServletException e) {
             // for binary compatibility, this method cannot throw a checked exception
@@ -2081,7 +2067,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         useSecurity = null;
         setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
         authorizationStrategy = AuthorizationStrategy.UNSECURED;
-        markupFormatter = null;
     }
 
     public void setProjectNamingStrategy(ProjectNamingStrategy ns) {
@@ -3342,6 +3327,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 }
             }
         }.start();
+    }
+
+    @Extension @Restricted(NoExternalUse.class)
+    public static class MasterRestartNotifyier extends RestartListener {
+
+        @Override
+        public void onRestart() {
+            Computer computer = Jenkins.getInstance().toComputer();
+            if (computer == null) return;
+            RestartCause cause = new RestartCause();
+            for (ComputerListener listener: ComputerListener.all()) {
+                listener.onOffline(computer, cause);
+            }
+        }
+
+        @Override
+        public boolean isReadyToRestart() throws IOException, InterruptedException {
+            return true;
+        }
+
+        private static class RestartCause extends OfflineCause.SimpleOfflineCause {
+            protected RestartCause() {
+                super(Messages._Jenkins_IsRestarting());
+            }
+        }
     }
 
     /**

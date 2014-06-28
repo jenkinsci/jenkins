@@ -26,6 +26,8 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.scm.SCM;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
@@ -35,6 +37,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.ProjectWithMaven;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
 import net.sf.json.JSONObject;
@@ -43,11 +46,13 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import jenkins.triggers.SCMTriggerItem;
 
 /**
  * Buildable software project.
@@ -55,7 +60,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
-    extends AbstractProject<P,B> implements SCMedItem, Saveable, ProjectWithMaven, BuildableItemWithBuildWrappers {
+    extends AbstractProject<P,B> implements SCMTriggerItem, Saveable, ProjectWithMaven, BuildableItemWithBuildWrappers {
 
     /**
      * List of active {@link Builder}s configured for this project.
@@ -95,6 +100,22 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     public AbstractProject<?, ?> asProject() {
         return this;
+    }
+
+    @Override public Item asItem() {
+        return this;
+    }
+
+    @Override public QueueTaskFuture<?> scheduleBuild2(int quietPeriod, Action... actions) {
+        return scheduleBuild2(quietPeriod, null, actions);
+    }
+
+    @Override public SCMTrigger getSCMTrigger() {
+        return getTrigger(SCMTrigger.class);
+    }
+
+    @Override public Collection<? extends SCM> getSCMs() {
+        return SCMTriggerItem.SCMTriggerItems.resolveMultiScmIfConfigured(getScm());
     }
 
     public List<Builder> getBuilders() {

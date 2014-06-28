@@ -40,10 +40,15 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import jenkins.RestartRequiredException;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
@@ -51,67 +56,70 @@ import org.jvnet.hudson.test.recipes.WithPluginManager;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class PluginManagerTest extends HudsonTestCase {
-    @Override
-    protected void setUp() throws Exception {
-        setPluginManager(null); // use a fresh instance
-        super.setUp();
-    }
+public class PluginManagerTest {
+
+    @Rule public JenkinsRule r = new JenkinsRule() {
+        @Override public void before() throws Throwable {
+            setPluginManager(null);
+            super.before();
+        }
+    };
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     /**
      * Manual submission form.
      */
-    public void testUploadJpi() throws Exception {
-        HtmlPage page = new WebClient().goTo("pluginManager/advanced");
+    @Test public void uploadJpi() throws Exception {
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
-        File dir = env.temporaryDirectoryAllocator.allocate();
+        File dir = tmp.newFolder();
         File plugin = new File(dir, "tasks.jpi");
         FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/tasks.jpi"),plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
-        submit(f);
+        r.submit(f);
 
-        assertTrue( new File(jenkins.getRootDir(),"plugins/tasks.jpi").exists() );
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/tasks.jpi").exists() );
     }
 
     /**
      * Manual submission form.
      */
-    public void testUploadHpi() throws Exception {
-        HtmlPage page = new WebClient().goTo("pluginManager/advanced");
+    @Test public void uploadHpi() throws Exception {
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
-        File dir = env.temporaryDirectoryAllocator.allocate();
+        File dir = tmp.newFolder();
         File plugin = new File(dir, "legacy.hpi");
         FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/legacy.hpi"),plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
-        submit(f);
+        r.submit(f);
 
         // uploaded legacy plugins get renamed to *.jpi
-        assertTrue( new File(jenkins.getRootDir(),"plugins/legacy.jpi").exists() );
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/legacy.jpi").exists() );
     }
     
     /**
      * Tests the effect of {@link WithPlugin}.
      */
     @WithPlugin("tasks.jpi")
-    public void testWithRecipeJpi() throws Exception {
-        assertNotNull(jenkins.getPlugin("tasks"));
+    @Test public void withRecipeJpi() throws Exception {
+        assertNotNull(r.jenkins.getPlugin("tasks"));
     }
     
     /**
      * Tests the effect of {@link WithPlugin}.
      */
     @WithPlugin("legacy.hpi")
-    public void testWithRecipeHpi() throws Exception {
-        assertNotNull(jenkins.getPlugin("legacy"));
+    @Test public void withRecipeHpi() throws Exception {
+        assertNotNull(r.jenkins.getPlugin("legacy"));
     }
 
     /**
      * Makes sure that plugins can see Maven2 plugin that's refactored out in 1.296.
      */
     @WithPlugin("tasks.jpi")
-    public void testOptionalMavenDependency() throws Exception {
+    @Test public void optionalMavenDependency() throws Exception {
         PluginWrapper.Dependency m2=null;
-        PluginWrapper tasks = jenkins.getPluginManager().getPlugin("tasks");
+        PluginWrapper tasks = r.jenkins.getPluginManager().getPlugin("tasks");
         for( PluginWrapper.Dependency d : tasks.getOptionalDependencies() ) {
             if(d.shortName.equals("maven-plugin")) {
                 assertNull(m2);
@@ -134,11 +142,11 @@ public class PluginManagerTest extends HudsonTestCase {
      */
     @WithPlugin("tasks.jpi")
     @WithPluginManager(PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart.class)
-    public void testUberClassLoaderIsAvailableDuringStart() {
-        assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart) jenkins.pluginManager).tested);
+    @Test public void uberClassLoaderIsAvailableDuringStart() {
+        assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart) r.jenkins.pluginManager).tested);
     }
 
-    public class PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart extends LocalPluginManager {
+    public static class PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart extends LocalPluginManager {
         boolean tested;
 
         public PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart(File rootDir) {
@@ -170,10 +178,10 @@ public class PluginManagerTest extends HudsonTestCase {
      * infinite cycle ensues.
      */
     @Url("http://jenkins.361315.n4.nabble.com/channel-example-and-plugin-classes-gives-ClassNotFoundException-td3756092.html")
-    public void testUberClassLoaderDoesntUseContextClassLoader() throws Exception {
+    @Test public void uberClassLoaderDoesntUseContextClassLoader() throws Exception {
         Thread t = Thread.currentThread();
 
-        URLClassLoader ucl = new URLClassLoader(new URL[0], jenkins.pluginManager.uberClassLoader);
+        URLClassLoader ucl = new URLClassLoader(new URL[0], r.jenkins.pluginManager.uberClassLoader);
 
         ClassLoader old = t.getContextClassLoader();
         t.setContextClassLoader(ucl);
@@ -191,33 +199,33 @@ public class PluginManagerTest extends HudsonTestCase {
         }
     }
 
-    public void testInstallWithoutRestart() throws Exception {
+    @Test public void installWithoutRestart() throws Exception {
         URL res = getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi");
-        File f = new File(jenkins.getRootDir(), "plugins/htmlpublisher.jpi");
+        File f = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi");
         FileUtils.copyURLToFile(res, f);
-        jenkins.pluginManager.dynamicLoad(f);
+        r.jenkins.pluginManager.dynamicLoad(f);
 
-        Class c = jenkins.getPluginManager().uberClassLoader.loadClass("htmlpublisher.HtmlPublisher$DescriptorImpl");
-        assertNotNull(jenkins.getDescriptorByType(c));
+        Class c = r.jenkins.getPluginManager().uberClassLoader.loadClass("htmlpublisher.HtmlPublisher$DescriptorImpl");
+        assertNotNull(r.jenkins.getDescriptorByType(c));
     }
 
-    public void testPrevalidateConfig() throws Exception {
-        PersistedList<UpdateSite> sites = jenkins.getUpdateCenter().getSites();
+    @Test public void prevalidateConfig() throws Exception {
+        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/tasks-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         sites.add(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         assertNotNull(site.getData());
-        assertEquals(Collections.emptyList(), jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>")));
-        assertNull(jenkins.getPluginManager().getPlugin("tasks"));
-        List<Future<UpdateCenterJob>> jobs = jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><tasks plugin=\"tasks@2.23\"/></whatever>"));
+        assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>")));
+        assertNull(r.jenkins.getPluginManager().getPlugin("tasks"));
+        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><tasks plugin=\"tasks@2.23\"/></whatever>"));
         assertEquals(1, jobs.size());
         UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
         assertEquals("InstallationJob", job.getType());
         UpdateCenter.InstallationJob ijob = (UpdateCenter.InstallationJob) job;
         assertEquals("tasks", ijob.plugin.name);
-        assertNotNull(jenkins.getPluginManager().getPlugin("tasks"));
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("tasks"));
         // TODO restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
         // TODO dependencies installed or upgraded too
         // TODO required plugin installed but inactive
@@ -257,7 +265,7 @@ public class PluginManagerTest extends HudsonTestCase {
      * @throws Exception
      */
     private String callDependerValue() throws Exception {
-        Class<?> c = jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
+        Class<?> c = r.jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
         Method m = c.getMethod("getValue");
         return (String)m.invoke(null);
     }
@@ -268,14 +276,14 @@ public class PluginManagerTest extends HudsonTestCase {
      * 
      * @throws Exception
      */
-    public void testInstallDependingPluginWithoutRestart() throws Exception {
+    @Test public void installDependingPluginWithoutRestart() throws Exception {
         // Load dependee.
         {
             String target = "dependee.hpi";
             URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
             FileUtils.copyURLToFile(src, dest);
-            jenkins.pluginManager.dynamicLoad(dest);
+            r.jenkins.pluginManager.dynamicLoad(dest);
         }
         
         // before load depender, of course failed to call Depender.getValue()
@@ -286,22 +294,22 @@ public class PluginManagerTest extends HudsonTestCase {
         }
         
         // No extensions exist.
-        assertTrue(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+        assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
         
         // Load depender.
         {
             String target = "depender.hpi";
             URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
             FileUtils.copyURLToFile(src, dest);
-            jenkins.pluginManager.dynamicLoad(dest);
+            r.jenkins.pluginManager.dynamicLoad(dest);
         }
         
         // depender successfully accesses to dependee.
         assertEquals("dependee", callDependerValue());
         
         // Extension in depender is loaded.
-        assertFalse(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+        assertFalse(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
     
     /**
@@ -311,14 +319,14 @@ public class PluginManagerTest extends HudsonTestCase {
      * @throws Exception
      */
     @Bug(19976)
-    public void testInstallDependedPluginWithoutRestart() throws Exception {
+    @Test public void installDependedPluginWithoutRestart() throws Exception {
         // Load depender.
         {
             String target = "depender.hpi";
             URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
             FileUtils.copyURLToFile(src, dest);
-            jenkins.pluginManager.dynamicLoad(dest);
+            r.jenkins.pluginManager.dynamicLoad(dest);
         }
         
         // before load dependee, depender does not access to dependee.
@@ -326,7 +334,7 @@ public class PluginManagerTest extends HudsonTestCase {
         
         // before load dependee, of course failed to list extensions for dependee.
         try {
-            jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
+            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
             fail();
         } catch( ClassNotFoundException _ ){
         }
@@ -335,9 +343,9 @@ public class PluginManagerTest extends HudsonTestCase {
         {
             String target = "dependee.hpi";
             URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(jenkins.getRootDir(), String.format("plugins/%s", target));
+            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
             FileUtils.copyURLToFile(src, dest);
-            jenkins.pluginManager.dynamicLoad(dest);
+            r.jenkins.pluginManager.dynamicLoad(dest);
         }
         
         // (MUST) Not throws an exception
@@ -346,7 +354,25 @@ public class PluginManagerTest extends HudsonTestCase {
         
         // No extensions exist.
         // extensions in depender is not loaded.
-        assertTrue(jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+        assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
+    }
+
+    @Bug(12753)
+    @WithPlugin("tasks.jpi")
+    @Test public void dynamicLoadRestartRequiredException() throws Exception {
+        File jpi = new File(r.jenkins.getRootDir(), "plugins/tasks.jpi");
+        assertTrue(jpi.isFile());
+        FileUtils.touch(jpi);
+        File timestamp = new File(r.jenkins.getRootDir(), "plugins/tasks/.timestamp2");
+        assertTrue(timestamp.isFile());
+        long lastMod = timestamp.lastModified();
+        try {
+            r.jenkins.getPluginManager().dynamicLoad(jpi);
+            fail("should not have worked");
+        } catch (RestartRequiredException x) {
+            // good
+        }
+        assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
 }

@@ -43,6 +43,7 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullChangeLogParser;
 import hudson.scm.SCM;
+import hudson.scm.SCMRevisionState;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
@@ -84,11 +85,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static java.util.logging.Level.WARNING;
+
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -435,9 +440,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         /**
          * Returns the current {@link Node} on which we are building.
+         * @return Returns the current {@link Node}
+         * @throws IllegalStateException if that cannot be determined
          */
-        protected final Node getCurrentNode() {
-            return Executor.currentExecutor().getOwner().getNode();
+        protected final @Nonnull Node getCurrentNode() throws IllegalStateException {
+            Executor exec = Executor.currentExecutor();
+            if (exec == null) {
+                throw new IllegalStateException("not being called from an executor thread");
+            }
+            Computer c = exec.getOwner();
+            Node node = c.getNode();
+            if (node == null) {
+                throw new IllegalStateException("no longer a configured node for " + c.getName());
+            }
+            return node;
         }
 
         public Launcher getLauncher() {
@@ -456,7 +472,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param wsl
          *      Passed in for the convenience. The returned path must be registered to this object.
          */
-        protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+        protected Lease decideWorkspace(@Nonnull Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null) {
                 // we allow custom workspaces to be concurrently used between jobs.
@@ -466,8 +482,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()), getBuild());
         }
 
-        public Result run(BuildListener listener) throws Exception {
-            Node node = getCurrentNode();
+        public Result run(@Nonnull BuildListener listener) throws Exception {
+            final Node node = getCurrentNode();
+            
             assert builtOn==null;
             builtOn = node.getNodeName();
             hudsonVersion = Jenkins.VERSION;
@@ -555,8 +572,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param listener
          *      Always non-null. Connected to the main build output.
          */
-        protected Launcher createLauncher(BuildListener listener) throws IOException, InterruptedException {
-            Launcher l = getCurrentNode().createLauncher(listener);
+        @Nonnull
+        protected Launcher createLauncher(@Nonnull BuildListener listener) throws IOException, InterruptedException {
+            final Node currentNode = getCurrentNode();
+            Launcher l = currentNode.createLauncher(listener);
 
             if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
@@ -580,7 +599,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 }
             }
 
-            for (NodeProperty nodeProperty: Computer.currentComputer().getNode().getNodeProperties()) {
+            for (NodeProperty nodeProperty: currentNode.getNodeProperties()) {
                 Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
                 if (environment != null) {
                     buildEnvironments.add(environment);
@@ -601,14 +620,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 build.scm = NullChangeLogParser.INSTANCE;
 
                 try {
-                    if (project.checkout(build, launcher,listener,new File(build.getRootDir(),"changelog.xml"))) {
+                    File changeLogFile = new File(build.getRootDir(), "changelog.xml");
+                    if (project.checkout(build, launcher,listener, changeLogFile)) {
                         // check out succeeded
                         SCM scm = project.getScm();
+                        for (SCMListener l : SCMListener.all()) {
+                            try {
+                                l.onCheckout(build, scm, build.getWorkspace(), listener, changeLogFile, build.getAction(SCMRevisionState.class));
+                            } catch (Exception e) {
+                                throw new IOException(e);
+                            }
+                        }
 
                         build.scm = scm.createChangeLogParser();
                         build.changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(build.calcChangeSet());
 
-                        for (SCMListener l : Jenkins.getInstance().getSCMListeners())
+                        for (SCMListener l : SCMListener.all())
                             try {
                                 l.onChangeLogParsed(build,listener,build.getChangeSet());
                             } catch (Exception e) {
@@ -846,6 +873,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return cs;
     }
 
+    @Restricted(DoNotUse.class) // for project-changes.jelly
+    public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
+        ChangeLogSet<? extends Entry> cs = getChangeSet();
+        return cs.isEmptySet() ? Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>emptyList() : Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>singletonList(cs);
+    }
+
     /**
      * Returns true if the changelog is already computed.
      */
@@ -914,6 +947,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     public Calendar due() {
         return getTimestamp();
+    }
+
+    /**
+     * {@inheritDoc}
+     * The action may have a {@code summary.jelly} view containing a {@code <t:summary>} or other {@code <tr>}.
+     */
+    @Override public void addAction(Action a) {
+        super.addAction(a);
     }
       
     @SuppressWarnings("deprecation")

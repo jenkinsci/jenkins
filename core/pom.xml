@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.564-SNAPSHOT</version>
+    <version>1.571-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.224</stapler.version>
+    <stapler.version>1.227</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>1.8.9</groovy.version>
   </properties>
@@ -112,7 +112,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build217-jenkins-3</version>
+      <version>build217-jenkins-5</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -479,12 +479,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.19</version>
+      <version>1.20</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-      <version>1.7</version>
+      <version>1.8</version>
     </dependency>
     <dependency><!-- StAX implementation. See HUDSON-2547. -->
       <groupId>org.codehaus.woodstox</groupId>

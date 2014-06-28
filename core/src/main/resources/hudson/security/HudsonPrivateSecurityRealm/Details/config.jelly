@@ -26,7 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${descriptor.enabled}">
     <f:entry title="${%Password}:">
-      ${instance} : ${instance!=null} : ${instance.class}
       <input name="user.password" type="password" value="${instance.protectedPassword}" />
     </f:entry>
     <f:entry title="${%Confirm Password}:">
