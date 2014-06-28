@@ -540,6 +540,20 @@ public class Functions {
         return map.subMap(Integer.parseInt(to),Integer.parseInt(from)-1);
     }
 
+    /**
+     * Creates a sub map by using the given range (upper end inclusive).
+     */
+    @Restricted(NoExternalUse.class)
+    public static <V> SortedMap<Integer,V> filterExcludingFrom(SortedMap<Integer,V> map, String from, String to) {
+        if(from==null && to==null)      return map;
+        if(to==null)
+            return map.headMap(Integer.parseInt(from));
+        if(from==null)
+            return map.tailMap(Integer.parseInt(to));
+
+        return map.subMap(Integer.parseInt(to),Integer.parseInt(from));
+    }
+
     private static final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
