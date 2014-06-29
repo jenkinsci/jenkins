@@ -4,6 +4,8 @@ import hudson.scm.SCM
 
 def st = namespace("jelly:stapler")
 
+st.contentType(value: "text/html;charset=UTF-8")
+
 html {
     head {
         title(_("Available Environmental Variables"))
