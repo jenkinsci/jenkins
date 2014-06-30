@@ -104,7 +104,6 @@ import hudson.tasks.Ant;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
-import hudson.tasks.Mailer;
 import hudson.tasks.Maven;
 import hudson.tasks.Publisher;
 import hudson.tools.ToolProperty;
@@ -354,14 +353,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         // this allows tests to use a part of the URL space for itself.
         jenkins.getActions().add(this);
 
-        // cause all the descriptors to reload.
-        // ideally we'd like to reset them to properly emulate the behavior, but that's not possible.
-        Mailer.DescriptorImpl desc = Mailer.descriptor();
-        // prevent NPE with eclipse
-        if (desc != null) Mailer.descriptor().setHudsonUrl(getURL().toString());
         JenkinsLocationConfiguration.get().setUrl(getURL().toString());
-        for( Descriptor d : jenkins.getExtensionList(Descriptor.class) )
-            d.load();
         
         setUpTimeout();
     }
