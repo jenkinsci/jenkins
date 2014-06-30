@@ -1980,7 +1980,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new File(expandVariablesForDirectory(base, item.getFullName(), item.getRootDir().getPath()));
     }
 
-    private static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
+    @Restricted(NoExternalUse.class)
+    static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
         return Util.replaceMacro(base, ImmutableMap.of(
                 "JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath(),
                 "ITEM_ROOTDIR", itemRootDir,

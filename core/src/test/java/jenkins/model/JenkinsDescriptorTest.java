@@ -36,6 +36,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.io.File;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
@@ -62,10 +63,11 @@ public class JenkinsDescriptorTest {
     }
 
     @Test
-    @PrepareForTest(fullyQualifiedNames={"jenkins.model.Jenkins"})
+    @PrepareForTest(Jenkins.class)
     public void testBuildDirValidation() {
         PowerMockito.mockStatic(Jenkins.class);
         PowerMockito.when(Jenkins.getInstance()).thenReturn(jenkins);
+        PowerMockito.when(Jenkins.expandVariablesForDirectory(anyString(), anyString(), anyString())).thenCallRealMethod();
         when(jenkins.getRootDir()).thenReturn(new File(".").getAbsoluteFile());
 
         assertTrue(isOK("$JENKINS_HOME/foo/$ITEM_FULL_NAME"));
