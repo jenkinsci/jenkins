@@ -42,6 +42,11 @@ THE SOFTWARE.
             <j:when test="${requiresConfirmation}">
               <l:confirmationLink href="${_href}" post="true" message="${%are.you.sure(title)}">${title}</l:confirmationLink>
             </j:when>
+            <j:when test="${post}">
+              <form action="${_href}" method="post">
+                <a href="javascript:void(0)" onclick="this.parentNode.submit()">${title}</a>
+              </form>
+            </j:when>
             <j:otherwise>
               <a href="${_href}">${title}</a>
             </j:otherwise>
@@ -86,7 +91,7 @@ THE SOFTWARE.
         <l:hasPermission permission="${m.requiredPermission}">
           <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}"/>
           <j:if test="${icon!=null}">
-            <local:feature icon="${icon}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}">
+            <local:feature icon="${icon}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}" post="${m.requiresPOST}">
               <j:out value="${m.description}"/>
               <st:include it="${m}" page="info.jelly" optional="true"/>
             </local:feature>
