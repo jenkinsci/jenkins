@@ -51,7 +51,9 @@ THE SOFTWARE.
         <td class="pane" colspan="2" style="white-space: normal;">
           ${%Jenkins is going to shut down. No further builds will be performed.}
           <j:if test="${h.hasPermission(app.ADMINISTER)}">
-            <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
+          	<f:form method="POST" action="${rootURL}/cancelQuietDown">
+          	  <input type="submit" value="${%cancel}" class="submit-button primary danger" />
+            </f:form>
           </j:if>
         </td>
       </tr>
