@@ -48,8 +48,12 @@ THE SOFTWARE.
         </f:entry>
       </f:advanced>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
-        <f:textarea name="system_message" value="${it.systemMessage}"
+        <f:textarea name="system_message" value="${it.rawSystemMessage}"
                     codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+      </f:entry>
+      <f:entry help="/help/system-config/systemMessageScript.html">
+        <f:checkbox name="system_message_script" checked="${it.systemMessageScript}" />
+        <label class="attach-previous"> ${%Evaluate System Message as Groovy Script}</label>
       </f:entry>
 
       <!-- global configuration from everyone -->
