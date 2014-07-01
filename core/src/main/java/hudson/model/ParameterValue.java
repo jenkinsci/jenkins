@@ -125,7 +125,7 @@ public abstract class ParameterValue implements Serializable {
      * @param build
      *      The build for which this parameter is being used. Never null.
      * @deprecated as of 1.344
-     *      Use {@link #buildEnvVars(Run, EnvVars)} instead.
+     *      Use {@link #buildEnvironment(Run, EnvVars)} instead.
      */
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
         if (env instanceof EnvVars) {
@@ -139,7 +139,7 @@ public abstract class ParameterValue implements Serializable {
         // otherwise no-op by default
     }
 
-    /** @deprecated Use {@link #buildEnvVars(Run, EnvVars)} instead. */
+    /** @deprecated Use {@link #buildEnvironment(Run, EnvVars)} instead. */
     @Deprecated
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
         if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
