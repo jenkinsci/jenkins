@@ -215,6 +215,10 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
     margin: 0;
 }
 
+pre a {
+    word-wrap: break-all;	
+}
+
 pre.console {
   overflow: auto;
 }
