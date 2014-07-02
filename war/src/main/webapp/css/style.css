@@ -444,12 +444,9 @@ th.pane {
 #login-field {
     vertical-align: middle;
     padding-right: 1em;
-    width:1px;
-}
-
-#login-field SPAN {
-  white-space:nowrap;
-  color: white;
+    white-space:nowrap;
+    color: white;
+    line-height: 100%;
 }
 
 #login-field A {
@@ -458,6 +455,10 @@ th.pane {
       If I set this to inherit, it won't work in IE7
      */
     color: white;
+    font-weight: bold;
+    display: table-cell;
+    vertical-align: middle;
+    height: 34px;
 }
 
 div.behavior-loading {
@@ -971,12 +972,13 @@ DIV.yahooTree td {
 #search-box-minWidth {
   position:absolute;
   visibility: hidden;
-  width:15em;
+  width:5em;
 }
 
 #search-box-sizer {
   position:absolute;
-  visibility: hidden;
+  display: none;
+  word-wrap: break-word;
 }
 
 

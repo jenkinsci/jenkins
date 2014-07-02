@@ -1579,6 +1579,11 @@ public class Functions {
         return Collections.singletonList(t);
     }
 
+    public static boolean isMobile() {
+        StaplerRequest staplerRequest = Stapler.getCurrentRequest();
+        return StringUtils.trimToEmpty(staplerRequest.getHeader("User-Agent")).toLowerCase().contains("mobile");
+    }
+
     /**
      * Gets all the {@link PageDecorator}s.
      */
