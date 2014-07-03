@@ -85,7 +85,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     // TODO event for new user signed up (e.g. in HudsonPrivateSecurityRealm)
     // TODO event for CAPTCHA failure
 
-    /** @since 1.569 */
+    /** @since 1.569, 1.565.1 */
     public static void fireAuthenticated(@Nonnull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {
             List<String> groups = new ArrayList<String>();
@@ -101,7 +101,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
-    /** @since 1.569 */
+    /** @since 1.569, 1.565.1 */
     public static void fireFailedToAuthenticate(@Nonnull String username) {
         LOGGER.log(Level.FINE, "failed to authenticate: {0}", username);
         for (SecurityListener l : all()) {
@@ -109,7 +109,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
-    /** @since 1.569 */
+    /** @since 1.569, 1.565.1 */
     public static void fireLoggedIn(@Nonnull String username) {
         LOGGER.log(Level.FINE, "logged in: {0}", username);
         for (SecurityListener l : all()) {
@@ -117,7 +117,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
-    /** @since 1.569 */
+    /** @since 1.569, 1.565.1 */
     public static void fireFailedToLogIn(@Nonnull String username) {
         LOGGER.log(Level.FINE, "failed to log in: {0}", username);
         for (SecurityListener l : all()) {
@@ -125,7 +125,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
-    /** @since 1.569 */
+    /** @since 1.569, 1.565.1 */
     public static void fireLoggedOut(@Nonnull String username) {
         LOGGER.log(Level.FINE, "logged out: {0}", username);
         for (SecurityListener l : all()) {
