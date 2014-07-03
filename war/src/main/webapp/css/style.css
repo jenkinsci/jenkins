@@ -216,7 +216,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-all;	
+    word-wrap: break-word;	
 }
 
 pre.console {
