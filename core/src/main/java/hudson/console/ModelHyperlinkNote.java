@@ -1,11 +1,8 @@
 package hudson.console;
 
 import hudson.Extension;
-import hudson.model.Item;
-import hudson.model.ModelObject;
-import hudson.model.Node;
-import hudson.model.Run;
-import hudson.model.User;
+import hudson.model.*;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -37,7 +34,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     }
 
     public static String encodeTo(Item item) {
-        return encodeTo(item,item.getDisplayName());
+        return encodeTo(item,item.getFullDisplayName());
     }
 
     public static String encodeTo(Item item, String text) {
@@ -49,7 +46,12 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     }
 
     public static String encodeTo(Node node) {
-        return encodeTo("/computer/"+ node.getNodeName(), node.getDisplayName());
+        Computer c = node.toComputer();
+        if (c != null) {
+            return encodeTo("/" + c.getUrl(), node.getDisplayName());
+        }
+        String nodePath = node == Jenkins.getInstance() ? "(master)" : node.getNodeName();
+        return encodeTo("/computer/" + nodePath, node.getDisplayName());
     }
 
     public static String encodeTo(String url, String text) {

@@ -626,7 +626,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getUrl() {
-        return "computer/" + Util.rawEncode(getDisplayName()) + "/";
+        return "computer/" + Util.rawEncode(getName()) + "/";
     }
 
     /**
@@ -865,7 +865,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getSearchUrl() {
-        return "computer/"+nodeName;
+        return getUrl();
     }
 
     /**

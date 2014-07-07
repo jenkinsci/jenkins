@@ -25,11 +25,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.Extension;
-import hudson.ExtensionPoint;
-import hudson.FilePath;
-import hudson.FileSystemProvisioner;
-import hudson.Launcher;
+import hudson.*;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
@@ -103,7 +99,11 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     public String getSearchUrl() {
-        return "computer/"+getNodeName();
+        Computer c = toComputer();
+        if (c != null) {
+            return c.getUrl();
+        }
+        return "computer/" + Util.rawEncode(getNodeName());
     }
 
     public boolean isHoldOffLaunchUntilSave() {
