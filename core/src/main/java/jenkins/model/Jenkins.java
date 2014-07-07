@@ -1834,25 +1834,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Gets the absolute URL of Jenkins,
-     * such as "http://localhost/jenkins/".
+     * Gets the absolute URL of Jenkins, such as {@code http://localhost/jenkins/}.
      *
      * <p>
      * This method first tries to use the manually configured value, then
-     * fall back to {@link StaplerRequest#getRootPath()}.
+     * fall back to {@link #getRootUrlFromRequest}.
      * It is done in this order so that it can work correctly even in the face
      * of a reverse proxy.
      *
-     * @return
-     *      This method returns null if this parameter is not configured by the user.
-     *      The caller must gracefully deal with this situation.
-     *      The returned URL will always have the trailing '/'.
+     * @return null if this parameter is not configured by the user and the calling thread is not in an HTTP request; otherwise the returned URL will always have the trailing {@code /}
      * @since 1.66
-     * @see Descriptor#getCheckUrl(String)
-     * @see #getRootUrlFromRequest()
      * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML">Hyperlinks in HTML</a>
      */
-    public String getRootUrl() {
+    public @Nullable String getRootUrl() {
         String url = JenkinsLocationConfiguration.get().getUrl();
         if(url!=null) {
             return Util.ensureEndsWith(url,"/");
@@ -1875,7 +1869,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Gets the absolute URL of Hudson top page, such as "http://localhost/hudson/".
+     * Gets the absolute URL of Hudson top page, such as {@code http://localhost/hudson/}.
      *
      * <p>
      * Unlike {@link #getRootUrl()}, which uses the manually configured value,
@@ -1884,28 +1878,55 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * correctly, especially when a migration is involved), but the downside
      * is that unless you are processing a request, this method doesn't work.
      *
-     * Please note that this will not work in all cases if Jenkins is running behind a
-     * reverse proxy (e.g. when user has switched off ProxyPreserveHost, which is
-     * default setup or the actual url uses https) and you should use getRootUrl if
-     * you want to be sure you reflect user setup.
-     * See https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache
-     *
+     * <p>Please note that this will not work in all cases if Jenkins is running behind a
+     * reverse proxy which has not been fully configured.
+     * Specifically the {@code Host} and {@code X-Forwarded-Proto} headers must be set.
+     * <a href="https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache">Running Jenkins behind Apache</a>
+     * shows some examples of configuration.
      * @since 1.263
      */
-    public String getRootUrlFromRequest() {
+    public @Nonnull String getRootUrlFromRequest() {
         StaplerRequest req = Stapler.getCurrentRequest();
-        StringBuilder buf = new StringBuilder();
-        String scheme = req.getScheme();
-        String forwardedScheme = req.getHeader("X-Forwarded-Proto");
-        if (forwardedScheme != null) {
-            scheme = forwardedScheme;
+        if (req == null) {
+            throw new IllegalStateException("cannot call getRootUrlFromRequest from outside a request handling thread");
         }
-        buf.append(scheme+"://");
-        buf.append(req.getServerName());
-        if(req.getServerPort()!=80)
-            buf.append(':').append(req.getServerPort());
+        StringBuilder buf = new StringBuilder();
+        String scheme = getXForwardedHeader(req, "X-Forwarded-Proto", req.getScheme());
+        buf.append(scheme).append("://");
+        String host = getXForwardedHeader(req, "X-Forwarded-Host", req.getServerName());
+        buf.append(host);
+        int port = req.getServerPort();
+        String forwardedPort = getXForwardedHeader(req, "X-Forwarded-Port", null);
+        if (forwardedPort != null) {
+            try {
+                port = Integer.parseInt(forwardedPort);
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        if (port != ("https".equals(scheme) ? 443 : 80)) {
+            buf.append(':').append(port);
+        }
         buf.append(req.getContextPath()).append('/');
         return buf.toString();
+    }
+
+    /**
+     * Gets the originating "X-Forwarded-..." header from the request. If there are multiple headers the originating
+     * header is the first header. If the originating header contains a comma separated list, the originating entry
+     * is the first one.
+     * @param req the request
+     * @param header the header name
+     * @param defaultValue the value to return if the header is absent.
+     * @return the originating entry of the header or the default value if the header was not present.
+     */
+    private static String getXForwardedHeader(StaplerRequest req, String header, String defaultValue) {
+        String value = req.getHeader(header);
+        if (value != null) {
+            int index = value.indexOf(',');
+            return index == -1 ? value.trim() : value.substring(0,index).trim();
+        }
+        return defaultValue;
     }
 
     public File getRootDir() {
