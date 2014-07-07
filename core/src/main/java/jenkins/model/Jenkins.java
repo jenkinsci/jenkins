@@ -2119,6 +2119,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      but that's not a hard requirement.
      * @return
      *      Can be an empty list but never null.
+     * @see ExtensionList#lookup
      */
     @SuppressWarnings({"unchecked"})
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {

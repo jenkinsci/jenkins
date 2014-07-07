@@ -8,6 +8,7 @@ import hudson.util.DescriptorList;
 
 import java.util.List;
 import java.util.Collection;
+import org.jvnet.hudson.test.WithoutJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -32,10 +33,17 @@ public class ExtensionListTest extends HudsonTestCase {
 
 
     public void testAutoDiscovery() throws Exception {
-        ExtensionList<Animal> list = jenkins.getExtensionList(Animal.class);
+        ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
         assertEquals(2,list.size());
         assertNotNull(list.get(Dog.class));
         assertNotNull(list.get(Cat.class));
+    }
+
+    @WithoutJenkins
+    public void testNullJenkinsInstance() throws Exception {
+        ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
+        assertEquals(0, list.size());
+        assertFalse(list.iterator().hasNext());
     }
 
     public void testExtensionListView() throws Exception {
