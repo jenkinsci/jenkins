@@ -81,7 +81,7 @@ public class Tasks {
         return t.getOwnerTask();
     }
 
-    public static Task getOwnerTaskOf(SubTask t) {
+    public static @Nonnull Task getOwnerTaskOf(@Nonnull SubTask t) {
         try {
             return _getOwnerTaskOf(t);
         } catch (AbstractMethodError e) {

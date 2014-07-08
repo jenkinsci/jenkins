@@ -1278,14 +1278,13 @@ public class Queue extends ResourceController implements Saveable {
     public interface Executable extends Runnable {
         /**
          * Task from which this executable was created.
-         * Never null.
          *
          * <p>
          * Since this method went through a signature change in 1.377, the invocation may results in
          * {@link AbstractMethodError}.
          * Use {@link Executables#getParentOf(Queue.Executable)} that avoids this.
          */
-        SubTask getParent();
+        @Nonnull SubTask getParent();
 
         /**
          * Called by {@link Executor} to perform the task

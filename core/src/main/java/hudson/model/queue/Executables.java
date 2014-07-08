@@ -27,6 +27,7 @@ import hudson.model.Queue.Executable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import javax.annotation.Nonnull;
 
 /**
  * Convenience methods around {@link Executable}.
@@ -37,7 +38,7 @@ public class Executables {
     /**
      * Due to the return type change in {@link Executable}, the caller needs a special precaution now.
      */
-    public static SubTask getParentOf(Executable e) {
+    public static @Nonnull SubTask getParentOf(Executable e) {
         try {
             return _getParentOf(e);
         } catch (AbstractMethodError _) {
