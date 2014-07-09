@@ -283,6 +283,14 @@ pre.console {
   font-size: 12pt;
 }
 
+#jenkins .task-link {
+    text-decoration: none;
+}
+
+#jenkins .task-link:hover {
+    text-decoration: underline;
+}
+
 .task {
   white-space: nowrap;
 }
