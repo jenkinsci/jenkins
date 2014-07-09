@@ -678,11 +678,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * @deprecated since 2008-06-15.
-     *     This is only used to support backward compatibility with old URLs.
+     * Looks up a build by its ID.
      * @see LazyBuildMixIn#getBuild
      */
-    @Deprecated
     public RunT getBuild(String id) {
         for (RunT r : _getRuns().values()) {
             if (r.getId().equals(id))
