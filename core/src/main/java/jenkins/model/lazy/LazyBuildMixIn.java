@@ -291,12 +291,18 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
          *
          * <p>
          * Some {@link Run}s do lazy-loading, so we don't use
-         * {@link #previousBuild} and {@link #nextBuild}, and instead use these
+         * {@link #previousBuildR} and {@link #nextBuildR}, and instead use these
          * fields and point to {@link #selfReference} (or {@link #none}) of
          * adjacent builds.
          */
         private volatile BuildReference<RunT> previousBuildR, nextBuildR;
 
+        /**
+         * Used in {@link #previousBuildR} and {@link #nextBuildR} to indicate
+         * that we know there is no next/previous build (as opposed to {@code null},
+         * which is used to indicate we haven't determined if there is a next/previous
+         * build.)
+         */
         @SuppressWarnings({"unchecked", "rawtypes"})
         private static final BuildReference NONE = new BuildReference("NONE", null);
 
