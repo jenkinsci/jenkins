@@ -30,6 +30,8 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.Assert.*;
+
+import hudson.model.listeners.RunListener;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -44,6 +46,8 @@ public class LazyBuildMixInTest {
 
     @Bug(22395)
     @Test public void dropLinksAfterGC() throws Exception {
+        RunListener.all().clear();  // see commit message for the discussion
+
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
@@ -64,6 +68,8 @@ public class LazyBuildMixInTest {
 
     @Issue("JENKINS-22395")
     @Test public void dropLinksAfterGC2() throws Exception {
+        RunListener.all().clear();  // see commit message for the discussion
+
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
