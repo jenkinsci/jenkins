@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestExtension;
@@ -60,10 +61,31 @@ public class LazyBuildMixInTest {
         assertEquals(1, b1a.getNumber());
         assertEquals(b3, b1a.getNextBuild());
     }
+
+    @Issue("JENKINS-22395")
+    @Test public void dropLinksAfterGC2() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
+        FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
+        assertEquals(b2, b1.getNextBuild());
+        assertEquals(b3, b2.getNextBuild());
+        assertEquals(null, b3.getNextBuild());
+        assertEquals(null, b1.getPreviousBuild());
+        assertEquals(b1, b2.getPreviousBuild());
+        assertEquals(b2, b3.getPreviousBuild());
+        b2.delete();
+        assertEquals(1, BRHF.drop(b1));
+        FreeStyleBuild b1a = b2.getPreviousBuild();
+        assertNotSame(b1, b1a);
+        assertEquals(1, b1a.getNumber());
+        assertEquals(b3, b1a.getNextBuild());
+    }
+
     /**
      * Unlike the standard {@link SoftReference} this lets us simulate a referent disappearing at a specific time.
      */
-    @TestExtension("dropLinksAfterGC") public static final class BRHF implements BuildReference.HolderFactory {
+    @TestExtension public static final class BRHF implements BuildReference.HolderFactory {
         private static final List<BRH<?>> refs = new ArrayList<BRH<?>>();
         private static final class BRH<R> implements BuildReference.Holder<R> {
             R r;
