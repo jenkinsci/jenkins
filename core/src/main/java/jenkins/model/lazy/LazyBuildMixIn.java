@@ -325,14 +325,21 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
          * To implement {@link Run#dropLinks}.
          */
         public final void dropLinks() {
-            RunT nb = getNextBuild();
-            if (nb != null) {
-                nb.getRunMixIn().previousBuildR = previousBuildR;
+            if (nextBuildR != null) {
+                RunT nb = nextBuildR.get();
+                if (nb != null) {
+                    nb.getRunMixIn().previousBuildR = previousBuildR;
+                }
             }
-            RunT pb = getPreviousBuild();
-            if (pb != null) {
-                pb.getRunMixIn().nextBuildR = nextBuildR;
+            if (previousBuildR != null) {
+                RunT pb = previousBuildR.get();
+                if (pb != null) {
+                    pb.getRunMixIn().nextBuildR = nextBuildR;
+                }
             }
+
+            // make this build object unreachable by other Runs
+            createReference().clear();
         }
 
         /**

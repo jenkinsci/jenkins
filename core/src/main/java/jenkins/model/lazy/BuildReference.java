@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.LazyBuildMixIn.RunMixIn;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -34,7 +35,7 @@ public final class BuildReference<R> {
     private static final Logger LOGGER = Logger.getLogger(BuildReference.class.getName());
 
     final String id;
-    private final Holder<R> holder;
+    private volatile Holder<R> holder;
 
     public BuildReference(String id, R referent) {
         this.id = id;
@@ -47,7 +48,17 @@ public final class BuildReference<R> {
      * @see Holder#get
      */
     public @CheckForNull R get() {
-        return holder.get();
+        Holder<R> h = holder; // capture
+        return h!=null ? h.get() : null;
+    }
+
+    /**
+     * Clear the reference to make a particular R object effectively unreachable.
+     *
+     * @see RunMixIn#dropLinks()
+     */
+    /*package*/ void clear() {
+        holder = null;
     }
 
     @Override
