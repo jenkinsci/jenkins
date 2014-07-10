@@ -226,7 +226,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Primarily for debugging and testing lazy loading behaviour.
      * @since 1.507
      */
-    public void purgeCache() {
+    public synchronized void purgeCache() {
         index = new Index();
         fullyLoaded = false;
         loadIdOnDisk();
