@@ -1229,6 +1229,15 @@ var jenkinsRules = {
         // initial positioning
         Element.observe(window,"load",adjustSticker);
         adjustSticker();
+    },
+
+    "#tasks .task-link-group" : function(task) {
+        var anchors = task.getElementsByTagName("A");
+        if (anchors && anchors.length > 0) {
+            task.onclick = function () {
+                anchors[0].click();
+            }
+        }
     }
 };
 /** @deprecated Use {@link Behaviour.specify} instead. */

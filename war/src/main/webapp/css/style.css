@@ -114,10 +114,19 @@ body {
   margin-bottom: 20px;
 }
 
+
 #tasks .task {
   margin-bottom: 4px;
   font-size: 14px;
   white-space: nowrap;
+}
+#tasks .task-link-group:hover {
+  cursor: pointer;
+  background-color: #e0e4dc;
+}
+
+#side-panel-content .pane {
+  margin-bottom: 15px;
 }
 
 /* buildQueue */
@@ -486,7 +495,7 @@ pre.console {
 }
 
 #jenkins .task-link:hover {
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .task {

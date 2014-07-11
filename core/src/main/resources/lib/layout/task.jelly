@@ -165,6 +165,7 @@ THE SOFTWARE.
               </script>
           </j:if>
 
+          <div class="task-link-group">
           <j:choose>
             <j:when test="${requiresConfirmation and not attrs.onClick}">
               <l:confirmationLink class="task-icon-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
@@ -219,6 +220,7 @@ THE SOFTWARE.
               </a>
             </j:otherwise>
           </j:choose>
+          </div>
 
           <j:if test="${match}">
             <div class="subtasks">
