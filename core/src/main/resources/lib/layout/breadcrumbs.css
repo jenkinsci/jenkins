@@ -19,9 +19,9 @@
 }
 
 #breadcrumbs {
-    list-style-type:none;
-    padding:0;
-    margin:0;
+    list-style-type: none;
+    padding: 0 0 0 8px;
+    margin: 0;
     height: 2em;
     border-bottom: 1px solid #d3d7cf;
 }
