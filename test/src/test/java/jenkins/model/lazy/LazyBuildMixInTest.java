@@ -26,19 +26,14 @@ package jenkins.model.lazy;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.List;
-import static org.junit.Assert.*;
-
 import hudson.model.listeners.RunListener;
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
-import org.jvnet.hudson.test.TestExtension;
 
 public class LazyBuildMixInTest {
 
@@ -58,7 +53,7 @@ public class LazyBuildMixInTest {
         assertEquals(null, b1.getPreviousBuild());
         assertEquals(b1, b2.getPreviousBuild());
         assertEquals(b2, b3.getPreviousBuild());
-        assertEquals(1, BRHF.drop(b1));
+        b1.getRunMixIn().createReference().clear();
         b2.delete();
         FreeStyleBuild b1a = b2.getPreviousBuild();
         assertNotSame(b1, b1a);
@@ -81,46 +76,11 @@ public class LazyBuildMixInTest {
         assertEquals(b1, b2.getPreviousBuild());
         assertEquals(b2, b3.getPreviousBuild());
         b2.delete();
-        assertEquals(1, BRHF.drop(b1));
+        b1.getRunMixIn().createReference().clear();
         FreeStyleBuild b1a = b2.getPreviousBuild();
         assertNotSame(b1, b1a);
         assertEquals(1, b1a.getNumber());
         assertEquals(b3, b1a.getNextBuild());
-    }
-
-    /**
-     * Unlike the standard {@link SoftReference} this lets us simulate a referent disappearing at a specific time.
-     */
-    @TestExtension public static final class BRHF implements BuildReference.HolderFactory {
-        private static final List<BRH<?>> refs = new ArrayList<BRH<?>>();
-        private static final class BRH<R> implements BuildReference.Holder<R> {
-            R r;
-            BRH(R r) {this.r = r;}
-            @Override public R get() {return r;}
-        }
-        @Override public <R> BuildReference.Holder<R> make(R referent) {
-            BRH<R> ref = new BRH<R>(referent);
-            synchronized (refs) {
-                refs.add(ref);
-            }
-            return ref;
-        }
-        /**
-         * Simulates garbage collection of a referent.
-         * @return how many build references went null as a result
-         */
-        static int drop(Object o) {
-            int count = 0;
-            synchronized (refs) {
-                for (BRH<?> ref : refs) {
-                    if (ref.r == o) {
-                        ref.r = null;
-                        count++;
-                    }
-                }
-            }
-            return count;
-        }
     }
 
     @Bug(20662)
