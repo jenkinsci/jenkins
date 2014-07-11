@@ -120,9 +120,21 @@ body {
   font-size: 14px;
   white-space: nowrap;
 }
-#tasks .task-link-group:hover {
+
+#tasks .task-link-group:hover a {
   cursor: pointer;
   background-color: #e0e4dc;
+  display: inline-block;
+  width: 100%;
+}
+
+#tasks .task-link .active {
+  font-weight: bold;
+}
+
+#tasks .task-link span {
+  display: inline-block;
+  padding-left:3px;
 }
 
 #side-panel-content .pane {

@@ -168,58 +168,35 @@ THE SOFTWARE.
           <div class="task-link-group">
           <j:choose>
             <j:when test="${requiresConfirmation and not attrs.onClick}">
-              <l:confirmationLink class="task-icon-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+              <l:confirmationLink class="task-icon-link task-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                 <j:choose>
                   <j:when test="${iconMetadata != null}">
                     <l:icon class="${iconMetadata.classSpec}" style="width: 24px; height: 24px; margin: 2px;" />
+                    <span class="${match ? 'active' : 'inactive'}">${title}</span>
                   </j:when>
                   <j:otherwise>
                     <l:icon alt="" src="${icon}" style="width: 24px; height: 24px; margin: 2px;" />
+                    <span class="${match ? 'active' : 'inactive'}">${title}</span>
                   </j:otherwise>
                 </j:choose>
               </l:confirmationLink>
             </j:when>
             <j:otherwise>
-              <a href="${href}" class="task-icon-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
+              <a href="${href}" class="task-icon-link task-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
                 <j:choose>
                   <j:when test="${iconMetadata != null}">
                     <l:icon class="${iconMetadata.classSpec}" style="width: 24px; height: 24px; margin: 2px;" />
+                    <span class="${match ? 'active' : 'inactive'}">${title}</span>
                   </j:when>
                   <j:otherwise>
                     <l:icon alt="" src="${icon}" style="width: 24px; height: 24px; margin: 2px;" />
+                    <span class="${match ? 'active' : 'inactive'}">${title}</span>
                   </j:otherwise>
                 </j:choose>
               </a>
             </j:otherwise>
           </j:choose>
-          <st:nbsp />
 
-          <j:choose>
-            <j:when test="${requiresConfirmation and not attrs.onClick}">
-              <l:confirmationLink class="task-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
-                <j:choose>
-                  <j:when test="${match}">
-                    <b>${title}</b>
-                  </j:when>
-                  <j:otherwise>
-                    ${title}
-                  </j:otherwise>
-                </j:choose>
-              </l:confirmationLink>
-            </j:when>
-            <j:otherwise>
-              <a href="${href}" class="task-link" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}">
-                <j:choose>
-                  <j:when test="${match}">
-                    <b>${title}</b>
-                  </j:when>
-                  <j:otherwise>
-                    ${title}
-                  </j:otherwise>
-                </j:choose>
-              </a>
-            </j:otherwise>
-          </j:choose>
           </div>
 
           <j:if test="${match}">
