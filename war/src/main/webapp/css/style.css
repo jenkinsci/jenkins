@@ -83,6 +83,11 @@ body {
   margin-bottom: 20px;
 }
 
+#tasks .task-link-group:hover {
+  cursor: pointer;
+  background-color: #e0e4dc;
+}
+
 #side-panel-content .pane {
   margin-bottom: 15px;
 }
@@ -381,7 +386,7 @@ pre.console {
 }
 
 #jenkins .task-link:hover {
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .task {
