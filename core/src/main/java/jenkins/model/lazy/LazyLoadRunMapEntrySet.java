@@ -2,7 +2,7 @@ package jenkins.model.lazy;
 
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 
-import java.util.AbstractMap.SimpleEntry;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -74,7 +74,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Entry<Integer,R>> {
             }
 
             private Entry<Integer, R> entryOf(R r) {
-                return new SimpleEntry<Integer, R>(owner.getNumberOf(r),r);
+                return new SimpleImmutableEntry<Integer, R>(owner.getNumberOf(r),r);
             }
 
             public void remove() {
