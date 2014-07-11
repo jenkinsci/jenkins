@@ -109,6 +109,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Updated atomically. Once set to this field, the index object may not be modified.
      */
     private volatile Index index = new Index();
+    private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<R>(this);
 
     /**
      * Pair of two maps into a single class, so that the changes can be made visible atomically,
@@ -274,7 +275,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     @Override
     public Set<Entry<Integer, R>> entrySet() {
         assert baseDirInitialized();
-        return Collections.unmodifiableSet(new BuildReferenceMapAdapter<R>(this,all()).entrySet());
+        return entrySet;
     }
 
     /**
@@ -348,7 +349,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public R get(int n) {
-        return search(n,Direction.EXACT);
+        return search(n, Direction.EXACT);
     }
 
     /**
@@ -543,7 +544,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public R getByNumber(int n) {
-        return search(n,Direction.EXACT);
+        return search(n, Direction.EXACT);
     }
 
     public R put(R value) {
@@ -551,7 +552,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     protected R _put(R value) {
-        return put(getNumberOf(value),value);
+        return put(getNumberOf(value), value);
     }
 
     @Override
@@ -612,7 +613,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * @return
      *      fully populated map.
      */
-    private TreeMap<Integer,BuildReference<R>> all() {
+    /*package*/ TreeMap<Integer,BuildReference<R>> all() {
         if (!fullyLoaded) {
             synchronized (this) {
                 if (!fullyLoaded) {
