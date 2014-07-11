@@ -39,19 +39,19 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.554.3</version>
+      <version>1.554.3.JENKINS-18065-ALLRM-all</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.554.3</version>
+      <version>1.554.3.JENKINS-18065-ALLRM-all</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.554.3</version>
+      <version>1.554.3.JENKINS-18065-ALLRM-all</version>
       <scope>test</scope>
     </dependency>
     <!--
