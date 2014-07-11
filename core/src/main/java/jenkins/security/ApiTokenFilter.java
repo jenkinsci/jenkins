@@ -17,6 +17,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * {@link Filter} that performs HTTP basic authentication based on API token.
@@ -61,9 +65,10 @@ public class ApiTokenFilter implements Filter {
                             SecurityContextHolder.setContext(oldContext);
                         }
                     } catch (UsernameNotFoundException x) {
-                        // Not/no longer a user; deny the API token. (But do not leak the information that this happened.)
-                        chain.doFilter(request, response);
-                        return;
+                        // The token was valid, but the impersonation failed. This token is clearly not his real password,
+                        // so there's no point in continuing the request processing. Report this error and abort.
+                        LOGGER.log(WARNING, "API token matched for user "+username+" but the impersonation failed",x);
+                        throw new ServletException(x);
                     } catch (DataAccessException x) {
                         throw new ServletException(x);
                     }
@@ -76,4 +81,6 @@ public class ApiTokenFilter implements Filter {
 
     public void destroy() {
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ApiTokenFilter.class.getName());
 }
