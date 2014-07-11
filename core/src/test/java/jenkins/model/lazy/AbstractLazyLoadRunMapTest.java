@@ -32,6 +32,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -39,6 +40,7 @@ import java.util.logging.Level;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -206,9 +208,9 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
         a.get(1).asserts(1,"A");
         assertNull(a.get(2));
-        a.get(3).asserts(3,"B");
+        a.get(3).asserts(3, "B");
         assertNull(a.get(4));
-        a.get(5).asserts(5,"C");
+        a.get(5).asserts(5, "C");
     }
 
     @Test
@@ -216,7 +218,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         FakeMap a = localBuilder.addBoth(1, "A").addBoth(3, "B").addBoth(5, "C").addBoth(7, "D").make();
 
         // we should be using the cache to find the entry efficiently
-        a.search(6, Direction.ASC).asserts(7,"D");
+        a.search(6, Direction.ASC).asserts(7, "D");
         a.search(2, Direction.DESC).asserts(1, "A");
     }
 
@@ -234,7 +236,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
     @Test
     public void bogusCache2() throws IOException {
-        FakeMap a = localBuilder.addBogusCache(1,3,"A").make();
+        FakeMap a = localBuilder.addBogusCache(1, 3, "A").make();
         assertNull(a.get(1));
         a.get(3).asserts(3,"A");
     }
@@ -294,7 +296,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
             .addUnloadable("F")
             .addUnloadable("G")
             .add(200,"H")
-            .add(201,"I");
+            .add(201, "I");
         FakeMap map = f.make();
 
         Build x = map.search(Integer.MAX_VALUE, Direction.DESC);
@@ -362,4 +364,63 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertFalse(iterator.hasNext());
     }
 
+    @Issue("JENKINS-18065")
+    @Test
+    public void entrySetIterator() {
+        Iterator<Entry<Integer, Build>> itr = a.entrySet().iterator();
+
+        // iterator, when created fresh, shouldn't force loading everything
+        // this involves binary searching, so it can load several.
+        assertTrue(a.getLoadedBuilds().size() < 3);
+
+        // check if the first entry is legit
+        assertTrue(itr.hasNext());
+        Entry<Integer, Build> e = itr.next();
+        assertEquals((Integer)5,e.getKey());
+        e.getValue().asserts(5, "C");
+
+        // now that the first entry is returned, we expect there to be two loaded
+        assertTrue(a.getLoadedBuilds().size() < 3);
+
+        // check if the second entry is legit
+        assertTrue(itr.hasNext());
+        e = itr.next();
+        assertEquals((Integer)3, e.getKey());
+        e.getValue().asserts(3,"B");
+
+        // repeat the process for the third one
+        assertTrue(a.getLoadedBuilds().size() <= 3);
+
+        // check if the third entry is legit
+        assertTrue(itr.hasNext());
+        e = itr.next();
+        assertEquals((Integer) 1, e.getKey());
+        e.getValue().asserts(1,"A");
+
+        assertFalse(itr.hasNext());
+        assertEquals(3, a.getLoadedBuilds().size());
+    }
+
+    @Issue("JENKINS-18065")
+    @Test
+    public void entrySetEmpty() {
+        // entrySet().isEmpty() shouldn't cause full data load
+        assertFalse(a.entrySet().isEmpty());
+        assertTrue(a.getLoadedBuilds().size() < 3);
+    }
+
+    @Issue("JENKINS-18065")
+    @Test
+    public void entrySetSize() {
+        assertEquals(3, a.entrySet().size());
+        assertEquals(0, b.entrySet().size());
+    }
+
+    @Issue("JENKINS-18065")
+    @Test
+    public void entrySetContains() {
+        for (Entry<Integer, Build> e : a.entrySet()) {
+            assertTrue(a.entrySet().contains(e));
+        }
+    }
 }
