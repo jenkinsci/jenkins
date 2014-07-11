@@ -39,7 +39,6 @@ import java.util.SortedMap;
 import java.util.logging.Level;
 import org.junit.BeforeClass;
 import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -362,7 +361,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertFalse(iterator.hasNext());
     }
 
-    @Issue("JENKINS-18065")
+    @Bug(18065)
     @Test
     public void entrySetIterator() {
         Iterator<Entry<Integer, Build>> itr = a.entrySet().iterator();
@@ -399,7 +398,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertEquals(3, a.getLoadedBuilds().size());
     }
 
-    @Issue("JENKINS-18065")
+    @Bug(18065)
     @Test
     public void entrySetEmpty() {
         // entrySet().isEmpty() shouldn't cause full data load
@@ -407,14 +406,14 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertTrue(a.getLoadedBuilds().size() < 3);
     }
 
-    @Issue("JENKINS-18065")
+    @Bug(18065)
     @Test
     public void entrySetSize() {
         assertEquals(3, a.entrySet().size());
         assertEquals(0, b.entrySet().size());
     }
 
-    @Issue("JENKINS-18065")
+    @Bug(18065)
     @Test
     public void entrySetContains() {
         for (Entry<Integer, Build> e : a.entrySet()) {
