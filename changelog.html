@@ -68,8 +68,8 @@ Upcoming changes</a>
   <li class="bug">
     Log rotation fails with "...looks to have already been deleted"
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22395">issue 22395</a>)
-  <li class="bug">
-    AbstractLazyLoadRunMap.iterator() calls .all()
+  <li class='major bug'>
+    Fixed unnecessary eager loading of build records in certain code path.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18065">issue 18065</a>)
 </ul>
 </div><!--=TRUNK-END=-->
@@ -87,12 +87,6 @@ Upcoming changes</a>
   <li class=bug>
     Do not offer automatic upgrade if war parent directory is not writable
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23683">issue 23683</a>)
-  <li class=bug>
-    Fixed "... looks to have already been deleted" bug in LogRotator
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22395">issue 22395</a>)
-  <li class='major bug'>
-    Fixed unnecessary eager loading of build records in certain code path.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18065">issue 18065</a>)
 </ul>
 </div><!--=END=-->
 <h3><a name=v1.571>What's new in 1.571</a> (2014/07/07)</h3>
