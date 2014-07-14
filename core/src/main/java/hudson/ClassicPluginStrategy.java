@@ -70,6 +70,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jenkinsci.bytecode.Transformer;
 
 public class ClassicPluginStrategy implements PluginStrategy {
 
@@ -696,8 +697,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     /**
-     * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
-     * Deprecated as of Java 7, retained only for Java 6.
+     * {@link AntClassLoader} with a few methods exposed, {@link Closeable} support, and {@link Transformer} support.
      */
     private final class AntClassLoader2 extends AntClassLoader implements Closeable {
         private final Vector pathComponents;
