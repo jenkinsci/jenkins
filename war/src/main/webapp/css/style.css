@@ -184,13 +184,14 @@ dt {
 }
 
 #header .login {
+  position: relative;
+  top: 8px;
   color: white;
   margin-right: 10px;
 }
 
-#header .login a {
-  position: relative;
-  top: 10px;
+#header .login a, #header .login a:visited {
+  color: white;
 }
 
 a:link {

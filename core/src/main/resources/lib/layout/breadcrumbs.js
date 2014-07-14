@@ -103,8 +103,16 @@ var breadcrumbs = (function() {
          */
         menuSelector.show = function(target) {
             var xy = Dom.getXY(target);
+
             if ($(target).hasClassName("inside"))
                 xy[0] -= this.offsetWidth;  // show the menu selector inside the text
+
+            if ($(target).hasClassName("inverse")) {
+                menuSelector.addClassName("inverse");
+            } else {
+                menuSelector.removeClassName("inverse");
+            }
+
             xy[0] += target.offsetWidth;
             xy[1] += target.offsetHeight/2 - this.offsetHeight/2;
             Dom.setXY(this, xy);

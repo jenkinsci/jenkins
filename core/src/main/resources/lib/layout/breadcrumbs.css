@@ -83,6 +83,9 @@
   cursor: pointer;
   z-index: 2000;
 }
+#menuSelector.inverse {
+  background-image: url(menu_down_arrow2.png);
+}
 
 A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
   padding-right: 16px;
