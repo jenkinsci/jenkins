@@ -345,12 +345,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public EnvVars getEnvironment(Node node, TaskListener listener) throws IOException, InterruptedException {
         EnvVars env =  super.getEnvironment(node, listener);
 
-        JDK jdk = getJDK();
-        if (jdk != null) {
+        JDK jdkTool = getJDK();
+        if (jdkTool != null) {
             if (node != null) { // just in case were not in a build
-                jdk = jdk.forNode(node, listener);
+                jdkTool = jdkTool.forNode(node, listener);
             }
-            jdk.buildEnvVars(env);
+            jdkTool.buildEnvVars(env);
+        } else if (jdk != null) {
+            listener.getLogger().println("No JDK named ‘" + jdk + "’ found");
         }
 
         return env;
