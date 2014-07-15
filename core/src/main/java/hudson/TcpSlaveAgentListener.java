@@ -33,7 +33,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
@@ -76,7 +75,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
 
-        LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
+        LOGGER.log(Level.FINE, "JNLP slave agent listener started on TCP port {0}", getPort());
 
         start();
     }
