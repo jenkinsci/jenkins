@@ -3,8 +3,6 @@ package hudson.model;
 import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +34,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     /**
      * Schedules this periodic work now in a new thread, if one isn't already running.
      */
+    @SuppressWarnings("deprecation") // in this case we really want to use PeriodicWork.logger since it reports the impl class
     public final void doRun() {
         try {
             if(thread!=null && thread.isAlive()) {
