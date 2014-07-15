@@ -50,22 +50,16 @@ public class InstallerTranslator extends ToolLocationTranslator {
         if (isp == null) {
             return null;
         }
-
         for (ToolInstaller installer : isp.installers) {
             if (installer.appliesTo(node)) {
-            	Map<ToolInstallation, Semaphore> mutexByTool;
-            	Semaphore semaphore;
-            	
-                synchronized(mutexByNode) {
-                    mutexByTool = mutexByNode.get(node);
-                    if (mutexByTool == null) {
-                        mutexByNode.put(node, mutexByTool = new WeakHashMap<ToolInstallation, Semaphore>());
-                        mutexByTool.put(tool, semaphore = new Semaphore(1));
-                    } else {
-                    	semaphore = mutexByTool.get(tool);
-                    }
+                Map<ToolInstallation, Semaphore> mutexByTool = mutexByNode.get(node);
+                if (mutexByTool == null) {
+                    mutexByNode.put(node, mutexByTool = new WeakHashMap<ToolInstallation, Semaphore>());
                 }
-
+                Semaphore semaphore = mutexByTool.get(tool);
+                if (semaphore == null) {
+                    mutexByTool.put(tool, semaphore = new Semaphore(1));
+                }
                 semaphore.acquire();
                 try {
                     return installer.performInstallation(tool, node, log).getRemote();
