@@ -1811,7 +1811,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 }
 
                 private boolean ignore(CSSParseException e) {
-                    return e.getURI().contains("/yui/");
+                    String uri = e.getURI();
+                    return uri.contains("/yui/")
+                        // TODO JENKINS-14749: these are a mess today, and we know that
+                        || uri.contains("/css/style.css") || uri.contains("/css/responsive-grid.css");
                 }
             });
 
