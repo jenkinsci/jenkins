@@ -594,6 +594,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         server.start();
 
         localPort = connector.getLocalPort();
+        LOGGER.log(Level.INFO, "Running on {0}", getURL());
 
         return context.getServletContext();
     }
@@ -2127,6 +2128,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     // needs to keep reference, or it gets GC-ed.
     private static final Logger XML_HTTP_REQUEST_LOGGER = Logger.getLogger(XMLHttpRequest.class.getName());
+    private static final Logger SPRING_LOGGER = Logger.getLogger("org.springframework");
+    private static final Logger JETTY_LOGGER = Logger.getLogger("org.mortbay.log");
 
     static {
         // screen scraping relies on locale being fixed.
@@ -2146,8 +2149,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 }
         }
 
-        // suppress INFO output from Spring, which is verbose
-        Logger.getLogger("org.springframework").setLevel(Level.WARNING);
+        // suppress some logging which we do not much care about here
+        SPRING_LOGGER.setLevel(Level.WARNING);
+        JETTY_LOGGER.setLevel(Level.WARNING);
 
         // hudson-behavior.js relies on this to decide whether it's running unit tests.
         Main.isUnitTest = true;
