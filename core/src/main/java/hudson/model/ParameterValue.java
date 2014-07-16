@@ -283,6 +283,7 @@ public abstract class ParameterValue implements Serializable {
      * boolean, string, etc.
      *
      * If there's nothing that really fits the bill, the callee can return {@code this}.
+     * @since 1.568
      */
     public Object getValue() {
         return null;
