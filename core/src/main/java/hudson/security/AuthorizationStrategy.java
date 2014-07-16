@@ -167,6 +167,23 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
     }
 
     /**
+     * Implementation can choose to provide different ACL for different {@link TopLevelItemDescriptor}s in the context
+     * of different {@link ItemGroup}s.
+     *
+     * <p>
+     * The default implementation returns the {@link ItemGroup}'s ACL falling back to {@link #getRootACL()} if
+     * the item group is not an {@link hudson.model.AbstractItem}
+     *
+     * @param context the context.
+     * @param descriptor the descriptor.
+     *
+     * @since 1.574
+     */
+    public @Nonnull ACL getACL(@Nonnull ItemGroup context, @Nonnull TopLevelItemDescriptor descriptor) {
+        return context instanceof AbstractItem ? getACL((AbstractItem)context) : getRootACL();
+    }
+
+    /**
      * Returns the list of all group/role names used in this authorization strategy,
      * and the ACL returned from the {@link #getRootACL()} method.
      * <p>
