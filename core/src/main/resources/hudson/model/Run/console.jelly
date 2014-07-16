@@ -52,7 +52,7 @@ THE SOFTWARE.
       <j:choose>
         <!-- Do progressive console output -->
         <j:when test="${it.isLogUpdated()}">
-          <pre id="out" class="console-output" />
+          <pre id="out" class="console-output console-output-dark" />
             <div id="spinner">
               <img src="${imagesURL}/spinner.gif" alt="" /> 
             </div>
@@ -60,7 +60,7 @@ THE SOFTWARE.
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>
-          <pre class="console-output">
+          <pre class="console-output console-output-dark">
             <st:getOutput var="output" />
             <j:whitespace>${it.writeLogTo(offset,output)}</j:whitespace>
           </pre>
