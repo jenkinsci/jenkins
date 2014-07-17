@@ -67,6 +67,7 @@ ${h.initPageVariables(context)}
   this also allows us to configure HttpSessionContextIntegrationFilter not to create sessions,
   which I suspect can end up creating sessions for wrong resource types (such as static resources.)
 -->
+<j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
 <j:set var="_" value="${request.getSession()}"/>
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null and !attrs.norefresh.equals(false))}"/>
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
@@ -79,6 +80,10 @@ ${h.initPageVariables(context)}
 <html>
   <head>
     ${h.checkPermission(it,permission)}
+
+    <j:if test="${isMSIE}">
+      <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    </j:if>
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
@@ -121,6 +126,10 @@ ${h.initPageVariables(context)}
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
+
+    <j:if test="${isMSIE}">
+      <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
+    </j:if>
 
     <script>
         crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
