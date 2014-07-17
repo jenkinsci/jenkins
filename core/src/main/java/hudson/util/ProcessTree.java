@@ -716,7 +716,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 in = org.apache.commons.io.FileUtils.openInputStream(file);
                 return org.apache.commons.io.IOUtils.toByteArray(in);
             } finally {
-                org.apache.commons.io.IOUtils.closeQuietly(in);
+                in.close();
             }
         }
     }
