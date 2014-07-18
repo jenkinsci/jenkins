@@ -40,13 +40,13 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -340,6 +340,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(outputStream);
+        zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
         for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
             String relativePath;
             if (glob.length() == 0) {
