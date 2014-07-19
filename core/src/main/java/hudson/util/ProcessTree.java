@@ -711,12 +711,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         public byte[] readFileToByteArray(File file) throws IOException {
-            InputStream in = null;
+            InputStream in = org.apache.commons.io.FileUtils.openInputStream(file);
             try {
-                in = org.apache.commons.io.FileUtils.openInputStream(file);
                 return org.apache.commons.io.IOUtils.toByteArray(in);
             } finally {
-                if (in != null)
                     in.close();
             }
         }
