@@ -31,6 +31,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.model.listeners.ItemListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.File;
@@ -44,9 +45,14 @@ import org.kohsuke.stapler.QueryParameter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.json.JSONObject;
 import javax.annotation.Nonnull;
+import jenkins.model.BuildDiscarder;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -55,20 +61,20 @@ import javax.annotation.Nonnull;
  */
 public class ArtifactArchiver extends Recorder {
 
+    private static final Logger LOG = Logger.getLogger(ArtifactArchiver.class.getName());
+
     /**
      * Comma- or space-separated list of patterns of files/directories to be archived.
      */
-    private final String artifacts;
+    private String artifacts;
 
     /**
      * Possibly null 'excludes' pattern as in Ant.
      */
-    private final String excludes;
+    private String excludes = "";
 
-    /**
-     * Just keep the last successful artifact set, no more.
-     */
-    private final boolean latestOnly;
+    @Deprecated
+    private Boolean latestOnly;
 
     /**
      * Fail (or not) the build if archiving returns nothing.
@@ -86,31 +92,35 @@ public class ArtifactArchiver extends Recorder {
      * Default ant exclusion
      */
     @Nonnull
-    private Boolean defaultExcludes;
+    private Boolean defaultExcludes = true;
 
+    @DataBoundConstructor public ArtifactArchiver(String artifacts) {
+        this.artifacts = artifacts.trim();
+    }
 
+    @Deprecated
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly) {
         this(artifacts, excludes, latestOnly, false, false);
     }
 
+    @Deprecated
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive) {
         this(artifacts, excludes, latestOnly, allowEmptyArchive, false);
     }
 
-
+    @Deprecated
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive, boolean onlyIfSuccessful) {
         this(artifacts, excludes , latestOnly , allowEmptyArchive, onlyIfSuccessful , true);
     }
 
-
-    @DataBoundConstructor
+    @Deprecated
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive, boolean onlyIfSuccessful, Boolean defaultExcludes) {
-        this.artifacts = artifacts.trim();
-        this.excludes = Util.fixEmptyAndTrim(excludes);
+        this(artifacts);
+        setExcludes(excludes);
         this.latestOnly = latestOnly;
-        this.allowEmptyArchive = allowEmptyArchive;
-        this.onlyIfSuccessful = onlyIfSuccessful;
-        this.defaultExcludes = defaultExcludes;
+        setAllowEmptyArchive(allowEmptyArchive);
+        setOnlyIfSuccessful(onlyIfSuccessful);
+        setDefaultExcludes(defaultExcludes);
     }
 
     // Backwards compatibility for older builds
@@ -132,20 +142,37 @@ public class ArtifactArchiver extends Recorder {
         return excludes;
     }
 
+    @DataBoundSetter public final void setExcludes(String excludes) {
+        this.excludes = Util.fixEmptyAndTrim(excludes);
+    }
+
+    @Deprecated
     public boolean isLatestOnly() {
-        return latestOnly;
+        return latestOnly != null ? latestOnly : false;
     }
 
     public boolean isOnlyIfSuccessful() {
         return onlyIfSuccessful;
     }
 
+    @DataBoundSetter public final void setOnlyIfSuccessful(boolean onlyIfSuccessful) {
+        this.onlyIfSuccessful = onlyIfSuccessful;
+    }
+
     public boolean getAllowEmptyArchive() {
         return allowEmptyArchive;
     }
 
+    @DataBoundSetter public final void setAllowEmptyArchive(boolean allowEmptyArchive) {
+        this.allowEmptyArchive = allowEmptyArchive;
+    }
+
     public boolean isDefaultExcludes() {
         return defaultExcludes;
+    }
+
+    @DataBoundSetter public final void setDefaultExcludes(boolean defaultExcludes) {
+        this.defaultExcludes = defaultExcludes;
     }
 
     private void listenerWarnOrError(BuildListener listener, String message) {
@@ -236,34 +263,6 @@ public class ArtifactArchiver extends Recorder {
         }
     }
 
-    @Override
-    public boolean prebuild(AbstractBuild<?, ?> build, BuildListener listener) {
-        if(latestOnly) {
-            AbstractBuild<?,?> b = build.getProject().getLastCompletedBuild();
-            Result bestResultSoFar = Result.NOT_BUILT;
-            while(b!=null) {
-                if(b.getResult()!=null){
-                    if (b.getResult().isBetterThan(bestResultSoFar)) {
-                        bestResultSoFar = b.getResult();
-                    } else {
-                        // remove old artifacts
-                        try {
-                            if (b.getArtifactManager().delete()) {
-                                listener.getLogger().println(Messages.ArtifactArchiver_DeletingOld(b.getDisplayName()));
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace(listener.error(e.getMessage()));
-                        } catch (InterruptedException x) {
-                            x.printStackTrace(listener.error(x.getMessage()));
-                        }
-                    }
-                }
-                b = b.getPreviousBuild();
-            }
-        }
-        return true;
-    }
-
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
@@ -301,4 +300,36 @@ public class ArtifactArchiver extends Recorder {
             return true;
         }
     }
+
+    @Extension public static final class Migrator extends ItemListener {
+        @Override public void onLoaded() {
+            for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+                ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
+                if (aa != null && aa.latestOnly != null) {
+                    try {
+                        if (aa.latestOnly) {
+                            BuildDiscarder bd = p.getBuildDiscarder();
+                            if (bd instanceof LogRotator) {
+                                LogRotator lr = (LogRotator) bd;
+                                if (lr.getArtifactNumToKeep() == -1) {
+                                    p.setBuildDiscarder(new LogRotator(lr.getDaysToKeep(), lr.getNumToKeep(), lr.getArtifactDaysToKeep(), 1));
+                                } else {
+                                    LOG.log(Level.WARNING, "will not clobber artifactNumToKeep={0} in {1}", new Object[] {lr.getArtifactNumToKeep(), p});
+                                }
+                            } else if (bd == null) {
+                                p.setBuildDiscarder(new LogRotator(-1, -1, -1, 1));
+                            } else {
+                                LOG.log(Level.WARNING, "unrecognized BuildDiscarder {0} in {1}", new Object[] {bd, p});
+                            }
+                        }
+                        aa.latestOnly = null;
+                        p.save();
+                    } catch (IOException x) {
+                        LOG.log(Level.WARNING, "could not migrate " + p, x);
+                    }
+                }
+            }
+        }
+    }
+
 }
