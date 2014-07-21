@@ -87,6 +87,7 @@ public class ArtifactArchiver extends Recorder {
      */
     private boolean onlyIfSuccessful;
 
+    private boolean fingerprint;
 
     /**
      * Default ant exclusion
@@ -159,6 +160,15 @@ public class ArtifactArchiver extends Recorder {
         this.onlyIfSuccessful = onlyIfSuccessful;
     }
 
+    public boolean isFingerprint() {
+        return fingerprint;
+    }
+
+    /** Whether to fingerprint the artifacts after we archive them. */
+    @DataBoundSetter public void setFingerprint(boolean fingerprint) {
+        this.fingerprint = fingerprint;
+    }
+
     public boolean getAllowEmptyArchive() {
         return allowEmptyArchive;
     }
@@ -208,6 +218,9 @@ public class ArtifactArchiver extends Recorder {
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes));
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(ws, launcher, listener, files);
+                if (fingerprint) {
+                    new Fingerprinter(artifacts).perform(build, launcher, listener);
+                }
             } else {
                 Result result = build.getResult();
                 if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
@@ -302,11 +315,12 @@ public class ArtifactArchiver extends Recorder {
     }
 
     @Extension public static final class Migrator extends ItemListener {
+        @SuppressWarnings("deprecation")
         @Override public void onLoaded() {
             for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
-                ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
-                if (aa != null && aa.latestOnly != null) {
-                    try {
+                try {
+                    ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
+                    if (aa != null && aa.latestOnly != null) {
                         if (aa.latestOnly) {
                             BuildDiscarder bd = p.getBuildDiscarder();
                             if (bd instanceof LogRotator) {
@@ -324,9 +338,17 @@ public class ArtifactArchiver extends Recorder {
                         }
                         aa.latestOnly = null;
                         p.save();
-                    } catch (IOException x) {
-                        LOG.log(Level.WARNING, "could not migrate " + p, x);
                     }
+                    Fingerprinter f = p.getPublishersList().get(Fingerprinter.class);
+                    if (f.getRecordBuildArtifacts()) {
+                        f.recordBuildArtifacts = null;
+                        if (aa != null) {
+                            aa.setFingerprint(true);
+                        }
+                        p.save();
+                    }
+                } catch (IOException x) {
+                    LOG.log(Level.WARNING, "could not migrate " + p, x);
                 }
             }
         }

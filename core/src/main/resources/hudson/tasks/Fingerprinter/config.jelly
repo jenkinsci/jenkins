@@ -26,8 +26,4 @@ THE SOFTWARE.
   <f:entry title="${%Files to fingerprint}" field="targets">
     <f:textbox/>
   </f:entry>
-  <f:entry title="">
-    <f:checkbox name="recordBuildArtifacts" checked="${instance.recordBuildArtifacts}"
-            title="${%Fingerprint all archived artifacts}"/>
-  </f:entry>
 </j:jelly>

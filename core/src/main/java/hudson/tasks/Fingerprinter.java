@@ -87,14 +87,16 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
      */
     private final String targets;
 
-    /**
-     * Also record all the finger prints of the build artifacts.
-     */
-    private final boolean recordBuildArtifacts;
+    @Deprecated
+    Boolean recordBuildArtifacts;
 
-    @DataBoundConstructor
-    public Fingerprinter(String targets, boolean recordBuildArtifacts) {
+    @DataBoundConstructor public Fingerprinter(String targets) {
         this.targets = targets;
+    }
+
+    @Deprecated
+    public Fingerprinter(String targets, boolean recordBuildArtifacts) {
+        this(targets);
         this.recordBuildArtifacts = recordBuildArtifacts;
     }
 
@@ -102,8 +104,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return targets;
     }
 
+    @Deprecated
     public boolean getRecordBuildArtifacts() {
-        return recordBuildArtifacts;
+        return recordBuildArtifacts != null && recordBuildArtifacts;
     }
 
     @Override
@@ -117,18 +120,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             if(targets.length()!=0) {
                 String expandedTargets = environment.expand(targets);
                 record(build, listener, record, expandedTargets);
-            }
-
-            if(recordBuildArtifacts) {
-                ArtifactArchiver aa = build.getProject().getPublishersList().get(ArtifactArchiver.class);
-                if(aa==null) {
-                    // configuration error
-                    listener.error(Messages.Fingerprinter_NoArchiving());
-                    build.setResult(Result.FAILURE);
-                    return true;
-                }
-                String expandedArtifacts = environment.expand(aa.getArtifacts());
-                record(build, listener, record, expandedArtifacts);
             }
 
             FingerprintAction fingerprintAction = build.getAction(FingerprintAction.class);

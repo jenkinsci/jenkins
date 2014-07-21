@@ -231,4 +231,20 @@ public class ArtifactArchiverTest {
         assertTrue(xml, xml.contains("<artifactNumToKeep>1</artifactNumToKeep>"));
     }
 
+    @LocalData
+    @Test public void fingerprintMigration() throws Exception {
+        FreeStyleProject p = j.jenkins.getItemByFullName("sample", FreeStyleProject.class);
+        assertNotNull(p);
+        String xml = p.getConfigFile().asString();
+        assertFalse(xml, xml.contains("<recordBuildArtifacts>"));
+        assertTrue(xml, xml.contains("<fingerprint>true</fingerprint>"));
+        ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
+        assertTrue(aa.isFingerprint());
+        FreeStyleBuild b1 = j.buildAndAssertSuccess(p);
+        assertEquals(1, b1.getArtifacts().size());
+        Fingerprinter.FingerprintAction a = b1.getAction(Fingerprinter.FingerprintAction.class);
+        assertNotNull(a);
+        assertEquals("[stuff]", a.getFingerprints().keySet().toString());
+    }
+
 }
