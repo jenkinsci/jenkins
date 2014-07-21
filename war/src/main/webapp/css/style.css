@@ -191,6 +191,12 @@ dt {
 
 #header .login a, #header .login a:visited {
   color: white;
+  text-decoration: none;
+}
+
+#header .login a:hover {
+    text-decoration: underline;
+    color: #ccc;
 }
 
 a:link {
