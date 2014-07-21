@@ -269,15 +269,12 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             return Messages.Fingerprinter_DisplayName();
         }
 
-        @Override
-        public String getHelpFile() {
-            return "/help/project-config/fingerprint.html";
+        @Deprecated
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            return doCheckTargets(project, value);
         }
 
-        /**
-         * Performs on-the-fly validation on the file mask wildcard.
-         */
-        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+        public FormValidation doCheckTargets(@AncestorInPath AbstractProject<?,?> project, @QueryParameter String value) throws IOException {
             return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 
