@@ -51,6 +51,11 @@ public abstract class CommandInterpreter extends Builder {
      */
     protected final String command;
 
+    /**
+     * The build being run. Valid only during perform(...).
+     */
+    protected AbstractBuild<?,?> build;
+
     public CommandInterpreter(String command) {
         this.command = command;
     }
@@ -59,12 +64,26 @@ public abstract class CommandInterpreter extends Builder {
         return command;
     }
 
+    /**
+      * Access the current build object.
+      *
+      * Useful for {@link #join(Proc p)} for setting build results.
+      *
+     * @return The build being run, or null if outside perform(...)
+     * @since 1.573
+     */
+    protected final AbstractBuild<?,?> getBuild()
+    {
+        return build;
+    }
+
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         return perform(build,launcher,(TaskListener)listener);
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
+        this.build = build;
         FilePath ws = build.getWorkspace();
         if (ws == null) {
             Node node = build.getBuiltOn();
@@ -97,6 +116,7 @@ public abstract class CommandInterpreter extends Builder {
                 Util.displayIOException(e, listener);
                 e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
             }
+            this.build = null;
             return r==0;
         } finally {
             try {
@@ -125,9 +145,12 @@ public abstract class CommandInterpreter extends Builder {
     /**
      * Reports the exit code from the process.
      *
-     * This allows subtypes to treat the exit code differently (for example by treating non-zero exit code
-     * as if it's zero, or to set the status to {@link Result#UNSTABLE}). Any non-zero exit code will cause
-     * the build step to fail.
+     * This allows subtypes to treat the exit code differently (for example by
+     * treating non-zero exit code as if it's zero). Any non-zero exit code
+     * will cause the build step to fail.
+     *
+     * To set the status to {@link Result#UNSTABLE}, use {@link #getBuild()} and
+     * call {@code getBuild().setResult(BuildResult.UNSTABLE); }.
      *
      * @since 1.549
      */
