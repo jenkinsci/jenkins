@@ -27,7 +27,10 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.Extension;
+import hudson.Proc;
 import hudson.model.AbstractProject;
+import hudson.model.Result;
+import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.IOException;
@@ -53,16 +56,25 @@ import java.util.logging.Logger;
  */
 public class Shell extends CommandInterpreter {
     @DataBoundConstructor
-    public Shell(String command) {
+    public Shell(String command, Integer unstableReturn) {
         super(LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Unix));
+        if (unstableReturn != null && unstableReturn.equals(0))
+            unstableReturn = null;
+        this.unstableReturn = unstableReturn;
     }
+
+    public Shell(String command) {
+        this(command, null);
+    }
+
+    private final Integer unstableReturn;
 
     /**
      * Older versions of bash have a bug where non-ASCII on the first line
      * makes the shell think the file is a binary file and not a script. Adding
      * a leading line feed works around this problem.
      */
-    private static String addLineFeedForNonASCII(String s) {
+    private static String addCrForNonASCII(String s) {
         if(!s.startsWith("#!")) {
             if (s.indexOf('\n')!=0) {
                 return "\n" + s;
@@ -87,11 +99,29 @@ public class Shell extends CommandInterpreter {
     }
 
     protected String getContents() {
-        return addLineFeedForNonASCII(LineEndingConversion.convertEOL(command,LineEndingConversion.EOLType.Unix));
+        return addCrForNonASCII(fixCrLf(command));
     }
 
     protected String getFileExtension() {
         return ".sh";
+    }
+
+    public final Integer getUnstableReturn() {
+        return unstableReturn;
+    }
+
+    /**
+      * Allow the user to define a result for "unstable":
+      */
+    @Override
+    protected int join(Proc p) throws IOException, InterruptedException {
+        final int result = p.join();
+        if (this.unstableReturn != null && result != 0 && this.unstableReturn.equals(result)) {
+            getBuild().setResult(Result.UNSTABLE);
+            return 0;
+        }
+        else
+            return result;
     }
 
     @Override
@@ -159,6 +189,17 @@ public class Shell extends CommandInterpreter {
 
         public String getDisplayName() {
             return Messages.Shell_DisplayName();
+        }
+
+        @Override
+        public Builder newInstance(StaplerRequest req, JSONObject data) {
+            final String unstableReturnStr = data.getString("unstableReturn");
+            Integer unstableReturn = null;
+            if (unstableReturnStr != null && ! unstableReturnStr.isEmpty()) {
+                /* Already validated by f.number in the form */
+                unstableReturn = (Integer)Integer.parseInt(unstableReturnStr, 10);
+            }
+            return new Shell(data.getString("command"), unstableReturn);
         }
 
         @Override
