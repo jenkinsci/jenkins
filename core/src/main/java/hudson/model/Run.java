@@ -1518,7 +1518,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @see CheckPoint#report()
      */
     /*package*/ static void reportCheckpoint(@Nonnull CheckPoint id) {
-        RunnerStack.INSTANCE.peek().checkpoints.report(id);
+        Run<?,?>.RunExecution exec = RunnerStack.INSTANCE.peek();
+        if (exec == null) {
+            return;
+        }
+        exec.checkpoints.report(id);
     }
 
     /**
@@ -1526,7 +1530,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     /*package*/ static void waitForCheckpoint(@Nonnull CheckPoint id, @CheckForNull BuildListener listener, @CheckForNull String waiter) throws InterruptedException {
         while(true) {
-            Run b = RunnerStack.INSTANCE.peek().getBuild().getPreviousBuildInProgress();
+            Run<?,?>.RunExecution exec = RunnerStack.INSTANCE.peek();
+            if (exec == null) {
+                return;
+            }
+            Run b = exec.getBuild().getPreviousBuildInProgress();
             if(b==null)     return; // no pending earlier build
             Run.RunExecution runner = b.runner;
             if(runner==null) {
