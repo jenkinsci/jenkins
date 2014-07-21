@@ -39,7 +39,7 @@ body {
 
 #header {
   background-color: #000000;
-  height: 50px;
+  height: 40px;
 }
 
 #header div {
@@ -52,18 +52,16 @@ body {
 
 #jenkins-head-icon {
   position: relative;
-  top: 5px;
-  width: 40px;
-  height: 40px;
+  top: 2px;
 }
 #jenkins-name-icon {
   position: relative;
-  top: 6px;
+  top: 3px;
 }
 
 #header .searchbox, #header .login {
   float: right;
-  padding: 11px;
+  padding: 6px 11px;
 }
 
 #breadcrumbBar, #footer-container, .top-sticker-inner {
