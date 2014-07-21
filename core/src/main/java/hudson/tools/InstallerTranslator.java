@@ -50,7 +50,6 @@ public class InstallerTranslator extends ToolLocationTranslator {
         if (isp == null) {
             return null;
         }
-
         for (ToolInstaller installer : isp.installers) {
             if (installer.appliesTo(node)) {
                 Semaphore semaphore;
