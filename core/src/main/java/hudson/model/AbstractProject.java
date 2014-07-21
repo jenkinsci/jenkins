@@ -1826,6 +1826,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
         canRoam = assignedNode==null;
 
+        keepDependencies = req.getParameter("keepDependencies") != null;
+
         concurrentBuild = req.getSubmittedForm().has("concurrentBuild");
 
         authToken = BuildAuthorizationToken.create(req);

@@ -30,9 +30,4 @@ THE SOFTWARE.
     <f:checkbox name="recordBuildArtifacts" checked="${instance.recordBuildArtifacts}"
             title="${%Fingerprint all archived artifacts}"/>
   </f:entry>
-  <!-- keepDependencies is actually a property of the Job, not Fingerprinter: -->
-  <f:entry title="" help="/help/tasks/fingerprint/keepDependencies.html">
-    <f:checkbox name="keepDependencies" checked="${it.keepDependencies}"
-            title="${%Keep the build logs of dependencies}"/>
-  </f:entry>
 </j:jelly>

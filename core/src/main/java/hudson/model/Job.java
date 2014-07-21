@@ -149,7 +149,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     private transient Integer cachedBuildHealthReportsBuildNumber = null;
     private transient List<HealthReport> cachedBuildHealthReports = null;
 
-    private boolean keepDependencies;
+    boolean keepDependencies;
 
     /**
      * List of {@link UserProperty}s configured for this project.
@@ -312,6 +312,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * If true, it will keep all the build logs of dependency components.
+     * (This really only makes sense in {@link AbstractProject} but historically it was defined here.)
      */
     @Exported
     public boolean isKeepDependencies() {
@@ -1128,8 +1129,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         checkPermission(CONFIGURE);
 
         description = req.getParameter("description");
-
-        keepDependencies = req.getParameter("keepDependencies") != null;
 
         try {
             JSONObject json = req.getSubmittedForm();
