@@ -2316,9 +2316,9 @@ public final class FilePath implements Serializable {
     /**
      * Shortcut for {@link #validateFileMask(String)} in case the left-hand side can be null.
      */
-    public static FormValidation validateFileMask(FilePath pathOrNull, String value) throws IOException {
-        if(pathOrNull==null) return FormValidation.ok();
-        return pathOrNull.validateFileMask(value);
+    public static FormValidation validateFileMask(@CheckForNull FilePath path, String value) throws IOException {
+        if(path==null) return FormValidation.ok();
+        return path.validateFileMask(value);
     }
 
     /**

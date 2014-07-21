@@ -544,7 +544,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      null if there's no available workspace.
      * @since 1.319
      */
-    public final FilePath getSomeWorkspace() {
+    public final @CheckForNull FilePath getSomeWorkspace() {
         R b = getSomeBuildWithWorkspace();
         if (b!=null) return b.getWorkspace();
         for (WorkspaceBrowser browser : Jenkins.getInstance().getExtensionList(WorkspaceBrowser.class)) {
