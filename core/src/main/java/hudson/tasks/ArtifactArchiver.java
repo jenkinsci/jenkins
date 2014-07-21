@@ -340,7 +340,7 @@ public class ArtifactArchiver extends Recorder {
                         p.save();
                     }
                     Fingerprinter f = p.getPublishersList().get(Fingerprinter.class);
-                    if (f.getRecordBuildArtifacts()) {
+                    if (f != null && f.getRecordBuildArtifacts()) {
                         f.recordBuildArtifacts = null;
                         if (aa != null) {
                             aa.setFingerprint(true);
