@@ -80,7 +80,7 @@ import jenkins.model.RunAction2;
  * @author Kohsuke Kawaguchi
  */
 public class Fingerprinter extends Recorder implements Serializable, DependencyDeclarer {
-    public static boolean enableFingerprintsInDependencyGraph = Boolean.parseBoolean(System.getProperty(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph", "false"));
+    public static boolean enableFingerprintsInDependencyGraph = Boolean.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
     
     /**
      * Comma-separated list of files/directories to be fingerprinted.
