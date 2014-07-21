@@ -32,7 +32,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.CheckPoint;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.model.Saveable;
@@ -152,9 +151,6 @@ public class JUnitResultArchiver extends Recorder {
 			}
 
 			action.setData(data);
-
-			CHECKPOINT.block(listener, getDescriptor().getDisplayName());
-
 		} catch (AbortException e) {
 			if (build.getResult() == Result.FAILURE)
 				// most likely a build failed before it gets to the test phase.
@@ -171,7 +167,6 @@ public class JUnitResultArchiver extends Recorder {
 		}
 
 		build.addAction(action);
-		CHECKPOINT.report();
 
 		if (action.getResult().getFailCount() > 0)
 			build.setResult(Result.UNSTABLE);
@@ -189,9 +184,6 @@ public class JUnitResultArchiver extends Recorder {
 		return new TestResult(buildTime, ds);
 	}
 
-	/**
-	 * This class does explicit checkpointing.
-	 */
 	public BuildStepMonitor getRequiredMonitorService() {
 		return BuildStepMonitor.NONE;
 	}
@@ -215,12 +207,6 @@ public class JUnitResultArchiver extends Recorder {
 	public boolean isKeepLongStdio() {
 		return keepLongStdio;
 	}
-
-	/**
-	 * Test result tracks the diff from the previous run, hence the checkpoint.
-	 */
-	private static final CheckPoint CHECKPOINT = new CheckPoint(
-			"JUnit result archiving");
 
 	private static final long serialVersionUID = 1L;
 
