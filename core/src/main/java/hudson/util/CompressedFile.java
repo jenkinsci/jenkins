@@ -115,11 +115,14 @@ public class CompressedFile {
         StringBuilder str = new StringBuilder((int)sizeGuess);
 
         Reader r = new InputStreamReader(read());
-        char[] buf = new char[8192];
-        int len;
-        while((len=r.read(buf,0,buf.length))>0)
-           str.append(buf,0,len);
-        r.close();
+        try {
+            char[] buf = new char[8192];
+            int len;
+            while((len=r.read(buf,0,buf.length))>0)
+                str.append(buf,0,len);
+        } finally {
+            IOUtils.closeQuietly(r);
+        }
 
         return str.toString();
     }
@@ -159,7 +162,7 @@ public class CompressedFile {
      */
     private static final ExecutorService compressionThread = new ThreadPoolExecutor(
         0, 1, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
-        new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
+        new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "CompressedFile")));
 
     private static final Logger LOGGER = Logger.getLogger(CompressedFile.class.getName());
 }

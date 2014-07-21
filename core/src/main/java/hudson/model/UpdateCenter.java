@@ -44,7 +44,9 @@ import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
+import hudson.util.NamingThreadFactory;
 import hudson.util.IOException2;
+import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
@@ -82,7 +84,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -131,25 +132,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @since 1.501
      */
     private final ExecutorService installerService = new AtmostOneThreadExecutor(
-        new DaemonThreadFactory(new ThreadFactory() {
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("Update center installer thread");
-                return t;
-            }
-        }));
+        new NamingThreadFactory(new DaemonThreadFactory(), "Update center installer thread"));
 
     /**
      * An {@link ExecutorService} for updating UpdateSites.
      */
     protected final ExecutorService updateService = Executors.newCachedThreadPool(
-        new DaemonThreadFactory(new ThreadFactory() {
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("Update site data downloader");
-                return t;
-            }
-        }));
+        new NamingThreadFactory(new DaemonThreadFactory(), "Update site data downloader"));
         
     /**
      * List of created {@link UpdateCenterJob}s. Access needs to be synchronized.
@@ -643,7 +632,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
         List <Future<FormValidation>> futures = new ArrayList<Future<FormValidation>>();
         for (UpdateSite site : getSites()) {
-            Future<FormValidation> future = site.updateDirectly(true);
+            Future<FormValidation> future = site.updateDirectly(DownloadService.signatureCheck);
             if (future != null) {
                 futures.add(future);
             }
@@ -758,16 +747,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @see DownloadJob
          */
         public File download(DownloadJob job, URL src) throws IOException {
+            CountingInputStream in = null;
+            OutputStream out = null;
+            URLConnection con = null;
             try {
-                URLConnection con = connect(job,src);
+                con = connect(job,src);
                 int total = con.getContentLength();
-                CountingInputStream in = new CountingInputStream(con.getInputStream());
+                in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
                 int len;
 
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath()+".tmp");
-                OutputStream out = new FileOutputStream(tmp);
+                out = new FileOutputStream(tmp);
 
                 LOGGER.info("Downloading "+job.getName());
                 try {
@@ -776,11 +768,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
                     }
                 } catch (IOException e) {
-                    throw new IOException2("Failed to load "+src+" to "+tmp,e);
+                    throw new IOException("Failed to load "+src+" to "+tmp,e);
                 }
-
-                in.close();
-                out.close();
 
                 if (total!=-1 && total!=tmp.length()) {
                     // don't know exactly how this happens, but report like
@@ -791,7 +780,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 return tmp;
             } catch (IOException e) {
-                throw new IOException2("Failed to download from "+src,e);
+                // assist troubleshooting in case of e.g. "too many redirects" by printing actual URL
+                String extraMessage = "";
+                if (con != null && con.getURL() != null && !src.toString().equals(con.getURL().toString())) {
+                    // Two URLs are considered equal if different hosts resolve to same IP. Prefer to log in case of string inequality,
+                    // because who knows how the server responds to different host name in the request header?
+                    // Also, since it involved name resolution, it'd be an expensive operation.
+                    extraMessage = " (redirected to: " + con.getURL() + ")";
+                }
+                throw new IOException2("Failed to download from "+src+extraMessage,e);
+            } finally {
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(out);
             }
         }
 
@@ -873,7 +873,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
                    // fix up this crappy error message from JDK
-                    throw new IOException2("Failed to validate the SSL certificate of "+url,e);
+                    throw new IOException("Failed to validate the SSL certificate of "+url,e);
             }
         }
     }
@@ -1314,7 +1314,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } catch (RestartRequiredException e) {
                     throw new SuccessButRequiresRestart(e.message);
                 } catch (Exception e) {
-                    throw new IOException2("Failed to dynamically deploy this plugin",e);
+                    throw new IOException("Failed to dynamically deploy this plugin",e);
                 }
             } else {
                 throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
@@ -1544,7 +1544,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *
      * This has to wait until after all plugins load, to let custom UpdateCenterConfiguration take effect first.
      */
-    @Initializer(after=PLUGINS_STARTED)
+    @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
     }

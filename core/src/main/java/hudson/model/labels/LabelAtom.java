@@ -93,6 +93,7 @@ public class LabelAtom extends Label implements Saveable {
      * {@link LabelAtomProperty}s who want to add a project action
      * should do so by implementing {@link LabelAtomProperty#getActions(LabelAtom)}.
      */
+    @SuppressWarnings("deprecation")
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too

@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.535-SNAPSHOT</version>
+    <version>1.574-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -42,6 +42,7 @@ THE SOFTWARE.
   <properties>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
+    <ignore.random.failures>false</ignore.random.failures>
   </properties>
 
   <dependencies>
@@ -64,7 +65,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
+      <version>${maven-plugin.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -79,7 +80,22 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>1.5</version>
+      <version>1.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <version>1.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>antisamy-markup-formatter</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>1.0-beta-1</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
@@ -87,9 +103,9 @@ THE SOFTWARE.
       <version>6.1.26</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
       <scope>compile</scope>
       <!-- in this module we need this as a compile scope, whereas in the parent it's test -->
     </dependency>
@@ -161,12 +177,6 @@ THE SOFTWARE.
       <artifactId>geb-implicit-assertions</artifactId>
       <version>0.7.2</version>
     </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.test</groupId>
-      <artifactId>sample-plexus-component</artifactId>
-      <version>1.0</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -182,16 +192,16 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>-Dfile.encoding=UTF-8 -XX:MaxPermSize=128m</argLine>
+          <argLine>-Dfile.encoding=UTF-8 -Xmx256m -XX:MaxPermSize=128m</argLine>
           <systemPropertyVariables>
               <!-- use AntClassLoader that supports predictable file handle release -->
               <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
               <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
               <buildDirectory>${project.build.directory}</buildDirectory>
+              <ignore.random.failures>${ignore.random.failures}</ignore.random.failures>
           </systemPropertyVariables>
           <reuseForks>true</reuseForks>
           <forkCount>${concurrency}</forkCount>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
       <plugin>
@@ -249,6 +259,17 @@ THE SOFTWARE.
       <id>light-test</id>
       <properties>
         <skipTests>true</skipTests>
+      </properties>
+    </profile>
+    <profile>
+      <id>all-tests</id>
+      <activation>
+        <property>
+          <name>!test</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
       </properties>
     </profile>
     <profile>

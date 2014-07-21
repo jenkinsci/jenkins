@@ -25,15 +25,25 @@
 package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import static hudson.cli.CLICommandInvoker.Matcher.*;
+import hudson.model.AbstractItem;
 import hudson.model.FreeStyleProject;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Locale;
-import org.apache.commons.io.input.NullInputStream;
+import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.User;
+import hudson.security.ACL;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.SparseACL;
+import java.util.Collection;
+import java.util.Collections;
+import jenkins.model.Jenkins;
+import org.acegisecurity.acls.sid.PrincipalSid;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
@@ -41,19 +51,103 @@ import org.jvnet.hudson.test.MockFolder;
 public class CopyJobCommandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    private CLICommand copyJobCommand;
+    private CLICommandInvoker command;
+
+    @Before public void setUp() {
+        copyJobCommand = new CopyJobCommand();
+        command = new CLICommandInvoker(j, copyJobCommand);
+    }
 
     @Test public void copyBetweenFolders() throws Exception {
         MockFolder dir1 = j.createFolder("dir1");
         MockFolder dir2 = j.createFolder("dir2");
         FreeStyleProject p = dir1.createProject(FreeStyleProject.class, "p1");
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream outS = new PrintStream(out);
-        int result = new CopyJobCommand().main(Arrays.asList("dir1/p1", "dir2/p2"), Locale.ENGLISH, new NullInputStream(0), outS, outS);
-        outS.flush();
-        assertEquals(out.toString(), 0, result);
-        assertEquals("", out.toString());
+
+        CLICommandInvoker.Result result = command.invokeWithArgs("dir1/p1", "dir2/p2");
+
+        assertThat(result, succeededSilently());
+
         assertNotNull(j.jenkins.getItemByFullName("dir2/p2"));
         // TODO test copying from/to root, or into nonexistent folder
+    }
+
+    @Bug(22262)
+    @Test public void folderPermissions() throws Exception {
+        final MockFolder d1 = j.createFolder("d1");
+        final FreeStyleProject p = d1.createProject(FreeStyleProject.class, "p");
+        final MockFolder d2 = j.createFolder("d2");
+        // alice has no real permissions. bob has READ on everything but no more. charlie has CREATE on d2 but not EXTENDED_READ on p. debbie has both.
+        final SparseACL rootACL = new SparseACL(null);
+        rootACL.add(new PrincipalSid("alice"), Jenkins.READ, true);
+        rootACL.add(new PrincipalSid("bob"), Jenkins.READ, true);
+        rootACL.add(new PrincipalSid("charlie"), Jenkins.READ, true);
+        rootACL.add(new PrincipalSid("debbie"), Jenkins.READ, true);
+        final SparseACL d1ACL = new SparseACL(null);
+        d1ACL.add(new PrincipalSid("bob"), Item.READ, true);
+        d1ACL.add(new PrincipalSid("charlie"), Item.READ, true);
+        d1ACL.add(new PrincipalSid("debbie"), Item.READ, true);
+        final SparseACL pACL = new SparseACL(null);
+        pACL.add(new PrincipalSid("bob"), Item.READ, true);
+        pACL.add(new PrincipalSid("charlie"), Item.READ, true);
+        pACL.add(new PrincipalSid("debbie"), Item.READ, true);
+        pACL.add(new PrincipalSid("debbie"), Item.EXTENDED_READ, true);
+        final SparseACL d2ACL = new SparseACL(null);
+        d2ACL.add(new PrincipalSid("bob"), Item.READ, true);
+        d2ACL.add(new PrincipalSid("charlie"), Item.READ, true);
+        d2ACL.add(new PrincipalSid("charlie"), Item.CREATE, true);
+        d2ACL.add(new PrincipalSid("debbie"), Item.READ, true);
+        d2ACL.add(new PrincipalSid("debbie"), Item.CREATE, true);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new AuthorizationStrategy() {
+            @Override public ACL getRootACL() {
+                return rootACL;
+            }
+            @Override public ACL getACL(Job<?, ?> project) {
+                if (project == p) {
+                    return pACL;
+                } else {
+                    throw new AssertionError(project);
+                }
+            }
+            @Override public ACL getACL(AbstractItem item) {
+                if (item == d1) {
+                    return d1ACL;
+                } else if (item == d2) {
+                    return d2ACL;
+                } else {
+                    throw new AssertionError(item);
+                }
+            }
+            @Override public Collection<String> getGroups() {
+                return Collections.emptySet();
+            }
+        });
+        copyJobCommand.setTransportAuth(User.get("alice").impersonate());
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        copyJobCommand.setTransportAuth(User.get("bob").impersonate());
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        copyJobCommand.setTransportAuth(User.get("charlie").impersonate());
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        copyJobCommand.setTransportAuth(User.get("debbie").impersonate());
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), succeededSilently());
+        assertNotNull(d2.getItem("p"));
+    }
+
+    // hold off build until saved only makes sense on the UI with config screen shown after copying;
+    // expect the CLI copy command to leave the job buildable
+    @Test public void copiedJobIsBuildable() throws Exception {
+        FreeStyleProject p1 = j.createFreeStyleProject();
+        String copiedProjectName = "p2";
+
+        CLICommandInvoker.Result result = command.invokeWithArgs(p1.getName(), copiedProjectName);
+
+        assertThat(result, succeededSilently());
+
+        FreeStyleProject p2 = (FreeStyleProject)j.jenkins.getItem(copiedProjectName);
+
+        assertNotNull(p2);
+        assertTrue(p2.isBuildable());
     }
 
 }

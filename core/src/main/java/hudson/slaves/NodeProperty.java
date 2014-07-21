@@ -39,6 +39,7 @@ import hudson.model.BuildListener;
 import hudson.model.Environment;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -47,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 /**
  * Extensible property of {@link Node}.
@@ -161,7 +163,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      *
      * @since 1.489
      */
-    public void buildEnvVars(EnvVars env, TaskListener listener) throws IOException,InterruptedException {
+    public void buildEnvVars(@Nonnull EnvVars env, @Nonnull TaskListener listener) throws IOException,InterruptedException {
         // default is no-op
     }
 

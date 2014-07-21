@@ -22,13 +22,10 @@ public class ProcessTreeKillerTest extends HudsonTestCase {
 		project.getBuildersList().add(new Maven("install", "maven"));
 
 		// build the project, wait until tests are running, then cancel.
-		project.scheduleBuild(0);
-		Thread.sleep(2000);
+		project.scheduleBuild2(0).waitForStart();
 
         FreeStyleBuild b = project.getLastBuild();
-        b.doStop(
-				EasyMock.createNiceMock(StaplerRequest.class),
-				EasyMock.createNiceMock(StaplerResponse.class));
+        b.doStop();
 
 		Thread.sleep(1000);
 		

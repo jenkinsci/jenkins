@@ -51,7 +51,6 @@ import org.acegisecurity.providers.encoding.PasswordEncoder;
 import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.tools.ant.taskdefs.email.Mailer;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
@@ -73,11 +72,12 @@ import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -173,8 +173,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     protected Details authenticate(String username, String password) throws AuthenticationException {
         Details u = loadUserByUsername(username);
-        if (!u.isPasswordCorrect(password))
-            throw new BadCredentialsException("Failed to login as "+username);
+        if (!u.isPasswordCorrect(password)) {
+            String message;
+            try {
+                message = ResourceBundle.getBundle("org.acegisecurity.messages").getString("AbstractUserDetailsAuthenticationProvider.badCredentials");
+            } catch (MissingResourceException x) {
+                message = "Bad credentials";
+            }
+            throw new BadCredentialsException(message);
+        }
         return u;
     }
 
@@ -280,9 +287,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private void tryToMakeAdmin(User u) {
         AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
-        if (as instanceof GlobalMatrixAuthorizationStrategy) {
-            GlobalMatrixAuthorizationStrategy ma = (GlobalMatrixAuthorizationStrategy) as;
-            ma.add(Jenkins.ADMINISTER,u.getId());
+        for (PermissionAdder adder : Jenkins.getInstance().getExtensionList(PermissionAdder.class)) {
+            if (adder.add(as, u, Jenkins.ADMINISTER)) {
+                return;
+            }
         }
     }
 
@@ -358,7 +366,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
      */
     public String getDisplayName() {
-        return "User Database";
+        return Messages.HudsonPrivateSecurityRealm_DisplayName();
     }
 
     public ACL getACL() {

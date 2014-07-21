@@ -53,7 +53,11 @@ class RunMapTest extends HudsonTestCase {
         b.save()
 
         p._getRuns().purgeCache()
-        assert p.getBuildByNumber(b.number)==null
+        b = p.getBuildByNumber(b.number)
+        // Original test assumed that b == null, but after JENKINS-21024 this is no longer true,
+        // so this may not really be testing anything interesting:
+        assert b != null
+        assert b.getAction(BombAction.class) == null
         assert bombed
     }
 

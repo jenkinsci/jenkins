@@ -26,6 +26,7 @@ package hudson.model;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.cli.declarative.OptionHandlerExtension;
+import hudson.init.Initializer;
 import hudson.util.EditDistance;
 import org.apache.commons.beanutils.Converter;
 import org.kohsuke.args4j.CmdLineException;
@@ -201,7 +202,8 @@ public final class Result implements Serializable, CustomExportedBean {
         }
     }
 
-    static {
+    @Initializer
+    public static void init() {
         Stapler.CONVERT_UTILS.register(new Converter() {
             public Object convert(Class type, Object value) {
                 return Result.fromString(value.toString());

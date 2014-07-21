@@ -27,21 +27,24 @@ THE SOFTWARE.
   <!--
     This is a good place to add "welcome" materials, like pointers to the website and etc
   -->
-  ${%Welcome to Jenkins!}
+  <h1>${%Welcome to Jenkins!}</h1>
+
   <j:choose xmlns:j="jelly:core">
     <!-- Only show the create new jobs link to those users that have permission to use it. -->
     <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
     <j:when test="${h.hasPermission(permission)}">
-      ${%newJob}
+      <div class="call-to-action">${%newJob}</div>
     </j:when>
     <j:otherwise>
       <!-- Offer anonymous users the chance to login, then they can create jobs. -->
       <j:if test="${h.isAnonymous()}">
+        <div class="call-to-action">
         ${%login(rootURL, app.securityRealm.loginUrl, request.requestURI)}
         <!-- Also offer them the opportunity to sign-up for an account, if this facility is available. -->
         <j:if test="${app.securityRealm.allowsSignup()}">
           ${%signup}
         </j:if>
+        </div>
       </j:if>
     </j:otherwise>
   </j:choose>

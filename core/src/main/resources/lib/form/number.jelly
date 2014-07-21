@@ -69,11 +69,16 @@ THE SOFTWARE.
     INPUT.number (defined in hudson-behavior.js) is a class for integers.
     On the other hand, HTML5 <input> permits floating-point numbers.
   -->
+  <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
+  <j:set var="default" value="${attrs.default ?: ''}"/>
+  <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
   <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
          class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
-         name="${attrs.name ?: '_.'+attrs.field}"
-         value="${attrs.value ?: instance[attrs.field] ?: attrs.default}"
+         name="${name}"
+         value="${value}"
          type="number"
          ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
-  <!-- TODO consider customizedFields -->
+  <j:if test="${customizedFields != null and attrs.field != null and value != default}">
+    <j:mute>${customizedFields.add(name)}</j:mute>
+  </j:if>
 </j:jelly>

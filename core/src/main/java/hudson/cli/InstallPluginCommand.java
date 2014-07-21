@@ -26,7 +26,6 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.PluginManager;
-import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Data;
@@ -35,6 +34,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.HashSet;
@@ -114,7 +114,7 @@ public class InstallPluginCommand extends CLICommand {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
                 Throwable e = p.deploy(dynamicLoad).get().getError();
                 if (e!=null)
-                    throw new IOException2("Failed to install plugin "+source,e);
+                    throw new IOException("Failed to install plugin "+source,e);
                 continue;
             }
 
@@ -141,7 +141,7 @@ public class InstallPluginCommand extends CLICommand {
         }
 
         if (restart)
-            h.restart();
+            h.safeRestart();
         return 0; // all success
     }
 

@@ -77,7 +77,6 @@ public class LabelLoadStatisticsQueueLengthTest {
      * {@link LoadStatistics#queueLength} reflects the number of items in the
      * queue, and continues to do so if the {@link Project}'s label is changed.
      */
-    @Bug(15576)
     @Test
     public void queueLengthReflectsBuildableItemsAssignedLabel()
             throws Exception {

@@ -32,8 +32,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.BindException;
-import java.net.ServerSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,7 +56,7 @@ import java.util.logging.Logger;
  */
 public final class TcpSlaveAgentListener extends Thread {
 
-    private final ServerSocket serverSocket;
+    private final ServerSocketChannel serverSocket;
     private volatile boolean shuttingDown;
 
     public final int configuredPort;
@@ -67,13 +68,14 @@ public final class TcpSlaveAgentListener extends Thread {
     public TcpSlaveAgentListener(int port) throws IOException {
         super("TCP slave agent listener port="+port);
         try {
-            serverSocket = new ServerSocket(port);
+            serverSocket = ServerSocketChannel.open();
+            serverSocket.socket().bind(new InetSocketAddress(port));
         } catch (BindException e) {
             throw (BindException)new BindException("Failed to listen on port "+port+" because it's already in use.").initCause(e);
         }
         this.configuredPort = port;
 
-        LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
+        LOGGER.log(Level.FINE, "JNLP slave agent listener started on TCP port {0}", getPort());
 
         start();
     }
@@ -82,7 +84,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * Gets the TCP port number in which we are listening.
      */
     public int getPort() {
-        return serverSocket.getLocalPort();
+        return serverSocket.socket().getLocalPort();
     }
 
     @Override
@@ -90,7 +92,7 @@ public final class TcpSlaveAgentListener extends Thread {
         try {
             // the loop eventually terminates when the socket is closed.
             while (true) {
-                Socket s = serverSocket.accept();
+                Socket s = serverSocket.accept().socket();
 
                 // this prevents a connection from silently terminated by the router in between or the other peer
                 // and that goes without unnoticed. However, the time out is often very long (for example 2 hours

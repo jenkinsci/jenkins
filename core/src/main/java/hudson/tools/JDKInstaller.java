@@ -48,6 +48,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -83,6 +84,13 @@ import static hudson.tools.JDKInstaller.Preference.*;
  * @since 1.305
  */
 public class JDKInstaller extends ToolInstaller {
+
+    static {
+        // this socket factory will not attempt to bind to the client interface
+        Protocol.registerProtocol("http", new Protocol("http", new hudson.util.NoClientBindProtocolSocketFactory(), 80));
+        Protocol.registerProtocol("https", new Protocol("https", new hudson.util.NoClientBindSSLProtocolSocketFactory(), 443));
+    }
+
     /**
      * The release ID that Sun assigns to each JDK, such as "jdk-6u13-oth-JPR@CDS-CDS_Developer"
      *
@@ -170,8 +178,11 @@ public class JDKInstaller extends ToolInstaller {
             byte[] header = new byte[2];
             {
                 DataInputStream in = new DataInputStream(fs.read(jdkBundle));
-                in.readFully(header);
-                in.close();
+                try {
+                    in.readFully(header);
+                } finally {
+                    IOUtils.closeQuietly(in);
+                }
             }
 
             ProcStarter starter;
@@ -224,16 +235,33 @@ public class JDKInstaller extends ToolInstaller {
              */
             String logFile = jdkBundle+".install.log";
 
-            ArgumentListBuilder args = new ArgumentListBuilder();
-            args.add(jdkBundle);
-            if (isJava15() || isJava14()) {
-                args.add("/s","/v/qn REBOOT=ReallySuppress INSTALLDIR=\""+ expectedLocation +"\" /L \""+logFile+"\"");
-            } else {
-                // modern version supports arguments in more sane format.
-                args.add("/s","/v","/qn","/L","\""+logFile+"\"","REBOOT=ReallySuppress","INSTALLDIR=\""+ expectedLocation+"\"");
+            expectedLocation = expectedLocation.trim();
+            if (expectedLocation.endsWith("\\")) {
+                // Prevent a trailing slash from escaping quotes
+                expectedLocation = expectedLocation.substring(0, expectedLocation.length() - 1);
             }
-            // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
-            // Oh Windows, oh windows, why do you have to be so difficult?
+            ArgumentListBuilder args = new ArgumentListBuilder();
+            assert (new File(expectedLocation).exists()) : expectedLocation
+                    + " must exist, otherwise /L will cause the installer to fail with error 1622";
+            if (isJava15() || isJava14()) {
+                // Installer uses InstallShield.
+                args.add("CMD.EXE", "/C");
+
+                // CMD.EXE /C must be followed by a single parameter (do not split it!)
+                args.add(jdkBundle + " /s /v\"/qn REBOOT=ReallySuppress INSTALLDIR=\\\""
+                        + expectedLocation + "\\\" /L \\\"" + expectedLocation
+                        + "\\jdk.exe.install.log\\\"\"");
+            } else {
+                // Installed uses Windows Installer (MSI)
+                args.add(jdkBundle, "/s");
+
+                // Create a private JRE by omitting "PublicjreFeature"
+                // @see http://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#jdk-silent-installation
+                args.add("ADDLOCAL=\"ToolsFeature\"");
+
+                args.add("REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
+                        "/L \\\"" + expectedLocation + "\\jdk.exe.install.log\\\"");
+            }
             int r = launcher.launch().cmds(args).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
             if (r != 0) {
@@ -372,6 +400,7 @@ public class JDKInstaller extends ToolInstaller {
 
         HttpMethodBase m = new GetMethod(primary.filepath);
         hc.getState().addCookie(new Cookie(".oracle.com","gpw_e24",".", "/", -1, false));
+        hc.getState().addCookie(new Cookie(".oracle.com","oraclelicense","accept-securebackup-cookie", "/", -1, false));
         try {
             while (true) {
                 if (totalPageCount++>16) // looping too much

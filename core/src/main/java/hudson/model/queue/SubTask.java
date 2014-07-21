@@ -29,8 +29,6 @@ import hudson.model.Node;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceActivity;
-import hudson.security.ACL;
-import org.acegisecurity.Authentication;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -78,7 +76,7 @@ public interface SubTask extends ResourceActivity {
     /**
      * Gets the {@link Task} that this subtask belongs to.
      */
-    Task getOwnerTask();
+    @Nonnull Task getOwnerTask();
 
     /**
      * If a subset of {@link SubTask}s of a {@link Task} needs to be collocated with other {@link SubTask}s,

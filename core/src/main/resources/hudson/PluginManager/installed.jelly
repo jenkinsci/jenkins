@@ -30,6 +30,11 @@ THE SOFTWARE.
   <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
+        <st:adjunct includes="hudson.PluginManager._table"/>
+        <div id="filter-container">
+            ${%Filter}:
+            <input type="text" id="filter-box"/>
+        </div>
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
       <table id="plugins" class="sortable pane bigtable">
         <j:choose>
@@ -48,7 +53,7 @@ THE SOFTWARE.
               <th width="1">${%Uninstall}</th>
             </tr>
             <j:forEach var="p" items="${app.pluginManager.plugins}">
-              <tr>
+              <tr class="plugin">
                 <j:set var="state" value="${p.enabled?'true':null}"/>
                 <td class="center pane" data="${state}">
                   <input type="checkbox" checked="${state}" onclick="flip(event)"
@@ -58,7 +63,7 @@ THE SOFTWARE.
                 <td class="pane">
                   <div>
                     <a href="${p.url}">
-                      ${p.updateInfo.title?:p.longName}
+                      ${p.updateInfo.displayName?:p.displayName}
                     </a>
                   </div>
                   <div class="excerpt">

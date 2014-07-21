@@ -31,7 +31,7 @@ THE SOFTWARE.
 			<input type="hidden" name="name" value="${it.name}" />
             <select name="runId">
               <j:forEach var="run" items="${it.builds}">
-                <option value="${run.externalizableId}">${run}</option>
+                <option value="${run.externalizableId}">${run.fullDisplayName}</option>
               </j:forEach>
             </select>
 		</div>

@@ -23,13 +23,16 @@
  */
 package hudson;
 
-import static org.mockito.Mockito.*;
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
-import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
-import hudson.util.IOException2;
 import hudson.util.NullStream;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Chmod;
+import org.jvnet.hudson.test.Bug;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -54,11 +57,7 @@ import java.util.concurrent.Future;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Chmod;
-import org.jvnet.hudson.test.Bug;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -142,9 +141,9 @@ public class FilePathTest extends ChannelTestCase {
                         private Exception closed;
                         private volatile int count;
 
-                        private void checkNotClosed() throws IOException2 {
+                        private void checkNotClosed() throws IOException {
                             if (closed != null)
-                                throw new IOException2(closed);
+                                throw new IOException(closed);
                         }
 
                         @Override
@@ -386,18 +385,19 @@ public class FilePathTest extends ChannelTestCase {
 
     @Bug(11073)
     public void testIsUnix() {
-        FilePath winPath = new FilePath(new LocalChannel(null),
+        VirtualChannel dummy = Mockito.mock(VirtualChannel.class);
+        FilePath winPath = new FilePath(dummy,
                 " c:\\app\\hudson\\workspace\\3.8-jelly-db\\jdk/jdk1.6.0_21/label/sqlserver/profile/sqlserver\\acceptance-tests\\distribution.zip");
         assertFalse(winPath.isUnix());
 
-        FilePath base = new FilePath(new LocalChannel(null),
+        FilePath base = new FilePath(dummy,
                 "c:\\app\\hudson\\workspace\\3.8-jelly-db");
         FilePath middle = new FilePath(base, "jdk/jdk1.6.0_21/label/sqlserver/profile/sqlserver");
         FilePath full = new FilePath(middle, "acceptance-tests\\distribution.zip");
         assertFalse(full.isUnix());
         
         
-        FilePath unixPath = new FilePath(new LocalChannel(null),
+        FilePath unixPath = new FilePath(dummy,
                 "/home/test");
         assertTrue(unixPath.isUnix());
     }
@@ -464,8 +464,9 @@ public class FilePathTest extends ChannelTestCase {
 
     @Bug(13649)
     public void testMultiSegmentRelativePaths() throws Exception {
-        FilePath winPath = new FilePath(new LocalChannel(null), "c:\\app\\jenkins\\workspace");
-        FilePath nixPath = new FilePath(new LocalChannel(null), "/opt/jenkins/workspace");
+        VirtualChannel d = Mockito.mock(VirtualChannel.class);
+        FilePath winPath = new FilePath(d, "c:\\app\\jenkins\\workspace");
+        FilePath nixPath = new FilePath(d, "/opt/jenkins/workspace");
 
         assertEquals("c:\\app\\jenkins\\workspace\\foo\\bar\\manchu", new FilePath(winPath, "foo/bar/manchu").getRemote());
         assertEquals("c:\\app\\jenkins\\workspace\\foo\\bar\\manchu", new FilePath(winPath, "foo\\bar/manchu").getRemote());
@@ -616,5 +617,34 @@ public class FilePathTest extends ChannelTestCase {
         zip.close();
 
         return new ByteArrayInputStream(buf.toByteArray());
+    }
+
+    @Bug(16846)
+    public void testMoveAllChildrenTo() throws IOException, InterruptedException {
+        final File tmp = Util.createTempDir();
+        try
+        {
+            final String dirname = "sub";
+            final File top = new File(tmp, "test");
+            final File sub = new File(top, dirname);
+            final File subsub = new File(sub, dirname);
+
+            subsub.mkdirs();
+
+            final File subFile1 = new File( sub.getAbsolutePath() + "/file1.txt" );
+            subFile1.createNewFile();
+            final File subFile2 = new File( subsub.getAbsolutePath() + "/file2.txt" );
+            subFile2.createNewFile();
+
+            final FilePath src = new FilePath(sub);
+            final FilePath dst = new FilePath(top);
+            
+            // test conflict subdir
+            src.moveAllChildrenTo(dst);
+        }
+        finally
+        {
+          Util.deleteRecursive(tmp);
+        }
     }
 }

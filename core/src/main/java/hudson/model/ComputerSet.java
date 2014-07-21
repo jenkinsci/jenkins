@@ -28,16 +28,19 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.NodeDescriptor;
+import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import jenkins.util.Timer;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -47,7 +50,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractList;
@@ -55,9 +57,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
+
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -236,12 +241,11 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
             Node src = app.getNode(from);
             if(src==null) {
-                rsp.setStatus(SC_BAD_REQUEST);
-                if(Util.fixEmpty(from)==null)
-                    sendError(Messages.ComputerSet_SpecifySlaveToCopy(),req,rsp);
-                else
-                    sendError(Messages.ComputerSet_NoSuchSlave(from),req,rsp);
-                return;
+                if (Util.fixEmpty(from) == null) {
+                    throw new Failure(Messages.ComputerSet_SpecifySlaveToCopy());
+                } else {
+                    throw new Failure(Messages.ComputerSet_NoSuchSlave(from));
+                }
             }
 
             // copy through XStream
@@ -260,12 +264,14 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             rsp.sendRedirect2(result.getNodeName()+"/configure");
         } else {
             // proceed to step 2
-            if(mode==null) {
-                rsp.sendError(SC_BAD_REQUEST);
-                return;
+            if (mode == null) {
+                throw new Failure("No mode given");
             }
 
             NodeDescriptor d = NodeDescriptor.all().findByName(mode);
+            if (d == null) {
+                throw new Failure("No node type ‘" + mode + "’ is known");
+            }
             d.handleNewNodePage(this,name,req,rsp);
         }
     }
@@ -396,6 +402,16 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Just to force the execution of the static initializer.
      */
     public static void initialize() {}
+
+    @Initializer(after= JOB_LOADED)
+    public static void init() {
+        // start monitoring nodes, although there's no hurry.
+        Timer.get().schedule(new SafeTimerTask() {
+            public void doRun() {
+                ComputerSet.initialize();
+            }
+        }, 10, TimeUnit.SECONDS);
+    }
 
     private static final Logger LOGGER = Logger.getLogger(ComputerSet.class.getName());
 

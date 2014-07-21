@@ -51,6 +51,12 @@
     the value remains stable for any given project.
   </p>
   <p>
+      Beware that for the day of month field, short cycles such as <code>*/3</code> or <code>H/3</code> will not work consistently near the end of most months, due to variable month lengths.
+      For example, <code>*/3</code> will run on the 1st, 4th, …31st days of a long month, then again the next day of the next month.
+      Hashes are always chosen in the 1-28 range, so <code>H/3</code> will produce a gap between runs of between 3 and 6 days at the end of a month.
+      (Longer cycles will also have inconsistent lengths but the effect may be relatively less noticeable.)
+  </p>
+  <p>
     Empty lines and lines that start with <code>#</code> will be ignored as comments.
   </p><p>
     In addition, <code>@yearly</code>, <code>@annually</code>, <code>@monthly</code>,

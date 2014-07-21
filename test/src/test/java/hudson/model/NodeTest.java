@@ -23,38 +23,38 @@
  */
 package hudson.model;
 
+import hudson.FilePath;
+import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import org.jvnet.hudson.test.TestExtension;
-import java.util.List;
-import java.util.ArrayList;
-import hudson.util.TagCloud.Entry;
-import hudson.util.TagCloud;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.security.ACL;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.Permission;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
+import hudson.slaves.OfflineCause.UserCause;
+import hudson.util.TagCloud;
+import hudson.util.TagCloud.Entry;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.List;
+import jenkins.model.Jenkins;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
+import org.acegisecurity.context.SecurityContextHolder;
+import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.*;
-import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContextHolder;
-import jenkins.security.QueueItemAuthenticator;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import hudson.FilePath;
-import hudson.model.Node.Mode;
-import hudson.security.Permission;
-import hudson.slaves.DumbSlave;
-import org.junit.Before;
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  *
@@ -69,7 +69,8 @@ public class NodeTest {
     @Before
     public void before(){
        addDynamicLabel = false;
-       notTake = false; 
+       notTake = false;
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
     }
     
     @Test
@@ -86,6 +87,32 @@ public class NodeTest {
         OfflineCause cause2 = new ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
         assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getOfflineCause());
+    }
+
+    @Test
+    public void testOfflineCause() throws Exception {
+        Node node = j.createOnlineSlave();
+        Computer computer = node.toComputer();
+        OfflineCause.UserCause cause;
+
+        final User someone = User.get("someone@somewhere.com");
+        ACL.impersonate(someone.impersonate());
+
+        computer.doToggleOffline("original message");
+        cause = (UserCause) computer.getOfflineCause();
+        assertEquals("Disconnected by someone@somewhere.com : original message", cause.toString());
+        assertEquals(someone, cause.getUser());
+
+        final User root = User.get("root@localhost");
+        ACL.impersonate(root.impersonate());
+
+        computer.doChangeOfflineCause("new message");
+        cause = (UserCause) computer.getOfflineCause();
+        assertEquals("Disconnected by root@localhost : new message", cause.toString());
+        assertEquals(root, cause.getUser());
+
+        computer.doToggleOffline(null);
+        assertNull(computer.getOfflineCause());
     }
 
     @Test
@@ -151,8 +178,9 @@ public class NodeTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
+        realm.createAccount("John", "");
         notTake = false;
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new QueueItemAuthenticatorImpl());
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(project.getFullName(), user.impersonate())));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
         message = Messages._Node_LackingBuildPermission(item.authenticate().getName(),node.getNodeName()).toString();
         assertEquals("Cause of blockage should be bussy label.", message, node.canTake(item).getShortDescription());
@@ -179,7 +207,7 @@ public class NodeTest {
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
-        User user = User.get("John Smith");
+        User user = realm.createAccount("John Smith","abcdef");
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         assertFalse("Current user should not have permission read.", node.hasPermission(Permission.READ));
         auth.add(Computer.CONFIGURE, user.getId());
@@ -236,11 +264,4 @@ public class NodeTest {
         }
     }
     
-    @TestExtension
-    public static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
-        @Override
-        public Authentication authenticate(Queue.Item item) {
-            return new UsernamePasswordAuthenticationToken("John ","John",new GrantedAuthority[0]);
-        }
-    }
 }

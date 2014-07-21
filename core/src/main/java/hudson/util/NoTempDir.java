@@ -24,6 +24,8 @@
 package hudson.util;
 
 import hudson.Functions;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.IOException;
 
@@ -36,15 +38,13 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class NoTempDir extends ErrorObject {
+public class NoTempDir extends BootFailure {
+    @Restricted(NoExternalUse.class) @Deprecated
     public final IOException exception;
 
     public NoTempDir(IOException exception) {
+        super(exception);
         this.exception = exception;
-    }
-
-    public String getStackTrace() {
-        return Functions.printThrowable(exception);
     }
 
     public String getTempDir() {

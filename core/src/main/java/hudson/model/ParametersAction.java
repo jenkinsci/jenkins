@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.matrix.MatrixChildAction;
 import hudson.model.Queue.QueueAction;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.SubTask;
@@ -36,7 +35,6 @@ import hudson.util.VariableResolver;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,6 +42,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Records the parameter values used for a build.
@@ -54,7 +57,7 @@ import java.util.Set;
  * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction, MatrixChildAction {
+public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
 
     private final List<ParameterValue> parameters;
 
@@ -73,15 +76,20 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
 
     public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
         for (ParameterValue p : parameters) {
+            if (p == null) continue;
             BuildWrapper w = p.createBuildWrapper(build);
             if(w!=null) result.add(w);
         }
     }
 
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        for (ParameterValue p : parameters)
-            p.buildEnvVars(build,env);
+        for (ParameterValue p : parameters) {
+            if (p == null) continue;
+            p.buildEnvironment(build, env); 
+        }
     }
+
+    // TODO do we need an EnvironmentContributingAction variant that takes Run so this can implement it?
 
     /**
      * Performs a variable substitution to the given text and return it.
@@ -99,14 +107,16 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
         VariableResolver[] resolvers = new VariableResolver[parameters.size()+1];
         int i=0;
-        for (ParameterValue p : parameters)
+        for (ParameterValue p : parameters) {
+            if (p == null) continue;
             resolvers[i++] = p.createVariableResolver(build);
-
+        }
+            
         resolvers[i] = build.getBuildVariableResolver();
 
         return new VariableResolver.Union<String>(resolvers);
     }
-
+    
     public Iterator<ParameterValue> iterator() {
         return parameters.iterator();
     }
@@ -117,14 +127,17 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     public ParameterValue getParameter(String name) {
-        for (ParameterValue p : parameters)
+        for (ParameterValue p : parameters) {
+            if (p == null) continue;
             if (p.getName().equals(name))
                 return p;
+        }
         return null;
     }
 
     public Label getAssignedLabel(SubTask task) {
         for (ParameterValue p : parameters) {
+            if (p == null) continue;
             Label l = p.getAssignedLabel(task);
             if (l!=null)    return l;
         }
@@ -163,24 +176,42 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     /**
      * Creates a new {@link ParametersAction} that contains all the parameters in this action
      * with the overrides / new values given as parameters.
+     * @return New {@link ParametersAction}. The result may contain null {@link ParameterValue}s
      */
-    public ParametersAction createUpdated(Collection<? extends ParameterValue> newValues) {
-        List<ParameterValue> r = new ArrayList<ParameterValue>();
+    @Nonnull
+    public ParametersAction createUpdated(Collection<? extends ParameterValue> overrides) {
+        if(overrides == null) {
+            return new ParametersAction(parameters);
+        }
+        List<ParameterValue> combinedParameters = newArrayList(overrides);
+        Set<String> names = newHashSet();
 
-        Set<String> names = new HashSet<String>();
-        for (ParameterValue v : newValues) {
-            names.add(v.name);
+        for(ParameterValue v : overrides) {
+            if (v == null) continue;
+            names.add(v.getName());
         }
 
-        for (Iterator<ParameterValue> itr = parameters.iterator(); itr.hasNext(); ) {
-            ParameterValue v = itr.next();
-            if (!names.contains(v.getName()))
-                r.add(v);
+        for (ParameterValue v : parameters) {
+            if (v == null) continue;
+            if (!names.contains(v.getName())) {
+                combinedParameters.add(v);
+            }
         }
 
-        r.addAll(newValues);
+        return new ParametersAction(combinedParameters);
+    }
 
-        return new ParametersAction(r);
+    /*
+     * Creates a new {@link ParametersAction} that contains all the parameters in this action
+     * with the overrides / new values given as another {@link ParametersAction}.
+     * @return New {@link ParametersAction}. The result may contain null {@link ParameterValue}s
+     */
+    @Nonnull
+    public ParametersAction merge(@CheckForNull ParametersAction overrides) {
+        if (overrides == null) {
+            return new ParametersAction(parameters);
+        }
+        return createUpdated(overrides.getParameters());
     }
 
     private Object readResolve() {

@@ -24,16 +24,15 @@
 
 package hudson;
 
-import jenkins.model.Jenkins;
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
-import hudson.remoting.Callable;
-import java.io.ByteArrayOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 public class LauncherTest extends ChannelTestCase {
@@ -97,10 +96,10 @@ public class LauncherTest extends ChannelTestCase {
     public void testDecoratedByEnvMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
-        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, false);
+        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByEnv(new EnvVars());
         assertEquals(false, decorated.isUnix());
-        remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, true);
+        remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, true);
         decorated = remoteLauncher.decorateByEnv(new EnvVars());
         assertEquals(true, decorated.isUnix());
     }
@@ -109,10 +108,10 @@ public class LauncherTest extends ChannelTestCase {
     public void testDecoratedByPrefixMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
-        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, false);
+        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByPrefix("test");
         assertEquals(false, decorated.isUnix());
-        remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, true);
+        remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, true);
         decorated = remoteLauncher.decorateByPrefix("test");
         assertEquals(true, decorated.isUnix());
     }

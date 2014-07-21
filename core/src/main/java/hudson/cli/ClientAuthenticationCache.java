@@ -1,11 +1,10 @@
 package hudson.cli;
 
 import hudson.FilePath;
-import jenkins.model.Jenkins;
-import jenkins.model.Jenkins.MasterComputer;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -40,10 +39,14 @@ public class ClientAuthenticationCache implements Serializable {
     private final Properties props = new Properties();
 
     public ClientAuthenticationCache(Channel channel) throws IOException, InterruptedException {
-        store = (channel==null ? MasterComputer.localChannel :  channel).call(new Callable<FilePath, IOException>() {
+        store = (channel==null ? FilePath.localChannel :  channel).call(new Callable<FilePath, IOException>() {
             public FilePath call() throws IOException {
                 File home = new File(System.getProperty("user.home"));
-                return new FilePath(new File(home, ".hudson/cli-credentials"));
+                File hudsonHome = new File(home, ".hudson");
+                if (hudsonHome.exists()) {
+                    return new FilePath(new File(hudsonHome, "cli-credentials"));
+                }
+                return new FilePath(new File(home, ".jenkins/cli-credentials"));
             }
         });
         if (store.exists()) {

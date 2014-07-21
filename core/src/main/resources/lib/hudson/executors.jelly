@@ -45,7 +45,7 @@ THE SOFTWARE.
               ${name}
             </td>
             <j:choose>
-              <j:when test="${!e.alive}">
+              <j:when test="${!e.active}">
                 <td class="pane">
                   <a href="${rootURL}/${c.url}${url}/causeOfDeath">
                     <div class="error">${%Dead} (!)</div>
@@ -79,7 +79,7 @@ THE SOFTWARE.
                       </j:invokeStatic>
                       <j:choose>
                         <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
-                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>&#160;<a href="${rootURL}/${exe.url}" class="model-link inside">#${exe.number}</a>
+                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>&#160;<a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
                           <t:buildProgressBar build="${exe}" executor="${executor}"/>
                         </j:when>
                         <j:otherwise>
@@ -103,7 +103,8 @@ THE SOFTWARE.
   </d:taglib>
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
     <l:pane width="3" id="executors"
-        title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>">
+        title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>"
+        collapsedText="${%Computers(computers.size() - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
       <colgroup><col width="1*"/><col width="200*"/><col width="24"/></colgroup>
 
       <tr>

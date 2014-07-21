@@ -847,6 +847,7 @@ var jenkinsRules = {
                 editor.DOMReady=true;
                 editor.fireQueue();
                 editor.render();
+                layoutUpdateCallback.call();
             } catch(e) {
                 alert(e);
             }
@@ -873,6 +874,7 @@ var jenkinsRules = {
                 ev = Event.getEvent(ev);
                 function max(a,b) { if(a<b) return b; else return a; }
                 s.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
+                layoutUpdateCallback.call();
                 return false;
             };
             document.onmouseup = function() {
@@ -1157,7 +1159,10 @@ var jenkinsRules = {
             var pos = DOM.getRegion(shadow);
 
             sticker.style.position = "fixed";
-            sticker.style.bottom = Math.max(0, viewport.bottom - pos.bottom) + "px"
+
+            var bottomPos = Math.max(0, viewport.bottom - pos.bottom);
+
+            sticker.style.bottom = bottomPos + "px"
             sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
         }
 
@@ -1187,6 +1192,7 @@ var jenkinsRules = {
         edge.className = "top-sticker-edge";
         sticker.insertBefore(edge,sticker.firstChild);
 
+        var initialBreadcrumbPosition = DOM.getRegion(shadow);
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
 
@@ -1194,7 +1200,9 @@ var jenkinsRules = {
             var pos = DOM.getRegion(shadow);
 
             sticker.style.position = "fixed";
-            sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            if(pos.top <= initialBreadcrumbPosition.top) {
+                sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
+            }
             sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
         }
 
@@ -1811,6 +1819,7 @@ function buildFormTree(form) {
             }
                 
             var p;
+            var r;
             var type = e.getAttribute("type");
             if(type==null)  type="";
             switch(type.toLowerCase()) {
@@ -1858,15 +1867,17 @@ function buildFormTree(form) {
                 break;
             case "radio":
                 if(!e.checked)  break;
-                while (e.name.substring(0,8)=='removeme')
-                    e.name = e.name.substring(e.name.indexOf('_',8)+1);
+                r=0;
+                while (e.name.substring(r,r+8)=='removeme')
+                    r = e.name.indexOf('_',r+8)+1;
+                p = findParent(e);
                 if(e.groupingNode) {
-                    p = findParent(e);
-                    addProperty(p, e.name, e.formDom = { value: e.value });
-                    break;
+                    addProperty(p, e.name.substring(r), e.formDom = { value: e.value });
+                } else {
+                    addProperty(p, e.name.substring(r), e.value);
                 }
+                break;
 
-                // otherwise fall through
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);
@@ -2129,7 +2140,7 @@ function applySafeRedirector(url) {
         new Ajax.Request(url, {
             method: "get",
             onFailure: function(rsp) {
-                if(rsp.status==503) {
+                if(rsp.status==503 && rsp.getHeader("X-Jenkins-Interactive")==null) {
                   // redirect as long as we are still loading
                   window.setTimeout(statusChecker,5000);
                 } else {

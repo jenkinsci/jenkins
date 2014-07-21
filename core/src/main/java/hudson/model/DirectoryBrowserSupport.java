@@ -25,14 +25,7 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.Util;
-import hudson.util.IOException2;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.HttpResponse;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import hudson.remoting.Callable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,11 +38,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
+import org.apache.commons.io.IOUtils;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipOutputStream;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Has convenience methods to serve file system.
@@ -122,7 +122,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         try {
             serveFile(req,rsp,base,icon,serveDirIndex);
         } catch (InterruptedException e) {
-            throw new IOException2("interrupted",e);
+            throw new IOException("interrupted",e);
         }
     }
 
@@ -251,7 +251,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             } else
             if(serveDirIndex) {
                 // serve directory index
-                glob = buildChildPaths(baseFile, req.getLocale());
+                glob = baseFile.run(new BuildChildPaths(baseFile, req.getLocale()));
             }
 
             if(glob!=null) {
@@ -340,12 +340,25 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(outputStream);
+        zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
         for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
-            ZipEntry e = new ZipEntry(n);
+            String relativePath;
+            if (glob.length() == 0) {
+                // JENKINS-19947: traditional behavior is to prepend the directory name
+                relativePath = dir.getName() + '/' + n;
+            } else {
+                relativePath = n;
+            }
+            ZipEntry e = new ZipEntry(relativePath);
             VirtualFile f = dir.child(n);
             e.setTime(f.lastModified());
             zos.putNextEntry(e);
-            Util.copyStream(f.open(), zos);
+            InputStream in = f.open();
+            try {
+                Util.copyStream(in, zos);
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
             zos.closeEntry();
         }
         zos.close();
@@ -419,7 +432,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static final class FileComparator implements Comparator<VirtualFile> {
         private Collator collator;
 
-        public FileComparator(Locale locale) {
+        FileComparator(Locale locale) {
             this.collator = Collator.getInstance(locale);
         }
 
@@ -441,6 +454,17 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
+    private static final class BuildChildPaths implements Callable<List<List<Path>>,IOException> {
+        private final VirtualFile cur;
+        private final Locale locale;
+        BuildChildPaths(VirtualFile cur, Locale locale) {
+            this.cur = cur;
+            this.locale = locale;
+        }
+        @Override public List<List<Path>> call() throws IOException {
+            return buildChildPaths(cur, locale);
+        }
+    }
     /**
      * Builds a list of list of {@link Path}. The inner
      * list of {@link Path} represents one child item to be shown

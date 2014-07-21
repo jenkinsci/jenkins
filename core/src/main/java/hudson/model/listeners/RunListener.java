@@ -235,7 +235,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     }
 
     /**
-     * Fires the {@link #onFinalized(Run)} event.
+     * Fires the {@link #onDeleted} event.
      */
     public static void fireDeleted(Run r) {
         for (RunListener l : all()) {

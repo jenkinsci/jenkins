@@ -25,18 +25,20 @@ package jenkins.model;
 
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
-import hudson.tasks.BuildStep;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.triggers.Trigger;
+import hudson.util.DescribableList;
 
 /**
- * Marker interface for those {@link BuildStep}s that can participate
+ * Marker interface for project-associated objects that can participate
  * in the dependency graph computation process.
  *
  * <p>
- * {@link Publisher}s, {@link Builder}s, and {@link hudson.model.JobProperty}s
- * can additional implement this method to add additional edges
- * to the dependency graph computation.
+ * {@link Publisher}s, {@link Builder}s, {@link BuildWrapper}s, and {@link Trigger}s
+ * (or whatever {@link DescribableList#buildDependencyGraph} is called on, by {@link AbstractProject#buildDependencyGraph})
+ * can implement this interface to add additional edges to the dependency graph.
  *
  * @author Nicolas Lalevee
  * @author Martin Ficker

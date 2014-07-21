@@ -30,9 +30,10 @@ THE SOFTWARE.
   <l:header title="Label ${it.displayName}" />
   <l:side-panel>
     <l:tasks>
+      <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
       <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" contextMenu="false"/>
-      <l:task icon="images/24x24/computer.png" href="." title="${%Overview}" contextMenu="false"/>
-      <l:task icon="images/24x24/monitor.png" href="load-statistics" title="${%Load Statistics}" />
+      <l:task icon="images/24x24/attribute.png" href="${url}" title="${%Overview}" contextMenu="false"/>
+      <l:task icon="images/24x24/monitor.png" href="${url}/load-statistics" title="${%Load Statistics}" />
       <st:include page="actions.jelly" />
     </l:tasks>
   </l:side-panel>

@@ -66,7 +66,7 @@ public class DependencyGraphTest extends HudsonTestCase {
         assertNull("down1 should not be triggered: " + log, down1.getLastBuild());
         q = jenkins.getQueue().getItem(down2);
         assertNotNull("down2 should be in queue (quiet period): " + log, q);
-        Run r = (Run)q.getFuture().get(6, TimeUnit.SECONDS);
+        Run r = (Run)q.getFuture().get(60, TimeUnit.SECONDS);
         assertNotNull("down2 should be triggered: " + log, r);
         assertNotNull("down2 should have MailMessageIdAction",
                       r.getAction(MailMessageIdAction.class));
@@ -83,7 +83,7 @@ public class DependencyGraphTest extends HudsonTestCase {
                      down2.getLastBuild().getNumber());
         q = jenkins.getQueue().getItem(down1);
         assertNotNull("down1 should be in queue (quiet period): " + log, q);
-        r = (Run)q.getFuture().get(6, TimeUnit.SECONDS);
+        r = (Run)q.getFuture().get(60, TimeUnit.SECONDS);
         assertNotNull("down1 should be triggered", r);
     }
 

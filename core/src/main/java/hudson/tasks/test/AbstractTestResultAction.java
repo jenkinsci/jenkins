@@ -25,9 +25,16 @@ package hudson.tasks.test;
 
 import hudson.Functions;
 import hudson.model.*;
-import hudson.tasks.junit.CaseResult;
 import hudson.util.*;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
+
+import java.awt.*;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import jenkins.model.RunAction2;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -44,13 +51,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import java.awt.*;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Common base class for recording test result.
  *
@@ -61,13 +61,26 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements HealthReportingAction {
-    public final AbstractBuild<?,?> owner;
+public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements HealthReportingAction, RunAction2 {
+    public transient AbstractBuild<?,?> owner;
 
     private Map<String,String> descriptions = new ConcurrentHashMap<String, String>();
 
+    /** @since 1.545 */
+    protected AbstractTestResultAction() {}
+
+    /** @deprecated Use the default constructor and just call {@link Run#addAction} to associate the build with the action. */
+    @Deprecated
     protected AbstractTestResultAction(AbstractBuild owner) {
         this.owner = owner;
+    }
+
+    @Override public void onAttached(Run<?, ?> r) {
+        this.owner = (AbstractBuild<?,?>) r;
+    }
+
+    @Override public void onLoad(Run<?, ?> r) {
+        this.owner = (AbstractBuild<?,?>) r;
     }
 
     /**
@@ -188,7 +201,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
      * 
      * @return List of failed tests from associated test result.
      */
-    public List<CaseResult> getFailedTests() {
+    public List<? extends TestResult> getFailedTests() {
         return Collections.emptyList();
     }
 

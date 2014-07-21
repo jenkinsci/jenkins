@@ -5,6 +5,7 @@ import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 import hudson.model.Queue.WaitingItem;
+import javax.annotation.CheckForNull;
 
 /**
  * Result of {@link Queue#schedule2}
@@ -36,7 +37,7 @@ public abstract class ScheduleResult {
      * the newly created item in the queue or the existing item that's already
      * in the queue that matched the submitted task.
      */
-    public Item getItem() {
+    public @CheckForNull Item getItem() {
         return null;
     }
 
@@ -44,7 +45,7 @@ public abstract class ScheduleResult {
      * If {@link #isCreated()} returns true, then this method returns
      * the newly created item, which is always of the type {@link WaitingItem}.
      */
-    public WaitingItem getCreateItem() {
+    public @CheckForNull WaitingItem getCreateItem() {
         return null;
     }
 

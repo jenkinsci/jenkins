@@ -27,16 +27,24 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.Failure;
+import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
+import hudson.model.User;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.HttpResponses;
 import hudson.model.FreeStyleProject;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
+import hudson.slaves.ComputerListener;
+import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 
 import org.junit.Assert;
@@ -44,8 +52,12 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule.DummySecurityRealm;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -53,7 +65,7 @@ import java.net.URL;
  * @author kingfai
  *
  */
-public class JenkinsTest extends HudsonTestCase {
+public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction {
 
     @Test
     public void testIsDisplayNameUniqueTrue() throws Exception {
@@ -354,4 +366,42 @@ public class JenkinsTest extends HudsonTestCase {
             throw new AssertionError();
         }
     }
+
+    @Bug(20866)
+    public void testErrorPageShouldBeAnonymousAccessible() throws Exception {
+        HudsonPrivateSecurityRealm s = new HudsonPrivateSecurityRealm(false, false, null);
+        User alice = s.createAccount("alice", "alice");
+        jenkins.setSecurityRealm(s);
+
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        jenkins.setAuthorizationStrategy(auth);
+
+        // no anonymous read access
+        assertTrue(!Jenkins.getInstance().getACL().hasPermission(Jenkins.ANONYMOUS,Jenkins.READ));
+
+        WebClient wc = createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage p = wc.goTo("/self/reportError");
+
+        assertEquals(400, p.getWebResponse().getStatusCode());  // not 403 forbidden
+        assertTrue(p.getWebResponse().getContentAsString().contains("My car is black"));
+    }
+
+    public HttpResponse doReportError() {
+        return new Failure("My car is black");
+    }
+
+    @Bug(23551)
+    public void testComputerListenerNotifiedOnRestart() {
+        // Simulate restart calling listeners
+        for (RestartListener listener : RestartListener.all())
+            listener.onRestart();
+
+        ArgumentCaptor<OfflineCause> captor = ArgumentCaptor.forClass(OfflineCause.class);
+        Mockito.verify(listenerMock).onOffline(Mockito.eq(jenkins.toComputer()), captor.capture());
+        assertTrue(captor.getValue().toString().contains("restart"));
+    }
+
+    @TestExtension(value = "testComputerListenerNotifiedOnRestart")
+    public static final ComputerListener listenerMock = Mockito.mock(ComputerListener.class);
 }

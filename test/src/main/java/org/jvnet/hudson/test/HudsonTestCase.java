@@ -27,6 +27,7 @@ package org.jvnet.hudson.test;
 import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.google.inject.Injector;
+
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
 import hudson.DNSMultiCast;
@@ -57,6 +58,7 @@ import hudson.model.*;
 import hudson.model.Executor;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
+import hudson.os.PosixAPI;
 import hudson.remoting.Which;
 import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
@@ -82,7 +84,6 @@ import hudson.tools.ToolProperty;
 import hudson.util.PersistedList;
 import hudson.util.ReflectionUtils;
 import hudson.util.StreamTaskListener;
-import hudson.util.jna.GNUCLibrary;
 
 import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
@@ -183,7 +184,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+
 import java.net.HttpURLConnection;
+
 import jenkins.model.JenkinsLocationConfiguration;
 
 /**
@@ -255,7 +258,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     /**
      * Number of seconds until the test times out.
      */
-    public int timeout = 180;
+    public int timeout = Integer.getInteger("jenkins.test.timeout", 180);
 
     private volatile Timer timeoutTimer;
 
@@ -355,8 +358,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         timeoutTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (timeoutTimer!=null)
+                if (timeoutTimer!=null) {
+                    LOGGER.warning(String.format("Test timed out (after %d seconds).", timeout));
                     testThread.interrupt();
+                }
             }
         }, TimeUnit.SECONDS.toMillis(timeout));
     }
@@ -587,8 +592,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         mvn.copyFrom(HudsonTestCase.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         mvn.unzip(new FilePath(buildDirectory));
         // TODO: switch to tar that preserves file permissions more easily
-        if(!Functions.isWindows())
-            GNUCLibrary.LIBC.chmod(new File(mvnHome, "bin/mvn").getPath(),0755);
+        if(!Functions.isWindows()) {
+            PosixAPI.jnr().chmod(new File(mvnHome, "bin/mvn").getPath(), 0755);
+        }
 
         MavenInstallation mavenInstallation = new MavenInstallation("default",
                 mvnHome.getAbsolutePath(), NO_PROPERTIES);
@@ -611,8 +617,9 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
-            if(!Functions.isWindows())
-                GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
+            if(!Functions.isWindows()) {
+                PosixAPI.jnr().chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
+            }
 
             antInstallation = new AntInstallation("default", new File(antHome,"apache-ant-1.8.1").getAbsolutePath(),NO_PROPERTIES);
         }
@@ -1808,7 +1815,16 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
-            Page p = super.getPage(getContextPath() + relative);
+            while (relative.startsWith("/")) relative = relative.substring(1);
+            Page p;
+            try {
+                p = super.getPage(getContextPath() + relative);
+            } catch (IOException x) {
+                if (x.getCause() != null) {
+                    x.getCause().printStackTrace();
+                }
+                throw x;
+            }
             assertEquals(expectedContentType,p.getWebResponse().getContentType());
             return p;
         }
@@ -1976,8 +1992,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         if (!Functions.isWindows()) {
             try {
-                GNUCLibrary.LIBC.unsetenv("MAVEN_OPTS");
-                GNUCLibrary.LIBC.unsetenv("MAVEN_DEBUG_OPTS");
+                PosixAPI.jnr().unsetenv("MAVEN_OPTS");
+                PosixAPI.jnr().unsetenv("MAVEN_DEBUG_OPTS");
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,"Failed to cancel out MAVEN_OPTS",e);
             }

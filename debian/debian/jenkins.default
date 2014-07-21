@@ -7,13 +7,15 @@ NAME=jenkins
 JAVA=/usr/bin/java
 
 # arguments to pass to java
+JAVA_ARGS="-Djava.awt.headless=true"  # Allow graphs etc. to work even when an X server is present
 #JAVA_ARGS="-Xmx256m"
 #JAVA_ARGS="-Djava.net.preferIPv4Stack=true" # make jenkins listen on IPv4 address
 
 PIDFILE=/var/run/jenkins/jenkins.pid
 
-# user id to be invoked as (otherwise will run as root; not wise!)
+# user and group to be invoked as (default to jenkins)
 JENKINS_USER=jenkins
+JENKINS_GROUP=jenkins
 
 # location of the jenkins war file
 JENKINS_WAR=/usr/share/jenkins/jenkins.war

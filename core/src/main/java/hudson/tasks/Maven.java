@@ -64,7 +64,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
@@ -639,17 +638,7 @@ public class Maven extends Builder {
             /**
              * Checks if the MAVEN_HOME is valid.
              */
-            public FormValidation doCheckMavenHome(@QueryParameter File value) {
-                // this can be used to check the existence of a file on the server, so needs to be protected
-                if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
-                    return FormValidation.ok();
-
-                if(value.getPath().equals(""))
-                    return FormValidation.ok();
-
-                if(!value.isDirectory())
-                    return FormValidation.error(Messages.Maven_NotADirectory(value));
-
+            @Override protected FormValidation checkHomeDirectory(File value) {
                 File maven1File = new File(value,MAVEN_1_INSTALLATION_COMMON_FILE);
                 File maven2File = new File(value,MAVEN_2_INSTALLATION_COMMON_FILE);
 
@@ -659,9 +648,6 @@ public class Maven extends Builder {
                 return FormValidation.ok();
             }
 
-            public FormValidation doCheckName(@QueryParameter String value) {
-                return FormValidation.validateRequired(value);
-            }
         }
 
         public static class ConverterImpl extends ToolConverter {

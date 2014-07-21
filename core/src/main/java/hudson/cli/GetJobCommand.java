@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.AbstractProject;
+import hudson.model.AbstractItem;
 import hudson.model.Item;
 import hudson.util.IOUtils;
 import org.kohsuke.args4j.Argument;
@@ -35,7 +35,7 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class GetJobCommand extends CLICommand {
     @Argument(metaVar="JOB",usage="Name of the job",required=true)
-    public AbstractProject<?,?> job;
+    public AbstractItem job;
 
     @Override
     public String getShortDescription() {

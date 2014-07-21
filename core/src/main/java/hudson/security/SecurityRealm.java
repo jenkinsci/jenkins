@@ -30,6 +30,7 @@ import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
@@ -63,7 +64,6 @@ import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -147,6 +147,34 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * overriding {@link #createFilter(FilterConfig)}.
      */
     public abstract SecurityComponents createSecurityComponents();
+
+    /**
+     * Returns the {@link IdStrategy} that should be used for turning
+     * {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
+     * Mostly this should be {@link IdStrategy.CaseInsensitive} but there may be occasions when either
+     * {@link IdStrategy.CaseSensitive} or {@link IdStrategy.CaseSensitiveEmailAddress} are the correct approach.
+     *
+     * @return the {@link IdStrategy} that should be used for turning
+     *         {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
+     * @since 1.566
+     */
+    public IdStrategy getUserIdStrategy() {
+        return IdStrategy.CASE_INSENSITIVE;
+    }
+
+    /**
+     * Returns the {@link IdStrategy} that should be used for turning {@link hudson.security.GroupDetails#getName()}
+     * into an ID.
+     * Note: Mostly this should be the same as {@link #getUserIdStrategy()} but some security realms may have legitimate
+     * reasons for a different strategy.
+     *
+     * @return the {@link IdStrategy} that should be used for turning {@link hudson.security.GroupDetails#getName()}
+     *         into an ID.
+     * @since 1.566
+     */
+    public IdStrategy getGroupIdStrategy() {
+        return getUserIdStrategy();
+    }
 
     /**
      * Creates a {@link CliAuthenticator} object that authenticates an invocation of a CLI command.
@@ -315,6 +343,28 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
         throw new UserMayOrMayNotExistException(groupname);
+    }
+
+    /**
+     * If this {@link SecurityRealm} supports a look up of {@link GroupDetails} by their names, override this method
+     * to provide the look up.
+     * <p/>
+     * <p/>
+     * This information, when available, can be used by {@link AuthorizationStrategy}s to improve the UI and
+     * error diagnostics for the user.
+     *
+     * @param groupname    the name of the group to fetch
+     * @param fetchMembers if {@code true} then try and fetch the members of the group if it exists. Trying does not
+     *                     imply that the members will be fetched and {@link hudson.security.GroupDetails#getMembers()}
+     *                     may still return {@code null}
+     * @throws UserMayOrMayNotExistException if no conclusive result could be determined regarding the group existance.
+     * @throws UsernameNotFoundException     if the group does not exist.
+     * @throws DataAccessException           if the backing security realm could not be connected to.
+     * @since 1.549
+     */
+    public GroupDetails loadGroupByGroupname(String groupname, boolean fetchMembers)
+            throws UsernameNotFoundException, DataAccessException {
+        return loadGroupByGroupname(groupname);
     }
 
     /**

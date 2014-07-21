@@ -29,7 +29,7 @@ THE SOFTWARE.
   <l:layout>
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <table cellpadding="5">
+      <table cellpadding="5" id="legend-table">
         <tr><td>
           <img src="images/48x48/grey.png" alt="" height="48" width="48"/>
           ${%grey}

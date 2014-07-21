@@ -93,11 +93,11 @@ public final class Problem {
 
     @Override
     public String toString() {
-        return job.getFullDisplayName()+" "+ Util.join(offenders);
+        return job.getFullName() + " " + Util.join(offenders);
     }
 
     public void fix(TaskListener listener) throws IOException, InterruptedException {
-        listener.getLogger().println("Fixing problems in "+job.getFullDisplayName());
+        listener.getLogger().println("Fixing problems in " + job.getFullName());
         for (BuildPtr o : offenders) {
             o.fix(listener);
         }
@@ -146,7 +146,7 @@ public final class Problem {
             }
 
             byId = new ArrayList<BuildPtr>(byN);
-            Collections.sort(byId, BuildPtr.BY_ID);
+            Collections.sort(byId);
             i=0;
             for (BuildPtr b : byId) {
                 b.posByID = i++;
@@ -254,8 +254,10 @@ public final class Problem {
                         BuildPtr b = new BuildPtr(job,build,n);
 
                         BuildPtr o = builds.put(n, b);
-                        if (o!=null)
-                            LOGGER.warning("Multiple builds have the same number: "+o+" vs "+b);
+                        if (o != null) {
+                            LOGGER.log(WARNING, "Multiple builds have the same number: {0} vs. {1}", new Object[] {o, b});
+                            offenders.add(b.compareTo(o) > 0 ? o : b);
+                        }
                     }
                 } catch (XPathExpressionException e) {
                     LOGGER.log(WARNING, "Failed to inspect "+build, e);

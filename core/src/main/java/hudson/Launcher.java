@@ -39,6 +39,8 @@ import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
 import org.apache.commons.io.input.NullInputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -298,8 +300,13 @@ public abstract class Launcher {
             return this;
         }
 
+        /**
+         * Gets a list of environment variables to be set.
+         * Returns an empty array if envs field has not been initialized.
+         * @return If initialized, returns a copy of internal envs array. Otherwise - a new empty array.
+         */
         public String[] envs() {
-            return envs.clone();
+            return envs != null ? envs.clone() : new String[0];
         }
 
         /**
@@ -752,7 +759,7 @@ public abstract class Launcher {
      */
     public static class LocalLauncher extends Launcher {
         public LocalLauncher(TaskListener listener) {
-            this(listener, Jenkins.MasterComputer.localChannel);
+            this(listener, FilePath.localChannel);
         }
 
         public LocalLauncher(TaskListener listener, VirtualChannel channel) {
@@ -816,7 +823,7 @@ public abstract class Launcher {
                  * Kill the process when the channel is severed.
                  */
                 @Override
-                protected synchronized void terminate(IOException e) {
+                public synchronized void terminate(IOException e) {
                     super.terminate(e);
                     ProcessTree pt = ProcessTree.get();
                     try {
@@ -840,6 +847,30 @@ public abstract class Launcher {
             };
         }
     }
+
+    @Restricted(NoExternalUse.class)
+    public static class DummyLauncher extends Launcher {
+
+        public DummyLauncher(TaskListener listener) {
+            super(listener, null);
+        }
+
+        @Override
+        public Proc launch(ProcStarter starter) throws IOException {
+            throw new IOException("Can not call launch on a dummy launcher.");
+        }
+
+        @Override
+        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
+            throw new IOException("Can not call launchChannel on a dummy launcher.");
+        }
+
+        @Override
+        public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
+            // Kill method should do nothing.
+        }
+    }
+
 
     /**
      * Launches processes remotely by using the given channel.
@@ -945,6 +976,88 @@ public abstract class Launcher {
                 return io.stdin;
             }
         }
+    }
+    
+    /**
+     * A launcher which delegates to a provided inner launcher. 
+     * Allows subclasses to only implement methods they want to override.
+     * Originally, this launcher has been implemented in 
+     * <a href="https://wiki.jenkins-ci.org/display/JENKINS/Custom+Tools+Plugin">
+     * Custom Tools Plugin</a>.
+     * 
+     * @author rcampbell
+     * @author Oleg Nenashev, Synopsys Inc.
+     * @since TODO: define version
+     */
+    public static class DecoratedLauncher extends Launcher {
+
+        private Launcher inner = null;
+
+        public DecoratedLauncher(Launcher inner) {
+            super(inner);
+            this.inner = inner;
+        }
+
+        @Override
+        public Proc launch(ProcStarter starter) throws IOException {
+            return inner.launch(starter);
+        }
+
+        @Override
+        public Channel launchChannel(String[] cmd, OutputStream out,
+                FilePath workDir, Map<String, String> envVars) throws IOException,
+                InterruptedException {
+            return inner.launchChannel(cmd, out, workDir, envVars);
+        }
+
+        @Override
+        public void kill(Map<String, String> modelEnvVars) throws IOException,
+                InterruptedException {
+            inner.kill(modelEnvVars);
+        }
+
+        @Override
+        public boolean isUnix() {
+            return inner.isUnix();
+        }
+
+        @Override
+        public Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+            return inner.launch(cmd, mask, env, in, out, workDir);
+        }
+
+        @Override
+        public Computer getComputer() {
+            return inner.getComputer();
+        }
+
+        @Override
+        public TaskListener getListener() {
+            return inner.getListener();
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "; decorates " + inner.toString();
+        }
+
+        @Override
+        public VirtualChannel getChannel() {
+            return inner.getChannel();
+        }
+
+        @Override
+        public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
+            return inner.launch(cmd, env, in, out, workDir); 
+        }
+   
+        /**
+         * Gets nested launcher.
+         * @return Inner launcher
+         */
+        public Launcher getInner() {
+            return inner;
+        }    
     }
 
     public static class IOTriplet implements Serializable {
@@ -1087,11 +1200,7 @@ public abstract class Launcher {
      */
     private static EnvVars inherit(Map<String,String> overrides) {
         EnvVars m = new EnvVars(EnvVars.masterEnvVars);
-        // first add all values and then eventually expand them as values can refer other newly added values (see JENKINS-19488)
-        for (Map.Entry<String,String> o : overrides.entrySet()) 
-            m.override(o.getKey(),o.getValue());
-        for (Map.Entry<String,String> o : overrides.entrySet()) 
-            m.override(o.getKey(),m.expand(o.getValue()));
+        m.overrideExpandingAll(overrides);
         return m;
     }
     

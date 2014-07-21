@@ -6,7 +6,6 @@ import com.trilead.ssh2.SFTPv3Client;
 import com.trilead.ssh2.SFTPv3FileAttributes;
 import com.trilead.ssh2.SFTPv3FileHandle;
 import com.trilead.ssh2.sftp.ErrorCodes;
-import hudson.util.IOException2;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +16,9 @@ import java.io.OutputStream;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.339
+ * @deprecated Does nothing different from {@link SFTPv3Client}.
  */
+@Deprecated
 public class SFTPClient extends SFTPv3Client {
     public SFTPClient(Connection conn) throws IOException {
         super(conn);
@@ -60,7 +61,7 @@ public class SFTPClient extends SFTPv3Client {
         try {
             mkdir(path, posixPermission);
         } catch (IOException e) {
-            throw new IOException2("Failed to mkdir "+path,e);
+            throw new IOException("Failed to mkdir "+path,e);
         }
     }
 

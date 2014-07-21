@@ -30,9 +30,9 @@ THE SOFTWARE.
 		<f:textbox name="parameter.name" value="${instance.name}" />
 	</f:entry>
 	<f:entry title="${%Choices}" help="/help/parameter/choice-choices.html">
-		<f:textarea name="parameter.choices" value="${instance.choicesText}" />
+		<f:textarea checkUrl="'${rootURL}/descriptorByName/hudson.model.ChoiceParameterDefinition/checkChoices?value='+encodeURIComponent(this.value)" name="parameter.choices" value="${instance.choicesText}" />
 	</f:entry>
     <f:entry title="${%Description}" help="/help/parameter/description.html">
-        <f:textarea name="parameter.description" value="${instance.description}" />
+        <f:textarea name="parameter.description" value="${instance.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
 </j:jelly>

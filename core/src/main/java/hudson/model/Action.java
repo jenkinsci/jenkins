@@ -104,7 +104,7 @@ public interface Action extends ModelObject {
     /**
      * Gets the URL path name.
      *
-     * <p>tions
+     * <p>
      * For example, if this method returns "xyz", and if the parent object
      * (that this action is associated with) is bound to /foo/bar/zot,
      * then this action object will be exposed to /foo/bar/zot/xyz.

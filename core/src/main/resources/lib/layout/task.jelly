@@ -129,12 +129,12 @@ THE SOFTWARE.
           <j:choose>
             <j:when test="${requiresConfirmation and not attrs.onClick}">
               <l:confirmationLink href="${href}" post="${post}" message="${confirmationMessage ?: title}">
-                <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
+                <img class="task-icon" width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
               </l:confirmationLink>
             </j:when>
             <j:otherwise>
-              <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
-                <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
+              <a href="${href}" class="task-icon-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
+                <img class="task-icon" width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
               </a>
             </j:otherwise>
           </j:choose>
@@ -142,7 +142,7 @@ THE SOFTWARE.
 
           <j:choose>
             <j:when test="${requiresConfirmation and not attrs.onClick}">
-              <l:confirmationLink href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+              <l:confirmationLink class="task-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                 <j:choose>
                   <j:when test="${match}">
                     <b>${title}</b>
@@ -154,7 +154,7 @@ THE SOFTWARE.
               </l:confirmationLink>
             </j:when>
             <j:otherwise>
-              <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
+              <a href="${href}" class="task-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
                 <j:choose>
                   <j:when test="${match}">
                     <b>${title}</b>

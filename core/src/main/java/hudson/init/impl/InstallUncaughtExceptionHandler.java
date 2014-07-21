@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -22,8 +23,18 @@ public class InstallUncaughtExceptionHandler {
             @Override
             public void reportException(Throwable e, ServletContext context, HttpServletRequest req, HttpServletResponse rsp) throws ServletException, IOException {
                 req.setAttribute("javax.servlet.error.exception",e);
-                WebApp.get(j.servletContext).getSomeStapler()
-                        .invoke(req,rsp, Jenkins.getInstance(), "/oops");
+                try {
+                    WebApp.get(j.servletContext).getSomeStapler()
+                            .invoke(req,rsp, Jenkins.getInstance(), "/oops");
+                } catch (ServletException x) {
+                    if (!Stapler.isSocketException(x)) {
+                        throw x;
+                    }
+                } catch (IOException x) {
+                    if (!Stapler.isSocketException(x)) {
+                        throw x;
+                    }
+                }
             }
         });
     }

@@ -95,6 +95,9 @@ public class MultiStageTimeSeries implements Serializable {
 
     private int counter;
 
+    private static final Font CHART_FONT = Font.getFont(MultiStageTimeSeries.class.getName() + ".chartFont",
+            new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+
     public MultiStageTimeSeries(Localizable title, Color color, float initialValue, float decay) {
         this.title = title;
         this.color = color;
@@ -242,6 +245,7 @@ public class MultiStageTimeSeries implements Serializable {
                     );
 
             chart.setBackgroundPaint(Color.white);
+            chart.getLegend().setItemFont(CHART_FONT);
 
             final CategoryPlot plot = chart.getCategoryPlot();
             configurePlot(plot);
@@ -255,6 +259,8 @@ public class MultiStageTimeSeries implements Serializable {
 
         protected void configureRangeAxis(NumberAxis rangeAxis) {
             rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+            rangeAxis.setTickLabelFont(CHART_FONT);
+            rangeAxis.setLabelFont(CHART_FONT);
         }
 
         protected void crop(CategoryPlot plot) {
@@ -269,6 +275,8 @@ public class MultiStageTimeSeries implements Serializable {
             domainAxis.setLowerMargin(0.0);
             domainAxis.setUpperMargin(0.0);
             domainAxis.setCategoryMargin(0.0);
+            domainAxis.setLabelFont(CHART_FONT);
+            domainAxis.setTickLabelFont(CHART_FONT);
             return domainAxis;
         }
 

@@ -64,13 +64,13 @@ public class RunParameterDefinitionTest {
         assertEquals("dir/sub dir/some project", def.getProjectName());
         assertEquals(p, def.getProject());
         EnvVars env = new EnvVars();
-        def.getDefaultParameterValue().buildEnvVars(null, env);
+        def.getDefaultParameterValue().buildEnvironment(null, env);
         assertEquals(j.jenkins.getRootUrl() + "job/dir/job/sub%20dir/job/some%20project/3/", env.get("build"));
         RunParameterValue val = def.createValue(id);
         assertEquals(build2, val.getRun());
         assertEquals("dir/sub dir/some project", val.getJobName());
         assertEquals("2", val.getNumber());
-        val.buildEnvVars(null, env);
+        val.buildEnvironment(null, env);
         assertEquals(j.jenkins.getRootUrl() + "job/dir/job/sub%20dir/job/some%20project/2/", env.get("build"));
         assertEquals("dir/sub dir/some project", env.get("build.jobName"));
         assertEquals("dir/sub dir/some project", env.get("build_JOBNAME"));
@@ -236,6 +236,30 @@ public class RunParameterDefinitionTest {
     }
     
     
+    @Test
+    public void testLoadEnvironmentVariablesWhenRunParameterJobHasBeenDeleted() throws Exception {
+
+        FreeStyleProject project = j.createFreeStyleProject("project");
+        FreeStyleBuild successfulBuild = project.scheduleBuild2(0).get();
+
+        FreeStyleProject paramProject = j.createFreeStyleProject("paramProject");
+        ParametersDefinitionProperty pdp =
+                new ParametersDefinitionProperty(new RunParameterDefinition("RUN",
+                                                                             project.getName(),
+                                                                             "run description",
+                                                                             RunParameterFilter.ALL));
+        paramProject.addProperty(pdp);
+
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
+        assertEquals(Integer.toString(project.getLastBuild().getNumber()),
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
+
+        successfulBuild.delete();
+        // We should still be able to retrieve non RunParameter environment variables for the parameterized build
+        // even when the selected RunParameter build has been deleted.
+        assertEquals("paramProject", build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("JOB_NAME"));
+    }
+
     static class ResultPublisher extends Publisher {
 
         private final Result result;

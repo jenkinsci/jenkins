@@ -12,7 +12,7 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
         });
 
         responseDialog.setHeader("Error");
-        responseDialog.setBody("<div id='"+containerId+"'></iframe>");
+        responseDialog.setBody("<div id='"+containerId+"'></div>");
         responseDialog.render(document.body);
         var target; // iframe
 
@@ -29,10 +29,7 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
 
             // create a throw-away IFRAME to avoid back button from loading the POST result back
             id = "iframe"+(iota++);
-            target = document.createElement("iframe");
-            target.setAttribute("id",id);
-            target.setAttribute("name",id);
-            target.setAttribute("style","height:100%; width:100%");
+            target = Element('iframe', {id: id, name: id, style: 'height:100%; width:100%'});
             $(containerId).appendChild(target);
 
             attachIframeOnload(target, function () {
@@ -41,9 +38,33 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                     target.contentWindow.applyCompletionHandler(window);
                 } else {
                     // otherwise this is possibly an error from the server, so we need to render the whole content.
+                    var doc = target.contentDocument || target.contentWindow.document;
+                    var error = doc.getElementById('error-description');
+                    if (!error) {
+                        // fallback if it's not a regular error dialog from oops.jelly: use the entire body
+                        error = Element('div', {id: 'error-description'});
+                        error.appendChild(doc.getElementsByTagName('body')[0]);
+                    }
+
+                    if (oldError = $('error-description')) {
+                        // Remove old error if there is any
+                        $(containerId).removeChild(oldError);
+                    }
+
+                    $(containerId).appendChild(error);
                     var r = YAHOO.util.Dom.getClientRegion();
-                    responseDialog.cfg.setProperty("width",r.width*3/4+"px");
-                    responseDialog.cfg.setProperty("height",r.height*3/4+"px");
+
+                    var contentHeight = r.height*3/4;
+                    var dialogStyleHeight = contentHeight+40;
+                    var contentWidth = r.width*3/4;
+                    var dialogStyleWidth = contentWidth+20;
+
+                    $(containerId).style.height = contentHeight+"px";
+                    $(containerId).style.width = contentWidth+"px";
+                    $(containerId).style.overflow = "scroll";
+
+                    responseDialog.cfg.setProperty("width", dialogStyleWidth+"px");
+                    responseDialog.cfg.setProperty("height", dialogStyleHeight+"px");
                     responseDialog.center();
                     responseDialog.show();
                 }
@@ -60,7 +81,7 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                 f.submit();
             } finally {
                 f.elements['core:apply'].value = null;
-                f.target = null;
+                f.target = '_self';
             }
         });
 });

@@ -101,8 +101,10 @@ public class CauseAction implements FoldableAction, RunAction2 {
     public Map<Cause,Integer> getCauseCounts() {
         Map<Cause,Integer> result = new LinkedHashMap<Cause,Integer>();
         for (Cause c : causes) {
-            Integer i = result.get(c);
-            result.put(c, i == null ? 1 : i.intValue() + 1);
+            if (c != null) {
+                Integer i = result.get(c);
+                result.put(c, i == null ? 1 : i.intValue() + 1);
+            }
         }
         return result;
     }
@@ -116,18 +118,21 @@ public class CauseAction implements FoldableAction, RunAction2 {
         return causes.get(0).getShortDescription();
     }
 
-    @Override public void onLoad(Run<?,?> r) {
-        // noop
+    @Override public void onLoad(Run<?,?> owner) {
+        for (Cause c : causes) {
+            if (c != null) {
+                c.onLoad(owner);
+            }
+        }
     }
 
     /**
      * When hooked up to build, notify {@link Cause}s.
      */
     @Override public void onAttached(Run<?,?> owner) {
-        if (owner instanceof AbstractBuild) {// this should be always true but being defensive here
-            AbstractBuild b = (AbstractBuild) owner;
-            for (Cause c : causes) {
-                c.onAddedTo(b);
+        for (Cause c : causes) {
+            if (c != null) {
+                c.onAddedTo(owner);
             }
         }
     }
@@ -139,7 +144,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
             return;
         }
         // no CauseAction found, so add a copy of this one
-        item.getActions().add(new CauseAction(this));
+        item.addAction(new CauseAction(this));
     }
 
     public static class ConverterImpl extends XStream2.PassthruConverter<CauseAction> {

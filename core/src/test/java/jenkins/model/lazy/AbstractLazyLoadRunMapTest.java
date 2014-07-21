@@ -32,13 +32,14 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -149,6 +150,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertNull(a.search(-99, Direction.DESC));
     }
 
+    @Bug(19418)
     @Test
     public void searchExactWhenIndexedButSoftReferenceExpired() throws IOException {
         final FakeMap m = localExpiredBuilder.add(1, "A").add(2, "B").make();
@@ -159,6 +161,24 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         m.search(1, Direction.EXACT).asserts(1, "A");
         assertNull(m.search(3, Direction.EXACT));
         assertNull(m.search(0, Direction.EXACT));
+    }
+
+    @Bug(22681)
+    @Test public void exactSearchShouldNotReload() throws Exception {
+        FakeMap m = localBuilder.add(1, "A").add(2, "B").make();
+        assertNull(m.search(0, Direction.EXACT));
+        Build a = m.search(1, Direction.EXACT);
+        a.asserts(1, "A");
+        Build b = m.search(2, Direction.EXACT);
+        b.asserts(2, "B");
+        assertNull(m.search(0, Direction.EXACT));
+        assertSame(a, m.search(1, Direction.EXACT));
+        assertSame(b, m.search(2, Direction.EXACT));
+        assertNull(m.search(3, Direction.EXACT));
+        assertNull(m.search(0, Direction.EXACT));
+        assertSame(a, m.search(1, Direction.EXACT));
+        assertSame("#2 should not have been reloaded by searching for #3", b, m.search(2, Direction.EXACT));
+        assertNull(m.search(3, Direction.EXACT));
     }
 
     /**
@@ -187,9 +207,9 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
         a.get(1).asserts(1,"A");
         assertNull(a.get(2));
-        a.get(3).asserts(3,"B");
+        a.get(3).asserts(3, "B");
         assertNull(a.get(4));
-        a.get(5).asserts(5,"C");
+        a.get(5).asserts(5, "C");
     }
 
     @Test
@@ -197,7 +217,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         FakeMap a = localBuilder.addBoth(1, "A").addBoth(3, "B").addBoth(5, "C").addBoth(7, "D").make();
 
         // we should be using the cache to find the entry efficiently
-        a.search(6, Direction.ASC).asserts(7,"D");
+        a.search(6, Direction.ASC).asserts(7, "D");
         a.search(2, Direction.DESC).asserts(1, "A");
     }
 
@@ -215,7 +235,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
     @Test
     public void bogusCache2() throws IOException {
-        FakeMap a = localBuilder.addBogusCache(1,3,"A").make();
+        FakeMap a = localBuilder.addBogusCache(1, 3, "A").make();
         assertNull(a.get(1));
         a.get(3).asserts(3,"A");
     }
@@ -275,7 +295,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
             .addUnloadable("F")
             .addUnloadable("G")
             .add(200,"H")
-            .add(201,"I");
+            .add(201, "I");
         FakeMap map = f.make();
 
         Build x = map.search(Integer.MAX_VALUE, Direction.DESC);
@@ -304,43 +324,101 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertNull(map.search(3, Direction.DESC));
     }
 
-    @Ignore("just calling entrySet triggers loading of every build!")
     @Bug(18065)
     @Test public void all() throws Exception {
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         Set<Map.Entry<Integer,Build>> entries = a.entrySet();
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         assertFalse(entries.isEmpty());
-        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("5 since it is the latest, and 3 because, well, .search and pivot is weird", "[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertEquals(5, a.getById("C").n);
-        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertEquals("A", a.getByNumber(1).id);
-        assertEquals("[5, 1]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
         a.purgeCache();
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         Iterator<Map.Entry<Integer,Build>> iterator = entries.iterator();
-        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("iterator starts off checking for newest build, so for this crazy logic see above", "[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
-        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         Map.Entry<Integer,Build> entry = iterator.next();
-        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertEquals(5, entry.getKey().intValue());
-        assertEquals("[]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertEquals("C", entry.getValue().id);
-        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
         entry = iterator.next();
         assertEquals(3, entry.getKey().intValue());
-        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
+        assertEquals(".next() precomputes the one after that too", "[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
         assertEquals("B", entry.getValue().id);
-        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
         entry = iterator.next();
         assertEquals(1, entry.getKey().intValue());
-        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
         assertEquals("A", entry.getValue().id);
         assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
         assertFalse(iterator.hasNext());
     }
 
+    @Issue("JENKINS-18065")
+    @Test
+    public void entrySetIterator() {
+        Iterator<Entry<Integer, Build>> itr = a.entrySet().iterator();
+
+        // iterator, when created fresh, shouldn't force loading everything
+        // this involves binary searching, so it can load several.
+        assertTrue(a.getLoadedBuilds().size() < 3);
+
+        // check if the first entry is legit
+        assertTrue(itr.hasNext());
+        Entry<Integer, Build> e = itr.next();
+        assertEquals((Integer)5,e.getKey());
+        e.getValue().asserts(5, "C");
+
+        // now that the first entry is returned, we expect there to be two loaded
+        assertTrue(a.getLoadedBuilds().size() < 3);
+
+        // check if the second entry is legit
+        assertTrue(itr.hasNext());
+        e = itr.next();
+        assertEquals((Integer)3, e.getKey());
+        e.getValue().asserts(3,"B");
+
+        // repeat the process for the third one
+        assertTrue(a.getLoadedBuilds().size() <= 3);
+
+        // check if the third entry is legit
+        assertTrue(itr.hasNext());
+        e = itr.next();
+        assertEquals((Integer) 1, e.getKey());
+        e.getValue().asserts(1,"A");
+
+        assertFalse(itr.hasNext());
+        assertEquals(3, a.getLoadedBuilds().size());
+    }
+
+    @Issue("JENKINS-18065")
+    @Test
+    public void entrySetEmpty() {
+        // entrySet().isEmpty() shouldn't cause full data load
+        assertFalse(a.entrySet().isEmpty());
+        assertTrue(a.getLoadedBuilds().size() < 3);
+    }
+
+    @Issue("JENKINS-18065")
+    @Test
+    public void entrySetSize() {
+        assertEquals(3, a.entrySet().size());
+        assertEquals(0, b.entrySet().size());
+    }
+
+    @Issue("JENKINS-18065")
+    @Test
+    public void entrySetContains() {
+        for (Entry<Integer, Build> e : a.entrySet()) {
+            assertTrue(a.entrySet().contains(e));
+        }
+    }
 }

@@ -193,6 +193,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return idleDelay;
         }
 
+        @Override
         public synchronized long check(SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
                 final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
@@ -211,7 +212,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     // assume the answer is no until we can find such an executor
                     boolean needExecutor = true;
                     for (Computer o : Collections.unmodifiableSet(availableComputers.keySet())) {
-                        if (o.getNode().canTake(item) == null) {
+                        Node otherNode = o.getNode();
+                        if (otherNode != null && otherNode.canTake(item) == null) {
                             needExecutor = false;
                             final int availableExecutors = availableComputers.remove(o);
                             if (availableExecutors > 1) {
@@ -224,7 +226,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     }
 
                     // this 'item' cannot be built by any of the existing idle nodes, but it can be built by 'c'
-                    if (needExecutor && c.getNode().canTake(item) == null) {
+                    Node checkedNode = c.getNode();
+                    if (needExecutor && checkedNode != null && checkedNode.canTake(item) == null) {
                         demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
                         needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
                         break;
@@ -251,6 +254,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
         @Extension
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            @Override
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Demand_displayName();
             }

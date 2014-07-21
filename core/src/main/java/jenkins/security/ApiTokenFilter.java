@@ -5,6 +5,8 @@ import hudson.security.ACL;
 import hudson.util.Scrambler;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.springframework.dao.DataAccessException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -15,6 +17,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * {@link Filter} that performs HTTP basic authentication based on API token.
@@ -47,15 +53,24 @@ public class ApiTokenFilter implements Filter {
                 User u = User.get(username);
                 ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
                 if (t!=null && t.matchesPassword(password)) {
-                    // even if we fail to match the password, we aren't rejecting it.
-                    // as the user might be passing in a real password.
-                    SecurityContext oldContext = ACL.impersonate(u.impersonate());
                     try {
-                        request.setAttribute(ApiTokenProperty.class.getName(), u);
-                        chain.doFilter(request,response);
-                        return;
-                    } finally {
-                        SecurityContextHolder.setContext(oldContext);
+                        // even if we fail to match the password, we aren't rejecting it.
+                        // as the user might be passing in a real password.
+                        SecurityContext oldContext = ACL.impersonate(u.impersonate());
+                        try {
+                            request.setAttribute(ApiTokenProperty.class.getName(), u);
+                            chain.doFilter(request,response);
+                            return;
+                        } finally {
+                            SecurityContextHolder.setContext(oldContext);
+                        }
+                    } catch (UsernameNotFoundException x) {
+                        // The token was valid, but the impersonation failed. This token is clearly not his real password,
+                        // so there's no point in continuing the request processing. Report this error and abort.
+                        LOGGER.log(WARNING, "API token matched for user "+username+" but the impersonation failed",x);
+                        throw new ServletException(x);
+                    } catch (DataAccessException x) {
+                        throw new ServletException(x);
                     }
                 }
             }
@@ -66,4 +81,6 @@ public class ApiTokenFilter implements Filter {
 
     public void destroy() {
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ApiTokenFilter.class.getName());
 }

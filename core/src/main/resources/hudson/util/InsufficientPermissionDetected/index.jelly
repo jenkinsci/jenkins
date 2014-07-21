@@ -35,7 +35,7 @@ THE SOFTWARE.
       <p>
          ${%errorMessage.2}
       </p>
-      <pre>${it.exceptionTrace}</pre>
+      <pre>${it.stackTraceString}</pre>
     </l:main-panel>
   </l:layout>
 </j:jelly>

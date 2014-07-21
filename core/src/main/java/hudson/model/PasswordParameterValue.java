@@ -49,7 +49,7 @@ public class PasswordParameterValue extends ParameterValue {
     }
 
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    public void buildEnvironment(Run<?,?> build, EnvVars env) {
         String v = Secret.toString(value);
         env.put(name, v);
         env.put(name.toUpperCase(Locale.ENGLISH),v); // backward compatibility pre 1.345

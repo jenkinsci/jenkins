@@ -54,6 +54,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * If you are calling this on Hudson something is wrong.
      *
      * @deprecated
+     *      Maybe you were trying to call {@link #getDisplayName()}.
      */
     @Deprecated @Override
     public String getNodeName() {
@@ -63,6 +64,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
    /**
      * @deprecated
      *      Why are you calling a method that always returns ""?
+    *       You probably want o call {@link Jenkins#getRootUrl()}
      */
     public String getUrl() {
         return "";
@@ -79,7 +81,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         v.owner = this;
     }
     protected void interruptReloadThread() {
-        ViewJob.reloadThread.interrupt();
+        ViewJob.interruptReloadThread();
     }
 
     protected void killComputer(Computer c) {
@@ -144,7 +146,6 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 return;
             }
         }
-        throw new IllegalStateException("Trying to remove unknown computer");
     }
 
     /*package*/ @CheckForNull Computer getComputer(Node n) {
@@ -164,9 +165,10 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         synchronized(updateComputerLock) {// just so that we don't have two code updating computer list at the same time
             Map<String,Computer> byName = new HashMap<String,Computer>();
             for (Computer c : computers.values()) {
-                if(c.getNode()==null)
+                Node node = c.getNode();
+                if (node == null)
                     continue;   // this computer is gone
-                byName.put(c.getNode().getNodeName(),c);
+                byName.put(node.getNodeName(),c);
             }
 
             Set<Computer> old = new HashSet<Computer>(computers.values());

@@ -25,19 +25,16 @@ package hudson.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.thoughtworks.xstream.XStreamException;
 import hudson.XmlFile;
-import hudson.matrix.MatrixRun;
 import hudson.model.Result;
 import hudson.model.Run;
 import java.io.File;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.model.CauseOfInterruption;
-import jenkins.model.InterruptedBuildAction;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
@@ -260,24 +257,6 @@ public class XStream2Test extends TestCase {
         public int x,y;
     }
 
-    /**
-     * Unmarshall a matrix build.xml result.
-     */
-    @Bug(10903)
-    public void testUnMarshalRunMatrix() {
-        InputStream is = XStream2Test.class.getResourceAsStream("runMatrix.xml");
-        MatrixRun result = (MatrixRun) Run.XSTREAM.fromXML(is);
-        assertNotNull(result);
-        assertNotNull(result.getPersistentActions());
-        assertEquals(2, result.getPersistentActions().size());
-        InterruptedBuildAction action = (InterruptedBuildAction) result.getPersistentActions().get(1);
-        assertNotNull(action.getCauses());
-        assertEquals(1, action.getCauses().size());
-        CauseOfInterruption.UserInterruption cause =
-            (CauseOfInterruption.UserInterruption) action.getCauses().get(0);
-        assertNotNull(cause);
-    }
-
     public static class Foo2 {
         ConcurrentHashMap<String,String> m = new ConcurrentHashMap<String,String>();
     }
@@ -310,6 +289,21 @@ public class XStream2Test extends TestCase {
         Foo2 map = (Foo2) new XStream2().fromXML(getClass().getResourceAsStream("old-concurrentHashMap.xml"));
         assertEquals(1,map.m.size());
         assertEquals("def",map.m.get("abc"));
+    }
+
+    public void testDynamicProxyBlocked() throws Exception { // SECURITY-105
+        try {
+            ((Runnable) new XStream2().fromXML("<dynamic-proxy><interface>java.lang.Runnable</interface><handler class='java.beans.EventHandler'><target class='" + Hacked.class.getName() + "'/><action>oops</action></handler></dynamic-proxy>")).run();
+        } catch (XStreamException x) {
+            // good
+        }
+        assertFalse("should never have run that", Hacked.tripped);
+    }
+    public static final class Hacked {
+        static boolean tripped;
+        public void oops() {
+            tripped = true;
+        }
     }
 
     public void testTrimVersion() throws Exception {

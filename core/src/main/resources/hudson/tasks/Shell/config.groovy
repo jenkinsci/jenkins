@@ -25,5 +25,6 @@ package hudson.tasks.Shell;
 f=namespace(lib.FormTagLib)
 
 f.entry(title:_("Command"),description:_("description",rootURL)) {
-    f.textarea(name:"command",value:instance?.command,class:"fixed-width")
+    // TODO JENKINS-23151 'codemirror-mode': 'shell' is broken
+    f.textarea(name: "command", value: instance?.command, class: "fixed-width")
 }

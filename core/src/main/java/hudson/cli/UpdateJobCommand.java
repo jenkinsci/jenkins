@@ -24,7 +24,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.AbstractProject;
+import hudson.model.AbstractItem;
 import org.kohsuke.args4j.Argument;
 
 import javax.xml.transform.Source;
@@ -36,7 +36,7 @@ import javax.xml.transform.stream.StreamSource;
 @Extension
 public class UpdateJobCommand extends CLICommand {
     @Argument(metaVar="JOB",usage="Name of the job",required=true)
-    public AbstractProject<?,?> job;
+    public AbstractItem job;
 
     @Override
     public String getShortDescription() {

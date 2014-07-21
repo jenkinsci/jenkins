@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import javax.annotation.Nonnull;
 import jenkins.security.NonSerializableSecurityContext;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
@@ -48,7 +49,7 @@ public abstract class ACL {
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
      */
-    public final void checkPermission(Permission p) {
+    public final void checkPermission(@Nonnull Permission p) {
         Authentication a = Jenkins.getAuthentication();
         if(!hasPermission(a,p))
             throw new AccessDeniedException2(a,p);
@@ -60,7 +61,7 @@ public abstract class ACL {
      * @return false
      *      if the user doesn't have the permission.
      */
-    public final boolean hasPermission(Permission p) {
+    public final boolean hasPermission(@Nonnull Permission p) {
         return hasPermission(Jenkins.getAuthentication(),p);
     }
 
@@ -71,7 +72,7 @@ public abstract class ACL {
      * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
      * in which case you should probably just assume it has every permission.
      */
-    public abstract boolean hasPermission(Authentication a, Permission permission);
+    public abstract boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission);
 
     //
     // Sid constants
@@ -124,7 +125,7 @@ public abstract class ACL {
      * because the same {@link SecurityContext} object is reused for all the concurrent requests from the same session.
      * @since 1.462
      */
-    public static SecurityContext impersonate(Authentication auth) {
+    public static @Nonnull SecurityContext impersonate(@Nonnull Authentication auth) {
         SecurityContext old = SecurityContextHolder.getContext();
         SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
         return old;
@@ -136,7 +137,7 @@ public abstract class ACL {
      * @param body an action to run with this alternate authentication in effect
      * @since 1.509
      */
-    public static void impersonate(Authentication auth, Runnable body) {
+    public static void impersonate(@Nonnull Authentication auth, @Nonnull Runnable body) {
         SecurityContext old = impersonate(auth);
         try {
             body.run();

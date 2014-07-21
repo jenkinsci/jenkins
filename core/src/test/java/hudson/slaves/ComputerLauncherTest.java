@@ -49,8 +49,8 @@ public class ComputerLauncherTest {
         assertChecked("java version \"1.6.0_33\"\nJava(TM) SE Runtime Environment (build 1.6.0_33-b03)\nJava HotSpot(TM) Server VM (build 20.8-b03, mixed mode)\n", "1.6.0");
     }
 
-    @Test public void jdk5() throws IOException {
-        assertChecked("java version \"1.5.0_22\"\nJava(TM) 2 Runtime Environment, Standard Edition (build 1.5.0_22-b03)\nJava HotSpot(TM) Server VM (build 1.5.0_22-b03, mixed mode)\n", "1.5.0");
+    @Test(expected=IOException.class) public void jdk5() throws IOException {
+        ComputerLauncher.checkJavaVersion(new PrintStream(new NullOutputStream()), "-", new BufferedReader(new StringReader("java version \"1.5.0_22\"\nJava(TM) 2 Runtime Environment, Standard Edition (build 1.5.0_22-b03)\nJava HotSpot(TM) Server VM (build 1.5.0_22-b03, mixed mode)\n")));
     }
 
     @Test(expected=IOException.class) public void j2sdk4() throws IOException {

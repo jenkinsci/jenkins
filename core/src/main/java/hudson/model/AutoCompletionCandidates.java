@@ -91,7 +91,22 @@ public class AutoCompletionCandidates implements HttpResponse {
     public static <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, @CheckForNull Item self, ItemGroup container) {
         if (self==container)
             container = self.getParent();
+        return ofJobNames(type, value, container);
+    }
 
+
+    /**
+     * Auto-completes possible job names.
+     *
+     * @param type
+     *      Limit the auto-completion to the subtype of this type.
+     * @param value
+     *      The value the user has typed in. Matched as a prefix.
+     * @param container
+     *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
+     * @since 1.553
+     */
+    public static  <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, ItemGroup container) {
         final AutoCompletionCandidates candidates = new AutoCompletionCandidates();
         class Visitor extends ItemVisitor {
             String prefix;

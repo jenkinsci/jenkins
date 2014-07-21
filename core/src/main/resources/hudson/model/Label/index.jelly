@@ -28,18 +28,24 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/computer.png" width="48" height="48" alt=""/>
+        <img src="${imagesURL}/48x48/attribute.png" width="48" height="48" alt=""/>
         ${it.name}
       </h1>
 
+      <j:forEach var="a" items="${it.actions}">
+        <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+      </j:forEach>
+
       <div>
-        ${%Nodes:}
+        <h2>${%Nodes}</h2>
         <j:forEach var="n" items="${it.nodes}">
           <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
-          <a href="${rootURL}/computer/${n.nodeName}" class="model-link inside">
-            <img src="${imagesURL}/16x16/${c.icon}" width="16" height="16" alt=""/>
-            ${c.displayName}
-          </a>
+          <j:set var="url" value="${rootURL}/computer/${n.nodeName}"/>
+          <nobr>
+            <a href="${url}"><img src="${imagesURL}/16x16/${c.icon}" width="16" height="16" alt=""/></a>
+            <st:nbsp/>
+            <a href="${url}" class="model-link inside">${c.displayName}</a>
+          </nobr>
         </j:forEach>
       </div>
 

@@ -49,6 +49,8 @@ import static java.util.Collections.singletonList;
 /**
  * One test result.
  *
+ * Non-final since 1.526
+ *
  * @author Kohsuke Kawaguchi
  */
 public class CaseResult extends TestResult implements Comparable<CaseResult> {
@@ -201,6 +203,8 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
 
     /**
      * Used to create a fake failure, when Hudson fails to load data from XML files.
+     *
+     * Public since 1.526.
      */
     public CaseResult(SuiteResult parent, String testName, String errorStackTrace) {
         this.className = parent == null ? "unnamed" : parent.getName();
@@ -331,6 +335,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         else            return className.substring(0,idx);
     }
     
+    @Override
     public String getFullName() {
     	return className+'.'+getName();
     }
@@ -368,7 +373,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
         if (failedSince==0 && getFailCount()==1) {
             CaseResult prev = getPreviousResult();
             if(prev!=null && !prev.isPassed())
-                this.failedSince = prev.failedSince;
+                this.failedSince = prev.getFailedSince();
             else if (getOwner() != null) {
                 this.failedSince = getOwner().getNumber();
             } else {

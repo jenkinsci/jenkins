@@ -99,7 +99,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
         assertTrue(monitor.getLogFile().exists());
 
         // should be no warning/error now
-        HtmlPage manage = wc.goTo("/manage");
+        HtmlPage manage = wc.goTo("manage");
         assertEquals(0,manage.selectNodes("//*[class='error']").size());
         assertEquals(0,manage.selectNodes("//*[class='warning']").size());
 
@@ -121,7 +121,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
     }
 
     private HtmlForm getRekeyForm(WebClient wc) throws IOException, SAXException {
-        return wc.goTo("/manage").getFormByName("rekey");
+        return wc.goTo("manage").getFormByName("rekey");
     }
 
     private HtmlButton getButton(HtmlForm form, int index) {

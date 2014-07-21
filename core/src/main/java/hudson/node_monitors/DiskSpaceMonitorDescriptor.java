@@ -24,12 +24,11 @@
 package hudson.node_monitors;
 
 import hudson.FilePath.FileCallable;
-import hudson.model.Computer;
+import hudson.Functions;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
 import hudson.slaves.OfflineCause;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,15 +96,11 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
          * Returns the HTML representation of the space.
          */
         public String toHtml() {
-            long space = size;
-            space/=1024L;   // convert to KB
-            space/=1024L;   // convert to MB
+            String humanReadableSpace = Functions.humanReadableByteSize(size);
             if(triggered) {
-                // less than a GB
-                return Util.wrapToErrorSpan(new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString()+"GB");
+                return Util.wrapToErrorSpan(humanReadableSpace);
             }
-
-            return space/1024+"GB";
+            return humanReadableSpace;
         }
         
         /**
@@ -161,16 +156,10 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
     protected static final class GetUsableSpace implements FileCallable<DiskSpace> {
         public GetUsableSpace() {}
-        @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
-            try {
                 long s = f.getUsableSpace();
                 if(s<=0)    return null;
                 return new DiskSpace(f.getCanonicalPath(), s);
-            } catch (LinkageError e) {
-                // pre-mustang
-                return null;
-            }
         }
         private static final long serialVersionUID = 1L;
     }

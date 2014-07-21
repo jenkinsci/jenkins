@@ -18,8 +18,10 @@ import java.util.concurrent.Future;
  */
 public class ExecutorTest extends HudsonTestCase {
     public void testYank() throws Exception {
-        Computer c = Jenkins.getInstance().toComputer();
-        Executor e = c.getExecutors().get(0);
+        jenkins.setNumExecutors(1);
+        jenkins.updateComputerList(true);
+        Computer c = jenkins.toComputer();
+        final Executor e = c.getExecutors().get(0);
 
         // kill an executor
         kill(e);
@@ -35,21 +37,23 @@ public class ExecutorTest extends HudsonTestCase {
         submit(p.getFormByName("yank"));
 
         assertFalse(c.getExecutors().contains(e));
-        waitUntilExecutorSizeIs(c, 2);
+        waitUntilExecutorSizeIs(c, 1);
     }
 
     @Bug(4756)
     public void testWhenAnExecuterIsYankedANewExecuterTakesItsPlace() throws Exception {
+        jenkins.setNumExecutors(1);
+        jenkins.updateComputerList(true);
+
         Computer c = jenkins.toComputer();
         Executor e = getExecutorByNumber(c, 0);
 
         kill(e);
         e.doYank();
 
-        waitUntilExecutorSizeIs(c, 2);
+        waitUntilExecutorSizeIs(c, 1);
 
         assertNotNull(getExecutorByNumber(c, 0));
-        assertNotNull(getExecutorByNumber(c, 1));
     }
 
     private void waitUntilExecutorSizeIs(Computer c, int executorCollectionSize) throws InterruptedException {
@@ -60,9 +64,11 @@ public class ExecutorTest extends HudsonTestCase {
         }
     }
 
-    private void kill(Executor e) throws InterruptedException {
+    private void kill(Executor e) throws InterruptedException, IOException {
         e.killHard();
-        while (e.isAlive())
+        // trigger a new build which causes the forced death of the executor
+        createFreeStyleProject().scheduleBuild2(0);
+        while (e.isActive())
             Thread.sleep(10);
     }
 

@@ -35,18 +35,11 @@ THE SOFTWARE.
     <l:main-panel>
       <l:hasPermission permission="${it.CONNECT}">
         <h1>${it.oSDescription} slave, version ${it.slaveVersion}</h1>
-        <h1>${%System Properties}</h1>
-        <t:propertyTable items="${it.systemProperties}" />
-        <h1>${%Environment Variables}</h1>
-        <t:propertyTable items="${it.envVars}" />
-        <h1>${%Thread Dump}</h1>
-        <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
-          <h2>${t.key}</h2>
-          <pre>${t.value}</pre>
+
+        <j:forEach var="instance" items="${it.systemInfoExtensions}">
+          <h1>${instance.displayName}</h1>
+          <st:include page="systemInfo" from="${instance}"/>
         </j:forEach>
-        <j:if test="${it.channel != null}">
-          <st:include page="statistics.groovy"/>
-        </j:if>
       </l:hasPermission>
     </l:main-panel>
   </l:layout>

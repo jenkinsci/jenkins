@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div style="float:right">
-    <j:forEach var="a" items="${it.actions}">
+    <j:forEach var="a" items="${it.allActions}">
       <!--
         For historical reason, we failed to expose the action as "it", so
         this exposes it as "action", without breaking the compatibility with plugins

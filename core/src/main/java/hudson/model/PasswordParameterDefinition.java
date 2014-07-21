@@ -28,6 +28,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.Extension;
 import hudson.util.Secret;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Parameter whose value is a {@link Secret} and is hidden from the UI.
@@ -74,6 +76,11 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
 
     public String getDefaultValue() {
         return Secret.toString(defaultValue);
+    }
+
+    @Restricted(DoNotUse.class) // used from Jelly
+    public Secret getDefaultValueAsSecret() {
+        return defaultValue;
     }
 
     // kept for backward compatibility

@@ -92,6 +92,8 @@ var breadcrumbs = (function() {
      */
     var menuSelector = (function() {
         var menuSelector = $(document.createElement("div"));
+        var menuSelectorTarget;
+
         document.body.appendChild(menuSelector);
         menuSelector.id = 'menuSelector';
 
@@ -101,17 +103,28 @@ var breadcrumbs = (function() {
          */
         menuSelector.show = function(target) {
             var xy = Dom.getXY(target);
+
             if ($(target).hasClassName("inside"))
                 xy[0] -= this.offsetWidth;  // show the menu selector inside the text
+
+            if ($(target).hasClassName("inverse")) {
+                menuSelector.addClassName("inverse");
+            } else {
+                menuSelector.removeClassName("inverse");
+            }
+
             xy[0] += target.offsetWidth;
             xy[1] += target.offsetHeight/2 - this.offsetHeight/2;
             Dom.setXY(this, xy);
             this.target = target;
 
             this.style.visibility = "visible";
+
+            menuSelectorTarget = target;
         };
         menuSelector.hide = function() {
             this.style.visibility = "hidden";
+            menuSelectorTarget = undefined;
         };
         menuSelector.observe("click",function () {
             invokeContextMenu(this.target);
@@ -125,11 +138,17 @@ var breadcrumbs = (function() {
 
         menuSelector.observe("mouseover",function () {
             logger("mouse entered 'v'");
+            if (menuSelectorTarget) {
+                menuSelectorTarget.addClassName('mouseIsOverMenuSelector');
+            }
             canceller.cancel();
         });
         menuSelector.observe("mouseout",function () {
             logger("mouse left 'v'");
             canceller.schedule();
+            if (menuSelectorTarget) {
+                menuSelectorTarget.removeClassName('mouseIsOverMenuSelector');
+            }
         });
         menuSelector.canceller = canceller;
 
@@ -221,6 +240,10 @@ var breadcrumbs = (function() {
         a.observe("click",function() {
             invokeContextMenu(this,"childrenContextMenu");
         })
+    });
+
+    Behaviour.specify("#breadcrumbs A", 'breadcrumbs', 0, function (a) {
+        $(a).addClassName('breadcrumbBarAnchor');
     });
 
     /**

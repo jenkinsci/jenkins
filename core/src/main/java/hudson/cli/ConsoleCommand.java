@@ -26,7 +26,7 @@ import java.io.PrintStream;
 public class ConsoleCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Retrieves console output of a build";
+        return Messages.ConsoleCommand_ShortDescription();
     }
 
     @Argument(metaVar="JOB",usage="Name of the job",required=true)
@@ -77,7 +77,7 @@ public class ConsoleCommand extends CLICommand {
             } else {
                 InputStream in = run.getLogInputStream();
                 IOUtils.skip(in,pos);
-                IOUtils.copy(new InputStreamReader(in,run.getCharset()),w);
+                org.apache.commons.io.IOUtils.copy(new InputStreamReader(in,run.getCharset()),w);
             }
         } finally {
             w.flush(); // this pointless flush needed to work around SSHD-154
@@ -134,7 +134,7 @@ public class ConsoleCommand extends CLICommand {
 
             return rb.get();
         } finally {
-            IOUtils.closeQuietly(in);
+            org.apache.commons.io.IOUtils.closeQuietly(in);
         }
     }
 

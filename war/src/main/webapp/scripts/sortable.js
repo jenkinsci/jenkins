@@ -55,7 +55,7 @@ var Sortable = (function() {
 
         // We have a first row: assume it's the header, and make its contents clickable links
         firstRow.each(function (cell){
-            cell.innerHTML = '<a href="#" class="sortheader">'+this.getInnerText(cell)+'<span class="sortarrow" /></a>';
+            cell.innerHTML = '<a href="#" class="sortheader">'+this.getInnerText(cell)+'<span class="sortarrow"></span></a>';
             this.arrows.push(cell.firstChild.lastChild);
 
             var self = this;

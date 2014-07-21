@@ -56,7 +56,8 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 
-import hudson.util.TimeUnit2;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.slaves.WorkspaceLocator;
 
@@ -148,7 +149,7 @@ public abstract class Slave extends Node implements Serializable {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
     
-    public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
+    public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;
@@ -284,7 +285,7 @@ public abstract class Slave extends Node implements Serializable {
      * @return
      *      null if not connected.
      */
-    public FilePath getWorkspaceRoot() {
+    public @CheckForNull FilePath getWorkspaceRoot() {
         FilePath r = getRootPath();
         if(r==null) return null;
         return r.child(WORKSPACE_ROOT);
@@ -342,9 +343,21 @@ public abstract class Slave extends Node implements Serializable {
 
     }
 
+    /**
+     * Creates a launcher for the slave.
+     *
+     * @return
+     *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
+     *      will return a {@link hudson.Launcher.RemoteLauncher} instead.
+     */
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
-        return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
+        if (c == null) {
+            listener.error("Issue with creating launcher for slave " + name + ".");
+            return new Launcher.DummyLauncher(listener);
+        } else {
+            return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
+        }
     }
 
     /**

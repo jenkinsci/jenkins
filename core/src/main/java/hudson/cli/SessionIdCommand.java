@@ -13,7 +13,7 @@ import jenkins.model.Jenkins;
 public class SessionIdCommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Outputs the session ID, which changes every time Jenkins restarts";
+        return Messages.SessionIdCommand_ShortDescription();
     }
 
     protected int run() {

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import jenkins.model.Jenkins;
 
 /**
  * Adds the "Manage Jenkins" link to the top page.
@@ -33,7 +34,7 @@ import hudson.Extension;
 @Extension(ordinal=100)
 public class ManageJenkinsAction implements RootAction {
     public String getIconFileName() {
-        if (Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+        if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
             return "setting.png";
         else
             return null;

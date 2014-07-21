@@ -1,5 +1,7 @@
 package hudson.model;
 
+import hudson.util.FormValidation;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
@@ -15,25 +17,26 @@ import java.util.Arrays;
  * @author huybrechts
  */
 public class ChoiceParameterDefinition extends SimpleParameterDefinition {
+    public static final String CHOICES_DELIMETER = "\\r?\\n";
+
     private final List<String> choices;
     private final String defaultValue;
+
+    public static boolean areValidChoices(String choices) {
+        String strippedChoices = choices.trim();
+        return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMETER).length > 0;
+    }
 
     @DataBoundConstructor
     public ChoiceParameterDefinition(String name, String choices, String description) {
         super(name, description);
-        this.choices = Arrays.asList(choices.split("\\r?\\n"));
-        if (choices.length()==0) {
-            throw new IllegalArgumentException("No choices found");
-        }
+        this.choices = Arrays.asList(choices.split(CHOICES_DELIMETER));
         defaultValue = null;
     }
 
     public ChoiceParameterDefinition(String name, String[] choices, String description) {
         super(name, description);
         this.choices = new ArrayList<String>(Arrays.asList(choices));
-        if (this.choices.isEmpty()) {
-            throw new IllegalArgumentException("No choices found");
-        }
         defaultValue = null;
     }
 
@@ -52,7 +55,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
             return this;
         }
     }
-    
+
     @Exported
     public List<String> getChoices() {
         return choices;
@@ -94,6 +97,17 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         @Override
         public String getHelpFile() {
             return "/help/parameter/choice.html";
+        }
+
+        /**
+         * Checks if parameterised build choices are valid.
+         */
+        public FormValidation doCheckChoices(@QueryParameter String value) {
+            if (ChoiceParameterDefinition.areValidChoices(value)) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.error(Messages.ChoiceParameterDefinition_MissingChoices());
+            }
         }
     }
 

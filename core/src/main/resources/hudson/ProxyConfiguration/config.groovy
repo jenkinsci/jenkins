@@ -17,3 +17,10 @@ f.entry(title:_("Password"),field:"password") {
 f.entry(title:_("No Proxy Host"),field:"noProxyHost") {
     f.textarea()
 }
+f.advanced(){
+    f.entry(title:_("Test URL"),field:"testUrl") {
+        f.textbox()
+    }
+    f.validateButton(title:_("Validate Proxy"), 
+                     method:"validateProxy", with:"testUrl,name,port,userName,password,noProxyHost")
+}

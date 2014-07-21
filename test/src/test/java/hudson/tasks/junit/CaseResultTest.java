@@ -28,16 +28,11 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.FreeStyleBuild;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
-import hudson.maven.MavenBuild;
-import hudson.maven.reporters.SurefireReport;
 import hudson.Launcher;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
@@ -125,27 +120,6 @@ public class CaseResultTest extends HudsonTestCase {
     }
     
     /**
-     * Verifies that the error message and stacktrace from a failed junit test actually render properly.
-     */
-    @Bug(4257)
-    public void testMavenErrorMsgAndStacktraceRender() throws Exception {
-	configureDefaultMaven();
-	MavenModuleSet m = createMavenProject("maven-render-test");
-	m.setScm(new ExtractResourceSCM(m.getClass().getResource("maven-test-failure-findbugs.zip")));
-	m.setGoals("clean test");
-
-	MavenModuleSetBuild b = assertBuildStatus(Result.UNSTABLE, m.scheduleBuild2(0).get());
-	MavenBuild modBuild = (MavenBuild)b.getModuleLastBuilds().get(m.getModule("test:test"));
-	TestResult tr = modBuild.getAction(SurefireReport.class).getResult();
-        assertEquals(1,tr.getFailedTests().size());
-        CaseResult cr = tr.getFailedTests().get(0);
-        assertEquals("test.AppTest",cr.getClassName());
-        assertEquals("testApp",cr.getName());
-	assertNotNull("Error details should not be null", cr.getErrorDetails());
-	assertNotNull("Error stacktrace should not be null", cr.getErrorStackTrace());
-    }
-
-    /**
      * Verify fields show up at the correct visibility in the remote API
      */
 
@@ -205,6 +179,19 @@ public class CaseResultTest extends HudsonTestCase {
 
         found = page.getByXPath(composeXPath(OTHER_FIELDS)).size();
         assertTrue("Should have found 0 elements, but found " + found, found == 0);
+    }
+
+    /**
+     * Makes sure the summary page remains text/plain (see commit 7089a81 in JENKINS-1544) but
+     * the index page must be in text/html.
+     */
+    @Bug(21261)
+    public void testContentType() throws Exception {
+        configureTestBuild("foo");
+        WebClient wc = createWebClient();
+        wc.goTo("job/foo/1/testReport/org.twia.vendor/VendorManagerTest/testCreateAdjustingFirm/","text/html");
+
+        wc.goTo("job/foo/1/testReport/org.twia.vendor/VendorManagerTest/testCreateAdjustingFirm/summary","text/plain");
     }
 
     private FreeStyleBuild configureTestBuild(String projectName) throws Exception {

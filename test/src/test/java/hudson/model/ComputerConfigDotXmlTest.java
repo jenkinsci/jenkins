@@ -48,6 +48,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.DummySecurityRealm;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mock;
@@ -71,6 +72,7 @@ public class ComputerConfigDotXmlTest {
 
         MockitoAnnotations.initMocks(this);
         computer = spy(rule.createSlave().toComputer());
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         oldSecurityContext = ACL.impersonate(User.get("user").impersonate());
     }
 
