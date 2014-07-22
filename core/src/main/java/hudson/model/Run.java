@@ -2034,9 +2034,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private @Nonnull Summary determineDetailedUnstableSummary(Boolean worseOverride) {
         if(((Run)this) instanceof AbstractBuild) {
-            AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getTestResultAction();
+            AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getAction(AbstractTestResultAction.class);
             Run prev = getPreviousBuild();
-            AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getTestResultAction();
+            AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getAction(AbstractTestResultAction.class);
             if(trP==null) {
                 if(trN!=null && trN.getFailCount()>0)
                     return new Summary(worseOverride != null ? worseOverride : true,

@@ -187,7 +187,7 @@ public class BuildStatusSummaryTest {
         when(this.build.getResult()).thenReturn(Result.UNSTABLE);
         when(this.prevBuild.getResult()).thenReturn(Result.UNSTABLE);
         // Null test result action recorded
-        when(((AbstractBuild) this.build).getTestResultAction()).thenReturn(null);
+        when(((AbstractBuild) this.build).getAction(AbstractTestResultAction.class)).thenReturn(null);
 
         Summary summary = this.build.getBuildStatusSummary();
 
@@ -293,6 +293,6 @@ public class BuildStatusSummaryTest {
         AbstractTestResultAction testResult = mock(AbstractTestResultAction.class);
         when(testResult.getFailCount()).thenReturn(failedTests);
         
-        when(build.getTestResultAction()).thenReturn(testResult);
+        when(build.getAction(AbstractTestResultAction.class)).thenReturn(testResult);
     }
 }

@@ -1039,14 +1039,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Gets {@link AbstractTestResultAction} associated with this build if any.
+     * @deprecated Use {@link #getAction(Class)} on {@link AbstractTestResultAction}.
      */
     public AbstractTestResultAction getTestResultAction() {
         return getAction(AbstractTestResultAction.class);
     }
 
     /**
-     * Gets {@link AggregatedTestResultAction} associated with this build if any.
+     * @deprecated Use {@link #getAction(Class)} on {@link AggregatedTestResultAction}.
      */
     public AggregatedTestResultAction getAggregatedTestResultAction() {
         return getAction(AggregatedTestResultAction.class);

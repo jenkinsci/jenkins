@@ -55,7 +55,7 @@ public abstract class TestResult extends TestObject {
      * this test result.
      */
     public AbstractTestResultAction getParentAction() {
-        return getOwner().getTestResultAction();
+        return getOwner().getAction(AbstractTestResultAction.class);
     }
     
     /**
