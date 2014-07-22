@@ -52,7 +52,7 @@ public class CaseResultTest extends HudsonTestCase {
 //        MavenModuleSet p = createMavenProject();
 //        p.setScm(new SubversionSCM(".../hudson/test-projects/junit-failure@16411"));
 //        MavenModuleSetBuild b = assertBuildStatus(UNSTABLE,p.scheduleBuild2(0).get());
-//        AbstractTestResultAction<?> t = b.getTestResultAction();
+//        AbstractTestResultAction<?> t = b.getAction(AbstractTestResultAction.class);
 //        assertSame(1,t.getFailCount());
 //        CaseResult tc = t.getFailedTests().get(0);
 //        assertTrue(tc.getStderr().contains("stderr"));
