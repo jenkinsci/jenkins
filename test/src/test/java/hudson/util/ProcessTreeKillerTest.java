@@ -47,11 +47,7 @@ public class ProcessTreeKillerTest extends HudsonTestCase {
 
         processJob.getBuildersList().add(new Shell("ps -ef | grep sleep"));
 
-        String log = processJob.scheduleBuild2(0).get().getLog();
-
-        System.err.println("LOGS: " + log);
-
-        assertFalse("Did not properly kill task", log.contains("sleep 100000"));
+        assertLogNotContains("sleep 100000", processJob.scheduleBuild2(0).get());
     }
 
 }
