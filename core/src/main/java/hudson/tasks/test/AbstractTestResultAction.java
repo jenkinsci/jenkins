@@ -23,6 +23,7 @@
  */
 package hudson.tasks.test;
 
+import hudson.Extension;
 import hudson.Functions;
 import hudson.model.*;
 import hudson.util.*;
@@ -374,4 +375,50 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     	
     	return this;
     }
+
+    @Extension public static final class Summarizer extends Run.StatusSummarizer {
+        @Override public Run.Summary summarize(Run<?,?> run, ResultTrend trend) {
+            AbstractTestResultAction<?> trN = run.getAction(AbstractTestResultAction.class);
+            if (trN == null) {
+                return null;
+            }
+            Boolean worseOverride;
+            switch (trend) {
+            case NOW_UNSTABLE:
+                worseOverride = false;
+                break;
+            case UNSTABLE:
+                worseOverride = true;
+                break;
+            case STILL_UNSTABLE:
+                worseOverride = null;
+                break;
+            default:
+                return null;
+            }
+            Run prev = run.getPreviousBuild();
+            AbstractTestResultAction<?> trP = prev == null ? null : prev.getAction(AbstractTestResultAction.class);
+            if (trP == null) {
+                if (trN.getFailCount() > 0) {
+                    return new Run.Summary(worseOverride != null ? worseOverride : true, Messages.Run_Summary_TestFailures(trN.getFailCount()));
+                }
+            } else {
+                if (trN.getFailCount() != 0) {
+                    if (trP.getFailCount() == 0) {
+                        return new Run.Summary(worseOverride != null ? worseOverride : true, Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
+                    }
+                    if (trP.getFailCount() < trN.getFailCount()) {
+                        return new Run.Summary(worseOverride != null ? worseOverride : true, Messages.Run_Summary_MoreTestsFailing(trN.getFailCount() - trP.getFailCount(), trN.getFailCount()));
+                    }
+                    if (trP.getFailCount() > trN.getFailCount()) {
+                        return new Run.Summary(worseOverride != null ? worseOverride : false, Messages.Run_Summary_LessTestsFailing(trP.getFailCount() - trN.getFailCount(), trN.getFailCount()));
+                    }
+
+                    return new Run.Summary(worseOverride != null ? worseOverride : false, Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
+                }
+            }
+            return null;
+        }
+    }
+
 }

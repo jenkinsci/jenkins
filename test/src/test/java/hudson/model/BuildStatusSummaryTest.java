@@ -9,7 +9,9 @@ import hudson.model.Run.Summary;
 import hudson.tasks.test.AbstractTestResultAction;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Tests {@link Run#getBuildStatusSummary()}.
@@ -18,6 +20,8 @@ import org.junit.Test;
  */
 @SuppressWarnings("rawtypes")
 public class BuildStatusSummaryTest {
+
+    @Rule public JenkinsRule r = new JenkinsRule(); // TODO only necessary to load AbstractTestResultAction.Summarizer
 
     private Run build;
     private Run prevBuild;
@@ -169,14 +173,14 @@ public class BuildStatusSummaryTest {
         Summary summary = this.build.getBuildStatusSummary();
         
         assertTrue(summary.isWorse);
-        assertEquals(Messages.Run_Summary_TestFailures(1), summary.message);
+        assertEquals(hudson.tasks.test.Messages.Run_Summary_TestFailures(1), summary.message);
         
         
         // same thing should happen if previous build has tests, but no failing ones:
         buildHasTestResult((AbstractBuild) this.prevBuild, 0);
         summary = this.build.getBuildStatusSummary();
         assertTrue(summary.isWorse);
-        assertEquals(Messages.Run_Summary_TestsStartedToFail(1), summary.message);
+        assertEquals(hudson.tasks.test.Messages.Run_Summary_TestsStartedToFail(1), summary.message);
     }
 
     @Test
@@ -214,7 +218,7 @@ public class BuildStatusSummaryTest {
         Summary summary = this.build.getBuildStatusSummary();
         
         assertFalse(summary.isWorse);
-        assertEquals(Messages.Run_Summary_TestsStillFailing(1), summary.message);
+        assertEquals(hudson.tasks.test.Messages.Run_Summary_TestsStillFailing(1), summary.message);
     }
     
     @Test
@@ -230,7 +234,7 @@ public class BuildStatusSummaryTest {
         Summary summary = this.build.getBuildStatusSummary();
         
         assertTrue(summary.isWorse);
-        assertEquals(Messages.Run_Summary_MoreTestsFailing(1, 2), summary.message);
+        assertEquals(hudson.tasks.test.Messages.Run_Summary_MoreTestsFailing(1, 2), summary.message);
     }
     
     @Test
@@ -246,7 +250,7 @@ public class BuildStatusSummaryTest {
         Summary summary = this.build.getBuildStatusSummary();
         
         assertFalse(summary.isWorse);
-        assertEquals(Messages.Run_Summary_LessTestsFailing(1, 1), summary.message);
+        assertEquals(hudson.tasks.test.Messages.Run_Summary_LessTestsFailing(1, 1), summary.message);
     }
     
     @Test

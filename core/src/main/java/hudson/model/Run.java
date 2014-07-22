@@ -32,6 +32,7 @@ import com.thoughtworks.xstream.XStream;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.Functions;
@@ -53,7 +54,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.tasks.BuildWrapper;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
@@ -1986,8 +1986,23 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
+     * Used to implement {@link #getBuildStatusSummary}.
+     * @since 1.575
+     */
+    public static abstract class StatusSummarizer implements ExtensionPoint {
+        /**
+         * Possibly summarizes the reasons for a build’s status.
+         * @param run a completed build
+         * @param trend the result of {@link ResultTrend#getResultTrend(hudson.model.Run)} on {@code run} (precomputed for efficiency)
+         * @return a summary, or null to fall back to other summarizers or built-in behavior
+         */
+        public abstract @CheckForNull Summary summarize(@Nonnull Run<?,?> run, @Nonnull ResultTrend trend);
+    }
+
+    /**
      * Gets an object which represents the single line summary of the status of this build
      * (especially in comparison with the previous build.)
+     * @see StatusSummarizer
      */
     public @Nonnull Summary getBuildStatusSummary() {
         if (isBuilding()) {
@@ -1996,6 +2011,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         
         ResultTrend trend = ResultTrend.getResultTrend(this);
         
+        Jenkins j = Jenkins.getInstance();
+        if (j != null) {
+            for (StatusSummarizer summarizer : j.getExtensionList(StatusSummarizer.class)) {
+                Summary summary = summarizer.summarize(this, trend);
+                if (summary != null) {
+                    return summary;
+                }
+            }
+        }
+
         switch (trend) {
             case ABORTED : return new Summary(false, Messages.Run_Summary_Aborted());
             
@@ -2011,11 +2036,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 return new Summary(false, Messages.Run_Summary_BrokenSince(failedBuild.getDisplayName()));
            
             case NOW_UNSTABLE:
-                return determineDetailedUnstableSummary(Boolean.FALSE);
-            case UNSTABLE :
-                return determineDetailedUnstableSummary(Boolean.TRUE);
             case STILL_UNSTABLE :
-                return determineDetailedUnstableSummary(null);
+                return new Summary(false, Messages.Run_Summary_Unstable());
+            case UNSTABLE :
+                return new Summary(true, Messages.Run_Summary_Unstable());
                 
             case SUCCESS :
                 return new Summary(false, Messages.Run_Summary_Stable());
@@ -2026,41 +2050,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
         
         return new Summary(false, Messages.Run_Summary_Unknown());
-    }
-
-    /**
-     * @param worseOverride override the 'worse' parameter to this value.
-     *   May be null in which case 'worse' is calculated based on the number of failed tests.
-     */
-    private @Nonnull Summary determineDetailedUnstableSummary(Boolean worseOverride) {
-        if(((Run)this) instanceof AbstractBuild) {
-            AbstractTestResultAction trN = ((AbstractBuild)(Run)this).getAction(AbstractTestResultAction.class);
-            Run prev = getPreviousBuild();
-            AbstractTestResultAction trP = prev==null ? null : ((AbstractBuild) prev).getAction(AbstractTestResultAction.class);
-            if(trP==null) {
-                if(trN!=null && trN.getFailCount()>0)
-                    return new Summary(worseOverride != null ? worseOverride : true,
-                            Messages.Run_Summary_TestFailures(trN.getFailCount()));
-            } else {
-                if(trN!=null && trN.getFailCount()!= 0) {
-                    if(trP.getFailCount()==0)
-                        return new Summary(worseOverride != null ? worseOverride : true,
-                                Messages.Run_Summary_TestsStartedToFail(trN.getFailCount()));
-                    if(trP.getFailCount() < trN.getFailCount())
-                        return new Summary(worseOverride != null ? worseOverride : true,
-                                Messages.Run_Summary_MoreTestsFailing(trN.getFailCount()-trP.getFailCount(), trN.getFailCount()));
-                    if(trP.getFailCount() > trN.getFailCount())
-                        return new Summary(worseOverride != null ? worseOverride : false,
-                                Messages.Run_Summary_LessTestsFailing(trP.getFailCount()-trN.getFailCount(), trN.getFailCount()));
-                    
-                    return new Summary(worseOverride != null ? worseOverride : false,
-                            Messages.Run_Summary_TestsStillFailing(trN.getFailCount()));
-                }
-            }
-        }
-        
-        return new Summary(worseOverride != null ? worseOverride : false,
-                Messages.Run_Summary_Unstable());
     }
 
     /**
