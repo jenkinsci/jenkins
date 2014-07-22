@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
 
 /**
  * Aggregates downstream test reports into a single consolidated report,
@@ -104,9 +105,9 @@ public class AggregatedTestResultPublisher extends Recorder {
     public static final class TestResultAction extends AbstractTestResultAction {
         /**
          * Jobs to aggregate. Comma separated.
-         * Never null.
+         * Null if doing downstream projects.
          */
-        private final String jobs;
+        private final @CheckForNull String jobs;
 
         /**
          * Should failed builds be included?
