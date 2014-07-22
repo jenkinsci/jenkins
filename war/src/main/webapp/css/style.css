@@ -1276,6 +1276,12 @@ table#legend-table td {
 	vertical-align: middle;
 }
 
+#description, .make-disabled-container {
+    display: inline-block;
+    float: right;
+    clear: right;
+}
+
 /* ========================= Button styles ================= */
 
 #disable-project {
