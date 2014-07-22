@@ -30,8 +30,10 @@ import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import static hudson.Util.fixNull;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.InvisibleAction;
 import hudson.model.ItemGroup;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
@@ -57,6 +59,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Aggregates downstream test reports into a single consolidated report,
@@ -94,6 +98,10 @@ public class AggregatedTestResultPublisher extends Recorder {
 
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
+    }
+
+    @Override public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
+        return Collections.singleton(new TestResultProjectAction(project));
     }
 
     /**
@@ -356,6 +364,14 @@ public class AggregatedTestResultPublisher extends Recorder {
 
         public AutoCompletionCandidates doAutoCompleteJobs(@QueryParameter String value, @AncestorInPath Item self, @AncestorInPath ItemGroup container) {
             return AutoCompletionCandidates.ofJobNames(Job.class,value,self,container);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static final class TestResultProjectAction extends InvisibleAction {
+        public final AbstractProject<?, ?> project;
+        private TestResultProjectAction(AbstractProject<?,?> project) {
+            this.project = project;
         }
     }
 
