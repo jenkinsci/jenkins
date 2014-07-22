@@ -53,6 +53,8 @@ import javax.annotation.Nonnull;
  * This class defines a few well-known check point instances. plugins can define
  * their additional check points for their own use.
  *
+ * <p>Note that not all job types support checkpoints.
+ *
  * <h2>Example</h2>
  * <p>
  * {@link JUnitResultArchiver} provides a good example of how a {@link Recorder} can

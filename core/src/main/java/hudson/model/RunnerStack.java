@@ -56,6 +56,10 @@ final class RunnerStack {
 
     /**
      * Looks up the currently running build, if known.
+     * <p>While most {@link Run} implementations do add a {@link RunExecution} to the stack for the duration of the build,
+     * those which have a different implementation of {@link Run#run} (or which do additional work after {@link Run#execute} completes)
+     * may not consistently or ever keep an execution on the stack.
+     * In such cases this method will return null, meaning that {@link CheckPoint#block(BuildListener, String)} and {@link CheckPoint#report} will do nothing.
      * @return a running build, or null if one has not been recorded
      */
     synchronized @CheckForNull RunExecution peek() {
