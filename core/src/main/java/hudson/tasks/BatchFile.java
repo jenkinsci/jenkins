@@ -40,9 +40,16 @@ import java.io.ObjectStreamException;
  */
 public class BatchFile extends CommandInterpreter {
     @DataBoundConstructor
-    public BatchFile(String command) {
+    public BatchFile(String command, Integer unstableReturn) {
         super(LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Windows));
+        this.unstableReturn = unstableReturn;
     }
+
+    public BatchFile(String command) {
+        this(command, null);
+    }
+
+    private final Integer unstableReturn;
 
     public String[] buildCommandLine(FilePath script) {
         return new String[] {"cmd","/c","call",script.getRemote()};
@@ -54,6 +61,10 @@ public class BatchFile extends CommandInterpreter {
 
     protected String getFileExtension() {
         return ".bat";
+    }
+
+    public final Integer getUnstableReturn() {
+        return unstableReturn;
     }
 
     private Object readResolve() throws ObjectStreamException {
@@ -73,7 +84,13 @@ public class BatchFile extends CommandInterpreter {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject data) {
-            return new BatchFile(data.getString("command"));
+            final String unstableReturnStr = data.getString("unstableReturn");
+            Integer unstableReturn = null;
+            if (unstableReturnStr != null && ! unstableReturnStr.isEmpty()) {
+                /* Already validated by f.number in the form */
+                unstableReturn = (Integer)Integer.parseInt(unstableReturnStr, 10);
+            }
+            return new BatchFile(data.getString("command"), unstableReturn);
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
