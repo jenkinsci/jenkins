@@ -29,6 +29,17 @@ do
   for color in grey blue yellow red green
   do
     cp $sz/$color.gif ../src/main/webapp/images/$sz/$color.gif
+    cp $sz/$color.png ../src/main/webapp/images/$sz/$color.png
     ./makeFlash.sh $sz/$color.gif ../src/main/webapp/images/$sz/${color}_anime.gif
   done
+
+  cp ../src/main/webapp/images/$sz/grey.png ../src/main/webapp/images/$sz/aborted.png 
+  cp ../src/main/webapp/images/$sz/grey.png ../src/main/webapp/images/$sz/disabled.png
+  cp ../src/main/webapp/images/$sz/grey.png ../src/main/webapp/images/$sz/nobuilt.png
+  cp ../src/main/webapp/images/$sz/grey.gif ../src/main/webapp/images/$sz/aborted.gif
+  cp ../src/main/webapp/images/$sz/grey.gif ../src/main/webapp/images/$sz/disabled.gif
+  cp ../src/main/webapp/images/$sz/grey.gif ../src/main/webapp/images/$sz/nobuilt.gif
+  cp ../src/main/webapp/images/$sz/grey_anime.gif ../src/main/webapp/images/$sz/aborted_anime.gif
+  cp ../src/main/webapp/images/$sz/grey_anime.gif ../src/main/webapp/images/$sz/disabled_anime.gif
+  cp ../src/main/webapp/images/$sz/grey_anime.gif ../src/main/webapp/images/$sz/nobuilt_anime.gif
 done
