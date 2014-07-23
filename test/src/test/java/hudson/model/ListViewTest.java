@@ -26,15 +26,19 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import hudson.Functions;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+
 import static org.junit.Assert.*;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -135,4 +139,70 @@ public class ListViewTest {
         assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
     }
 
+    @Bug(23893)
+    @Test public void renameJobContainedInTopLevelView() throws Exception {
+        ListView view = new ListView("view", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job = j.createFreeStyleProject("old_name");
+        view.add(job);
+
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+
+        job.renameTo("new_name");
+
+        assertFalse("old job name is still contained: " + view.jobNames, view.jobNames.contains("old_name"));
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+    }
+
+    @Test public void renameContainedJob() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "old_name");
+        view.add(job);
+
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+
+        job.renameTo("new_name");
+
+        assertFalse("old job name is still contained", view.jobNames.contains("old_name"));
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+    }
+
+    @Bug(23893)
+    @Test public void deleteJobContainedInTopLevelView() throws Exception {
+        ListView view = new ListView("view", j.jenkins);
+        j.jenkins.addView(view);
+        FreeStyleProject job = j.createFreeStyleProject("project");
+        view.add(job);
+
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+
+        job.delete();
+
+        assertFalse(view.contains(job));
+        assertFalse(view.jobNamesContains(job));
+    }
+
+    @Test public void deleteContainedJob() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "project");
+        view.add(job);
+
+        assertTrue(view.contains(job));
+        assertTrue(view.jobNamesContains(job));
+
+        job.delete();
+
+        assertFalse(view.contains(job));
+        assertFalse(view.jobNamesContains(job));
+    }
 }
