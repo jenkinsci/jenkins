@@ -319,11 +319,18 @@ pre.console {
 
 .setting-name {
   white-space: nowrap;
+  padding: 10px;
 }
 
 .setting-main {
   width: 100%; /* try to make this column as big as possible. */
+  vertical-align: middle;
 }
+
+.setting-main select{
+  padding: 6px;
+}
+
 .setting-help {
   width: 16px;
   vertical-align: middle;
