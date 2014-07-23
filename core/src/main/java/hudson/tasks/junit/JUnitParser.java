@@ -25,8 +25,8 @@ package hudson.tasks.junit;
 
 import hudson.model.TaskListener;
 import hudson.tasks.test.TestResultParser;
-import hudson.model.AbstractBuild;
 import hudson.*;
+import hudson.model.Run;
 import hudson.remoting.VirtualChannel;
 
 import java.io.IOException;
@@ -69,8 +69,8 @@ public class JUnitParser extends TestResultParser {
     }
 
     @Override
-    public TestResult parse(String testResultLocations,
-                                       AbstractBuild build, Launcher launcher,
+    public TestResult parseResult(String testResultLocations,
+                                       Run<?,?> build, FilePath workspace, Launcher launcher,
                                        TaskListener listener)
             throws InterruptedException, IOException
     {
@@ -80,10 +80,6 @@ public class JUnitParser extends TestResultParser {
         // [BUG 3123310] TODO - Test Result Refactor: review and fix TestDataPublisher/TestAction subsystem]
         // also get code that deals with testDataPublishers from JUnitResultArchiver.perform
         
-        FilePath workspace = build.getWorkspace();
-        if (workspace == null) {
-            throw new AbortException(Messages.JUnitParser_no_workspace_found(build));
-        }
         return workspace.act(new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio));
     }
 

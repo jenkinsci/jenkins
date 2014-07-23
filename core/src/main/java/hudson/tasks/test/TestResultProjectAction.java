@@ -50,7 +50,7 @@ public class TestResultProjectAction implements Action {
     /**
      * Project that owns this action.
      */
-    public final AbstractProject<?,?> project;
+    public final AbstractProject<?,?> project; // TODO deprecate and replace with job
 
     public TestResultProjectAction(AbstractProject<?,?> project) {
         this.project = project;

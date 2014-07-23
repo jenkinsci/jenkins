@@ -27,7 +27,6 @@ import hudson.util.TextFile;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.localizer.Localizable;
 
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.tasks.test.TestResult;
 
@@ -374,8 +373,8 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
             CaseResult prev = getPreviousResult();
             if(prev!=null && !prev.isPassed())
                 this.failedSince = prev.getFailedSince();
-            else if (getOwner() != null) {
-                this.failedSince = getOwner().getNumber();
+            else if (getRun() != null) {
+                this.failedSince = getRun().getNumber();
             } else {
                 LOGGER.warning("trouble calculating getFailedSince. We've got prev, but no owner.");
                 // failedSince will be 0, which isn't correct. 
@@ -385,7 +384,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     }
     
     public Run<?,?> getFailedSinceRun() {
-    	return getOwner().getParent().getBuildByNumber(getFailedSince());
+    	return getRun().getParent().getBuildByNumber(getFailedSince());
     }
 
     /**
@@ -396,8 +395,8 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     public int getAge() {
         if(isPassed())
             return 0;
-        else if (getOwner() != null) {
-            return getOwner().getNumber()-getFailedSince()+1;
+        else if (getRun() != null) {
+            return getRun().getNumber()-getFailedSince()+1;
         } else {
             LOGGER.fine("Trying to get age of a CaseResult without an owner");
             return 0; 
@@ -553,14 +552,14 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
     }
     
     @Override
-    public AbstractBuild<?,?> getOwner() {
+    public Run<?,?> getRun() {
         SuiteResult sr = getSuiteResult();
         if (sr==null) {
             LOGGER.warning("In getOwner(), getSuiteResult is null"); return null; }
         hudson.tasks.junit.TestResult tr = sr.getParent();
         if (tr==null) {
             LOGGER.warning("In getOwner(), suiteResult.getParent() is null."); return null; }
-        return tr.getOwner(); 
+        return tr.getRun();
     }
 
     public void setParentSuiteResult(SuiteResult parent) {
@@ -575,7 +574,7 @@ public class CaseResult extends TestResult implements Comparable<CaseResult> {
             if(prev!=null && !prev.isPassed())
                 this.failedSince = prev.failedSince;
             else
-                this.failedSince = getOwner().getNumber();
+                this.failedSince = getRun().getNumber();
         }
     }
 

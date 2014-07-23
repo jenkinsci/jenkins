@@ -34,6 +34,7 @@ import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
+import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -56,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * Generates HTML report from JUnit test result XML files.
@@ -110,10 +112,10 @@ public class JUnitResultArchiver extends Recorder {
     /**
      * In progress. Working on delegating the actual parsing to the JUnitParser.
      */
-    protected TestResult parse(String expandedTestResults, AbstractBuild build, Launcher launcher, BuildListener listener)
+    protected TestResult parse(String expandedTestResults, Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException
     {
-        return new JUnitParser(isKeepLongStdio()).parse(expandedTestResults, build, launcher, listener);
+        return new JUnitParser(isKeepLongStdio()).parseResult(expandedTestResults, run, workspace, launcher, listener);
     }
 
     @Override
@@ -124,8 +126,13 @@ public class JUnitResultArchiver extends Recorder {
 		
 		final String testResults = build.getEnvironment(listener).expand(this.testResults);
 
+        FilePath workspace = build.getWorkspace();
+        if (workspace == null) {
+            throw new AbortException(hudson.tasks.test.Messages.JUnitParser_no_workspace_found(build));
+        }
+
 		try {
-			TestResult result = parse(testResults, build, launcher, listener);
+			TestResult result = parse(testResults, build, workspace, launcher, listener);
 
 			try {
                 // TODO can the build argument be omitted now, or is it used prior to the call to addAction?
@@ -143,7 +150,7 @@ public class JUnitResultArchiver extends Recorder {
 			List<Data> data = new ArrayList<Data>();
 			if (testDataPublishers != null) {
 				for (TestDataPublisher tdp : testDataPublishers) {
-					Data d = tdp.getTestData(build, launcher, listener, result);
+					Data d = tdp.contributeTestData(build, workspace, launcher, listener, result);
 					if (d != null) {
 						data.add(d);
 					}

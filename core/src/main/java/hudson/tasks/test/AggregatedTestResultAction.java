@@ -23,7 +23,9 @@
  */
 package hudson.tasks.test;
 
+import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -33,7 +35,7 @@ import java.util.List;
 
 /**
  * {@link AbstractTestResultAction} that aggregates all the test results
- * from the corresponding {@link AbstractBuild}s.
+ * from the corresponding {@link Run}s.
  *
  * <p>
  * (This has nothing to do with {@link AggregatedTestResultPublisher}, unfortunately)
@@ -121,13 +123,21 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
      */
     @ExportedBean(defaultVisibility=2)
     public static final class ChildReport {
-        @Exported
+        @Deprecated
         public final AbstractBuild<?,?> child;
+        @Exported(name="child")
+        public final Run<?,?> run;
         @Exported
         public final Object result;
 
+        @Deprecated
         public ChildReport(AbstractBuild<?, ?> child, AbstractTestResultAction result) {
-            this.child = child;
+            this((Run) child, result);
+        }
+
+        public ChildReport(Run<?,?> run, AbstractTestResultAction result) {
+            this.child = run instanceof AbstractBuild ? (AbstractBuild) run : null;
+            this.run = run;
             this.result = result!=null ? result.getResult() : null;
         }
     }
@@ -140,7 +150,7 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
         return new AbstractList<ChildReport>() {
             public ChildReport get(int index) {
                 return new ChildReport(
-                        resolveChild(children.get(index)),
+                        resolveRun(children.get(index)),
                         getChildReport(children.get(index)));
             }
 
@@ -151,14 +161,27 @@ public abstract class AggregatedTestResultAction extends AbstractTestResultActio
     }
 
     protected abstract String getChildName(AbstractTestResultAction tr);
-    public abstract AbstractBuild<?,?> resolveChild(Child child);
+
+    public Run<?,?> resolveRun(Child child) {
+        return resolveChild(child);
+    }
+
+    @Deprecated
+    public AbstractBuild<?,?> resolveChild(Child child) {
+        if (Util.isOverridden(AggregatedTestResultAction.class, getClass(), "resolveRun", Child.class)) {
+            Run<?,?> r = resolveRun(child);
+            return r instanceof AbstractBuild ? (AbstractBuild) r : null;
+        } else {
+            throw new AbstractMethodError("you must override resolveRun");
+        }
+    }
 
     /**
      * Uses {@link #resolveChild(Child)} and obtain the
      * {@link AbstractTestResultAction} object for the given child.
      */
     protected AbstractTestResultAction getChildReport(Child child) {
-        AbstractBuild<?,?> b = resolveChild(child);
+        Run<?,?> b = resolveRun(child);
         if(b==null) return null;
         return b.getAction(AbstractTestResultAction.class);
     }

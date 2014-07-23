@@ -23,7 +23,7 @@
  */
 package hudson.tasks.test;
 
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.tasks.junit.TestAction;
 
 import java.util.Collection;
@@ -189,9 +189,9 @@ public class SimpleCaseResult extends TestResult {
     }
 
     @Override
-    public AbstractBuild<?,?> getOwner() {
+    public Run<?,?> getRun() {
         if (parentAction == null) {
-            LOGGER.warning("in Trivial Test Result, parentAction is null, but getOwner() called");
+            LOGGER.warning("in Trivial Test Result, parentAction is null, but getRun() called");
             return null; 
         }
         return parentAction.owner;

@@ -24,6 +24,7 @@
 package hudson.tasks.junit;
 
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import jenkins.model.Jenkins;
 import hudson.tasks.test.TestObject;
 import hudson.tasks.test.TestResult;
@@ -68,7 +69,7 @@ public class History {
 	}
 	
     public boolean historyAvailable() {
-       if (testObject.getOwner().getParent().getBuilds().size() > 1)
+       if (testObject.getRun().getParent().getBuilds().size() > 1)
            return true;
         else
            return false; 
@@ -76,10 +77,10 @@ public class History {
 	
     public List<TestResult> getList(int start, int end) {
     	List<TestResult> list = new ArrayList<TestResult>();
-    	end = Math.min(end, testObject.getOwner().getParent().getBuilds().size());
-    	for (AbstractBuild<?,?> b: testObject.getOwner().getParent().getBuilds().subList(start, end)) {
+    	end = Math.min(end, testObject.getRun().getParent().getBuilds().size());
+    	for (Run<?,?> b: testObject.getRun().getParent().getBuilds().subList(start, end)) {
     		if (b.isBuilding()) continue;
-    		TestResult o = testObject.getResultInBuild(b);
+    		TestResult o = testObject.getResultInRun(b);
     		if (o != null) {
     			list.add(o);
     		}
@@ -88,7 +89,7 @@ public class History {
     }
     
 	public List<TestResult> getList() {
-		return getList(0, testObject.getOwner().getParent().getBuilds().size());
+		return getList(0, testObject.getRun().getParent().getBuilds().size());
 	}
 
     /**
@@ -223,7 +224,7 @@ public class History {
                 public String generateToolTip(CategoryDataset dataset, int row,
                         int column) {
                     ChartLabel label = (ChartLabel) dataset.getColumnKey(column);
-                    return label.o.getOwner().getDisplayName() + " : "
+                    return label.o.getRun().getDisplayName() + " : "
                             + label.o.getDurationString();
                 }
             };
@@ -253,14 +254,14 @@ public class History {
         }
 
          private void generateUrl() {
-            AbstractBuild<?,?> build = o.getOwner();
+            Run<?,?> build = o.getRun();
             String buildLink = build.getUrl();
             String actionUrl = o.getTestResultAction().getUrlName();
             this.url = Jenkins.getInstance().getRootUrl() + buildLink + actionUrl + o.getUrl();
         }
 
         public int compareTo(ChartLabel that) {
-            return this.o.getOwner().number - that.o.getOwner().number;
+            return this.o.getRun().number - that.o.getRun().number;
         }
 
         @Override
@@ -283,8 +284,9 @@ public class History {
 
         @Override
         public String toString() {
-            String l = o.getOwner().getDisplayName();
-            String s = o.getOwner().getBuiltOnStr();
+            Run<?, ?> run = o.getRun();
+            String l = run.getDisplayName();
+            String s = run instanceof AbstractBuild ? ((AbstractBuild) run).getBuiltOnStr() : null;
             if (s != null)
                 l += ' ' + s;
             return l;

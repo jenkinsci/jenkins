@@ -28,6 +28,7 @@ import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
+import hudson.model.Run;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.TestObject;
 import hudson.util.HeapSpaceStringConverter;
@@ -183,7 +184,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
      * Resolves {@link TestAction}s for the given {@link TestObject}.
      *
      * <p>
-     * This object itself is persisted as a part of {@link AbstractBuild}, so it needs to be XStream-serializable.
+     * This object itself is persisted as a part of {@link Run}, so it needs to be XStream-serializable.
      *
      * @see TestDataPublisher
      */

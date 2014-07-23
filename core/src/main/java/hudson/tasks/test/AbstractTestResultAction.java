@@ -63,6 +63,9 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements HealthReportingAction, RunAction2 {
+
+    public transient Run<?,?> run;
+    @Deprecated
     public transient AbstractBuild<?,?> owner;
 
     private Map<String,String> descriptions = new ConcurrentHashMap<String, String>();
@@ -72,16 +75,23 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
 
     /** @deprecated Use the default constructor and just call {@link Run#addAction} to associate the build with the action. */
     @Deprecated
+    protected AbstractTestResultAction(Run owner) {
+        onAttached(owner);
+    }
+
+    @Deprecated
     protected AbstractTestResultAction(AbstractBuild owner) {
-        this.owner = owner;
+        this((Run) owner);
     }
 
     @Override public void onAttached(Run<?, ?> r) {
-        this.owner = (AbstractBuild<?,?>) r;
+        this.run = r;
+        this.owner = r instanceof AbstractBuild ? (AbstractBuild<?,?>) r : null;
     }
 
     @Override public void onLoad(Run<?, ?> r) {
-        this.owner = (AbstractBuild<?,?>) r;
+        this.run = r;
+        this.owner = r instanceof AbstractBuild ? (AbstractBuild<?,?>) r : null;
     }
 
     /**
