@@ -105,7 +105,7 @@ THE SOFTWARE.
     <l:pane width="3" id="executors"
         title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>"
         collapsedText="${%Computers(computers.size() - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
-      <colgroup><col width="1*"/><col width="200*"/><col width="24"/></colgroup>
+      <colgroup><col width="30"/><col width="200*"/><col width="24"/></colgroup>
 
       <tr>
         <th class="pane">#</th>
