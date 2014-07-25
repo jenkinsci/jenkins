@@ -42,13 +42,8 @@ THE SOFTWARE.
             <j:when test="${requiresConfirmation}">
               <l:confirmationLink href="${_href}" post="true" message="${%are.you.sure(title)}">${title}</l:confirmationLink>
             </j:when>
-            <j:when test="${post}">
-              <form action="${_href}" method="post">
-                <a href="javascript:void(0)" onclick="this.parentNode.submit()">${title}</a>
-              </form>
-            </j:when>
             <j:otherwise>
-              <a href="${_href}">${title}</a>
+              <f:link href="${_href}" post="${post}">${title}</f:link>
             </j:otherwise>
           </j:choose>
         </div>
