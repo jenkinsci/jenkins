@@ -1407,3 +1407,15 @@ table#legend-table td {
     color: #f8f8f8;
     border: 1px solid #e39280;
 }
+/* ========================= Drag-Drop Container styles ================= */
+.repeated-container.with-drag-drop {
+	padding-top: 7px;
+}
+
+.with-drag-drop .repeated-chunk table {
+	padding-left: 12px;
+}
+
+.with-drag-drop .optional-block-start td {
+padding-left: 85px;
+}
