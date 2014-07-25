@@ -33,6 +33,9 @@ THE SOFTWARE.
 	<f:entry field="keepLongStdio" title="">
 		<f:checkbox name="keepLongStdio" checked="${instance.keepLongStdio}" title="${%Retain long standard output/error}"/>
 	</f:entry>
+	<f:entry field="ignoreResultFileTimestamps" title="">
+		<f:checkbox name="ignoreResultFileTimestamps" checked="${instance.ignoreResultFileTimestamps}" title="${%Ignore Resultfile Timestamps}"/>
+	</f:entry>
 	<j:invokeStatic var="testDataPublisherDescriptors"
 		className="hudson.tasks.junit.TestDataPublisher" method="all" />
 	<j:if test="${testDataPublisherDescriptors.size() > 0}">

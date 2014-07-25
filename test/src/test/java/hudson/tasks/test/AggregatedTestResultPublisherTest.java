@@ -173,7 +173,7 @@ public class AggregatedTestResultPublisherTest {
     }
 
     private void addJUnitResultArchiver(FreeStyleProject project) {
-        JUnitResultArchiver archiver = new JUnitResultArchiver("*.xml", false, null);
+        JUnitResultArchiver archiver = new JUnitResultArchiver("*.xml", false, false, null);
         project.getPublishersList().add(archiver);
         project.getBuildersList().add(new TouchBuilder());
     }

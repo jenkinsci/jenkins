@@ -284,7 +284,7 @@ public class TestResultPublishingTest extends HudsonTestCase {
     public void testBrokenResultFile() throws Exception {
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder());
-        p.getPublishersList().add(new JUnitResultArchiver("TEST-foo.xml", false, null));
+        p.getPublishersList().add(new JUnitResultArchiver("TEST-foo.xml", false, false, null));
         assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
     }
     private static final class TestBuilder extends Builder {
