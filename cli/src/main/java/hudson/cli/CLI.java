@@ -420,7 +420,7 @@ public class CLI {
                 args = args.subList(1,args.size());
                 continue;
             }
-            if (head.equals("-noPKey")) {
+            if (head.equals("-noKeyAuth")) {
             	tryLoadPKey = false;
             	args = args.subList(1,args.size());
             	continue;
