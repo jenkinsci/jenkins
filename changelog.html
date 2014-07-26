@@ -55,12 +55,27 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class="rfe">
+    Improved validation of Build Record Root Directory setting.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14538">issue 14538</a>)
+  <li class="rfe">
+    Indicate which node the workspace being viewed is on.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23636">issue 23636</a>)
+  <li class="rfe">
+    Show full project name for projects in folders.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22971">issue 22971</a>)
   <li class="bug">
     Killing processes started by builds on Unix was broken as of 1.553.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22641">issue 22641</a>)
   <li class="bug">
     Should not stop a build from finishing just to compute JUnit result difference to a prior build which is still running.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10234">issue 10234</a>)
+  <li class="bug">
+    Do not show link to System Information page for offline slaves, make page more robust when offline.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23041">issue 23041</a>)
+  <li class="bug">
+    Fix link to SCM polling log from downstream job cause.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18048">issue 18048</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
