@@ -47,8 +47,9 @@ THE SOFTWARE.
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
               <j:set var="id" value="${h.generateId()}"/>
               <span style="display: none" id="${id}">
-                <img src="${imagesURL}/16x16/document_edit.png" style="vertical-align: super" alt="${%customizedFields}" tooltip="${%customizedFields}"/>
+                <img src="${imagesURL}/24x24/notepad.png" style="vertical-align: baseline" alt="${%customizedFields}" tooltip="${%customizedFields}"/>
               </span>
+              <st:nbsp />
 	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->
 	    </div>
             <j:new var="customizedFields" className="java.util.TreeSet"/>
