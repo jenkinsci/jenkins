@@ -1753,14 +1753,43 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         public FormValidation doCheckRawBuildsDir(@QueryParameter String value) {
-            if (!value.contains("${")) {
-                File d = new File(value);
-                if (!d.isDirectory() && (d.getParentFile() == null || !d.getParentFile().canWrite())) {
+            // do essentially what expandVariablesForDirectory does, without an Item
+            String replacedValue = expandVariablesForDirectory(value,
+                    "doCheckRawBuildsDir-Marker:foo",
+                    Jenkins.getInstance().getRootDir().getPath() + "/jobs/doCheckRawBuildsDir-Marker$foo");
+
+            File replacedFile = new File(replacedValue);
+            if (!replacedFile.isAbsolute()) {
+                return FormValidation.error(value + " does not resolve to an absolute path");
+            }
+
+            if (!replacedValue.contains("doCheckRawBuildsDir-Marker")) {
+                return FormValidation.error(value + " does not contain ${ITEM_FULL_NAME} or ${ITEM_ROOTDIR}, cannot distinguish between projects");
+            }
+
+            if (replacedValue.contains("doCheckRawBuildsDir-Marker:foo")) {
+                // make sure platform can handle colon
+                try {
+                    File tmp = File.createTempFile("Jenkins-doCheckRawBuildsDir", "foo:bar");
+                    tmp.delete();
+                } catch (IOException e) {
+                    return FormValidation.error(value + " contains ${ITEM_FULLNAME} but your system does not support it (JENKINS-12251). Use ${ITEM_FULL_NAME} instead");
+                }
+            }
+
+            File d = new File(replacedValue);
+            if (!d.isDirectory()) {
+                // if dir does not exist (almost guaranteed) need to make sure nearest existing ancestor can be written to
+                d = d.getParentFile();
+                while (!d.exists()) {
+                    d = d.getParentFile();
+                }
+                if (!d.canWrite()) {
                     return FormValidation.error(value + " does not exist and probably cannot be created");
                 }
-                // TODO failure to use either ITEM_* variable might be an error too?
             }
-            return FormValidation.ok(); // TODO assumes it will be OK after substitution, but can we be sure?
+
+            return FormValidation.ok();
         }
 
         // to route /descriptor/FQCN/xxx to getDescriptor(FQCN).xxx
@@ -1949,11 +1978,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private File expandVariablesForDirectory(String base, Item item) {
-        return new File(Util.replaceMacro(base, ImmutableMap.of(
-                "JENKINS_HOME", getRootDir().getPath(),
-                "ITEM_ROOTDIR", item.getRootDir().getPath(),
-                "ITEM_FULLNAME", item.getFullName(),   // legacy, deprecated
-                "ITEM_FULL_NAME", item.getFullName().replace(':','$')))); // safe, see JENKINS-12251
+        return new File(expandVariablesForDirectory(base, item.getFullName(), item.getRootDir().getPath()));
+    }
+
+    @Restricted(NoExternalUse.class)
+    static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
+        return Util.replaceMacro(base, ImmutableMap.of(
+                "JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath(),
+                "ITEM_ROOTDIR", itemRootDir,
+                "ITEM_FULLNAME", itemFullName,   // legacy, deprecated
+                "ITEM_FULL_NAME", itemFullName.replace(':','$'))); // safe, see JENKINS-12251
+
     }
     
     public String getRawWorkspaceDir() {
