@@ -28,6 +28,7 @@ THE SOFTWARE.
   <l:layout title="${it.title} : ${path}">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
     <l:main-panel>
+      <h1><l:breakable value="${it.title}"/></h1>
       <div class="dirTree">
       <!-- parent path -->
         <div class="parentPath">

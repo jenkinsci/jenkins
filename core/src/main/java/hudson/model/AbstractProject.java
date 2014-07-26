@@ -1890,7 +1890,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             req.getView(this,"noWorkspace.jelly").forward(req,rsp);
             return null;
         } else {
-            return new DirectoryBrowserSupport(this, ws, getDisplayName()+" workspace", "folder.png", true);
+            Computer c = ws.toComputer();
+            String title;
+            if (c == null) {
+                title = Messages.AbstractProject_WorkspaceTitle(getDisplayName());
+            } else {
+                title = Messages.AbstractProject_WorkspaceTitleOnComputer(getDisplayName(), c.getDisplayName());
+            }
+            return new DirectoryBrowserSupport(this, ws, title, "folder.png", true);
         }
     }
 
