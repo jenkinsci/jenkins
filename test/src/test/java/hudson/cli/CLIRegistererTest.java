@@ -1,21 +1,18 @@
 package hudson.cli;
 
-import hudson.ExtensionComponent;
-import hudson.cli.declarative.CLIRegisterer;
-import hudson.model.Hudson;
-import jenkins.model.Jenkins;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import hudson.cli.CLICommandInvoker.Result;
+import hudson.cli.declarative.CLIMethod;
+import hudson.model.User;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Locale;
+import org.kohsuke.args4j.Option;
 
 public class CLIRegistererTest {
 
@@ -26,36 +23,27 @@ public class CLIRegistererTest {
     public void testAuthWithSecurityRealmCLIAuthenticator() {
         j.getInstance().setSecurityRealm(j.createDummySecurityRealm());
 
-        Collection<ExtensionComponent<CLICommand>> extensions = new CLIRegisterer().find(CLICommand.class, (Hudson) j.getInstance());
+        CLICommandInvoker command = new CLICommandInvoker(j, "command-for-test");
 
-        CLICommand quietCommand = null;
-        CLICommand cancelCommand = null;
+        Result invocation = command.invokeWithArgs("--username", "foo", "--password", "foo", "--expected", "foo");
+        assertThat(invocation, succeededSilently());
 
-        Assert.assertFalse("Jenkins not in quiet down mode", Jenkins.getInstance().isQuietingDown());
+        invocation = command.invokeWithArgs("--expected", "anonymous");
+        assertThat(invocation, failedWith(1));
+        assertThat(invocation.stderr(), containsString("Not authenticated"));
 
-        for (ExtensionComponent<CLICommand> extension : extensions) {
-            CLICommand command = extension.getInstance();
-            if (command.getName().equals("quiet-down")) {
-                quietCommand = command;
-            }
-            if (command.getName().equals("cancel-quiet-down")) {
-                cancelCommand = command;
-            }
-        }
+        invocation = command.invokeWithArgs("--username", "foo", "--password", "invalid", "--expected", "anonymous");
+        assertThat(invocation, failedWith(1));
+        assertThat(invocation.stderr(), containsString("BadCredentialsException: foo"));
+    }
 
-        Assert.assertNotNull(quietCommand);
-        Assert.assertNotNull(cancelCommand);
+    @CLIMethod(name = "command-for-test")
+    public static int commandForTest(@Option(name = "--expected") String expected) {
+        final User user = User.current();
+        if (user == null) throw new RuntimeException("Not authenticated");
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(baos);
-        ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0]);
+        Assert.assertEquals(expected, user.getId());
 
-        // run the CLI command with valid credentials
-        int quietResult = quietCommand.main(Arrays.asList("--username", "foo", "--password", "foo"), Locale.ENGLISH, bais, out, out);
-        Assert.assertTrue("Jenkins put into quiet down mode", Jenkins.getInstance().isQuietingDown());
-
-        // run the CLI command with invalid credentials
-        int cancelResult = cancelCommand.main(Arrays.asList("--username", "foo", "--password", "invalid"), Locale.ENGLISH, bais, out, out);
-        Assert.assertTrue("Jenkins still in quiet down mode", Jenkins.getInstance().isQuietingDown());
+        return 0;
     }
 }
