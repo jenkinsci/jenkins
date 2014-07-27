@@ -29,12 +29,9 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.model.AbstractModelObject;
-import hudson.model.Computer;
+import hudson.model.*;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
-import hudson.model.Saveable;
-import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -44,25 +41,16 @@ import hudson.util.CopyOnWriteList;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
@@ -98,6 +86,19 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         });
 
         return ts;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public AutoCompletionCandidates doAutoCompleteLoggerName(@QueryParameter String value) {
+        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+        Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
+        while (loggerNames.hasMoreElements()) {
+            String loggerName = loggerNames.nextElement();
+            if (loggerName.toLowerCase(Locale.ENGLISH).contains(value.toLowerCase(Locale.ENGLISH))) {
+                candidates.add(loggerName);
+            }
+        }
+        return candidates;
     }
 
     @Restricted(NoExternalUse.class)
