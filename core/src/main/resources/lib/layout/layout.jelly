@@ -83,6 +83,7 @@ ${h.initPageVariables(context)}
     <j:if test="${isMSIE}">
       <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
     </j:if>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
@@ -213,13 +214,20 @@ ${h.initPageVariables(context)}
     <div id="breadcrumbBar">
       <l:breadcrumbBar>
         <j:set var="mode" value="breadcrumbs" />
-        <d:invokeBody/>
+        <d:invokeBody />
       </l:breadcrumbBar>
     </div>
 
     <div id="page-body" class="container-fluid">
       <div class="row">
-        <div id="side-panel" class="col-sm-9 col-md-7 col-lg-6 col-xlg-4">
+        <div id="main-panel" class="col-sm-15 col-sm-push-9 col-md-17 col-md-push-7 col-lg-18 col-lg-push-6 col-xlg-20 col-xlg-push-4">
+          <div id="main-panel-content">
+            <j:set var="mode" value="main-panel" />
+            <d:invokeBody/>
+          </div>
+        </div>
+        
+        <div id="side-panel" class="col-sm-9 col-sm-pull-15 col-md-7 col-md-pull-17 col-lg-6 col-lg-pull-18 col-xlg-4 col-xlg-pull-20">
           <div id="side-panel-content">
             <j:set var="mode" value="side-panel" />
             <d:invokeBody />
@@ -234,13 +242,6 @@ ${h.initPageVariables(context)}
                 });
               </script>
             </j:if>
-          </div>
-        </div>
-
-        <div id="main-panel" class="col-sm-15 col-md-17 col-lg-18 col-xlg-20">
-          <div id="main-panel-content">
-            <j:set var="mode" value="main-panel" />
-            <d:invokeBody/>
           </div>
         </div>
       </div>
