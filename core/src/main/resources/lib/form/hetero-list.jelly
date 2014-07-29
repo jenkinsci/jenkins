@@ -81,11 +81,7 @@ THE SOFTWARE.
                 <b>${descriptor.displayName}</b>
               </div>
             </td>
-            <j:if test="${help!=null}">
-              <td>
-                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
-              </td>
-            </j:if>
+            <f:helpLink url="${help}"/>
           </tr>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">

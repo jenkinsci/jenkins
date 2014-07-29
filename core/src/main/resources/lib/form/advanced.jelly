@@ -70,5 +70,6 @@ THE SOFTWARE.
               </script>
             </j:if>
 	  </td>
+	  <td/>
 	</tr>
 </j:jelly>

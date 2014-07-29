@@ -51,13 +51,7 @@ THE SOFTWARE.
                 <d:invokeBody/>
             </select>
         </td>
-        <j:if test="${attrs.help!=null}">
-            <td class="setting-help">
-                <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.png"
-                                                                                       alt="Help for feature: ${title}"
-                                                                                       height="16" width="16"/></a>
-            </td>
-        </j:if>
+        <f:helpLink url="${attrs.help}" featureName="${title}"/>
     </tr>
 
     <!-- generate the actual form entries -->

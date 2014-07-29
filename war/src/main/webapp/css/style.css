@@ -332,6 +332,9 @@ pre.console {
   width: 16px;
   vertical-align: middle;
 }
+.setting-no-help {
+  width: 16px;
+}
 
 .setting-input {
   width: 100%;
