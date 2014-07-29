@@ -26,6 +26,7 @@ package hudson.tasks.junit;
 import com.thoughtworks.xstream.XStream;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -60,6 +61,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     private int failCount;
     private int skipCount;
     private Integer totalCount;
+    private Double healthScaleFactor;
     private List<Data> testData = new ArrayList<Data>();
 
     @Deprecated
@@ -139,7 +141,16 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         return totalCount;
     }
 
-     @Override
+    @Override
+    public double getHealthScaleFactor() {
+        return healthScaleFactor == null ? 1.0 : healthScaleFactor;
+    }
+
+    public void setHealthScaleFactor(double healthScaleFactor) {
+        this.healthScaleFactor = Math.max(0.0,healthScaleFactor);
+    }
+
+    @Override
      public List<CaseResult> getFailedTests() {
           return getResult().getFailedTests();
      }

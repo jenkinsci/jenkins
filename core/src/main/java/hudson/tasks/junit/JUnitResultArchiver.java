@@ -52,6 +52,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,6 +83,8 @@ public class JUnitResultArchiver extends Recorder {
      */
     private final DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
 
+    private final Double healthScaleFactor;
+
 	/**
 	 * left for backwards compatibility
          * @deprecated since 2009-08-09.
@@ -97,14 +100,24 @@ public class JUnitResultArchiver extends Recorder {
         this(testResults, false, testDataPublishers);
     }
 	
-	@DataBoundConstructor
+	@Deprecated
 	public JUnitResultArchiver(
 			String testResults,
             boolean keepLongStdio,
 			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers) {
+        this(testResults, keepLongStdio, testDataPublishers, 1.0);
+    }
+
+	@DataBoundConstructor
+	public JUnitResultArchiver(
+			String testResults,
+            boolean keepLongStdio,
+			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers,
+            double healthScaleFactor) {
 		this.testResults = testResults;
         this.keepLongStdio = keepLongStdio;
 		this.testDataPublishers = testDataPublishers;
+        this.healthScaleFactor = Math.max(0.0,healthScaleFactor);
 	}
 
     /**
@@ -133,6 +146,7 @@ public class JUnitResultArchiver extends Recorder {
 			} catch (NullPointerException npe) {
 				throw new AbortException(Messages.JUnitResultArchiver_BadXML(testResults));
 			}
+            action.setHealthScaleFactor(getHealthScaleFactor()); // TODO do we want to move this to the constructor?
             result.freeze(action);
 			if (result.isEmpty()) {
 			    // most likely a configuration error in the job - e.g. false pattern to match the JUnit result files
@@ -192,7 +206,11 @@ public class JUnitResultArchiver extends Recorder {
 		return testResults;
 	}
 
-	public DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> getTestDataPublishers() {
+    public double getHealthScaleFactor() {
+        return healthScaleFactor == null ? 1.0 : healthScaleFactor;
+    }
+
+    public DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> getTestDataPublishers() {
 		return testDataPublishers;
 	}
 
@@ -248,5 +266,15 @@ public class JUnitResultArchiver extends Recorder {
 		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
 			return true;
 		}
+
+        public FormValidation doCheckHealthScaleFactor(@QueryParameter double value) {
+            if (value < 1e-7) return FormValidation.warning("Test health reporting disabled");
+            return FormValidation.ok(Messages.JUnitResultArchiver_HealthScaleFactorAnalysis(
+                    1,
+                    (int) (100.0 - Math.max(0.0, Math.min(100.0, 1 * value))),
+                    5,
+                    (int) (100.0 - Math.max(0.0, Math.min(100.0, 5 * value)))
+            ));
+        }
     }
 }

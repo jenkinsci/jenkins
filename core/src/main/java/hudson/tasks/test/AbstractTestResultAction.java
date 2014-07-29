@@ -133,9 +133,15 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     }
 
     public HealthReport getBuildHealth() {
+        final double scaleFactor = getHealthScaleFactor();
+        if (scaleFactor < 1e-7) {
+            return null;
+        }
         final int totalCount = getTotalCount();
         final int failCount = getFailCount();
-        int score = (totalCount == 0) ? 100 : (int) (100.0 * (1.0 - ((double)failCount) / totalCount));
+        int score = (totalCount == 0)
+                ? 100
+                : (int) (100.0 * Math.max(1.0, Math.min(0.0, 1.0 - (scaleFactor * failCount) / totalCount)));
         Localizable description, displayName = Messages._AbstractTestResultAction_getDisplayName();
         if (totalCount == 0) {
         	description = Messages._AbstractTestResultAction_zeroTestDescription(displayName);
@@ -143,6 +149,19 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         	description = Messages._AbstractTestResultAction_TestsDescription(displayName, failCount, totalCount);
         }
         return new HealthReport(score, description);
+    }
+
+    /**
+     * Returns how much to scale the test related health by.
+     * @return a factor of {@code 1.0} to have the test health be the percentage of tests passing so 20% of tests
+     * failing will report as 80% health. A factor of {@code 2.0} will mean that 20% of tests failing will report as 60%
+     * health. A factor of {@code 2.5} will mean that 20% of test failing will report as 50% health. A factor of
+     * {@code 4.0} will mean that 20% of tests failing will report as 20% health. A factor of {@code 5.0} will mean
+     * that 20% (or more) of tests failing will report as 0% health. A factor of {@code 0.0} will disable test health
+     * reporting.
+     */
+    public double getHealthScaleFactor() {
+        return 1.0;
     }
 
     /**
