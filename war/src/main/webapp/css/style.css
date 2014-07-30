@@ -1429,3 +1429,51 @@ table#legend-table td {
     color: #f8f8f8;
     border: 1px solid #e39280;
 }
+
+/* tabBar */
+
+.tabBar {
+  clear: both;
+  overflow: auto;
+}
+.tabBar .tab {
+  float: left;
+  margin-left: 3px;
+}
+.tabBar .tab:first-child {
+  margin-left: 15px;
+}
+.tabBar .tab a {
+  position: relative;
+  display: block;
+  background: #eee;
+  text-decoration: none;
+  color: #000;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+.tabBar .tab a:hover {
+  background: #d1d1d1;
+}
+.tabBar .tab a.addTab {
+  background: #d8efff;
+}
+.tabBar .tab a.addTab:hover {
+  background: #bed5e5;
+}
+.tabBar .tab [type=radio] {
+  display: none;
+}
+.tabBar [type=radio]:checked ~ a {
+  background: white;
+  border-bottom: 1px solid white;
+  z-index: 2;
+}
+.tabBarBaseline {
+  position: relative;
+  top: -1px;
+  border-top: 1px solid #ccc;
+  z-index: 1;
+}
