@@ -30,7 +30,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-  <div class="tab">
+  <div class="tab${active?' active':''}">
     <j:choose>
       <j:when test="${active}">
         <input type="radio" id="tab-${tabBarId}-${tabIndex}" name="tab-group-${tabBarId}" checked="checked" />

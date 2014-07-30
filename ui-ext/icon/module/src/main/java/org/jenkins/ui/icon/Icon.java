@@ -152,10 +152,23 @@ public class Icon {
         if (string == null) {
             return null;
         }
+        return "icon-" + toNormalizedIconName(string);
+    }
+
+    /**
+     * Normalize the supplied string to an Icon name e.g. "blue_anime" to "blue-anime".
+     *
+     * @param string The string to be normalized.
+     * @return The normalized icon name.
+     */
+    public static String toNormalizedIconName(String string) {
+        if (string == null) {
+            return null;
+        }
         if (string.endsWith(".png") || string.endsWith(".gif")) {
             string = string.substring(0, string.length() - 4);
         }
-        return "icon-" + string.replace("_", "-");
+        return string.replace("_", "-");
     }
 
     /**

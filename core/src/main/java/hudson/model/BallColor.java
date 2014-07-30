@@ -73,17 +73,27 @@ public enum BallColor implements StatusIcon {
     ;
 
     private final Localizable description;
+    private final String iconName;
     private final String iconClassName;
     private final String image;
     private final Color baseColor;
 
     BallColor(String image, Localizable description, Color baseColor) {
+        this.iconName = Icon.toNormalizedIconName(image);
         this.iconClassName = Icon.toNormalizedIconNameClass(image);
         this.baseColor = baseColor;
         // name() is not usable in the constructor, so I have to repeat the name twice
         // in the constants definition.
         this.image = image+ (image.endsWith("_anime")?".gif":".png");
         this.description = description;
+    }
+
+    /**
+     * Get the status ball icon name.
+     * @return The status ball icon name.
+     */
+    public String getIconName() {
+        return iconName;
     }
 
     /**
@@ -123,7 +133,7 @@ public enum BallColor implements StatusIcon {
      * Returns the {@link #getBaseColor()} in the "#RRGGBB" format.
      */
     public String getHtmlBaseColor() {
-        return String.format("#%06X",baseColor.getRGB()&0xFFFFFF);
+        return String.format("#%06X", baseColor.getRGB() & 0xFFFFFF);
     }
 
     /**
