@@ -331,6 +331,20 @@ pre.console {
   padding: 6px;
 }
 
+.setting-main input[type="checkbox"] {
+    margin-top: 10px;
+}
+
+.radio-block-start input[type="radio"] {
+    margin-left: 6px;
+    vertical-align: bottom;
+    margin-bottom: 2px;
+}
+
+.optional-block-start input[type="checkbox"] {
+    margin-left: 6px;
+}
+
 .setting-help {
   width: 16px;
   vertical-align: middle;
