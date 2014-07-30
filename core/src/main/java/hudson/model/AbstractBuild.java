@@ -56,6 +56,7 @@ import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
+import hudson.Util;
 import hudson.util.*;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
@@ -475,6 +476,28 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         protected Lease decideWorkspace(@Nonnull Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null) {
+                // If the custom workspace contains the 'WORKSPACE' variable then it is a modification to the
+                // automatically generated workspace, as such it is not shared between jobs.
+                // Use the normal variable resolution method for future proof testing by resolving
+                // WORKSPACE to a known string that should not be found in real applications.
+                final String SEARCH = "!:-1SearchPathToken2_:!";
+                final Map<String, String> map = new HashMap<String, String>();
+                map.put("WORKSPACE", SEARCH);
+                final VariableResolver<String> resolver = new VariableResolver.ByMap<String>(map);
+                
+                if (Util.replaceMacro(customWorkspace, resolver).contains(SEARCH))
+                {
+                    Lease parent = wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()), getBuild());
+                    
+                    // Use a copy of the environment so that we do not corrupt the acutal environment
+                    EnvVars env = new EnvVars(getEnvironment(listener));
+                    env.put("WORKSPACE", parent.path.getRemote());
+                    
+                    String customPath = env.expand(customWorkspace);
+                    return Lease.createLinkedDummyLease(n.getRootPath().child(customPath), parent);
+                }
+                
+                // Otherwise just use the custom workspace as defined.
                 // we allow custom workspaces to be concurrently used between jobs.
                 return Lease.createDummyLease(n.getRootPath().child(getEnvironment(listener).expand(customWorkspace)));
             }
