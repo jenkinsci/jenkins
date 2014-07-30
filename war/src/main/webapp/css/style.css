@@ -1276,7 +1276,7 @@ table#legend-table td {
 	vertical-align: middle;
 }
 
-#description, .make-disabled-container {
+#description, .disable-project-container {
     display: inline-block;
     float: right;
     clear: right;
