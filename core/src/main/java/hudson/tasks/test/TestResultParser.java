@@ -119,6 +119,7 @@ public abstract class TestResultParser implements ExtensionPoint {
      * @throws AbortException
      *      If you encounter an error that you handled gracefully, throw this exception and Hudson
      *      will not show a stack trace.
+     * @since TODO
      */
     public TestResult parseResult(String testResultLocations,
                                        Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher,

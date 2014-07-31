@@ -64,6 +64,9 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean
 public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements HealthReportingAction, RunAction2 {
 
+    /**
+     * @since TODO
+     */
     public transient Run<?,?> run;
     @Deprecated
     public transient AbstractBuild<?,?> owner;
@@ -73,7 +76,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     /** @since 1.545 */
     protected AbstractTestResultAction() {}
 
-    /** @deprecated Use the default constructor and just call {@link Run#addAction} to associate the build with the action. */
+    /**
+     * @deprecated Use the default constructor and just call {@link Run#addAction} to associate the build with the action.
+     * @since TODO
+     */
     @Deprecated
     protected AbstractTestResultAction(Run owner) {
         onAttached(owner);

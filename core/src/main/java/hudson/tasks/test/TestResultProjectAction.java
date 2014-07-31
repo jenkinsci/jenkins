@@ -50,12 +50,16 @@ import java.util.List;
 public class TestResultProjectAction implements Action {
     /**
      * Project that owns this action.
+     * @since TODO
      */
     public final Job<?,?> job;
 
     @Deprecated
     public final AbstractProject<?,?> project;
 
+    /**
+     * @since TODO
+     */
     public TestResultProjectAction(Job<?,?> job) {
         this.job = job;
         project = job instanceof AbstractProject ? (AbstractProject) job : null;
