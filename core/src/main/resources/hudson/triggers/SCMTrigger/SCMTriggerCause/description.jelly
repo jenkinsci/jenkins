@@ -23,5 +23,6 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <span><a href="pollingLog">${it.shortDescription}</a></span>
+    <!-- this link loses breadcrumb context, but need absolute URL for upstream cause support (JENKINS-18048) -->
+    <span><a href="${rootURL}/${it.run.url}pollingLog">${it.shortDescription}</a></span>
 </j:jelly>

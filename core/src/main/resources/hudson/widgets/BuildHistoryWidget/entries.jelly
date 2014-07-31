@@ -35,7 +35,7 @@ THE SOFTWARE.
       <j:set var="id" value="${h.generateId()}"/>
       <tr class="build-row transitive" id="${id}">
         <td nowrap="nowrap">
-          <img width="16" height="16" src="${imagesURL}/16x16/grey.png" alt="${%pending}"/>
+          <l:icon class="icon-grey icon-sm"/>
           <st:nbsp/>
           <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
           #${queuedItems.size()==1 ? it.owner.nextBuildNumber

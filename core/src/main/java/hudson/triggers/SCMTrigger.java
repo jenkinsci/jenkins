@@ -44,6 +44,13 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -66,14 +73,14 @@ import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.jelly.XMLOutput;
-import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import static java.util.logging.Level.*;
+import jenkins.model.RunAction2;
+
+import javax.annotation.Nonnull;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -584,6 +591,8 @@ public class SCMTrigger extends Trigger<Item> {
          */
         private String pollingLog;
 
+        private transient Run run;
+
         public SCMTriggerCause(File logFile) throws IOException {
             // TODO: charset of this log file?
             this(FileUtils.readFileToString(logFile));
@@ -602,7 +611,13 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         @Override
+        public void onLoad(Run run) {
+            this.run = run;
+        }
+
+        @Override
         public void onAddedTo(Run build) {
+            this.run = build;
             try {
                 BuildAction a = new BuildAction(build);
                 FileUtils.writeStringToFile(a.getPollingLogFile(),pollingLog);
@@ -616,6 +631,11 @@ public class SCMTrigger extends Trigger<Item> {
         @Override
         public String getShortDescription() {
             return Messages.SCMTrigger_SCMTriggerCause_ShortDescription();
+        }
+
+        @Restricted(DoNotUse.class)
+        public Run getRun() {
+            return this.run;
         }
 
         @Override

@@ -531,7 +531,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         File home = homeLoader.allocate();
         for (JenkinsRecipe.Runner r : recipes)
             r.decorateHome(this,home);
-        return new Hudson(home, webServer, getPluginManager());
+        try {
+            return new Hudson(home, webServer, getPluginManager());
+        } catch (InterruptedException x) {
+            throw new AssumptionViolatedException("Jenkins startup interrupted", x);
+        }
     }
 
     public PluginManager getPluginManager() {

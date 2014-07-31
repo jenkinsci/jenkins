@@ -1568,14 +1568,21 @@ function updateBuildHistory(ajaxUrl,nBuild) {
             if (bh.headers == null) {
                 // Yahoo.log("Missing headers in buildHistory element");
             }
+
+            function getDataTable(buildHistoryDiv) {
+                return $(buildHistoryDiv).getElementsBySelector('table.pane')[0];
+            }
+
             new Ajax.Request(ajaxUrl, {
                 requestHeaders: bh.headers,
                 onSuccess: function(rsp) {
-                    var rows = bh.rows;
+                    var dataTable = getDataTable(bh);
+                    var rows = dataTable.rows;
 
                     //delete rows with transitive data
-                    while (rows.length > 2 && Element.hasClassName(rows[1], "transitive"))
-                        Element.remove(rows[1]);
+                    while (rows.length > 0 && Element.hasClassName(rows[0], "transitive")) {
+                        Element.remove(rows[0]);
+                    }
 
                     // insert new rows
                     var div = document.createElement('div');
@@ -1583,9 +1590,16 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     Behaviour.applySubtree(div);
 
                     var pivot = rows[0];
-                    var newRows = $(div).firstDescendant().rows;
-                    for (var i = newRows.length - 1; i >= 0; i--) {
-                        pivot.parentNode.insertBefore(newRows[i], pivot.nextSibling);
+                    var newRows = getDataTable(div).rows;
+                    while (newRows.length > 0) {
+                        if (pivot !== undefined) {
+                            // The data table has rows.  Insert before a "pivot" row (first row).
+                            pivot.parentNode.insertBefore(newRows[0], pivot);
+                        } else {
+                            // The data table has no rows.  In this case, we just add all new rows directly to the
+                            // table, one after the other i.e. we don't insert before a "pivot" row (first row).
+                            dataTable.appendChild(newRows[0]);
+                        }
                     }
 
                     // next update

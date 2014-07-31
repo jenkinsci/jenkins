@@ -33,6 +33,9 @@ THE SOFTWARE.
 	<f:entry field="keepLongStdio" title="">
 		<f:checkbox name="keepLongStdio" checked="${instance.keepLongStdio}" title="${%Retain long standard output/error}"/>
 	</f:entry>
+  <f:entry field="healthScaleFactor" title="${%Health report amplification factor}">
+    <f:number default="1.0" min="0" step="0.1" size="10"/>
+  </f:entry>
 	<j:invokeStatic var="testDataPublisherDescriptors"
 		className="hudson.tasks.junit.TestDataPublisher" method="all" />
 	<j:if test="${testDataPublisherDescriptors.size() > 0}">

@@ -177,6 +177,26 @@ public abstract class Cause {
             this.upstreamCauses = upstreamCauses;
         }
 
+        @Override
+        public void onLoad(@Nonnull Run run) {
+            Item i = Jenkins.getInstance().getItemByFullName(this.upstreamProject);
+            if (i == null || !(i instanceof Job)) {
+                // cannot initialize upstream causes
+                return;
+            }
+
+            Job j = (Job)i;
+            Run r = j.getBuildByNumber(this.getUpstreamBuild());
+            if (r == null) {
+                // build doesn't exist anymore
+                return;
+            }
+
+            for (Cause c : this.upstreamCauses) {
+                c.onLoad(r);
+            }
+        }
+
         /**
          * @since 1.515
          */

@@ -8,7 +8,7 @@ l.layout {
     l.header(title:title)
     l.main_panel {
         h1 {
-            img(src:"${imagesURL}/48x48/error.png",alt:"[!]",height:48,width:48)
+            l.icon(class: 'icon-error icon-xlg')
             text(" ")
             text(title)
         }

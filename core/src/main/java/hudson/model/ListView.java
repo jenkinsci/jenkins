@@ -432,53 +432,72 @@ public class ListView extends View implements DirectlyModifiableView {
     @Restricted(NoExternalUse.class)
     @Extension public static final class Listener extends ItemListener {
         @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            for (Item g : Jenkins.getInstance().getAllItems()) {
+            final Jenkins jenkins = Jenkins.getInstance();
+            for (View view: jenkins.getViews()) {
+                if (view instanceof ListView) {
+                    renameViewItem(oldFullName, newFullName, jenkins, (ListView) view);
+                }
+            }
+            for (Item g : jenkins.getAllItems()) {
                 if (g instanceof ViewGroup) {
                     ViewGroup vg = (ViewGroup) g;
                     for (View v : vg.getViews()) {
                         if (v instanceof ListView) {
-                            ListView lv = (ListView) v;
-                            boolean needsSave;
-                            synchronized (lv) {
-                                Set<String> oldJobNames = new HashSet<String>(lv.jobNames);
-                                lv.jobNames.clear();
-                                for (String oldName : oldJobNames) {
-                                    lv.jobNames.add(Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, oldName, vg.getItemGroup()));
-                                }
-                                needsSave = !oldJobNames.equals(lv.jobNames);
-                            }
-                            if (needsSave) { // do not hold ListView lock at the time
-                                try {
-                                    g.save();
-                                } catch (IOException x) {
-                                    Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x);
-                                }
-                            }
+                            renameViewItem(oldFullName, newFullName, vg, (ListView) v);
                         }
                     }
                 }
             }
         }
+
+        private void renameViewItem(String oldFullName, String newFullName, ViewGroup vg, ListView lv) {
+            boolean needsSave;
+            synchronized (lv) {
+                Set<String> oldJobNames = new HashSet<String>(lv.jobNames);
+                lv.jobNames.clear();
+                for (String oldName : oldJobNames) {
+                    lv.jobNames.add(Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, oldName, vg.getItemGroup()));
+                }
+                needsSave = !oldJobNames.equals(lv.jobNames);
+            }
+            if (needsSave) { // do not hold ListView lock at the time
+                try {
+                    lv.save();
+                } catch (IOException x) {
+                    Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x);
+                }
+            }
+        }
+
         @Override public void onDeleted(Item item) {
-            for (Item g : Jenkins.getInstance().getAllItems()) {
+            final Jenkins jenkins = Jenkins.getInstance();
+            for (View view: jenkins.getViews()) {
+                if (view instanceof ListView) {
+                    deleteViewItem(item, jenkins, (ListView) view);
+                }
+            }
+            for (Item g : jenkins.getAllItems()) {
                 if (g instanceof ViewGroup) {
                     ViewGroup vg = (ViewGroup) g;
                     for (View v : vg.getViews()) {
                         if (v instanceof ListView) {
-                            ListView lv = (ListView) v;
-                            boolean needsSave;
-                            synchronized (lv) {
-                                needsSave = lv.jobNames.remove(item.getRelativeNameFrom(vg.getItemGroup()));
-                            }
-                            if (needsSave) {
-                                try {
-                                    g.save();
-                                } catch (IOException x) {
-                                    Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x);
-                                }
-                            }
+                            deleteViewItem(item, vg, (ListView) v);
                         }
                     }
+                }
+            }
+        }
+
+        private void deleteViewItem(Item item, ViewGroup vg, ListView lv) {
+            boolean needsSave;
+            synchronized (lv) {
+                needsSave = lv.jobNames.remove(item.getRelativeNameFrom(vg.getItemGroup()));
+            }
+            if (needsSave) {
+                try {
+                    lv.save();
+                } catch (IOException x) {
+                    Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x);
                 }
             }
         }

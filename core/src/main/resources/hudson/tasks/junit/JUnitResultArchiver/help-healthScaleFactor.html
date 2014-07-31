@@ -1,0 +1,17 @@
+<div>
+    The amplification factor to apply to test failures when computing the test result contribution to the build health
+    score.
+    <br />
+    The default factor is <code>1.0</code>
+    <ul>
+        <li>A factor of <code>0.0</code> will disable the test result contribution to build health score.</li>
+        <li>A factor of <code>0.1</code> means that 10% of tests failing will score 99% health</li>
+        <li>A factor of <code>0.5</code> means that 10% of tests failing will score 95% health</li>
+        <li>A factor of <code>1.0</code> means that 10% of tests failing will score 10% health</li>
+        <li>A factor of <code>2.0</code> means that 10% of tests failing will score 20% health</li>
+        <li>A factor of <code>2.5</code> means that 10% of tests failing will score 25% health</li>
+        <li>A factor of <code>5.0</code> means that 10% of tests failing will score 50% health</li>
+        <li>A factor of <code>10.0</code> means that 10% of tests failing will score 0% health</li>
+    </ul>
+    The factor is persisted with the build results, so changes will only be reflected in new builds.
+</div>

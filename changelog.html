@@ -56,18 +56,80 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class="bug">
-    Killing processes started by builds on Unix was broken as of 1.553.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22641">issue 22641</a>)
-  <li class="bug">
-    Should not stop a build from finishing just to compute JUnit result difference to a prior build which is still running.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10234">issue 10234</a>)
+    Fixed a file descriptor leak with CLI connections.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23248">issue 23248</a>)
+  <li class="bug major">
+    Fixed a regression that removed all users with uppercase letters in the user name since 1.566.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23872">issue 23872</a>)
+  <li class="rfe">
+    Added support for host:port format in X-Forwarded-Host header.
+    (<a href="https://github.com/jenkinsci/jenkins/commit/19d8b80bb2f33e4877c7170bcca8bfa318ebe77d">commit 19d8b80</a>)
+  <li class="rfe">
+    Added option to increase impact of test failures on the weather report.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24006">issue 24006</a>)
+  <li class="rfe">
+    Modernized sidebar <code>&lt;l:pane&gt;</code>s and making them work better with new layout.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23810">issue 23810</a>)
+  <li class="rfe">
+    Encapsulate icon rendering in a new <code>&lt;l:icon&gt;</code> layout tag.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23842">issue 23842</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.574>What's new in 1.574</a> <!--=DATE=--></h3>
+<h3><a name=v1.575>What's new in 1.575</a> <!--=DATE=--></h3>
 <ul class=image>
+  <li class="rfe">
+    Improved validation of Build Record Root Directory setting.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14538">issue 14538</a>)
+  <li class="rfe">
+    Indicate which node the workspace being viewed is on.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23636">issue 23636</a>)
+  <li class="rfe">
+    Show full project name for projects in folders.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22971">issue 22971</a>)
+  <li class="rfe">
+    UI redesign: Shrink the top bar, change logo, changed links in top bar.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1327">pull 1327</a>,
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1328">pull 1328</a>)
+  <li class="bug">
+    Killing processes started by builds on Unix was broken as of 1.553.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22641">issue 22641</a>)
+  <li class="bug">
+    Should not stop a build from finishing just to compute JUnit result difference to a prior build which is still running.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10234">issue 10234</a>)
+  <li class="bug">
+    Do not show link to System Information page for offline slaves, make page more robust when offline.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23041">issue 23041</a>)
+  <li class="bug">
+    Fix link to SCM polling log from downstream job cause.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18048">issue 18048</a>)
+  <li class="rfe">
+    Autocomplete logger names.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23994">issue 23994</a>)
+  <li class="bug">
+    UI redesign: Fix links in header bar when logged in.
+  <li class="rfe">
+    Move option to fingerprint artifacts to Archive the Artifacts, Advanced options.
+    (<a href="https://github.com/jenkinsci/jenkins/commit/f43a450c31d3875e72defa8400c6ada43bfc3ad0">commit f43a450</a>)
+  <li class="rfe">
+    Move option to keep dependencies (builds) from Fingerprint to Advanced Project Options.
+    (<a href="https://github.com/jenkinsci/jenkins/commit/a8756c6c0ddcc4625660288f94da1015eca7bf10">commit a8756c6</a>)
+  <li class="rfe">
+    Do not show changes for the build at the lower bound of the changes list.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18902">issue 18902</a>)
+  <li class="bug">
+    Restrict access to SCM trigger status page to administrators.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1327">pull 1282</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.574>What's new in 1.574</a> (2014/07/27)</h3>
+<ul class=image>
+  <li class="rfe">
+    UI redesign: Use Helvetica as default font
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1315">pull 1315</a>, 
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-23840">issue 23840</a>)
   <li class="bug">
     Synchronization issue during tool installation
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17667">issue 17667</a>)
@@ -75,7 +137,6 @@ Upcoming changes</a>
     Use native encoding for filenames in downloaded ZIPs.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20663">issue 20663</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.573>What's new in 1.573</a> (2014/07/20)</h3>
 <ul class=image>
   <li class="rfe">

@@ -379,7 +379,33 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         } finally {
             byNameLock.readLock().unlock();
         }
-        if (u==null && (create || getConfigFileFor(id).exists())) {
+        final File configFile = getConfigFileFor(id);
+        if (!configFile.isFile() && !configFile.getParentFile().isDirectory()) {
+            // check for legacy users and migrate if safe to do so.
+            File[] legacy = getLegacyConfigFilesFor(id);
+            if (legacy != null && legacy.length > 0) {
+                for (File p : legacy) {
+                    final XmlFile legacyXml = new XmlFile(XSTREAM, new File(p, "config.xml"));
+                    try {
+                        Object o = legacyXml.read();
+                        if (o instanceof User) {
+                            User tmp = (User) o;
+                            if (idStrategy().equals(id, tmp.getId()) && !idStrategy().filenameOf(tmp.getId())
+                                    .equals(p.getParentFile().getName())) {
+                                if (!p.getParentFile().renameTo(configFile.getParentFile())) {
+                                    LOGGER.log(Level.FINE, "Could not migrate user record from {0} to {1}",
+                                            new Object[]{p.getParentFile(), configFile.getParentFile()});
+                                }
+                                break;
+                            }
+                        }
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                }
+            }
+        }
+        if (u==null && (create || configFile.exists())) {
             User tmp = new User(id, fullName);
             User prev;
             byNameLock.readLock().lock();
@@ -393,7 +419,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
                     LOGGER.log(Level.FINE, "mismatch on fullName (‘" + fullName + "’ vs. ‘" + prev.getFullName() + "’) for ‘" + id + "’", new Throwable());
                 }
-            } else if (!id.equals(fullName) && !getConfigFileFor(id).exists()) {
+            } else if (!id.equals(fullName) && !configFile.exists()) {
                 // JENKINS-16332: since the fullName may not be recoverable from the id, and various code may store the id only, we must save the fullName
                 try {
                     u.save();
@@ -577,6 +603,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     private static final File getConfigFileFor(String id) {
         return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
+    }
+
+    private static final File[] getLegacyConfigFilesFor(final String id) {
+        return getRootDir().listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory() && new File(pathname, "config.xml").isFile() && idStrategy().equals(
+                        pathname.getName(), id);
+            }
+        });
     }
 
     /**
