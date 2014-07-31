@@ -67,11 +67,11 @@ THE SOFTWARE.
       <st:include from="${it.testObject}" it="${it.testObject}" page="list.jelly" optional="true"/>
       	<div>
 	      <j:if test="${start > 0}">
-	      		<a href="${app.rootUrl}${it.testObject.owner.url}testReport${it.testObject.url}/history${(start-25)>0?'?start='+(start-25):''}">${%Newer}</a>
+	      		<a href="${app.rootUrl}${it.testObject.run.url}testReport${it.testObject.url}/history${(start-25)>0?'?start='+(start-25):''}">${%Newer}</a>
 	      </j:if>
 	       
-	      <j:if test="${it.testObject.owner.project.builds.size() > end}">
-	      		<a href="${app.rootUrl}${it.testObject.owner.url}testReport${it.testObject.url}/history?start=${end+1}">${%Older}</a>
+	      <j:if test="${it.testObject.run.parent.builds.size() > end}">
+	      		<a href="${app.rootUrl}${it.testObject.run.url}testReport${it.testObject.url}/history?start=${end+1}">${%Older}</a>
 	      </j:if>
       	</div>
     </l:main-panel>

@@ -26,7 +26,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
     <table style="margin-top: 1em; margin-left: 1em;">
-        <j:set var="tr" value="${it.project.lastCompletedBuild.getAction(it.class.classLoader.loadClass('hudson.tasks.test.AbstractTestResultAction'))}"/>
+        <j:set var="tr" value="${it.job.lastCompletedBuild.getAction(it.class.classLoader.loadClass('hudson.tasks.test.AbstractTestResultAction'))}"/>
         <j:if test="${tr != null}">
             <t:summary icon="clipboard.png">
                 <a href="lastCompletedBuild/${tr.urlName}/">${%Latest Test Result}</a>

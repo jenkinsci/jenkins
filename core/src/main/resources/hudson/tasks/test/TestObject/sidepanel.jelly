@@ -32,16 +32,16 @@ THE SOFTWARE.
     <l:tasks>
       <j:set var="buildUrl" value="${h.decompose(request)}" />
       <j:set var="baseUrl" value="${request.findAncestor(it).relativePath}"/>
-      <st:include it="${it.owner}" page="tasks.jelly" optional="true"/>
+      <st:include it="${it.run}" page="tasks.jelly" optional="true"/>
       <l:task href="${baseUrl}/history" icon="icon-graph icon-md" title="${%History}"/>
-      <st:include it="${it.owner}" page="actions.jelly" optional="true" />
+      <st:include it="${it.run}" page="actions.jelly" optional="true" />
 
       <t:actions actions="${it.testActions}" />
 
-      <j:if test="${it.owner.previousBuild!=null}">
+      <j:if test="${it.run.previousBuild!=null}">
         <l:task href="${buildUrl.previousBuildUrl}" icon="icon-previous icon-md" title="${%Previous Build}"/>
       </j:if>
-      <j:if test="${it.owner.nextBuild!=null}">
+      <j:if test="${it.run.nextBuild!=null}">
         <l:task href="${buildUrl.nextBuildUrl}" icon="icon-next icon-md" title="${%Next Build}"/>
       </j:if>
     </l:tasks>

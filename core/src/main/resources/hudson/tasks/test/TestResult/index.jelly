@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:test="/lib/test">
-  <l:layout title="${it.owner} ${it.displayName}">
+  <l:layout title="${it.run} ${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1><st:out value="${it.title}" /></h1>
@@ -39,7 +39,7 @@ THE SOFTWARE.
         </a>
       </div>
 
-      <t:editableDescription permission="${it.owner.UPDATE}"/>
+      <t:editableDescription permission="${it.run.UPDATE}"/>
 
       <table style="margin-top: 1em; margin-left:0em;">
 	  <j:forEach var="action" items="${it.testActions}">

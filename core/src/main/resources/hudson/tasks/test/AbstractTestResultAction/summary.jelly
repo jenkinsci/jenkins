@@ -64,7 +64,7 @@ THE SOFTWARE.
 
           <li class="${elementClass}" style="${elementStyle}">
             <!-- child test results are referenced from their parent builds -->
-            <j:set var="build" value="${testObject.owner}" />
+            <j:set var="build" value="${testObject.run}" />
             <a href="${it.getTestResultPath(testObject)}">
               <st:out value="${testObject.fullDisplayName}" />
             </a>
