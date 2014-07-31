@@ -30,18 +30,17 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.tasks.junit.TestResultAction.Data;
-import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
@@ -53,19 +52,17 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import jenkins.tasks.SimpleBuildStep;
 
 /**
  * Generates HTML report from JUnit test result XML files.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class JUnitResultArchiver extends Recorder {
+public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
 
     /**
      * {@link FileSet} "includes" string, like "foo/bar/*.xml"
@@ -122,7 +119,7 @@ public class JUnitResultArchiver extends Recorder {
         this.healthScaleFactor = Math.max(0.0,healthScaleFactor);
 	}
 
-    private TestResult parse(String expandedTestResults, Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher, BuildListener listener)
+    private TestResult parse(String expandedTestResults, Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher, TaskListener listener)
             throws IOException, InterruptedException
     {
         return new JUnitParser(isKeepLongStdio()).parseResult(expandedTestResults, run, workspace, launcher, listener);
@@ -136,17 +133,12 @@ public class JUnitResultArchiver extends Recorder {
     }
 
     @Override
-	public boolean perform(AbstractBuild build, Launcher launcher,
-			BuildListener listener) throws InterruptedException, IOException {
+	public void perform(Run build, FilePath workspace, Launcher launcher,
+			TaskListener listener) throws InterruptedException, IOException {
 		listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
 		TestResultAction action;
 		
 		final String testResults = build.getEnvironment(listener).expand(this.testResults);
-
-        FilePath workspace = build.getWorkspace();
-        if (workspace == null) {
-            throw new AbortException(hudson.tasks.test.Messages.JUnitParser_no_workspace_found(build));
-        }
 
 		try {
 			TestResult result = parse(testResults, build, workspace, launcher, listener);
@@ -180,23 +172,21 @@ public class JUnitResultArchiver extends Recorder {
 			if (build.getResult() == Result.FAILURE)
 				// most likely a build failed before it gets to the test phase.
 				// don't report confusing error message.
-				return true;
+				return;
 
 			listener.getLogger().println(e.getMessage());
 			build.setResult(Result.FAILURE);
-			return true;
+			return;
 		} catch (IOException e) {
 			e.printStackTrace(listener.error("Failed to archive test reports"));
 			build.setResult(Result.FAILURE);
-			return true;
+			return;
 		}
 
 		build.addAction(action);
 
 		if (action.getResult().getFailCount() > 0)
 			build.setResult(Result.UNSTABLE);
-
-		return true;
 	}
 
 	/**
@@ -223,11 +213,6 @@ public class JUnitResultArchiver extends Recorder {
 
     public DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> getTestDataPublishers() {
 		return testDataPublishers;
-	}
-
-	@Override
-	public Collection<Action> getProjectActions(AbstractProject<?, ?> project) {
-		return Collections.<Action>singleton(new TestResultProjectAction(project));
 	}
 
 	/**

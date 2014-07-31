@@ -57,9 +57,9 @@ public abstract class TestDataPublisher extends AbstractDescribableImpl<TestData
      */
 	public TestResultAction.Data contributeTestData(
 			Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher,
-			BuildListener listener, TestResult testResult) throws IOException, InterruptedException {
-        if (run instanceof AbstractBuild) {
-            return getTestData((AbstractBuild) run, launcher, listener, testResult);
+			TaskListener listener, TestResult testResult) throws IOException, InterruptedException {
+        if (run instanceof AbstractBuild && listener instanceof BuildListener) {
+            return getTestData((AbstractBuild) run, launcher, (BuildListener) listener, testResult);
         } else {
             throw new AbstractMethodError("you must override contributeTestData");
         }
@@ -69,7 +69,7 @@ public abstract class TestDataPublisher extends AbstractDescribableImpl<TestData
 	public TestResultAction.Data getTestData(
 			AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener, TestResult testResult) throws IOException, InterruptedException {
-        if (Util.isOverridden(TestDataPublisher.class, getClass(), "contributeTestData", Run.class, FilePath.class, Launcher.class, BuildListener.class, TestResult.class)) {
+        if (Util.isOverridden(TestDataPublisher.class, getClass(), "contributeTestData", Run.class, FilePath.class, Launcher.class, TaskListener.class, TestResult.class)) {
             FilePath workspace = build.getWorkspace();
             if (workspace == null) {
                 throw new IOException("no workspace in " + build);

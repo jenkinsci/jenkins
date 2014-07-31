@@ -140,7 +140,7 @@ public abstract class TestResultParser implements ExtensionPoint {
         if (Util.isOverridden(TestResultParser.class, getClass(), "parseResult", String.class, Run.class, FilePath.class, Launcher.class, TaskListener.class)) {
             FilePath workspace = build.getWorkspace();
             if (workspace == null) {
-                throw new AbortException(Messages.JUnitParser_no_workspace_found(build));
+                throw new AbortException("no workspace in " + build);
             }
             return parseResult(testResultLocations, build, workspace, launcher, listener);
         } else {

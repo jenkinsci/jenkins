@@ -29,8 +29,10 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.TestObject;
+import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.HeapSpaceStringConverter;
 import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerProxy;
@@ -39,10 +41,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.tasks.SimpleBuildStep;
 
 /**
  * {@link Action} that displays the JUnit test result.
@@ -53,7 +57,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class TestResultAction extends AbstractTestResultAction<TestResultAction> implements StaplerProxy {
+public class TestResultAction extends AbstractTestResultAction<TestResultAction> implements StaplerProxy, SimpleBuildStep.LastBuildAction {
     private transient WeakReference<TestResult> result;
 
     // Hudson < 1.25 didn't set these fields, so use Integer
@@ -66,6 +70,13 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
 
     @Deprecated
     public TestResultAction(AbstractBuild owner, TestResult result, BuildListener listener) {
+        this((Run) owner, result, listener);
+    }
+
+    /**
+     * @since TODO
+     */
+    public TestResultAction(Run owner, TestResult result, TaskListener listener) {
         super(owner);
         setResult(result, listener);
     }
@@ -75,10 +86,15 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         this(null, result, listener);
     }
 
+    @Override public Collection<? extends Action> getProjectActions() {
+		return Collections.<Action>singleton(new TestResultProjectAction(run.getParent()));
+    }
+
     /**
      * Overwrites the {@link TestResult} by a new data set.
+     * @since TODO
      */
-    public synchronized void setResult(TestResult result, BuildListener listener) {
+    public synchronized void setResult(TestResult result, TaskListener listener) {
         result.freeze(this);
 
         totalCount = result.getTotalCount();
@@ -93,6 +109,11 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
         }
 
         this.result = new WeakReference<TestResult>(result);
+    }
+
+    @Deprecated
+    public void setResult(TestResult result, BuildListener listener) {
+        setResult(result, (TaskListener) listener);
     }
 
     private XmlFile getDataFile() {
