@@ -452,7 +452,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.9</version>
+          <version>1.13</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
