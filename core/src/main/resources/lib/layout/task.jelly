@@ -114,10 +114,10 @@ THE SOFTWARE.
           <span>
             <j:choose>
               <j:when test="${iconMetadata != null}">
-                <l:icon class="${iconMetadata.classSpec}"/>
+                <l:icon class="${iconMetadata.classSpec}" style="width: 24px; height: 24px; margin: 2px;" />
               </j:when>
               <j:otherwise>
-                <l:icon width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
+                <l:icon alt="" src="${icon}" style="width: 24px; height: 24px; margin: 2px;" />
               </j:otherwise>
             </j:choose>
           </span>
@@ -137,7 +137,14 @@ THE SOFTWARE.
       </j:when>
       <j:otherwise>
         <div class="task">
-          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
+          <j:choose>
+            <j:when test="${iconMetadata != null}">
+              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true') : null}
+            </j:when>
+            <j:otherwise>
+              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
+            </j:otherwise>
+          </j:choose>
 
           <j:set var="id" value="${h.generateId()}"/>
           <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
