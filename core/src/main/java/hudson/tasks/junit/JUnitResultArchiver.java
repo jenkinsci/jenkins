@@ -122,13 +122,17 @@ public class JUnitResultArchiver extends Recorder {
         this.healthScaleFactor = Math.max(0.0,healthScaleFactor);
 	}
 
-    /**
-     * In progress. Working on delegating the actual parsing to the JUnitParser.
-     */
-    protected TestResult parse(String expandedTestResults, Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher, BuildListener listener)
+    private TestResult parse(String expandedTestResults, Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException
     {
         return new JUnitParser(isKeepLongStdio()).parseResult(expandedTestResults, run, workspace, launcher, listener);
+    }
+
+    @Deprecated
+    protected TestResult parse(String expandedTestResults, AbstractBuild build, Launcher launcher, BuildListener listener)
+            throws IOException, InterruptedException
+    {
+        return parse(expandedTestResults, build, build.getWorkspace(), launcher, listener);
     }
 
     @Override
