@@ -46,4 +46,8 @@ public class JobParameterValue extends ParameterValue {
         env.put(name,job.toString());
         env.put(name.toUpperCase(Locale.ENGLISH),job.toString()); // backward compatibility pre 1.345
     }
+
+    @Override public String getShortDescription() {
+        return name + "=" + job.getFullDisplayName();
+    }
 }

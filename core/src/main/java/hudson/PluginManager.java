@@ -59,6 +59,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.LogFactory;
+import org.jenkinsci.bytecode.Transformer;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
@@ -101,6 +102,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
@@ -150,6 +152,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     // and load plugin-contributed classes.
     public final ClassLoader uberClassLoader = new UberClassLoader();
 
+    private final Transformer compatibilityTransformer = new Transformer();
+
     /**
      * Once plugin is uploaded, this flag becomes true.
      * This is used to report a message that Jenkins needs to be restarted
@@ -178,6 +182,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             rootDir.mkdirs();
         
         strategy = createPluginStrategy();
+
+        // load up rules for the core first
+        try {
+            compatibilityTransformer.loadRules(getClass().getClassLoader());
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to load compatibility rewrite rules",e);
+        }
+    }
+
+    public Transformer getCompatibilityTransformer() {
+        return compatibilityTransformer;
     }
 
     public Api getApi() {
@@ -299,6 +314,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     }
                                 }
                             });
+
+                            // Let's see for a while until we open this functionality up to plugins
+//                            g.followedBy().attains(PLUGINS_LISTED).add("Load compatibility rules", new Executable() {
+//                                public void run(Reactor reactor) throws Exception {
+//                                    compatibilityTransformer.loadRules(uberClassLoader);
+//                                }
+//                            });
 
                             session.addAll(g.discoverTasks(session));
 
@@ -729,24 +751,45 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if(!fileName.endsWith(".jpi") && !fileName.endsWith(".hpi")){ 
                 throw new Failure(hudson.model.Messages.Hudson_NotAPlugin(fileName));
             }
-            final String baseName = FilenameUtils.getBaseName(fileName);
-            new File(rootDir, baseName + ".hpi").delete(); // don't keep confusing legacy *.hpi
-            fileItem.write(new File(rootDir, baseName + ".jpi")); // rename all new plugins to *.jpi
+
+            // first copy into a temporary file name
+            File t = File.createTempFile("uploaded", ".jpi");
+            t.deleteOnExit();
+            fileItem.write(t);
             fileItem.delete();
 
-            PluginWrapper existing = getPlugin(baseName);
-            if (existing!=null && existing.isBundled){
-                existing.doPin();
-            }
+            final String baseName = identifyPluginShortName(t);
 
             pluginUploaded = true;
 
-            return new HttpRedirect(".");
+            // Now create a dummy plugin that we can dynamically load (the InstallationJob will force a restart if one is needed):
+            JSONObject cfg = new JSONObject().
+                    element("name", baseName).
+                    element("version", "0"). // unused but mandatory
+                    element("url", t.toURI().toString()).
+                    element("dependencies", new JSONArray());
+            new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
+            return new HttpRedirect("../updateCenter");
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {// grrr. fileItem.write throws this
             throw new ServletException(e);
         }
+    }
+
+    protected String identifyPluginShortName(File t) {
+        try {
+            JarFile j = new JarFile(t);
+            try {
+                String name = j.getManifest().getMainAttributes().getValue("Short-Name");
+                if (name!=null) return name;
+            } finally {
+                j.close();
+            }
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to identify the short name from "+t,e);
+        }
+        return FilenameUtils.getBaseName(t.getName());    // fall back to the base name of what's uploaded
     }
 
     public Descriptor<ProxyConfiguration> getProxyDescriptor() {
@@ -775,7 +818,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         List<Future<UpdateCenter.UpdateCenterJob>> jobs = new ArrayList<Future<UpdateCenter.UpdateCenterJob>>();
         UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
-        // XXX call uc.updateAllSites() when available? perhaps not, since we should not block on network here
+        // TODO call uc.updateAllSites() when available? perhaps not, since we should not block on network here
         for (Map.Entry<String,VersionNumber> requestedPlugin : parseRequestedPlugins(configXml).entrySet()) {
             PluginWrapper pw = getPlugin(requestedPlugin.getKey());
             if (pw == null) { // install new

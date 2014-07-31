@@ -52,8 +52,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -185,6 +183,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public void setDescription(String description) throws IOException {
         this.description = description;
         save();
+        ItemListener.fireOnUpdated(this);
     }
 
     /**
@@ -326,39 +325,37 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         if(n.length()==0)   return getDisplayName();
         else                return n+" \u00BB "+getDisplayName();
     }
+    
+    /**
+     * Gets the display name of the current item relative to the given group.
+     *
+     * @since 1.515
+     * @param p the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "foo » bar"
+     */
+    public String getRelativeDisplayNameFrom(ItemGroup p) {
+        return Functions.getRelativeDisplayNameFrom(this, p);
+    }
+    
+    /**
+     * This method only exists to disambiguate {@link #getRelativeNameFrom(ItemGroup)} and {@link #getRelativeNameFrom(Item)}
+     * @since 1.512
+     * @see #getRelativeNameFrom(ItemGroup)
+     */
+    public String getRelativeNameFromGroup(ItemGroup p) {
+        return getRelativeNameFrom(p);
+    }
 
+    /**
+     * @param p
+     *  The ItemGroup instance used as context to evaluate the relative name of this AbstractItem
+     * @return
+     *  The name of the current item, relative to p.
+     *  Nested ItemGroups are separated by / character.
+     */
     public String getRelativeNameFrom(ItemGroup p) {
-        // first list up all the parents
-        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
-        int depth=0;
-        while (p!=null) {
-            parents.put(p, depth++);
-            if (p instanceof Item)
-                p = ((Item)p).getParent();
-            else
-                p = null;
-        }
-
-        StringBuilder buf = new StringBuilder();
-        Item i=this;
-        while (true) {
-            if (buf.length()>0) buf.insert(0,'/');
-            buf.insert(0,i.getName());
-            ItemGroup g = i.getParent();
-
-            Integer d = parents.get(g);
-            if (d!=null) {
-                String s="";
-                for (int j=d; j>0; j--)
-                    s+="../";
-                return s+buf;
-            }
-
-            if (g instanceof Item)
-                i = (Item)g;
-            else
-                return null;
-        }
+        return Functions.getRelativeNameFrom(this, p);
     }
 
     public String getRelativeNameFrom(Item item) {
@@ -405,7 +402,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     public String getShortUrl() {
-        return getParent().getUrlChildPrefix()+'/'+Util.rawEncode(getName())+'/';
+        String prefix = getParent().getUrlChildPrefix();
+        String subdir = Util.rawEncode(getName());
+        return prefix.equals(".") ? subdir + '/' : prefix + '/' + subdir + '/';
     }
 
     public String getSearchUrl() {
@@ -477,6 +476,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Deletes this item.
+     * Note on the funny name: for reasons of historical compatibility, this URL is {@code /doDelete}
+     * since it predates {@code <l:confirmationLink>}. {@code /delete} goes to a Jelly page
+     * which should now be unused by core but is left in case plugins are still using it.
      */
     @CLIMethod(name="delete-job")
     @RequirePOST
@@ -512,7 +514,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // ignore
         }
 
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
 
     /**
@@ -591,7 +593,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             } finally {
                 Items.updatingByXml.set(false);
             }
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             // if everything went well, commit this new version
             out.commit();

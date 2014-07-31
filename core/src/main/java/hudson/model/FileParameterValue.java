@@ -66,6 +66,9 @@ public class FileParameterValue extends ParameterValue {
      */
     private final String originalFileName;
 
+    /**
+     * Overrides the location in the build to place this file. Initially set to {@link #getName()}
+     */
     private String location;
 
     @DataBoundConstructor
@@ -81,6 +84,7 @@ public class FileParameterValue extends ParameterValue {
         super(name);
         this.file = file;
         this.originalFileName = originalFileName;
+        setLocation(name);
     }
 
     // post initialization hook
@@ -129,7 +133,7 @@ public class FileParameterValue extends ParameterValue {
         return new BuildWrapper() {
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            	if (!StringUtils.isEmpty(file.getName())) {
+            	if (!StringUtils.isEmpty(location)) {
             	    listener.getLogger().println("Copying file to "+location);
                     FilePath locationFilePath = build.getWorkspace().child(location);
                     locationFilePath.getParent().mkdirs();
@@ -173,6 +177,10 @@ public class FileParameterValue extends ParameterValue {
     @Override
     public String toString() {
     	return "(FileParameterValue) " + getName() + "='" + originalFileName + "'";
+    }
+
+    @Override public String getShortDescription() {
+        return name + "=" + originalFileName;
     }
 
     /**

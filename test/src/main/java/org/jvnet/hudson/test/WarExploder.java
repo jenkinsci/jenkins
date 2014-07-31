@@ -87,6 +87,7 @@ final class WarExploder {
             throw new AssertionError("jenkins.war is not in the classpath. If you are running this from the core workspace, run 'mvn install' to create the war image in war/target/jenkins");
         File war = Which.jarFile(Class.forName("executable.Executable"));
 
+        // TODO this assumes that the CWD of the Maven process is the plugin ${basedir}, which may not be the case
         File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();
         File timestamp = new File(explodeDir,".timestamp");
 

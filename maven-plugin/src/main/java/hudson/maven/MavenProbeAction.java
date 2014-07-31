@@ -59,7 +59,7 @@ public final class MavenProbeAction implements Action {
 
     public String getIconFileName() {
         if(channel==null)   return null;
-        return "computer.gif";
+        return "computer.png";
     }
 
     public String getDisplayName() {
@@ -97,21 +97,7 @@ public final class MavenProbeAction implements Action {
     }
 
     public void doScript( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        // ability to run arbitrary script is dangerous,
-        // so tie it to the admin access
-        owner.checkPermission(Jenkins.RUN_SCRIPTS);
-
-        String text = req.getParameter("script");
-        if(text!=null) {
-            try {
-                req.setAttribute("output",
-                RemotingDiagnostics.executeGroovy(text,channel));
-            } catch (InterruptedException e) {
-                throw new ServletException(e);
-            }
-        }
-
-        req.getView(this,"_script.jelly").forward(req,rsp);
+        Jenkins._doScript(req, rsp, req.getView(this, "_script.jelly"), channel, owner.getACL());
     }
 
     /**

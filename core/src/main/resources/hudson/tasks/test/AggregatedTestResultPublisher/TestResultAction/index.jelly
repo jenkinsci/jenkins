@@ -61,7 +61,7 @@ THE SOFTWARE.
             <j:forEach var="i" items="${it.didntRun}">
               <tr>
                 <td class="pane">
-                  <a href="${rootURL}/${i.url}" class="model-link">${i.fullDisplayName}</a>
+                  <a href="${rootURL}/${i.url}" class="model-link inside">${i.fullDisplayName}</a>
                   (${%test result not available})
                 </td>
                 <td class="pane">
@@ -75,7 +75,7 @@ THE SOFTWARE.
             <j:forEach var="i" items="${it.noFingerprints}">
               <tr>
                 <td class="pane">
-                  <a href="${rootURL}/${i.url}" class="model-link">${i.fullDisplayName}</a>
+                  <a href="${rootURL}/${i.url}" class="model-link inside">${i.fullDisplayName}</a>
                   (${%last successful job is not fingerprinted})
                 </td>
                 <td class="pane">

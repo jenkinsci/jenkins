@@ -66,6 +66,7 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Publisher;
 import hudson.tasks.JavadocArchiver;
 import hudson.tasks.junit.JUnitResultArchiver;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -89,9 +90,11 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.mvn.DefaultGlobalSettingsProvider;
 import jenkins.mvn.DefaultSettingsProvider;
 import jenkins.mvn.FilePathSettingsProvider;
+import jenkins.mvn.GlobalMavenConfig;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.GlobalSettingsProviderDescriptor;
 import jenkins.mvn.SettingsProvider;
@@ -102,7 +105,9 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.tools.ant.taskdefs.email.Mailer;
+import hudson.tasks.Mailer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -244,7 +249,9 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     /**
      * parameter for validation level during pom parsing by default the one corresponding
      * to the maven version used (2 or 3)
+     *
      * @since 1.394
+     * @see DescriptorImpl#mavenValidationLevels
      */    
     private int mavenValidationLevel = -1;
 
@@ -282,12 +289,12 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     /**
      * @since 1.491
      */
-    private SettingsProvider settings = new DefaultSettingsProvider();
+    private SettingsProvider settings;
     
     /**
      * @since 1.491
      */
-    private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
+    private GlobalSettingsProvider globalSettings;
 
 
     /**
@@ -432,12 +439,22 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
     }
 
     public MavenModule getItem(String name) {
-        return modules.get(ModuleName.fromString(name));
+        try {
+            return modules.get(ModuleName.fromString(name));
+        } catch (IllegalArgumentException x) {
+            return null; // not a Maven module name, ignore
+        }
     }
 
     public MavenModule getModule(String name) {
         return getItem(name);
     }
+
+    @Override
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, Messages.MavenModuleSet_Pronoun());
+    }
+
 
     @Override   // to make this accessible from MavenModuleSetBuild
     protected void updateTransientActions() {
@@ -644,14 +661,14 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * @since 1.481
      */
     public SettingsProvider getSettings() {
-        return settings != null ? settings : new DefaultSettingsProvider();
+        return settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
     }
 
     /**
      * @since 1.481
      */
     public GlobalSettingsProvider getGlobalSettings() {
-        return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
+        return globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
     }
 
     /**
@@ -1024,7 +1041,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
             return mavenOpts.replaceAll("[\t\r\n]+"," ");
         }
         else {
-            String globalOpts = DESCRIPTOR.getGlobalMavenOpts();
+            String globalOpts = getDescriptor().getGlobalMavenOpts();
             if (globalOpts!=null) {
                 return globalOpts.replaceAll("[\t\r\n]+"," ");
             }
@@ -1046,7 +1063,7 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      * If null, we pick any random Maven installation.
      */
     public MavenInstallation getMaven() {
-        MavenInstallation[] installations = DESCRIPTOR.getMavenDescriptor().getInstallations();
+        MavenInstallation[] installations = getDescriptor().getMavenDescriptor().getInstallations();
         for( MavenInstallation i : installations) {
             if(mavenName==null || i.getName().equals(mavenName))
                 return i;
@@ -1095,6 +1112,11 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
      */
     public String getUserConfiguredGoals() {
         return goals;
+    }
+    
+    @Override
+    protected List<MavenModuleSetBuild> getEstimatedDurationCandidates() {
+        return super.getEstimatedDurationCandidates();
     }
 
     /*package*/ void reconfigure(PomInfo rootPom) throws IOException {
@@ -1170,10 +1192,24 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         return FormValidation.ok();
     }
 
-    public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
+    @Override
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        for (MavenModule mm : getModules()) {
+            menu.add(mm);
+        }
+        return menu;
     }
 
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)Jenkins.getInstance().getDescriptorOrDie(getClass());
+    }
+
+    /**
+     * Descriptor is instantiated as a field purely for backward compatibility.
+     * Do not do this in your code. Put @Extension on your DescriptorImpl class instead.
+     */
+    @Restricted(NoExternalUse.class)
     @Extension(ordinal=900)
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
@@ -1245,7 +1281,10 @@ public class MavenModuleSet extends AbstractMavenProject<MavenModuleSet,MavenMod
         }
 
         public MavenModuleSet newInstance(ItemGroup parent, String name) {
-            return new MavenModuleSet(parent,name);
+            MavenModuleSet mms = new MavenModuleSet(parent,name);
+            mms.setSettings(GlobalMavenConfig.get().getSettingsProvider());
+            mms.setGlobalSettings(GlobalMavenConfig.get().getGlobalSettingsProvider());
+            return mms;
         }
 
         public Maven.DescriptorImpl getMavenDescriptor() {

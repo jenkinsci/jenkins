@@ -247,7 +247,7 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
     public String getWhyKeepLog() {
         MatrixBuild b = getNextBuild();
         if (isLinkedBy(b))
-            return b.getDisplayName()+" depends on this";
+            return Messages.MatrixBuild_depends_on_this(b.getDisplayName());
         return super.getWhyKeepLog();
     }
 
@@ -368,7 +368,8 @@ public class MatrixBuild extends AbstractBuild<MatrixProject,MatrixBuild> {
                     final int n = getNumber();
                     for (MatrixConfiguration c : activeConfigurations) {
                         for (Item i : q.getItems(c)) {
-                            if (i.getAction(ParentBuildAction.class).parent==getBuild()) {
+                            ParentBuildAction a = i.getAction(ParentBuildAction.class);
+                            if (a!=null && a.parent==getBuild()) {
                                 q.cancel(i);
                                 logger.println(Messages.MatrixBuild_Cancelled(ModelHyperlinkNote.encodeTo(c)));
                             }

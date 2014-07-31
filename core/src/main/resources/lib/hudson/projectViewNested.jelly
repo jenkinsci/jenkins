@@ -48,7 +48,7 @@ THE SOFTWARE.
       </div>
     </td>
     <td colspan="5" style="${indenter.getCss(job)}">
-      <a href="${rootURL}/${v.url}" class="model-link">
+      <a href="${rootURL}/${v.url}" class="model-link inside">
         ${v.viewName}
       </a>
     </td>

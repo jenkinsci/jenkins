@@ -47,15 +47,15 @@ THE SOFTWARE.
     <j:forEach var="b" items="${h.subList(attrs.builds,50)}">
       <tr>
         <td data="${b.iconColor.ordinal()}">
-          <a href="${jobBaseUrl}${b.url}" class="model-link">
+          <a href="${jobBaseUrl}${b.url}">
             <img src="${imagesURL}/${iconSize}/${b.buildStatusUrl}"
                  alt="${b.iconColor.description}" class="icon${iconSize}"/>
           </a>
         </td>
         <td>
-          <a href="${jobBaseUrl}${b.parent.url}" class="model-link">${b.parent.fullDisplayName}</a>
+          <a href="${jobBaseUrl}${b.parent.url}" class="model-link"><l:breakable value="${b.parent.fullDisplayName}"/></a>
           <st:nbsp/>
-          <a href="${jobBaseUrl}${b.url}" class="model-link">${b.displayName}</a>
+          <a href="${jobBaseUrl}${b.url}" class="model-link inside">${b.displayName}</a>
         </td>
         <td data="${b.timestampString2}" tooltip="${%Click to center timeline on event}" onclick="javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime('${b.timestampString2}'))">
           ${b.timestampString}

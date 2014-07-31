@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="110"
-   height="35"
+   width="139"
+   height="34"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.43"
-   sodipodi:docbase="C:\Documents and Settings\kohsuke\Desktop"
-   sodipodi:docname="logo.svg"
-   version="1.0">
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="title.svg"
+   version="1.0"
+   inkscape:export-filename="/files/kohsuke/ws/jenkins/jenkins/war/src/main/webapp/images/title.png"
+   inkscape:export-xdpi="180"
+   inkscape:export-ydpi="180">
   <defs
      id="defs4">
     <linearGradient
@@ -37,9 +40,19 @@
        x1="156.411"
        y1="96.022438"
        x2="156.411"
-       y2="2.9507828e-007"
+       y2="2.9507828e-07"
        gradientUnits="userSpaceOnUse"
        gradientTransform="scale(0.341615,0.322916)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3054"
+       id="linearGradient2990"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="scale(0.43167715,0.322916)"
+       x1="156.411"
+       y1="96.022438"
+       x2="156.411"
+       y2="2.9507828e-07" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -48,19 +61,20 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.313708"
-     inkscape:cx="113.33181"
-     inkscape:cy="7.2246685"
+     inkscape:zoom="14.277311"
+     inkscape:cx="80.942949"
+     inkscape:cy="18.557032"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="929"
-     inkscape:window-height="608"
-     inkscape:window-x="281"
-     inkscape:window-y="58"
+     inkscape:window-width="1864"
+     inkscape:window-height="1000"
+     inkscape:window-x="639"
+     inkscape:window-y="177"
      inkscape:grid-points="true"
      inkscape:grid-bbox="true"
-     inkscape:guide-points="true" />
+     inkscape:guide-points="true"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -69,41 +83,28 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
-    <rect
-       style="fill:url(#linearGradient3060);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:28.51399994;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
-       id="rect1307"
-       width="110"
-       height="31"
-       x="0"
-       y="-2.2735736e-015"
-       rx="0"
-       ry="11.898433" />
-    <rect
-       style="opacity:1;fill:#fbad3e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:28.51399994;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
-       id="rect2182"
-       width="110"
-       height="4"
-       x="0"
-       y="31"
-       rx="0"
-       ry="1.5352814" />
+     id="layer1"
+     transform="translate(0,-1)">
     <text
        xml:space="preserve"
-       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Georgia"
-       x="7.1015625"
-       y="25"
+       style="font-size:28.5498848px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Georgia"
+       x="7.7234173"
+       y="26.604568"
        id="text2184"
-       sodipodi:linespacing="100%"><tspan
+       sodipodi:linespacing="100%"
+       transform="scale(1.0049742,0.99505038)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
          sodipodi:role="line"
          id="tspan2186"
-         x="7.1015625"
-         y="25">Jenkins</tspan></text>
+         x="7.7234173"
+         y="26.604568">Jenkins</tspan></text>
   </g>
 </svg>

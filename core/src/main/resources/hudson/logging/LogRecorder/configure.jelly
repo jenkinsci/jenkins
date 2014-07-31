@@ -55,7 +55,7 @@ THE SOFTWARE.
               <td>
                 <select name="level">
                   <j:forEach var="lv" items="${it.LEVELS}">
-                    <f:option selected="${instance.level==lv}">${lv.toString().toLowerCase()}</f:option>
+                    <f:option value="${lv.name}" selected="${instance.level==lv}">${lv.localizedName}</f:option>
                   </j:forEach>
                 </select>
               </td>

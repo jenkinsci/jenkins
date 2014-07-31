@@ -24,6 +24,7 @@
  */
 package hudson.util;
 
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 
@@ -191,16 +192,11 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      *      The persisted form of {@link Properties}. For example, "abc=def\nghi=jkl". Can be null, in which
      *      case this method becomes no-op.
      * @param vr
-     *      {@link VariableResolver} to be performed on the values.
+     *      {@link VariableResolver} to resolve variables in properties string.
      * @since 1.262
      */
-    public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver vr) throws IOException {
-        if(properties==null)    return this;
-
-        for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
-            addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), false);
-        }
-        return this;
+    public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver<String> vr) throws IOException {
+        return addKeyValuePairsFromPropertyString(prefix, properties, vr, null);
     }
 
     /**
@@ -212,19 +208,45 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      *      The persisted form of {@link Properties}. For example, "abc=def\nghi=jkl". Can be null, in which
      *      case this method becomes no-op.
      * @param vr
-     *      {@link VariableResolver} to be performed on the values.
+     *      {@link VariableResolver} to resolve variables in properties string.
      * @param propsToMask
      *      Set containing key names to mark as masked in the argument list. Key
      *      names that do not exist in the set will be added unmasked.
      * @since 1.378
      */
-    public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver vr, Set<String> propsToMask) throws IOException {
+    public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver<String> vr, Set<String> propsToMask) throws IOException {
         if(properties==null)    return this;
 
+        properties = Util.replaceMacro(properties, propertiesGeneratingResolver(vr));
+
         for (Entry<Object,Object> entry : Util.loadProperties(properties).entrySet()) {
-            addKeyValuePair(prefix, (String)entry.getKey(), Util.replaceMacro(entry.getValue().toString(),vr), (propsToMask == null) ? false : propsToMask.contains((String)entry.getKey()));
+            addKeyValuePair(prefix, (String)entry.getKey(), entry.getValue().toString(), (propsToMask == null) ? false : propsToMask.contains(entry.getKey()));
         }
         return this;
+    }
+
+    /**
+     * Creates a resolver generating values to be safely placed in properties string.
+     *
+     * {@link Properties#load} generally removes single backslashes from input and that
+     * is not desirable for outcomes of macro substitution as the values can
+     * contain them but user has no way to escape them.
+     *
+     * @param original Resolution will be delegated to this resolver. Resolved
+     *                 values will be escaped afterwards.
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-10539">JENKINS-10539</a>
+     */
+    private static VariableResolver<String> propertiesGeneratingResolver(final VariableResolver<String> original) {
+
+        return new VariableResolver<String>() {
+
+            public String resolve(String name) {
+                final String value = original.resolve(name);
+                if (value == null) return null;
+                // Substitute one backslash with two
+                return value.replaceAll("\\\\", "\\\\\\\\");
+            }
+        };
     }
 
     public String[] toCommandArray() {
@@ -369,6 +391,10 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     public void addMasked(String string) {
         add(string, true);
+    }
+
+    public ArgumentListBuilder addMasked(Secret s) {
+        return add(Secret.toString(s),true);
     }
 
     /**

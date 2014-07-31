@@ -82,7 +82,7 @@ public class SuiteResultTest extends TestCase {
 
         List<CaseResult> cases = result.getCases();
         for (CaseResult caseResult : cases) {
-            assertEquals("Test class name is incorrect in " + caseResult.getDisplayName(), "WLI-FI-Tests-Fake", caseResult.getClassName());            
+            assertEquals("Test class name is incorrect in " + caseResult.getName(), "WLI-FI-Tests-Fake", caseResult.getClassName());            
         }
         assertEquals("Test name is incorrect", "IF_importTradeConfirmationToDwh", cases.get(0).getName());
         assertEquals("Test name is incorrect", "IF_getAmartaDisbursements", cases.get(1).getName());
@@ -119,7 +119,7 @@ public class SuiteResultTest extends TestCase {
 
         List<CaseResult> cases = result.getCases();
         for (CaseResult caseResult : cases) {
-            assertEquals("Test class name is incorrect in " + caseResult.getDisplayName(), "some.package.somewhere.WhooHoo", caseResult.getClassName());
+            assertEquals("Test class name is incorrect in " + caseResult.getName(), "some.package.somewhere.WhooHoo", caseResult.getClassName());
         }
         assertEquals("this normally has the string like, expected mullet, but got bream", cases.get(0).getErrorDetails());
     }

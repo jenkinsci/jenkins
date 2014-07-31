@@ -32,12 +32,17 @@ var repeatableSupport = {
     expand : function() {
         // importNode isn't supported in IE.
         // nc = document.importNode(node,true);
-        var nc = document.createElement("div");
+        var nc = $(document.createElement("div"));
         nc.className = "repeated-chunk";
+        nc.setOpacity(0);
         nc.setAttribute("name",this.name);
         nc.innerHTML = this.blockHTML;
         this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
         if (this.withDragDrop) prepareDD(nc);
+
+        new YAHOO.util.Anim(nc, {
+            opacity: { to:1 }
+        }, 0.2, YAHOO.util.Easing.easeIn).animate();
 
         Behaviour.applySubtree(nc,true);
         this.update();
@@ -119,10 +124,18 @@ Behaviour.specify("INPUT.repeatable-add", 'repeatable', 0, function(e) {
     });
 
 Behaviour.specify("INPUT.repeatable-delete", 'repeatable', 0, function(e) {
-        makeButton(e,function(e) {
+        var b = makeButton(e,function(e) {
             repeatableSupport.onDelete(e.target);
         });
-        e = null; // avoid memory leak
+        var be = $(b.get("element"));
+        be.on("mouseover",function() {
+            $(this).up(".repeated-chunk").addClassName("hover");
+        });
+        be.on("mouseout",function() {
+            $(this).up(".repeated-chunk").removeClassName("hover");
+        });
+
+        e = be = null; // avoid memory leak
     });
 
     // radio buttons in repeatable content

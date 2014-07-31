@@ -184,7 +184,7 @@ public abstract class AbstractMavenProject<P extends AbstractProject<P,R>,R exte
         addTransientActionsFromBuild(getLastBuild(),r,added);
         addTransientActionsFromBuild(getLastSuccessfulBuild(),r,added);
 
-        for (Trigger<?> trigger : triggers)
+        for (Trigger<?> trigger : triggers())
             r.addAll(trigger.getProjectActions());
 
         return r;

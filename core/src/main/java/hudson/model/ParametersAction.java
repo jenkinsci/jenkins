@@ -36,6 +36,7 @@ import hudson.util.VariableResolver;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,7 +84,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     /**
-     * Performs a variable subsitution to the given text and return it.
+     * Performs a variable substitution to the given text and return it.
      */
     public String substitute(AbstractBuild<?,?> build, String text) {
         return Util.replaceMacro(text,createVariableResolver(build));
@@ -157,6 +158,29 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
             }
             return !params.equals(new HashSet<ParameterValue>(this.parameters));
         }
+    }
+
+    /**
+     * Creates a new {@link ParametersAction} that contains all the parameters in this action
+     * with the overrides / new values given as parameters.
+     */
+    public ParametersAction createUpdated(Collection<? extends ParameterValue> newValues) {
+        List<ParameterValue> r = new ArrayList<ParameterValue>();
+
+        Set<String> names = new HashSet<String>();
+        for (ParameterValue v : newValues) {
+            names.add(v.name);
+        }
+
+        for (Iterator<ParameterValue> itr = parameters.iterator(); itr.hasNext(); ) {
+            ParameterValue v = itr.next();
+            if (!names.contains(v.getName()))
+                r.add(v);
+        }
+
+        r.addAll(newValues);
+
+        return new ParametersAction(r);
     }
 
     private Object readResolve() {

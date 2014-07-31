@@ -32,7 +32,7 @@ THE SOFTWARE.
   <j:set var="b" value="${it.resolve(job)}"/>
   <j:if test="${b!=null}">
     <li>
-      <a class="model-link tl-tr" href="${it.id}/">${%format(it.displayName,b.displayName,b.timestampString)}</a>
+      <a class="model-link inside tl-tr" href="${it.id}/">${%format(it.displayName,b.displayName,b.timestampString)}</a>
     </li>
   </j:if>
 </j:jelly>

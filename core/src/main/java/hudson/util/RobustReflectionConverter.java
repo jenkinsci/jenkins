@@ -52,7 +52,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 
@@ -309,22 +309,13 @@ public class RobustReflectionConverter implements Converter {
                     }
                 }
             } catch (MissingFieldException e) {
-                if (critical) {
-                    throw e;
-                }
-                LOGGER.log(WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
+                LOGGER.log(FINE, "Skipping a non-existent field " + e.getFieldName(), e);
                 addErrorInContext(context, e);
             } catch (CannotResolveClassException e) {
-                if (critical) {
-                    throw e;
-                }
-                LOGGER.log(WARNING,"Skipping a non-existent type",e);
+                LOGGER.log(FINE, "Skipping a non-existent type", e);
                 addErrorInContext(context, e);
             } catch (LinkageError e) {
-                if (critical) {
-                    throw e;
-                }
-                LOGGER.log(WARNING,"Failed to resolve a type",e);
+                LOGGER.log(FINE, "Failed to resolve a type", e);
                 addErrorInContext(context, e);
             }
 

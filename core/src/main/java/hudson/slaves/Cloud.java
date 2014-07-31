@@ -26,6 +26,8 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.model.Computer;
+import hudson.model.Slave;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
 import jenkins.model.Jenkins;
@@ -37,6 +39,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.util.DescriptorList;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Collection;
 
@@ -47,6 +50,33 @@ import java.util.Collection;
  * Put another way, this class encapsulates different communication protocols
  * needed to start a new slave programmatically.
  *
+ * <h2>Notes for implementers</h2>
+ * <h4>Automatically delete idle slaves</h4>
+ * <p>
+ * Nodes provisioned from a cloud do not automatically get released just because it's created from {@link Cloud}.
+ * Doing so requires a use of {@link RetentionStrategy}. Instantiate your {@link Slave} subtype with something
+ * like {@link CloudSlaveRetentionStrategy} so that it gets automatically deleted after some idle time.
+ *
+ * <h4>Freeing an external resource when a slave is removed</h4>
+ * <p>
+ * Whether you do auto scale-down or not, you often want to release an external resource tied to a cloud-allocated
+ * slave when it is removed.
+ *
+ * <p>
+ * To do this, have your {@link Slave} subtype remember the necessary handle (such as EC2 instance ID)
+ * as a field. Such fields need to survive the user-initiated re-configuration of {@link Slave}, so you'll need to
+ * expose it in your {@link Slave} <tt>configure-entries.jelly</tt> and read it back in through {@link DataBoundConstructor}.
+ *
+ * <p>
+ * You then implement your own {@link Computer} subtype, override {@link Slave#createComputer()}, and instantiate
+ * your own {@link Computer} subtype with this handle information.
+ *
+ * <p>
+ * Finally, override {@link Computer#onRemoved()} and use the handle to talk to the "cloud" and de-allocate
+ * the resource (such as shutting down a virtual machine.) {@link Computer} needs to own this handle information
+ * because by the time this happens, a {@link Slave} object is already long gone.
+ *
+ *
  * @author Kohsuke Kawaguchi
  * @see NodeProvisioner
  * @see AbstractCloudImpl
@@ -55,6 +85,9 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
+     *
+     * This is expected to be short ID-like string that does not contain any character unsafe as variable name or
+     * URL path token.
      */
     public final String name;
 

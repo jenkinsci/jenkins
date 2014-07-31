@@ -32,10 +32,21 @@ THE SOFTWARE.
     <!-- table to show a map -->
     <d:tag name="feature">
       <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"/>
-      ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,iconUrl,title) : null}
+      ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,iconUrl,title,requiresConfirmation,requiresConfirmation) : null}
+      <!-- TODO summary.jelly should be modified to accept requiresConfirmation so the icon link can be included -->
+      <j:set var="_href" value="${href}"/>
       <t:summary icon="${icon}"
-                 href="${href}" iconOnly="true">
-        <div class="link"><a href="${href}">${title}</a></div>
+                 href="${requiresConfirmation ? null : href}" iconOnly="true">
+        <div class="link">
+          <j:choose>
+            <j:when test="${requiresConfirmation}">
+              <l:confirmationLink href="${_href}" post="true" message="${%are.you.sure(title)}">${title}</l:confirmationLink>
+            </j:when>
+            <j:otherwise>
+              <a href="${_href}">${title}</a>
+            </j:otherwise>
+          </j:choose>
+        </div>
         <div style="color:gray; text-decoration:none;">
           <d:invokeBody />
         </div>
@@ -74,7 +85,7 @@ THE SOFTWARE.
       <j:forEach var="m" items="${it.managementLinks}">
         <l:hasPermission permission="${m.requiredPermission}">
           <j:if test="${m.iconFileName!=null}">
-            <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}">
+            <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}">
               <j:out value="${m.description}"/>
               <st:include it="${m}" page="info.jelly" optional="true"/>
             </local:feature>

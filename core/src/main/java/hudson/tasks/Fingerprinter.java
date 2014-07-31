@@ -44,7 +44,6 @@ import hudson.model.FingerprintMap;
 import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.RunAction;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
@@ -75,6 +74,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.RunAction2;
 
 /**
  * Records fingerprints of the specified files.
@@ -136,7 +136,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             build.getActions().add(new FingerprintAction(build,record));
 
             if (enableFingerprintsInDependencyGraph) {
-                Jenkins.getInstance().rebuildDependencyGraph();
+                Jenkins.getInstance().rebuildDependencyGraphAsync();
             }
         } catch (IOException e) {
             e.printStackTrace(listener.error(Messages.Fingerprinter_Failed()));
@@ -158,10 +158,8 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
             for ( ListIterator iter = builds.listIterator(); iter.hasNext(); ) {
                 Run build = (Run) iter.next();
-                List<FingerprintAction> fingerprints = build.getActions(FingerprintAction.class);
-                for (FingerprintAction action : fingerprints) {
-                    Map<AbstractProject,Integer> deps = action.getDependencies();
-                    for (AbstractProject key : deps.keySet()) {
+                for (FingerprintAction action : build.getActions(FingerprintAction.class)) {
+                    for (AbstractProject key : action.getDependencies().keySet()) {
                         if (key == owner) {
                             continue;   // Avoid self references
                         }
@@ -292,10 +290,10 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     /**
      * Action for displaying fingerprints.
      */
-    public static final class FingerprintAction implements RunAction {
-        
-        private final AbstractBuild build;
+    public static final class FingerprintAction implements RunAction2 {
 
+        private transient AbstractBuild build;
+        
         private static final Random rand = new Random();
 
         /**
@@ -308,7 +306,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         public FingerprintAction(AbstractBuild build, Map<String, String> record) {
             this.build = build;
             this.record = PackedMap.of(record);
-            onLoad();   // make compact
+            compact();
         }
 
         public void add(Map<String,String> moreRecords) {
@@ -316,7 +314,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             r.putAll(moreRecords);
             record = PackedMap.of(r);
             ref = null;
-            onLoad();
+            compact();
         }
 
         public String getIconFileName() {
@@ -342,7 +340,16 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             return record;
         }
 
-        public void onLoad() {
+        @Override public void onLoad(Run<?,?> r) {
+            build = (AbstractBuild) r;
+            compact();
+        }
+
+        @Override public void onAttached(Run<?,?> r) {
+            // for historical reasons this setup is done in the constructor instead
+        }
+
+        private void compact() {
             // share data structure with nearby builds, but to keep lazy loading efficient,
             // don't go back the history forever.
             if (rand.nextInt(2)!=0) {
@@ -353,12 +360,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                         compact(a);
                 }
             }
-        }
-
-        public void onAttached(Run r) {
-        }
-
-        public void onBuildComplete() {
         }
 
         /**

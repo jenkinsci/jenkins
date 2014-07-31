@@ -38,7 +38,7 @@ import static java.util.Collections.emptyList;
  * language or implementation specifics.
  * Subclasses must add @Exported annotation to the fields they want to export.
  *
- * @sine 1.343
+ * @since 1.343
  */
 public abstract class TestResult extends TestObject {
 
@@ -53,8 +53,6 @@ public abstract class TestResult extends TestObject {
     /**
      * Returns the action that points to the top level test result includes
      * this test result.
-     * 
-     * @return
      */
     public AbstractTestResultAction getParentAction() {
         return getOwner().getTestResultAction();
@@ -246,7 +244,7 @@ public abstract class TestResult extends TestObject {
         sb.append("Total Count: ").append(this.getTotalCount()).append(", ");
         sb.append("Fail: ").append(this.getFailCount()).append(", ");
         sb.append("Skipt: ").append(this.getSkipCount()).append(", ");
-        sb.append("Pass: ").append(this.getSkipCount()).append(",\n");
+        sb.append("Pass: ").append(this.getPassCount()).append(",\n");
         sb.append("Test Result Class: " ).append(this.getClass().getName()).append(" }\n");
         return sb.toString(); 
     }
@@ -254,7 +252,6 @@ public abstract class TestResult extends TestObject {
     /**
      * Annotate some text -- what does this do? 
      * @param text
-     * @return
      */
     public String annotate(String text) {
         if (text == null)

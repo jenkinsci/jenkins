@@ -5,11 +5,12 @@ package hudson.slaves;
  * typical {@link Cloud} implementations.
  *
  * <p>
- * Whereas {@link Cloud} is the contract between the rest of Hudson and a cloud implementation,
+ * Whereas {@link Cloud} is the contract between the rest of Jenkins and a cloud implementation,
  * this class focuses on providing a convenience to minimize the effort it takes to integrate
- * a new cloud to Hudson.
+ * a new cloud to Jenkins.
  *
  * @author Kohsuke Kawaguchi
+ * @see AbstractCloudSlave
  */
 public abstract class AbstractCloudImpl extends Cloud {
     /**

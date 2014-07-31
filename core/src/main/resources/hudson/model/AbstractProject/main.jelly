@@ -55,8 +55,7 @@ THE SOFTWARE.
     <j:if test="${tr!=null}">
       <j:if test="${tr.class.name != 'hudson.tasks.test.AggregatedTestResultAction'}">
         <t:summary icon="clipboard.png">
-          <a href="lastCompletedBuild/testReport/" class="model-link">${%Latest Test Result}</a>
-          <st:nbsp/>
+          <a href="lastCompletedBuild/${tr.urlName}/" class="model-link inside">${%Latest Test Result}</a>
           <t:test-result it="${tr}" />
         </t:summary>
       </j:if>
@@ -65,8 +64,7 @@ THE SOFTWARE.
     <j:set var="atr" value="${it.lastCompletedBuild.aggregatedTestResultAction}"/>
     <j:if test="${atr!=null}">
       <t:summary icon="clipboard.png">
-        <a href="lastCompletedBuild/aggregatedTestReport/" class="model-link">${%Latest Aggregated Test Result}</a>
-        <st:nbsp/>
+        <a href="lastCompletedBuild/aggregatedTestReport/" class="model-link inside">${%Latest Aggregated Test Result}</a>
         <t:test-result it="${atr}" />
       </t:summary>
     </j:if>

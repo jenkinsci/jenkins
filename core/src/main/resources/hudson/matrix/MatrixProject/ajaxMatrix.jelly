@@ -34,7 +34,7 @@ THE SOFTWARE.
           <img src="${imagesURL}/24x24/grey.png" tooltip="${%Not configured}" alt="${%Not configured}" height="24" width="24"/>
         </j:when>
         <j:otherwise>
-          <a href="${p.shortUrl}" class="model-link">
+          <a href="${p.shortUrl}" class="model-link inside">
             <img src="${imagesURL}/24x24/${p.buildStatusUrl}" tooltip="${p.iconColor.description}" alt="${p.iconColor.description}" height="24" width="24"/>
             <j:if test="${empty(o.x) and empty(o.y)}">
               ${p.combination.toString(o.z)}

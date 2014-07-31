@@ -35,7 +35,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
- * Common part of {@link CVSSCM.TagAction} and {@link SubversionTagAction}.
+ * Common part of <tt>CVSSCM.TagAction</tt> and <tt>SubversionTagAction</tt>.
  *
  * <p>
  * This class implements the action that tags the modules. Derived classes

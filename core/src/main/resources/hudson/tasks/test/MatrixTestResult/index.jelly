@@ -42,7 +42,7 @@ THE SOFTWARE.
         <j:forEach var="report" items="${it.childReports}">
           <tr>
             <td class="pane">
-              <a href="../${report.child.project.shortUrl}testReport" class="model-link">${report.child.project.name}</a>
+              <a href="../${report.child.project.shortUrl}testReport" class="model-link inside">${report.child.project.name}</a>
             </td>
             <td data="${report.result.duration}" class="pane" style="text-align:right">
               ${report.result.durationString}
@@ -74,7 +74,7 @@ THE SOFTWARE.
 
           <h3>
             <a name="${report.child.project.name}"/>
-            <a href="../${report.child.project.shortUrl}testReport" class="model-link">${report.child.project.name}</a>
+            <a href="../${report.child.project.shortUrl}testReport" class="model-link inside">${report.child.project.name}</a>
           </h3>
 
           <table class="pane sortable">
@@ -86,12 +86,11 @@ THE SOFTWARE.
             <j:forEach var="f" items="${report.result.failedTests}" varStatus="i">
               <tr>
                 <td class="pane">
-                  <a href="../${report.child.project.shortUrl}testReport/${f.getRelativePathFrom(report.result)}" class="model-link">
+                  <a href="../${report.child.project.shortUrl}testReport/${f.getRelativePathFrom(report.result)}" class="model-link inside">
                     <st:out value="${f.fullName}"/>
-		          	<st:nbsp/>
-			        <j:forEach var="badge" items="${f.testActions}">
-			          <st:include it="${badge}" page="badge.jelly" optional="true"/>
-			        </j:forEach>
+                    <j:forEach var="badge" items="${f.testActions}">
+                      <st:include it="${badge}" page="badge.jelly" optional="true"/>
+                    </j:forEach>
                   </a>
                 </td>
                 <td class="pane" style="text-align:right;">

@@ -42,6 +42,9 @@ public class TestEnvironment {
      */
     public final @CheckForNull HudsonTestCase testCase;
 
+    /**
+     * Current test case being run (null for a JUnit 3 test).
+     */
     private final @CheckForNull Description description;
 
     public final TemporaryDirectoryAllocator temporaryDirectoryAllocator = new TemporaryDirectoryAllocator();

@@ -38,7 +38,7 @@ import java.util.List;
  * some fails, etc.
  * 
  * @author Kohsuke Kawaguchi
- * @sicne 1.456
+ * @since 1.456
  */
 public abstract class MatrixExecutionStrategy extends AbstractDescribableImpl<MatrixExecutionStrategy> implements ExtensionPoint {
     public Result run(MatrixBuildExecution execution) throws InterruptedException, IOException {
@@ -47,7 +47,7 @@ public abstract class MatrixExecutionStrategy extends AbstractDescribableImpl<Ma
 
     /**
      * @deprecated
-     *      Override {@link #run(MatrixBuildExecution)}
+     *      Override {@link #run(MatrixBuild.MatrixBuildExecution)}
      */
     public Result run(MatrixBuild build, List<MatrixAggregator> aggregators, BuildListener listener) throws InterruptedException, IOException {
         throw new UnsupportedOperationException(getClass()+" needs to override run(MatrixBuildExecution)");

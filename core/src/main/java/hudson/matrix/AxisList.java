@@ -88,7 +88,7 @@ public class AxisList extends ArrayList<Axis> {
     }
 
     /**
-     * {@link Converter} implementation for XStream.
+     * {@link com.thoughtworks.xstream.converters.Converter} implementation for XStream.
      */
     public static final class ConverterImpl extends RobustCollectionConverter {
         public ConverterImpl(XStream xs) {

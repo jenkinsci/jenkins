@@ -25,6 +25,8 @@ package hudson.matrix
 
 import hudson.model.Cause
 import hudson.model.Result
+import hudson.slaves.DumbSlave
+import hudson.slaves.RetentionStrategy
 import hudson.tasks.Ant
 import hudson.tasks.ArtifactArchiver
 import hudson.tasks.Fingerprinter
@@ -62,6 +64,8 @@ import java.util.ArrayList;
 import hudson.model.Action;
 
 import java.util.concurrent.CountDownLatch
+
+import static hudson.model.Node.Mode.EXCLUSIVE
 import static org.junit.Assert.*
 import org.junit.Assume
 import org.junit.Rule
@@ -471,4 +475,48 @@ public class MatrixProjectTest {
         assertNull(defaultExecutionStrategy.getSorter());
     }
 
+    @Bug(17337)
+    @Test public void reload() throws Exception {
+        MatrixProject p = j.createMatrixProject();
+        AxisList axes = new AxisList();
+        axes.add(new TextAxis("p", "only"));
+        p.setAxes(axes);
+        String n = p.getFullName();
+        j.buildAndAssertSuccess(p);
+        j.jenkins.reload();
+        p = j.jenkins.getItemByFullName(n, MatrixProject.class);
+        assertNotNull(p);
+        MatrixConfiguration c = p.getItem("p=only");
+        assertNotNull(c);
+        assertNotNull(c.getBuildByNumber(1));
+    }
+
+    /**
+     * Given a small master and a big exclusive slave, the fair scheduling would prefer running the flyweight job
+     * in the slave. But if the scheduler honors the EXCLUSIVE flag, then we should see it built on the master.
+     *
+     * Since there's a chance that the fair scheduling just so happens to pick up the master by chance,
+     * we try multiple jobs to reduce the chance of that happening.
+     */
+    @Bug(5076)
+    @Test
+    public void dontRunOnExclusiveSlave() {
+        def projects = (0..10).collect {
+            def m = j.createMatrixProject()
+            def axes = new AxisList();
+            axes.add(new TextAxis("p", "only"));
+            m.axes = axes
+            return m;
+        }
+
+        def s = new DumbSlave("big", "this is a big slave", j.createTmpDir().path, "20", EXCLUSIVE, "", j.createComputerLauncher(null), RetentionStrategy.NOOP);
+		j.jenkins.addNode(s);
+
+        s.toComputer().connect(false).get(); // connect this guy
+
+        projects.each { p ->
+            def b = j.assertBuildStatusSuccess(p.scheduleBuild2(2))
+            assertSame(b.builtOn, j.jenkins)
+        }
+    }
 }

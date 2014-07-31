@@ -44,8 +44,8 @@ import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
@@ -152,10 +152,10 @@ public class HudsonTest extends HudsonTestCase {
         // try to delete it by hitting the final URL directly
         WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
         try {
-            wc.getPage(req);
+            wc.getPage(wc.addCrumb(req));
             fail("Error code expected");
         } catch (FailingHttpStatusCodeException e) {
-            assertEquals(SC_FORBIDDEN,e.getStatusCode());
+            assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, e.getStatusCode());
         }
 
         // the master computer object should be still here

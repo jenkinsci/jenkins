@@ -72,4 +72,9 @@ public class PasswordParameterValue extends ParameterValue {
     public Secret getValue() {
         return value;
     }
+
+    @Override public String getShortDescription() {
+        return name + "=****";
+    }
+
 }

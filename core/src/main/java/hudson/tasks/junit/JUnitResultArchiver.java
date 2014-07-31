@@ -57,7 +57,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -139,8 +138,10 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 				throw new AbortException(Messages.JUnitResultArchiver_BadXML(testResults));
 			}
             result.freeze(action);
-			if (result.getPassCount() == 0 && result.getFailCount() == 0)
+			if (result.isEmpty()) {
+			    // most likely a configuration error in the job - e.g. false pattern to match the JUnit result files
 				throw new AbortException(Messages.JUnitResultArchiver_ResultIsEmpty());
+			}
 
             // TODO: Move into JUnitParser [BUG 3123310]
 			List<Data> data = new ArrayList<Data>();
@@ -155,7 +156,7 @@ public class JUnitResultArchiver extends Recorder implements MatrixAggregatable 
 
 			action.setData(data);
 
-			CHECKPOINT.block();
+			CHECKPOINT.block(listener, getDescriptor().getDisplayName());
 
 		} catch (AbortException e) {
 			if (build.getResult() == Result.FAILURE)

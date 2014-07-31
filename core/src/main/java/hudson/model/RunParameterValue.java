@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Geoff Cummings
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,6 +82,9 @@ public class RunParameterValue extends ParameterValue {
         
         env.put(name + "_NAME",  run.getDisplayName());  // since 1.504
 
+        String buildResult = (null == run.getResult()) ? "UNKNOWN" : run.getResult().toString();
+        env.put(name + "_RESULT",  buildResult);  // since 1.517
+
         env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
 
     }
@@ -89,6 +92,10 @@ public class RunParameterValue extends ParameterValue {
     @Override
     public String toString() {
     	return "(RunParameterValue) " + getName() + "='" + getRunId() + "'";
+    }
+
+    @Override public String getShortDescription() {
+        return name + "=" + getRun().getFullDisplayName();
     }
 
 }

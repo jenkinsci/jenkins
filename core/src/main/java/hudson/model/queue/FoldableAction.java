@@ -48,7 +48,7 @@ public interface FoldableAction extends Action {
      * is considered as a duplicate.
      *
      * @param item
-     *      The existing {@link Queue.Item} in the queue against which we are judged as a duplicate. Never null.
+     *      The existing {@link hudson.model.Queue.Item} in the queue against which we are judged as a duplicate. Never null.
      * @param owner
      *      The {@link Task} with which this action was submitted to the queue. Never null.
      * @param otherActions

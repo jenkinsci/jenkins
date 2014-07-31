@@ -32,5 +32,5 @@ THE SOFTWARE.
   </st:documentation>
 
 <img src="${imagesURL}/16x16/${job.buildStatusUrl}" alt="${job.iconColor.description}" height="16" width="16"/>
-<a href="${h.getRelativeLinkTo(job)}" class="model-link">${job.fullDisplayName}</a>
+<a href="${h.getRelativeLinkTo(job)}" class="model-link"><l:breakable value="${job.fullDisplayName}"/></a>
 </j:jelly>

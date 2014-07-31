@@ -32,7 +32,6 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.*;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
-import hudson.util.StreamTaskListener;
 import hudson.util.XStream2;
 
 import java.io.Serializable;
@@ -41,6 +40,7 @@ import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -125,8 +125,9 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * 
      * The path can be in Unix format as well as in Windows format.
      * Must be absolute.
+     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on master)
      */
-    public String getHome() {
+    public @CheckForNull String getHome() {
         return home;
     }
 

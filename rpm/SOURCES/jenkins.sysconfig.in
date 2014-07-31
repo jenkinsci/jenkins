@@ -45,6 +45,33 @@ JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true"
 #
 JENKINS_PORT="8080"
 
+## Type:        string
+## Default:     ""
+## ServiceRestart: jenkins
+#
+# IP address Jenkins listens on for HTTP requests.
+# Default is all interfaces (0.0.0.0).
+#
+JENKINS_LISTEN_ADDRESS=""
+
+## Type:        integer(0:65535)
+## Default:     ""
+## ServiceRestart: jenkins
+#
+# HTTPS port Jenkins is listening on.
+# Default is disabled.
+#
+JENKINS_HTTPS_PORT=""
+
+## Type:        string
+## Default:     ""
+## ServiceRestart: jenkins
+#
+# IP address Jenkins listens on for HTTPS requests.
+# Default is disabled.
+#
+JENKINS_HTTPS_LISTEN_ADDRESS=""
+
 ## Type:        integer(0:65535)
 ## Default:     8009
 ## ServiceRestart: jenkins
@@ -53,6 +80,15 @@ JENKINS_PORT="8080"
 # Set to -1 to disable
 #
 JENKINS_AJP_PORT="8009"
+
+## Type:        string
+## Default:     ""
+## ServiceRestart: jenkins
+#
+# IP address Jenkins listens on for Ajp13 requests.
+# Default is all interfaces (0.0.0.0).
+#
+JENKINS_AJP_LISTEN_ADDRESS=""
 
 ## Type:        integer(1:9)
 ## Default:     5

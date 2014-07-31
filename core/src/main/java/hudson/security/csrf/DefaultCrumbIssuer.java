@@ -100,7 +100,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return false;
     }
 
-    private final String PROXY_HEADER = "X-Forwarded-For";
+    private static final String PROXY_HEADER = "X-Forwarded-For";
 
     private String getClientIP(HttpServletRequest req) {
         String defaultAddress = req.getRemoteAddr();

@@ -100,12 +100,12 @@ var crumb = {
     wrap: function(headers) {
         if (this.fieldName!=null) {
             if (headers instanceof Array)
-                // XXX prototype.js only seems to interpret object
+                // TODO prototype.js only seems to interpret object
                 headers.push(this.fieldName, this.value);
             else
                 headers[this.fieldName]=this.value;
         }
-        // XXX return value unused
+        // TODO return value unused
         return headers;
     },
 
@@ -409,10 +409,27 @@ var tooltip;
 function registerValidator(e) {
     e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
     e.targetUrl = function() {
-        return eval(this.getAttribute("checkUrl")); // need access to 'this'
+        var url = this.getAttribute("checkUrl");
+        var depends = this.getAttribute("checkDependsOn");
+
+        if (depends==null) {// legacy behaviour where checkUrl is a JavaScript
+            try {
+                return eval(url); // need access to 'this', so no 'geval'
+            } catch (e) {
+                if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid Javascript: "+e);
+                if (window.YUI!=null)      YUI.log("Legacy checkUrl '" + url + "' is not valid Javascript: "+e,"warn");
+                return url; // return plain url as fallback
+            }
+        } else {
+            var q = qs(this).addThis();
+            if (depends.length>0)
+                depends.split(" ").each(function (n) {
+                    q.nearBy(n);
+                });
+            return url+ q.toString();
+        }
     };
-    var method = e.getAttribute("checkMethod");
-    if (!method) method = "get";
+    var method = e.getAttribute("checkMethod") || "get";
 
     var url = e.targetUrl();
     try {
@@ -440,6 +457,19 @@ function registerValidator(e) {
     } else
         e.onchange = checker;
     e.onblur = checker;
+
+    var v = e.getAttribute("checkDependsOn");
+    if (v) {
+        v.split(" ").each(function (name) {
+            var c = findNearBy(e,name);
+            if (c==null) {
+                if (window.console!=null)  console.warn("Unable to find nearby "+name);
+                if (window.YUI!=null)      YUI.log("Unable to find a nearby control of the name "+name,"warn")
+                return;
+            }
+            $(c).observe("change",checker.bind(e));
+        });
+    }
 
     e = null; // avoid memory leak
 }
@@ -470,6 +500,8 @@ function registerRegexpValidator(e,regexp,message) {
  *      button element
  * @param onclick
  *      onclick handler
+ * @return
+ *      YUI Button widget.
  */
 function makeButton(e,onclick) {
     var h = e.onclick;
@@ -576,13 +608,13 @@ function sequencer(fs) {
 
 /** @deprecated Use {@link Behaviour.specify} instead. */
 var jenkinsRules = {
-// XXX convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
+// TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
     "BODY" : function() {
         tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
     },
 
     "TABLE.sortable" : function(e) {// sortable table
-        ts_makeSortable(e);
+        e.sortable = new Sortable.Sortable(e);
     },
 
     "TABLE.progress-bar" : function(e) { // progressBar.jelly
@@ -893,7 +925,7 @@ var jenkinsRules = {
 
     "TR.optional-block-start": function(e) { // see optionalBlock.jelly
         // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.firstChild.firstChild;
+        var checkbox = e.down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
@@ -999,7 +1031,7 @@ var jenkinsRules = {
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwitch row-set-end
         // this requires "TR.row-set-end" to mark rows
-        var checkbox = e.firstChild.firstChild;
+        var checkbox = e.down().down();
         updateOptionalBlock(checkbox,false);
     },
 
@@ -1187,8 +1219,6 @@ var hudsonRules = jenkinsRules; // legacy name
 Behaviour.register(hudsonRules);
 
 function applyTooltip(e,text) {
-        if (e.hasClassName("model-link"))   return; // tooltip gets handled by context menu
-
         // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
         // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
         e.onmouseover = function(ev) {
@@ -1430,14 +1460,12 @@ function refreshPart(id,url) {
                     var hist = $(id);
                     if (hist==null) console.log("There's no element that has ID of "+id)
                     var p = hist.up();
-                    var next = hist.next();
-                    p.removeChild(hist);
 
                     var div = document.createElement('div');
                     div.innerHTML = rsp.responseText;
 
                     var node = $(div).firstDescendant();
-                    p.insertBefore(node, next);
+                    p.replaceChild(node, hist);
 
                     Behaviour.applySubtree(node);
                     layoutUpdateCallback.call();
@@ -1726,7 +1754,7 @@ function shortenName(name) {
 //   see http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
 function buildFormTree(form) {
     try {
-        // I initially tried to use an associative array with DOM elemnets as keys
+        // I initially tried to use an associative array with DOM elements as keys
         // but that doesn't seem to work neither on IE nor Firefox.
         // so I switch back to adding a dynamic property on DOM.
         form.formDom = {}; // root object

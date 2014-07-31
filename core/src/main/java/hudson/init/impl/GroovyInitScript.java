@@ -31,12 +31,12 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import hudson.init.Initializer;
+import java.util.logging.Level;
 
 /**
  * Run the initialization script, if it exists.
@@ -78,9 +78,13 @@ public class GroovyInitScript {
         execute(new GroovyCodeSource(initScript));
     }
 
-    private static void execute(GroovyCodeSource initScript) throws IOException {
+    private static void execute(GroovyCodeSource initScript) {
         GroovyShell shell = new GroovyShell(Jenkins.getInstance().getPluginManager().uberClassLoader);
-        shell.evaluate(initScript);
+        try {
+            shell.evaluate(initScript);
+        } catch (RuntimeException x) {
+            LOGGER.log(Level.WARNING, "Failed to run script " + initScript.getName(), x);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(GroovyInitScript.class.getName());

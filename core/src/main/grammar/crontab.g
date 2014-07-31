@@ -93,7 +93,7 @@ term [int field]
 returns [long bits=0]
 throws ANTLRException
 {
-  int d=1,s,e,t;
+  int d=NO_STEP,s,e,t;
 }
   : (token "-")=> s=token "-" e=token ( "/" d=token )?
   {
@@ -108,13 +108,13 @@ throws ANTLRException
   {
     bits = doRange(d,field);
   }
-  | ("H" "(")=> "H" "(" s=token "-" e=token ")"
+  | ("H" "(")=> "H" "(" s=token "-" e=token ")" ( "/" d=token )?
   {
-    bits = doHash(s,e);
+    bits = doHash(s,e,d);
   }
-  | "H"
+  | "H" ( "/" d=token )?
   {
-    bits = doHash(field);
+    bits = doHash(d,field);
   }
   ;
 

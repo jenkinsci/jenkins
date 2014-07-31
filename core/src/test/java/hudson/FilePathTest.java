@@ -206,6 +206,46 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
+    @Bug(9540)
+    public void testErrorMessageInRemoteCopyRecursive() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            File src = new File(tmp, "src");
+            File dst = new File(tmp, "dst");
+            FilePath from = new FilePath(src);
+            FilePath to = new FilePath(british, dst.getAbsolutePath());
+            for (int i = 0; i < 10000; i++) {
+                // TODO is there a simpler way to force the TarOutputStream to be flushed and the reader to start?
+                // Have not found a way to make the failure guaranteed.
+                OutputStream os = from.child("content" + i).write();
+                try {
+                    for (int j = 0; j < 1024; j++) {
+                        os.write('.');
+                    }
+                } finally {
+                    os.close();
+                }
+            }
+            FilePath toF = to.child("content0");
+            toF.write().close();
+            toF.chmod(0400);
+            try {
+                from.copyRecursiveTo(to);
+                // on Windows this may just succeed; OK, test did not prove anything then
+            } catch (IOException x) {
+                if (Functions.printThrowable(x).contains("content0")) {
+                    // Fine, error message talks about permission denied.
+                } else {
+                    throw x;
+                }
+            } finally {
+                toF.chmod(700);
+            }
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
+
     public void testArchiveBug4039() throws Exception {
         File tmp = Util.createTempDir();
         try {
@@ -449,7 +489,7 @@ public class FilePathTest extends ChannelTestCase {
             assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d, "**/*.js");
             assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAnything("index.htm"), d, "index.htm");
             assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("f.html", "d1/d2/d3/f.html"), d, "f.html");
-            // XXX lots more to test, e.g. multiple patterns separated by commas; ought to have full code coverage for this method
+            // TODO lots more to test, e.g. multiple patterns separated by commas; ought to have full code coverage for this method
         } finally {
             Util.deleteRecursive(tmp);
         }

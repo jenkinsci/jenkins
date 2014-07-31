@@ -87,17 +87,37 @@ abstract class BaseParser extends LLkParser {
 
     /**
      * Uses {@link Hash} to choose a random (but stable) value from within this field.
+     *
+     * @param step
+     *      Increments. For example, 15 if "H/15". Or {@link #NO_STEP} to indicate
+     *      the special constant for "H" without the step value.
      */
-    protected long doHash( int field ) {
+    protected long doHash(int step, int field) throws ANTLRException {
         int u = UPPER_BOUNDS[field];
         if (field==2) u = 28;   // day of month can vary depending on month, so to make life simpler, just use [1,28] that's always safe
         if (field==4) u = 6;   // Both 0 and 7 of day of week are Sunday. For better distribution, limit upper bound to 6
-        int h = hash.next(u+1 - LOWER_BOUNDS[field]); // upper bound is inclusive
-        return 1L << (h+LOWER_BOUNDS[field]);
+        return doHash(LOWER_BOUNDS[field], u, step);
     }
 
-    protected long doHash( int s, int e ) {
-        return 1L << (s+hash.next(e+1-s));
+    protected long doHash(int s, int e, int step) throws ANTLRException {
+        if (step > e - s + 1) {
+            error(Messages.BaseParser_OutOfRange(step, 1, e - s + 1));
+            throw new AssertionError();
+        } else if (step > 1) {
+            long bits = 0;
+            for (int i = hash.next(step) + s; i <= e; i += step) {
+                bits |= 1L << i;
+            }
+            assert bits != 0;
+            return bits;
+        } else if (step <=0) {
+            error(Messages.BaseParser_MustBePositive(step));
+            throw new AssertionError();
+        } else {
+            assert step==NO_STEP;
+            // step=1 (i.e. omitted) in the case of hash is actually special; means pick one value, not step by 1
+            return 1L << (s+hash.next(e+1-s));
+        }
     }
     
     protected void rangeCheck(int value, int field) throws ANTLRException {
@@ -122,7 +142,11 @@ abstract class BaseParser extends LLkParser {
 
     /**
      * This property hashes tokens in the cron tab tokens like @daily so that they spread evenly.
-     * This is more aggressive optimization that changes the semantics, so not on by default.
      */
-    public static boolean HASH_TOKENS = Boolean.getBoolean(BaseParser.class.getName()+".hash");
+    public static boolean HASH_TOKENS = !"false".equals(System.getProperty(BaseParser.class.getName()+".hash"));
+
+    /**
+     * Constant that indicates no step value.
+     */
+    public static final int NO_STEP = 1;
 }

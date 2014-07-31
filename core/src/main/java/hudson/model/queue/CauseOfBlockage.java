@@ -10,12 +10,19 @@ import hudson.slaves.Cloud;
 import org.jvnet.localizer.Localizable;
 
 /**
- * If a {@link Task} execution is blocked in the queue, this object represents why.
+ * If something is blocked/vetoed, this object represents why.
+ *
+ * <p>
+ * Originally, this is added for {@link Task} stuck in the queue, but since then the use of this
+ * has expanded beyond queues.
  *
  * <h2>View</h2>
- * <tt>summary.jelly</tt> should do one-line HTML rendering to be used while rendering
- * "build history" widget, next to the blocking build. By default it simply renders
- * {@link #getShortDescription()} text.
+ * <tt>summary.jelly</tt> should do one-line HTML rendering to be used showing the cause
+ * to the user. By default it simply renders {@link #getShortDescription()} text.
+ *
+ * <p>
+ * For queues, this is used while rendering the "build history" widget.
+ *
  *
  * @since 1.330
  */
@@ -41,6 +48,10 @@ public abstract class CauseOfBlockage {
                 return l.toString();
             }
         };
+    }
+
+    @Override public String toString() {
+        return getShortDescription();
     }
 
     /**

@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Lucie Votypkova
  * @since 1.434
- * @see jenkins.model.Computer#getComputerPanelBoxs()
+ * @see hudson.model.Computer#getComputerPanelBoxs()
  */
 
 public abstract class ComputerPanelBox implements ExtensionPoint{

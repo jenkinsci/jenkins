@@ -96,4 +96,9 @@ public class StringParameterValue extends ParameterValue {
     public String toString() {
     	return "(StringParameterValue) " + getName() + "='" + value + "'";
     }
+
+    @Override public String getShortDescription() {
+        return name + '=' + value;
+    }
+
 }

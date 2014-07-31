@@ -23,42 +23,40 @@
  */
 package hudson.model;
 
-import org.jvnet.hudson.test.HudsonTestCase;
-
-import java.util.List;
+import java.net.HttpURLConnection;
+import java.util.Collection;
+import java.util.Collections;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class RunTest extends HudsonTestCase {
-    private List<? extends Run<?,?>.Artifact> createArtifactList(String... paths) throws Exception {
-        FreeStyleProject prj = createFreeStyleProject();
-        FreeStyleBuild r = prj.scheduleBuild2(0).get();
-        Run<FreeStyleProject,FreeStyleBuild>.ArtifactList list = r.new ArtifactList();
-        for (String p : paths) {
-            list.add(r.new Artifact(p,p,p,String.valueOf(p.length()),"n"+list.size()));  // Assuming all test inputs don't need urlencoding
-        }
-        list.computeDisplayName();
-        return list;
-    }
-    
-    public void testArtifactListDisambiguation1() throws Exception {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
-        assertEquals(a.get(0).getDisplayPath(),"c.xml");
-        assertEquals(a.get(1).getDisplayPath(),"g.xml");
-        assertEquals(a.get(2).getDisplayPath(),"j.xml");
+public class RunTest  {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Bug(17935)
+    @Test public void getDynamicInvisibleTransientAction() throws Exception {
+        TransientBuildActionFactory.all().add(0, new TransientBuildActionFactory() {
+            @Override public Collection<? extends Action> createFor(Run target) {
+                return Collections.singleton(new Action() {
+                    @Override public String getDisplayName() {
+                        return "Test";
+                    }
+                    @Override public String getIconFileName() {
+                        return null;
+                    }
+                    @Override public String getUrlName() {
+                        return null;
+                    }
+                });
+            }
+        });
+        j.assertBuildStatusSuccess(j.createFreeStyleProject("stuff").scheduleBuild2(0));
+        j.createWebClient().assertFails("job/stuff/1/nonexistent", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
-    public void testArtifactListDisambiguation2() throws Exception {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
-        assertEquals(a.get(0).getDisplayPath(),"c.xml");
-        assertEquals(a.get(1).getDisplayPath(),"f/g.xml");
-        assertEquals(a.get(2).getDisplayPath(),"i/g.xml");
-    }
-
-    public void testArtifactListDisambiguation3() throws Exception {
-        List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml","a/a.xml");
-        assertEquals(a.get(0).getDisplayPath(),"a.xml");
-        assertEquals(a.get(1).getDisplayPath(),"a/a.xml");
-    }
 }

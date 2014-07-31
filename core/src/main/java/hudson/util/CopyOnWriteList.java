@@ -38,9 +38,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
+import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.WARNING;
 
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
@@ -138,7 +138,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         this.core = new ArrayList<E>();
     }
 
-    public E[] toArray(E[] array) {
+    public <E> E[] toArray(E[] array) {
         return core.toArray(array);
     }
 
@@ -193,10 +193,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                     Object item = readItem(reader, context, items);
                     items.add(item);
                 } catch (CannotResolveClassException e) {
-                    LOGGER.log(WARNING,"Failed to resolve class",e);
+                    LOGGER.log(FINE, "Failed to resolve class", e);
                     RobustReflectionConverter.addErrorInContext(context, e);
                 } catch (LinkageError e) {
-                    LOGGER.log(WARNING,"Failed to resolve class",e);
+                    LOGGER.log(FINE, "Failed to resolve class", e);
                     RobustReflectionConverter.addErrorInContext(context, e);
                 }
                 reader.moveUp();

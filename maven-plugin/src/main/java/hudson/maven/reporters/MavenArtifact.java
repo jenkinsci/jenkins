@@ -23,7 +23,6 @@
  */
 package hudson.maven.reporters;
 
-import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenBuildProxy;
@@ -34,7 +33,6 @@ import hudson.model.Run;
 import hudson.util.LRUStringConverter;
 import jenkins.model.Jenkins;
 
-import hudson.util.HttpResponses;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -48,11 +46,16 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Captures information about an artifact created by Maven and archived by
@@ -119,7 +122,7 @@ public final class MavenArtifact implements Serializable {
         this.classifier = a.getClassifier();
         this.type = a.getType();
         this.fileName = a.getFile().getName();
-        this.md5sum = Util.getDigestOf(new FileInputStream(a.getFile()));
+        this.md5sum = Util.getDigestOf(a.getFile());
         String extension;
         if(a.getArtifactHandler()!=null) // don't know if this can be null, but just to be defensive.
             extension = a.getArtifactHandler().getExtension();
@@ -159,6 +162,7 @@ public final class MavenArtifact implements Serializable {
 
     /**
      * Creates a Maven {@link Artifact} back from the persisted data.
+     * {@link Artifact#getFile} should be deleted when you are finished as it is a temporary copy.
      */
     public Artifact toArtifact(ArtifactHandlerManager handlerManager, ArtifactFactory factory, MavenBuild build) throws IOException {
         // Hack: presence of custom ArtifactHandler during builds could influence the file extension
@@ -195,11 +199,18 @@ public final class MavenArtifact implements Serializable {
 
     /**
      * Obtains the {@link File} representing the archived artifact.
+     * This is a temporary copy which you should delete when finished.
+     * @throws FileNotFoundException if the archived artifact was missing
      */
     public File getFile(MavenBuild build) throws IOException {
-        File f = new File(new File(new File(new File(build.getArtifactsDir(), groupId), artifactId), version), canonicalName);
-        if(!f.exists())
-            throw new IOException("Archived artifact is missing: "+f);
+        File f = File.createTempFile("jenkins-", canonicalName);
+        f.deleteOnExit();
+        OutputStream os = new FileOutputStream(f);
+        try {
+            Util.copyStreamAndClose(build.getArtifactManager().root().child(artifactPath()).open(), os);
+        } finally {
+            os.close();
+        }
         return f;
     }
 
@@ -208,12 +219,17 @@ public final class MavenArtifact implements Serializable {
      *
      * TODO: figure out how to make this URL more discoverable to the remote API.
      */
-    public HttpResponse doFile(@AncestorInPath MavenArtifactRecord parent) throws IOException {
-        return HttpResponses.staticResource(getFile(parent.parent));
+    public HttpResponse doFile(final @AncestorInPath MavenArtifactRecord parent) throws IOException {
+        return new HttpResponse() {
+            @Override public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                rsp.setContentType("application/octet-stream");
+                Util.copyStreamAndClose(parent.parent.getArtifactManager().root().child(artifactPath()).open(), rsp.getCompressedOutputStream(req));
+            }
+        };
     }
 
-    private FilePath getArtifactArchivePath(MavenBuildProxy build, String groupId, String artifactId, String version) {
-        return build.getArtifactsDir().child(groupId).child(artifactId).child(version).child(canonicalName);
+    private String artifactPath() {
+        return groupId + '/' + artifactId + '/' + version + '/' + canonicalName;
     }
 
     /**
@@ -224,58 +240,7 @@ public final class MavenArtifact implements Serializable {
             LOGGER.fine("Archiving disabled - not archiving " + file);
         }
         else {
-            FilePath target = getArtifactArchivePath(build,groupId,artifactId,version);
-            FilePath origin = new FilePath(file);
-            if (!target.exists()) {
-                listener.getLogger().println("[JENKINS] Archiving "+ file+" to "+target);
-                origin.copyTo(target);
-            } else if (!origin.digest().equals(target.digest())) {
-                listener.getLogger().println("[JENKINS] Re-archiving "+file);
-                origin.copyTo(target);
-            } else {
-                LOGGER.fine("Not actually archiving "+origin+" due to digest match");
-            }
-
-            /* debug probe to investigate "missing artifact" problem typically seen like this:
-
-            ERROR: Asynchronous execution failure
-            java.util.concurrent.ExecutionException: java.io.IOException: Archived artifact is missing: /files/hudson/server/jobs/glassfish-v3/modules/org.glassfish.build$maven-glassfish-extension/builds/2008-04-02_10-17-15/archive/org.glassfish.build/maven-glassfish-extension/1.0-SNAPSHOT/maven-glassfish-extension-1.0-SNAPSHOT.jar
-                    at hudson.remoting.Channel$1.adapt(Channel.java:423)
-                    at hudson.remoting.Channel$1.adapt(Channel.java:418)
-                    at hudson.remoting.FutureAdapter.get(FutureAdapter.java:32)
-                    at hudson.maven.MavenBuilder.call(MavenBuilder.java:140)
-                    at hudson.maven.MavenModuleSetBuild$Builder.call(MavenModuleSetBuild.java:476)
-                    at hudson.maven.MavenModuleSetBuild$Builder.call(MavenModuleSetBuild.java:422)
-                    at hudson.remoting.UserRequest.perform(UserRequest.java:69)
-                    at hudson.remoting.UserRequest.perform(UserRequest.java:23)
-                    at hudson.remoting.Request$2.run(Request.java:200)
-                    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:417)
-                    at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:269)
-                    at java.util.concurrent.FutureTask.run(FutureTask.java:123)
-                    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:650)
-                    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:675)
-                    at java.lang.Thread.run(Thread.java:595)
-            Caused by: java.io.IOException: Archived artifact is missing: /files/hudson/server/jobs/glassfish-v3/modules/org.glassfish.build$maven-glassfish-extension/builds/2008-04-02_10-17-15/archive/org.glassfish.build/maven-glassfish-extension/1.0-SNAPSHOT/maven-glassfish-extension-1.0-SNAPSHOT.jar
-                    at hudson.maven.reporters.MavenArtifact.getFile(MavenArtifact.java:147)
-                    at hudson.maven.reporters.MavenArtifact.toArtifact(MavenArtifact.java:126)
-                    at hudson.maven.reporters.MavenArtifactRecord.install(MavenArtifactRecord.java:115)
-                    at hudson.maven.reporters.MavenArtifactArchiver$1.call(MavenArtifactArchiver.java:81)
-                    at hudson.maven.reporters.MavenArtifactArchiver$1.call(MavenArtifactArchiver.java:71)
-                    at hudson.maven.MavenBuild$ProxyImpl.execute(MavenBuild.java:255)
-                    at hudson.maven.MavenBuildProxy$Filter$AsyncInvoker.call(MavenBuildProxy.java:177)
-                    at hudson.remoting.UserRequest.perform(UserRequest.java:69)
-                    at hudson.remoting.UserRequest.perform(UserRequest.java:23)
-                    at hudson.remoting.Request$2.run(Request.java:200)
-                    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:441)
-                    at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:303)
-                    at java.util.concurrent.FutureTask.run(FutureTask.java:138)
-                    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:885)
-                    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:907)
-                    at java.lang.Thread.run(Thread.java:619)
-         */
-
-            if(!target.exists())
-                throw new AssertionError("Just copied "+file+" to "+target+" but now I can't find it");
+            build.queueArchiving(artifactPath(), file.getAbsolutePath());
         }
     }
 

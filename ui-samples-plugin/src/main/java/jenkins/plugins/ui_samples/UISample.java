@@ -1,20 +1,21 @@
 package jenkins.plugins.ui_samples;
 
+import static org.apache.commons.io.IOUtils.copy;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Describable;
-import jenkins.model.Jenkins;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
-import static org.apache.commons.io.IOUtils.copy;
+import jenkins.model.Jenkins;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -78,6 +79,33 @@ public abstract class UISample implements ExtensionPoint, Action, Describable<UI
      */
     public static ExtensionList<UISample> all() {
         return Jenkins.getInstance().getExtensionList(UISample.class);
+    }
+
+    public static List<UISample> getGroovySamples() {
+        List<UISample> r = new ArrayList<UISample>();
+        for (UISample uiSample : UISample.all()) {
+            for (SourceFile src : uiSample.getSourceFiles()) {
+                if (src.name.contains("groovy")) {
+                    r.add(uiSample);
+                    break;
+                }
+            }
+        }
+        return r;
+    }
+
+    public static List<UISample> getOtherSamples() {
+        List<UISample> r = new ArrayList<UISample>();
+        OUTER:
+        for (UISample uiSample : UISample.all()) {
+            for (SourceFile src : uiSample.getSourceFiles()) {
+                if (src.name.contains("groovy")) {
+                    continue OUTER;
+                }
+            }
+            r.add(uiSample);
+        }
+        return r;
     }
 
     /**

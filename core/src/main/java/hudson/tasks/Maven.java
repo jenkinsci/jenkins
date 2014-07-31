@@ -38,8 +38,7 @@ import hudson.model.Computer;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
-import jenkins.mvn.DefaultGlobalSettingsProvider;
-import jenkins.mvn.DefaultSettingsProvider;
+import jenkins.mvn.GlobalMavenConfig;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
@@ -56,6 +55,8 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
+import hudson.util.VariableResolver.ByMap;
+import hudson.util.VariableResolver.Union;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
@@ -129,13 +130,13 @@ public class Maven extends Builder {
      * Provides access to the settings.xml to be used for a build.
      * @since 1.491
      */
-    private SettingsProvider settings = new DefaultSettingsProvider();
+    private SettingsProvider settings;
     
     /**
      * Provides access to the global settings.xml to be used for a build.
      * @since 1.491
      */
-    private GlobalSettingsProvider globalSettings = new DefaultGlobalSettingsProvider();
+    private GlobalSettingsProvider globalSettings;
 
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
@@ -163,8 +164,8 @@ public class Maven extends Builder {
         this.properties = Util.fixEmptyAndTrim(properties);
         this.jvmOptions = Util.fixEmptyAndTrim(jvmOptions);
         this.usePrivateRepository = usePrivateRepository;
-        this.settings = settings != null ? settings : new DefaultSettingsProvider();
-        this.globalSettings = globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
+        this.settings = settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
+        this.globalSettings = globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
     }
 
     public String getTargets() {
@@ -175,14 +176,22 @@ public class Maven extends Builder {
      * @since 1.491
      */
     public SettingsProvider getSettings() {
-        return settings != null ? settings : new DefaultSettingsProvider();
+        return settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
+    }
+    
+    protected void setSettings(SettingsProvider settings) {
+        this.settings = settings;
     }
     
     /**
      * @since 1.491
      */
     public GlobalSettingsProvider getGlobalSettings() {
-        return globalSettings != null ? globalSettings : new DefaultGlobalSettingsProvider();
+        return globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
+    }
+    
+    protected void setGlobalSettings(GlobalSettingsProvider globalSettings) {
+        this.globalSettings = globalSettings;
     }
 
     public void setUsePrivateRepository(boolean usePrivateRepository) {
@@ -257,7 +266,6 @@ public class Maven extends Builder {
         String targets = Util.replaceMacro(this.targets,vr);
         targets = env.expand(targets);
         String pom = env.expand(this.pom);
-        String properties = env.expand(this.properties);
 
         int startIndex = 0;
         int endIndex;
@@ -307,7 +315,8 @@ public class Maven extends Builder {
             Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
             args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
-            args.addKeyValuePairsFromPropertyString("-D",properties,vr,sensitiveVars);
+            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+            args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
@@ -398,6 +407,14 @@ public class Maven extends Builder {
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
         }
+        
+        public GlobalSettingsProvider getDefaultGlobalSettingsProvider() {
+            return GlobalMavenConfig.get().getGlobalSettingsProvider();
+        }
+        
+        public SettingsProvider getDefaultSettingsProvider() {
+            return GlobalMavenConfig.get().getSettingsProvider();
+        }
 
         public MavenInstallation[] getInstallations() {
             return installations;
@@ -444,7 +461,7 @@ public class Maven extends Builder {
 
         /**
          * @deprecated as of 1.308.
-         *      Use {@link #MavenInstallation(String, String, List)}
+         *      Use {@link #Maven.MavenInstallation(String, String, List)}
          */
         public MavenInstallation(String name, String home) {
             super(name, home);
@@ -471,6 +488,9 @@ public class Maven extends Builder {
         @Override
         public void buildEnvVars(EnvVars env) {
             String home = getHome();
+            if (home == null) {
+                return;
+            }
             env.put("M2_HOME", home);
             env.put("MAVEN_HOME", home);
             env.put("PATH+MAVEN", home + "/bin");

@@ -23,11 +23,16 @@
  */
 package hudson.cli
 
-import org.jvnet.hudson.test.HudsonTestCase
+import org.jvnet.hudson.test.JenkinsRule
+import org.junit.Rule
+import org.junit.Test
+import static org.junit.Assert.*
+import org.junit.Assume
 import hudson.tasks.Shell
 import hudson.util.OneShotEvent
 import org.jvnet.hudson.test.TestBuilder
 import hudson.model.AbstractBuild
+import hudson.model.FreeStyleProject;
 import hudson.Launcher
 import hudson.model.BuildListener
 import hudson.model.ParametersDefinitionProperty
@@ -40,12 +45,15 @@ import org.apache.commons.io.output.TeeOutputStream
  *
  * @author Kohsuke Kawaguchi
  */
-public class BuildCommandTest extends HudsonTestCase {
+public class BuildCommandTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
     /**
      * Just schedules a build and return.
      */
-    void testAsync() {
-        def p = createFreeStyleProject();
+    @Test void async() {
+        def p = j.createFreeStyleProject();
         def started = new OneShotEvent();
         def completed = new OneShotEvent();
         p.buildersList.add([perform: {AbstractBuild build, Launcher launcher, BuildListener listener ->
@@ -55,7 +63,7 @@ public class BuildCommandTest extends HudsonTestCase {
         }] as TestBuilder);
 
         // this should be asynchronous
-        def cli = new CLI(getURL())
+        def cli = new CLI(j.URL)
         try {
             assertEquals(0,cli.execute(["build", p.name]))
             started.block()
@@ -70,11 +78,11 @@ public class BuildCommandTest extends HudsonTestCase {
     /**
      * Tests synchronous execution.
      */
-    void testSync() {
-        def p = createFreeStyleProject();
+    @Test void sync() {
+        def p = j.createFreeStyleProject();
         p.buildersList.add(new Shell("sleep 3"));
 
-        def cli = new CLI(getURL())
+        def cli = new CLI(j.URL)
         try {
             cli.execute(["build","-s",p.name])
             assertFalse(p.getBuildByNumber(1).isBuilding())
@@ -87,11 +95,11 @@ public class BuildCommandTest extends HudsonTestCase {
     /**
      * Tests synchronous execution with retried verbose output
      */
-    void testSyncWOutputStreaming() {
-        def p = createFreeStyleProject();
+    @Test void syncWOutputStreaming() {
+        def p = j.createFreeStyleProject();
         p.buildersList.add(new Shell("sleep 3"));
 
-        def cli =new CLI(getURL())
+        def cli =new CLI(j.URL)
         try {
             cli.execute(["build","-s","-v","-r","5",p.name])
             assertFalse(p.getBuildByNumber(1).isBuilding())
@@ -100,28 +108,28 @@ public class BuildCommandTest extends HudsonTestCase {
         }
     }
 
-    void testParameters() {
-        def p = createFreeStyleProject();
+    @Test void parameters() {
+        def p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty([new StringParameterDefinition("key",null)]));
 
-        def cli = new CLI(getURL())
+        def cli = new CLI(j.URL)
         try {
             cli.execute(["build","-s","-p","key=foobar",p.name])
-            def b = assertBuildStatusSuccess(p.getBuildByNumber(1))
+            def b = j.assertBuildStatusSuccess(p.getBuildByNumber(1))
             assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value)
         } finally {
             cli.close();
         }
     }
 
-    void testDefaultParameters() {
-        def p = createFreeStyleProject();
+    @Test void defaultParameters() {
+        def p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty([new StringParameterDefinition("key","default"), new StringParameterDefinition("key2","default2") ]));
 
-        def cli = new CLI(getURL())
+        def cli = new CLI(j.URL)
         try {
             cli.execute(["build","-s","-p","key=foobar",p.name])
-            def b = assertBuildStatusSuccess(p.getBuildByNumber(1))
+            def b = j.assertBuildStatusSuccess(p.getBuildByNumber(1))
             assertEquals("foobar",b.getAction(ParametersAction.class).getParameter("key").value)
             assertEquals("default2",b.getAction(ParametersAction.class).getParameter("key2").value)
         } finally {
@@ -129,17 +137,56 @@ public class BuildCommandTest extends HudsonTestCase {
         }
     }
 
-    void testConsoleOutput() {
-        def p = createFreeStyleProject()
-        def cli = new CLI(getURL())
+    @Test void consoleOutput() {
+        Assume.assumeFalse("Started test0 #1", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")))
+        def p = j.createFreeStyleProject()
+        def cli = new CLI(j.URL)
         try {
             def o = new ByteArrayOutputStream()
             cli.execute(["build","-s","-v",p.name],System.in,new TeeOutputStream(System.out,o),System.err)
-            assertBuildStatusSuccess(p.getBuildByNumber(1))
+            j.assertBuildStatusSuccess(p.getBuildByNumber(1))
             assertTrue(o.toString(), o.toString().contains("Started by command line by anonymous"))
             assertTrue(o.toString().contains("Finished: SUCCESS"))
         } finally {
             cli.close()
         }
+    }
+
+    @Test void refuseToBuildDisabledProject() {
+
+        def project = j.createFreeStyleProject("the-project");
+        project.disable();
+        def invoker = new CLICommandInvoker(j, new BuildCommand());
+        def result = invoker.invokeWithArgs("the-project");
+
+        assertTrue("Error message missing", result.stderr().contains("Cannot build the-project because it is disabled."));
+        assertEquals("Command is expected to fail", -1, result.returnCode());
+        assertNull("Project should not be built", project.getBuildByNumber(1));
+    }
+
+    @Test void refuseToBuildNewlyCoppiedProject() {
+
+        def original = j.createFreeStyleProject("original");
+        def newOne = (FreeStyleProject) j.jenkins.copy(original, "new-one");
+        def invoker = new CLICommandInvoker(j, new BuildCommand());
+        def result = invoker.invokeWithArgs("new-one");
+
+        assertTrue("Error message missing", result.stderr().contains("Cannot build new-one because its configuration has not been saved."));
+        assertEquals("Command is expected to fail", -1, result.returnCode());
+        assertNull("Project should not be built", newOne.getBuildByNumber(1));
+    }
+
+    @Test void correctlyParseMapValuesContainingEqualsSign() {
+
+        def project = j.createFreeStyleProject("the-project");
+        project.addProperty(new ParametersDefinitionProperty([
+                new StringParameterDefinition("expr", null)
+        ]));
+
+        def invoker = new CLICommandInvoker(j, new BuildCommand());
+        def result = invoker.invokeWithArgs("the-project", "-p", "expr=a=b", "-s");
+
+        assertEquals("Command is expected to succeed", 0, result.returnCode());
+        assertEquals("a=b", project.getBuildByNumber(1).getBuildVariables().get("expr"));
     }
 }

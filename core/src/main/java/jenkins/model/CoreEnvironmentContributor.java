@@ -6,6 +6,7 @@ import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.EnvironmentContributor;
 import hudson.model.Executor;
+import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -23,22 +24,32 @@ import java.io.IOException;
 public class CoreEnvironmentContributor extends EnvironmentContributor {
     @Override
     public void buildEnvironmentFor(Run r, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
+        env.put("BUILD_DISPLAY_NAME",r.getDisplayName());
+
+        Jenkins j = Jenkins.getInstance();
+        String rootUrl = j.getRootUrl();
+        if(rootUrl!=null) {
+            env.put("BUILD_URL", rootUrl+r.getUrl());
+        }
+    }
+
+    @Override
+    public void buildEnvironmentFor(Job j, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
         Computer c = Computer.currentComputer();
         if (c!=null){
             EnvVars compEnv = c.getEnvironment().overrideAll(env);
             env.putAll(compEnv);
         }
 
-        Jenkins j = Jenkins.getInstance();
-        String rootUrl = j.getRootUrl();
+        Jenkins jenkins = Jenkins.getInstance();
+        String rootUrl = jenkins.getRootUrl();
         if(rootUrl!=null) {
             env.put("JENKINS_URL", rootUrl);
             env.put("HUDSON_URL", rootUrl); // Legacy compatibility
-            env.put("BUILD_URL", rootUrl+r.getUrl());
-            env.put("JOB_URL", rootUrl+r.getParent().getUrl());
+            env.put("JOB_URL", rootUrl+j.getUrl());
         }
 
-        String root = j.getRootDir().getPath();
+        String root = jenkins.getRootDir().getPath();
         env.put("JENKINS_HOME", root);
         env.put("HUDSON_HOME", root);   // legacy compatibility
 

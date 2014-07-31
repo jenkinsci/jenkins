@@ -124,9 +124,9 @@ public class SCMTriggerTest extends HudsonTestCase {
         // Schedule a new build, and trigger it many ways while it sits in queue
         Future<FreeStyleBuild> fb = p.scheduleBuild2(0, new UserCause());
         assertNotNull(fb);
-        assertFalse(p.scheduleBuild(new SCMTriggerCause("First poll")));
-        assertFalse(p.scheduleBuild(new SCMTriggerCause("Second poll")));
-        assertFalse(p.scheduleBuild(new SCMTriggerCause("Third poll")));
+        assertTrue(p.scheduleBuild(new SCMTriggerCause("First poll")));
+        assertTrue(p.scheduleBuild(new SCMTriggerCause("Second poll")));
+        assertTrue(p.scheduleBuild(new SCMTriggerCause("Third poll")));
 
         // Wait for 2nd build to finish
         buildShouldComplete.signal();

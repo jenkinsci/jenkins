@@ -25,6 +25,7 @@ package hudson.model.queue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Label;
@@ -35,6 +36,7 @@ import hudson.model.Queue.Executable;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAssignmentAction;
+import hudson.security.ACL;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -57,7 +59,7 @@ import static java.lang.Math.*;
  * which determines where each {@link SubTask} gets executed.
  *
  * <p>
- * This mapping is done under two constraints:
+ * This mapping is done under the following constraints:
  *
  * <ul>
  * <li>
@@ -80,7 +82,7 @@ import static java.lang.Math.*;
  * to assist various algorithms that produce the solution of this mapping problem,
  * which is represented as {@link Mapping}.
  *
- * @see LoadBalancer#map(Task, MappingWorksheet)
+ * @see LoadBalancer#map(Queue.Task, MappingWorksheet)
  * @author Kohsuke Kawaguchi
  */
 public class MappingWorksheet {
@@ -111,6 +113,7 @@ public class MappingWorksheet {
         public final int index;
         public final Computer computer;
         public final Node node;
+        public final ACL nodeAcl;
 
         private ExecutorChunk(List<ExecutorSlot> base, int index) {
             super(base);
@@ -118,14 +121,23 @@ public class MappingWorksheet {
             assert !base.isEmpty();
             computer = base.get(0).getExecutor().getOwner();
             node = computer.getNode();
+            nodeAcl = node.getACL();
         }
 
         /**
          * Is this executor chunk and the given work chunk compatible? Can the latter be run on the former?
          */
         public boolean canAccept(WorkChunk c) {
-            return this.size() >= c.size()
-                && (c.assignedLabel==null || c.assignedLabel.contains(node));
+            if (this.size()<c.size())
+                return false;   // too small compared towork
+
+            if (c.assignedLabel!=null && !c.assignedLabel.contains(node))
+                return false;   // label mismatch
+
+            if (!nodeAcl.hasPermission(item.authenticate(), Computer.BUILD))
+                return false;   // tasks don't have a permission to run on this node
+
+            return true;
         }
 
         /**
@@ -154,6 +166,9 @@ public class MappingWorksheet {
         }
     }
 
+    /**
+     * {@link SubTask}s that need to run on the same node.
+     */
     public class WorkChunk extends ReadOnlyList<SubTask> {
         public final int index;
 

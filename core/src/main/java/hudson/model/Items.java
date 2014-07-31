@@ -166,7 +166,7 @@ public class Items {
         while(tokens.hasMoreTokens()) {
             String relativeName = tokens.nextToken().trim();
             String canonicalName = getCanonicalName(context, relativeName);
-            if (canonicalName.startsWith(oldFullName)) {
+            if (canonicalName.equals(oldFullName) || canonicalName.startsWith(oldFullName+'/')) {
                 String newCanonicalName = newFullName + canonicalName.substring(oldFullName.length());
                 // relative name points to the renamed item, let's compute the new relative name
                 newValue.add( computeRelativeNameAfterRenaming(canonicalName, newCanonicalName, relativeName) );
@@ -234,6 +234,49 @@ public class Items {
      */
     public static XmlFile getConfigFile(Item item) {
         return getConfigFile(item.getRootDir());
+    }
+    
+    /**
+     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
+     * and filter them by the given type.
+     * 
+     * @since 1.512
+     */
+    public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type) {
+        List<T> r = new ArrayList<T>();
+
+        Stack<ItemGroup> q = new Stack<ItemGroup>();
+        q.push(root);
+
+        while(!q.isEmpty()) {
+            ItemGroup<?> parent = q.pop();
+            for (Item i : parent.getItems()) {
+                if(type.isInstance(i)) {
+                    if (i.hasPermission(Item.READ))
+                        r.add(type.cast(i));
+                }
+                if(i instanceof ItemGroup)
+                    q.push((ItemGroup)i);
+            }
+        }
+        // sort by relative name, ignoring case
+        Collections.sort(r, new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                if (o1 == null) {
+                    if (o2 == null) {
+                        return 0;
+                    }
+                    return 1;
+                }
+                if (o2 == null) {
+                    return -1;
+                }
+                return o1.getRelativeNameFrom(root).compareToIgnoreCase(o2.getRelativeNameFrom(root));
+            }
+            
+        });
+        return r;
     }
 
     /**

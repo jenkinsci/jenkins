@@ -11,7 +11,7 @@ if (items.isEmpty()) {
     }
     include(my,"noJob.jelly");
 } else {
-    t.projectView(jobs: items, jobBaseUrl: "", showViewTabs: true, columnExtensions: my.columns, indenter: my.indenter) {
+    t.projectView(jobs: items, showViewTabs: true, columnExtensions: my.columns, indenter: my.indenter, itemGroup: my.owner.itemGroup) {
         set("views",my.owner.views);
         set("currentView",my);
         if (my.owner.class == hudson.model.MyViewsProperty.class) {

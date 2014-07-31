@@ -77,7 +77,7 @@ THE SOFTWARE.
                       <st:nbsp/>
                       <j:choose>
                         <j:when test="${dep.from!=null}">
-                          <a href="${rootURL}/${dep.from.url}" class="model-link">
+                          <a href="${rootURL}/${dep.from.url}" class="model-link inside">
                             <img src="${imagesURL}/16x16/${dep.from.buildStatusUrl}"
                                  alt="${dep.from.iconColor.description}" height="16" width="16" />${dep.from.displayName}</a>
                         </j:when>
@@ -88,7 +88,7 @@ THE SOFTWARE.
 
                       &#x2192; <!-- right arrow -->
 
-                      <a href="${rootURL}/${dep.to.url}" class="model-link">
+                      <a href="${rootURL}/${dep.to.url}" class="model-link inside">
                         <img src="${imagesURL}/16x16/${dep.to.buildStatusUrl}"
                              alt="${dep.to.iconColor.description}" height="16" width="16" />${dep.to.displayName}</a>
 
@@ -122,7 +122,7 @@ THE SOFTWARE.
         <ul style="list-style-type: none;">
           <j:forEach var="item" items="${upstream}">
             <li>
-              <a href="${rootURL}/${item.key.url}" class="model-link">${item.key.displayName}</a>
+              <a href="${rootURL}/${item.key.url}" class="model-link inside">${item.key.displayName}</a>
               <t:buildLink job="${item.key}" number="${item.value}" />
             </li>
           </j:forEach>
@@ -134,7 +134,7 @@ THE SOFTWARE.
         <ul style="list-style-type: none;">
           <j:forEach var="item" items="${downstream}">
             <li>
-              <a href="${rootURL}/${item.key.url}" class="model-link">${item.key.displayName}</a>
+              <a href="${rootURL}/${item.key.url}" class="model-link inside">${item.key.displayName}</a>
               <j:choose>
                 <j:when test="${item.value.isEmpty()}">
                   (${%none})

@@ -22,6 +22,7 @@ import org.jvnet.hudson.test.recipes.WithPluginManager;
 import org.xml.sax.SAXException;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import jenkins.model.JenkinsLocationConfiguration;
 
 public class UseRecipesWithJenkinsRuleTest {
 
@@ -53,6 +54,10 @@ public class UseRecipesWithJenkinsRuleTest {
     @WithPluginManager(MyPluginManager.class)
     public void testWithPluginManager() {
         assertEquals(MyPluginManager.class, rule.jenkins.pluginManager.getClass());
+    }
+
+    @Test public void rightURL() throws Exception {
+        assertEquals(rule.getURL(), new URL(JenkinsLocationConfiguration.get().getUrl()));
     }
 
     private void verifyNotError(WebClient wc) throws IOException, SAXException {

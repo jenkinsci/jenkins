@@ -80,6 +80,10 @@ public class Kernel32Utils {
      * @param target
      *      If relative, resolved against the location of the symlink.
      *      If absolute, it's absolute.
+     * @throws UnsatisfiedLinkError
+     *      If the function is not exported by kernel32.
+     *      See http://msdn.microsoft.com/en-us/library/windows/desktop/aa363866(v=vs.85).aspx
+     *      for compatibility info.
      */
     public static void createSymbolicLink(File symlink, String target, boolean dirLink) throws IOException {
         if (!Kernel32.INSTANCE.CreateSymbolicLinkW(

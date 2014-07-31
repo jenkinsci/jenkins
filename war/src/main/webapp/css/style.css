@@ -491,7 +491,8 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url("../images/16x16/error.gif");
+    line-height: 16px;
+    background-image: url("../images/16x16/error.png");
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -506,7 +507,8 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url( "../images/16x16/warning.gif" );
+    line-height: 16px;
+    background-image: url( "../images/16x16/warning.png" );
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -806,6 +808,14 @@ TABLE.fingerprint-in-build TD {
 
 /* ========================= repeatable elements ========================= */
 
+.repeated-chunk {
+    border: 2px dashed transparent;
+}
+
+.repeated-chunk.hover {
+    border-color: #CCC;
+}
+
 .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -880,14 +890,14 @@ DIV.yahooTree td {
 
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
-  background: white url(../images/16x16/search.gif) no-repeat 2px center;
+  background: white url(../images/16x16/search.png) no-repeat 2px center;
   padding-left: 20px;
   width: 15em;
   position: static; 
-}
-
-#search-box.defaulted {
-  color: gray;
+  border: 1px solid #DDD;
+  border-radius: 4px;
+  box-shadow: 0 0 5px #DDD inset;
+  outline: none;
 }
 
 #search-box-completion {
@@ -964,12 +974,7 @@ TEXTAREA.rich-editor {
     padding-left: 20px;
 }
 
-.hetero-list-container.with-drag-drop .repeated-chunk.hover {
-    border: 2px dashed #CCC;
-}
-
 .hetero-list-container.with-drag-drop .repeated-chunk {
-    border: 2px dashed transparent;
     padding: 0.5em;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
@@ -1076,6 +1081,20 @@ table.progress-bar.red td.progress-bar-done {
 .textarea-preview {
     background-color: #F0F0F0;
     padding: 0.5em;
+}
+
+/* ========================= logRecords.jelly ================== */
+
+.logrecord-metadata {
+    // TODO does not work: font-size: 70%;
+}
+
+.logrecord-metadata-new {
+    color: #8A8;
+}
+
+.logrecord-metadata-old {
+    color: #AAA;
 }
 
 /* ========================= matrix configuration table ================== */

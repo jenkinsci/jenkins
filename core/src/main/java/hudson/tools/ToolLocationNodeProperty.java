@@ -83,7 +83,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      * return the node-specific home directory. Otherwise return {@code installation.getHome()}
      *
      * <p>
-     * This is the core logic behind {@link NodeSpecific#forNode(Node)} for {@link ToolInstallation}.
+     * This is the core logic behind {@link NodeSpecific#forNode(Node, TaskListener)} for {@link ToolInstallation}.
      *
      * @return
      *      never null.

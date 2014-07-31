@@ -32,6 +32,9 @@ import jenkins.model.Jenkins;
 import hudson.model.RSS;
 import hudson.util.CopyOnWriteMap;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -49,6 +52,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -58,9 +62,9 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public class LogRecorderManager extends AbstractModelObject {
+public class LogRecorderManager extends AbstractModelObject implements ModelObjectWithChildren {
     /**
-     * {@link LogRecorder}s.
+     * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#name name}.
      */
     public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<String,LogRecorder>();
 
@@ -107,6 +111,15 @@ public class LogRecorderManager extends AbstractModelObject {
 
         // redirect to the config screen
         return new HttpRedirect(name+"/configure");
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu menu = new ContextMenu();
+        menu.add("all","All Jenkins Logs");
+        for (LogRecorder lr : logRecorders.values()) {
+            menu.add(lr.getSearchUrl(), lr.getDisplayName());
+        }
+        return menu;
     }
 
     /**

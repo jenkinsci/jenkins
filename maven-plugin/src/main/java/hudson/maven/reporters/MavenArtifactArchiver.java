@@ -24,7 +24,6 @@
 package hudson.maven.reporters;
 
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.maven.*;
 import hudson.model.BuildListener;
@@ -33,7 +32,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -99,7 +97,7 @@ public class MavenArtifactArchiver extends MavenReporter {
         if (pom.getFile() != null) {// goals like 'clean' runs without loading POM, apparently.
             // record POM
             final MavenArtifact pomArtifact = new MavenArtifact(
-                    pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), null, "pom", pom.getFile().getName(), Util.getDigestOf(new FileInputStream(pom.getFile())));
+                    pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), null, "pom", pom.getFile().getName(), Util.getDigestOf(pom.getFile()));
 
             final String repositoryUrl = pom.getDistributionManagementArtifactRepository() == null ? null : Util.fixEmptyAndTrim(pom.getDistributionManagementArtifactRepository().getUrl());
             final String repositoryId = pom.getDistributionManagementArtifactRepository() == null ? null : Util.fixEmptyAndTrim(pom.getDistributionManagementArtifactRepository().getId());
@@ -159,9 +157,9 @@ public class MavenArtifactArchiver extends MavenReporter {
             for (File assembly : assemblies) {
                 if(mavenArtifacts.contains(assembly))
                     continue;   // looks like this is already archived
-                FilePath target = build.getArtifactsDir().child(assembly.getName());
+                String target = assembly.getName();
                 listener.getLogger().println("[JENKINS] Archiving "+ assembly+" to "+target);
-                new FilePath(assembly).copyTo(target);
+                build.queueArchiving(target, assembly.getAbsolutePath());
                 // TODO: fingerprint
             }
         }

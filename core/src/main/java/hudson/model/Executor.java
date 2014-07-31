@@ -38,7 +38,8 @@ import hudson.security.ACL;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -49,6 +50,7 @@ import org.kohsuke.stapler.export.Exported;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -81,7 +83,7 @@ public class Executor extends Thread implements ModelObject {
      */
     private int number;
     /**
-     * {@link Queue.Executable} being executed right now, or null if the executor is idle.
+     * {@link hudson.model.Queue.Executable} being executed right now, or null if the executor is idle.
      */
     private volatile Queue.Executable executable;
 
@@ -122,7 +124,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public void interrupt(Result result) {
         Authentication a = Jenkins.getAuthentication();
-        if(a instanceof AnonymousAuthenticationToken || a==ACL.SYSTEM)
+        if (a == ACL.SYSTEM)
             interrupt(result, new CauseOfInterruption[0]);
         else {
             // worth recording who did it
@@ -135,6 +137,9 @@ public class Executor extends Thread implements ModelObject {
      * Interrupt the execution. Mark the cause and the status accordingly.
      */
     public void interrupt(Result result, CauseOfInterruption... causes) {
+        if (LOGGER.isLoggable(FINE))
+            LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
+
         interruptStatus = result;
         synchronized (this.causes) {
             for (CauseOfInterruption c : causes) {
@@ -210,6 +215,7 @@ public class Executor extends Thread implements ModelObject {
                         task = workUnit.work;
                         startTime = System.currentTimeMillis();
                         executable = task.createExecutable();
+                        workUnit.setExecutable(executable);
                     }
                     if (LOGGER.isLoggable(FINE))
                         LOGGER.log(FINE, getName()+" is going to execute "+executable);
@@ -231,10 +237,16 @@ public class Executor extends Thread implements ModelObject {
                             ((Actionable) executable).addAction(action);
                         }
                     }
-                    setName(threadName+" : executing "+executable.toString());
-                    if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName()+" is now executing "+executable);
-                    queue.execute(executable, task);
+
+                    final SecurityContext savedContext = ACL.impersonate(workUnit.context.item.authenticate());
+                    try {
+                        setName(threadName + " : executing " + executable.toString());
+                        if (LOGGER.isLoggable(FINE))
+                            LOGGER.log(FINE, getName()+" is now executing "+executable);
+                        queue.execute(executable, task);
+                    } finally {
+                        SecurityContextHolder.setContext(savedContext);
+                    }
                 } catch (Throwable e) {
                     // for some reason the executor died. this is really
                     // a bug in the code, but we don't want the executor to die,
@@ -286,7 +298,7 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Returns the current {@link Queue.Task} this executor is running.
+     * Returns the current {@link hudson.model.Queue.Task} this executor is running.
      *
      * @return
      *      null if the executor is idle.
@@ -563,7 +575,7 @@ public class Executor extends Thread implements ModelObject {
      * was compiled against Hudson < 1.383
      *
      * @deprecated as of 1.388
-     *      Use {@link Executables#getEstimatedDurationFor(Executable)}
+     *      Use {@link Executables#getEstimatedDurationFor(Queue.Executable)}
      */
     public static long getEstimatedDurationFor(Executable e) {
         return Executables.getEstimatedDurationFor(e);

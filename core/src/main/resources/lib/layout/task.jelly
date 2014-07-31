@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation>
     This tag inside &lt;l:tasks> tag renders the left navigation bar of Hudson.
     Each &lt;task> tag gets an icon and link.
@@ -60,6 +60,16 @@ THE SOFTWARE.
       If true, send a POST rather than a GET request.
       (onclick supersedes this except in the context menu.)
       (since 1.504)
+    </st:attribute>
+    <st:attribute name="requiresConfirmation" type="boolean">
+      If true, require confirmation before clicking.
+      Generally used with post="true".
+      (onclick supersedes this except in the context menu.)
+      (since 1.512)
+    </st:attribute>
+    <st:attribute name="confirmationMessage">
+      Message to use for confirmation, if requested; defaults to title.
+      (since 1.512)
     </st:attribute>
   </st:documentation>
 
@@ -103,11 +113,12 @@ THE SOFTWARE.
       <j:otherwise>
         <div class="task">
           <j:set var="icon" value="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
-          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true') : null}
+          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
 
-          <j:if test="${attrs.onclick == null &amp;&amp; post}">
+          <j:set var="id" value="${h.generateId()}"/>
+          <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
               <script>
-                  function postRequest(a) {
+                  function postRequest_${id}(a) {
                       new Ajax.Request(a.href);
                       hoverNotification('${%Done.}', a.parentNode);
                       return false;
@@ -115,21 +126,46 @@ THE SOFTWARE.
               </script>
           </j:if>
 
-          <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest(this)' : null)}">
-            <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
-          </a>
+          <j:choose>
+            <j:when test="${requiresConfirmation and not attrs.onClick}">
+              <l:confirmationLink href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
+              </l:confirmationLink>
+            </j:when>
+            <j:otherwise>
+              <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
+                <img width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
+              </a>
+            </j:otherwise>
+          </j:choose>
           <st:nbsp />
 
-          <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest(this)' : null)}">
-            <j:choose>
-              <j:when test="${match}">
-                <b>${title}</b>
-              </j:when>
-              <j:otherwise>
-                ${title}
-              </j:otherwise>
-            </j:choose>
-          </a>
+          <j:choose>
+            <j:when test="${requiresConfirmation and not attrs.onClick}">
+              <l:confirmationLink href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                <j:choose>
+                  <j:when test="${match}">
+                    <b>${title}</b>
+                  </j:when>
+                  <j:otherwise>
+                    ${title}
+                  </j:otherwise>
+                </j:choose>
+              </l:confirmationLink>
+            </j:when>
+            <j:otherwise>
+              <a href="${href}" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
+                <j:choose>
+                  <j:when test="${match}">
+                    <b>${title}</b>
+                  </j:when>
+                  <j:otherwise>
+                    ${title}
+                  </j:otherwise>
+                </j:choose>
+              </a>
+            </j:otherwise>
+          </j:choose>
 
           <j:if test="${match}">
             <div class="subtasks">

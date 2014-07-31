@@ -45,15 +45,7 @@ THE SOFTWARE.
     </f:entry>
   </j:if>
 
-  <!-- master/slave -->
-  <j:if test="${app.labels.size() gt 1 || app.clouds.size() gt 0 || (it.assignedLabel!=null and it.assignedLabel!=app.selfLabel)}">
-    <f:optionalBlock name="hasSlaveAffinity" title="${%Restrict where this project can be run}" checked="${it.assignedLabel!=null}"
-        help="/help/project-config/slave.html">
-      <f:entry title="${%Label Expression}" field="assignedLabelString">
-        <f:textbox autoCompleteDelimChar=" "/>
-      </f:entry>
-    </f:optionalBlock>
-  </j:if>
+  <p:config-assignedLabel />
 
   <f:section title="${%Advanced Project Options}">
     <f:advanced>

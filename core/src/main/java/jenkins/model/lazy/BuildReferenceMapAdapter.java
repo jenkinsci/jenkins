@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,7 +100,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
     }
 
     public boolean containsValue(Object value) {
-        return core.containsValue(value);
+        return core.containsValue(value); // TODO should this be core.containsValue(wrap(value))?
     }
 
     public R get(Object key) {
@@ -125,12 +126,16 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
     @Override
     public boolean equals(Object o) {
-        return core.equals(o);
+        return core.equals(o); // TODO this is wrong
     }
 
     @Override
     public int hashCode() {
         return core.hashCode();
+    }
+
+    @Override public String toString() {
+        return new LinkedHashMap<Integer,R>(this).toString();
     }
 
     private class CollectionAdapter implements Collection<R> {

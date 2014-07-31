@@ -105,9 +105,13 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @deprecated as of 1.460. Use {@link #buildEnvVars(EnvVars)}
      */
     public void buildEnvVars(Map<String,String> env) {
+        String home = getHome();
+        if (home == null) {
+            return;
+        }
         // see EnvVars javadoc for why this adds PATH.
-        env.put("PATH+JDK",getHome()+"/bin");
-        env.put("JAVA_HOME",getHome());
+        env.put("PATH+JDK",home+"/bin");
+        env.put("JAVA_HOME", home);
     }
 
     /**
@@ -149,7 +153,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
         public String getDisplayName() {
-            return "JDK"; // XXX I18N
+            return "JDK"; // TODO I18N
         }
 
         public @Override JDK[] getInstallations() {

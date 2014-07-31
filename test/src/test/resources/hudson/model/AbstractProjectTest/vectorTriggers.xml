@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>*/10 * * * *</spec>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+</project>

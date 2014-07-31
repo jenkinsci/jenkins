@@ -29,5 +29,5 @@ THE SOFTWARE.
     Displays a link when given an AbstractItem. It is assumed that that Abstract
     Item is passed in ${it}
   </st:documentation>  
-  <a href="${it.absoluteUrl}"  class="model-link">${it.displayName}</a>
+  <a href="${it.absoluteUrl}"  class="model-link inside">${it.displayName}</a>
 </j:jelly>

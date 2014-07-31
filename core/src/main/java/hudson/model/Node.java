@@ -35,6 +35,7 @@ import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.node_monitors.NodeMonitor;
+import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -58,10 +59,13 @@ import java.util.Set;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -69,14 +73,19 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * Base type of Hudson slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
+ * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
  *
  * <p>
  * As a special case, {@link Jenkins} extends from here.
  *
+ * <p>
+ * Nodes are persisted objects that capture user configurations, and instances get thrown away and recreated whenever
+ * the configuration changes. Running state of nodes are captured by {@link Computer}s.
+ *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
  * @see NodeDescriptor
+ * @see Computer
  */
 @ExportedBean
 public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster {
@@ -84,7 +93,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
     /**
-     * Newly copied slaves get this flag set, so that Hudson doesn't try to start this node until its configuration
+     * Newly copied slaves get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
      * is saved once.
      */
     protected volatile transient boolean holdOffLaunchUntilSave;
@@ -222,7 +231,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public TagCloud<LabelAtom> getLabelCloud() {
         return new TagCloud<LabelAtom>(getAssignedLabels(),new WeightFunction<LabelAtom>() {
             public float weight(LabelAtom item) {
-                return item.getTiedJobs().size();
+                return item.getTiedJobCount();
             }
         });
     }
@@ -322,8 +331,23 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         if(l!=null && !l.contains(this))
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
 
-        if(l==null && getMode()== Mode.EXCLUSIVE)
-            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+        if(l==null && getMode()== Mode.EXCLUSIVE) {
+            // flyweight tasks need to get executed somewhere, if every node
+            if (!(item.task instanceof Queue.FlyweightTask && (
+                    this instanceof Jenkins
+                            || Jenkins.getInstance().getNumExecutors() < 1
+                            || Jenkins.getInstance().getMode() == Mode.EXCLUSIVE)
+            )) {
+                return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+            }
+        }
+
+        Authentication identity = item.authenticate();
+        if (!getACL().hasPermission(identity,Computer.BUILD)) {
+            // doesn't have a permission
+            // TODO: does it make more sense to define a separate permission?
+            return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(),getNodeName()));
+        }
 
         // Check each NodeProperty to see whether they object to this node
         // taking the task
@@ -379,7 +403,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Gets the {@link NodeProperty} instances configured for this {@link Node}.
      */
-    public abstract DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
+    public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
     // used in the Jelly script to expose descriptors
     public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
@@ -436,26 +460,41 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @throws InterruptedException
      *      if the operation is aborted.
      */
-    public abstract ClockDifference getClockDifference() throws IOException, InterruptedException;
+    public ClockDifference getClockDifference() throws IOException, InterruptedException {
+        VirtualChannel channel = getChannel();
+        if(channel==null)
+            throw new IOException(getNodeName()+" is offline");
+
+        return channel.call(getClockDifferenceCallable());
+    }
+
+    /**
+     * Returns a {@link Callable} that when run on the channel, estimates the clock difference.
+     *
+     * @return
+     *      always non-null.
+     * @since 1.522
+     */
+    public abstract Callable<ClockDifference,IOException> getClockDifferenceCallable();
 
     /**
      * Constants that control how Hudson allocates jobs to slaves.
      */
     public enum Mode {
-        NORMAL(Messages.Node_Mode_NORMAL()),
-        EXCLUSIVE(Messages.Node_Mode_EXCLUSIVE());
+        NORMAL(Messages._Node_Mode_NORMAL()),
+        EXCLUSIVE(Messages._Node_Mode_EXCLUSIVE());
 
-        private final String description;
+        private final Localizable description;
 
         public String getDescription() {
-            return description;
+            return description.toString();
         }
 
         public String getName() {
             return name();
         }
 
-        Mode(String description) {
+        Mode(Localizable description) {
             this.description = description;
         }
 

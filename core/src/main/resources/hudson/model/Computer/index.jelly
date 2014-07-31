@@ -93,8 +93,7 @@ THE SOFTWARE.
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">
-              <a class="${entry.className} model-link" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
-              <st:nbsp/>
+              <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
             </j:if>
           </j:forEach>
         </div>
@@ -111,7 +110,7 @@ THE SOFTWARE.
           </p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${it.tiedJobs}" jobBaseUrl="${rootURL}/" useFullName="true"/>
+          <t:projectView jobs="${jobs}"/>
         </j:otherwise>
       </j:choose>
 

@@ -4,7 +4,7 @@ import org.jruby.ext.posix.POSIX.ERRORS;
 
 /**
  * Indicates an error during POSIX API call.
- *
+ * @see PosixAPI
  * @author Kohsuke Kawaguchi
  */
 public class PosixException extends RuntimeException {
@@ -15,6 +15,8 @@ public class PosixException extends RuntimeException {
         this.errors = errors;
     }
 
+    /** @deprecated Leaks reference to deprecated jna-posix API. */
+    @Deprecated
     public ERRORS getErrorCode() {
         return errors;
     }

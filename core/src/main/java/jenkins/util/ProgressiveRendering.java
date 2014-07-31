@@ -44,7 +44,7 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
  * (since it may be canceled if the user simply browses to another page while it is running).
  * <ol>
  * <li>Write a {@code <script>} section defining {@code function display(data)}.
- *     (Call {@code ts_refresh(document.getElementById('someid'))} if using a {@code sortable} table.)
+ *     (Call {@code ts_refresh($('someid'))} if using a {@code sortable} table.)
  * <li>Use {@code <l:progressiveRendering handler="${it.something()}" callback="display"/>} from your
  *     Jelly page to display a progress bar and initialize JavaScript infrastructure.
  *     (The callback attribute can take arbitrary JavaScript expression to be evaluated in the browser

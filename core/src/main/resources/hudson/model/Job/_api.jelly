@@ -37,6 +37,11 @@ THE SOFTWARE.
   <p>
     To programmatically schedule a new build, post to <a href="../build">this URL</a>. 
     If the build has parameters, post to <a href="../buildWithParameters">this URL</a> and provide the parameters as form data.
+    Either way, the successful queueing will result in 201 status code with <tt>Location</tt> HTTP header
+    pointing the URL of the item in the queue. By polling the <tt>api/xml</tt> sub-URL of the queue item,
+    you can track the status of the queued task. Generally, the task will go through some state transitions,
+    then eventually it becomes either cancelled (look for the "cancelled" boolean property), or gets executed
+    (look for the "executable" property that typically points to the <tt>AbstractBuild</tt> object.)
   </p>
   <p>
     To programmatically schedule SCM polling, post to <a href="../polling">this URL</a>.

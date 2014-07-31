@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 /**
- * Base class for defining filter {@link Queue.Task}.
+ * Base class for defining filter {@link hudson.model.Queue.Task}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.360

@@ -53,7 +53,7 @@ THE SOFTWARE.
 
                 &#8212;
 
-                <a href="${rootURL}/${c.author.url}/" class="model-link">${c.author}</a> /
+                <a href="${rootURL}/${c.author.url}/" class="model-link inside">${c.author}</a> /
 
                 <j:set var="cslink" value="${browser.getChangeSetLink(c)}"/>
                 <j:choose>

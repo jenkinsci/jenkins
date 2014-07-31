@@ -1,5 +1,7 @@
 package hudson.matrix;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyRuntimeException;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.Util;
@@ -8,6 +10,7 @@ import hudson.matrix.MatrixBuild.MatrixBuildExecution;
 import hudson.matrix.listeners.MatrixBuildListener;
 import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
+import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.ResourceController;
@@ -113,27 +116,21 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
 
     @Override
     public Result run(MatrixBuildExecution execution) throws InterruptedException, IOException {
-        MatrixBuild build = execution.getBuild();
-        MatrixProject p = execution.getProject();
-        PrintStream logger = execution.getListener().getLogger();
 
         Collection<MatrixConfiguration> touchStoneConfigurations = new HashSet<MatrixConfiguration>();
         Collection<MatrixConfiguration> delayedConfigurations = new HashSet<MatrixConfiguration>();
-        for (MatrixConfiguration c: execution.getActiveConfigurations()) {
-            if (!MatrixBuildListener.buildConfiguration(build, c))
-                continue; // skip rebuild
-            if (touchStoneCombinationFilter != null && c.getCombination().evalGroovyExpression(p.getAxes(), getTouchStoneCombinationFilter())) {
-                touchStoneConfigurations.add(c);
-            } else {
-                delayedConfigurations.add(c);
-            }
-        }
+
+        filterConfigurations(
+                execution,
+                touchStoneConfigurations,
+                delayedConfigurations
+        );
 
         if (notifyStartBuild(execution.getAggregators())) return Result.FAILURE;
 
         if (sorter != null) {
             touchStoneConfigurations = createTreeSet(touchStoneConfigurations, sorter);
-            delayedConfigurations    = createTreeSet(delayedConfigurations,sorter);
+            delayedConfigurations    = createTreeSet(delayedConfigurations, sorter);
         }
 
         if(!runSequentially)
@@ -148,7 +145,9 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
             notifyEndBuild(run,execution.getAggregators());
             r = r.combine(getResult(run));
         }
-        
+
+        PrintStream logger = execution.getListener().getLogger();
+
         if (touchStoneResultCondition != null && r.isWorseThan(touchStoneResultCondition)) {
             logger.printf("Touchstone configurations resulted in %s, so aborting...%n", r);
             return r;
@@ -168,6 +167,71 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
         }
 
         return r;
+    }
+
+    private void filterConfigurations(
+            final MatrixBuildExecution execution,
+            final Collection<MatrixConfiguration> touchStoneConfigurations,
+            final Collection<MatrixConfiguration> delayedConfigurations
+    ) throws AbortException {
+
+        final MatrixBuild build = execution.getBuild();
+
+        final String combinationFilter = execution.getProject().getCombinationFilter();
+        final String touchStoneFilter = getTouchStoneCombinationFilter();
+
+        try {
+
+            for (MatrixConfiguration c: execution.getActiveConfigurations()) {
+
+                if (!MatrixBuildListener.buildConfiguration(build, c)) continue; // skip rebuild
+
+                final Combination combination = c.getCombination();
+
+                if (touchStoneFilter != null && satisfies(execution, combination, touchStoneFilter)) {
+                    touchStoneConfigurations.add(c);
+                } else if (satisfies(execution, combination, combinationFilter)) {
+                    delayedConfigurations.add(c);
+                }
+            }
+        } catch (GroovyRuntimeException ex) {
+
+            PrintStream logger = execution.getListener().getLogger();
+            logger.println(ex.getMessage());
+            ex.printStackTrace(logger);
+            throw new AbortException("Failed executing combination filter");
+        }
+    }
+
+    private boolean satisfies(
+            final MatrixBuildExecution execution,
+            final Combination combination,
+            final String filter
+    ) {
+
+        return combination.evalGroovyExpression(
+                execution.getProject().getAxes(),
+                filter,
+                getConfiguredBinding(execution)
+        );
+    }
+
+    private Binding getConfiguredBinding(final MatrixBuildExecution execution) {
+
+        final Binding binding = new Binding();
+        final ParametersAction parameters = execution.getBuild().getAction(ParametersAction.class);
+
+        if (parameters == null) return binding;
+
+        for (final ParameterValue pv: parameters) {
+
+            if (pv == null) continue;
+            final String name = pv.getName();
+            final String value = pv.createVariableResolver(null).resolve(name);;
+            binding.setVariable(name, value);
+        }
+
+        return binding;
     }
 
     private Result getResult(@Nullable MatrixRun run) {
@@ -250,7 +314,7 @@ public class DefaultMatrixExecutionStrategyImpl extends MatrixExecutionStrategy 
             if(qi!=null) {
                 // if the build seems to be stuck in the queue, display why
                 String why = qi.getWhy();
-                if(!why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
+                if(why != null && !why.equals(whyInQueue) && System.currentTimeMillis()-startTime>5000) {
                     listener.getLogger().print("Configuration " + ModelHyperlinkNote.encodeTo(c)+" is still in the queue: ");
                     qi.getCauseOfBlockage().print(listener); //this is still shown on the same line
                     whyInQueue = why;

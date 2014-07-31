@@ -37,7 +37,6 @@ import hudson.console.ModelHyperlinkNote;
 import hudson.matrix.MatrixConfiguration;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
-import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SCMListener;
 import hudson.scm.ChangeLogParser;
@@ -59,7 +58,6 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.util.*;
 import jenkins.model.Jenkins;
-import jenkins.model.PeepholePermalink;
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import jenkins.model.lazy.BuildReference;
 import org.kohsuke.stapler.HttpResponse;
@@ -91,6 +89,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -151,7 +151,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     private volatile Set<String> culprits;
 
     /**
-     * During the build this field remembers {@link BuildWrapper.Environment}s created by
+     * During the build this field remembers {@link hudson.tasks.BuildWrapper.Environment}s created by
      * {@link BuildWrapper}. This design is bit ugly but forced due to compatibility.
      */
     protected transient List<Environment> buildEnvironments;
@@ -213,7 +213,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             if (r==null) {
                 // having two neighbors pointing to each other is important to make RunMap.removeValue work
-                R pb = getParent().builds.search(number-1, Direction.DESC);
+                P _parent = getParent();
+                if (_parent == null) {
+                    throw new IllegalStateException("no parent for " + number + " in " + workspace);
+                }
+                R pb = _parent._getRuns().search(number-1, Direction.DESC);
                 if (pb!=null) {
                     ((AbstractBuild)pb).nextBuild = selfReference;   // establish bi-di link
                     this.previousBuild = pb.selfReference;
@@ -354,7 +358,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Normally, a workspace is assigned by {@link RunExecution}, but this lets you set the workspace in case
+     * Normally, a workspace is assigned by {@link hudson.model.Run.RunExecution}, but this lets you set the workspace in case
      * {@link AbstractBuild} is created without a build.
      */
     protected void setWorkspace(FilePath ws) {
@@ -472,25 +476,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Backward compatibility.
-     *
-     * We used to have $JENKINS_HOME/jobs/JOBNAME/lastStable and lastSuccessful symlinked to the appropriate
-     * builds, but now those are done in {@link PeepholePermalink}. So here, we simply create symlinks that
-     * resolves to the symlink created by {@link PeepholePermalink}.
-     */
-    private void createSymlink(TaskListener listener, String name, Permalink target) throws InterruptedException {
-        String targetDir;
-        if (getProject().getBuildDir().equals(new File(getProject().getRootDir(), "builds"))) {
-            targetDir = "builds/" + target.getId();
-        } else {
-            targetDir = getProject().getBuildDir()+"/"+target.getId();
-        }
-        Util.createSymlink(getProject().getRootDir(), targetDir, name, listener);
-    }
-
-    /**
      * @deprecated as of 1.467
-     *      Please use {@link RunExecution}
+     *      Please use {@link hudson.model.Run.RunExecution}
      */
     public abstract class AbstractRunner extends AbstractBuildExecution {
 
@@ -718,9 +705,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         public final void post(BuildListener listener) throws Exception {
             try {
                 post2(listener);
-
-                createSymlink(listener, "lastSuccessful", Permalink.LAST_SUCCESSFUL_BUILD);
-                createSymlink(listener, "lastStable", Permalink.LAST_STABLE_BUILD);
             } finally {
                 // update the culprit list
                 HashSet<String> r = new HashSet<String>();
@@ -774,7 +758,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     } catch (Exception e) {
                         String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
                         e.printStackTrace(listener.error(msg));
-                        LOGGER.log(Level.WARNING, msg, e);
+                        LOGGER.log(WARNING, msg, e);
                         setResult(Result.FAILURE);
                     }
             }
@@ -915,9 +899,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         try {
             return scm.parse(this,changelogFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         } catch (SAXException e) {
-            e.printStackTrace();
+            LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         }
         return ChangeLogSet.createEmpty(this);
     }

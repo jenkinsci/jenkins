@@ -107,7 +107,7 @@ public class MavenFingerprinter extends MavenReporter {
      */
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws InterruptedException, IOException {
         
-        recordParents(build, pom);
+        recordParents(build, pom, listener);
         
         build.executeAsync(new BuildCallable<Void,IOException>() {
             private static final long serialVersionUID = -1360161848504044869L;
@@ -137,51 +137,29 @@ public class MavenFingerprinter extends MavenReporter {
         return true;
     }
 
-	private void recordParents(MavenBuildProxy build, MavenProject pom) throws IOException, InterruptedException {
-		MavenProject parent = pom.getParent();
+	private void recordParents(MavenBuildProxy build, MavenProject pom, BuildListener listener) throws IOException, InterruptedException {
+        Map<String,String> modelParents = build.getMavenBuildInformation().modelParents;
+        ArtifactRepository localRepository = getLocalRepository(build.getMavenBuildInformation(), pom);
+        if (localRepository == null) {
+            listener.error("Could not find local repository for " + build.getMavenBuildInformation().getMavenVersion());
+            return;
+        }
+		String parent = modelParents.get(pom.getId());
 		while (parent != null) {
-			File parentFile = parent.getFile();
-
-			if (parentFile == null) {
-				// Parent artifact contains no actual file, so we resolve against
-				// the local repository
-				ArtifactRepository localRepository = getLocalRepository(build.getMavenBuildInformation(), parent, pom);
-				if (localRepository != null) {
-				    Artifact parentArtifact = getArtifact(parent);
-					// Don't use ArtifactRepository.find(), for compatibility with Maven 2.x
-				    if (parentArtifact != null) {
-				        parentFile = new File(localRepository.getBasedir(),
-							localRepository.pathOf(parentArtifact));
-				    }
-				}
-			}
-			
-			if (parentFile != null) {
-    			// we need to include the artifact Id for poms as well, otherwise a
-    			// project with the same groupId would override its parent's
-    			// fingerprint
-    			record(parent.getGroupId() + ":" + parent.getArtifactId(),
-    					parentFile, used);
-			}
-			parent = parent.getParent();
+            String[] parts = parent.split(":");
+            assert parts.length == 4 : parent;
+            // Maven 2.x lacks DefaultArtifact constructor with String version and ArtifactRepository.find:
+            Artifact parentArtifact = new DefaultArtifact(parts[0], parts[1], VersionRange.createFromVersion(parts[3]), null, parts[2], null, new DefaultArtifactHandler(parts[2]));
+            File parentFile = new File(localRepository.getBasedir(), localRepository.pathOf(parentArtifact));
+            // we need to include the artifact Id for poms as well, otherwise a project with the same groupId would override its parent's fingerprint
+            record(parts[0] + ":" + parts[1], parentFile, used);
+			parent = modelParents.get(parent);
 		}
 	}
 
-	private Artifact getArtifact(MavenProject parent) {
-	    Artifact art = parent.getArtifact();
-	    if (art == null) {
-	        // happens for Maven 2.x
-	        DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler("pom");
-	        art = new DefaultArtifact(parent.getGroupId(), parent.getArtifactId(), VersionRange.createFromVersion(parent.getVersion()),
-	                null, "pom", "", artifactHandler);
-	    }
-        return art;
-    }
-
-    private ArtifactRepository getLocalRepository(MavenBuildInformation mavenBuildInformation, MavenProject parent, MavenProject pom) {
-        
+    private ArtifactRepository getLocalRepository(MavenBuildInformation mavenBuildInformation, MavenProject pom) {
         if (mavenBuildInformation.isMaven3OrLater()) {
-            return parent.getProjectBuildingRequest().getLocalRepository();
+            return pom.getProjectBuildingRequest().getLocalRepository();
         } else if (mavenBuildInformation.isAtLeastMavenVersion("2.2")) {
             // principally this should also work with Maven 2.1, but it's not tested, so err on the safe side
             return getArtifactRepositoryMaven21(pom);
@@ -202,6 +180,9 @@ public class MavenFingerprinter extends MavenReporter {
             // this maven 2 object via reflection
             Method method = MavenProject.class.getMethod("getProjectBuilderConfiguration");
             projectBuilderConfiguration = (ProjectBuilderConfiguration) method.invoke(pom);
+            if (projectBuilderConfiguration == null) {
+                return null;
+            }
             return projectBuilderConfiguration.getLocalRepository();
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Could not retrieve BuilderConfigration", e);
