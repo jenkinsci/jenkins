@@ -207,7 +207,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     }
 
     private <U extends AbstractTestResultAction> U getPreviousResult(Class<U> type) {
-        AbstractBuild<?,?> b = owner;
+        Run<?,?> b = run;
         while(true) {
             b = b.getPreviousBuild();
             if(b==null)
