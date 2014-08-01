@@ -85,6 +85,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -488,12 +490,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if (Util.replaceMacro(customWorkspace, resolver).contains(SEARCH))
                 {
                     Lease parent = wsl.allocate(n.getWorkspaceFor((TopLevelItem)getProject()), getBuild());
+                    String remotePath = parent.path.getRemote();
+                    String suffix = "";
+                    
+                    // Must ensure that the separator for concurrent builds is at the end of the string
+                    final String WORKSPACE_COMBINATOR = System.getProperty(hudson.slaves.WorkspaceList.class.getName(),"@");
+                    final Pattern p = Pattern.compile(".*" + Pattern.quote(WORKSPACE_COMBINATOR) + "(\\d+)$");
+                    Matcher matcher = p.matcher(remotePath);
+                    if (matcher.find()) {
+                        suffix = WORKSPACE_COMBINATOR + matcher.group(1);
+                        remotePath = remotePath.substring(0, matcher.start(1)-1);
+                    }
                     
                     // Use a copy of the environment so that we do not corrupt the acutal environment
                     EnvVars env = new EnvVars(getEnvironment(listener));
-                    env.put("WORKSPACE", parent.path.getRemote());
+                    env.put("WORKSPACE", remotePath);
                     
-                    String customPath = env.expand(customWorkspace);
+                    String customPath = env.expand(customWorkspace) + suffix;
                     return Lease.createLinkedDummyLease(n.getRootPath().child(customPath), parent);
                 }
                 
