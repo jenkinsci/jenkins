@@ -48,7 +48,7 @@ public class SetBuildResultCommand extends CommandDuringBuild {
     @Override
     protected int run() throws Exception {
         Run r = getCurrentlyBuilding();
-        r.getParent().checkPermission(Item.BUILD);
+        r.checkPermission(Run.UPDATE);
         r.setResult(result);
         return 0;
     }
