@@ -196,7 +196,6 @@ public class Executor extends Thread implements ModelObject {
     public void run() {
         startTime = System.currentTimeMillis();
 
-        // run as the system user. see ACL.SYSTEM for more discussion about why this is somewhat broken
         ACL.impersonate(ACL.SYSTEM);
 
         try {
@@ -507,6 +506,7 @@ public class Executor extends Thread implements ModelObject {
      * 
      * @since 1.489
      */
+    @RequirePOST
     public HttpResponse doStop() {
         Queue.Executable e = executable;
         if(e!=null) {
@@ -519,6 +519,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Throws away this executor and get a new one.
      */
+    @RequirePOST
     public HttpResponse doYank() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if (isAlive())
