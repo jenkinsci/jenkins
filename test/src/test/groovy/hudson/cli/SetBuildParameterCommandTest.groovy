@@ -4,6 +4,7 @@ import hudson.Launcher
 import hudson.model.AbstractBuild
 import hudson.model.BuildListener
 import hudson.model.ParametersAction
+import hudson.model.Result
 import hudson.tasks.Shell
 import jenkins.model.JenkinsLocationConfiguration
 import org.junit.Assert
@@ -42,6 +43,12 @@ public class SetBuildParameterCommandTest {
         def b = j.assertBuildStatusSuccess(p.scheduleBuild2(0))
         b.getAction(ParametersAction.class).parameters.each { v -> r[v.name]=v.value }
 
+        assert r.equals(["a":"x", "b":"y"]);
+
+        p.buildersList.add(new Shell("BUILD_NUMBER=1 java -jar cli.jar set-build-parameter a b"));
+        def b2 = j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        r = [:];
+        b.getAction(ParametersAction.class).parameters.each { v -> r[v.name]=v.value }
         assert r.equals(["a":"x", "b":"y"]);
     }
 }

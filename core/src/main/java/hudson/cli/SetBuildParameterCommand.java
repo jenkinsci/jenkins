@@ -32,6 +32,7 @@ public class SetBuildParameterCommand extends CommandDuringBuild {
     @Override
     protected int run() throws Exception {
         Run r = getCurrentlyBuilding();
+        r.checkPermission(Run.UPDATE);
 
         StringParameterValue p = new StringParameterValue(name, value);
 
