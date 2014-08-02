@@ -36,21 +36,6 @@ THE SOFTWARE.
     </j:if>
   </j:parse>
 
-  <j:parse var="paneFooter">
-    <!--
-      RSS link
-    -->
-    <span class="build-rss-links">
-        <a class="build-rss-all-icon" href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
-        <st:nbsp/>
-        <a class="build-rss-all-link" href="${it.baseUrl}/rssAll">RSS ${%for all}</a>
-        <st:nbsp/>
-        <a class="build-rss-failed-icon" href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
-        <st:nbsp/>
-        <a class="build-rss-failed-link" href="${it.baseUrl}/rssFailed">RSS ${%for failures}</a>
-    </span>
-  </j:parse>
-
   <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="stripped">
 
     <!-- build history -->
