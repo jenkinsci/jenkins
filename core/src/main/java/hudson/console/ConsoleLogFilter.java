@@ -55,6 +55,6 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      * All the registered {@link ConsoleLogFilter}s.
      */
     public static ExtensionList<ConsoleLogFilter> all() {
-        return Jenkins.getInstance().getExtensionList(ConsoleLogFilter.class);
+        return ExtensionList.lookup(ConsoleLogFilter.class);
     }
 }

@@ -74,7 +74,7 @@ public abstract class TestResultParser implements ExtensionPoint {
      * All registered {@link TestResultParser}s
      */
     public static ExtensionList<TestResultParser> all() {
-        return Jenkins.getInstance().getExtensionList(TestResultParser.class);
+        return ExtensionList.lookup(TestResultParser.class);
     }
 
     /**

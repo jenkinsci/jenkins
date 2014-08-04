@@ -25,6 +25,7 @@ package hudson.security;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
@@ -287,7 +288,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private void tryToMakeAdmin(User u) {
         AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
-        for (PermissionAdder adder : Jenkins.getInstance().getExtensionList(PermissionAdder.class)) {
+        for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
             if (adder.add(as, u, Jenkins.ADMINISTER)) {
                 return;
             }

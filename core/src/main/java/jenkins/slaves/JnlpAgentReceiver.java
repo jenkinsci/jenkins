@@ -59,6 +59,6 @@ public abstract class JnlpAgentReceiver implements ExtensionPoint {
     public abstract boolean handle(String name, JnlpSlaveHandshake handshake) throws IOException, InterruptedException;
 
     public static ExtensionList<JnlpAgentReceiver> all() {
-        return Jenkins.getInstance().getExtensionList(JnlpAgentReceiver.class);
+        return ExtensionList.lookup(JnlpAgentReceiver.class);
     }
 }

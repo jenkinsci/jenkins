@@ -1170,7 +1170,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * @return this monitor.
          */
         public static final PluginUpdateMonitor getInstance() {
-            return Jenkins.getInstance().getExtensionList(PluginUpdateMonitor.class).get(0);
+            return ExtensionList.lookup(PluginUpdateMonitor.class).get(0);
         }
         
         /**

@@ -33,7 +33,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      * unless explicitly overridden by {@link Queue#setSorter(QueueSorter)}.
      */
     public static ExtensionList<QueueSorter> all() {
-        return Jenkins.getInstance().getExtensionList(QueueSorter.class);
+        return ExtensionList.lookup(QueueSorter.class);
     }
 
     /**

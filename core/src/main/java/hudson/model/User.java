@@ -350,7 +350,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return null;
 
         // sort resolvers by priority
-        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(Jenkins.getInstance().getExtensionList(CanonicalIdResolver.class));
+        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(ExtensionList.lookup(CanonicalIdResolver.class));
         Collections.sort(resolvers);
 
         String id = null;

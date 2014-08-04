@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import jenkins.model.Jenkins;
 
 import java.io.File;
@@ -57,7 +58,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     private static FingerprintCleanupThread getInstance() {
-        return Jenkins.getInstance().getExtensionList(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
+        return ExtensionList.lookup(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
     }
 
     public void execute(TaskListener listener) {

@@ -30,7 +30,7 @@ public abstract class RestartListener implements ExtensionPoint {
      * Returns all the registered {@link LabelFinder}s.
      */
     public static ExtensionList<RestartListener> all() {
-        return Jenkins.getInstance().getExtensionList(RestartListener.class);
+        return ExtensionList.lookup(RestartListener.class);
     }
 
     /**

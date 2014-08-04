@@ -105,7 +105,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
      * Returns all the registered {@link AperiodicWork}s.
      */
     public static ExtensionList<AperiodicWork> all() {
-        return Jenkins.getInstance().getExtensionList(AperiodicWork.class);
+        return ExtensionList.lookup(AperiodicWork.class);
     }
 
     private static final Random RANDOM = new Random();

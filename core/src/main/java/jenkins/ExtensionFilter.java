@@ -86,6 +86,6 @@ public abstract class ExtensionFilter implements ExtensionPoint {
      * All registered {@link ExtensionFilter} instances.
      */
     public static ExtensionList<ExtensionFilter> all() {
-        return Jenkins.getInstance().getExtensionList(ExtensionFilter.class);
+        return ExtensionList.lookup(ExtensionFilter.class);
     }
 }

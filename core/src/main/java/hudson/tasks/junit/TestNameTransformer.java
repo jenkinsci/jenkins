@@ -37,6 +37,6 @@ public abstract class TestNameTransformer implements ExtensionPoint {
     }
 
     public static ExtensionList<TestNameTransformer> all() {
-        return Jenkins.getInstance().getExtensionList(TestNameTransformer.class);
+        return ExtensionList.lookup(TestNameTransformer.class);
     }
 }

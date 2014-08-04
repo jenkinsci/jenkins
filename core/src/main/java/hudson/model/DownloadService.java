@@ -324,7 +324,7 @@ public class DownloadService extends PageDecorator {
          * Returns all the registered {@link Downloadable}s.
          */
         public static ExtensionList<Downloadable> all() {
-            return Jenkins.getInstance().getExtensionList(Downloadable.class);
+            return ExtensionList.lookup(Downloadable.class);
         }
 
         /**

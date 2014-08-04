@@ -69,7 +69,7 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
      * Returns all the registered {@link ParserConfigurator}s.
      */
     public static ExtensionList<ParserConfigurator> all() {
-        return Jenkins.getInstance().getExtensionList(ParserConfigurator.class);
+        return ExtensionList.lookup(ParserConfigurator.class);
     }
 
     public static void applyConfiguration(SAXReader reader, Object context) throws IOException, InterruptedException {

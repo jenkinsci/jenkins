@@ -39,6 +39,6 @@ public abstract class BasicHeaderAuthenticator implements ExtensionPoint {
     public abstract Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException;
 
     public static ExtensionList<BasicHeaderAuthenticator> all() {
-        return Jenkins.getInstance().getExtensionList(BasicHeaderAuthenticator.class);
+        return ExtensionList.lookup(BasicHeaderAuthenticator.class);
     }
 }

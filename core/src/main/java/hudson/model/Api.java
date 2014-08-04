@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.ExtensionList;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
 
@@ -216,7 +217,7 @@ public class Api extends AbstractModelObject {
     }
 
     private boolean permit(StaplerRequest req) {
-        for (SecureRequester r : Jenkins.getInstance().getExtensionList(SecureRequester.class)) {
+        for (SecureRequester r : ExtensionList.lookup(SecureRequester.class)) {
             if (r.permit(req, bean)) {
                 return true;
             }
