@@ -392,6 +392,8 @@ public class CLI {
 
         if (url==null)
             url = System.getenv("HUDSON_URL");
+        
+        boolean tryLoadPKey = true;
 
         while(!args.isEmpty()) {
             String head = args.get(0);
@@ -417,6 +419,11 @@ public class CLI {
                 });
                 args = args.subList(1,args.size());
                 continue;
+            }
+            if (head.equals("-noKeyAuth")) {
+            	tryLoadPKey = false;
+            	args = args.subList(1,args.size());
+            	continue;
             }
             if(head.equals("-i") && args.size()>=2) {
                 File f = new File(args.get(1));
@@ -447,7 +454,7 @@ public class CLI {
         if(args.isEmpty())
             args = Arrays.asList("help"); // default to help
 
-        if (!provider.hasKeys())
+        if (tryLoadPKey && !provider.hasKeys())
             provider.readFromDefaultLocations();
 
         CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
