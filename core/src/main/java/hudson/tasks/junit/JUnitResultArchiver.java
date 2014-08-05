@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import jenkins.tasks.SimpleBuildStep;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Generates HTML report from JUnit test result XML files.
@@ -73,24 +74,20 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
      * If true, retain a suite's complete stdout/stderr even if this is huge and the suite passed.
      * @since 1.358
      */
-    private final boolean keepLongStdio;
+    private boolean keepLongStdio;
 
     /**
      * {@link TestDataPublisher}s configured for this archiver, to process the recorded data.
      * For compatibility reasons, can be null.
      * @since 1.320
      */
-    private final DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
+    private DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
 
-    private final Double healthScaleFactor;
+    private Double healthScaleFactor;
 
-	/**
-	 * left for backwards compatibility
-         * @deprecated since 2009-08-09.
-	 */
-	@Deprecated
+	@DataBoundConstructor
 	public JUnitResultArchiver(String testResults) {
-		this(testResults, false, null);
+		this.testResults = testResults;
 	}
 
     @Deprecated
@@ -107,16 +104,16 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
         this(testResults, keepLongStdio, testDataPublishers, 1.0);
     }
 
-	@DataBoundConstructor
+	@Deprecated
 	public JUnitResultArchiver(
 			String testResults,
             boolean keepLongStdio,
 			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers,
             double healthScaleFactor) {
 		this.testResults = testResults;
-        this.keepLongStdio = keepLongStdio;
-		this.testDataPublishers = testDataPublishers;
-        this.healthScaleFactor = Math.max(0.0,healthScaleFactor);
+        setKeepLongStdio(keepLongStdio);
+        setTestDataPublishers(testDataPublishers);
+        setHealthScaleFactor(healthScaleFactor);
 	}
 
     private TestResult parse(String expandedTestResults, Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher, TaskListener listener)
@@ -211,9 +208,19 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
         return healthScaleFactor == null ? 1.0 : healthScaleFactor;
     }
 
+    /** @since TODO */
+    public final void setHealthScaleFactor(double healthScaleFactor) {
+        this.healthScaleFactor = Math.max(0.0, healthScaleFactor);
+    }
+
     public DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> getTestDataPublishers() {
 		return testDataPublishers;
 	}
+
+    /** @since TODO */
+    public final void setTestDataPublishers(DescribableList<TestDataPublisher,Descriptor<TestDataPublisher>> testDataPublishers) {
+        this.testDataPublishers = testDataPublishers;
+    }
 
 	/**
 	 * @return the keepLongStdio
@@ -221,6 +228,11 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
 	public boolean isKeepLongStdio() {
 		return keepLongStdio;
 	}
+
+    /** @since TODO */
+    @DataBoundSetter public final void setKeepLongStdio(boolean keepLongStdio) {
+        this.keepLongStdio = keepLongStdio;
+    }
 
 	private static final long serialVersionUID = 1L;
 
