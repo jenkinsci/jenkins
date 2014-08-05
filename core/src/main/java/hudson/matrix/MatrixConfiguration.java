@@ -49,18 +49,22 @@ import hudson.model.Project;
 import hudson.model.SCMedItem;
 import hudson.model.Queue.NonBlockingTask;
 import hudson.model.Cause.LegacyCodeCause;
+import hudson.model.Failure;
 import hudson.scm.SCM;
 import jenkins.scm.SCMCheckoutStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
+import hudson.util.HttpResponses;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.ServletException;
+import org.kohsuke.stapler.HttpResponse;
 
 /**
  * One configuration of {@link MatrixProject}.
@@ -105,6 +109,25 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
         return env;
     }
 
+    @Override
+    public final boolean isDisabled() {
+        // Matrix configurations cannot be disabled independently from the master
+        return getParent().isDisabled(); 
+    }
+
+    @Override
+    public final void makeDisabled(boolean b) throws IOException {
+        if (/**disable*/ b) {
+            throw new Error("Matrix configurations cannot be disabled separately. Disable the parent project instead");
+        }
+        super.makeDisabled(b);
+    }
+
+    @Override
+    public final HttpResponse doDisable() throws IOException, ServletException {
+        return HttpResponses.errorWithoutStack(405, Messages.MatrixConfiguration_DisableNotAllowed());
+    }
+    
     @Override
     protected void updateTransientActions(){
         // This method is exactly the same as in {@link #AbstractProject}. 
