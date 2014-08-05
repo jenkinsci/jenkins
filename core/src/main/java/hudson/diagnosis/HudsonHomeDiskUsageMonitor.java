@@ -134,7 +134,7 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
          * All registered {@link Solution}s.
          */
         public static ExtensionList<Solution> all() {
-            return Jenkins.getInstance().getExtensionList(Solution.class);
+            return ExtensionList.lookup(Solution.class);
         }
     }
 }

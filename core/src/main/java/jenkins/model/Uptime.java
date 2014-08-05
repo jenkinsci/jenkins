@@ -1,6 +1,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 
@@ -27,6 +28,6 @@ public class Uptime {
 
     @Initializer(after=InitMilestone.JOB_LOADED)
     public static void init() {
-        Jenkins.getInstance().getExtensionList(Uptime.class).get(0).startTime = System.currentTimeMillis();
+        ExtensionList.lookup(Uptime.class).get(0).startTime = System.currentTimeMillis();
     }
 }

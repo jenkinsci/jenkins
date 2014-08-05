@@ -2015,13 +2015,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         
         ResultTrend trend = ResultTrend.getResultTrend(this);
         
-        Jenkins j = Jenkins.getInstance();
-        if (j != null) {
-            for (StatusSummarizer summarizer : j.getExtensionList(StatusSummarizer.class)) {
-                Summary summary = summarizer.summarize(this, trend);
-                if (summary != null) {
-                    return summary;
-                }
+        for (StatusSummarizer summarizer : ExtensionList.lookup(StatusSummarizer.class)) {
+            Summary summary = summarizer.summarize(this, trend);
+            if (summary != null) {
+                return summary;
             }
         }
 

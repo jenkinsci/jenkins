@@ -56,11 +56,17 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class="bug">
+    Worked around "incompatible InnerClasses attribute" bug in IBM J9 VM
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22525">issue 22525</a>)
+  <li class="bug">
     Fixed a file descriptor leak with CLI connections.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23248">issue 23248</a>)
   <li class="bug major">
     Fixed a regression that removed all users with uppercase letters in the user name since 1.566.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23872">issue 23872</a>)
+  <li class="bug">
+    Improving security of <code>set-build-parameter</code> and <code>set-build-result</code> CLI commands.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24080">issue 24080</a>)
   <li class="rfe">
     Added support for host:port format in X-Forwarded-Host header.
     (<a href="https://github.com/jenkinsci/jenkins/commit/19d8b80bb2f33e4877c7170bcca8bfa318ebe77d">commit 19d8b80</a>)
@@ -71,8 +77,11 @@ Upcoming changes</a>
     Modernized sidebar <code>&lt;l:pane&gt;</code>s and making them work better with new layout.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23810">issue 23810</a>)
   <li class="rfe">
-    Encapsulate icon rendering in a new <code>&lt;l:icon&gt;</code> layout tag.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23842">issue 23842</a>)
+    CLI authentication with username/password try to read my .ssh/id_rsa and prompts for key password.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23970">issue 23970</a>)
+  <li class="rfe">
+    Modernize tabBar and bigtable.  Makes the project view look better.  Same for Plugin Manager.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24030">issue 24030</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
@@ -80,6 +89,12 @@ Upcoming changes</a>
 <div id="rc" style="display:none;"><!--=BEGIN=-->
 <h3><a name=v1.575>What's new in 1.575</a> <!--=DATE=--></h3>
 <ul class=image>
+  <li class="rfe">
+    Move option to fingerprint artifacts to Archive the Artifacts, Advanced options.
+    (<a href="https://github.com/jenkinsci/jenkins/commit/f43a450c31d3875e72defa8400c6ada43bfc3ad0">commit f43a450</a>)
+  <li class="rfe">
+    Move option to keep dependencies (builds) from Fingerprint to Advanced Project Options.
+    (<a href="https://github.com/jenkinsci/jenkins/commit/a8756c6c0ddcc4625660288f94da1015eca7bf10">commit a8756c6</a>)
   <li class="rfe">
     Improved validation of Build Record Root Directory setting.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-14538">issue 14538</a>)
@@ -110,12 +125,6 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23994">issue 23994</a>)
   <li class="bug">
     UI redesign: Fix links in header bar when logged in.
-  <li class="rfe">
-    Move option to fingerprint artifacts to Archive the Artifacts, Advanced options.
-    (<a href="https://github.com/jenkinsci/jenkins/commit/f43a450c31d3875e72defa8400c6ada43bfc3ad0">commit f43a450</a>)
-  <li class="rfe">
-    Move option to keep dependencies (builds) from Fingerprint to Advanced Project Options.
-    (<a href="https://github.com/jenkinsci/jenkins/commit/a8756c6c0ddcc4625660288f94da1015eca7bf10">commit a8756c6</a>)
   <li class="rfe">
     Do not show changes for the build at the lower bound of the changes list.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18902">issue 18902</a>)

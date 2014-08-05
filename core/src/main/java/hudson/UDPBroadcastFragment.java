@@ -54,6 +54,6 @@ public abstract class UDPBroadcastFragment implements ExtensionPoint {
      * Returns all the registered {@link UDPBroadcastFragment}s.
      */
     public static ExtensionList<UDPBroadcastFragment> all() {
-        return Jenkins.getInstance().getExtensionList(UDPBroadcastFragment.class);
+        return ExtensionList.lookup(UDPBroadcastFragment.class);
     }
 }

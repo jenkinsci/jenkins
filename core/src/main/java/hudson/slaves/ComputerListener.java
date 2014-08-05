@@ -229,6 +229,6 @@ public abstract class ComputerListener implements ExtensionPoint {
      * All the registered {@link ComputerListener}s.
      */
     public static ExtensionList<ComputerListener> all() {
-        return Jenkins.getInstance().getExtensionList(ComputerListener.class);
+        return ExtensionList.lookup(ComputerListener.class);
     }
 }

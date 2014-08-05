@@ -70,7 +70,7 @@ public abstract class AlternativeUiTextProvider implements ExtensionPoint {
      * All the registered extension point instances.
      */
     public static ExtensionList<AlternativeUiTextProvider> all() {
-        return Jenkins.getInstance().getExtensionList(AlternativeUiTextProvider.class);
+        return ExtensionList.lookup(AlternativeUiTextProvider.class);
     }
 
     public static <T> String get(Message<T> text, T context, String defaultValue) {

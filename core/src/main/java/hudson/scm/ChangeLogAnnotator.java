@@ -121,6 +121,6 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      * Returns all the registered {@link ChangeLogAnnotator} descriptors.
      */
     public static ExtensionList<ChangeLogAnnotator> all() {
-        return Jenkins.getInstance().getExtensionList(ChangeLogAnnotator.class);
+        return ExtensionList.lookup(ChangeLogAnnotator.class);
     }
 }

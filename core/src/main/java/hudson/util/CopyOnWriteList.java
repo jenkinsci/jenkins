@@ -164,6 +164,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         return core.contains(item);
     }
 
+    @Override public String toString() {
+        return core.toString();
+    }
+
     /**
      * {@link Converter} implementation for XStream.
      */

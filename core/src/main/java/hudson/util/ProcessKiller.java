@@ -62,7 +62,7 @@ public abstract class ProcessKiller implements ExtensionPoint, Serializable {
      * Returns all the registered {@link ProcessKiller} descriptors.
      */
     public static ExtensionList<ProcessKiller> all() {
-        return Jenkins.getInstance().getExtensionList(ProcessKiller.class);
+        return ExtensionList.lookup(ProcessKiller.class);
     }
 
     /**

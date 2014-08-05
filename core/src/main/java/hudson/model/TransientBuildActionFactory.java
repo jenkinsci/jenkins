@@ -45,6 +45,6 @@ public abstract class TransientBuildActionFactory implements ExtensionPoint {
      * Returns all the registered {@link TransientBuildActionFactory}s.
      */
     public static ExtensionList<TransientBuildActionFactory> all() {
-        return Jenkins.getInstance().getExtensionList(TransientBuildActionFactory.class);
+        return ExtensionList.lookup(TransientBuildActionFactory.class);
     }
 }

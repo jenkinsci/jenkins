@@ -900,14 +900,9 @@ public final class FilePath implements Serializable {
             // run this on a remote system
             try {
                 DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable, cl);
-                Jenkins instance = Jenkins.getInstance();
-                if (instance != null) { // this happens during unit tests
-                    ExtensionList<FileCallableWrapperFactory> factories = instance.getExtensionList(FileCallableWrapperFactory.class);
-                    for (FileCallableWrapperFactory factory : factories) {
-                        wrapper = factory.wrap(wrapper);
-                    }
+                for (FileCallableWrapperFactory factory : ExtensionList.lookup(FileCallableWrapperFactory.class)) {
+                    wrapper = factory.wrap(wrapper);
                 }
-
                 return channel.call(wrapper);
             } catch (TunneledInterruptedException e) {
                 throw (InterruptedException)new InterruptedException(e.getMessage()).initCause(e);
@@ -985,14 +980,9 @@ public final class FilePath implements Serializable {
     public <T> Future<T> actAsync(final FileCallable<T> callable) throws IOException, InterruptedException {
         try {
             DelegatingCallable<T,IOException> wrapper = new FileCallableWrapper<T>(callable);
-            Jenkins instance = Jenkins.getInstance();
-            if (instance != null) { // this happens during unit tests
-                ExtensionList<FileCallableWrapperFactory> factories = instance.getExtensionList(FileCallableWrapperFactory.class);
-                for (FileCallableWrapperFactory factory : factories) {
-                    wrapper = factory.wrap(wrapper);
-                }
+            for (FileCallableWrapperFactory factory : ExtensionList.lookup(FileCallableWrapperFactory.class)) {
+                wrapper = factory.wrap(wrapper);
             }
-
             return (channel!=null ? channel : localChannel)
                 .callAsync(wrapper);
         } catch (IOException e) {

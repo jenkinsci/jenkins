@@ -93,7 +93,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      * Returns all the registered {@link PeriodicWork}s.
      */
     public static ExtensionList<PeriodicWork> all() {
-        return Jenkins.getInstance().getExtensionList(PeriodicWork.class);
+        return ExtensionList.lookup(PeriodicWork.class);
     }
 
     @Initializer(after= JOB_LOADED)

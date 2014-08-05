@@ -153,6 +153,6 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * All registered {@link AdministrativeMonitor} instances.
      */
     public static ExtensionList<AdministrativeMonitor> all() {
-        return Jenkins.getInstance().getExtensionList(AdministrativeMonitor.class);
+        return ExtensionList.lookup(AdministrativeMonitor.class);
     }
 }

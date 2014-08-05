@@ -32,6 +32,6 @@ public abstract class CrumbExclusion implements ExtensionPoint {
     public abstract boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException;
 
     public static ExtensionList<CrumbExclusion> all() {
-        return Jenkins.getInstance().getExtensionList(CrumbExclusion.class);
+        return ExtensionList.lookup(CrumbExclusion.class);
     }
 }

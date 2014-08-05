@@ -1600,7 +1600,7 @@ public class Queue extends ResourceController implements Saveable {
     	 * All registered {@link QueueDecisionHandler}s
     	 */
     	public static ExtensionList<QueueDecisionHandler> all() {
-    		return Jenkins.getInstance().getExtensionList(QueueDecisionHandler.class);
+    		return ExtensionList.lookup(QueueDecisionHandler.class);
     	}
     }
     

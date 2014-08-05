@@ -43,7 +43,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
      * Returns all the registered {@link AperiodicWork}s.
      */
     public static ExtensionList<AgentProtocol> all() {
-        return Jenkins.getInstance().getExtensionList(AgentProtocol.class);
+        return ExtensionList.lookup(AgentProtocol.class);
     }
 
     public static AgentProtocol of(String protocolName) {

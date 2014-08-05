@@ -33,6 +33,6 @@ public abstract class WorkspaceLocator implements ExtensionPoint {
      * All registered {@link WorkspaceLocator}s.
      */
     public static ExtensionList<WorkspaceLocator> all() {
-        return Jenkins.getInstance().getExtensionList(WorkspaceLocator.class);
+        return ExtensionList.lookup(WorkspaceLocator.class);
     }
 }

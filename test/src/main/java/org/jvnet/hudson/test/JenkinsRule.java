@@ -386,6 +386,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             public void run() {
                 if (timeoutTimer!=null) {
                     LOGGER.warning(String.format("Test timed out (after %d seconds).", timeout));
+                    // dump threads
+                    ThreadInfo[] threadInfos = Functions.getThreadInfos();
+                    Functions.ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
+                    for (ThreadInfo ti : threadInfos) {
+                        System.err.println(Functions.dumpThreadInfo(ti, m));
+                    }
                     testThread.interrupt();
                 }
             }
@@ -490,12 +496,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                             System.err.println("Note: known to randomly fail: " + rf.value());
                         }
 
-                        // dump threads
-                        ThreadInfo[] threadInfos = Functions.getThreadInfos();
-                        Functions.ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
-                        for (ThreadInfo ti : threadInfos) {
-                            System.err.println(Functions.dumpThreadInfo(ti, m));
-                        }
                         throw th;
                     }
                 } finally {

@@ -103,7 +103,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * All regsitered instances.
      */
     public static ExtensionList<ManagementLink> all() {
-        return Jenkins.getInstance().getExtensionList(ManagementLink.class);
+        return ExtensionList.lookup(ManagementLink.class);
     }
 
     /**

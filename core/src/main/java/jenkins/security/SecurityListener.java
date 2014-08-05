@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.SecurityRealm;
@@ -134,7 +135,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     }
 
     private static List<SecurityListener> all() {
-        return Jenkins.getInstance().getExtensionList(SecurityListener.class);
+        return ExtensionList.lookup(SecurityListener.class);
     }
 
 }

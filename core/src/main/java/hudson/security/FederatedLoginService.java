@@ -253,6 +253,6 @@ public abstract class FederatedLoginService implements ExtensionPoint {
     }
 
     public static ExtensionList<FederatedLoginService> all() {
-        return Jenkins.getInstance().getExtensionList(FederatedLoginService.class);
+        return ExtensionList.lookup(FederatedLoginService.class);
     }
 }
