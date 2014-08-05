@@ -117,10 +117,7 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
 
     @Override
     public final void makeDisabled(boolean b) throws IOException {
-        if (/**disable*/ b) {
-            throw new Error("Matrix configurations cannot be disabled separately. Disable the parent project instead");
-        }
-        super.makeDisabled(b);
+        super.makeDisabled(getParent().isDisabled());
     }
 
     @Override
