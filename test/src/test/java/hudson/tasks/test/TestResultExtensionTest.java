@@ -50,7 +50,7 @@ public class TestResultExtensionTest extends HudsonTestCase {
         assertBuildStatus(Result.SUCCESS, build);
         TrivialTestResultAction action = build.getAction(TrivialTestResultAction.class);
         assertNotNull("we should have an action", action);
-        assertNotNull("parent action should have an owner", action.owner); 
+        assertNotNull("parent action should have an owner", action.run);
         Object resultObject = action.getResult();
         assertNotNull("we should have a result");
         assertTrue("result should be an TestResult",
