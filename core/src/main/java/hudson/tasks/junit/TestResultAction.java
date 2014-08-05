@@ -117,7 +117,7 @@ public class TestResultAction extends AbstractTestResultAction<TestResultAction>
     }
 
     private XmlFile getDataFile() {
-        return new XmlFile(XSTREAM,new File(owner.getRootDir(), "junitResult.xml"));
+        return new XmlFile(XSTREAM, new File(run.getRootDir(), "junitResult.xml"));
     }
 
     public synchronized TestResult getResult() {

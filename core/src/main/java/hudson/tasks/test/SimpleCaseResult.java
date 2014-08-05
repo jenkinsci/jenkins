@@ -194,7 +194,7 @@ public class SimpleCaseResult extends TestResult {
             LOGGER.warning("in Trivial Test Result, parentAction is null, but getRun() called");
             return null; 
         }
-        return parentAction.owner;
+        return parentAction.run;
     }
 
     @Override

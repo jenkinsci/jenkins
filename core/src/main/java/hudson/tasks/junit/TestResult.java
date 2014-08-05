@@ -296,7 +296,7 @@ public final class TestResult extends MetaTabulatedResult {
 
     @Override
     public Run<?,?> getRun() {
-        return (parentAction == null? null: parentAction.owner);
+        return (parentAction == null? null: parentAction.run);
     }
 
     @Override

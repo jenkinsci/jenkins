@@ -251,7 +251,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             return;
         }
 
-        if(req.checkIfModified(owner.getTimestamp(),rsp))
+        if(req.checkIfModified(run.getTimestamp(),rsp))
             return;
 
         ChartUtil.generateGraph(req,rsp,createChart(req,buildDataSet(req)),calcDefaultSize());
@@ -261,7 +261,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
      * Generates a clickable map HTML for {@link #doGraph(StaplerRequest, StaplerResponse)}.
      */
     public void doGraphMap( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(req.checkIfModified(owner.getTimestamp(),rsp))
+        if(req.checkIfModified(run.getTimestamp(),rsp))
             return;
         ChartUtil.generateClickableMap(req,rsp,createChart(req,buildDataSet(req)),calcDefaultSize());
     }
@@ -293,10 +293,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         DataSetBuilder<String,NumberOnlyBuildLabel> dsb = new DataSetBuilder<String,NumberOnlyBuildLabel>();
 
         for( AbstractTestResultAction<?> a=this; a!=null; a=a.getPreviousResult(AbstractTestResultAction.class) ) {
-            dsb.add( a.getFailCount(), "failed", new NumberOnlyBuildLabel(a.owner));
+            dsb.add( a.getFailCount(), "failed", new NumberOnlyBuildLabel(a.run));
             if(!failureOnly) {
-                dsb.add( a.getSkipCount(), "skipped", new NumberOnlyBuildLabel(a.owner));
-                dsb.add( a.getTotalCount()-a.getFailCount()-a.getSkipCount(),"total", new NumberOnlyBuildLabel(a.owner));
+                dsb.add( a.getSkipCount(), "skipped", new NumberOnlyBuildLabel(a.run));
+                dsb.add( a.getTotalCount()-a.getFailCount()-a.getSkipCount(),"total", new NumberOnlyBuildLabel(a.run));
             }
         }
         return dsb.build();
@@ -351,20 +351,20 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             @Override
             public String generateURL(CategoryDataset dataset, int row, int column) {
                 NumberOnlyBuildLabel label = (NumberOnlyBuildLabel) dataset.getColumnKey(column);
-                return relPath+label.build.getNumber()+"/testReport/";
+                return relPath+label.getRun().getNumber()+"/testReport/";
             }
 
             @Override
             public String generateToolTip(CategoryDataset dataset, int row, int column) {
                 NumberOnlyBuildLabel label = (NumberOnlyBuildLabel) dataset.getColumnKey(column);
-                AbstractTestResultAction a = label.build.getAction(AbstractTestResultAction.class);
+                AbstractTestResultAction a = label.getRun().getAction(AbstractTestResultAction.class);
                 switch (row) {
                     case 0:
-                        return String.valueOf(Messages.AbstractTestResultAction_fail(label.build.getDisplayName(), a.getFailCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_fail(label.getRun().getDisplayName(), a.getFailCount()));
                     case 1:
-                        return String.valueOf(Messages.AbstractTestResultAction_skip(label.build.getDisplayName(), a.getSkipCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_skip(label.getRun().getDisplayName(), a.getSkipCount()));
                     default:
-                        return String.valueOf(Messages.AbstractTestResultAction_test(label.build.getDisplayName(), a.getTotalCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_test(label.getRun().getDisplayName(), a.getTotalCount()));
                 }
             }
         };
