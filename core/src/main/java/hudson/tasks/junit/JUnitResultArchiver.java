@@ -140,12 +140,8 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
 		try {
 			TestResult result = parse(testResults, build, workspace, launcher, listener);
 
-			try {
-                // TODO can the build argument be omitted now, or is it used prior to the call to addAction?
-				action = new TestResultAction(build, result, listener);
-			} catch (NullPointerException npe) {
-				throw new AbortException(Messages.JUnitResultArchiver_BadXML(testResults));
-			}
+            // TODO can the build argument be omitted now, or is it used prior to the call to addAction?
+            action = new TestResultAction(build, result, listener);
             action.setHealthScaleFactor(getHealthScaleFactor()); // TODO do we want to move this to the constructor?
             result.freeze(action);
 			if (result.isEmpty()) {
