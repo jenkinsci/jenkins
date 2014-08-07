@@ -161,6 +161,7 @@ public class BuildCommand extends CLICommand {
             }
             AbstractBuild b = f.waitForStart();    // wait for the start
             stdout.println("Started "+b.getFullDisplayName());
+            stdout.flush();
 
             if (sync || follow) {
                 try {

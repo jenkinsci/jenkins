@@ -67,6 +67,12 @@ Upcoming changes</a>
   <li class="bug">
     Improving security of <code>set-build-parameter</code> and <code>set-build-result</code> CLI commands.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24080">issue 24080</a>)
+  <li class="bug">
+    Startup can be broken by deeply recursive causes in build records.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24161">issue 24161</a>)
+  <li class="bug">
+    Displaying unabridged test result trend on project index page defeated lazy loading.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23945">issue 23945</a>)
   <li class="rfe">
     Added support for host:port format in X-Forwarded-Host header.
     (<a href="https://github.com/jenkinsci/jenkins/commit/19d8b80bb2f33e4877c7170bcca8bfa318ebe77d">commit 19d8b80</a>)
@@ -75,9 +81,10 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24006">issue 24006</a>)
   <li class="rfe">
     Modernized sidebar <code>&lt;l:pane&gt;</code>s and making them work better with new layout.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23810">issue 23810</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23810">issue 23810</a>,
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-23829">issue 23829</a>)
   <li class="rfe">
-    CLI authentication with username/password try to read my .ssh/id_rsa and prompts for key password.
+    Add option to CLI to skip key authentication (e.g. when there's a password on the default key).
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23970">issue 23970</a>)
   <li class="rfe">
     Modernize tabBar and bigtable.  Makes the project view look better.  Same for Plugin Manager.

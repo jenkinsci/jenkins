@@ -48,6 +48,7 @@ import hudson.util.FormValidation;
 import hudson.util.PackedMap;
 import hudson.util.RunList;
 import net.sf.json.JSONObject;
+import org.acegisecurity.AccessDeniedException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.AncestorInPath;
@@ -429,17 +430,24 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 BuildPtr bp = fp.getOriginal();
                 if(bp==null)    continue;       // outside Hudson
                 if(bp.is(build))    continue;   // we are the owner
-                AbstractProject job = bp.getJob();
-                if (job==null)  continue;   // project no longer exists
-                if (job.getParent()==build.getParent())
-                    continue;   // we are the parent of the build owner, that is almost like we are the owner 
-                if(!includeMissing && job.getBuildByNumber(bp.getNumber())==null)
-                    continue;               // build no longer exists
 
-                Integer existing = r.get(job);
-                if(existing!=null && existing>bp.getNumber())
-                    continue;   // the record in the map is already up to date
-                r.put(job,bp.getNumber());
+                try {
+                    AbstractProject job = bp.getJob();
+                    if (job==null)  continue;   // project no longer exists
+                    if (job.getParent()==build.getParent())
+                        continue;   // we are the parent of the build owner, that is almost like we are the owner
+                    if(!includeMissing && job.getBuildByNumber(bp.getNumber())==null)
+                        continue;               // build no longer exists
+
+                    Integer existing = r.get(job);
+                    if(existing!=null && existing>bp.getNumber())
+                        continue;   // the record in the map is already up to date
+                    r.put(job, bp.getNumber());
+                } catch (AccessDeniedException e) {
+                    // Need to log in to access this job, so ignore
+                    continue;
+                }
+
             }
             
             return r;
