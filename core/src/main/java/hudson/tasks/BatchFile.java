@@ -45,8 +45,18 @@ public class BatchFile extends CommandInterpreter {
         return new String[] {"cmd","/c","call",script.getRemote()};
     }
 
+    /**
+     * Convert line endings to Windows CR/LF.
+     */
+    private static String convertEOL(String input) {
+        input = input.replace("\r\n","\n");
+        input = input.replace("\r","\n");
+        input = input.replace("\n","\r\n");
+        return input;
+    }
+
     protected String getContents() {
-        return command+"\r\nexit %ERRORLEVEL%";
+        return convertEOL(command+"\r\nexit %ERRORLEVEL%");
     }
 
     protected String getFileExtension() {
