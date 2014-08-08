@@ -54,7 +54,7 @@ THE SOFTWARE.
             <j:forEach var="r" items="${it.runners}">
               <tr>
                 <td>
-                  <a href="${rootURL}/${r.target.url}scmPollLog/">${r.target.fullDisplayName}</a>
+                  <a href="${rootURL}/${r.target.asItem().url}scmPollLog/">${r.target.asItem().fullDisplayName}</a>
                 </td>
                 <td>
                   ${r.duration}
