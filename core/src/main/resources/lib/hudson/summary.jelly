@@ -71,7 +71,8 @@ THE SOFTWARE.
                     <l:icon class="${iconMetadata.classSpec}"/>
                   </j:when>
                   <j:otherwise>
-                    <l:icon width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
+                    <l:icon src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
+                            alt="" style="width: 48px; height: 48px; margin-right:1em;" />
                   </j:otherwise>
                 </j:choose>
               </a>
@@ -83,7 +84,7 @@ THE SOFTWARE.
                 </j:when>
                 <j:otherwise>
                   <l:icon src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
-                          alt="" width="48" height="48" style="margin-right:1em" />
+                          alt="" style="width: 48px; height: 48px; margin-right:1em;" />
                 </j:otherwise>
               </j:choose>
             </j:otherwise>
