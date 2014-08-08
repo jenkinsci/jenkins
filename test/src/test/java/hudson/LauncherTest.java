@@ -23,8 +23,6 @@
  */
 package hudson;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
@@ -34,13 +32,12 @@ import hudson.tasks.BatchFile;
 import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class LauncherTest {
@@ -48,7 +45,7 @@ public class LauncherTest {
     @Rule
     public JenkinsRule rule = new JenkinsRule();
 
-    @Bug(19488)
+    @Issue("JENKINS-19488")
     @Test
     public void correctlyExpandEnvVars() throws Exception {
         FreeStyleProject project = rule.createFreeStyleProject();
@@ -65,10 +62,10 @@ public class LauncherTest {
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-        assertThat(log(build), containsString("aaa aaaccc ccc"));
+        rule.assertLogContains("aaa aaaccc ccc", build);
     }
     
-    @Bug(19926)
+    @Issue("JENKINS-19926")
     @Test
     public void overwriteSystemEnvVars() throws Exception {
         Map<String, String> env = new HashMap<String,String>();
@@ -86,11 +83,7 @@ public class LauncherTest {
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-        assertThat(log(build), containsString("original value and new value"));
+        rule.assertLogContains("original value and new value", build);
     }
 
-    @SuppressWarnings("deprecation")
-    private String log(FreeStyleBuild build) throws IOException {
-        return build.getLog();
-    }
 }
