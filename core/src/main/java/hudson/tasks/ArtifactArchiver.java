@@ -345,6 +345,9 @@ public class ArtifactArchiver extends Recorder {
                         if (aa != null) {
                             aa.setFingerprint(true);
                         }
+                        if (f.getTargets().isEmpty()) { // no other reason to be here
+                            p.getPublishersList().remove(f);
+                        }
                         p.save();
                     }
                 } catch (IOException x) {
