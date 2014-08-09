@@ -135,7 +135,7 @@ public class JUnitResultArchiver extends Recorder {
 		listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
 		TestResultAction action;
 		
-		final String testResults = build.getEnvironment(listener).expand(this.testResults);
+        final String testResults = build.getEnvironment(listener).overrideAll(build.getBuildVariables()).expand(this.testResults);
 
 		try {
 			TestResult result = parse(testResults, build, launcher, listener);
