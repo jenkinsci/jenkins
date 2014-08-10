@@ -565,22 +565,26 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
                     throw new FormException("Please confirm the password by typing it twice","user.password2");
 
-                boolean enabled = req.hasParameter("user.enabled") && req.getParameter("user.enabled").equals("on");
+				boolean enabled;
+				if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+					enabled = req.hasParameter("user.enabled") && req.getParameter("user.enabled").equals("on");
+				} else {
+					//get User and check whether it was enabled before
+					enabled = true;
+				}
 
                 String data = Protector.unprotect(pwd);
                 if(data!=null) {
-                    String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
+                    String prefix = req.getSession().getId() + ':';
                     if(data.startsWith(prefix)){
-                        Details details = Details.fromHashedPassword(data.substring(prefix.length()));
-                        if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))  // or use default enabled
-                            details.setEnabled(enabled);
-                        return details;
+						Details details = Details.fromHashedPassword(data.substring(prefix.length()));
+						details.setEnabled(enabled);
+						return details;
                     }
                 }
 
                 Details details = Details.fromPlainPassword(Util.fixNull(pwd));
-                if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))  // or use default enabled
-                    details.setEnabled(enabled);
+                details.setEnabled(enabled);
                 return details;
             }
 
