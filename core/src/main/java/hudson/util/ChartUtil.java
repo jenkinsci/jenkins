@@ -24,7 +24,6 @@
 package hudson.util;
 
 import hudson.model.AbstractBuild;
-import hudson.tasks.junit.History;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.data.category.CategoryDataset;
@@ -93,7 +92,7 @@ public class ChartUtil {
      *      The size of the picture to be generated. These values can be overridden
      *      by the query paramter 'width' and 'height' in the request.
      * @deprecated as of 1.320
-     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
@@ -108,7 +107,7 @@ public class ChartUtil {
      *      The size of the picture to be generated. These values can be overridden
      *      by the query paramter 'width' and 'height' in the request.
      * @deprecated as of 1.320
-     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
@@ -123,7 +122,7 @@ public class ChartUtil {
      * Generates the clickable map info and sends that to the response.
      *
      * @deprecated as of 1.320
-     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
@@ -134,7 +133,7 @@ public class ChartUtil {
      * Generates the clickable map info and sends that to the response.
      *
      * @deprecated as of 1.320
-     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
