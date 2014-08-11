@@ -28,3 +28,11 @@ f.entry(title:_("Command"),description:_("description",rootURL)) {
     // TODO JENKINS-23151 'codemirror-mode': 'shell' is broken
     f.textarea(name: "command", value: instance?.command, class: "fixed-width")
 }
+
+f.advanced() {
+
+    f.entry(title:_("Return code to set build unstable"), description:_("If set, the script return code that will be interpreted as an unstable build result.")) {
+        f.number(name: "unstableReturn", value: instance?.unstableReturn, min:1, max:255, step:1)
+    }
+
+}
