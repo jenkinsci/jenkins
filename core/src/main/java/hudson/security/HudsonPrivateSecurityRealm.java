@@ -28,13 +28,8 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import jenkins.model.Jenkins;
-import hudson.model.ManagementLink;
-import hudson.model.ModelObject;
-import hudson.model.User;
-import hudson.model.UserProperty;
-import hudson.model.UserPropertyDescriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.util.PluginServletFilter;
@@ -42,10 +37,7 @@ import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.*;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.encoding.PasswordEncoder;
@@ -62,6 +54,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataAccessException;
 
+import javax.security.auth.login.AccountLockedException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -570,6 +563,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 					enabled = req.hasParameter("user.enabled") && req.getParameter("user.enabled").equals("on");
 				} else {
 					//get User and check whether it was enabled before
+					//if user changes itself, then he is enabled. Possible self-unlock while session not expired.
 					enabled = true;
 				}
 
