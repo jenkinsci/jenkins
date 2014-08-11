@@ -116,7 +116,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @ExportedBean
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 	
-    private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+    private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl", "https://updates.jenkins-ci.org/");
 
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
