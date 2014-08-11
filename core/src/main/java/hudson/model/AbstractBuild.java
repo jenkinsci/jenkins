@@ -54,8 +54,6 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
-import hudson.tasks.test.AbstractTestResultAction;
-import hudson.tasks.test.AggregatedTestResultAction;
 import hudson.util.*;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
@@ -1041,15 +1039,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * @deprecated Use {@link #getAction(Class)} on {@link AbstractTestResultAction}.
      */
-    public AbstractTestResultAction getTestResultAction() {
-        return getAction(AbstractTestResultAction.class);
+    public Action getTestResultAction() {
+        try {
+            return getAction(Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AbstractTestResultAction").asSubclass(Action.class));
+        } catch (ClassNotFoundException x) {
+            return null;
+        }
     }
 
     /**
      * @deprecated Use {@link #getAction(Class)} on {@link AggregatedTestResultAction}.
      */
-    public AggregatedTestResultAction getAggregatedTestResultAction() {
-        return getAction(AggregatedTestResultAction.class);
+    public Action getAggregatedTestResultAction() {
+        try {
+            return getAction(Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AggregatedTestResultAction").asSubclass(Action.class));
+        } catch (ClassNotFoundException x) {
+            return null;
+        }
     }
 
     /**
