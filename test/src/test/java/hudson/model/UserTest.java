@@ -365,7 +365,7 @@ public class UserTest {
         auth.add(Jenkins.READ, user2.getId());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
-        form.getInputByName("fullName").setValueAttribute("Alice Smith");
+        form.getInputByName("_.fullName").setValueAttribute("Alice Smith");
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
@@ -380,7 +380,7 @@ public class UserTest {
         }
         form = j.createWebClient().login(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
         
-        form.getInputByName("fullName").setValueAttribute("John");
+        form.getInputByName("_.fullName").setValueAttribute("John");
         j.submit(form);
         assertEquals("User should be albe to configure himself.", "John", user2.getFullName());
 
