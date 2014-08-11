@@ -26,17 +26,13 @@ package hudson.tasks.test;
 import hudson.AbortException;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.Run;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.tasks.Publisher;
 
 import java.io.IOException;
-import javax.annotation.Nonnull;
 
 /**
  * Parses test result files and builds in-memory representation of it as {@link TestResult}.
@@ -52,7 +48,7 @@ import javax.annotation.Nonnull;
  * which handles a set of default error checks on user inputs. 
  *
  * <p>
- * Parsers are stateless, and the {@link #parseResult} method
+ * Parsers are stateless, and the {@link #parse(String, AbstractBuild, Launcher, TaskListener)} method
  * can be concurrently invoked by multiple threads for different builds.
  *
  * @since 1.343
@@ -100,11 +96,10 @@ public abstract class TestResultParser implements ExtensionPoint {
      * </ul>
      *
      * @param testResultLocations
-     *      GLOB pattern relative to the {@code workspace} that
+     *      GLOB pattern relative to the {@linkplain AbstractBuild#getWorkspace() workspace} that
      *      specifies the locations of the test result files. Never null.
-     * @param run
+     * @param build
      *      Build for which these tests are parsed. Never null.
-     * @param workspace the workspace in which tests can be found
      * @param launcher
      *      Can be used to fork processes on the machine where the build is running. Never null.
      * @param listener
@@ -119,32 +114,9 @@ public abstract class TestResultParser implements ExtensionPoint {
      * @throws AbortException
      *      If you encounter an error that you handled gracefully, throw this exception and Hudson
      *      will not show a stack trace.
-     * @since TODO
      */
-    public TestResult parseResult(String testResultLocations,
-                                       Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher,
-                                       TaskListener listener)
-            throws InterruptedException, IOException {
-        if (run instanceof AbstractBuild) {
-            return parse(testResultLocations, (AbstractBuild) run, launcher, listener);
-        } else {
-            throw new AbstractMethodError("you must override parseResult");
-        }
-    }
-
-    @Deprecated
-    public TestResult parse(String testResultLocations,
+    public abstract TestResult parse(String testResultLocations,
                                        AbstractBuild build, Launcher launcher,
                                        TaskListener listener)
-            throws InterruptedException, IOException {
-        if (Util.isOverridden(TestResultParser.class, getClass(), "parseResult", String.class, Run.class, FilePath.class, Launcher.class, TaskListener.class)) {
-            FilePath workspace = build.getWorkspace();
-            if (workspace == null) {
-                throw new AbortException("no workspace in " + build);
-            }
-            return parseResult(testResultLocations, build, workspace, launcher, listener);
-        } else {
-            throw new AbstractMethodError("you must override parseResult");
-        }
-    }
+            throws InterruptedException, IOException;
 }

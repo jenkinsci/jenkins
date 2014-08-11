@@ -56,6 +56,8 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
     private static final Logger LOGGER = Logger.getLogger(TestObject.class.getName());
     private volatile transient String id;
 
+    public abstract AbstractBuild<?, ?> getOwner();
+
     /**
      * Reverse pointer of {@link TabulatedResult#getChildren()}.
      */
@@ -156,7 +158,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
             buf.insert(0,action.getUrlName());
 
             // Now the build
-            Run<?,?> myBuild = cur.getRun();
+            AbstractBuild<?,?> myBuild = cur.getOwner();
             if (myBuild ==null) {
                 LOGGER.warning("trying to get relative path, but we can't determine the build that owns this result.");
                 return ""; // this won't take us to the right place, but it also won't 404. 
@@ -199,7 +201,7 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      */
     @Override
     public AbstractTestResultAction getTestResultAction() {
-        Run<?, ?> owner = getRun();
+        AbstractBuild<?, ?> owner = getOwner();
         if (owner != null) {
             return owner.getAction(AbstractTestResultAction.class);
         } else {
@@ -244,19 +246,12 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
      */
     public abstract TestResult getPreviousResult();
 
-    @Deprecated
-    public TestResult getResultInBuild(AbstractBuild<?, ?> build) {
-        return (TestResult) super.getResultInBuild(build);
-    }
-
     /**
      * Gets the counterpart of this {@link TestResult} in the specified run.
      *
      * @return null if no such counter part exists.
      */
-    @Override public TestResult getResultInRun(Run<?,?> run) {
-        return (TestResult) super.getResultInRun(run);
-    }
+    public abstract TestResult getResultInBuild(AbstractBuild<?, ?> build);
 
     /**
      * Find the test result corresponding to the one identified by <code>id></code>
@@ -424,12 +419,12 @@ public abstract class TestObject extends hudson.tasks.junit.TestObject {
     public synchronized HttpResponse doSubmitDescription(
             @QueryParameter String description) throws IOException,
             ServletException {
-        if (getRun() == null) {
-            LOGGER.severe("getRun() is null, can't save description.");
+        if (getOwner() == null) {
+            LOGGER.severe("getOwner() is null, can't save description.");
         } else {
-            getRun().checkPermission(Run.UPDATE);
+            getOwner().checkPermission(Run.UPDATE);
             setDescription(description);
-            getRun().save();
+            getOwner().save();
         }
 
         return new HttpRedirect(".");

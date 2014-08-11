@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import jenkins.model.RunAction2;
-import jenkins.model.lazy.LazyBuildMixIn;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -65,12 +64,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class AbstractTestResultAction<T extends AbstractTestResultAction> implements HealthReportingAction, RunAction2 {
-
-    /**
-     * @since TODO
-     */
-    public transient Run<?,?> run;
-    @Deprecated
     public transient AbstractBuild<?,?> owner;
 
     private Map<String,String> descriptions = new ConcurrentHashMap<String, String>();
@@ -78,28 +71,18 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     /** @since 1.545 */
     protected AbstractTestResultAction() {}
 
-    /**
-     * @deprecated Use the default constructor and just call {@link Run#addAction} to associate the build with the action.
-     * @since TODO
-     */
-    @Deprecated
-    protected AbstractTestResultAction(Run owner) {
-        onAttached(owner);
-    }
-
+    /** @deprecated Use the default constructor and just call {@link Run#addAction} to associate the build with the action. */
     @Deprecated
     protected AbstractTestResultAction(AbstractBuild owner) {
-        this((Run) owner);
+        this.owner = owner;
     }
 
     @Override public void onAttached(Run<?, ?> r) {
-        this.run = r;
-        this.owner = r instanceof AbstractBuild ? (AbstractBuild<?,?>) r : null;
+        this.owner = (AbstractBuild<?,?>) r;
     }
 
     @Override public void onLoad(Run<?, ?> r) {
-        this.run = r;
-        this.owner = r instanceof AbstractBuild ? (AbstractBuild<?,?>) r : null;
+        this.owner = (AbstractBuild<?,?>) r;
     }
 
     /**
@@ -209,15 +192,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
     }
 
     private <U extends AbstractTestResultAction> U getPreviousResult(Class<U> type, boolean eager) {
-        Run<?,?> b = run;
-        Set<Integer> loadedBuilds;
-        if (!eager && run.getParent() instanceof LazyBuildMixIn.LazyLoadingJob) {
-            loadedBuilds = ((LazyBuildMixIn.LazyLoadingJob<?,?>) run.getParent()).getLazyBuildMixIn()._getRuns().getLoadedBuilds().keySet();
-        } else {
-            loadedBuilds = null;
-        }
+        Set<Integer> loadedBuilds = eager ? null : owner.getProject()._getRuns().getLoadedBuilds().keySet();
+        AbstractBuild<?,?> b = owner;
         while(true) {
-            b = loadedBuilds == null || loadedBuilds.contains(b.number - /* assuming there are no gaps */1) ? b.getPreviousBuild() : null;
+            b = eager || loadedBuilds.contains(b.number - /* assuming there are no gaps */1) ? b.getPreviousBuild() : null;
             if(b==null)
                 return null;
             U r = b.getAction(type);
@@ -259,7 +237,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             return;
         }
 
-        if(req.checkIfModified(run.getTimestamp(),rsp))
+        if(req.checkIfModified(owner.getTimestamp(),rsp))
             return;
 
         ChartUtil.generateGraph(req,rsp,createChart(req,buildDataSet(req)),calcDefaultSize());
@@ -269,7 +247,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
      * Generates a clickable map HTML for {@link #doGraph(StaplerRequest, StaplerResponse)}.
      */
     public void doGraphMap( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(req.checkIfModified(run.getTimestamp(),rsp))
+        if(req.checkIfModified(owner.getTimestamp(),rsp))
             return;
         ChartUtil.generateClickableMap(req,rsp,createChart(req,buildDataSet(req)),calcDefaultSize());
     }
@@ -301,10 +279,10 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
         DataSetBuilder<String,NumberOnlyBuildLabel> dsb = new DataSetBuilder<String,NumberOnlyBuildLabel>();
 
         for (AbstractTestResultAction<?> a = this; a != null; a = a.getPreviousResult(AbstractTestResultAction.class, false)) {
-            dsb.add( a.getFailCount(), "failed", new NumberOnlyBuildLabel(a.run));
+            dsb.add( a.getFailCount(), "failed", new NumberOnlyBuildLabel(a.owner));
             if(!failureOnly) {
-                dsb.add( a.getSkipCount(), "skipped", new NumberOnlyBuildLabel(a.run));
-                dsb.add( a.getTotalCount()-a.getFailCount()-a.getSkipCount(),"total", new NumberOnlyBuildLabel(a.run));
+                dsb.add( a.getSkipCount(), "skipped", new NumberOnlyBuildLabel(a.owner));
+                dsb.add( a.getTotalCount()-a.getFailCount()-a.getSkipCount(),"total", new NumberOnlyBuildLabel(a.owner));
             }
         }
         return dsb.build();
@@ -359,20 +337,20 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
             @Override
             public String generateURL(CategoryDataset dataset, int row, int column) {
                 NumberOnlyBuildLabel label = (NumberOnlyBuildLabel) dataset.getColumnKey(column);
-                return relPath+label.getRun().getNumber()+"/testReport/";
+                return relPath+label.build.getNumber()+"/testReport/";
             }
 
             @Override
             public String generateToolTip(CategoryDataset dataset, int row, int column) {
                 NumberOnlyBuildLabel label = (NumberOnlyBuildLabel) dataset.getColumnKey(column);
-                AbstractTestResultAction a = label.getRun().getAction(AbstractTestResultAction.class);
+                AbstractTestResultAction a = label.build.getAction(AbstractTestResultAction.class);
                 switch (row) {
                     case 0:
-                        return String.valueOf(Messages.AbstractTestResultAction_fail(label.getRun().getDisplayName(), a.getFailCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_fail(label.build.getDisplayName(), a.getFailCount()));
                     case 1:
-                        return String.valueOf(Messages.AbstractTestResultAction_skip(label.getRun().getDisplayName(), a.getSkipCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_skip(label.build.getDisplayName(), a.getSkipCount()));
                     default:
-                        return String.valueOf(Messages.AbstractTestResultAction_test(label.getRun().getDisplayName(), a.getTotalCount()));
+                        return String.valueOf(Messages.AbstractTestResultAction_test(label.build.getDisplayName(), a.getTotalCount()));
                 }
             }
         };

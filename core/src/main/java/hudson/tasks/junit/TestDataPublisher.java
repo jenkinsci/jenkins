@@ -26,14 +26,11 @@ package hudson.tasks.junit;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.*;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
-import javax.annotation.Nonnull;
 
 /**
  * Contributes {@link TestAction}s to test results.
@@ -53,32 +50,10 @@ public abstract class TestDataPublisher extends AbstractDescribableImpl<TestData
      *
      * @return
      *      can be null to indicate that there's nothing to contribute for this test result.
-     * @since TODO
      */
-	public TestResultAction.Data contributeTestData(
-			Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher,
-			TaskListener listener, TestResult testResult) throws IOException, InterruptedException {
-        if (run instanceof AbstractBuild && listener instanceof BuildListener) {
-            return getTestData((AbstractBuild) run, launcher, (BuildListener) listener, testResult);
-        } else {
-            throw new AbstractMethodError("you must override contributeTestData");
-        }
-    }
-
-    @Deprecated
-	public TestResultAction.Data getTestData(
+	public abstract TestResultAction.Data getTestData(
 			AbstractBuild<?, ?> build, Launcher launcher,
-			BuildListener listener, TestResult testResult) throws IOException, InterruptedException {
-        if (Util.isOverridden(TestDataPublisher.class, getClass(), "contributeTestData", Run.class, FilePath.class, Launcher.class, TaskListener.class, TestResult.class)) {
-            FilePath workspace = build.getWorkspace();
-            if (workspace == null) {
-                throw new IOException("no workspace in " + build);
-            }
-            return contributeTestData(build, workspace, launcher, listener, testResult);
-        } else {
-            throw new AbstractMethodError("you must override contributeTestData");
-        }
-    }
+			BuildListener listener, TestResult testResult) throws IOException, InterruptedException;
 
 	public static DescriptorExtensionList<TestDataPublisher, Descriptor<TestDataPublisher>> all() {
 		return Jenkins.getInstance().<TestDataPublisher, Descriptor<TestDataPublisher>>getDescriptorList(TestDataPublisher.class);

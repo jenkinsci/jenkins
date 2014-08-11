@@ -30,17 +30,17 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.Saveable;
-import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.tasks.junit.TestResultAction.Data;
+import hudson.tasks.test.TestResultProjectAction;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
@@ -52,18 +52,18 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nonnull;
-import jenkins.tasks.SimpleBuildStep;
-import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Generates HTML report from JUnit test result XML files.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
+public class JUnitResultArchiver extends Recorder {
 
     /**
      * {@link FileSet} "includes" string, like "foo/bar/*.xml"
@@ -74,20 +74,24 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
      * If true, retain a suite's complete stdout/stderr even if this is huge and the suite passed.
      * @since 1.358
      */
-    private boolean keepLongStdio;
+    private final boolean keepLongStdio;
 
     /**
      * {@link TestDataPublisher}s configured for this archiver, to process the recorded data.
      * For compatibility reasons, can be null.
      * @since 1.320
      */
-    private DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
+    private final DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers;
 
-    private Double healthScaleFactor;
+    private final Double healthScaleFactor;
 
-	@DataBoundConstructor
+	/**
+	 * left for backwards compatibility
+         * @deprecated since 2009-08-09.
+	 */
+	@Deprecated
 	public JUnitResultArchiver(String testResults) {
-		this.testResults = testResults;
+		this(testResults, false, null);
 	}
 
     @Deprecated
@@ -104,44 +108,44 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
         this(testResults, keepLongStdio, testDataPublishers, 1.0);
     }
 
-	@Deprecated
+	@DataBoundConstructor
 	public JUnitResultArchiver(
 			String testResults,
             boolean keepLongStdio,
 			DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> testDataPublishers,
             double healthScaleFactor) {
 		this.testResults = testResults;
-        setKeepLongStdio(keepLongStdio);
-        setTestDataPublishers(testDataPublishers);
-        setHealthScaleFactor(healthScaleFactor);
+        this.keepLongStdio = keepLongStdio;
+		this.testDataPublishers = testDataPublishers;
+        this.healthScaleFactor = Math.max(0.0,healthScaleFactor);
 	}
 
-    private TestResult parse(String expandedTestResults, Run<?,?> run, @Nonnull FilePath workspace, Launcher launcher, TaskListener listener)
-            throws IOException, InterruptedException
-    {
-        return new JUnitParser(isKeepLongStdio()).parseResult(expandedTestResults, run, workspace, launcher, listener);
-    }
-
-    @Deprecated
+    /**
+     * In progress. Working on delegating the actual parsing to the JUnitParser.
+     */
     protected TestResult parse(String expandedTestResults, AbstractBuild build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException
     {
-        return parse(expandedTestResults, build, build.getWorkspace(), launcher, listener);
+        return new JUnitParser(isKeepLongStdio()).parse(expandedTestResults, build, launcher, listener);
     }
 
     @Override
-	public void perform(Run build, FilePath workspace, Launcher launcher,
-			TaskListener listener) throws InterruptedException, IOException {
+	public boolean perform(AbstractBuild build, Launcher launcher,
+			BuildListener listener) throws InterruptedException, IOException {
 		listener.getLogger().println(Messages.JUnitResultArchiver_Recording());
 		TestResultAction action;
 		
 		final String testResults = build.getEnvironment(listener).expand(this.testResults);
 
 		try {
-			TestResult result = parse(testResults, build, workspace, launcher, listener);
+			TestResult result = parse(testResults, build, launcher, listener);
 
-            // TODO can the build argument be omitted now, or is it used prior to the call to addAction?
-            action = new TestResultAction(build, result, listener);
+			try {
+                // TODO can the build argument be omitted now, or is it used prior to the call to addAction?
+				action = new TestResultAction(build, result, listener);
+			} catch (NullPointerException npe) {
+				throw new AbortException(Messages.JUnitResultArchiver_BadXML(testResults));
+			}
             action.setHealthScaleFactor(getHealthScaleFactor()); // TODO do we want to move this to the constructor?
             result.freeze(action);
 			if (result.isEmpty()) {
@@ -153,7 +157,7 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
 			List<Data> data = new ArrayList<Data>();
 			if (testDataPublishers != null) {
 				for (TestDataPublisher tdp : testDataPublishers) {
-					Data d = tdp.contributeTestData(build, workspace, launcher, listener, result);
+					Data d = tdp.getTestData(build, launcher, listener, result);
 					if (d != null) {
 						data.add(d);
 					}
@@ -165,21 +169,23 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
 			if (build.getResult() == Result.FAILURE)
 				// most likely a build failed before it gets to the test phase.
 				// don't report confusing error message.
-				return;
+				return true;
 
 			listener.getLogger().println(e.getMessage());
 			build.setResult(Result.FAILURE);
-			return;
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace(listener.error("Failed to archive test reports"));
 			build.setResult(Result.FAILURE);
-			return;
+			return true;
 		}
 
 		build.addAction(action);
 
 		if (action.getResult().getFailCount() > 0)
 			build.setResult(Result.UNSTABLE);
+
+		return true;
 	}
 
 	/**
@@ -204,19 +210,14 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
         return healthScaleFactor == null ? 1.0 : healthScaleFactor;
     }
 
-    /** @since TODO */
-    public final void setHealthScaleFactor(double healthScaleFactor) {
-        this.healthScaleFactor = Math.max(0.0, healthScaleFactor);
-    }
-
     public DescribableList<TestDataPublisher, Descriptor<TestDataPublisher>> getTestDataPublishers() {
 		return testDataPublishers;
 	}
 
-    /** @since TODO */
-    public final void setTestDataPublishers(DescribableList<TestDataPublisher,Descriptor<TestDataPublisher>> testDataPublishers) {
-        this.testDataPublishers = testDataPublishers;
-    }
+	@Override
+	public Collection<Action> getProjectActions(AbstractProject<?, ?> project) {
+		return Collections.<Action>singleton(new TestResultProjectAction(project));
+	}
 
 	/**
 	 * @return the keepLongStdio
@@ -224,11 +225,6 @@ public class JUnitResultArchiver extends Recorder implements SimpleBuildStep {
 	public boolean isKeepLongStdio() {
 		return keepLongStdio;
 	}
-
-    /** @since TODO */
-    @DataBoundSetter public final void setKeepLongStdio(boolean keepLongStdio) {
-        this.keepLongStdio = keepLongStdio;
-    }
 
 	private static final long serialVersionUID = 1L;
 

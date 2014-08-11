@@ -23,11 +23,9 @@
  */
 package hudson.tasks.junit;
 
-import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractModelObject;
 import hudson.model.Api;
-import hudson.model.Run;
 import hudson.tasks.test.AbstractTestResultAction;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -46,23 +44,8 @@ import java.util.List;
  */
 @ExportedBean
 public abstract class TestObject extends AbstractModelObject implements Serializable {
+    public abstract AbstractBuild<?,?> getOwner() ; 
 
-    @Deprecated
-    public AbstractBuild<?,?> getOwner() {
-        if (Util.isOverridden(TestObject.class, getClass(), "getRun")) {
-            Run<?,?> r = getRun();
-            return r instanceof AbstractBuild ? (AbstractBuild) r : null;
-        } else {
-            throw new AbstractMethodError("you must override getRun");
-        }
-    }
-
-    /**
-     * @since TODO
-     */
-    public Run<?,?> getRun() {
-        return getOwner();
-    }
    
     public abstract TestObject getParent();
 
@@ -86,26 +69,8 @@ public abstract class TestObject extends AbstractModelObject implements Serializ
 	 * @return null if no such counter part exists.
 	 */
 	public abstract TestObject getPreviousResult();
-
-    @Deprecated
-	public TestObject getResultInBuild(AbstractBuild<?,?> build) {
-        if (Util.isOverridden(TestObject.class, getClass(), "getResultInRun", Run.class)) {
-            return getResultInRun(build);
-        } else {
-            throw new AbstractMethodError("you must override getResultInRun");
-        }
-    }
-
-    /**
-     * @since TODO
-     */
-	public TestObject getResultInRun(Run<?,?> run) {
-        if (run instanceof AbstractBuild) {
-            return getResultInBuild((AbstractBuild) run);
-        } else {
-            throw new AbstractMethodError("you must override getResultInRun");
-        }
-    }
+	
+	public abstract TestObject getResultInBuild(AbstractBuild<?,?> build); 
 
 	/**
 	 * Time took to run this test. In seconds.

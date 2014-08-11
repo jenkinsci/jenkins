@@ -23,7 +23,7 @@
  */
 package hudson.tasks.junit;
 
-import hudson.model.Run;
+import hudson.model.AbstractBuild;
 import hudson.tasks.test.TabulatedResult;
 import hudson.tasks.test.TestResult;
 import hudson.tasks.test.TestObject;
@@ -58,8 +58,8 @@ public final class ClassResult extends TabulatedResult implements Comparable<Cla
     }
 
     @Override
-    public Run<?, ?> getRun() {
-        return (parent==null ? null: parent.getRun());
+    public AbstractBuild<?, ?> getOwner() {
+        return (parent==null ? null: parent.getOwner()); 
     }
 
     public PackageResult getParent() {
