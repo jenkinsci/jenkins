@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Recorder;
 import hudson.tasks.Builder;
-import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.scm.SCM;
 import javax.annotation.Nonnull;
 
@@ -57,7 +56,7 @@ import javax.annotation.Nonnull;
  *
  * <h2>Example</h2>
  * <p>
- * {@link JUnitResultArchiver} provides a good example of how a {@link Recorder} can
+ * {@code JUnitResultArchiver} provides a good example of how a {@link Recorder} can
  * depend on its earlier result.
  *
  * @author Kohsuke Kawaguchi
@@ -127,9 +126,9 @@ public final class CheckPoint {
      *
      * <ol>
      * <li>Build #1, #2, and #3 happens around the same time
-     * <li>Build #3 waits for check point {@link JUnitResultArchiver}
+     * <li>Build #3 waits for check point {@code JUnitResultArchiver}
      * <li>Build #2 aborts before getting to that check point
-     * <li>Build #1 finally checks in {@link JUnitResultArchiver}
+     * <li>Build #1 finally checks in {@code JUnitResultArchiver}
      * </ol>
      *
      * <p>
