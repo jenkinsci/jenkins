@@ -58,7 +58,11 @@ THE SOFTWARE.
             that, we try deriving it by URL (assuming it's a full icon path).  If all that fails,
             we just fall back to the old method by passing a 'src' attribute to the <icon> tag.
           -->
-          <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(icon) + ' icon-xlg')}"/>
+          <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icon + ' icon-xlg')}"/>
+          <j:if test="${iconMetadata == null}">
+            <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
+            <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(icon) + ' icon-xlg')}"/>
+          </j:if>
           <j:if test="${iconMetadata == null}">
             <j:set var="iconMetadata" value="${icons.getIconByUrl(icon)}"/>
           </j:if>
@@ -71,7 +75,8 @@ THE SOFTWARE.
                     <l:icon class="${iconMetadata.classSpec}"/>
                   </j:when>
                   <j:otherwise>
-                    <l:icon width="24" height="24" style="margin: 2px;" alt="" src="${icon}"/>
+                    <l:icon src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
+                            alt="" style="width: 48px; height: 48px; margin-right:1em;" />
                   </j:otherwise>
                 </j:choose>
               </a>
@@ -83,7 +88,7 @@ THE SOFTWARE.
                 </j:when>
                 <j:otherwise>
                   <l:icon src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
-                          alt="" width="48" height="48" style="margin-right:1em" />
+                          alt="" style="width: 48px; height: 48px; margin-right:1em;" />
                 </j:otherwise>
               </j:choose>
             </j:otherwise>

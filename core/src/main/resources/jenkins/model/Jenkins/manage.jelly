@@ -84,8 +84,9 @@ THE SOFTWARE.
     <table style="padding-left: 2em;" id="management-links">
       <j:forEach var="m" items="${it.managementLinks}">
         <l:hasPermission permission="${m.requiredPermission}">
-          <j:if test="${m.iconFileName!=null}">
-            <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}">
+          <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}"/>
+          <j:if test="${icon!=null}">
+            <local:feature icon="${icon}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}">
               <j:out value="${m.description}"/>
               <st:include it="${m}" page="info.jelly" optional="true"/>
             </local:feature>
