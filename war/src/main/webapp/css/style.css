@@ -50,13 +50,19 @@ body {
   margin-left: 16px;
 }
 
+#jenkins-home-link {
+  position: absolute;
+  height: 40px;
+}
+
 #jenkins-head-icon {
-  position: relative;
-  top: 4px;
+  position: absolute;
+  bottom: 0px;
 }
 #jenkins-name-icon {
-  position: relative;
-  top: 3px;
+  position: absolute;
+  bottom: 3px;
+  left: 32px;
 }
 
 #header .searchbox, #header .login {
