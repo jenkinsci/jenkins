@@ -82,6 +82,6 @@
     }
 
     window.onbeforeunload = confirmExit;
-    Event.on(window,'load', initConfirm);
+    $(window).on('load', initConfirm);
 
 })();
