@@ -38,6 +38,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import hudson.tools.AbstractCommandInstaller;
+import hudson.tools.BatchCommandInstaller;
+import hudson.tools.CommandInstaller;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -47,6 +50,30 @@ public class LauncherTest {
 
     @Rule
     public JenkinsRule rule = new JenkinsRule();
+
+    @Test
+    public void validateBatchFileEOL() throws Exception {
+        CommandInterpreter command = new BatchFile("echo A\necho B\recho C");
+        assertThat(command.getCommand(), containsString("echo A\r\necho B\r\necho C"));
+    }
+
+    @Test
+    public void validateShellFileEOL() throws Exception {
+        CommandInterpreter command = new Shell("echo A\r\necho B\recho C");
+        assertThat(command.getCommand(), containsString("echo A\necho B\necho C"));
+    }
+
+    @Test
+    public void validateBatchInstallerEOL() throws Exception {
+        AbstractCommandInstaller command = new BatchCommandInstaller("", "echo A\necho B\recho C", "");
+        assertThat(command.getCommand(), containsString("echo A\r\necho B\r\necho C"));
+    }
+
+    @Test
+    public void validateShellInstallerEOL() throws Exception {
+        AbstractCommandInstaller command = new CommandInstaller("","echo A\r\necho B\recho C","");
+        assertThat(command.getCommand(), containsString("echo A\necho B\necho C"));
+    }
 
     @Bug(19488)
     @Test
