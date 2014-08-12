@@ -78,7 +78,7 @@ public interface PrioritizedTask extends Queue.Task {
             }
 
             @Override public String getShortDescription() {
-                return task.getFullDisplayName() + " should be allowed to run first";
+                return Messages.PrioritizedTask__should_be_allowed_to_run_first(task.getFullDisplayName());
             }
 
         }
