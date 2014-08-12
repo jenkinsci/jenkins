@@ -65,7 +65,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * <li>Return true unconditionally from {@link BuildStepDescriptor#isApplicable} (there is currently no filtering for other {@link Job} types).
  * </ul>
  * @see hudson.tasks.BuildStepCompatibilityLayer#perform(AbstractBuild, Launcher, BuildListener)
- * @since TODO
+ * @since 1.577
  */
 public interface SimpleBuildStep extends BuildStep {
 

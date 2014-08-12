@@ -53,7 +53,9 @@ public class ChartUtil {
         @Deprecated
         public final AbstractBuild build;
 
-        /** @since TODO */
+        /**
+         * @since 1.577
+         */
         public NumberOnlyBuildLabel(Run<?,?> run) {
             this.run = run;
             this.build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
@@ -65,7 +67,9 @@ public class ChartUtil {
             this.build = build;
         }
 
-        /* @since TODO */
+        /**
+         * @since 1.577
+         */
         public Run<?, ?> getRun() {
             return run;
         }

@@ -37,7 +37,8 @@ import java.util.List;
 /**
  * Wraps a {@link TaskListener} as a {@link BuildListener} for compatibility with APIs which historically expected the latter.
  * Does not support {@link BuildListener#started} or {@link BuildListener#finished}.
- * @since TODO
+ *
+ * @since 1.577
  */
 public final class BuildListenerAdapter implements BuildListener {
 

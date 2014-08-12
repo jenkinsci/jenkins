@@ -900,7 +900,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * @since TODO
+     * @since 1.577
      */
     public synchronized void addFor(Run b) throws IOException {
         add(b.getParent().getFullName(), b.getNumber());
