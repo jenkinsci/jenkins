@@ -23,6 +23,8 @@
  */
 package hudson.tasks;
 
+import hudson.AbortException;
+import hudson.FilePath;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Action;
@@ -34,6 +36,7 @@ import hudson.Launcher;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import jenkins.tasks.SimpleBuildStep;
 
 /**
  * Provides compatibility with {@link BuildStep} before 1.150
@@ -54,11 +57,23 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return true;
     }
 
+    /**
+     * @inheritDoc
+     * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
+     */
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        if (build instanceof Build)
-            return perform((Build)build,launcher,listener);
-        else
+        if (this instanceof SimpleBuildStep) {
+            FilePath workspace = build.getWorkspace();
+            if (workspace == null) {
+                throw new AbortException("no workspace for " + build);
+            }
+            ((SimpleBuildStep) this).perform(build, workspace, launcher, listener);
             return true;
+        } else if (build instanceof Build) {
+            return perform((Build)build,launcher,listener);
+        } else {
+            return true;
+        }
     }
 
     public Action getProjectAction(AbstractProject<?, ?> project) {

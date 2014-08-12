@@ -27,10 +27,10 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
@@ -52,6 +52,8 @@ import net.sf.json.JSONObject;
 import javax.annotation.Nonnull;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
+import jenkins.tasks.SimpleBuildStep;
+import jenkins.util.BuildListenerAdapter;
 import org.kohsuke.stapler.DataBoundSetter;
 
 /**
@@ -59,7 +61,7 @@ import org.kohsuke.stapler.DataBoundSetter;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ArtifactArchiver extends Recorder {
+public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     private static final Logger LOG = Logger.getLogger(ArtifactArchiver.class.getName());
 
@@ -185,7 +187,7 @@ public class ArtifactArchiver extends Recorder {
         this.defaultExcludes = defaultExcludes;
     }
 
-    private void listenerWarnOrError(BuildListener listener, String message) {
+    private void listenerWarnOrError(TaskListener listener, String message) {
     	if (allowEmptyArchive) {
     		listener.getLogger().println(String.format("WARN: %s", message));
     	} else {
@@ -194,32 +196,27 @@ public class ArtifactArchiver extends Recorder {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException {
         if(artifacts.length()==0) {
             listener.error(Messages.ArtifactArchiver_NoIncludes());
             build.setResult(Result.FAILURE);
-            return true;
+            return;
         }
 
         if (onlyIfSuccessful && build.getResult() != null && build.getResult().isWorseThan(Result.UNSTABLE)) {
             listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
-            return true;
+            return;
         }
 
         listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
-            FilePath ws = build.getWorkspace();
-            if (ws==null) { // #3330: slave down?
-                return true;
-            }
-
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes));
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, listener, files);
+                build.pickArtifactManager().archive(ws, launcher, new BuildListenerAdapter(listener), files);
                 if (fingerprint) {
-                    new Fingerprinter(artifacts).perform(build, launcher, listener);
+                    new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
                 }
             } else {
                 Result result = build.getResult();
@@ -239,17 +236,15 @@ public class ArtifactArchiver extends Recorder {
                 if (!allowEmptyArchive) {
                 	build.setResult(Result.FAILURE);
                 }
-                return true;
+                return;
             }
         } catch (IOException e) {
             Util.displayIOException(e,listener);
             e.printStackTrace(listener.error(
                     Messages.ArtifactArchiver_FailedToArchive(artifacts)));
             build.setResult(Result.FAILURE);
-            return true;
+            return;
         }
-
-        return true;
     }
 
     private static final class ListFiles implements FilePath.FileCallable<Map<String,String>> {
