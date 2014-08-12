@@ -57,10 +57,6 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
             return Messages.LegacyAuthorizationStrategy_DisplayName();
         }
 
-        public String getHelpFile() {
-            return "/help/security/legacy-auth-strategy.html";
-        }
-
         public LegacyAuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new LegacyAuthorizationStrategy();
         }

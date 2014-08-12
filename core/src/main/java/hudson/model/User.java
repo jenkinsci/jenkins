@@ -662,10 +662,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
 
-        fullName = req.getParameter("fullName");
-        description = req.getParameter("description");
-
         JSONObject json = req.getSubmittedForm();
+
+        fullName = json.getString("fullName");
+        description = json.getString("description");
 
         List<UserProperty> props = new ArrayList<UserProperty>();
         int i = 0;
