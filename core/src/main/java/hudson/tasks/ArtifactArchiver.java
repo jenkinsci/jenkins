@@ -214,7 +214,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes));
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, new BuildListenerAdapter(listener), files);
+                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
                     new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
                 }

@@ -84,4 +84,11 @@ public final class BuildListenerAdapter implements BuildListener {
         return delegate.fatalError(format, args);
     }
 
+    public static BuildListener wrap(TaskListener l) {
+        if (l instanceof BuildListener) {
+            return (BuildListener) l;
+        } else {
+            return new BuildListenerAdapter(l);
+        }
+    }
 }
