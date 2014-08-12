@@ -57,8 +57,10 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * <p>Such a build step would typically be written according to some guidelines that ensure it makes few assumptions about how it is being used:
  * <ul>
  * <li>Do not implement {@link BuildStep#prebuild}, since this presupposes a particular execution order.
- * <li>Do not implement {@link BuildStep#getProjectActions}, since this might never be called if the step is not part of the static configuration of a project; instead, add a {@link LastBuildAction} to a build when run.
- * <li>Implement {@link BuildStep#getRequiredMonitorService} to be {@link BuildStepMonitor#NONE}, since this facility only makes sense for a step called exactly once per build.
+ * <li>Do not implement {@link BuildStep#getProjectActions}, since this might never be called
+ *     if the step is not part of the static configuration of a project; instead, add a {@link LastBuildAction} to a build when run.
+ * <li>Implement {@link BuildStep#getRequiredMonitorService} to be {@link BuildStepMonitor#NONE}, since this facility
+ *     only makes sense for a step called exactly once per build.
  * <li>Do not implement {@link DependencyDeclarer} since this would be limited to use in {@link AbstractProject}.
  * <li>Return true unconditionally from {@link BuildStepDescriptor#isApplicable} (there is currently no filtering for other {@link Job} types).
  * </ul>

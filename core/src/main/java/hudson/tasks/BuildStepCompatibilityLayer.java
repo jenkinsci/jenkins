@@ -36,6 +36,9 @@ import hudson.Launcher;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import jenkins.tasks.SimpleBuildStep;
 
 /**
@@ -63,6 +66,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      */
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (this instanceof SimpleBuildStep) {
+            // delegate to the overloaded version defined in SimpleBuildStep
             FilePath workspace = build.getWorkspace();
             if (workspace == null) {
                 throw new AbortException("no workspace for " + build);
@@ -70,6 +74,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             ((SimpleBuildStep) this).perform(build, workspace, launcher, listener);
             return true;
         } else if (build instanceof Build) {
+            // delegate to the legacy signature deprecated in 1.312
             return perform((Build)build,launcher,listener);
         } else {
             return true;
