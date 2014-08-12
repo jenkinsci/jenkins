@@ -37,7 +37,7 @@ public class BatchCommandInstaller extends AbstractCommandInstaller {
 
     @DataBoundConstructor
     public BatchCommandInstaller(String label, String command, String toolHome) {
-        super(label, convertEOL(command), toolHome);
+        super(label, command, toolHome);
     }
 
     @Override
@@ -49,16 +49,6 @@ public class BatchCommandInstaller extends AbstractCommandInstaller {
     public String[] getCommandCall(FilePath script) {
         String[] cmd = {"cmd", "/c", "call", script.getRemote()};
         return cmd;
-    }
-
-    /**
-     * Convert line endings to Windows CR/LF.
-     */
-    private static String convertEOL(String input) {
-        input = input.replace("\r\n","\n");
-        input = input.replace("\r","\n");
-        input = input.replace("\n","\r\n");
-        return input;
     }
  
     @Extension

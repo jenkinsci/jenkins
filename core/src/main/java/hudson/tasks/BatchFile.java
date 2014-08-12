@@ -38,7 +38,7 @@ import org.kohsuke.stapler.StaplerRequest;
 public class BatchFile extends CommandInterpreter {
     @DataBoundConstructor
     public BatchFile(String command) {
-        super(convertEOL(command));
+        super(command);
     }
 
     public String[] buildCommandLine(FilePath script) {

@@ -36,7 +36,7 @@ public class CommandInstaller extends AbstractCommandInstaller {
 
     @DataBoundConstructor
     public CommandInstaller(String label, String command, String toolHome) {
-        super(label, convertEOL(command), toolHome);
+        super(label, command, toolHome);
     }
 
     @Override
@@ -48,15 +48,6 @@ public class CommandInstaller extends AbstractCommandInstaller {
     public String[] getCommandCall(FilePath script) {
         String[] cmd = {"sh", "-e", script.getRemote()};
         return cmd;
-    }
-
-    /**
-     * Convert line endings to Unix LF.
-     */
-    private static String convertEOL(String input) {
-        input = input.replace("\r\n","\n");
-        input = input.replace("\r","\n");
-        return input;
     }
 
     @Extension

@@ -50,16 +50,29 @@ import java.util.logging.Logger;
 public class Shell extends CommandInterpreter {
     @DataBoundConstructor
     public Shell(String command) {
-        super(convertEOL(command));
+        super(fixCrLf(command));
     }
 
     /**
-     * Convert line endings to Unix LF.
+     * Fix CR/LF and always make it Unix style.
      */
-    private static String convertEOL(String input) {
-        input = input.replace("\r\n","\n");
-        input = input.replace("\r","\n");
-        return input;
+    private static String fixCrLf(String s) {
+        // eliminate CR
+        int idx;
+        while((idx=s.indexOf("\r\n"))!=-1)
+            s = s.substring(0,idx)+s.substring(idx+1);
+
+        //// add CR back if this is for Windows
+        //if(isWindows()) {
+        //    idx=0;
+        //    while(true) {
+        //        idx = s.indexOf('\n',idx);
+        //        if(idx==-1) break;
+        //        s = s.substring(0,idx)+'\r'+s.substring(idx);
+        //        idx+=2;
+        //    }
+        //}
+        return s;
     }
 
     /**
@@ -92,7 +105,7 @@ public class Shell extends CommandInterpreter {
     }
 
     protected String getContents() {
-        return addCrForNonASCII(convertEOL(command));
+        return addCrForNonASCII(fixCrLf(command));
     }
 
     protected String getFileExtension() {
