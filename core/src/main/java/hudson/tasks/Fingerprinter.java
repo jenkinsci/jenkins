@@ -39,6 +39,7 @@ import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Fingerprint;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.FingerprintMap;
+import hudson.model.Job;
 import jenkins.model.Jenkins;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -432,8 +433,13 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 if(bp.is(build))    continue;   // we are the owner
 
                 try {
-                    AbstractProject job = bp.getJob();
+                    Job job = bp.getJob();
                     if (job==null)  continue;   // project no longer exists
+                    if (!(job instanceof AbstractProject)) {
+                        // Ignoring this for now. In the future we may want a dependency map function not limited to AbstractProject.
+                        // (Could be used by getDependencyChanges if pulled up from AbstractBuild into Run, for example.)
+                        continue;
+                    }
                     if (job.getParent()==build.getParent())
                         continue;   // we are the parent of the build owner, that is almost like we are the owner
                     if(!includeMissing && job.getBuildByNumber(bp.getNumber())==null)
@@ -442,7 +448,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                     Integer existing = r.get(job);
                     if(existing!=null && existing>bp.getNumber())
                         continue;   // the record in the map is already up to date
-                    r.put(job, bp.getNumber());
+                    r.put((AbstractProject) job, bp.getNumber());
                 } catch (AccessDeniedException e) {
                     // Need to log in to access this job, so ignore
                     continue;
