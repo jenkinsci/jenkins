@@ -1205,6 +1205,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Works just like {@link #checkAbortPermission()} except it indicates the status by a return value,
          * instead of exception.
+         * Also used by default for {@link hudson.model.Queue.Item#hasCancelPermission}.
          */
         boolean hasAbortPermission();
         
@@ -1478,7 +1479,11 @@ public class Queue extends ResourceController implements Saveable {
         	}
         	return s.toString();
         }
-        
+
+        /**
+         * Checks whether a scheduled item may be canceled.
+         * @return by default, the same as {@link hudson.model.Queue.Task#hasAbortPermission}
+         */
         public boolean hasCancelPermission() {
             return task.hasAbortPermission();
         }
