@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.google.common.collect.ImmutableList;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -119,8 +120,9 @@ public class Fingerprint implements ModelObject, Saveable {
          * Gets the {@link Job} that this pointer points to,
          * or null if such a job no longer exists.
          */
-        public AbstractProject getJob() { // TODO add variant returning Job
-            return Jenkins.getInstance().getItemByFullName(name,AbstractProject.class);
+        @WithBridgeMethods(value=AbstractProject.class, castRequired=true)
+        public Job<?,?> getJob() {
+            return Jenkins.getInstance().getItemByFullName(name, Job.class);
         }
 
         /**
