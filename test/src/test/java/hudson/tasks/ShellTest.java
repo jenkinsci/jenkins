@@ -15,10 +15,32 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
 /**
+ * Tests for the Shell tasks class
+ *
  * @author Kohsuke Kawaguchi
  */
 public class ShellTest extends HudsonTestCase {
+
+    @Rule
+    public JenkinsRule rule = new JenkinsRule();
+
+    @Test
+    public void validateShellCommandEOL() throws Exception {
+        Shell obj = new Shell("echo A\r\necho B\recho C");
+        rule.assertStringContains(obj.getCommand(), "echo A\necho B\necho C");
+    }
+
+    @Test
+    public void validateShellContents() throws Exception {
+        Shell obj = new Shell("echo A\r\necho B\recho C");
+        rule.assertStringContains(obj.getContents(), "\necho A\necho B\necho C");
+    }
+
     public void testBasic() throws Exception {
         // If we're on Windows, don't bother doing this.
         if (Functions.isWindows())
