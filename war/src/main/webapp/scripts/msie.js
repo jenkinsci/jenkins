@@ -24,16 +24,26 @@
  */
 
 function assertDocumentModeOK() {
-    if (YAHOO.env.ua.ie) {
+    if (YAHOO.env.ua.ie && YAHOO.env.ua.ie !== document.documentMode) {
         setTimeout(function() {
-            if (YAHOO.env.ua.ie !== document.documentMode) {
-                alert("WARNING: Your Internet Explorer appears to be set to a non-default 'Document Mode' (see Developer Tools - press F12).\n" +
-                      "\n" +
-                      "Jenkins may not display properly in this browser.");
-            }
+            alert("WARNING: Your Internet Explorer appears to be set to a non-default 'Document Mode' (see Developer Tools - press F12).\n" +
+                "\n" +
+                "Jenkins may not display properly in this browser.");
         }, 1500);
     }
 }
 
 assertDocumentModeOK();
 
+// IE 8 and before tweaks....
+if (YAHOO.env.ua.ie && YAHOO.env.ua.ie < 9) {
+    function loadRespondJS() {
+        var head = document.getElementsByTagName('head')[0];
+        var script = document.createElement('script');
+
+        script.setAttribute('src', head.getAttribute('resURL') + '/scripts/respond.js');
+        head.appendChild(script);
+    }
+
+    loadRespondJS();
+}

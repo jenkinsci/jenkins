@@ -55,6 +55,16 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class="major rfe">
+    Moved JUnit reporting functionality to a plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23263">issue 23263</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.576>What's new in 1.576</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class="bug">
     Worked around "incompatible InnerClasses attribute" bug in IBM J9 VM
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22525">issue 22525</a>)
@@ -67,9 +77,18 @@ Upcoming changes</a>
   <li class="bug">
     Improving security of <code>set-build-parameter</code> and <code>set-build-result</code> CLI commands.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24080">issue 24080</a>)
+  <li class="bug">
+    Startup can be broken by deeply recursive causes in build records.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24161">issue 24161</a>)
+  <li class="bug">
+    Displaying unabridged test result trend on project index page defeated lazy loading.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23945">issue 23945</a>)
   <li class="rfe">
     Added support for host:port format in X-Forwarded-Host header.
     (<a href="https://github.com/jenkinsci/jenkins/commit/19d8b80bb2f33e4877c7170bcca8bfa318ebe77d">commit 19d8b80</a>)
+  <li class="rfe">
+    API to launch processes without printing the command line.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23027">issue 23027</a>)
   <li class="rfe">
     Added option to increase impact of test failures on the weather report.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24006">issue 24006</a>)
@@ -84,11 +103,8 @@ Upcoming changes</a>
     Modernize tabBar and bigtable.  Makes the project view look better.  Same for Plugin Manager.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24030">issue 24030</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.575>What's new in 1.575</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.575>What's new in 1.575</a> (2014/08/10)</h3>
 <ul class=image>
   <li class="rfe">
     Move option to fingerprint artifacts to Archive the Artifacts, Advanced options.
@@ -133,7 +149,6 @@ Upcoming changes</a>
     Restrict access to SCM trigger status page to administrators.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1327">pull 1282</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.574>What's new in 1.574</a> (2014/07/27)</h3>
 <ul class=image>
   <li class="rfe">

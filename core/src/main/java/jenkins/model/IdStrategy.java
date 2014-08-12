@@ -29,6 +29,7 @@ import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.util.CaseInsensitiveComparator;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
@@ -138,6 +139,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      */
     public static class CaseInsensitive extends IdStrategy {
 
+        @DataBoundConstructor
+        public CaseInsensitive() {}
+
         @Override
         @Nonnull
         public String filenameOf(@Nonnull String id) {
@@ -177,6 +181,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * A case sensitive {@link IdStrategy}
      */
     public static class CaseSensitive extends IdStrategy {
+
+        @DataBoundConstructor
+        public CaseSensitive() {}
 
         /**
          * {@inheritDoc}
@@ -254,6 +261,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * but the RFC does allow them the option to configure that way. Domain names are always case insensitive per RFC.
      */
     public static class CaseSensitiveEmailAddress extends CaseSensitive {
+
+        @DataBoundConstructor
+        public CaseSensitiveEmailAddress() {}
 
         /**
          * {@inheritDoc}

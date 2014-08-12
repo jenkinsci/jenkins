@@ -175,20 +175,15 @@ public class Shell extends CommandInterpreter {
         }
 
         @Override
-        public Builder newInstance(StaplerRequest req, JSONObject data) {
-            return new Shell(data.getString("command"));
-        }
-
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject data) {
-            setShell(req.getParameter("shell"));
-            return true;
+        public boolean configure(StaplerRequest req, JSONObject data) throws FormException {
+            req.bindJSON(this, data);
+            return super.configure(req, data);
         }
 
         /**
          * Check the existence of sh in the given location.
          */
-        public FormValidation doCheck(@QueryParameter String value) {
+        public FormValidation doCheckShell(@QueryParameter String value) {
             // Executable requires admin permission
             return FormValidation.validateExecutable(value); 
         }
