@@ -119,7 +119,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * Gets the {@link Job} that this pointer points to,
          * or null if such a job no longer exists.
          */
-        public AbstractProject getJob() {
+        public AbstractProject getJob() { // TODO add variant returning Job
             return Jenkins.getInstance().getItemByFullName(name,AbstractProject.class);
         }
 
@@ -894,7 +894,15 @@ public class Fingerprint implements ModelObject, Saveable {
         return r;
     }
 
+    @Deprecated
     public synchronized void add(AbstractBuild b) throws IOException {
+        addFor((Run) b);
+    }
+
+    /**
+     * @since 1.577
+     */
+    public synchronized void addFor(Run b) throws IOException {
         add(b.getParent().getFullName(), b.getNumber());
     }
 
