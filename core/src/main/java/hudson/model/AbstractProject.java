@@ -1191,11 +1191,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public void checkAbortPermission() {
-        checkPermission(AbstractProject.ABORT);
+        checkPermission(CANCEL);
     }
 
     public boolean hasAbortPermission() {
-        return hasPermission(AbstractProject.ABORT);
+        return hasPermission(CANCEL);
     }
 
     /**
@@ -2175,7 +2175,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 
     /**
-     * Permission to abort a build
+     * @deprecated Just use {@link #CANCEL}.
      */
     public static final Permission ABORT = CANCEL;
 
