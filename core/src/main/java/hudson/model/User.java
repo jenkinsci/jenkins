@@ -802,7 +802,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return Collections.emptyList();
         }
         List<String> r = new ArrayList<String>();
-        for (GrantedAuthority a : impersonate().getAuthorities()) {
+        Authentication authentication;
+        try {
+            authentication = impersonate();
+        } catch (UsernameNotFoundException x) {
+            LOGGER.log(Level.FINE, "cannot look up authorities for " + id, x);
+            return Collections.emptyList();
+        }
+        for (GrantedAuthority a : authentication.getAuthorities()) {
             if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
                 continue;
             }
