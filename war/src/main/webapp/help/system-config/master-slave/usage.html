@@ -12,11 +12,12 @@
     </dd>
 
     <dt><b>
-      Leave this node for tied jobs only
+      Only build jobs with label restrictions matching this node
     </b></dt>
     <dd>
       In this mode, Jenkins will only build a project on this node when
-      that project specifically was tied to that node.
+      that project is restricted to certain nodes using a label expression,
+      and that expression matches this node&apos;s name and/or labels.
 
       This allows a slave to be reserved for certain kinds of jobs.
       For example, to run performance tests continuously from Jenkins,

@@ -100,6 +100,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import static javax.servlet.http.HttpServletResponse.*;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.lazy.LazyBuildMixIn;
 
 /**
@@ -114,7 +115,7 @@ import jenkins.model.lazy.LazyBuildMixIn;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint, StaplerOverridable, OnMaster {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, OnMaster {
 
     /**
      * Next build number. Kept in a separate file because this is the only
@@ -996,6 +997,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             permalinks.addAll(ppa.getPermalinks());
         }
         return permalinks;
+    }
+    
+    @Override public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        // not sure what would be really useful here. This needs more thoughts.
+        // for the time being, I'm starting with permalinks
+        ContextMenu menu = new ContextMenu();
+        for (Permalink p : getPermalinks()) {
+            if (p.resolve(this) != null) {
+                menu.add(p.getId(), p.getDisplayName());
+            }
+        }
+        return menu;
     }
 
     /**

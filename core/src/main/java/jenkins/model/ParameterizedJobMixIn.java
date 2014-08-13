@@ -25,7 +25,6 @@
 package jenkins.model;
 
 import hudson.Util;
-import static hudson.model.AbstractProject.ABORT;
 import hudson.model.Action;
 import hudson.model.BuildableItem;
 import hudson.model.Cause;
@@ -206,7 +205,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      */
     @RequirePOST
     public final void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        asJob().checkPermission(ABORT);
+        asJob().checkPermission(Item.CANCEL);
         Jenkins.getInstance().getQueue().cancel(asJob());
         rsp.forwardToPreviousPage(req);
     }
