@@ -211,7 +211,7 @@ public class Queue extends ResourceController implements Saveable {
             long t = System.currentTimeMillis();
             long d = expires.get();
             if (t>d) {// need to refresh the cache
-                long next = t+1000;
+                long next = t+ITEM_CACHE_EXPIRATION;
                 if (expires.compareAndSet(d,next)) {
                     // avoid concurrent cache update via CAS.
                     // if the getItems() lock is contended,
@@ -223,6 +223,8 @@ public class Queue extends ResourceController implements Saveable {
             return itemsView;
         }
     }
+
+    private static int ITEM_CACHE_EXPIRATION = Integer.parseInt(System.getProperty("hudson.model.Queue.itemCacheExpiration", "1000"));
 
     /**
      * Data structure created for each idle {@link Executor}.
