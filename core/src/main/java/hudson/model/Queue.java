@@ -148,6 +148,14 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @ExportedBean
 public class Queue extends ResourceController implements Saveable {
+
+    /**
+     * Defines the refresh period for of the internal cache ({@link #itemsView}).
+     * Data should be defined in milliseconds, default value - 1000;
+     * @since TODO: define the version
+     */
+    private static int CACHE_REFRESH_PERIOD = Integer.getInteger(Queue.class.getName() + ".cacheRefreshPeriod", 1000);
+    
     /**
      * Items that are waiting for its quiet period to pass.
      *
@@ -208,7 +216,7 @@ public class Queue extends ResourceController implements Saveable {
             long t = System.currentTimeMillis();
             long d = expires.get();
             if (t>d) {// need to refresh the cache
-                long next = t+1000;
+                long next = t+CACHE_REFRESH_PERIOD;
                 if (expires.compareAndSet(d,next)) {
                     // avoid concurrent cache update via CAS.
                     // if the getItems() lock is contended,
