@@ -26,6 +26,7 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.util.LineEndingConversion;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -37,7 +38,7 @@ public class BatchCommandInstaller extends AbstractCommandInstaller {
 
     @DataBoundConstructor
     public BatchCommandInstaller(String label, String command, String toolHome) {
-        super(label, command, toolHome);
+        super(label, LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Windows), toolHome);
     }
 
     @Override
