@@ -155,7 +155,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Defines the refresh period for of the internal cache ({@link #itemsView}).
      * Data should be defined in milliseconds, default value - 1000;
-     * @since TODO: define the version
+     * @since 1.577
      */
     private static int CACHE_REFRESH_PERIOD = Integer.getInteger(Queue.class.getName() + ".cacheRefreshPeriod", 1000);
     
