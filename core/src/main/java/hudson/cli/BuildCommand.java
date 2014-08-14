@@ -37,6 +37,7 @@ import hudson.AbortException;
 import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
@@ -235,7 +236,8 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public String getShortDescription() {
-            return Messages.BuildCommand_CLICause_ShortDescription(startedBy);
+            String userName = User.get(startedBy).getDisplayName();
+            return Messages.BuildCommand_CLICause_ShortDescription(userName);
         }
 
         @Override
