@@ -236,7 +236,8 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public String getShortDescription() {
-            String userName = User.get(startedBy).getDisplayName();
+            User user = User.get(startedBy, false);
+            String userName = user != null ? user.getDisplayName() : startedBy;
             return Messages.BuildCommand_CLICause_ShortDescription(userName);
         }
 
