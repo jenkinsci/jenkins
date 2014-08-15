@@ -206,6 +206,18 @@ public abstract class ComputerListener implements ExtensionPoint {
     public void onConfigurationChange() {}
 
     /**
+     * Called when the configuration of a {@Computer} changes.
+     * Instead of the {@link #onConfigurationChange()}, this callback operates 
+     * on the pre-computer basis.
+     * @param computer Node owner
+     * @param oldNode Previous node. May be null on the new node creation
+     * @param newNode Newly created node
+     * @since TODO: Define a version
+     */
+    public void onConfigurationChange(@Nonnull Computer computer, 
+            @CheckForNull Node oldNode, @Nonnull Node newNode) { }
+    
+    /**
      * Registers this {@link ComputerListener} so that it will start receiving events.
      *
      * @deprecated as of 1.286

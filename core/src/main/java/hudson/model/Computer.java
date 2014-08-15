@@ -1238,6 +1238,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
             nodes.set(i, newNode);
             app.setNodes(nodes);
+            
+            for (ComputerListener listener : ComputerListener.all()) {
+                listener.onConfigurationChange(this, node, newNode);
+            }
         }
     }
 
