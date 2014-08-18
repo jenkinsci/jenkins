@@ -1185,7 +1185,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return r;
     }
 
-    public R createExecutable() throws IOException {
+    public @CheckForNull R createExecutable() throws IOException {
         if(isDisabled())    return null;
         return newBuild();
     }
