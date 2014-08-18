@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArraySet;
+import javax.annotation.Nonnull;
 
 /**
  * Controls mutual exclusion of {@link ResourceList}.
@@ -73,7 +74,7 @@ public class ResourceController {
      * @throws InterruptedException
      *      the thread can be interrupted while waiting for the available resources.
      */
-    public void execute( Runnable task, ResourceActivity activity ) throws InterruptedException {
+    public void execute(@Nonnull Runnable task, ResourceActivity activity ) throws InterruptedException {
         ResourceList resources = activity.getResourceList();
         synchronized(this) {
             while(inUse.isCollidingWith(resources))
