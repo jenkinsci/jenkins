@@ -45,7 +45,6 @@ import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Node.Mode;
-import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
@@ -109,7 +108,6 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
-import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.Uptime;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -143,7 +141,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob {
 
     /**
      * {@link SCM} associated with the project.
@@ -352,7 +350,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 jdkTool = jdkTool.forNode(node, listener);
             }
             jdkTool.buildEnvVars(env);
-        } else if (jdk != null) {
+        } else if (jdk != null && !jdk.equals(JDK.DEFAULT_NAME)) {
             listener.getLogger().println("No JDK named ‘" + jdk + "’ found");
         }
 
@@ -1185,17 +1183,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return r;
     }
 
-    public R createExecutable() throws IOException {
+    public @CheckForNull R createExecutable() throws IOException {
         if(isDisabled())    return null;
         return newBuild();
     }
 
     public void checkAbortPermission() {
-        checkPermission(AbstractProject.ABORT);
+        checkPermission(CANCEL);
     }
 
     public boolean hasAbortPermission() {
-        return hasPermission(AbstractProject.ABORT);
+        return hasPermission(CANCEL);
     }
 
     /**
@@ -1865,17 +1863,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return r;
     }
 
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        // not sure what would be really useful here. This needs more thoughts.
-        // for the time being, I'm starting with permalinks
-        ContextMenu menu = new ContextMenu();
-        for (Permalink p : getPermalinks()) {
-            if (p.resolve(this)!=null)
-                menu.add(p.getId(),p.getDisplayName());
-        }
-        return menu;
-    }
-
     /**
      * Serves the workspace files.
      */
@@ -2175,7 +2162,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 
     /**
-     * Permission to abort a build
+     * @deprecated Just use {@link #CANCEL}.
      */
     public static final Permission ABORT = CANCEL;
 

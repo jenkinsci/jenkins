@@ -220,6 +220,13 @@ public class Executor extends Thread implements ModelObject {
             try {
                 workUnit.context.synchronizeStart();
 
+                // this code handles the behavior of null Executables returned
+                // by tasks. In such case Jenkins starts the workUnit in order 
+                // to report results to console outputs. 
+                if (executable == null) {
+                    throw new Error("The null Executable has been created for "+workUnit+". The task cannot be executed");
+                }
+                
                 if (executable instanceof Actionable) {
                     for (Action action: workUnit.context.actions) {
                         ((Actionable) executable).addAction(action);

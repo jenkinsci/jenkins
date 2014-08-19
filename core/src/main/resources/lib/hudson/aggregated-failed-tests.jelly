@@ -25,40 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    Display links to failed test from all child reports.
-    @since 1.538
-    <st:attribute name="it" type="AggregatedTestResultAction">
-      Aggregated action.
-    </st:attribute>
+      DEPRECATED
   </st:documentation>
-
-  <j:if test="${it.failCount!=0}">
-    <br/>
-    <h2>Failed Tests</h2>
-
-    <j:forEach var="report" items="${it.childReports}">
-      <j:if test="${report.result.failCount!=0}">
-
-        <h3>
-          <a name="${report.child.project.name}"/>
-          <a href="../${report.child.project.shortUrl}testReport" class="model-link inside">${report.child.project.name}</a>
-        </h3>
-
-        <table class="pane sortable bigtable">
-          <tr>
-            <td class="pane-header">Test Name</td>
-            <td class="pane-header" style="width:4em">Duration</td>
-            <td class="pane-header" style="width:4em">Age</td>
-          </tr>
-          <j:forEach var="f" items="${report.result.failedTests}" varStatus="i">
-            <tr>
-              <td class="pane"><t:failed-test result="${f}" url="../${report.child.project.shortUrl}testReport/${f.getRelativePathFrom(report.result)}"/></td>
-              <td class="pane" style="text-align:right;">${f.duration}</td>
-              <td class="pane" style="text-align:right;">${f.age}</td>
-            </tr>
-          </j:forEach>
-        </table>
-      </j:if>
-    </j:forEach>
-   </j:if>
+  <st:include page="/lib/hudson/test/aggregated-failed-tests.jelly"/>
 </j:jelly>

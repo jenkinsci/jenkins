@@ -729,9 +729,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             availableNumbers.remove(executor.getNumber());
 
         for (Integer number : availableNumbers) {
-            Executor e = new Executor(this, number);
-            executors.add(e);
+            /* There may be busy executors with higher index, so only
+               fill up until numExecutors is reached.
+               Extra executors will call removeExecutor(...) and that
+               will create any necessary executors from #0 again. */
+            if (executors.size() < numExecutors) {
+                Executor e = new Executor(this, number);
+                executors.add(e);
+            }
         }
+
     }
 
     /**

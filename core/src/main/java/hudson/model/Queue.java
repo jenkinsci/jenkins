@@ -151,6 +151,14 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @ExportedBean
 public class Queue extends ResourceController implements Saveable {
+
+    /**
+     * Defines the refresh period for of the internal cache ({@link #itemsView}).
+     * Data should be defined in milliseconds, default value - 1000;
+     * @since 1.577
+     */
+    private static int CACHE_REFRESH_PERIOD = Integer.getInteger(Queue.class.getName() + ".cacheRefreshPeriod", 1000);
+    
     /**
      * Items that are waiting for its quiet period to pass.
      *
@@ -211,7 +219,7 @@ public class Queue extends ResourceController implements Saveable {
             long t = System.currentTimeMillis();
             long d = expires.get();
             if (t>d) {// need to refresh the cache
-                long next = t+1000;
+                long next = t+CACHE_REFRESH_PERIOD;
                 if (expires.compareAndSet(d,next)) {
                     // avoid concurrent cache update via CAS.
                     // if the getItems() lock is contended,
@@ -1205,6 +1213,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Works just like {@link #checkAbortPermission()} except it indicates the status by a return value,
          * instead of exception.
+         * Also used by default for {@link hudson.model.Queue.Item#hasCancelPermission}.
          */
         boolean hasAbortPermission();
         
@@ -1478,7 +1487,11 @@ public class Queue extends ResourceController implements Saveable {
         	}
         	return s.toString();
         }
-        
+
+        /**
+         * Checks whether a scheduled item may be canceled.
+         * @return by default, the same as {@link hudson.model.Queue.Task#hasAbortPermission}
+         */
         public boolean hasCancelPermission() {
             return task.hasAbortPermission();
         }
@@ -1879,7 +1892,7 @@ public class Queue extends ResourceController implements Saveable {
          * the primary executable (such as {@link AbstractBuild}) that created out of it.
          */
         @Exported
-        public Executable getExecutable() {
+        public @CheckForNull Executable getExecutable() {
             return outcome!=null ? outcome.getPrimaryWorkUnit().getExecutable() : null;
         }
 

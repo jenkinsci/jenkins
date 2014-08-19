@@ -174,6 +174,8 @@ public class UserTest {
         User user = User.get("john smith");
         User user2 = User.get("John Smith");
         assertSame("Users should have the same id.", user.getId(), user2.getId());
+        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
+        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
     }
     
     @Test
@@ -191,6 +193,8 @@ public class UserTest {
         assertEquals("john smith", User.idStrategy().filenameOf(user.getId()));
         assertEquals("John Smith", User.idStrategy().keyFor(user2.getId()));
         assertEquals("~john ~smith", User.idStrategy().filenameOf(user2.getId()));
+        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
+        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
     }
 
     @Test
@@ -212,6 +216,8 @@ public class UserTest {
         assertEquals("Users should have the same id.", user.getId(), user2.getId());
         assertEquals("john.smith@acme.org", User.idStrategy().keyFor(user2.getId()));
         assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
+        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
+        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
     }
 
     @Test
@@ -365,7 +371,7 @@ public class UserTest {
         auth.add(Jenkins.READ, user2.getId());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
-        form.getInputByName("fullName").setValueAttribute("Alice Smith");
+        form.getInputByName("_.fullName").setValueAttribute("Alice Smith");
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
@@ -380,7 +386,7 @@ public class UserTest {
         }
         form = j.createWebClient().login(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
         
-        form.getInputByName("fullName").setValueAttribute("John");
+        form.getInputByName("_.fullName").setValueAttribute("John");
         j.submit(form);
         assertEquals("User should be albe to configure himself.", "John", user2.getFullName());
 

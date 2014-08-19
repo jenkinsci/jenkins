@@ -61,7 +61,38 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.576>What's new in 1.576</a> <!--=DATE=--></h3>
+<h3><a name=v1.577>What's new in 1.577</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class="major rfe">
+    Moved JUnit reporting functionality to a plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23263">issue 23263</a>)
+  <li class=bug>
+    Fixed ClassCastException on org.dom4j.DocumentFactory
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13709">issue 13709</a>)
+  <li class=rfe>
+    Allow BuildStep to work with non-AbstractProject
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23713">issue 23713</a>)
+  <li class=bug>
+    Improved class loading performance when using Groovy.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24309">issue 24309</a>)
+  <li class=bug>
+    Prevent <code>NullPointerException</code> from <code>Executor.run</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24110">issue 24110</a>)
+  <li class=rfe>
+    Make the lifetime of queue items cache configurable.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19691">issue 19691</a>)
+  <li class=bug>
+    Support --username/--password authentication for CLIMethod based CLI commands.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23988">issue 23988</a>)
+  <li class=bug>
+    Don't link to /safeRestart after update if Jenkins cannot restart itself.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24032">issue 24032</a>)
+  <li class=bug>
+    Properly consider busy executors when reducing a node's executor count.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24095">issue 24095</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.576>What's new in 1.576</a> (2014/08/18)</h3>
 <ul class=image>
   <li class="bug">
     Worked around "incompatible InnerClasses attribute" bug in IBM J9 VM
@@ -101,7 +132,6 @@ Upcoming changes</a>
     Modernize tabBar and bigtable.  Makes the project view look better.  Same for Plugin Manager.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24030">issue 24030</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.575>What's new in 1.575</a> (2014/08/10)</h3>
 <ul class=image>
   <li class="rfe">

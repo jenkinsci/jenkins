@@ -52,6 +52,13 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
+
+    /**
+     * Name of the “default JDK”, meaning no specific JDK selected.
+     * @since 1.577
+     */
+    public static final String DEFAULT_NAME = "(Default)";
+
     /**
      * @deprecated since 2009-02-25
      */

@@ -145,9 +145,22 @@ public class AnnotatedLargeText<T> extends LargeText {
             return super.writeLogTo(start,w);
     }
 
+    /**
+     * Strips annotations using a {@link PlainTextConsoleOutputStream}.
+     * @inheritDoc
+     */
     @Override
     public long writeLogTo(long start, OutputStream out) throws IOException {
         return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
+    }
+
+    /**
+     * Calls {@link LargeText#writeLogTo(long, OutputStream)} without stripping annotations as {@link #writeLogTo(long, OutputStream)} would.
+     * @inheritDoc
+     * @since 1.577
+     */
+    public long writeRawLogTo(long start, OutputStream out) throws IOException {
+        return super.writeLogTo(start, out);
     }
 
     public long writeHtmlTo(long start, Writer w) throws IOException {

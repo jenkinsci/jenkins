@@ -459,6 +459,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Gets all the users.
      */
     public static Collection<User> getAll() {
+        final IdStrategy strategy = idStrategy();
         if(System.currentTimeMillis() -lastScanned>10000) {
             // occasionally scan the file system to check new users
             // whether we should do this only once at start up or not is debatable.
@@ -471,7 +472,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
             for (File subdir : subdirs)
                 if(new File(subdir,"config.xml").exists()) {
-                    String name = subdir.getName();
+                    String name = strategy.idFromFilename(subdir.getName());
                     User.getOrCreate(name, name, true);
                 }
 
@@ -486,7 +487,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         Collections.sort(r,new Comparator<User>() {
-            IdStrategy strategy = idStrategy();
 
             public int compare(User o1, User o2) {
                 return strategy.compare(o1.getId(), o2.getId());
@@ -662,10 +662,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
 
-        fullName = req.getParameter("fullName");
-        description = req.getParameter("description");
-
         JSONObject json = req.getSubmittedForm();
+
+        fullName = json.getString("fullName");
+        description = json.getString("description");
 
         List<UserProperty> props = new ArrayList<UserProperty>();
         int i = 0;
@@ -802,7 +802,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return Collections.emptyList();
         }
         List<String> r = new ArrayList<String>();
-        for (GrantedAuthority a : impersonate().getAuthorities()) {
+        Authentication authentication;
+        try {
+            authentication = impersonate();
+        } catch (UsernameNotFoundException x) {
+            LOGGER.log(Level.FINE, "cannot look up authorities for " + id, x);
+            return Collections.emptyList();
+        }
+        for (GrantedAuthority a : authentication.getAuthorities()) {
             if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
                 continue;
             }

@@ -33,6 +33,7 @@ import hudson.model.ResourceList;
 
 import java.io.IOException;
 import java.util.Collection;
+import javax.annotation.CheckForNull;
 
 /**
  * Base class for defining filter {@link hudson.model.Queue.Task}.
@@ -79,7 +80,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getEstimatedDuration();
     }
 
-    public Executable createExecutable() throws IOException {
+    public @CheckForNull Executable createExecutable() throws IOException {
         return base.createExecutable();
     }
 
