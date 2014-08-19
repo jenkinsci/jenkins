@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.576-SNAPSHOT</version>
+    <version>1.576</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -43,7 +43,7 @@ THE SOFTWARE.
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
     <ignore.random.failures>false</ignore.random.failures>
-    <jacocoSurefireArgs></jacocoSurefireArgs><!-- empty by default -->
+    <jacocoSurefireArgs /><!-- empty by default -->
   </properties>
 
   <dependencies>
