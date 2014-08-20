@@ -152,6 +152,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Utility functions used in views.
