@@ -250,7 +250,7 @@ public class MyViewsPropertyTest {
             fail("Property should not throw AccessDeniedException - user should control of himself.");
         }
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
-        auth.add(Jenkins.ADMINISTER, "User2");
+        auth.add(Jenkins.ADMINISTER, "user2");
         try{
             property.checkPermission(Permission.CONFIGURE);
         }
