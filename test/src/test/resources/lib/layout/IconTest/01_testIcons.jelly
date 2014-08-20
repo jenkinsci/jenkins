@@ -37,6 +37,11 @@ THE SOFTWARE.
       -->
       <l:icon class="icon-sm icon-aborted " />
       <l:icon class="icon-md icon-aborted" />
+
+      <!--
+      src attribute...
+      -->
+      <l:icon src="/plugin/xxx/icon.png" />
     </div>
   </l:main-panel>
 </l:layout>

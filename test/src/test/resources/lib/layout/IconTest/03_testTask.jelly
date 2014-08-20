@@ -35,6 +35,10 @@ THE SOFTWARE.
       <l:task href=".." icon="16x16/blue.gif" title="Title"/>
       <l:task href=".." icon="images/16x16/blue.gif" title="Title"/>
       <l:task href=".." icon="/images/16x16/blue.gif" title="Title"/>
+
+      <!-- unknown icon urls... -->
+      <l:task href=".." icon="/plugin/xxx/icon.png" title="Title"/>
+      <l:task href=".." icon="plugin/xxx/icon.png" title="Title"/>
     </l:tasks>
 
   </l:main-panel>
