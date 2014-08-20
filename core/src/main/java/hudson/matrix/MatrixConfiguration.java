@@ -121,6 +121,11 @@ public class MatrixConfiguration extends Project<MatrixConfiguration,MatrixRun> 
     }
 
     @Override
+    public final boolean supportsMakeDisabled() {
+        return false;
+    }
+    
+    @Override
     public final HttpResponse doDisable() throws IOException, ServletException {
         return HttpResponses.errorWithoutStack(405, Messages.MatrixConfiguration_DisableNotAllowed());
     }
