@@ -27,13 +27,14 @@ package hudson;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Test;
 import org.junit.Rule;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class PluginTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    //@Issue("SECURITY-131")
+    @Issue("SECURITY-131")
     @Test public void doDynamic() throws Exception {
         r.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
         /* Collapsed somewhere before it winds up in restOfPath:
