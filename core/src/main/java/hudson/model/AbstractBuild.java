@@ -167,6 +167,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         super(job);
     }
 
+    @Deprecated
     protected AbstractBuild(P job, Calendar timestamp) {
         super(job, timestamp);
     }

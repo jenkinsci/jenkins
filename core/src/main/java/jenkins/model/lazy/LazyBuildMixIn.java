@@ -63,9 +63,6 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
     private @Nonnull RunMap<RunT> builds = new RunMap<RunT>();
 
-    // keep track of the previous time we started a build
-    private long lastBuildStartTime;
-
     /**
      * Initializes this mixin.
      * Call this from a constructor and {@link AbstractItem#onLoad} to make sure it is always initialized.
@@ -169,19 +166,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
      * Calls the ({@link Job}) constructor of {@link #getBuildClass}.
      * Suitable for {@link SubTask#createExecutable}.
      */
-    @SuppressWarnings("SleepWhileHoldingLock")
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("SWL_SLEEP_WITH_LOCK_HELD")
     public final synchronized RunT newBuild() throws IOException {
-    	// make sure we don't start two builds in the same second
-    	// so the build directories will be different too
-    	long timeSinceLast = System.currentTimeMillis() - lastBuildStartTime;
-    	if (timeSinceLast < 1000) {
-    		try {
-				Thread.sleep(1000 - timeSinceLast);
-			} catch (InterruptedException e) {
-			}
-    	}
-    	lastBuildStartTime = System.currentTimeMillis();
         try {
             RunT lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
             builds.put(lastBuild);

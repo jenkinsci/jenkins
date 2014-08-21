@@ -92,6 +92,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         super(project);
     }
 
+    @Deprecated
     protected Build(P job, Calendar timestamp) {
         super(job, timestamp);
     }
