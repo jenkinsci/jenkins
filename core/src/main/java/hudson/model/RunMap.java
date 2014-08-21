@@ -26,8 +26,8 @@ package hudson.model;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -187,8 +187,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
     @Override
     protected FilenameFilter createDirectoryFilter() {
-        final SimpleDateFormat formatter = Run.ID_FORMATTER.get();
-
+        final DateFormat formatter = Run.getIDFormatter();
+        final DateFormat formatterOld = Run.getOldIDFormatter();
         return new FilenameFilter() {
             @Override public boolean accept(File dir, String name) {
                 if (name.startsWith("0000")) {
@@ -199,6 +199,13 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 }
                 try {
                     if (formatter.format(formatter.parse(name)).equals(name)) {
+                        return true;
+                    }
+                } catch (ParseException e) {
+                    // fall through
+                }
+                try {
+                    if (formatterOld.format(formatterOld.parse(name)).equals(name)) {
                         return true;
                     }
                 } catch (ParseException e) {

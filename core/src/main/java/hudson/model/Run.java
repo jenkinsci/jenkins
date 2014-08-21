@@ -91,6 +91,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import static java.util.logging.Level.*;
 import java.util.logging.Logger;
@@ -176,6 +177,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * When the build is scheduled.
      */
     protected transient final long timestamp;
+    private transient final String id;
 
     /**
      * When the build has started running.
@@ -266,16 +268,24 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private @CheckForNull ArtifactManager artifactManager;
 
-    private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-    public static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
+    private static final SimpleDateFormat CANONICAL_ID_FORMATTER_OLD = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS");
+    static {
+        CANONICAL_ID_FORMATTER.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
+    private static final ThreadLocal<SimpleDateFormat> ID_FORMATTER_OLD = new IDFormatterProvider(CANONICAL_ID_FORMATTER_OLD);
+    private static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider(CANONICAL_ID_FORMATTER);
     private static final class IDFormatterProvider extends ThreadLocal<SimpleDateFormat> {
-                @Override
-                protected SimpleDateFormat initialValue() {
-                    synchronized (CANONICAL_ID_FORMATTER) {
-                        return (SimpleDateFormat) CANONICAL_ID_FORMATTER.clone();
-                    }
-                }
-            };
+        private final SimpleDateFormat canonicalFormatter;
+        IDFormatterProvider(SimpleDateFormat canonicalFormatter) {
+            this.canonicalFormatter = canonicalFormatter;
+        }
+        @Override protected SimpleDateFormat initialValue() {
+            synchronized (canonicalFormatter) {
+                return (SimpleDateFormat) canonicalFormatter.clone();
+            }
+        }
+    };
 
     /**
      * Creates a new {@link Run}.
@@ -296,17 +306,22 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     protected Run(@Nonnull JobT job, long timestamp) {
+        this(job, timestamp, getIDFormatter().format(new Date(timestamp)));
+		getRootDir().mkdirs();
+    }
+
+    private Run(@Nonnull JobT job, long timestamp, String id) {
         this.project = job;
         this.timestamp = timestamp;
+        this.id = id;
         this.state = State.NOT_STARTED;
-		getRootDir().mkdirs();
     }
 
     /**
      * Loads a run from a log file.
      */
     protected Run(@Nonnull JobT project, @Nonnull File buildDir) throws IOException {
-        this(project, parseTimestampFromBuildDir(buildDir));
+        this(project, parseTimestampFromBuildDir(buildDir), buildDir.getName());
         this.previousBuildInProgress = _this(); // loaded builds are always completed
         reload();
     }
@@ -404,9 +419,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             // as opposed to build numbers which are used in symlinks
             // (just in case the symlink check above did not work)
             buildDir = buildDir.getCanonicalFile();
-            return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
+            return getIDFormatter().parse(buildDir.getName()).getTime();
         } catch (ParseException e) {
-            throw new InvalidDirectoryNameException(buildDir);
+            try {
+                return getOldIDFormatter().parse(buildDir.getName()).getTime();
+            } catch (ParseException e2) {
+                throw new InvalidDirectoryNameException(buildDir);
+            }
         } catch (InterruptedException e) {
             throw new IOException("Interrupted while resolving symlink directory "+buildDir,e);
         }
@@ -984,7 +1003,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Exported
     public @Nonnull String getId() {
-        return ID_FORMATTER.get().format(new Date(timestamp));
+        return id;
     }
     
     /**
@@ -994,6 +1013,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public static @Nonnull DateFormat getIDFormatter() {
     	return ID_FORMATTER.get();
+    }
+
+    /**
+     * Gets the version of {@link #getIDFormatter} used in older build records.
+     * @since TODO
+     */
+    public static @Nonnull DateFormat getOldIDFormatter() {
+    	return ID_FORMATTER_OLD.get();
     }
  
     @Override
