@@ -1892,7 +1892,7 @@ public class Queue extends ResourceController implements Saveable {
          * the primary executable (such as {@link AbstractBuild}) that created out of it.
          */
         @Exported
-        public Executable getExecutable() {
+        public @CheckForNull Executable getExecutable() {
             return outcome!=null ? outcome.getPrimaryWorkUnit().getExecutable() : null;
         }
 

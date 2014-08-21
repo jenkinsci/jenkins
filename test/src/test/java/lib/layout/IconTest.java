@@ -62,6 +62,9 @@ public class IconTest extends HudsonTestCase  {
         // class specs not in "normal" order...
         assertIconToImageOkay(icons.get(4), "/images/16x16/aborted.png");
         assertIconToImageOkay(icons.get(5), "/images/24x24/aborted.png");
+
+        // src attribute...
+        assertIconToImageOkay(icons.get(6), "/plugin/xxx/icon.png");
     }
 
     public void testBallColorTd() throws Exception {
@@ -89,6 +92,9 @@ public class IconTest extends HudsonTestCase  {
         assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
         assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
         assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
+
+        assertIconToImageOkay(taskDivs.get(5).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
+        assertIconToImageOkay(taskDivs.get(6).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
     }
 
     public BallColor getBallColorAborted() {

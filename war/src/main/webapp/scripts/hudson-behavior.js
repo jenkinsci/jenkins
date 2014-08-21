@@ -456,7 +456,6 @@ function registerValidator(e) {
         e.onchange = function() { checker.call(this); oldOnchange.call(this); }
     } else
         e.onchange = checker;
-    e.onblur = checker;
 
     var v = e.getAttribute("checkDependsOn");
     if (v) {

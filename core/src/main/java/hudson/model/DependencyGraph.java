@@ -452,6 +452,10 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             hash = 23 * hash + this.downstream.hashCode();
             return hash;
         }
+
+        @Override public String toString() {
+            return super.toString() + "[" + upstream + "->" + downstream + "]";
+        }
     }
 
     /**

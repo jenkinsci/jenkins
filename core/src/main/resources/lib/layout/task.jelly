@@ -113,7 +113,10 @@ THE SOFTWARE.
         <j:set var="iconMetadata" value="${icons.getIconByUrl(attrs.icon)}"/>
       </j:if>
 
-      <j:set var="icon" value="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}/${icon}"/>
+      <j:if test="${!icon.startsWith('/')}">
+        <j:set var="icon" value="/${icon}"/>
+      </j:if>
+      <j:set var="icon" value="${rootURL}${icon.startsWith('images/') || icon.startsWith('plugin/') ? h.resourcePath : ''}${icon}"/>
       <j:when test="${enabled==false}">
         <div class="task disabled">
           <span>
