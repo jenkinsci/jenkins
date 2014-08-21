@@ -482,11 +482,6 @@ public class UserTest {
         assertTrue("But once storage is allocated, he can be deleted", user3.canDelete());
     }
 
-    @Test
-    public void testGetDynamic() {
-
-    }
-    
      public static class SomeUserProperty extends UserProperty {
          
         @TestExtension
