@@ -384,29 +384,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             // check for legacy users and migrate if safe to do so.
             File[] legacy = getLegacyConfigFilesFor(id);
             if (legacy != null && legacy.length > 0) {
-                for (File p : legacy) {
-                    final XmlFile legacyXml = new XmlFile(XSTREAM, new File(p, "config.xml"));
+                for (File legacyUserDir : legacy) {
+                    final XmlFile legacyXml = new XmlFile(XSTREAM, new File(legacyUserDir, "config.xml"));
                     try {
                         Object o = legacyXml.read();
                         if (o instanceof User) {
-                            User tmp = (User) o;
-                            if (idStrategy().equals(id, tmp.getId()) && !idStrategy().filenameOf(tmp.getId())
-                                    .equals(p.getParentFile().getName())) {
-                                if (!p.getParentFile().renameTo(configFile.getParentFile())) {
-                                    LOGGER.log(Level.FINE, "Could not migrate user record from {0} to {1}",
-                                            new Object[]{p.getParentFile(), configFile.getParentFile()});
+                            if (idStrategy().equals(id, legacyUserDir.getName()) && !idStrategy().filenameOf(legacyUserDir.getName())
+                                    .equals(legacyUserDir.getName())) {
+                                if (!legacyUserDir.renameTo(configFile.getParentFile())) {
+                                    LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
+                                            new Object[]{legacyUserDir, configFile.getParentFile()});
                                 }
                                 break;
                             }
+                        } else {
+                            LOGGER.log(Level.FINE, "Unexpected object loaded from {0}: {1}",
+                                    new Object[]{ legacyUserDir, o });
                         }
                     } catch (IOException e) {
-                        // ignore
+                        LOGGER.log(Level.FINE, String.format("Exception trying to load user from {0}: {1}",
+                                new Object[]{ legacyUserDir, e.getMessage() }), e);
                     }
                 }
             }
         }
         if (u==null && (create || configFile.exists())) {
-            User tmp = new User(id, fullName);
+            User tmp = new User(idkey, fullName);
             User prev;
             byNameLock.readLock().lock();
             try {
