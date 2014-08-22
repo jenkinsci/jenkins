@@ -46,6 +46,8 @@ import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
+import static java.util.logging.Level.FINER;
+
 /**
  * Makes it easier to use a lazy {@link RunMap} from a {@link Job} implementation.
  * Provides method implementations for some abstract {@link Job} methods,
@@ -325,14 +327,21 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
          * To implement {@link Run#dropLinks}.
          */
         public final void dropLinks() {
-            RunT nb = getNextBuild();
-            if (nb != null) {
-                nb.getRunMixIn().previousBuildR = previousBuildR;
+            if (nextBuildR != null) {
+                RunT nb = nextBuildR.get();
+                if (nb != null) {
+                    nb.getRunMixIn().previousBuildR = previousBuildR;
+                }
             }
-            RunT pb = getPreviousBuild();
-            if (pb != null) {
-                pb.getRunMixIn().nextBuildR = nextBuildR;
+            if (previousBuildR != null) {
+                RunT pb = previousBuildR.get();
+                if (pb != null) {
+                    pb.getRunMixIn().nextBuildR = nextBuildR;
+                }
             }
+
+            // make this build object unreachable by other Runs
+            createReference().clear();
         }
 
         /**
@@ -352,6 +361,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
                     if (pb != null) {
                         pb.getRunMixIn().nextBuildR = createReference();   // establish bi-di link
                         this.previousBuildR = pb.getRunMixIn().createReference();
+                        LOGGER.log(FINER, "Linked {0}<->{1} in getPreviousBuild()", new Object[]{this, pb});
                         return pb;
                     } else {
                         this.previousBuildR = none();
@@ -385,6 +395,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
                     if (nb != null) {
                         nb.getRunMixIn().previousBuildR = createReference();   // establish bi-di link
                         this.nextBuildR = nb.getRunMixIn().createReference();
+                        LOGGER.log(FINER, "Linked {0}<->{1} in getNextBuild()", new Object[]{this, nb});
                         return nb;
                     } else {
                         this.nextBuildR = none();

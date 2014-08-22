@@ -220,7 +220,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
 
     /**
      * Return only the most recent builds.
-     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * <em>Warning:</em> this method mutates the original list and then returns it.AbstractLazyLoadRunMap
      * @param n a count
      * @return the n most recent builds
      * @since 1.507

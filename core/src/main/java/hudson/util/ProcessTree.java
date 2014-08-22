@@ -37,19 +37,10 @@ import hudson.slaves.SlaveComputer;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
-import org.apache.commons.io.FileUtils;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -680,7 +671,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return arguments;
                 arguments = new ArrayList<String>();
                 try {
-                    byte[] cmdline = FileUtils.readFileToByteArray(getFile("cmdline"));
+                    byte[] cmdline = readFileToByteArray(getFile("cmdline"));
                     int pos=0;
                     for (int i = 0; i < cmdline.length; i++) {
                         byte b = cmdline[i];
@@ -702,7 +693,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return envVars;
                 envVars = new EnvVars();
                 try {
-                    byte[] environ = FileUtils.readFileToByteArray(getFile("environ"));
+                    byte[] environ = readFileToByteArray(getFile("environ"));
                     int pos=0;
                     for (int i = 0; i < environ.length; i++) {
                         byte b = environ[i];
@@ -716,6 +707,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // so don't report this as an error.
                 }
                 return envVars;
+            }
+        }
+
+        public byte[] readFileToByteArray(File file) throws IOException {
+            InputStream in = null;
+            try {
+                in = org.apache.commons.io.FileUtils.openInputStream(file);
+                return org.apache.commons.io.IOUtils.toByteArray(in);
+            } finally {
+                org.apache.commons.io.IOUtils.closeQuietly(in);
             }
         }
     }
