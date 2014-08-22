@@ -32,6 +32,10 @@ THE SOFTWARE.
         ${it.name}
       </h1>
 
+      <j:if test="${it.atom}">
+        <t:editableDescription permission="${app.ADMINISTER}"/>
+      </j:if>
+
       <j:forEach var="a" items="${it.actions}">
         <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
       </j:forEach>
