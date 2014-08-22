@@ -137,6 +137,6 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * All registered {@link QueueTaskDispatcher}s.
      */
     public static ExtensionList<QueueTaskDispatcher> all() {
-        return Jenkins.getInstance().getExtensionList(QueueTaskDispatcher.class);
+        return ExtensionList.lookup(QueueTaskDispatcher.class);
     }
 }

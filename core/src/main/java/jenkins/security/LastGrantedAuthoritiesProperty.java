@@ -60,7 +60,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     /**
      * Persist the information with the new {@link UserDetails}.
      */
-    public void update(Authentication auth) throws IOException {
+    public void update(@Nonnull Authentication auth) throws IOException {
         List<String> roles = new ArrayList<String>();
         for (GrantedAuthority ga : auth.getAuthorities()) {
             roles.add(ga.getAuthority());

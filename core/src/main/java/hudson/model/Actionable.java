@@ -23,13 +23,13 @@
  */
 package hudson.model;
 
+import hudson.ExtensionList;
 import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -89,12 +89,9 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Exported(name="actions")
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = new ArrayList<Action>(getActions());
-        Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins != null) {
-            for (TransientActionFactory<?> taf : jenkins.getExtensionList(TransientActionFactory.class)) {
-                if (taf.type().isInstance(this)) {
-                    _actions.addAll(createFor(taf));
-                }
+        for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
+            if (taf.type().isInstance(this)) {
+                _actions.addAll(createFor(taf));
             }
         }
         return Collections.unmodifiableList(_actions);

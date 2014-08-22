@@ -4,14 +4,14 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.33</version>
+    <version>1.34</version>
     <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.575-SNAPSHOT</version>
+  <version>1.577-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
@@ -22,6 +22,7 @@
     <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</connection>
     <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</developerConnection>
     <url>https://svn.jenkins-ci.org/trunk/hudson/plugins/</url>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
@@ -39,19 +40,19 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.575-SNAPSHOT</version>
+      <version>1.577-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.575-SNAPSHOT</version>
+      <version>1.577-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.575-SNAPSHOT</version>
+      <version>1.577-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <!--

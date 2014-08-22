@@ -24,7 +24,8 @@ THE SOFTWARE.
 
 <!--
   <%@ attribute name="job" required="true" type="hudson.model.Job" %>
-  <%@ attribute name="iconSize" required="true" type="java.lang.String" %>
+  <%@ attribute name="iconSizeClass" type="java.lang.String" %>
+  <%@ attribute name="iconSize" type="java.lang.String" %>
   <%@ attribute name="td" required="false" type="java.lang.String" %>
   <%@ attribute name="link" required="false" type="java.lang.String" %>
 -->
@@ -40,18 +41,25 @@ THE SOFTWARE.
         </x:attribute>
         <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
         <j:if test="${buildHealth!=null}">
+            <j:if test="${iconSizeClass == null}">
+              <j:choose>
+                <j:when  test="${iconSize == null}">
+                  <j:set var="iconSizeClass" value="icon-sm"/>
+                </j:when>
+                <j:otherwise>
+                  <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}"/>
+                </j:otherwise>
+              </j:choose>
+            </j:if>
             <j:choose>
               <j:when  test="${!empty(healthReports)}">
                 <a class="build-health-link" href="${empty(link)?'#':link}" 
                     style="${attrs.style}">
-                    <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                         alt="${buildHealth.score}%" 
-                         class="build-health-icon icon${iconSize}"/>
+                    <l:icon class="${buildHealth.iconClassName} ${iconSizeClass}" alt="${buildHealth.score}%"/>
                 </a>
               </j:when>
               <j:otherwise>
-                 <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                      alt="${buildHealth.score}%" class="build-health-icon icon${iconSize}"/>
+                 <l:icon class="${buildHealth.iconClassName} ${iconSizeClass}" alt="${buildHealth.score}%" />
                </j:otherwise>
              </j:choose>  
         </j:if>
@@ -69,8 +77,7 @@ THE SOFTWARE.
                         <j:forEach var="rpt" items="${job.buildHealthReports}">
                             <tr>
                                 <td align="left">
-                                    <img src="${rootURL}${rpt.getIconUrl('16x16')}" alt=""
-                                         title=""/>
+                                    <l:icon class="${rpt.iconClassName} icon-sm" />
                                 </td>
                                 <td>${rpt.localizableDescription}</td>
                                 <td align="right">${rpt.score}</td>

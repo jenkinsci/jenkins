@@ -252,7 +252,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Returns all the registered {@link RunListener}s.
      */
     public static ExtensionList<RunListener> all() {
-        return Jenkins.getInstance().getExtensionList(RunListener.class);
+        return ExtensionList.lookup(RunListener.class);
     }
 
     private static void report(Throwable e) {

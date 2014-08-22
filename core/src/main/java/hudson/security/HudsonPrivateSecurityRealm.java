@@ -25,6 +25,7 @@ package hudson.security;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
@@ -80,6 +81,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -127,6 +130,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     public boolean allowsSignup() {
         return !disableSignup;
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly
+    public boolean getAllowsSignup() {
+        return allowsSignup();
     }
 
     /**
@@ -287,7 +295,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private void tryToMakeAdmin(User u) {
         AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
-        for (PermissionAdder adder : Jenkins.getInstance().getExtensionList(PermissionAdder.class)) {
+        for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
             if (adder.add(as, u, Jenkins.ADMINISTER)) {
                 return;
             }
@@ -679,11 +687,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
-        }
-
-        @Override
-        public String getHelpFile() {
-            return "/help/security/private-realm.html"; 
         }
     }
 

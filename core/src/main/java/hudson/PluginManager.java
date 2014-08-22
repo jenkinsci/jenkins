@@ -435,6 +435,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         plugins.add(p);
         activePlugins.add(p);
+        synchronized (((UberClassLoader) uberClassLoader).loaded) {
+            ((UberClassLoader) uberClassLoader).loaded.clear();
+        }
 
         try {
             p.resolvePluginDependencies();
@@ -1015,6 +1018,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * Keyed by the generated class name.
          */
         private ConcurrentMap<String, WeakReference<Class>> generatedClasses = new ConcurrentHashMap<String, WeakReference<Class>>();
+        /** Cache of loaded, or known to be unloadable, classes. */
+        private final Map<String,Class<?>> loaded = new HashMap<String,Class<?>>();
 
         public UberClassLoader() {
             super(PluginManager.class.getClassLoader());
@@ -1033,13 +1038,35 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 else            generatedClasses.remove(name,wc);
             }
 
+            if (name.startsWith("SimpleTemplateScript")) { // cf. groovy.text.SimpleTemplateEngine
+                throw new ClassNotFoundException("ignoring " + name);
+            }
+            synchronized (loaded) {
+                if (loaded.containsKey(name)) {
+                    Class<?> c = loaded.get(name);
+                    if (c != null) {
+                        return c;
+                    } else {
+                        throw new ClassNotFoundException("cached miss for " + name);
+                    }
+                }
+            }
             if (FAST_LOOKUP) {
                 for (PluginWrapper p : activePlugins) {
                     try {
                         Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(p.classLoader, name);
-                        if (c!=null)    return c;
+                        if (c != null) {
+                            synchronized (loaded) {
+                                loaded.put(name, c);
+                            }
+                            return c;
+                        }
                         // calling findClass twice appears to cause LinkageError: duplicate class def
-                        return ClassLoaderReflectionToolkit._findClass(p.classLoader, name);
+                        c = ClassLoaderReflectionToolkit._findClass(p.classLoader, name);
+                        synchronized (loaded) {
+                            loaded.put(name, c);
+                        }
+                        return c;
                     } catch (ClassNotFoundException e) {
                         //not found. try next
                     }
@@ -1052,6 +1079,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         //not found. try next
                     }
                 }
+            }
+            synchronized (loaded) {
+                loaded.put(name, null);
             }
             // not found in any of the classloader. delegate.
             throw new ClassNotFoundException(name);
@@ -1170,7 +1200,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * @return this monitor.
          */
         public static final PluginUpdateMonitor getInstance() {
-            return Jenkins.getInstance().getExtensionList(PluginUpdateMonitor.class).get(0);
+            return ExtensionList.lookup(PluginUpdateMonitor.class).get(0);
         }
         
         /**

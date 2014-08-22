@@ -35,7 +35,7 @@ THE SOFTWARE.
           <j:forEach var="f" items="${it.artifacts}">
             <tr>
               <td>
-                <img src="${imagesURL}/16x16/text.png" alt="" height="16" width="16"/>
+                <l:icon class="icon-text icon-sm"/>
               </td>
               <td>
                 <a href="artifact/${f.href}">${f.displayPath}</a>

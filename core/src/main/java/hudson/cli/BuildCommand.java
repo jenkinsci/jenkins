@@ -37,6 +37,7 @@ import hudson.AbortException;
 import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
@@ -161,6 +162,7 @@ public class BuildCommand extends CLICommand {
             }
             AbstractBuild b = f.waitForStart();    // wait for the start
             stdout.println("Started "+b.getFullDisplayName());
+            stdout.flush();
 
             if (sync || follow) {
                 try {
@@ -234,7 +236,9 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public String getShortDescription() {
-            return Messages.BuildCommand_CLICause_ShortDescription(startedBy);
+            User user = User.get(startedBy, false);
+            String userName = user != null ? user.getDisplayName() : startedBy;
+            return Messages.BuildCommand_CLICause_ShortDescription(userName);
         }
 
         @Override

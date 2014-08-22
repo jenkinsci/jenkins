@@ -33,7 +33,8 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="computerCaption">
-      <a href="${rootURL}/${c.url}" class="model-link inside">${title}</a>
+
+      <a href="${rootURL}/${c.url}" class="model-link inside"><l:icon class="icon-computer${c.offline?'-x':''} icon-sm" alt="${altText}"/><st:nbsp/>${title}</a>
       <j:if test="${c.offline}"> <st:nbsp/> (${%offline})</j:if>
       <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
     </d:tag>
@@ -52,6 +53,7 @@ THE SOFTWARE.
                   </a>
                 </td>
                 <td class="pane"/>
+                <td class="pane"/>
               </j:when>
               <j:when test="${e.idle}">
                 <td class="pane">
@@ -65,13 +67,14 @@ THE SOFTWARE.
                   </j:choose>
                 </td>
                 <td class="pane"/>
+                <td class="pane"/>
               </j:when>
               <j:otherwise>
                 <!-- not actually optional, but it helps with backward compatibility -->
                 <j:set var="executor" value="${e}" />
                 <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
                   <td class="pane">
-                    <div style="white-space: normal">${%Building}
+                    <div style="white-space: normal">
                       <j:set var="exe" value="${e.currentExecutable}" />
                       <j:invokeStatic var="exeparent"
                          className="hudson.model.queue.Executables" method="getParentOf">
@@ -79,7 +82,7 @@ THE SOFTWARE.
                       </j:invokeStatic>
                       <j:choose>
                         <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
-                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>&#160;<a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
+                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
                           <t:buildProgressBar build="${exe}" executor="${executor}"/>
                         </j:when>
                         <j:otherwise>
@@ -88,6 +91,11 @@ THE SOFTWARE.
                       </j:choose>
                     </div>
                   </td>
+                <td class="pane">
+                  <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
+                      <a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
+                  </j:if>
+                </td>
                 </st:include>
                 <td class="pane" align="center" valign="middle">
                   <j:if test="${e.hasStopPermission()}">
@@ -106,15 +114,6 @@ THE SOFTWARE.
         title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>"
         collapsedText="${%Computers(computers.size() - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
       <colgroup><col width="30"/><col width="200*"/><col width="24"/></colgroup>
-
-      <tr>
-        <th class="pane">#</th>
-        <th class="pane" colspan="2">
-          <div style="margin-right:19px">
-            ${%Status}
-          </div>
-        </th>
-      </tr>
 
       <j:forEach var="c" items="${computers}">
         <tr>

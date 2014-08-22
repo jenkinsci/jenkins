@@ -28,7 +28,7 @@ public class ConnectionTest extends Assert {
     }
 
     @Test
-    public void testEncyrpt() throws Throwable {
+    public void testEncrypt() throws Throwable {
         final SecretKey sessionKey = new SecretKeySpec(new byte[16],"AES");
 
         Thread t1 = new Thread() {

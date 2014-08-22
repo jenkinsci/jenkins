@@ -76,7 +76,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * All the registered {@link CloudProvisioningListener}s.
      */
     public static ExtensionList<CloudProvisioningListener> all() {
-        return Jenkins.getInstance().getExtensionList(CloudProvisioningListener.class);
+        return ExtensionList.lookup(CloudProvisioningListener.class);
     }
 }
 

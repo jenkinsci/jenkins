@@ -33,8 +33,10 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
 import hudson.tasks.MailAddressResolver;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Collections;
 
 import jenkins.model.IdStrategy;
@@ -47,8 +49,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class UserTest {
 
@@ -174,6 +178,8 @@ public class UserTest {
         User user = User.get("john smith");
         User user2 = User.get("John Smith");
         assertSame("Users should have the same id.", user.getId(), user2.getId());
+        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
+        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
     }
     
     @Test
@@ -191,6 +197,8 @@ public class UserTest {
         assertEquals("john smith", User.idStrategy().filenameOf(user.getId()));
         assertEquals("John Smith", User.idStrategy().keyFor(user2.getId()));
         assertEquals("~john ~smith", User.idStrategy().filenameOf(user2.getId()));
+        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
+        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
     }
 
     @Test
@@ -212,6 +220,18 @@ public class UserTest {
         assertEquals("Users should have the same id.", user.getId(), user2.getId());
         assertEquals("john.smith@acme.org", User.idStrategy().keyFor(user2.getId()));
         assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
+        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
+        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
+    }
+
+    @Issue("JENKINS-24317")
+    @LocalData
+    @Test public void migration() throws Exception {
+        User bob = User.get("bob");
+        assertEquals("Bob Smith", bob.getFullName());
+        assertEquals("Bob Smith", User.get("Bob").getFullName());
+        assertEquals("nonexistent", User.get("nonexistent").getFullName());
+        assertEquals("[bob]", Arrays.toString(new File(j.jenkins.getRootDir(), "users").list()));
     }
 
     @Test
@@ -365,7 +385,7 @@ public class UserTest {
         auth.add(Jenkins.READ, user2.getId());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
-        form.getInputByName("fullName").setValueAttribute("Alice Smith");
+        form.getInputByName("_.fullName").setValueAttribute("Alice Smith");
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
@@ -380,7 +400,7 @@ public class UserTest {
         }
         form = j.createWebClient().login(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
         
-        form.getInputByName("fullName").setValueAttribute("John");
+        form.getInputByName("_.fullName").setValueAttribute("John");
         j.submit(form);
         assertEquals("User should be albe to configure himself.", "John", user2.getFullName());
 

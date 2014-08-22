@@ -238,6 +238,7 @@ public class ArtifactArchiverTest {
         String xml = p.getConfigFile().asString();
         assertFalse(xml, xml.contains("<recordBuildArtifacts>"));
         assertTrue(xml, xml.contains("<fingerprint>true</fingerprint>"));
+        assertFalse(xml, xml.contains("<hudson.tasks.Fingerprinter>"));
         ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
         assertTrue(aa.isFingerprint());
         FreeStyleBuild b1 = j.buildAndAssertSuccess(p);

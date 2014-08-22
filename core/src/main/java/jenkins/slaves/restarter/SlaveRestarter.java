@@ -40,7 +40,7 @@ public abstract class SlaveRestarter implements ExtensionPoint, Serializable {
     public abstract void restart() throws Exception;
 
     public static ExtensionList<SlaveRestarter> all() {
-        return Jenkins.getInstance().getExtensionList(SlaveRestarter.class);
+        return ExtensionList.lookup(SlaveRestarter.class);
     }
 
     private static final Logger LOGGER = Logger.getLogger(SlaveRestarter.class.getName());

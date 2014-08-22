@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Util;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     }
 
     public static void invoke() {
-        Jenkins.getInstance().getExtensionList(AsyncPeriodicWork.class).get(WorkspaceCleanupThread.class).run();
+        ExtensionList.lookup(AsyncPeriodicWork.class).get(WorkspaceCleanupThread.class).run();
     }
 
     @Override protected void execute(TaskListener listener) throws InterruptedException, IOException {

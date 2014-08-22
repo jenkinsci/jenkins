@@ -149,8 +149,6 @@ public class CLIRegisterer extends ExtensionFinder {
                             while (!chains.isEmpty())
                                 binders.add(new MethodBinder(chains.pop(),this,parser));
 
-                            new ClassParser().parse(Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this), parser);
-
                             return parser;
                         }
 
@@ -169,6 +167,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 try {
                                     // authentication
                                     CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
+                                    new ClassParser().parse(authenticator,parser);
 
                                     // fill up all the binders
                                     parser.parseArgument(args);

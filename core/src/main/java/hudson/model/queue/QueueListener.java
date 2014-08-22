@@ -80,6 +80,6 @@ public abstract class QueueListener implements ExtensionPoint {
      * Returns all the registered {@link QueueListener}s.
      */
     public static ExtensionList<QueueListener> all() {
-        return Jenkins.getInstance().getExtensionList(QueueListener.class);
+        return ExtensionList.lookup(QueueListener.class);
     }
 }

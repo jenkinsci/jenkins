@@ -24,7 +24,7 @@
 package hudson.util;
 
 import hudson.model.AbstractBuild;
-import hudson.tasks.junit.History;
+import hudson.model.Run;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.data.category.CategoryDataset;
@@ -47,31 +47,52 @@ public class ChartUtil {
      * Can be used as a graph label. Only displays numbers.
      */
     public static final class NumberOnlyBuildLabel implements Comparable<NumberOnlyBuildLabel> {
+        
+        private final Run<?,?> run;
+
+        @Deprecated
         public final AbstractBuild build;
 
+        /**
+         * @since 1.577
+         */
+        public NumberOnlyBuildLabel(Run<?,?> run) {
+            this.run = run;
+            this.build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
+        }
+
+        @Deprecated
         public NumberOnlyBuildLabel(AbstractBuild build) {
+            this.run = build;
             this.build = build;
         }
 
+        /**
+         * @since 1.577
+         */
+        public Run<?, ?> getRun() {
+            return run;
+        }
+
         public int compareTo(NumberOnlyBuildLabel that) {
-            return this.build.number-that.build.number;
+            return this.run.number-that.run.number;
         }
 
         @Override
         public boolean equals(Object o) {
             if(!(o instanceof NumberOnlyBuildLabel))    return false;
             NumberOnlyBuildLabel that = (NumberOnlyBuildLabel) o;
-            return build==that.build;
+            return run==that.run;
         }
 
         @Override
         public int hashCode() {
-            return build.hashCode();
+            return run.hashCode();
         }
 
         @Override
         public String toString() {
-            return build.getDisplayName();
+            return run.getDisplayName();
         }
     }
 
@@ -93,7 +114,7 @@ public class ChartUtil {
      *      The size of the picture to be generated. These values can be overridden
      *      by the query paramter 'width' and 'height' in the request.
      * @deprecated as of 1.320
-     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
@@ -108,7 +129,7 @@ public class ChartUtil {
      *      The size of the picture to be generated. These values can be overridden
      *      by the query paramter 'width' and 'height' in the request.
      * @deprecated as of 1.320
-     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
@@ -123,7 +144,7 @@ public class ChartUtil {
      * Generates the clickable map info and sends that to the response.
      *
      * @deprecated as of 1.320
-     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
@@ -134,7 +155,7 @@ public class ChartUtil {
      * Generates the clickable map info and sends that to the response.
      *
      * @deprecated as of 1.320
-     *      Bind {@link Graph} to the URL space. See {@link History} as an example (note that doing so involves
+     *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {

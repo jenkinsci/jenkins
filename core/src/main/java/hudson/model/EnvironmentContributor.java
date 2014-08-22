@@ -115,7 +115,7 @@ public abstract class EnvironmentContributor implements ExtensionPoint {
      * Returns all the registered {@link EnvironmentContributor}s.
      */
     public static ExtensionList<EnvironmentContributor> all() {
-        return Jenkins.getInstance().getExtensionList(EnvironmentContributor.class);
+        return ExtensionList.lookup(EnvironmentContributor.class);
     }
 
     /**

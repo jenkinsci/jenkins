@@ -80,7 +80,7 @@ THE SOFTWARE.
                   <j:if test="${stuck}">
                     &#160;
                     <a href="http://wiki.jenkins-ci.org/display/JENKINS/Executor+Starvation">
-                      <img src="${imagesURL}/16x16/hourglass.gif" height="16" width="16"/>
+                      <l:icon class="icon-hourglass icon-sm"/>
                     </a>
                   </j:if>
                 </j:when>

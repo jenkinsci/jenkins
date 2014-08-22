@@ -350,7 +350,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return null;
 
         // sort resolvers by priority
-        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(Jenkins.getInstance().getExtensionList(CanonicalIdResolver.class));
+        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(ExtensionList.lookup(CanonicalIdResolver.class));
         Collections.sort(resolvers);
 
         String id = null;
@@ -379,7 +379,36 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         } finally {
             byNameLock.readLock().unlock();
         }
-        if (u==null && (create || getConfigFileFor(id).exists())) {
+        final File configFile = getConfigFileFor(id);
+        if (!configFile.isFile() && !configFile.getParentFile().isDirectory()) {
+            // check for legacy users and migrate if safe to do so.
+            File[] legacy = getLegacyConfigFilesFor(id);
+            if (legacy != null && legacy.length > 0) {
+                for (File legacyUserDir : legacy) {
+                    final XmlFile legacyXml = new XmlFile(XSTREAM, new File(legacyUserDir, "config.xml"));
+                    try {
+                        Object o = legacyXml.read();
+                        if (o instanceof User) {
+                            if (idStrategy().equals(id, legacyUserDir.getName()) && !idStrategy().filenameOf(legacyUserDir.getName())
+                                    .equals(legacyUserDir.getName())) {
+                                if (!legacyUserDir.renameTo(configFile.getParentFile())) {
+                                    LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
+                                            new Object[]{legacyUserDir, configFile.getParentFile()});
+                                }
+                                break;
+                            }
+                        } else {
+                            LOGGER.log(Level.FINE, "Unexpected object loaded from {0}: {1}",
+                                    new Object[]{ legacyUserDir, o });
+                        }
+                    } catch (IOException e) {
+                        LOGGER.log(Level.FINE, String.format("Exception trying to load user from {0}: {1}",
+                                new Object[]{ legacyUserDir, e.getMessage() }), e);
+                    }
+                }
+            }
+        }
+        if (u==null && (create || configFile.exists())) {
             User tmp = new User(id, fullName);
             User prev;
             byNameLock.readLock().lock();
@@ -393,7 +422,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 if (LOGGER.isLoggable(Level.FINE) && !fullName.equals(prev.getFullName())) {
                     LOGGER.log(Level.FINE, "mismatch on fullName (‘" + fullName + "’ vs. ‘" + prev.getFullName() + "’) for ‘" + id + "’", new Throwable());
                 }
-            } else if (!id.equals(fullName) && !getConfigFileFor(id).exists()) {
+            } else if (!id.equals(fullName) && !configFile.exists()) {
                 // JENKINS-16332: since the fullName may not be recoverable from the id, and various code may store the id only, we must save the fullName
                 try {
                     u.save();
@@ -433,6 +462,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Gets all the users.
      */
     public static Collection<User> getAll() {
+        final IdStrategy strategy = idStrategy();
         if(System.currentTimeMillis() -lastScanned>10000) {
             // occasionally scan the file system to check new users
             // whether we should do this only once at start up or not is debatable.
@@ -445,7 +475,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
             for (File subdir : subdirs)
                 if(new File(subdir,"config.xml").exists()) {
-                    String name = subdir.getName();
+                    String name = strategy.idFromFilename(subdir.getName());
                     User.getOrCreate(name, name, true);
                 }
 
@@ -460,7 +490,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         Collections.sort(r,new Comparator<User>() {
-            IdStrategy strategy = idStrategy();
 
             public int compare(User o1, User o2) {
                 return strategy.compare(o1.getId(), o2.getId());
@@ -579,6 +608,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
     }
 
+    private static final File[] getLegacyConfigFilesFor(final String id) {
+        return getRootDir().listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory() && new File(pathname, "config.xml").isFile() && idStrategy().equals(
+                        pathname.getName(), id);
+            }
+        });
+    }
+
     /**
      * Gets the directory where Hudson stores user information.
      */
@@ -626,10 +665,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(Jenkins.ADMINISTER);
 
-        fullName = req.getParameter("fullName");
-        description = req.getParameter("description");
-
         JSONObject json = req.getSubmittedForm();
+
+        fullName = json.getString("fullName");
+        description = json.getString("description");
 
         List<UserProperty> props = new ArrayList<UserProperty>();
         int i = 0;
@@ -766,7 +805,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return Collections.emptyList();
         }
         List<String> r = new ArrayList<String>();
-        for (GrantedAuthority a : impersonate().getAuthorities()) {
+        Authentication authentication;
+        try {
+            authentication = impersonate();
+        } catch (UsernameNotFoundException x) {
+            LOGGER.log(Level.FINE, "cannot look up authorities for " + id, x);
+            return Collections.emptyList();
+        }
+        for (GrantedAuthority a : authentication.getAuthorities()) {
             if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
                 continue;
             }

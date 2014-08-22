@@ -139,6 +139,7 @@ import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
@@ -225,6 +226,7 @@ public class Functions {
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
 
         context.setVariable("userAgent", currentRequest.getHeader("User-Agent"));
+        IconSet.initPageVariables(context);
     }
 
     /**
@@ -911,7 +913,7 @@ public class Functions {
      * @since 1.494
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<GlobalConfigurationCategory> predicate) {
-        ExtensionList<Descriptor> exts = Jenkins.getInstance().getExtensionList(Descriptor.class);
+        ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
         List<Tag> r = new ArrayList<Tag>(exts.size());
 
         for (ExtensionComponent<Descriptor> c : exts.getComponents()) {

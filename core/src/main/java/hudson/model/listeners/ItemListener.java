@@ -148,7 +148,7 @@ public class ItemListener implements ExtensionPoint {
      * All the registered {@link ItemListener}s.
      */
     public static ExtensionList<ItemListener> all() {
-        return Jenkins.getInstance().getExtensionList(ItemListener.class);
+        return ExtensionList.lookup(ItemListener.class);
     }
 
     public static void fireOnCopied(Item src, Item result) {

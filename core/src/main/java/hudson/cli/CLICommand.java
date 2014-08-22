@@ -489,7 +489,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Returns all the registered {@link CLICommand}s.
      */
     public static ExtensionList<CLICommand> all() {
-        return Jenkins.getInstance().getExtensionList(CLICommand.class);
+        return ExtensionList.lookup(CLICommand.class);
     }
 
     /**

@@ -32,6 +32,7 @@ import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.AbortException;
 import hudson.CopyOnWrite;
 import hudson.EnvVars;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.FilePath;
@@ -44,7 +45,6 @@ import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Node.Mode;
-import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
@@ -108,7 +108,6 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
-import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.Uptime;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -142,7 +141,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, ModelObjectWithChildren, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob {
 
     /**
      * {@link SCM} associated with the project.
@@ -351,7 +350,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 jdkTool = jdkTool.forNode(node, listener);
             }
             jdkTool.buildEnvVars(env);
-        } else if (jdk != null) {
+        } else if (jdk != null && !jdk.equals(JDK.DEFAULT_NAME)) {
             listener.getLogger().println("No JDK named ‘" + jdk + "’ found");
         }
 
@@ -547,7 +546,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public final @CheckForNull FilePath getSomeWorkspace() {
         R b = getSomeBuildWithWorkspace();
         if (b!=null) return b.getWorkspace();
-        for (WorkspaceBrowser browser : Jenkins.getInstance().getExtensionList(WorkspaceBrowser.class)) {
+        for (WorkspaceBrowser browser : ExtensionList.lookup(WorkspaceBrowser.class)) {
             FilePath f = browser.getWorkspace(this);
             if (f != null) return f;
         }
@@ -1184,17 +1183,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return r;
     }
 
-    public R createExecutable() throws IOException {
+    public @CheckForNull R createExecutable() throws IOException {
         if(isDisabled())    return null;
         return newBuild();
     }
 
     public void checkAbortPermission() {
-        checkPermission(AbstractProject.ABORT);
+        checkPermission(CANCEL);
     }
 
     public boolean hasAbortPermission() {
-        return hasPermission(AbstractProject.ABORT);
+        return hasPermission(CANCEL);
     }
 
     /**
@@ -1369,7 +1368,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             WorkspaceOfflineReason workspaceOfflineReason = workspaceOffline( b );
             if ( workspaceOfflineReason != null ) {
                 // workspace offline
-                for (WorkspaceBrowser browser : Jenkins.getInstance().getExtensionList(WorkspaceBrowser.class)) {
+                for (WorkspaceBrowser browser : ExtensionList.lookup(WorkspaceBrowser.class)) {
                     ws = browser.getWorkspace(this);
                     if (ws != null) {
                         return pollWithWorkspace(listener, scm, b, ws, browser.getWorkspaceList());
@@ -1864,17 +1863,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return r;
     }
 
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        // not sure what would be really useful here. This needs more thoughts.
-        // for the time being, I'm starting with permalinks
-        ContextMenu menu = new ContextMenu();
-        for (Permalink p : getPermalinks()) {
-            if (p.resolve(this)!=null)
-                menu.add(p.getId(),p.getDisplayName());
-        }
-        return menu;
-    }
-
     /**
      * Serves the workspace files.
      */
@@ -2039,6 +2027,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                         Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
             }
             Jenkins j = Jenkins.getInstance();
+            if (j == null) {
+                return FormValidation.ok(); // ?
+            }
             Label l = j.getLabel(value);
             if (l.isEmpty()) {
                 for (LabelAtom a : l.listAtoms()) {
@@ -2171,7 +2162,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 
     /**
-     * Permission to abort a build
+     * @deprecated Just use {@link #CANCEL}.
      */
     public static final Permission ABORT = CANCEL;
 

@@ -81,7 +81,7 @@ body {
   margin-bottom: 20px;
 }
 
-#side-panel-content .pane {
+#side-panel-content .pane-frame {
   margin-bottom: 15px;
 }
 
@@ -332,6 +332,9 @@ pre.console {
   width: 16px;
   vertical-align: middle;
 }
+.setting-no-help {
+  width: 16px;
+}
 
 .setting-input {
   width: 100%;
@@ -348,6 +351,67 @@ pre.console {
   font-size: 0.8em;
   margin-top: 0;
   padding-top: 0;
+}
+
+/* tabBar */
+
+.tabBar {
+  clear: both;
+  overflow: auto;
+  position: relative;
+  top: 1px;
+}
+.tabBar .tab {
+  float: left;
+  margin-left: 3px;
+}
+.tabBar .tab:first-child {
+  margin-left: 15px;
+}
+.tabBar .tab a {
+  position: relative;
+  display: block;
+  border: solid 1px #f0f0f0;
+  border-bottom: none;
+  text-decoration: none;
+  color: #999;
+  padding: 7px 10px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+.tabBar .tab a:hover {
+  background: #eee;
+}
+.tabBar .tab a.addTab {
+  font-weight: bold;
+  color: #0460d1;
+  border: 1px solid #d8efff;
+  border-bottom: none;
+}
+.tabBar .tab a.addTab:hover {
+  background: #d8efff;
+}
+.tabBar .tab [type=radio] {
+  display: none;
+}
+.tabBar [type=radio]:checked ~ a {
+  border: solid 1px #f0f0f0;
+  background: #eee;
+  color: #000;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  z-index: 2;
+}
+.tabBarBaseline {
+  border-top: 1px solid #f0f0f0;
+  z-index: 1;
+}
+
+.tabBarBaseline {
+  display: none; /* Baseline is hidden by default.  See next rule fo adding visibility. */
+}
+.tabBarFrame.showBaseline .tabBarBaseline {
+  display: block;
 }
 
 /* div that looks like a hyperlink */
@@ -406,12 +470,39 @@ div.dashboard {
   clear:both;
 }
 
-.pane  {
-  margin-top: 4px;
-  white-space: nowrap;
+/* pane */
+
+.pane-frame {
+  border: solid 1px #f0f0f0;
+  border-radius: 4px;
 }
+
+#side-panel .pane-frame:hover {
+  border: solid 1px #cecece;
+}
+
+.pane-header, .pane-footer {
+  padding: 8px 0px;
+  background-color: #eee;
+  border: solid 1px #f3f3f3;
+  border-left: none;
+  border-right: none;
+  color: #3b3b3b;
+}
+.pane-header {
+  border-top: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+.pane-footer {
+  border-bottom: none;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
 .pane td {
   padding: 4px 4px 3px 4px;
+  vertical-align: middle;
 }
 
 table.pane {
@@ -419,58 +510,66 @@ table.pane {
   border-collapse: collapse;
   border: 1px #bbb solid;
 }
-table.pane > tbody > tr > td:last-child {
-  border-right: 1px #bbb solid;
-}
 
 td.pane {
-  border: 1px #bbb solid;
   padding: 3px 4px 3px 4px;
   vertical-align: middle;
 }
 
-td.pane-header {
-  border: 1px #bbb solid;
-  border-right: none;
-  border-left: none;
-  background-color: #f0f0f0;
+table.stripped tr:nth-child(even) {
+  background: #fbfbfb;
+}
+table.stripped-even tr:nth-child(even) {
+  background: #fbfbfb;
+}
+table.stripped-odd tr:nth-child(odd) {
+  background: #fbfbfb;
+}
+
+div.pane-header {
   font-weight: bold;
   padding-right: 24px;
 }
 
-td.pane-header > div {
-  position: relative;
-  padding-right: 24px;
-  width: 100%;
-  height: 100%;
-}
-
-td.pane-header > div > a.collapse {
+div.pane-header .collapse {
 	float: right;
-	position: absolute;
-	right: 4px;
-	top: -1px;
+  margin-left: 3px;
 }
 
 th.pane {
-  border: 1px #bbb solid;
   font-weight: bold;
 }
+
+/* executors */
+
+#executors th.pane {
+  text-align: left;
+  padding: 12px 5px 5px 5px;
+}
+
+#executors th.pane a {
+  text-decoration: none;
+}
+
+/* bigtable */
 
 .bigtable tr {
   border: 1px solid #bbb;
   padding: 3px 4px 3px 4px;
 }
+table.bigtable.pane > tbody > tr > td:last-child {
+  border-right: none;
+}
 
-.bigtable tr:hover {
-  background-color: #f0f0f0;
+.pane-frame table, .pane-frame .bigtable tr {
+  border: none; /* Border will be provided by the pane-frame */
 }
 
 .bigtable th {
   font-weight: bold;
   border: none;
   background-color: #f0f0f0;
-  padding: 3px 4px 3px 4px;
+  padding: 6px 4px;
 }
 
 .bigtable td {
@@ -742,8 +841,24 @@ LABEL.attach-previous {
   white-space: nowrap;
 }
 
+#projectstatus .header {
+  border-bottom: 1px solid #ddd;
+}
 #projectstatus th {
   text-align: left;
+  padding: 7px 0px;
+}
+#projectstatus tbody tr:first-child th:first-child {
+  border-top-left-radius: 4px;
+}
+#projectstatus tbody tr:first-child th:last-child {
+  border-top-right-radius: 4px;
+}
+#projectstatus tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 4px;
+}
+#projectstatus tr:last-child td:last-child {
+  border-bottom-right-radius: 4px;
 }
 
 /* ============================ list view entries ======================== */
@@ -808,9 +923,19 @@ table.parameters > tbody:hover {
     padding: 0;
 }
 
-#buildHistory td.desc {
-    padding: 0;
-    white-space: normal;
+#buildHistory .desc {
+  padding: 0;
+  margin-top: 5px;
+  white-space: normal;
+  max-width: 200px;
+}
+
+#buildHistory .build-rss-links {
+  float: right;
+}
+
+#buildHistory .build-name {
+  max-width: 120px;
 }
 
 /* ========================= editable combobox style ========================= */

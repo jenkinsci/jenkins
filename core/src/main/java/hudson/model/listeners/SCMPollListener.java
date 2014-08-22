@@ -102,6 +102,6 @@ public abstract class SCMPollListener implements ExtensionPoint {
 	 * Returns all the registered {@link SCMPollListener}s.
 	 */
 	public static ExtensionList<SCMPollListener> all() {
-		return Jenkins.getInstance().getExtensionList( SCMPollListener.class );
+		return ExtensionList.lookup( SCMPollListener.class );
 	}
 }

@@ -29,6 +29,7 @@ import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.util.CaseInsensitiveComparator;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
@@ -55,6 +56,16 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      */
     @Nonnull
     public abstract String filenameOf(@Nonnull String id);
+
+    /**
+     * Converts a filename into the corresponding id.
+     * @param filename the filename.
+     * @return the corresponding id.
+     * @since 1.577
+     */
+    public String idFromFilename(@Nonnull String filename) {
+        return filename;
+    }
 
     /**
      * Converts an ID into a key for use in a Java Map.
@@ -138,6 +149,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      */
     public static class CaseInsensitive extends IdStrategy {
 
+        @DataBoundConstructor
+        public CaseInsensitive() {}
+
         @Override
         @Nonnull
         public String filenameOf(@Nonnull String id) {
@@ -178,6 +192,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      */
     public static class CaseSensitive extends IdStrategy {
 
+        @DataBoundConstructor
+        public CaseSensitive() {}
+
         /**
          * {@inheritDoc}
          */
@@ -201,6 +218,59 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
                     } else {
                         buf.append('$');
                         buf.append(StringUtils.leftPad(Integer.toHexString(c & 0xffff), 4, '0'));
+                    }
+                }
+                return buf.toString();
+            }
+        }
+
+        @Override
+        public String idFromFilename(@Nonnull String filename) {
+            if (filename.matches("[a-z0-9_. -]+")) {
+                return filename;
+            } else {
+                StringBuilder buf = new StringBuilder(filename.length());
+                final char[] chars = filename.toCharArray();
+                for (int i = 0; i < chars.length; i++) {
+                    char c = chars[i];
+                    if ('a' <= c && c <= 'z') {
+                        buf.append(c);
+                    } else if ('0' <= c && c <= '9') {
+                        buf.append(c);
+                    } else if ('_' == c || '.' == c || '-' == c || ' ' == c || '@' == c) {
+                        buf.append(c);
+                    } else if (c == '~') {
+                        i++;
+                        if (i < chars.length) {
+                            buf.append(Character.toUpperCase(chars[i]));
+                        }
+                    } else if (c == '$') {
+                        StringBuilder hex = new StringBuilder(4);
+                        i++;
+                        if (i < chars.length) {
+                            hex.append(chars[i]);
+                        } else {
+                            break;
+                        }
+                        i++;
+                        if (i < chars.length) {
+                            hex.append(chars[i]);
+                        } else {
+                            break;
+                        }
+                        i++;
+                        if (i < chars.length) {
+                            hex.append(chars[i]);
+                        } else {
+                            break;
+                        }
+                        i++;
+                        if (i < chars.length) {
+                            hex.append(chars[i]);
+                        } else {
+                            break;
+                        }
+                        buf.append(Character.valueOf((char)Integer.parseInt(hex.toString(), 16)));
                     }
                 }
                 return buf.toString();
@@ -254,6 +324,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * but the RFC does allow them the option to configure that way. Domain names are always case insensitive per RFC.
      */
     public static class CaseSensitiveEmailAddress extends CaseSensitive {
+
+        @DataBoundConstructor
+        public CaseSensitiveEmailAddress() {}
 
         /**
          * {@inheritDoc}

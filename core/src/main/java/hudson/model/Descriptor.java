@@ -28,6 +28,7 @@ import hudson.PluginWrapper;
 import hudson.RelativePath;
 import hudson.XmlFile;
 import hudson.BulkChange;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.FormApply;
@@ -937,7 +938,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     public static @CheckForNull Descriptor find(String className) {
-        return find(Jenkins.getInstance().getExtensionList(Descriptor.class),className);
+        return find(ExtensionList.lookup(Descriptor.class),className);
     }
 
     public static final class FormException extends Exception implements HttpResponse {

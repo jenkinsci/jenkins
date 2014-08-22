@@ -23,6 +23,6 @@ public abstract class SlaveSystemInfo implements ExtensionPoint {
     public abstract String getDisplayName();
 
     public static ExtensionList<SlaveSystemInfo> all() {
-        return Jenkins.getInstance().getExtensionList(SlaveSystemInfo.class);
+        return ExtensionList.lookup(SlaveSystemInfo.class);
     }
 }

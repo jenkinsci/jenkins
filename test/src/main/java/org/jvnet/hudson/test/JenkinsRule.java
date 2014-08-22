@@ -386,6 +386,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             public void run() {
                 if (timeoutTimer!=null) {
                     LOGGER.warning(String.format("Test timed out (after %d seconds).", timeout));
+                    // dump threads
+                    ThreadInfo[] threadInfos = Functions.getThreadInfos();
+                    Functions.ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
+                    for (ThreadInfo ti : threadInfos) {
+                        System.err.println(Functions.dumpThreadInfo(ti, m));
+                    }
                     testThread.interrupt();
                 }
             }
@@ -490,12 +496,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                             System.err.println("Note: known to randomly fail: " + rf.value());
                         }
 
-                        // dump threads
-                        ThreadInfo[] threadInfos = Functions.getThreadInfos();
-                        Functions.ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
-                        for (ThreadInfo ti : threadInfos) {
-                            System.err.println(Functions.dumpThreadInfo(ti, m));
-                        }
                         throw th;
                     }
                 } finally {
@@ -531,7 +531,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         File home = homeLoader.allocate();
         for (JenkinsRecipe.Runner r : recipes)
             r.decorateHome(this,home);
-        return new Hudson(home, webServer, getPluginManager());
+        try {
+            return new Hudson(home, webServer, getPluginManager());
+        } catch (InterruptedException x) {
+            throw new AssumptionViolatedException("Jenkins startup interrupted", x);
+        }
     }
 
     public PluginManager getPluginManager() {

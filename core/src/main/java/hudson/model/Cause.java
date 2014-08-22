@@ -98,6 +98,13 @@ public abstract class Cause {
         }
     }
 
+    void onLoad(@Nonnull Job<?,?> job, int buildNumber) {
+        Run<?,?> build = job.getBuildByNumber(buildNumber);
+        if (build != null) {
+            onLoad(build);
+        }
+    }
+
     @Deprecated
     public void onLoad(AbstractBuild<?,?> build) {
         if (Util.isOverridden(Cause.class, getClass(), "onLoad", Run.class)) {
@@ -178,7 +185,7 @@ public abstract class Cause {
         }
 
         @Override
-        public void onLoad(@Nonnull Run run) {
+        public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {
             Item i = Jenkins.getInstance().getItemByFullName(this.upstreamProject);
             if (i == null || !(i instanceof Job)) {
                 // cannot initialize upstream causes
@@ -186,14 +193,8 @@ public abstract class Cause {
             }
 
             Job j = (Job)i;
-            Run r = j.getBuildByNumber(this.getUpstreamBuild());
-            if (r == null) {
-                // build doesn't exist anymore
-                return;
-            }
-
             for (Cause c : this.upstreamCauses) {
-                c.onLoad(r);
+                c.onLoad(j, upstreamBuild);
             }
         }
 
@@ -349,6 +350,7 @@ public abstract class Cause {
             @Override public String toString() {
                 return "JENKINS-14814";
             }
+            @Override public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {}
         }
 
     }

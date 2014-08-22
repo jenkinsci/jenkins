@@ -81,7 +81,7 @@ public abstract class LoadPredictor implements ExtensionPoint {
      * All the registered instances.
      */
     public static ExtensionList<LoadPredictor> all() {
-        return Jenkins.getInstance().getExtensionList(LoadPredictor.class);
+        return ExtensionList.lookup(LoadPredictor.class);
     }
 
     /**

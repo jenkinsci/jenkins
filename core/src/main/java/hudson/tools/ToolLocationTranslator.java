@@ -70,6 +70,6 @@ public abstract class ToolLocationTranslator implements ExtensionPoint {
      * Returns all the registered {@link ToolLocationTranslator}s.
      */
     public static ExtensionList<ToolLocationTranslator> all() {
-        return Jenkins.getInstance().getExtensionList(ToolLocationTranslator.class);
+        return ExtensionList.lookup(ToolLocationTranslator.class);
     }
 }
