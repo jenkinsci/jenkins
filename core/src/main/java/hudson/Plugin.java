@@ -42,6 +42,7 @@ import net.sf.json.JSONObject;
 import com.thoughtworks.xstream.XStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Base class of Hudson plugin.
@@ -199,6 +200,10 @@ public abstract class Plugin implements Saveable {
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
+
+        if (path.startsWith("/META-INF/") || path.startsWith("/WEB-INF/")) {
+            throw HttpResponses.notFound();
+        }
 
         if(path.length()==0)
             path = "/";
