@@ -71,9 +71,6 @@ public class LabelAtom extends Label implements Saveable {
     @CopyOnWrite
     protected transient volatile List<Action> transientActions = new Vector<Action>();
 
-    /**
-     * @since TODO
-     */
     private String description;
 
     public LabelAtom(String name) {
@@ -118,6 +115,9 @@ public class LabelAtom extends Label implements Saveable {
         transientActions = ta;
     }
 
+    /**
+     * @since TODO
+     */
     public String getDescription() {
         return description;
     }
