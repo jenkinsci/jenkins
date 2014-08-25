@@ -73,6 +73,9 @@ THE SOFTWARE.
                     <td class="fileSize">
                       ${h.humanReadableByteSize(x.getSize())}
                     </td>
+                    <td class="fileSize">
+                        ${x.getDate()}
+                    </td>
                     <td>
                       <j:if test="${x.readable}">
                         <j:if test="${app.fingerprintMap.ready}">

@@ -37,7 +37,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -133,6 +135,17 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      */
     public abstract long length() throws IOException;
 
+    /**
+     * Gets the file date.
+     * @return a date, or null if inapplicable
+     * @throws IOException  if checking the date failed
+     */
+    public abstract String date() throws IOException;
+    
+    
+    public static final String DateFormat = "MM/dd/yyyy h:mm:ss a";
+    
+    
     /**
      * Gets the file timestamp.
      * @return a length, or 0 if inapplicable
@@ -252,6 +265,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             @Override public long length() throws IOException {
                 return f.length();
             }
+            @Override public String date() throws IOException {
+                return new SimpleDateFormat(VirtualFile.DateFormat).format(f.lastModified());
+            }
             @Override public long lastModified() throws IOException {
                 return f.lastModified();
             }
@@ -336,6 +352,13 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 try {
                     return f.length();
                 } catch (InterruptedException x) {
+                    throw (IOException) new IOException(x.toString()).initCause(x);
+                }
+            }
+            @Override public String date() throws IOException {
+                try{
+                    return new SimpleDateFormat(VirtualFile.DateFormat).format(f.lastModified());
+                } catch(InterruptedException x){
                     throw (IOException) new IOException(x.toString()).initCause(x);
                 }
             }

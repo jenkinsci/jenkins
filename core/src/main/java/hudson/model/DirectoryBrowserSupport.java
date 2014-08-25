@@ -324,7 +324,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         int current=1;
         while(tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            r.add(new Path(createBackRef(total-current+restSize),token,true,0, true));
+            r.add(new Path(createBackRef(total-current+restSize),token,true,0, null, true));
             current++;
         }
         return r;
@@ -385,15 +385,21 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         private final long size;
         
         /**
+         * File modified date, or null if not a file
+         */
+        private final String date;
+        
+        /**
          * If the current user can read the file.
          */
         private final boolean isReadable;
 
-        public Path(String href, String title, boolean isFolder, long size, boolean isReadable) {
+        public Path(String href, String title, boolean isFolder, long size, String date, boolean isReadable) {
             this.href = href;
             this.title = title;
             this.isFolder = isFolder;
             this.size = size;
+            this.date = date;
             this.isReadable = isReadable;
         }
 
@@ -429,6 +435,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
         public long getSize() {
             return size;
+        }
+        
+        public String getDate() {
+            return date;
         }
 
         private static final long serialVersionUID = 1L;
@@ -484,7 +494,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 Arrays.sort(files,new FileComparator(locale));
     
                 for( VirtualFile f : files ) {
-                    Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.canRead());
+                    Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.date(), f.canRead());
                     if(!f.isDirectory()) {
                         r.add(Collections.singletonList(p));
                     } else {
@@ -505,7 +515,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                                 break;
                             f = sub.get(0);
                             relPath += '/'+Util.rawEncode(f.getName());
-                            l.add(new Path(relPath,f.getName(),true,0, f.canRead()));
+                            l.add(new Path(relPath,f.getName(),true,0, f.date(), f.canRead()));
                         }
                         r.add(l);
                     }
@@ -559,7 +569,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 href.append("/");
             }
 
-            Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length(), filePath.canRead());
+            Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length(), filePath.date(), filePath.canRead());
             pathList.add(path);
         }
 
