@@ -33,8 +33,10 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
 import hudson.tasks.MailAddressResolver;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Collections;
 
 import jenkins.model.IdStrategy;
@@ -47,8 +49,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class UserTest {
 
@@ -218,6 +222,16 @@ public class UserTest {
         assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
         assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
         assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
+    }
+
+    @Issue("JENKINS-24317")
+    @LocalData
+    @Test public void migration() throws Exception {
+        User bob = User.get("bob");
+        assertEquals("Bob Smith", bob.getFullName());
+        assertEquals("Bob Smith", User.get("Bob").getFullName());
+        assertEquals("nonexistent", User.get("nonexistent").getFullName());
+        assertEquals("[bob]", Arrays.toString(new File(j.jenkins.getRootDir(), "users").list()));
     }
 
     @Test
@@ -482,11 +496,6 @@ public class UserTest {
         assertTrue("But once storage is allocated, he can be deleted", user3.canDelete());
     }
 
-    @Test
-    public void testGetDynamic() {
-
-    }
-    
      public static class SomeUserProperty extends UserProperty {
          
         @TestExtension
