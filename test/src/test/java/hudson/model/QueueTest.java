@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.model.queue.MockTask;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -36,12 +37,9 @@ import hudson.matrix.TextAxis;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.BlockedItem;
-import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
-import hudson.model.queue.SubTask;
 import hudson.security.ACL;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
@@ -364,37 +362,15 @@ public class QueueTest extends HudsonTestCase {
         waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
-    private static final class TestTask extends AbstractQueueTask {
-        private final AtomicInteger cnt;
+    private static final class TestTask extends MockTask {
         TestTask(AtomicInteger cnt) {
-            this.cnt = cnt;
+            super(cnt);
         }
         @Override public boolean equals(Object o) {
             return o instanceof TestTask && cnt == ((TestTask) o).cnt;
         }
         @Override public int hashCode() {
             return cnt.hashCode();
-        }
-        @Override public boolean isBuildBlocked() {return false;}
-        @Override public String getWhyBlocked() {return null;}
-        @Override public String getName() {return "test";}
-        @Override public String getFullDisplayName() {return "Test";}
-        @Override public void checkAbortPermission() {}
-        @Override public boolean hasAbortPermission() {return true;}
-        @Override public String getUrl() {return "test/";}
-        @Override public String getDisplayName() {return "Test";}
-        @Override public Label getAssignedLabel() {return null;}
-        @Override public Node getLastBuiltOn() {return null;}
-        @Override public long getEstimatedDuration() {return -1;}
-        @Override public ResourceList getResourceList() {return new ResourceList();}
-        @Override public Executable createExecutable() throws IOException {
-            return new Executable() {
-                @Override public SubTask getParent() {return TestTask.this;}
-                @Override public long getEstimatedDuration() {return -1;}
-                @Override public void run() {
-                    cnt.incrementAndGet();
-                }
-            };
         }
     }
 
