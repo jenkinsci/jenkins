@@ -170,7 +170,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public final void updateBaseDir(File dir) {
         this.dir = dir;
     }
-
+    
     /**
      * Let go of all the loaded references.
      *
