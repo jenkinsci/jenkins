@@ -101,7 +101,10 @@ import javax.annotation.Nonnull;
 
 import static javax.servlet.http.HttpServletResponse.*;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -158,6 +161,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     // this should have been DescribableList but now it's too late
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
 
+    @Restricted(NoExternalUse.class)
+    public transient RunIdMigrator runIdMigrator;
+
     protected Job(ItemGroup parent, String name) {
         super(parent, name);
     }
@@ -168,10 +174,20 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         holdOffBuildUntilSave = holdOffBuildUntilUserSave;
     }
 
+    @Override public void onCreatedFromScratch() {
+        super.onCreatedFromScratch();
+        runIdMigrator = new RunIdMigrator();
+        runIdMigrator.created(getBuildDir());
+    }
+
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name)
             throws IOException {
         super.onLoad(parent, name);
+
+        File buildDir = getBuildDir();
+        runIdMigrator = new RunIdMigrator();
+        runIdMigrator.migrate(buildDir);
 
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {
@@ -184,7 +200,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
             } catch (NumberFormatException e) {
                 // try to infer the value of the next build number from the existing build records. See JENKINS-11563
-                File[] folders = this.getBuildDir().listFiles(new FileFilter() {
+                File[] folders = buildDir.listFiles(new FileFilter() {
                     public boolean accept(File file) {
                         return file.isDirectory() && file.getName().matches("[0-9]+");
                     }

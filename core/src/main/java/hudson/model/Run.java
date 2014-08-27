@@ -75,7 +75,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -174,12 +173,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     /* does not compile on JDK 7: private*/ volatile transient RunT previousBuildInProgress;
 
+    /** ID as used for historical build records; otherwise null. */
+    private @CheckForNull String id;
+    
     /**
      * When the build is scheduled.
      */
     protected /*final*/ long timestamp;
-    /** ID as used for historical build records; otherwise null. */
-    private @CheckForNull String id;
 
     /**
      * When the build has started running.
@@ -269,9 +269,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.532
      */
     private @CheckForNull ArtifactManager artifactManager;
-
-    private static final SimpleDateFormat LEGACY_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-    // TODO implement migration step; and write out a legacy ID -> number map for use from AbstractLazyLoadRunMap
 
     /**
      * Creates a new {@link Run}.

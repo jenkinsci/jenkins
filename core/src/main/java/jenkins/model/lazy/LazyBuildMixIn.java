@@ -47,6 +47,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import static java.util.logging.Level.FINER;
+import jenkins.model.RunIdMigrator;
 
 /**
  * Makes it easier to use a lazy {@link RunMap} from a {@link Job} implementation.
@@ -89,14 +90,14 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     }
 
     /**
-     * Something to be called from {@link AbstractItem#onCreatedFromScratch}.
+     * Something to be called from {@link Job#onCreatedFromScratch}.
      */
     public final void onCreatedFromScratch() {
         builds = createBuildRunMap();
     }
 
     /**
-     * Something to be called from {@link AbstractItem#onLoad}.
+     * Something to be called from {@link Job#onLoad}.
      */
     @SuppressWarnings("unchecked")
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
@@ -129,11 +130,15 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     }
 
     private RunMap<RunT> createBuildRunMap() {
-        return new RunMap<RunT>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
+        RunMap<RunT> r = new RunMap<RunT>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
             @Override public RunT create(File dir) throws IOException {
                 return loadBuild(dir);
             }
         });
+        RunIdMigrator runIdMigrator = asJob().runIdMigrator;
+        assert runIdMigrator != null;
+        r.runIdMigrator = runIdMigrator;
+        return r;
     }
 
     /**

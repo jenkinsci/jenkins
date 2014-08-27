@@ -138,7 +138,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * because the compatibility requires that we make it settable
      * in the first call after the constructor.
      */
-    private File dir;
+    protected File dir;
 
     @Restricted(NoExternalUse.class) // subclassing other than by RunMap does not guarantee compatibility
     protected AbstractLazyLoadRunMap(File dir) {
@@ -170,7 +170,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public final void updateBaseDir(File dir) {
         this.dir = dir;
     }
-    
+
     /**
      * Let go of all the loaded references.
      *
@@ -341,8 +341,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public R getById(String id) {
-        int n = Integer.parseInt(id); // TODO also need an index of historical IDs → number
-        return getByNumber(n);
+        return getByNumber(Integer.parseInt(id));
     }
 
     public R getByNumber(int n) {
@@ -483,8 +482,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      */
     protected abstract int getNumberOf(R r);
 
-    private String getIdOf(R r) {
-        // TODO see comment in getById
+    /**
+     * Subtype to provide {@link Run#getId()} so that this class doesn't have to depend on it.
+     */
+    protected String getIdOf(R r) {
         return String.valueOf(getNumberOf(r));
     }
 

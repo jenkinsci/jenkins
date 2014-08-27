@@ -35,10 +35,14 @@ import java.util.logging.Level;
 
 import static java.util.logging.Level.*;
 import java.util.logging.Logger;
+import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
 import org.apache.commons.collections.comparators.ReverseComparator;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link Map} from build number to {@link Run}.
@@ -57,6 +61,10 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     private final SortedMap<Integer,R> view = Collections.unmodifiableSortedMap(this);
 
     private Constructor<R> cons;
+
+    /** Normally overwritten by {@link LazyBuildMixIn#onLoad} or {@link LazyBuildMixIn#onCreatedFromScratch}, in turn created during {@link Job#onLoad}. */
+    @Restricted(NoExternalUse.class)
+    public RunIdMigrator runIdMigrator = new RunIdMigrator();
 
     // TODO: before first complete build
     // patch up next/previous build link
@@ -115,6 +123,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     @Override
     public boolean removeValue(R run) {
         run.dropLinks();
+        runIdMigrator.delete(dir, run.getId());
         return super.removeValue(run);
     }
 
@@ -161,6 +170,11 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         return r.getNumber();
     }
 
+    @Override
+    protected final String getIdOf(R r) {
+        return r.getId();
+    }
+
     /**
      * Add a <em>new</em> build to the map.
      * Do not use when loading existing builds (use {@link #put(Integer, Object)}).
@@ -175,6 +189,16 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         proposeNewNumber(r.getNumber());
         rootDir.mkdirs();
         return super._put(r);
+    }
+
+    @Override public R getById(String id) {
+        int n;
+        try {
+            n = Integer.parseInt(id);
+        } catch (NumberFormatException x) {
+            n = runIdMigrator.findNumber(id);
+        }
+        return getByNumber(n);
     }
 
     /**
