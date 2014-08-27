@@ -356,6 +356,12 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return load(n, null);
     }
 
+    protected final synchronized void proposeNewNumber(int number) throws IllegalStateException {
+        if (numberOnDisk.isInRange(numberOnDisk.ceil(number))) {
+            throw new IllegalStateException("cannot create a build with number " + number + " since that (or higher) is already in use among " + numberOnDisk);
+        }
+    }
+
     public R put(R value) {
         return _put(value);
     }

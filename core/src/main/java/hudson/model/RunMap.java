@@ -172,6 +172,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         if (rootDir.isDirectory()) {
             throw new IllegalStateException(rootDir + " already existed; will not overwite with " + r);
         }
+        proposeNewNumber(r.getNumber());
         rootDir.mkdirs();
         return super._put(r);
     }
