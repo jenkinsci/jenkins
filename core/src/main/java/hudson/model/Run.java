@@ -275,9 +275,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @param job Owner job
      */
     protected Run(@Nonnull JobT job) throws IOException {
-        project = job;
-        timestamp = System.currentTimeMillis();
-        state = State.NOT_STARTED;
+        this(job, System.currentTimeMillis());
         this.number = project.assignBuildNumber();
         LOGGER.log(FINER, "new {0} @{1}", new Object[] {this, hashCode()});
     }
