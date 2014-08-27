@@ -163,6 +163,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
 
     @Override
     public R put(R r) {
+        r.getRootDir().mkdirs();
         return super._put(r);
     }
 

@@ -47,6 +47,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -108,6 +109,7 @@ import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -280,21 +282,26 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         timestamp = System.currentTimeMillis();
         state = State.NOT_STARTED;
         this.number = project.assignBuildNumber();
-        getRootDir().mkdirs();
         LOGGER.log(FINER, "new {0} @{1}", new Object[] {this, hashCode()});
     }
 
-    @Deprecated
+    /**
+     * Constructor for creating a {@link Run} object in
+     * an arbitrary state.
+     * {@link #number} must be set manually.
+     * <p>May be used in a {@link SubTask#createExecutable} (instead of calling {@link LazyBuildMixIn#newBuild}).
+     * For example, {@code MatrixConfiguration.newBuild} does this
+     * so that the {@link #timestamp} as well as {@link #number} are shared with the parent build.
+     */
     protected Run(@Nonnull JobT job, @Nonnull Calendar timestamp) {
         this(job,timestamp.getTimeInMillis());
     }
 
-    @Deprecated
+    /** @see #Run(Job, Calendar) */
     protected Run(@Nonnull JobT job, long timestamp) {
         this.project = job;
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
-		getRootDir().mkdirs();
     }
 
     /**
