@@ -963,7 +963,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Exported
     public @Nonnull String getId() {
-        return id != null ? id : String.valueOf(number);
+        return id != null ? id : Integer.toString(number);
     }
     
     @Override
