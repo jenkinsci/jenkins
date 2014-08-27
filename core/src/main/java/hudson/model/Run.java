@@ -978,7 +978,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Override
     public @Nonnull File getRootDir() {
-        return new File(project.getBuildDir(), String.valueOf(number));
+        return new File(project.getBuildDir(), Integer.toString(number));
     }
 
     /**
