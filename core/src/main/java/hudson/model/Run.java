@@ -1453,10 +1453,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         RunListener.fireDeleted(this);
 
         synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
-        // if we have a symlink, delete it, too
-        File link = new File(project.getBuildDir(), String.valueOf(getNumber()));
-        link.delete();
-
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
         if (tmp.exists()) {
