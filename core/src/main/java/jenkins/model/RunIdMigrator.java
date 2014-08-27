@@ -30,6 +30,7 @@ import hudson.model.Run;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public final class RunIdMigrator {
 
     static final Logger LOGGER = Logger.getLogger(RunIdMigrator.class.getName());
-    private static final SimpleDateFormat LEGACY_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    private static final DateFormat LEGACY_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
     private static final Map<String,Integer> EMPTY = new TreeMap<String,Integer>();
@@ -187,7 +188,9 @@ public final class RunIdMigrator {
                 }
                 long timestamp;
                 try {
-                    timestamp = LEGACY_ID_FORMATTER.parse(name).getTime();
+                    synchronized (LEGACY_ID_FORMATTER) {
+                        timestamp = LEGACY_ID_FORMATTER.parse(name).getTime();
+                    }
                 } catch (ParseException x) {
                     LOGGER.log(Level.WARNING, "found unexpected dir {0}", name);
                     continue;
