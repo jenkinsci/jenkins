@@ -2069,7 +2069,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         }
 
         /**
-         * Adds a security crumb to the quest
+         * Adds a security crumb to the request.
+         * Use {@link #createCrumbedUrl} instead if you intend to call {@link WebRequestSettings#setRequestBody}, typical of a POST request.
          */
         public WebRequestSettings addCrumb(WebRequestSettings req) {
             NameValuePair crumb[] = { new NameValuePair() };

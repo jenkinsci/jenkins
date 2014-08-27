@@ -476,6 +476,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 if(e.getCurrentExecutable()==this)
                     return e;
             }
+            for (Executor e : c.getOneOffExecutors()) {
+                if(e.getCurrentExecutable()==this) {
+                    return e;
+                }
+            }
         }
         return null;
     }

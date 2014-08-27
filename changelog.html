@@ -55,18 +55,34 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    <code>ConcurrentModificationException</code> in <code>RunListProgressiveRendering</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21437">issue 21437</a>)
+  <li class=bug>
+    Job status page shows "Build has been executing for null on master" for flyweight tasks.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20307">issue 20307</a>)
+  <li class=bug>
+    Tolerate ?auto_refresh in reverse proxy check on /manage page.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24014">issue 24014</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+
+<!-- these changes are controlled by the release process. DO NOT MODIFY -->
+<div id="rc" style="display:none;"><!--=BEGIN=-->
+<h3><a name=v1.578>What's new in 1.578</a> <!--=DATE=--></h3>
+<ul class=image>
   <li class=rfe>
     Added 'no-store' to the 'Cache-Control' header to avoid accidental information leak through local cache backup
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24337">issue 24337</a>)
   <li class=bug>
     Deadlock in <code>OldDataMonitor</code>.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24358">issue 24358</a>)
+  <li class=bug>
+    Use absolute links for computer sidepanel items so they don't break as easily.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23963">issue 23963</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.577>What's new in 1.577</a> <!--=DATE=--></h3>
+</div><!--=END=-->
+<h3><a name=v1.577>What's new in 1.577</a> (2014/08/24)</h3>
 <ul class=image>
   <li class="major bug">
     Failure to migrate legacy user records in 1.576 properly broke Jenkins, resulted in NullPointerExceptions.
@@ -102,7 +118,6 @@ Upcoming changes</a>
     Properly consider busy executors when reducing a node's executor count.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24095">issue 24095</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.576>What's new in 1.576</a> (2014/08/18)</h3>
 <ul class=image>
   <li class="bug">

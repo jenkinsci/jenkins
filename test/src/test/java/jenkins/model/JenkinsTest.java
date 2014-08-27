@@ -52,7 +52,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.JenkinsRule.DummySecurityRealm;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
@@ -298,8 +297,6 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         gmas.add(Jenkins.READ, "bob");
         gmas.add(Jenkins.ADMINISTER, "charlie");
         jenkins.setAuthorizationStrategy(gmas);
-        // Otherwise get "RuntimeException: Trying to set the request parameters, but the request body has already been specified;the two are mutually exclusive!" from WebRequestSettings.setRequestParameters when POSTing content:
-        jenkins.setCrumbIssuer(null);
         WebClient wc = createWebClient();
         wc.login("alice");
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
@@ -320,9 +317,9 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         }
     }
     private String eval(WebClient wc) throws Exception {
-        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
+        WebRequestSettings req = new WebRequestSettings(wc.createCrumbedUrl("eval"), HttpMethod.POST);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
-        return wc.getPage(/*wc.addCrumb(*/req/*)*/).getWebResponse().getContentAsString();
+        return wc.getPage(req).getWebResponse().getContentAsString();
     }
 
     @TestExtension("testUnprotectedRootAction")
