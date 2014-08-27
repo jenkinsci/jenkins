@@ -161,9 +161,18 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         return r.getNumber();
     }
 
+    /**
+     * Add a <em>new</em> build to the map.
+     * Do not use when loading existing builds (use {@link #put(Integer, Object)}).
+     */
     @Override
     public R put(R r) {
-        r.getRootDir().mkdirs();
+        // Defense against JENKINS-23152 and its ilk.
+        File rootDir = r.getRootDir();
+        if (rootDir.isDirectory()) {
+            throw new IllegalStateException(rootDir + " already existed; will not overwite with " + r);
+        }
+        rootDir.mkdirs();
         return super._put(r);
     }
 

@@ -120,7 +120,8 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
             // if we are reloading, keep all those that are still building intact
             for (RunT r : currentBuilds.getLoadedBuilds().values()) {
                 if (r.isBuilding()) {
-                    _builds.put(r);
+                    // Do not use RunMap.put(Run):
+                    _builds.put(r.getNumber(), r);
                 }
             }
         }
