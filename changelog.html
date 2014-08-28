@@ -99,6 +99,11 @@ Upcoming changes</a>
   <li class=bug>
     Fixed ClassCastException on org.dom4j.DocumentFactory
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-13709">issue 13709</a>)
+  <li class="rfe">
+    Jenkins now logs warnings when it fails to export objects to XML/JSON.
+    This can result in a lot of log output in case of heavy API use.
+    We recommend that API users use the <code>?tree</code> parameter instead of <code>?depth</code>.
+    (<a href="https://github.com/stapler/stapler/commit/ed2cb8b04c1514377f3a8bfbd567f050a67c6e1c">commit</a>)
   <li class=rfe>
     Allow BuildStep to work with non-AbstractProject
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23713">issue 23713</a>)
