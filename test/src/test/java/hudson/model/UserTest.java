@@ -45,6 +45,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -227,14 +228,12 @@ public class UserTest {
     @Issue("JENKINS-24317")
     @LocalData
     @Test public void migration() throws Exception {
+        assumeFalse("was not a problem on a case-insensitive FS to begin with", new File(j.jenkins.getRootDir(), "users/bob").isDirectory());
         User bob = User.get("bob");
         assertEquals("Bob Smith", bob.getFullName());
         assertEquals("Bob Smith", User.get("Bob").getFullName());
         assertEquals("nonexistent", User.get("nonexistent").getFullName());
-
-        // users/Bob is what exists in migration.zip, so lowercasing dir list to make sure the test
-        // is not case sensitive.
-        assertEquals("[bob]", Arrays.toString(new File(j.jenkins.getRootDir(), "users").list()).toLowerCase());
+        assertEquals("[bob]", Arrays.toString(new File(j.jenkins.getRootDir(), "users").list()));
     }
 
     @Test
