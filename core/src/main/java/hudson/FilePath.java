@@ -111,6 +111,7 @@ import java.util.regex.Pattern;
 
 import static hudson.FilePath.TarCompression.*;
 import static hudson.Util.*;
+import javax.annotation.Nonnull;
         
 /**
  * {@link File} like object with remoting support.
@@ -1161,7 +1162,7 @@ public final class FilePath implements Serializable {
      * @param relOrAbsolute a relative or absolute path
      * @return a file on the same channel
      */
-    public FilePath child(String relOrAbsolute) {
+    public @Nonnull FilePath child(String relOrAbsolute) {
         return new FilePath(this,relOrAbsolute);
     }
 
