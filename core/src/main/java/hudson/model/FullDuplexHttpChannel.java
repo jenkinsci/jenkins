@@ -156,5 +156,5 @@ abstract public class FullDuplexHttpChannel {
     /**
      * Controls the time out of waiting for the 2nd HTTP request to arrive.
      */
-    public static long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
+    private static long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 }
