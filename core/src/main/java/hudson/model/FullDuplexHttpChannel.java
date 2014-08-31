@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,9 +80,14 @@ abstract public class FullDuplexHttpChannel {
         out.write("Starting HTTP duplex channel".getBytes());
         out.flush();
 
-        // wait until we have the other channel
-        while(upload==null)
-            wait();
+        {// wait until we have the other channel
+            long end = System.currentTimeMillis() + CONNECTION_TIMEOUT;
+            while (upload == null && System.currentTimeMillis()<end)
+                wait(1000);
+
+            if (upload==null)
+                throw new IOException("HTTP full-duplex channel timeout: "+uuid);
+        }
 
         try {
             channel = new Channel("HTTP full-duplex channel " + uuid,
@@ -145,4 +152,9 @@ abstract public class FullDuplexHttpChannel {
      * Set to true if the servlet container doesn't support chunked encoding.
      */
     public static boolean DIY_CHUNKING = Boolean.getBoolean("hudson.diyChunking");
+
+    /**
+     * Controls the time out of waiting for the 2nd HTTP request to arrive.
+     */
+    private static long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 }
