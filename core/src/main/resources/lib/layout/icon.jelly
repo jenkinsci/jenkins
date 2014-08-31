@@ -25,6 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
+    @since 1.576
     <st:attribute name="class">
       The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'.
     </st:attribute>

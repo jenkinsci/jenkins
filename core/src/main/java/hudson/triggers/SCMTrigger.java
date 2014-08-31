@@ -67,10 +67,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
-import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.model.RunAction2;
 import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -80,7 +78,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import static java.util.logging.Level.*;
 import jenkins.model.RunAction2;
 
-import javax.annotation.Nonnull;
 
 /**
  * {@link Trigger} that checks for SCM updates periodically.
@@ -131,8 +128,10 @@ public class SCMTrigger extends Trigger<Item> {
      * @since 1.375
      */
     public void run(Action[] additionalActions) {
-        if(Jenkins.getInstance().isQuietingDown())
-            return; // noop
+        if (Jenkins.getInstance().isQuietingDown()) {
+            LOGGER.log(INFO, "Skipping polling for {0} since Jenkins is in quiet mode", job.getFullName());
+            return;
+        }
 
         DescriptorImpl d = getDescriptor();
 

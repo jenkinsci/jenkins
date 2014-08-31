@@ -56,7 +56,7 @@ public class LauncherTest extends ChannelTestCase {
             p.kill();
             assertTrue(p.join()!=0);
             long end = System.currentTimeMillis();
-            assertTrue("join finished promptly", (end - start < 5000));
+            assertTrue("join finished promptly", (end - start < 15000));
             french.call(NOOP); // this only returns after the other side of the channel has finished executing cancellation
             Thread.sleep(2000); // more delay to make sure it's gone
             assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp).trim())));

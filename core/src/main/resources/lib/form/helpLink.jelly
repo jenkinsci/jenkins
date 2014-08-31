@@ -30,7 +30,7 @@ THE SOFTWARE.
 
     The help link is rendered as a table cell with an (?) icon.
     If the user clicks it, the content of the HTML fragment at the given URL 
-    is renderd in the area designated as &lt;f:helpArea> by the caller,
+    is rendered in the area designated as &lt;f:helpArea> by the caller,
     usually in a row beneath the item with help.
     
     The alternative spacer is just an empty table cell.
@@ -38,7 +38,7 @@ THE SOFTWARE.
     This tag was introduced to ensure that the space reserved for help items
     is consistent over the UI whether or not help exists.
 
-    @since XXX
+    @since 1.576
     <st:attribute name="url">
       URL to the HTML page. Optional. If not given, no help icon is displayed.
 

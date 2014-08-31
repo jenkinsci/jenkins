@@ -61,11 +61,27 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.577>What's new in 1.577</a> <!--=DATE=--></h3>
+<h3><a name=v1.578>What's new in 1.578</a> <!--=DATE=--></h3>
 <ul class=image>
-  <li class='major bug'>
-    Failure to migrate legacy user records properly broke Jenkins.
+  <li class=rfe>
+    Added 'no-store' to the 'Cache-Control' header to avoid accidental information leak through local cache backup
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24337">issue 24337</a>)
+  <li class=bug>
+    Deadlock in <code>OldDataMonitor</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24358">issue 24358</a>)
+  <li class=bug>
+    Use absolute links for computer sidepanel items so they don't break as easily.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23963">issue 23963</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.577>What's new in 1.577</a> (2014/08/24)</h3>
+<ul class=image>
+  <li class="major bug">
+    Failure to migrate legacy user records in 1.576 properly broke Jenkins, resulted in NullPointerExceptions.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24317">issue 24317</a>)
+  <li class="major bug">
+    Jenkins did not correctly display icons contributed by plugins in 1.576.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24316">issue 24316</a>)
   <li class="major rfe">
     Moved JUnit reporting functionality to a plugin.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23263">issue 23263</a>)
@@ -94,7 +110,6 @@ Upcoming changes</a>
     Properly consider busy executors when reducing a node's executor count.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24095">issue 24095</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.576>What's new in 1.576</a> (2014/08/18)</h3>
 <ul class=image>
   <li class="bug">
