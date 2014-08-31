@@ -14,7 +14,6 @@ import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -108,9 +107,14 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
      */
     private void updateSecureSessionFlag() {
         try {
-            boolean v = fixNull(jenkinsUrl).startsWith("https");
             ServletContext context = Jenkins.getInstance().servletContext;
-            Method m = context.getClass().getMethod("getSessionCookieConfig");
+            Method m;
+            try {
+                m = context.getClass().getMethod("getSessionCookieConfig");
+            } catch (NoSuchMethodException x) { // 3.0+
+                LOGGER.log(Level.FINE, "Failed to set secure cookie flag", x);
+                return;
+            }
             Object sessionCookieConfig = m.invoke(context);
 
             // not exposing session cookie to JavaScript to mitigate damage caused by XSS
@@ -119,9 +123,10 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
             setHttpOnly.invoke(sessionCookieConfig,true);
 
             Method setSecure = scc.getMethod("setSecure",boolean.class);
+            boolean v = fixNull(jenkinsUrl).startsWith("https");
             setSecure.invoke(sessionCookieConfig,v);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to set secure cookie flag. Maybe running on Servlet 2.5 and younger?", e);
+            LOGGER.log(Level.WARNING, "Failed to set secure cookie flag", e);
         }
     }
 
