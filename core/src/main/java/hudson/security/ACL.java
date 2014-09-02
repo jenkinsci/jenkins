@@ -33,6 +33,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.
@@ -150,8 +152,9 @@ public abstract class ACL {
      * Safer variant of {@link #impersonate(Authentication)} that does not require a finally-block.
      * @param auth authentication, such as {@link #SYSTEM}
      * @param body an action to run with this alternate authentication in effect
-     * @since 1.581
      */
+    // TODO: this line should be removed in the master branch once this commit is merged to mainline releases
+    @Restricted(NoExternalUse.class)
     public static <V,T extends Exception> V impersonate(Authentication auth, Callable<V,T> body) throws T {
         SecurityContext old = impersonate(auth);
         try {
