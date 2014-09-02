@@ -27,7 +27,8 @@ import com.gargoylesoftware.htmlunit.ElementNotFoundException
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPage
+import hudson.maven.MavenModuleSet;
 import hudson.security.*;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
@@ -44,7 +45,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.context.SecurityContextHolder
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.MemoryAssert;
@@ -514,5 +515,39 @@ public class AbstractProjectTest extends HudsonTestCase {
         // those two jobs should still be there
         assert jenkins.getItem("regular")!=null;
         assert jenkins.getItem("secret")!=null;
+    }
+
+
+    /**
+     * Trying to POST to config.xml by a different job type should fail.
+     */
+    public void testConfigDotXmlSubmissionToDifferentType() {
+        jenkins.crumbIssuer = null
+        def p = createFreeStyleProject()
+
+        HttpURLConnection con = postConfigDotXml(p, "<maven2-moduleset />")
+
+        // this should fail with a type mismatch error
+        // the error message should report both what was submitted and what was expected
+        assert con.responseCode == 500
+        def msg = con.errorStream.text
+        println msg
+        assert msg.contains(FreeStyleProject.class.name)
+        assert msg.contains(MavenModuleSet.class.name)
+
+        // control. this should work
+        con = postConfigDotXml(p, "<project />")
+        assert con.responseCode == 200
+    }
+
+    private HttpURLConnection postConfigDotXml(FreeStyleProject p, String xml) {
+        HttpURLConnection con = new URL(getURL(), "job/${p.name}/config.xml").openConnection()
+        con.requestMethod = "POST"
+        con.setRequestProperty("Content-Type", "application/xml")
+        con.doOutput = true
+        con.outputStream.withStream { s ->
+            s.write(xml.bytes)
+        }
+        return con
     }
 }
