@@ -34,6 +34,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.remoting.Callable;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -43,6 +44,7 @@ import hudson.util.AtomicFileWriter;
 import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.WebMethod;
@@ -199,7 +201,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Not all the Items need to support this operation, but if you decide to do so,
      * you can use this method.
      */
-    protected void renameTo(String newName) throws IOException {
+    protected void renameTo(final String newName) throws IOException {
         // always synchronize from bigger objects first
         final ItemGroup parent = getParent();
         synchronized (parent) {
@@ -212,13 +214,28 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 if (this.name.equals(newName))
                     return;
 
-                Item existing = parent.getItem(newName);
-                if (existing != null && existing!=this)
-                    // the look up is case insensitive, so we need "existing!=this"
-                    // to allow people to rename "Foo" to "foo", for example.
-                    // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
-                    throw new IllegalArgumentException("Job " + newName
-                            + " already exists");
+                // the test to see if the project already exists or not needs to be done in escalated privilege
+                // to avoid overwriting
+                ACL.impersonate(ACL.SYSTEM,new Callable<Void,IOException>() {
+                    final Authentication user = Jenkins.getAuthentication();
+                    @Override
+                    public Void call() throws IOException {
+                        Item existing = parent.getItem(newName);
+                        if (existing != null && existing!=AbstractItem.this) {
+                            if (existing.getACL().hasPermission(user,Item.DISCOVER))
+                                // the look up is case insensitive, so we need "existing!=this"
+                                // to allow people to rename "Foo" to "foo", for example.
+                                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
+                                throw new IllegalArgumentException("Job " + newName + " already exists");
+                            else {
+                                // can't think of any real way to hide this, but at least the error message could be vague.
+                                throw new IOException("Unable to rename to " + newName);
+                            }
+                        }
+                        return null;
+                    }
+                });
+
 
                 String oldName = this.name;
                 File oldRoot = this.getRootDir();
