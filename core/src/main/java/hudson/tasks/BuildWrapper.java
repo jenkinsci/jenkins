@@ -284,7 +284,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *      Contains existing build variables. Add additional build variables that you contribute
      *      to this map.
      */
-    public void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {
+    public void makeBuildVariables(Run build, Map<String,String> variables) {
     	// noop
     }
 

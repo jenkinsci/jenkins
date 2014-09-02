@@ -27,7 +27,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
-import jenkins.model.Jenkins;
 
 import java.util.Map;
 
@@ -64,7 +63,7 @@ public abstract class BuildVariableContributor implements ExtensionPoint {
      *      Partially built variable map. Implementation of this method is expected to
      *      add additional variables here. Never null.
      */
-    public abstract void buildVariablesFor(AbstractBuild build, Map<String,String> variables);
+    public abstract void buildVariablesFor(Run build, Map<String,String> variables);
 
     /**
      * Returns all the registered {@link BuildVariableContributor}s.
