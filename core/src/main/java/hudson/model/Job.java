@@ -619,6 +619,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         super.renameTo(newName);
         File newBuildDir = getBuildDir();
         if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
+            if (!newBuildDir.getParentFile().isDirectory()) {
+                newBuildDir.getParentFile().mkdirs();
+            }
             if (!oldBuildDir.renameTo(newBuildDir)) {
                 throw new IOException("failed to rename " + oldBuildDir + " to " + newBuildDir);
             }
