@@ -186,7 +186,7 @@ public class ConsistentHash<T> {
         String hash(T t);
     }
 
-    private static final Hash DEFAULT_HASH = new Hash() {
+    static final Hash DEFAULT_HASH = new Hash() {
         public String hash(Object o) {
             return o.toString();
         }
@@ -229,7 +229,8 @@ public class ConsistentHash<T> {
      */
     public void addAll(T... nodes) {
         for (T node : nodes)
-            add(node);
+            addInternal(node,defaultReplication);
+        refreshTable();
     }
 
     /**
@@ -237,7 +238,17 @@ public class ConsistentHash<T> {
      */
     public void addAll(Collection<? extends T> nodes) {
         for (T node : nodes)
-            add(node);
+            addInternal(node,defaultReplication);
+        refreshTable();
+    }
+
+    /**
+     * Calls {@link #add(Object,int)} with all the arguments.
+     */
+    public void addAll(Map<? extends T,Integer> nodes) {
+        for (Map.Entry<? extends T,Integer> node : nodes.entrySet())
+            addInternal(node.getKey(),node.getValue());
+        refreshTable();
     }
 
     /**
@@ -344,24 +355,4 @@ public class ConsistentHash<T> {
     public Iterable<T> list(String queryPoint) {
         return list(md5(queryPoint));
     }
-
-    public static class Builder<T> {
-
-        final ConsistentHash<T> c;
-
-        public Builder(Hash hash) {
-            c = new ConsistentHash<T>(hash);
-        }
-
-        public Builder add(T node, int replica) {
-            c.addInternal(node, replica);
-            return this;
-        }
-
-        public ConsistentHash<T> build() {
-            c.refreshTable();
-            return c;
-        }
-    }
-
 }

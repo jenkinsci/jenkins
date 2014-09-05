@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import com.google.common.collect.Iterables;
+import hudson.util.CopyOnWriteMap.Hash;
 import junit.framework.TestCase;
 
 import java.util.Random;
@@ -118,5 +120,24 @@ public class ConsistentHashTest extends TestCase {
         assertFalse(hash.list(0).iterator().hasNext());
         assertNull(hash.lookup(0));
         assertNull(hash.lookup(999));
+    }
+
+    /**
+     * This test doesn't fail but it's written to measure the performance of the consistent hash function with large data set.
+     */
+    public void testSpeed() {
+        Map<String,Integer> data = new Hash<String, Integer>();
+        for (int i = 0; i < 1000; i++)
+            data.put("node" + i,100);
+        data.put("tail",100);
+
+        long start = System.currentTimeMillis();
+        for (int j=0; j<10; j++) {
+            ConsistentHash<String> b = new ConsistentHash<String>();
+            b.addAll(data);
+//            System.out.println(Iterables.toString(b.list("x")));
+        }
+
+        System.out.println(System.currentTimeMillis()-start);
     }
 }

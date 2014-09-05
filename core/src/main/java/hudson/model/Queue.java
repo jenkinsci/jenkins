@@ -1074,17 +1074,19 @@ public class Queue extends ResourceController implements Saveable {
     private void makeBuildable(BuildableItem p) {
         if(Jenkins.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask && !ifBlockedByHudsonShutdown(p.task)) {
 
-            ConsistentHash.Builder<Node> builder = new ConsistentHash.Builder<Node>(NODE_HASH);
 
             Jenkins h = Jenkins.getInstance();
+            Map<Node,Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
+
             // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
-            builder.add(h, Math.max(h.getNumExecutors() * 100, 1));
+            hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
 
             for (Node n : h.getNodes()) {
-                builder.add(n, n.getNumExecutors() * 100);
+                hashSource.put(n, n.getNumExecutors() * 100);
             }
 
-            ConsistentHash<Node> hash = builder.build();
+            ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
+            hash.addAll(hashSource);
 
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
