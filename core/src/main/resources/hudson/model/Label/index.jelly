@@ -40,7 +40,7 @@ THE SOFTWARE.
         <h2>${%Nodes}</h2>
         <j:forEach var="n" items="${it.nodes}">
           <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
-          <j:set var="url" value="${rootURL}/computer/${n.nodeName}"/>
+          <j:set var="url" value="${rootURL}/${c.url}"/>
           <nobr>
             <a href="${url}"><l:icon class="${c.iconClassName} icon-sm"/></a>
             <st:nbsp/>
