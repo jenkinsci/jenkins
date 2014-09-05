@@ -55,7 +55,12 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+    Channel reader thread can end up consuming 100% CPU
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23471">issue 23471</a>)
+  <li class=bug>
+    CancelledKeyException can cause all JNLP slaves to disconnect (and the problem remains until restart)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24050">issue 24050</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 
