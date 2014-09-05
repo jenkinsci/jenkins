@@ -201,13 +201,13 @@ public class ConsistentHash<T> {
     }
 
     public ConsistentHash(Hash<T> hash) {
-        this(hash,100);
+        this(hash, 100);
     }
 
     public ConsistentHash(Hash<T> hash, int defaultReplication) {
         this.hash = hash;
         this.defaultReplication = defaultReplication;
-        this.table = new Table(); // initial empty table
+        refreshTable();
     }
 
     public int countAllPoints() {
@@ -244,7 +244,7 @@ public class ConsistentHash<T> {
      * Removes the node entirely. This is the same as {@code add(node,0)}
      */
     public void remove(T node) {
-        add(node,0);
+        add(node, 0);
     }
 
     /**
@@ -254,6 +254,11 @@ public class ConsistentHash<T> {
      * This is the only function that manipulates {@link #items}.
      */
     public synchronized void add(T node, int replica) {
+        addInternal(node, replica);
+        refreshTable();
+    }
+
+    private void addInternal(T node, int replica) {
         if(replica==0) {
             items.remove(node);
         } else {
@@ -263,8 +268,12 @@ public class ConsistentHash<T> {
                 points[i] = new Point(md5(seed+':'+i),node);
             items.put(node,points);
         }
+    }
+
+    private void refreshTable() {
         table = new Table();
     }
+
 
     /**
      * Compresses a string into an integer with MD5.
@@ -335,4 +344,24 @@ public class ConsistentHash<T> {
     public Iterable<T> list(String queryPoint) {
         return list(md5(queryPoint));
     }
+
+    public static class Builder<T> {
+
+        final ConsistentHash<T> c;
+
+        public Builder(Hash hash) {
+            c = new ConsistentHash<T>(hash);
+        }
+
+        public Builder add(T node, int replica) {
+            c.addInternal(node, replica);
+            return this;
+        }
+
+        public ConsistentHash<T> build() {
+            c.refreshTable();
+            return c;
+        }
+    }
+
 }
