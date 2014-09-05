@@ -145,7 +145,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns true iff this label is an atom.
      *
-     * @since TODO
+     * @since 1.580
      */
     public boolean isAtom() { return false; }
 
