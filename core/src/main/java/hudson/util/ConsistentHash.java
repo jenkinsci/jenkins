@@ -48,7 +48,7 @@ import hudson.util.Iterators.DuplicateFilterIterator;
  * and then we use MD5 to create random enough distribution.
  *
  * <p>
- * This consistent hash implementaiton is consistent both to the addition/removal of Ts, as well
+ * This consistent hash implementation is consistent both to the addition/removal of Ts, as well
  * as increase/decrease of the replicas.
  *
  * <p>
@@ -314,8 +314,8 @@ public class ConsistentHash<T> {
      * Creates a permutation of all the nodes for the given data point.
      *
      * <p>
-     * The returned pemutation is consistent, in the sense that small change
-     * to the consitent hash (like addition/removal/change of replicas) only
+     * The returned permutation is consistent, in the sense that small change
+     * to the consistent hash (like addition/removal/change of replicas) only
      * creates a small change in the permutation.
      *
      * <p>
