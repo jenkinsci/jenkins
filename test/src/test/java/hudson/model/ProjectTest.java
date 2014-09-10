@@ -419,7 +419,9 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         Slave slave = j.createOnlineSlave();
         AbstractBuild build = p.createExecutable();
-        FilePath path = slave.toComputer().getWorkspaceList().allocate(slave.getWorkspaceFor(p), build).path;
+        FilePath ws = slave.getWorkspaceFor(p);
+        assertNotNull(ws);
+        FilePath path = slave.toComputer().getWorkspaceList().allocate(ws, build).path;
         build.setWorkspace(path);
         BuildListener listener = new StreamBuildListener(BuildListener.NULL.getLogger(), Charset.defaultCharset());
         assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));

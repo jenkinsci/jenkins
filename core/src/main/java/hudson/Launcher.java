@@ -1009,7 +1009,7 @@ public abstract class Launcher {
      * 
      * @author rcampbell
      * @author Oleg Nenashev, Synopsys Inc.
-     * @since TODO: define version
+     * @since 1.568
      */
     public static class DecoratedLauncher extends Launcher {
 

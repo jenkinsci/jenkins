@@ -292,7 +292,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Normally, a workspace is assigned by {@link hudson.model.Run.RunExecution}, but this lets you set the workspace in case
      * {@link AbstractBuild} is created without a build.
      */
-    protected void setWorkspace(FilePath ws) {
+    protected void setWorkspace(@Nonnull FilePath ws) {
         this.workspace = ws.getRemote();
     }
 

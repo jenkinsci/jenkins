@@ -30,7 +30,7 @@ import org.apache.commons.io.IOUtils;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(optional=true)
+@Extension(optional=true) // TODO why would an extension using a built-in extension point need to be marked optional?
 public class HsErrPidList extends AdministrativeMonitor {
     /**
      * hs_err_pid files that we think belong to us.
@@ -43,6 +43,9 @@ public class HsErrPidList extends AdministrativeMonitor {
     private MappedByteBuffer map;
 
     public HsErrPidList() {
+        if (Functions.getIsUnitTest()) {
+            return;
+        }
         try {
             FileChannel ch = new FileInputStream(getSecretKeyFile()).getChannel();
             map = ch.map(MapMode.READ_ONLY,0,1);

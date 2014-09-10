@@ -39,6 +39,11 @@ JENKINS_LOG=/var/log/jenkins/$NAME.log
 #   descriptors are forced to 1024 regardless of /etc/security/limits.conf
 MAXOPENFILES=8192
 
+# set the umask to control permission bits of files that Jenkins creates.
+#   027 makes files read-only for group and inaccessible for others. comment this out to inherit setting
+#   (as of Ubuntu 12.04, by default umask comes from pam_umask(8) and /etc/login.defs
+UMASK=027
+
 # port for HTTP connector (default 8080; disable with -1)
 HTTP_PORT=8080
 
