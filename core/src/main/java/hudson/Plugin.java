@@ -48,7 +48,7 @@ import com.thoughtworks.xstream.XStream;
  * Base class of Hudson plugin.
  *
  * <p>
- * A plugin needs to derive from this class.
+ * A plugin may derive from this class.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point

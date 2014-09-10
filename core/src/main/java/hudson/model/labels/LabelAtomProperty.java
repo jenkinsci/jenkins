@@ -40,6 +40,17 @@ import java.util.Collections;
  * Plugins can contribute this extension point to add additional data or UI actions to {@link LabelAtom}.
  * {@link LabelAtomProperty}s show up in the configuration screen of a label, and they are persisted
  * with the {@link LabelAtom} object.
+ * 
+ * <h2>Implementation hints</h2>
+ * <ul>
+ * <li>extend this class and define a static inner class extending {@link hudson.model.labels.LabelAtomPropertyDescriptor}</li>
+ * <li>in the inner class override <code>getDisplayName()</code>. This function returns the name of the option shown in the label
+ * configuration page to activate your extension</li>
+ * <li>if you need additional parameters in this page when activating your extension, provide a <tt>config.jelly</tt> file</li>
+ * <li>when the user saves the label configuration page with your extension activated, Jenkins calls the corresponding
+ * {@link org.kohsuke.stapler.DataBoundConstructor}-annotated constructor in your LabelAtomProperty subclass</li>
+ * <li>override the <code>getActions()</code> function to return your additional {@link hudson.model.Action}(s)</li>
+ * </ul>
  *
  * @author Kohsuke Kawaguchi
  * @since 1.373
