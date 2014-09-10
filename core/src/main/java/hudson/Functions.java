@@ -786,6 +786,14 @@ public class Functions {
     }
 
     /**
+     * Return s, replacing space characters by '_'. Space are not valid chars in html id (HTML5)
+     * JENKINS-23330
+     */
+    public static String getHTML5CompliantId(String s) {
+        return s == null ? s : s.replace(' ', '_');
+    }
+    
+    /**
      * Infers the hudson installation URL from the given request.
      */
     public static String inferHudsonURL(StaplerRequest req) {

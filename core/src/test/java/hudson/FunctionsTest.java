@@ -29,24 +29,30 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+
 import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -301,6 +307,16 @@ public class FunctionsTest {
         }finally{
             Locale.setDefault(defaultLocale);
         }
+    }
+    
+    @Test
+    @Issue("JENKINS-23330")
+    public void testGetHTML5CompliantId() {
+        // make sure function doesn't blow for null values
+        assertNull(Functions.getHTML5CompliantId(null));
+        // for object not null, result is not predictable but the value is expected to contain only digits
+        assertEquals("A_string_with_space", Functions.getHTML5CompliantId("A string with space"));
+        assertEquals("A_string_with_no_space#$%&é§è!ç%", Functions.getHTML5CompliantId("A_string_with_no_space#$%&é§è!ç%"));
     }
 
     @Bug(17030)
