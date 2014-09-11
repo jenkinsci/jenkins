@@ -68,6 +68,10 @@ public class ChannelPinger extends ComputerListener {
 
     @Override
     public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener)  {
+        install(channel);
+    }
+
+    public void install(Channel channel) {
         if (pingInterval < 1) {
             LOGGER.fine("Slave ping is disabled");
             return;
@@ -75,9 +79,9 @@ public class ChannelPinger extends ComputerListener {
 
         try {
             channel.call(new SetUpRemotePing(pingInterval));
-            LOGGER.fine("Set up a remote ping for " + c.getName());
+            LOGGER.fine("Set up a remote ping for " + channel.getName());
         } catch (Exception e) {
-            LOGGER.severe("Failed to set up a ping for " + c.getName());
+            LOGGER.severe("Failed to set up a ping for " + channel.getName());
         }
 
         // set up ping from both directions, so that in case of a router dropping a connection,
