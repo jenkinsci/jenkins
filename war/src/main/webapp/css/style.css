@@ -123,6 +123,7 @@ body, table, form, input, td, th, p, textarea, select
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
   color: #333;
+  background-color: #fff;
 }
 
 FORM {
