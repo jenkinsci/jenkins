@@ -8,7 +8,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Adds the 'X-Frame-Options' header to all web pages.
  *
- * @since TODO
+ * @since 1.581
  */
 @Extension(ordinal = 1000)
 public class FrameOptionsPageDecorator extends PageDecorator {
