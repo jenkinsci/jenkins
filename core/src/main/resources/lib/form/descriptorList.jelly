@@ -39,7 +39,7 @@ THE SOFTWARE.
       method works fine, too, such as DescribableList.
     </st:attribute>
     <st:attribute name="field">
-      Either @field or @instances are required (or @field needs to be inherited from the ancestor &lt;entry> elemetn.
+      Either @field or @instances are required (or @field may be inherited from the ancestor &lt;entry> element).
       If field is specified, instances are assumed to be instance[field].
 
       When this attribute is specified, JSON structure is properly set up so that the databinding
