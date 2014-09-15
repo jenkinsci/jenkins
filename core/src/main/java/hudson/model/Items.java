@@ -116,7 +116,7 @@ public class Items {
     }
 
     /**
-     * Returns all the registered {@link TopLevelItemDescriptor}s that the current security principle is allowed to
+     * Returns all the registered {@link TopLevelItemDescriptor}s that the current security principal is allowed to
      * create within the specified item group.
      *
      * @since 1.582
@@ -126,7 +126,7 @@ public class Items {
     }
 
     /**
-     * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principle is allowed to
+     * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principal is allowed to
      * create within the specified item group.
      *
      * @since 1.582
