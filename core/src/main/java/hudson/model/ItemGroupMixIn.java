@@ -31,6 +31,7 @@ import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
 import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -258,12 +259,17 @@ public abstract class ItemGroupMixIn {
                     return (TopLevelItem) Items.load(parent, dir);
                 }
             });
+            acl.getACL().checkCreatePermission(parent, result.getDescriptor());
             add(result);
 
             ItemListener.fireOnCreated(result);
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             return result;
+        } catch (AccessDeniedException e) {
+            // if anything fails, delete the config file to avoid further confusion
+            Util.deleteRecursive(dir);
+            throw e;
         } catch (IOException e) {
             // if anything fails, delete the config file to avoid further confusion
             Util.deleteRecursive(dir);
@@ -274,6 +280,7 @@ public abstract class ItemGroupMixIn {
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
             throws IOException {
         acl.checkPermission(Item.CREATE);
+        acl.getACL().checkCreatePermission(parent, type);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
         if(parent.getItem(name)!=null)

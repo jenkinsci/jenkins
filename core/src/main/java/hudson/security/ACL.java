@@ -25,6 +25,8 @@ package hudson.security;
 
 import javax.annotation.Nonnull;
 import hudson.remoting.Callable;
+import hudson.model.ItemGroup;
+import hudson.model.TopLevelItemDescriptor;
 import jenkins.security.NonSerializableSecurityContext;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
@@ -77,6 +79,44 @@ public abstract class ACL {
      * in which case you should probably just assume it has every permission.
      */
     public abstract boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission);
+
+    /**
+     * Checks if the current security principal has the permission to create top level items within the specified item group.
+     * <p>
+     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * in which case you should probably just assume it has can create anything.
+     * <p>
+     * This is just a convenience function.
+     * @param c the container of the item.
+     * @param d the descriptor of the item to be created.
+     * @throws AccessDeniedException
+     *      if the user doesn't have the permission.
+     * @since 1.582
+     */
+    public final void checkCreatePermission(@Nonnull ItemGroup c,
+                                            @Nonnull TopLevelItemDescriptor d) {
+        Authentication a = Jenkins.getAuthentication();
+        if (!hasCreatePermission(a, c, d)) {
+            throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
+                    "Item/CREATE/" + d.getDisplayName()));
+        }
+    }
+    /**
+     * Checks if the given principle has the permission to create top level items within the specified item group.
+     * <p>
+     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * in which case you should probably just assume it has can create anything.
+     * @param a the principle.
+     * @param c the container of the item.
+     * @param d the descriptor of the item to be created.
+     * @return false
+     *      if the user doesn't have the permission.
+     * @since 1.582
+     */
+    public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ItemGroup c,
+                                       @Nonnull TopLevelItemDescriptor d) {
+        return true;
+    }
 
     //
     // Sid constants
