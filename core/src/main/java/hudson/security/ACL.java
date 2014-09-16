@@ -81,7 +81,8 @@ public abstract class ACL {
     public abstract boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission);
 
     /**
-     * Checks if the current security principal has the permission to create top level items within the specified item group.
+     * Checks if the current security principal has the permission to create top level items within the specified
+     * item group.
      * <p>
      * This is just a convenience function.
      * @param c the container of the item.
@@ -102,7 +103,7 @@ public abstract class ACL {
      * Checks if the given principal has the permission to create top level items within the specified item group.
      * <p>
      * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
-     * in which case you should probably just assume it has can create anything.
+     * in which case you should probably just assume it can create anything anywhere.
      * @param a the principal.
      * @param c the container of the item.
      * @param d the descriptor of the item to be created.
