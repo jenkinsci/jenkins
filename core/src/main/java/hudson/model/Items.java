@@ -136,8 +136,6 @@ public class Items {
         ACL acl;
         if (c instanceof AccessControlled) {
             acl = ((AccessControlled) c).getACL();
-        } else if (c instanceof Item) {
-            acl = ((Item) c).getACL();
         } else {
             // fall back to root
             acl = Jenkins.getInstance().getACL();
