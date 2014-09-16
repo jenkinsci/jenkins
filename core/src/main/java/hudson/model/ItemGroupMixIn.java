@@ -191,6 +191,8 @@ public abstract class ItemGroupMixIn {
                 if (descriptor == null) {
                     throw new Failure("No item type ‘" + mode + "’ is known");
                 }
+                descriptor.checkApplicableIn(parent);
+                acl.getACL().checkCreatePermission(parent, descriptor);
 
                 // create empty job and redirect to the project config screen
                 result = createProject(descriptor, name, true);
@@ -215,6 +217,8 @@ public abstract class ItemGroupMixIn {
     public synchronized <T extends TopLevelItem> T copy(T src, String name) throws IOException {
         acl.checkPermission(Item.CREATE);
         src.checkPermission(Item.EXTENDED_READ);
+        src.getDescriptor().checkApplicableIn(parent);
+        acl.getACL().checkCreatePermission(parent, src.getDescriptor());
 
         T result = (T)createProject(src.getDescriptor(),name,false);
 
@@ -250,6 +254,7 @@ public abstract class ItemGroupMixIn {
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
         final File dir = configXml.getParentFile();
         dir.mkdirs();
+        boolean success = false;
         try {
             IOUtils.copy(xml,configXml);
 
@@ -259,27 +264,34 @@ public abstract class ItemGroupMixIn {
                     return (TopLevelItem) Items.load(parent, dir);
                 }
             });
-            acl.getACL().checkCreatePermission(parent, result.getDescriptor());
+
+            success = acl.getACL().hasCreatePermission(Jenkins.getAuthentication(), parent, result.getDescriptor())
+                && result.getDescriptor().isApplicableIn(parent);
+
             add(result);
 
             ItemListener.fireOnCreated(result);
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             return result;
-        } catch (AccessDeniedException e) {
-            // if anything fails, delete the config file to avoid further confusion
-            Util.deleteRecursive(dir);
-            throw e;
         } catch (IOException e) {
-            // if anything fails, delete the config file to avoid further confusion
-            Util.deleteRecursive(dir);
+            success = false;
             throw e;
+        } catch (RuntimeException e) {
+            success = false;
+            throw e;
+        } finally {
+            if (!success) {
+                // if anything fails, delete the config file to avoid further confusion
+                Util.deleteRecursive(dir);
+            }
         }
     }
 
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
             throws IOException {
         acl.checkPermission(Item.CREATE);
+        type.checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, type);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
