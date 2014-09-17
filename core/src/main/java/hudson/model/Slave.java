@@ -61,7 +61,6 @@ import jenkins.model.Jenkins;
 import jenkins.slaves.WorkspaceLocator;
 
 import org.apache.commons.io.IOUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -133,7 +132,6 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String userId;
 
-    @DataBoundConstructor
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
