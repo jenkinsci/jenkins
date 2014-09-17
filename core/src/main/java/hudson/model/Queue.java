@@ -834,11 +834,11 @@ public class Queue extends ResourceController implements Saveable {
         int r = 0;
         for (BuildableItem bi : buildables.values())
             for (SubTask st : bi.task.getSubTasks())
-                if (null==l || st.getAssignedLabel()==l)
+                if (null==l || bi.getAssignedLabelFor(st)==l)
                     r++;
         for (BuildableItem bi : pendings.values())
             for (SubTask st : bi.task.getSubTasks())
-                if (null==l || st.getAssignedLabel()==l)
+                if (null==l || bi.getAssignedLabelFor(st)==l)
                     r++;
         return r;
     }
@@ -1413,6 +1413,21 @@ public class Queue extends ResourceController implements Saveable {
                 if (l!=null)    return l;
             }
             return task.getAssignedLabel();
+        }
+        
+        /**
+         * Test if the specified {@link SubTask} needs to be run on a node with a particular label, and
+         * return that {@link Label}. Otherwise null, indicating it can run on anywhere.
+         * 
+         * <p>
+         * This code takes {@link LabelAssignmentAction} into account, then falls back to {@link SubTask#getAssignedLabel()}
+         */
+        public Label getAssignedLabelFor(SubTask st) {
+            for (LabelAssignmentAction laa : getActions(LabelAssignmentAction.class)) {
+                Label l = laa.getAssignedLabel(st);
+                if (l!=null)    return l;
+            }
+            return st.getAssignedLabel();
         }
 
         /**

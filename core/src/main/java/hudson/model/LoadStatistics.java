@@ -233,7 +233,7 @@ public abstract class LoadStatistics {
             int q=0;
             for (Queue.BuildableItem bi : bis) {
                 for (SubTask st : Tasks.getSubTasksOf(bi.task))
-                    if (st.getAssignedLabel()==l)
+                    if (bi.getAssignedLabelFor(st)==l)
                         q++;
             }
             return q;
