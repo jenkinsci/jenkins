@@ -122,8 +122,11 @@ body, table, form, input, td, th, p, textarea, select
 {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
+}
+
+body, table, form, td, th, p
+{
   color: #333;
-  background-color: #fff;
 }
 
 FORM {
