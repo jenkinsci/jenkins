@@ -112,10 +112,9 @@ do_start()
         ulimit -n $MAXOPENFILES
     fi
     
-    # honor umask setting
+    # notify of explicit umask
     if [ -n "$UMASK" ]; then
         [ "$VERBOSE" != no ] && echo Setting umask to $UMASK
-        umask $UMASK
     fi
 
     # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
