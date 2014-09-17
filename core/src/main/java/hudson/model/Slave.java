@@ -208,6 +208,10 @@ public abstract class Slave extends Node implements Serializable {
         return name;
     }
 
+    @Override public String toString() {
+        return getClass().getName() + "[" + name + "]";
+    }
+
     public void setNodeName(String name) {
         this.name = name; 
     }
