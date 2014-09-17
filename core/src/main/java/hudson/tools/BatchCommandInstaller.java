@@ -26,7 +26,9 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.util.LineEndingConversion;
 import org.kohsuke.stapler.DataBoundConstructor;
+import java.io.ObjectStreamException;
 
 /**
  * Installs tool via script execution of Batch script.
@@ -37,7 +39,7 @@ public class BatchCommandInstaller extends AbstractCommandInstaller {
 
     @DataBoundConstructor
     public BatchCommandInstaller(String label, String command, String toolHome) {
-        super(label, command, toolHome);
+        super(label, LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Windows), toolHome);
     }
 
     @Override
@@ -49,6 +51,10 @@ public class BatchCommandInstaller extends AbstractCommandInstaller {
     public String[] getCommandCall(FilePath script) {
         String[] cmd = {"cmd", "/c", "call", script.getRemote()};
         return cmd;
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+        return new BatchCommandInstaller(getLabel(), getCommand(), getToolHome());
     }
  
     @Extension

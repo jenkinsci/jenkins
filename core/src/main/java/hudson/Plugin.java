@@ -48,7 +48,10 @@ import com.thoughtworks.xstream.XStream;
  * Base class of Hudson plugin.
  *
  * <p>
- * A plugin needs to derive from this class.
+ * A plugin may derive from this class, or it may directly define extension
+ * points annotated with {@link hudson.Extension}. For a list of extension
+ * points, see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Extension+points">
+ * https://wiki.jenkins-ci.org/display/JENKINS/Extension+points</a>.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point
