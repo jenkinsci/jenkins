@@ -23,7 +23,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 #DAEMON=$JENKINS_SH
 DAEMON=/usr/bin/daemon
-DAEMON_ARGS="--name=$NAME --inherit --env=JENKINS_HOME=$JENKINS_HOME --output=$JENKINS_LOG --pidfile=$PIDFILE" 
+DAEMON_ARGS="--name=$NAME --inherit --umask=$UMASK --env=JENKINS_HOME=$JENKINS_HOME --output=$JENKINS_LOG --pidfile=$PIDFILE"
 
 SU=/bin/su
 
