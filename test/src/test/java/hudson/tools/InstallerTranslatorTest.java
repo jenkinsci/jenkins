@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.Node;
@@ -31,6 +32,7 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
+import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -58,6 +60,42 @@ public class InstallerTranslatorTest {
         String slaveDefaultLocation = "/System/JDK";
         slave.getNodeProperties().add(new ToolLocationNodeProperty(new ToolLocationNodeProperty.ToolLocation((ToolDescriptor) jdk.getDescriptor(), jdk.getName(), slaveDefaultLocation)));
         assertEquals(slaveDefaultLocation, p.getEnvironment(slave, listener).get(javaHomeProp));
+    }
+
+    @Issue("JENKINS-17667")
+    @Test public void multipleSlavesAndTools() throws Exception {
+        Node slave1 = r.createSlave();
+        Node slave2 = r.createSlave();
+        JDK jdk1 = new JDK("jdk1", null, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(new CommandInstaller(null, "echo installed jdk1", "/opt/jdk1")))));
+        JDK jdk2 = new JDK("jdk2", null, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(new CommandInstaller(null, "echo installed jdk2", "/opt/jdk2")))));
+        r.jenkins.getJDKs().add(jdk1);
+        r.jenkins.getJDKs().add(jdk2);
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setJDK(jdk1);
+        p.getBuildersList().add(new Shell("echo $JAVA_HOME"));
+        p.setAssignedNode(slave1);
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        r.assertLogContains("installed jdk1", b1);
+        r.assertLogContains("/opt/jdk1", b1);
+        p.setJDK(jdk2);
+        FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
+        r.assertLogContains("installed jdk2", b2);
+        r.assertLogContains("/opt/jdk2", b2);
+        FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
+        // An installer is run for every build, and it is up to a CommandInstaller configuration to do any up-to-date check.
+        r.assertLogContains("installed jdk2", b3);
+        r.assertLogContains("/opt/jdk2", b3);
+        p.setAssignedNode(slave2);
+        FreeStyleBuild b4 = r.buildAndAssertSuccess(p);
+        r.assertLogContains("installed jdk2", b4);
+        r.assertLogContains("/opt/jdk2", b4);
+        p.setJDK(jdk1);
+        FreeStyleBuild b5 = r.buildAndAssertSuccess(p);
+        r.assertLogContains("installed jdk1", b5);
+        r.assertLogContains("/opt/jdk1", b5);
+        FreeStyleBuild b6 = r.buildAndAssertSuccess(p);
+        r.assertLogContains("installed jdk1", b6);
+        r.assertLogContains("/opt/jdk1", b6);
     }
 
 }

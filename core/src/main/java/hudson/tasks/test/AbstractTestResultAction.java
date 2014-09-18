@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import jenkins.model.RunAction2;
 import org.jfree.chart.ChartFactory;
@@ -167,13 +168,14 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
      * Gets the test result of the previous build, if it's recorded, or null.
      */
     public T getPreviousResult() {
-        return (T)getPreviousResult(getClass());
+        return (T)getPreviousResult(getClass(), true);
     }
 
-    private <U extends AbstractTestResultAction> U getPreviousResult(Class<U> type) {
+    private <U extends AbstractTestResultAction> U getPreviousResult(Class<U> type, boolean eager) {
+        Set<Integer> loadedBuilds = eager ? null : owner.getProject()._getRuns().getLoadedBuilds().keySet();
         AbstractBuild<?,?> b = owner;
         while(true) {
-            b = b.getPreviousBuild();
+            b = eager || loadedBuilds.contains(b.number - /* assuming there are no gaps */1) ? b.getPreviousBuild() : null;
             if(b==null)
                 return null;
             U r = b.getAction(type);
@@ -256,7 +258,7 @@ public abstract class AbstractTestResultAction<T extends AbstractTestResultActio
 
         DataSetBuilder<String,NumberOnlyBuildLabel> dsb = new DataSetBuilder<String,NumberOnlyBuildLabel>();
 
-        for( AbstractTestResultAction<?> a=this; a!=null; a=a.getPreviousResult(AbstractTestResultAction.class) ) {
+        for (AbstractTestResultAction<?> a = this; a != null; a = a.getPreviousResult(AbstractTestResultAction.class, false)) {
             dsb.add( a.getFailCount(), "failed", new NumberOnlyBuildLabel(a.owner));
             if(!failureOnly) {
                 dsb.add( a.getSkipCount(), "skipped", new NumberOnlyBuildLabel(a.owner));

@@ -84,9 +84,13 @@ public class OldDataMonitor extends AdministrativeMonitor {
         return !data.isEmpty();
     }
 
-    public synchronized Map<Saveable,VersionRange> getData() {
+    public Map<Saveable,VersionRange> getData() {
+        Map<SaveableReference,VersionRange> _data;
+        synchronized (this) {
+            _data = new HashMap<SaveableReference,VersionRange>(this.data);
+        }
         Map<Saveable,VersionRange> r = new HashMap<Saveable,VersionRange>();
-        for (Map.Entry<SaveableReference,VersionRange> entry : data.entrySet()) {
+        for (Map.Entry<SaveableReference,VersionRange> entry : _data.entrySet()) {
             Saveable s = entry.getKey().get();
             if (s != null) {
                 r.put(s, entry.getValue());
