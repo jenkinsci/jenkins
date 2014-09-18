@@ -34,6 +34,7 @@ import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
+import jenkins.security.MasterToSlave;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.stapler.StaplerRequest;
@@ -70,6 +71,7 @@ public final class RemotingDiagnostics {
         return channel.call(new GetSystemProperties());
     }
 
+    @MasterToSlave
     private static final class GetSystemProperties implements Callable<Map<Object,Object>,RuntimeException> {
         public Map<Object,Object> call() {
             return new TreeMap<Object,Object>(System.getProperties());
@@ -83,12 +85,13 @@ public final class RemotingDiagnostics {
         return channel.call(new GetThreadDump());
     }
 
-    public static Future<Map<String,String>> getThreadDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
+    public static Future<Map<String,String>> getThreakdDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
         if(channel==null)
             return new AsyncFutureImpl<Map<String, String>>(Collections.singletonMap("N/A","offline"));
         return channel.callAsync(new GetThreadDump());
     }
 
+    @MasterToSlave
     private static final class GetThreadDump implements Callable<Map<String,String>,RuntimeException> {
         public Map<String,String> call() {
             Map<String,String> r = new LinkedHashMap<String,String>();
@@ -119,6 +122,7 @@ public final class RemotingDiagnostics {
         return channel.call(new Script(script));
     }
 
+    @MasterToSlave
     private static final class Script implements DelegatingCallable<String,RuntimeException> {
         private final String script;
         private transient ClassLoader cl;
@@ -184,6 +188,7 @@ public final class RemotingDiagnostics {
      * Heap dump, exposable to URL via Stapler.
      *
      */
+    @MasterToSlave
     public static class HeapDump {
         private final AccessControlled owner;
         private final VirtualChannel channel;
