@@ -34,7 +34,9 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.*;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents health of something (typically project).
@@ -59,6 +61,15 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     private static final String HEALTH_21_TO_40_IMG = "health-20to39.png";
     private static final String HEALTH_0_TO_20_IMG = "health-00to19.png";
     private static final String HEALTH_UNKNOWN_IMG = "empty.png";
+
+    private static final Map<String, String> iconIMGToClassMap = new HashMap<String, String>();
+    static {
+        iconIMGToClassMap.put(HEALTH_OVER_80_IMG, HEALTH_OVER_80);
+        iconIMGToClassMap.put(HEALTH_61_TO_80_IMG, HEALTH_61_TO_80);
+        iconIMGToClassMap.put(HEALTH_41_TO_60_IMG, HEALTH_41_TO_60);
+        iconIMGToClassMap.put(HEALTH_21_TO_40_IMG, HEALTH_21_TO_40);
+        iconIMGToClassMap.put(HEALTH_0_TO_20_IMG, HEALTH_0_TO_20);
+    }
 
     /**
      * The percentage health score (from 0 to 100 inclusive).
@@ -350,6 +361,10 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
             if (hr.localizibleDescription == null) {
                 hr.localizibleDescription = new NonLocalizable(hr.description == null ? "" : hr.description);
                 OldDataMonitor.report(context, "1.256");
+            }
+
+            if (hr.iconClassName == null && hr.iconUrl != null && iconIMGToClassMap.containsKey(hr.iconUrl)) {
+                hr.iconClassName = iconIMGToClassMap.get(hr.iconUrl);
             }
         }
     }

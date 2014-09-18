@@ -74,7 +74,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
         assert j != null;
         String inferred = j.getRootUrlFromRequest() + "manage";
         // TODO this could also verify that j.getRootUrl() has been properly configured, and send a different message if not
-        if (rest.equals(inferred)) {
+        if (rest.startsWith(inferred)) { // not using equals due to JENKINS-24014
             throw HttpResponses.ok();
         } else {
             LOGGER.log(Level.WARNING, "{0} vs. {1}", new Object[] {inferred, rest});

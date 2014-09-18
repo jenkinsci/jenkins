@@ -108,6 +108,12 @@ do_start()
         ulimit -n $MAXOPENFILES
     fi
     
+    # honor umask setting
+    if [ -n "$UMASK" ]; then
+        [ "$VERBOSE" != no ] && echo Setting umask to $UMASK
+        umask $UMASK
+    fi
+
     # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
     # so we let su do so for us now
     $SU -l $JENKINS_USER --shell=/bin/bash -c "$DAEMON $DAEMON_ARGS -- $JAVA $JAVA_ARGS -jar $JENKINS_WAR $JENKINS_ARGS" || return 2

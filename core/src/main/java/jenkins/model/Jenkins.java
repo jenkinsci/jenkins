@@ -2014,6 +2014,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return buildsDir;
     }
 
+    @Restricted(NoExternalUse.class)
+    public void setRawBuildsDir(String buildsDir) {
+        this.buildsDir = buildsDir;
+    }
+
     public FilePath getRootPath() {
         return new FilePath(getRootDir());
     }
@@ -2307,7 +2312,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * Note that the look up is case-insensitive.
      */
-    public TopLevelItem getItem(String name) {
+    @Override public TopLevelItem getItem(String name) throws AccessDeniedException {
         if (name==null)    return null;
     	TopLevelItem item = items.get(name);
         if (item==null)
@@ -2411,8 +2416,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return
      *      null if either such {@link Item} doesn't exist under the given full name,
      *      or it exists but it's no an instance of the given type.
+     * @throws AccessDeniedException as per {@link ItemGroup#getItem}
      */
-    public @CheckForNull <T extends Item> T getItemByFullName(String fullName, Class<T> type) {
+    public @CheckForNull <T extends Item> T getItemByFullName(String fullName, Class<T> type) throws AccessDeniedException {
         StringTokenizer tokens = new StringTokenizer(fullName,"/");
         ItemGroup parent = this;
 
