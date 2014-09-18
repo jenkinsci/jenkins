@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -65,7 +66,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
     private HashMap<SaveableReference,VersionRange> data = new HashMap<SaveableReference,VersionRange>();
-    private boolean updating = false;
+    private AtomicInteger updating = new AtomicInteger(0);
 
     static OldDataMonitor get(Jenkins j) {
         return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
@@ -101,8 +102,8 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     private static void remove(Saveable obj, boolean isDelete) {
         OldDataMonitor odm = get(Jenkins.getInstance());
+        if (odm.updating.get() > 0) return; // Skip during doUpgrade or doDiscard
         synchronized (odm) {
-            if (odm.updating) return; // Skip during doUpgrade or doDiscard
             odm.data.remove(referTo(obj));
             if (isDelete && obj instanceof Job<?,?>)
                 for (Run r : ((Job<?,?>)obj).getBuilds())
@@ -277,16 +278,20 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public synchronized HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
         String thruVerParam = req.getParameter("thruVer");
         VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
-        updating = true;
-        for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<SaveableReference,VersionRange> entry = it.next();
-            VersionNumber version = entry.getValue().max;
-            if (version != null && (thruVer == null || !version.isNewerThan(thruVer))) {
-                it.remove();
-                tryToSave(entry.getKey());
+        updating.incrementAndGet();
+        try {
+            for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<SaveableReference,VersionRange> entry = it.next();
+                VersionNumber version = entry.getValue().max;
+                if (version != null && (thruVer == null || !version.isNewerThan(thruVer))) {
+                    it.remove();
+                    tryToSave(entry.getKey());
+                }
             }
+        } finally {
+            updating.decrementAndGet();
         }
-        updating = false;
+
         return HttpResponses.forwardToPreviousPage();
     }
 
@@ -296,15 +301,19 @@ public class OldDataMonitor extends AdministrativeMonitor {
      */
     @RequirePOST
     public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
-        updating = true;
-        for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<SaveableReference,VersionRange> entry = it.next();
-            if (entry.getValue().max == null) {
-                it.remove();
-                tryToSave(entry.getKey());
+        updating.incrementAndGet();
+        try {
+            for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<SaveableReference,VersionRange> entry = it.next();
+                if (entry.getValue().max == null) {
+                    it.remove();
+                    tryToSave(entry.getKey());
+                }
             }
+        } finally {
+            updating.decrementAndGet();
         }
-        updating = false;
+        
         return HttpResponses.forwardToPreviousPage();
     }
 
