@@ -24,6 +24,7 @@
 package hudson.slaves;
 
 import hudson.model.*;
+import hudson.remoting.ChannelBuilder;
 import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
@@ -72,7 +73,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.RequestDispatcher;
 import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
-import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -343,7 +343,15 @@ public class SlaveComputer extends Computer {
      *      so the implementation of the listener doesn't need to do that again.
      */
     public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
-        Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE, in,out, launchLog);
+        ChannelBuilder cb = new ChannelBuilder(nodeName,threadPoolForRemoting)
+            .withMode(Channel.Mode.NEGOTIATE)
+            .withHeaderStream(launchLog);
+
+        for (ComputerListener cl : ComputerListener.all()) {
+            cl.onChannelBuilding(cb,this);
+        }
+
+        Channel channel = cb.build(in,out);
         setChannel(channel,launchLog,listener);
     }
 
