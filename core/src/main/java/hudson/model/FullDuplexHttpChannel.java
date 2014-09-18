@@ -28,6 +28,8 @@ import hudson.remoting.PingThread;
 import hudson.remoting.Channel.Mode;
 import hudson.util.ChunkedOutputStream;
 import hudson.util.ChunkedInputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -151,10 +153,12 @@ abstract public class FullDuplexHttpChannel {
     /**
      * Set to true if the servlet container doesn't support chunked encoding.
      */
+    @Restricted(NoExternalUse.class)
     public static boolean DIY_CHUNKING = Boolean.getBoolean("hudson.diyChunking");
 
     /**
      * Controls the time out of waiting for the 2nd HTTP request to arrive.
      */
-    private static long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
+    @Restricted(NoExternalUse.class)
+    public static long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 }
