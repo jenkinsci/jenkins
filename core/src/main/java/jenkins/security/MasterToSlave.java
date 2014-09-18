@@ -15,6 +15,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * @author Kohsuke Kawaguchi
  * @see SlaveToMaster
+ * @see CallableDirectionChecker
  * @since 1.THU
  */
 @Retention(RUNTIME)

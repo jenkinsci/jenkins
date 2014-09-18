@@ -29,6 +29,9 @@ public class CallableDirectionChecker extends CallableDecorator {
     public <V, T extends Throwable> Callable<V, T> userRequest(Callable<V, T> op, Callable<V, T> stem) {
         Class c = op.getClass();
 
+        if (c.getName().startsWith("hudson.remoting"))
+            return stem;    // lower level services provided by remoting, such IOSyncer, RPCRequest, Ping, etc. that we allow
+
         boolean m2s = c.isAnnotationPresent(MasterToSlave.class);
         boolean s2m = c.isAnnotationPresent(SlaveToMaster.class);
 
