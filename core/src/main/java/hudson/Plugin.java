@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.util.IOException2;
 import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
@@ -220,7 +221,7 @@ public abstract class Plugin implements Saveable {
         try {
             rsp.serveLocalizedFile(req, wrapper.baseResourceURL.toURI().resolve(new URI(null, '.' + path, null)).toURL(), expires);
         } catch (URISyntaxException x) {
-            throw new IOException(x);
+            throw new IOException2(x);
         }
     }
 
