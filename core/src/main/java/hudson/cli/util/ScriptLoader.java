@@ -9,14 +9,16 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import jenkins.security.UnsafeBySlave;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 /**
- * 
- * @author vjuranek
+ * Reads a file (either a path or URL) over a channel.
  *
+ * @author vjuranek
  */
+@UnsafeBySlave
 public class ScriptLoader implements Callable<String,IOException> {
     
     private final String script;
@@ -43,5 +45,4 @@ public class ScriptLoader implements Callable<String,IOException> {
             s.close();
         }
     }
-
 }
