@@ -363,13 +363,13 @@ pre.console {
 /* tabBar */
 
 .tabBar {
-  clear: both;
   overflow: auto;
   position: relative;
   top: 1px;
+  white-space: nowrap;
 }
 .tabBar .tab {
-  float: left;
+  display: inline-block;
   margin-left: 3px;
 }
 .tabBar .tab:first-child {
