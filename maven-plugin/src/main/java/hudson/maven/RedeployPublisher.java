@@ -53,6 +53,7 @@ import java.util.Properties;
 import jenkins.model.Jenkins;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
+import jenkins.security.MasterToSlave;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
@@ -286,6 +287,7 @@ public class RedeployPublisher extends Recorder {
         }
     }
     
+    @MasterToSlave
     private static final class GetUserHome implements Callable<String,IOException> {
         private static final long serialVersionUID = -8755705771716056636L;
 

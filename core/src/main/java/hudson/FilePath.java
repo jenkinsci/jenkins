@@ -53,6 +53,9 @@ import static hudson.FilePath.TarCompression.GZIP;
 import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
+import jenkins.security.MasterToSlave;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.SlaveToMaster;
 import jenkins.util.VirtualFile;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -2091,6 +2094,7 @@ public final class FilePath implements Serializable {
             return new RemoteLauncher(listener,channel,channel.call(new IsUnix()));
     }
 
+    @MasterToSlave @SlaveToMaster
     private static final class IsUnix implements Callable<Boolean,IOException> {
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
@@ -2489,7 +2493,7 @@ public final class FilePath implements Serializable {
      * (User's home directory in the Unix sense) of the given channel.
      */
     public static FilePath getHomeDirectory(VirtualChannel ch) throws InterruptedException, IOException {
-        return ch.call(new Callable<FilePath,IOException>() {
+        return ch.call(new MasterToSlaveCallable<FilePath,IOException>() {
             public FilePath call() throws IOException {
                 return new FilePath(new File(System.getProperty("user.home")));
             }

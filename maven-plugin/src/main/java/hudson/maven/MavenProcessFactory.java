@@ -34,6 +34,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.tasks.Maven.MavenInstallation;
+import jenkins.security.MasterToSlave;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -110,6 +111,7 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
         channel.call(new InstallPlexusModulesTask(context));
     }
 
+    @MasterToSlave
     private static final class InstallPlexusModulesTask implements Callable<Void,IOException> {
         PlexusModuleContributor c;
 
@@ -126,6 +128,7 @@ final class MavenProcessFactory extends AbstractMavenProcessFactory implements P
     /**
      * Finds classworlds.jar
      */
+    @MasterToSlave
     private static final class GetClassWorldsJar implements Callable<String,IOException> {
         private static final long serialVersionUID = 5812919424079344101L;
         private final String mvnHome;

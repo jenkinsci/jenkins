@@ -32,6 +32,8 @@ import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.IOException;
+
+import jenkins.security.MasterToSlave;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -193,6 +195,7 @@ public class Shell extends CommandInterpreter {
             return FormValidation.validateExecutable(value); 
         }
         
+        @MasterToSlave
         private static final class Shellinterpreter implements Callable<String, IOException> {
 
             private static final long serialVersionUID = 1L;

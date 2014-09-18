@@ -200,6 +200,7 @@ import jenkins.InitReactorRunner;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.io.FileBoolean;
 import net.sf.json.JSONObject;
@@ -1966,7 +1967,7 @@ public class Jenkins extends AbstractCIBase implements ModifiableTopLevelItemGro
 
     @Override
     public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
-        return new Callable<ClockDifference, IOException>() {
+        return new MasterToSlaveCallable<ClockDifference, IOException>() {
             public ClockDifference call() throws IOException {
                 return new ClockDifference(0);
             }

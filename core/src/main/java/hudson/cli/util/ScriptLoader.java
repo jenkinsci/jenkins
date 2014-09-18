@@ -2,6 +2,9 @@ package hudson.cli.util;
 
 import hudson.AbortException;
 import hudson.remoting.Callable;
+import jenkins.security.MasterToSlave;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,16 +12,12 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import jenkins.security.UnsafeBySlave;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
 /**
  * Reads a file (either a path or URL) over a channel.
  *
  * @author vjuranek
  */
-@UnsafeBySlave
+@MasterToSlave
 public class ScriptLoader implements Callable<String,IOException> {
     
     private final String script;

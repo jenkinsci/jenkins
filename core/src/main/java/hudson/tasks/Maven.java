@@ -59,6 +59,7 @@ import hudson.util.VariableResolver.ByMap;
 import hudson.util.VariableResolver.Union;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
@@ -507,7 +508,7 @@ public class Maven extends Builder {
         public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
             // FIXME using similar stuff as in the maven plugin could be better 
             // olamy : but will add a dependency on maven in core -> so not so good 
-            String mavenVersion = launcher.getChannel().call(new Callable<String,IOException>() {
+            String mavenVersion = launcher.getChannel().call(new MasterToSlaveCallable<String,IOException>() {
                     private static final long serialVersionUID = -4143159957567745621L;
 
                     public String call() throws IOException {
@@ -563,7 +564,7 @@ public class Maven extends Builder {
          * Gets the executable path of this maven on the given target system.
          */
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
-            return launcher.getChannel().call(new Callable<String,IOException>() {
+            return launcher.getChannel().call(new MasterToSlaveCallable<String,IOException>() {
                 private static final long serialVersionUID = 2373163112639943768L;
 
                 public String call() throws IOException {

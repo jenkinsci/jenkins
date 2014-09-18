@@ -43,12 +43,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlave;
 
 /**
  * @author Olivier Lamy
  * @author Christoph Kutzinski
  *
  */
+@MasterToSlave
 public abstract class AbstractMavenBuilder implements DelegatingCallable<Result,IOException> {
     
     private static final long serialVersionUID = -2687215937784908860L;

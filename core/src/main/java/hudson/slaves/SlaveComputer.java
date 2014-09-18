@@ -72,6 +72,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.RequestDispatcher;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlave;
+import jenkins.security.SlaveToMaster;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -399,6 +401,7 @@ public class SlaveComputer extends Computer {
         return channel.call(new LoadingTime(true));
     }
 
+    @MasterToSlave @SlaveToMaster
     static class LoadingCount implements Callable<Integer,RuntimeException> {
         private final boolean resource;
         LoadingCount(boolean resource) {
@@ -410,12 +413,14 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    @MasterToSlave
     static class LoadingPrefetchCacheCount implements Callable<Integer,RuntimeException> {
         @Override public Integer call() {
             return Channel.current().classLoadingPrefetchCacheCount.get();
         }
     }
 
+    @MasterToSlave
     static class LoadingTime implements Callable<Long,RuntimeException> {
         private final boolean resource;
         LoadingTime(boolean resource) {
@@ -711,18 +716,21 @@ public class SlaveComputer extends Computer {
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
 
+    @MasterToSlave
     private static final class SlaveVersion implements Callable<String,IOException> {
         public String call() throws IOException {
             try { return Launcher.VERSION; }
             catch (Throwable ex) { return "< 1.335"; } // Older slave.jar won't have VERSION
         }
     }
+    @MasterToSlave @SlaveToMaster
     private static final class DetectOS implements Callable<Boolean,IOException> {
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
         }
     }
 
+    @MasterToSlave @SlaveToMaster
     private static final class DetectDefaultCharset implements Callable<String,IOException> {
         public String call() throws IOException {
             return Charset.defaultCharset().name();
@@ -740,6 +748,7 @@ public class SlaveComputer extends Computer {
         static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
     }
 
+    @MasterToSlave
     private static class SlaveInitializer implements Callable<Void,RuntimeException> {
         public Void call() {
             // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
@@ -787,6 +796,7 @@ public class SlaveComputer extends Computer {
         return null;
     }
 
+    @MasterToSlave
     private static class SlaveLogFetcher implements Callable<List<LogRecord>,RuntimeException> {
         public List<LogRecord> call() {
             return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());

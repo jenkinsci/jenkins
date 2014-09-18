@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.List;
 import jenkins.model.ArtifactManager;
+import jenkins.security.SlaveToMaster;
 
 /**
  * Remoting proxy interface for {@link MavenReporter}s to talk to {@link MavenBuild}
@@ -266,6 +267,7 @@ public interface MavenBuildProxy {
         /**
          * {@link Callable} for invoking {@link BuildCallable} asynchronously.
          */
+        @SlaveToMaster
         protected static final class AsyncInvoker implements DelegatingCallable<Object,Throwable> {
             private final MavenBuildProxy proxy;
             private final BuildCallable<?,?> program;

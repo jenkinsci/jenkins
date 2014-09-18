@@ -38,6 +38,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
+import jenkins.security.MasterToSlave;
 import org.apache.commons.io.input.NullInputStream;
 
 import java.io.BufferedOutputStream;
@@ -887,6 +888,7 @@ public abstract class Launcher {
             getChannel().call(new KillTask(modelEnvVars));
         }
 
+        @MasterToSlave
         private static final class KillTask implements Callable<Void,RuntimeException> {
             private final Map<String, String> modelEnvVars;
 
@@ -962,6 +964,7 @@ public abstract class Launcher {
         IOTriplet getIOtriplet();
     }
 
+    @MasterToSlave
     private static class RemoteLaunchCallable implements Callable<RemoteProcess,IOException> {
         private final List<String> cmd;
         private final boolean[] masks;
@@ -1032,6 +1035,7 @@ public abstract class Launcher {
         private static final long serialVersionUID = 1L;
     }
 
+    @MasterToSlave
     private static class RemoteChannelLaunchCallable implements Callable<OutputStream,IOException> {
         private final String[] cmd;
         private final Pipe out;

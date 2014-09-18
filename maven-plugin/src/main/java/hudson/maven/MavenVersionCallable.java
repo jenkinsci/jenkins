@@ -30,14 +30,15 @@ import hudson.remoting.Callable;
 import java.io.File;
 import java.io.IOException;
 
+import jenkins.security.MasterToSlave;
 import org.kohsuke.stapler.framework.io.IOException2;
 
 /**
  * 
  * @author Olivier Lamy
  * @since 3.0
- *
  */
+@MasterToSlave
 public class MavenVersionCallable
     implements Callable<MavenInformation, IOException>
 {

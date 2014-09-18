@@ -85,7 +85,7 @@ public final class RemotingDiagnostics {
         return channel.call(new GetThreadDump());
     }
 
-    public static Future<Map<String,String>> getThreakdDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
+    public static Future<Map<String,String>> getThreadDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
         if(channel==null)
             return new AsyncFutureImpl<Map<String, String>>(Collections.singletonMap("N/A","offline"));
         return channel.callAsync(new GetThreadDump());
@@ -165,30 +165,12 @@ public final class RemotingDiagnostics {
      * Obtains the heap dump in an HPROF file.
      */
     public static FilePath getHeapDump(VirtualChannel channel) throws IOException, InterruptedException {
-        return channel.call(new Callable<FilePath, IOException>() {
-            public FilePath call() throws IOException {
-                final File hprof = File.createTempFile("hudson-heapdump", "hprof");
-                hprof.delete();
-                try {
-                    MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-                    server.invoke(new ObjectName("com.sun.management:type=HotSpotDiagnostic"), "dumpHeap",
-                            new Object[]{hprof.getAbsolutePath(), true}, new String[]{String.class.getName(), boolean.class.getName()});
-
-                    return new FilePath(hprof);
-                } catch (JMException e) {
-                    throw new IOException2(e);
-                }
-            }
-
-            private static final long serialVersionUID = 1L;
-        });
+        return channel.call(new GetHeapDump());
     }
 
     /**
      * Heap dump, exposable to URL via Stapler.
-     *
      */
-    @MasterToSlave
     public static class HeapDump {
         private final AccessControlled owner;
         private final VirtualChannel channel;
@@ -221,5 +203,24 @@ public final class RemotingDiagnostics {
         public FilePath obtain() throws IOException, InterruptedException {
             return RemotingDiagnostics.getHeapDump(channel);
         }
+    }
+
+    @MasterToSlave
+    private static class GetHeapDump implements Callable<FilePath, IOException> {
+        public FilePath call() throws IOException {
+            final File hprof = File.createTempFile("hudson-heapdump", "hprof");
+            hprof.delete();
+            try {
+                MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+                server.invoke(new ObjectName("com.sun.management:type=HotSpotDiagnostic"), "dumpHeap",
+                        new Object[]{hprof.getAbsolutePath(), true}, new String[]{String.class.getName(), boolean.class.getName()});
+
+                return new FilePath(hprof);
+            } catch (JMException e) {
+                throw new IOException2(e);
+            }
+        }
+
+        private static final long serialVersionUID = 1L;
     }
 }

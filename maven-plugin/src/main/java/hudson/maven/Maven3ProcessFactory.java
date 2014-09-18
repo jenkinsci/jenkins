@@ -32,6 +32,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.tasks.Maven.MavenInstallation;
+import jenkins.security.MasterToSlave;
 import org.jvnet.hudson.maven3.agent.Maven3Main;
 import org.jvnet.hudson.maven3.launcher.Maven3Launcher;
 import org.jvnet.hudson.maven3.listeners.HudsonMavenExecutionResult;
@@ -106,6 +107,7 @@ public class Maven3ProcessFactory extends AbstractMavenProcessFactory implements
     /**
      * Finds classworlds.jar
      */
+    @MasterToSlave
     protected static final class GetClassWorldsJar implements Callable<String,IOException> {
         private static final long serialVersionUID = -2599434124883557137L;
         private final String mvnHome;

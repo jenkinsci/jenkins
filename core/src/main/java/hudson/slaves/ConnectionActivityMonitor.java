@@ -32,6 +32,8 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.remoting.Callable;
 import hudson.Extension;
+import jenkins.security.MasterToSlave;
+import jenkins.security.SlaveToMaster;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -102,6 +104,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
     public boolean enabled = Boolean.getBoolean(ConnectionActivityMonitor.class.getName()+".enabled");
 
     private static final PingCommand PING_COMMAND = new PingCommand();
+    @MasterToSlave @SlaveToMaster
     private static final class PingCommand implements Callable<Void,RuntimeException> {
         public Void call() throws RuntimeException {
             return null;

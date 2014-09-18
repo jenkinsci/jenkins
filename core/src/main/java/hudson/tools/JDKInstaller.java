@@ -40,6 +40,7 @@ import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlave;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
@@ -501,6 +502,7 @@ public class JDKInstaller extends ToolInstaller {
             throw new DetectionFailedException("Unknown CPU name: "+arch);
         }
 
+        @MasterToSlave
         static class GetCurrentPlatform implements Callable<Platform,DetectionFailedException> {
             private static final long serialVersionUID = 1L;
             public Platform call() throws DetectionFailedException {
@@ -563,6 +565,7 @@ public class JDKInstaller extends ToolInstaller {
             throw new DetectionFailedException("Unknown CPU architecture: "+arch);
         }
 
+        @MasterToSlave
         static class GetCurrentCPU implements Callable<CPU,DetectionFailedException> {
             private static final long serialVersionUID = 1L;
             public CPU call() throws DetectionFailedException {

@@ -58,7 +58,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import static hudson.Util.fixNull;
+import static hudson.Util.*;
 
 /**
  * @author Olivier Lamy

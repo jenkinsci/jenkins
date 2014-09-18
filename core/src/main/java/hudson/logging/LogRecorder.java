@@ -42,6 +42,7 @@ import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
+import jenkins.security.MasterToSlave;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -160,6 +161,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     }
 
+    @MasterToSlave
     private static final class SetLevel implements Callable<Void,Error> {
         /** known loggers (kept per slave), to avoid GC */
         @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<Logger>();

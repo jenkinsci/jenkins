@@ -31,6 +31,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
+import jenkins.security.MasterToSlave;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,6 +86,7 @@ public class ChannelPinger extends ComputerListener {
         setUpPingForChannel(channel, pingInterval);
     }
 
+    @MasterToSlave
     private static class SetUpRemotePing implements Callable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         private int pingInterval;

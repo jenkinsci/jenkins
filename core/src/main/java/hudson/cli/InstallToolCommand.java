@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
 
+import jenkins.security.MasterToSlave;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -128,6 +129,7 @@ public class InstallToolCommand extends CLICommand {
         return 0;
     }
 
+    @MasterToSlave
     private static final class BuildIDs implements Callable<BuildIDs, IOException> {
         String job,number,id;
 
