@@ -30,23 +30,19 @@ public class CallableDirectionChecker extends CallableDecorator {
         if (c.getName().startsWith("hudson.remoting")) // TODO probably insecure
             return stem;    // lower level services provided by remoting, such IOSyncer, RPCRequest, Ping, etc. that we allow
 
-        boolean m2s = c.isAnnotationPresent(MasterToSlave.class);
-        boolean s2m = c.isAnnotationPresent(SlaveToMaster.class);
+        if (c.isAnnotationPresent(SlaveToMaster.class)) {
+            return stem;    // known to be safe
+        }
 
-        if (!m2s && !s2m) {
+        if (c.isAnnotationPresent(MasterToSlave.class)) {
+            throw new SecurityException(String.format("Invocation of %s is prohibited", c));
+        } else {
             // no annotation provided, so we don't know.
             // to err on the correctness we'd let it pass with reporting, which
             // provides auditing trail.
             LOGGER.log(Level.WARNING, "Unchecked callable from {0}: {1}", new Object[] {computer.getName(), c});
-
             return stem;
         }
-
-        if (s2m)
-            return stem;    // known to be safe
-
-        // this means m2s && !s2m, meaning it's for master->slave
-        throw new SecurityException(String.format("Invocation of %s is prohibited", c));
     }
 
     /**
