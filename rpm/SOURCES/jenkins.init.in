@@ -62,9 +62,19 @@ JENKINS_PID_FILE="/var/run/jenkins.pid"
 	else exit 1; fi; }
 
 # Search usable Java. We do this because various reports indicated
-# that /usr/bin/java may not always point to Java 1.5
+# that /usr/bin/java may not always point to Java >= 1.6
 # see http://www.nabble.com/guinea-pigs-wanted-----Hudson-RPM-for-RedHat-Linux-td25673707.html
-for candidate in /etc/alternatives/java /usr/lib/jvm/java-1.6.0/bin/java /usr/lib/jvm/jre-1.6.0/bin/java /usr/lib/jvm/java-1.5.0/bin/java /usr/lib/jvm/jre-1.5.0/bin/java /usr/bin/java
+candidates="
+/etc/alternatives/java
+/usr/lib/jvm/java-1.6.0/bin/java
+/usr/lib/jvm/jre-1.6.0/bin/java
+/usr/lib/jvm/java-1.7.0/bin/java
+/usr/lib/jvm/jre-1.7.0/bin/java
+/usr/lib/jvm/java-1.8.0/bin/java
+/usr/lib/jvm/jre-1.8.0/bin/java
+/usr/bin/java
+"
+for candidate in $candidates
 do
   [ -x "$JENKINS_JAVA_CMD" ] && break
   JENKINS_JAVA_CMD="$candidate"
