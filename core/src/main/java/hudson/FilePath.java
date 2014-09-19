@@ -2563,13 +2563,13 @@ public final class FilePath implements Serializable {
 
             @Override
             public void visitSymlink(File link, String target, String relativePath) throws IOException {
-                filter.readSymlink(link);
+                filter.read(link);
                 v.visitSymlink(link, target, relativePath);
             }
 
             @Override
             public boolean understandsSymlink() {
-                return true;
+                return v.understandsSymlink();
             }
         };
     }
@@ -2602,7 +2602,10 @@ public final class FilePath implements Serializable {
      * Pass through 'f' after ensuring that we can write to that file.
      */
     private static File writing(File f) {
-        FilePathFilter.currentNonnull().write(f);
+        FilePathFilter filter = FilePathFilter.currentNonnull();
+        if (!f.exists())
+            filter.create(f);
+        filter.write(f);
         return f;
     }
 
@@ -2616,6 +2619,8 @@ public final class FilePath implements Serializable {
 
 
     private static boolean mkdirs(File dir) {
+        if (dir.exists())   return false;
+
         FilePathFilter.currentNonnull().mkdirs(dir);
         return dir.mkdirs();
     }
