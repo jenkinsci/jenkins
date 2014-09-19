@@ -39,8 +39,7 @@ public class CallableDirectionChecker extends CallableDecorator {
             // no annotation provided, so we don't know.
             // to err on the correctness we'd let it pass with reporting, which
             // provides auditing trail.
-            if (LOGGER.isLoggable(Level.FINE))
-                LOGGER.fine("Unchecked callable from "+computer.getName()+": "+c);
+            LOGGER.log(Level.WARNING, "Unchecked callable from {0}: {1}", new Object[] {computer.getName(), c});
 
             return stem;
         }
