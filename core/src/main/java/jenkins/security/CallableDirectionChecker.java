@@ -17,6 +17,9 @@ import java.util.logging.Logger;
  * @since TODO
  */
 public class CallableDirectionChecker extends CallableDecorator {
+
+    private static final String BYPASS_PROP = "jenkins.security.CallableDirectionChecker.allowUnmarkedCallables";
+
     private final SlaveComputer computer;
 
     public CallableDirectionChecker(SlaveComputer computer) {
@@ -26,22 +29,30 @@ public class CallableDirectionChecker extends CallableDecorator {
     @Override
     public <V, T extends Throwable> Callable<V, T> userRequest(Callable<V, T> op, Callable<V, T> stem) {
         Class<?> c = op.getClass();
+        String name = c.getName();
 
-        if (c.getName().startsWith("hudson.remoting")) // TODO probably insecure
+        if (name.startsWith("hudson.remoting")) { // TODO probably insecure
             return stem;    // lower level services provided by remoting, such IOSyncer, RPCRequest, Ping, etc. that we allow
+        }
 
         if (c.isAnnotationPresent(SlaveToMaster.class)) {
             return stem;    // known to be safe
         }
 
+        String node = computer.getName();
         if (c.isAnnotationPresent(MasterToSlave.class)) {
-            throw new SecurityException(String.format("Invocation of %s is prohibited", c));
+            throw new SecurityException("Sending " + name + " from " + node + " to master is prohibited");
         } else {
-            // no annotation provided, so we don't know.
-            // to err on the correctness we'd let it pass with reporting, which
-            // provides auditing trail.
-            LOGGER.log(Level.WARNING, "Unchecked callable from {0}: {1}", new Object[] {computer.getName(), c});
-            return stem;
+            // No annotation provided, so we do not know whether it is safe or not.
+            if (Boolean.getBoolean(BYPASS_PROP)) {
+                LOGGER.log(Level.FINE, "Allowing {0} to be sent from {1} to master", new Object[] {name, node});
+                return stem;
+            } else if (Boolean.getBoolean(BYPASS_PROP + "." + name)) {
+                LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from {1} to master", new Object[] {name, node});
+                return stem;
+            } else {
+                throw new SecurityException("Sending from " + node + " to master is prohibited unless you run with: -D" + BYPASS_PROP + "." + name);
+            }
         }
     }
 
