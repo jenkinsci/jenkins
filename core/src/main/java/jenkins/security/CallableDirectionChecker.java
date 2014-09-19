@@ -1,15 +1,12 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.model.Computer;
-import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.CallableDecorator;
 import hudson.remoting.ChannelBuilder;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.SlaveComputer;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,11 +56,6 @@ public class CallableDirectionChecker extends CallableDecorator {
         @Override
         public void onChannelBuilding(ChannelBuilder builder, SlaveComputer sc) {
             builder.with(new CallableDirectionChecker(sc));
-        }
-
-        @Override
-        public void preLaunch(Computer c, TaskListener taskListener) throws IOException, InterruptedException {
-            super.preLaunch(c, taskListener);
         }
     }
 
