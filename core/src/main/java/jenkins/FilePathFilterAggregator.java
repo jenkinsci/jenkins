@@ -32,17 +32,32 @@ class FilePathFilterAggregator extends FilePathFilter {
         }
     }
 
+    @Override
+    public void mkdirs(File f) throws SecurityException {
+        for (FilePathFilter filter : all) {
+            filter.mkdirs(f);
+        }
+    }
+
     public void write(File f) throws SecurityException {
-        throw new UnsupportedOperationException();
+        for (FilePathFilter filter : all) {
+            filter.write(f);
+        }
     }
     public void create(File f) throws SecurityException {
-        throw new UnsupportedOperationException();
+        for (FilePathFilter filter : all) {
+            filter.create(f);
+        }
     }
     public void delete(File f) throws SecurityException {
-        throw new UnsupportedOperationException();
+        for (FilePathFilter filter : all) {
+            filter.delete(f);
+        }
     }
     public void stat(File f) throws SecurityException {
-        throw new UnsupportedOperationException();
+        for (FilePathFilter filter : all) {
+            filter.stat(f);
+        }
     }
 
     static final ChannelProperty<FilePathFilterAggregator> KEY = new ChannelProperty<FilePathFilterAggregator>(FilePathFilterAggregator.class, "FilePathFilters");
