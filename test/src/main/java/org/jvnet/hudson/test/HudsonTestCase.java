@@ -1808,7 +1808,15 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         }
 
         public Page goTo(String relative, String expectedContentType) throws IOException, SAXException {
-            Page p = super.getPage(getContextPath() + relative);
+            Page p;
+            try {
+                p = super.getPage(getContextPath() + relative);
+            } catch (IOException x) {
+                if (x.getCause() != null) {
+                    x.getCause().printStackTrace();
+                }
+                throw x;
+            }
             assertEquals(expectedContentType,p.getWebResponse().getContentType());
             return p;
         }
