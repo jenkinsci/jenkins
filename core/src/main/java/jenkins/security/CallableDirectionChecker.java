@@ -14,6 +14,7 @@ import java.util.logging.Logger;
  * Rejects {@link MasterToSlave} callables.
  *
  * @author Kohsuke Kawaguchi
+ * @since TODO
  */
 public class CallableDirectionChecker extends CallableDecorator {
     private final SlaveComputer computer;
@@ -24,7 +25,7 @@ public class CallableDirectionChecker extends CallableDecorator {
 
     @Override
     public <V, T extends Throwable> Callable<V, T> userRequest(Callable<V, T> op, Callable<V, T> stem) {
-        Class c = op.getClass();
+        Class<?> c = op.getClass();
 
         if (c.getName().startsWith("hudson.remoting")) // TODO probably insecure
             return stem;    // lower level services provided by remoting, such IOSyncer, RPCRequest, Ping, etc. that we allow
