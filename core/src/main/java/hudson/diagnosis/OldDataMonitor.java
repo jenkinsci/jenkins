@@ -307,14 +307,24 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     private void saveAndRemoveEntries(Predicate<Map.Entry<SaveableReference, VersionRange>> matchingPredicate) {
+        /*
+         * Note that there a race condition here: we acquire the lock and get localCopy which includes some
+         * project (say); then we go through our loop and save that project; then someone POSTs a new
+         * config.xml for the project with some old data, causing remove to be called and the project to be
+         * added to data (in the new version); then we hit the end of this method and the project is removed
+         * from data again, even though it again has old data.
+         *
+         * In practice this condition is extremely unlikely, and not a major problem even if it
+         * does occur: just means the user will be prompted to discard less than they should have been (and
+         * would see the warning again after next restart).
+         */
         Map<SaveableReference,VersionRange> localCopy = null;
         synchronized (this) {
             localCopy = new HashMap<SaveableReference,VersionRange>(data);
         }
 
         List<SaveableReference> removed = new ArrayList<SaveableReference>();
-        for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = localCopy.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<SaveableReference,VersionRange> entry = it.next();
+        for (Map.Entry<SaveableReference,VersionRange> entry : localCopy.entrySet()) {
             if (matchingPredicate.apply(entry)) {
                 Saveable s = entry.getKey().get();
                 if (s != null) {
@@ -329,9 +339,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         }
 
         synchronized (this) {
-            for (SaveableReference ref : removed) {
-                data.remove(ref);
-            }
+            data.keySet().removeAll(removed);
         }
     }
 
