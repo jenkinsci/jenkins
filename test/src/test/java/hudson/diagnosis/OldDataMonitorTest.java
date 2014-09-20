@@ -138,9 +138,11 @@ public class OldDataMonitorTest {
 
         ensureEntry.await();
         // test will hang here due to JENKINS-24763
+        File xml = File.createTempFile("OldDataMontiorTest.slowDiscard", "xml");
+        xml.deleteOnExit();
         OldDataMonitor.changeListener
                 .onChange(new Saveable() {public void save() throws IOException {}},
-                        new XmlFile(File.createTempFile("somexmlfile","xml")));
+                        new XmlFile(xml));
 
         preventExit.countDown();
         discardFuture.get();
