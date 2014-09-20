@@ -1,0 +1,8 @@
+<div>
+    When specifying a path inside the workspace here, Jenkins applies the artifact pattern only to this directory, and
+    artifact paths are relative to this directory. For example, if you want to archive files matching the pattern
+    'module/dist/**/*.zip' but don't want the folders 'module/dist' show up as part of the result artifact paths, you
+    can specify 'module/dist' here, and instead use the pattern '**/*.zip' above. This way, Jenkins archives paths like
+    'foo/bar.zip' rather than 'module/dist/foo/bar.zip'. Only files inside this path (relative to the workspace) can be
+    archived. If left empty, Jenkins applies the archive pattern relative to the workspace.
+</div>
