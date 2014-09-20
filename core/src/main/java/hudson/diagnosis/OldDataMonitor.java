@@ -23,6 +23,7 @@
  */
 package hudson.diagnosis;
 
+import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
 import hudson.XmlFile;
@@ -38,12 +39,13 @@ import hudson.model.listeners.SaveableListener;
 import hudson.util.RobustReflectionConverter;
 import hudson.util.VersionNumber;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -66,7 +68,6 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
     private HashMap<SaveableReference,VersionRange> data = new HashMap<SaveableReference,VersionRange>();
-    private AtomicInteger updating = new AtomicInteger(0);
 
     static OldDataMonitor get(Jenkins j) {
         return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
@@ -102,7 +103,6 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     private static void remove(Saveable obj, boolean isDelete) {
         OldDataMonitor odm = get(Jenkins.getInstance());
-        if (odm.updating.get() > 0) return; // Skip during doUpgrade or doDiscard
         synchronized (odm) {
             odm.data.remove(referTo(obj));
             if (isDelete && obj instanceof Job<?,?>)
@@ -275,22 +275,17 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public synchronized HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
-        String thruVerParam = req.getParameter("thruVer");
-        VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
-        updating.incrementAndGet();
-        try {
-            for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<SaveableReference,VersionRange> entry = it.next();
+    public HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
+        final String thruVerParam = req.getParameter("thruVer");
+        final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
+
+        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
+            @Override
+            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
                 VersionNumber version = entry.getValue().max;
-                if (version != null && (thruVer == null || !version.isNewerThan(thruVer))) {
-                    it.remove();
-                    tryToSave(entry.getKey());
-                }
+                return version != null && (thruVer == null || !version.isNewerThan(thruVer));
             }
-        } finally {
-            updating.decrementAndGet();
-        }
+        });
 
         return HttpResponses.forwardToPreviousPage();
     }
@@ -300,30 +295,42 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
-        updating.incrementAndGet();
-        try {
-            for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<SaveableReference,VersionRange> entry = it.next();
-                if (entry.getValue().max == null) {
-                    it.remove();
-                    tryToSave(entry.getKey());
-                }
+    public HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
+        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
+            @Override
+            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
+                return entry.getValue().max == null;
             }
-        } finally {
-            updating.decrementAndGet();
-        }
-        
+        });
+
         return HttpResponses.forwardToPreviousPage();
     }
 
-    private void tryToSave(SaveableReference ref) {
-        Saveable s = ref.get();
-        if (s != null) {
-            try {
-                s.save();
-            } catch (Exception x) {
-                LOGGER.log(Level.WARNING, "failed to save " + s, x);
+    private void saveAndRemoveEntries(Predicate<Map.Entry<SaveableReference, VersionRange>> matchingPredicate) {
+        Map<SaveableReference,VersionRange> localCopy = null;
+        synchronized (this) {
+            localCopy = new HashMap<SaveableReference,VersionRange>(data);
+        }
+
+        List<SaveableReference> removed = new ArrayList<SaveableReference>();
+        for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = localCopy.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<SaveableReference,VersionRange> entry = it.next();
+            if (matchingPredicate.apply(entry)) {
+                Saveable s = entry.getKey().get();
+                if (s != null) {
+                    try {
+                        s.save();
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "failed to save " + s, x);
+                    }
+                }
+                removed.add(entry.getKey());
+            }
+        }
+
+        synchronized (this) {
+            for (SaveableReference ref : removed) {
+                data.remove(ref);
             }
         }
     }
