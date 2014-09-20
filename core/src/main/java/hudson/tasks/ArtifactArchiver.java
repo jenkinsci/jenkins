@@ -41,6 +41,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
@@ -109,6 +110,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      */
     @Nonnull
     private Boolean caseSensitive = true;
+
+    private String basePath;
 
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
@@ -214,6 +217,15 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         this.caseSensitive = caseSensitive;
     }
 
+
+    public String getBasePath() {
+        return this.basePath;
+    }
+
+    @DataBoundSetter public final void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
     @Override
     public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         if(artifacts.length()==0) {
@@ -230,11 +242,28 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         try {
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
-            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
+            FilePath dir = ws;
+            if (this.basePath != null && this.basePath.length() > 0) {
+                String path = build.getEnvironment(listener).expand(this.basePath);
+                dir = ws.child(path);
+
+                // add trailing slash so we don't allow '../workspacefoo' to escape the workspace
+                String wsPath = ws.getRemote();
+                wsPath = wsPath.endsWith("/") ? wsPath : wsPath + "/";
+                String dirPath = dir.getRemote() + '/';
+                dirPath = dirPath.endsWith("/") ? dirPath : dirPath + "/";
+                if (!dirPath.startsWith(wsPath)) {
+                    listener.error("context path needs to be relative and inside the workspace");
+                    build.setResult(Result.FAILURE);
+                    return;
+                }
+            }
+
+            Map<String,String> files = dir.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
+                build.pickArtifactManager().archive(dir, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
-                    new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
+                    new Fingerprinter(artifacts).perform(build, dir, launcher, listener);
                 }
             } else {
                 result = build.getResult();
@@ -319,16 +348,54 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
          * Performs on-the-fly validation of the file mask wildcard, when the artifacts
          * textbox or the caseSensitive checkbox are modified
          */
-        public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project,
-                @QueryParameter String value,
+        public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, 
+                @QueryParameter String value, 
+                @QueryParameter String basePath,
                 @QueryParameter(value = "caseSensitive") String caseSensitive)
-                throws IOException {
+                throws IOException, InterruptedException {
             if (project == null) {
+                return FormValidation.ok();
+            }
+            // Make sure context path is valid first, otherwise this suggests files outside the workspace
+            FormValidation contextPathValidation = doCheckBasePath(project, basePath);
+            if (contextPathValidation.kind != FormValidation.Kind.OK) {
+                // if context path is invalid, treat this like no workspace exists rather than e.g. show the same validation error twice
+                return FormValidation.ok();
+            }
+            FilePath ws = project.getSomeWorkspace();
+            if (ws == null) {
                 return FormValidation.ok();
             }
             // defensive approach to remain case sensitive in doubtful situations
             boolean bCaseSensitive = caseSensitive == null || !"false".equals(caseSensitive);
-            return FilePath.validateFileMask(project.getSomeWorkspace(), value, bCaseSensitive);
+            return FilePath.validateFileMask(ws.child(basePath), value, bCaseSensitive);
+        }
+
+        public FormValidation doCheckBasePath(@AncestorInPath AbstractProject project, @QueryParameter String basePath) throws IOException, InterruptedException {
+            FilePath ws = project.getSomeWorkspace();
+            FilePath reference;
+            if (ws == null) {
+                // we're not writing anything, just checking whether the basePath escapes a reference directory
+                // so we can use anything here
+                reference = Jenkins.getInstance().getRootPath();
+            } else {
+                reference = ws;
+            }
+            FilePath context = reference.child(basePath);
+            if (!context.getRemote().startsWith(reference.getRemote())) {
+                return FormValidation.error("Search Base must specify a path inside the job workspace!");
+            }
+
+            if (ws != null && ws.exists()) {
+                if (!context.exists()) {
+                    return FormValidation.warning("Base Path does not exist inside workspace");
+                }
+                if (!context.isDirectory()) {
+                    return FormValidation.warning("Base Path must not be a file");
+                }
+            }
+
+            return FormValidation.ok();
         }
 
         @Override

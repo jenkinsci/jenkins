@@ -45,16 +45,21 @@ import java.util.List;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import jenkins.MasterToSlaveFileCallable;
+
+import hudson.util.FormValidation;
 import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
 
 import static org.hamcrest.Matchers.lessThan;
+
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
@@ -228,6 +233,15 @@ public class ArtifactArchiverTest {
         }
     }
 
+    static class CreateFilesForBasePathTest extends TestBuilder {
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            FilePath dir = build.getWorkspace().child("module/dist/target");
+            dir.mkdirs();
+            dir.child("file").write("content", "UTF-8");
+            return true;
+        }
+    }
+
     @Test
     @Issue("JENKINS-20086")
     public void testDefaultExcludesOn() throws Exception {
@@ -258,6 +272,90 @@ public class ArtifactArchiverTest {
         VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
         assertTrue(artifacts.child(".svn").child("file").exists());
         assertTrue(artifacts.child("dir").child(".svn").child("file").exists());
+    }
+
+    @Test
+    @Issue("JENKINS-12379")
+    public void testBasePathOK() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));
+
+        ArtifactArchiver archiver = new ArtifactArchiver("**");
+        archiver.setBasePath("module/dist");
+        p.getPublishersList().replaceBy(Collections.singleton(archiver));
+
+        assertEquals(Result.SUCCESS, build(p));
+        VirtualFile artifacts = p.getBuildByNumber(1).getArtifactManager().root();
+        assertTrue(artifacts.child("target").child("file").exists());
+    }
+
+    @Test
+    @Issue("JENKINS-12379")
+    public void testBasePathUp() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));
+
+        ArtifactArchiver archiver = new ArtifactArchiver("**");
+        archiver.setBasePath("..");
+        p.getPublishersList().replaceBy(Collections.singleton(archiver));
+
+        assertEquals(Result.FAILURE, build(p));
+        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+    }
+
+    @Test
+    @Issue("JENKINS-12379")
+    public void testBasePathInOutOut() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));
+
+        ArtifactArchiver archiver = new ArtifactArchiver("**");
+        archiver.setBasePath("foo/../..");
+        p.getPublishersList().replaceBy(Collections.singleton(archiver));
+
+        assertEquals(Result.FAILURE, build(p));
+        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+    }
+
+    @Test
+    @Issue("JENKINS-12379")
+    public void testBasePathAbsolute() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));
+
+        ArtifactArchiver archiver = new ArtifactArchiver("**");
+        // TODO absolute path on Windows?
+        archiver.setBasePath("/");
+        p.getPublishersList().replaceBy(Collections.singleton(archiver));
+
+        assertEquals(Result.FAILURE, build(p));
+        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+    }
+
+    @Test
+    @Issue("JENKINS-12379")
+    public void testBasePathValidation() throws Exception {
+        ArtifactArchiver.DescriptorImpl desc = (ArtifactArchiver.DescriptorImpl)j.jenkins.getDescriptorOrDie(ArtifactArchiver.class);
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        Assert.assertEquals("no workspace", FormValidation.Kind.OK, desc.doCheckBasePath(p, "foo").kind);
+        Assert.assertEquals("relative path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
+        Assert.assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
+
+        // create workspace for the project
+        p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));
+        build(p);
+
+        Assert.assertEquals("workspace exists but path does not", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "foo").kind);
+        Assert.assertEquals("workspace exists and path does", FormValidation.Kind.OK, desc.doCheckBasePath(p, "module").kind);
+        Assert.assertEquals("file specified as context path", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "module/dist/target/file").kind);
+        Assert.assertEquals("relative path breakout", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
+
+        Assert.assertEquals("absolute path breakout", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
     }
 
     @LocalData

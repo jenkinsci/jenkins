@@ -28,6 +28,9 @@ THE SOFTWARE.
 	  <f:textbox />
 	</f:entry>
   <f:advanced>
+    <f:entry title="${%Search Context}" field="contextPath">
+      <f:textbox />
+    </f:entry>
     <f:entry title="${%Excludes}" field="excludes">
       <f:textbox />
     </f:entry>
