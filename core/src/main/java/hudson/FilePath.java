@@ -530,7 +530,7 @@ public final class FilePath implements Serializable {
                 } else {
                     File p = f.getParentFile();
                     if (p != null) {
-                        mkdirs(f);
+                        mkdirs(p);
                     }
                     IOUtils.copy(zip.getInputStream(e), writing(f));
                     try {
