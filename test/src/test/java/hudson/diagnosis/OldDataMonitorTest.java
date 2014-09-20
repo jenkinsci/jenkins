@@ -110,7 +110,7 @@ public class OldDataMonitorTest {
      */
     // Test timeout indicates JENKINS-24763 exists
     @Issue("JENKINS-24763")
-    @Test public void testSlowDiscard() throws InterruptedException, IOException, ExecutionException {
+    @Test public void slowDiscard() throws InterruptedException, IOException, ExecutionException {
         final OldDataMonitor oldDataMonitor = OldDataMonitor.get(r.jenkins);
         final CountDownLatch ensureEntry= new CountDownLatch(1);
         final CountDownLatch preventExit = new CountDownLatch(1);
