@@ -23,11 +23,7 @@ public class CallableDirectionChecker extends CallableDecorator {
 
     private static final String BYPASS_PROP = "jenkins.security.CallableDirectionChecker.allowUnmarkedCallables";
 
-    private final SlaveComputer computer;
-
-    private CallableDirectionChecker(SlaveComputer computer) {
-        this.computer = computer;
-    }
+    private CallableDirectionChecker() {}
 
     @Override
     public <V, T extends Throwable> Callable<V, T> userRequest(Callable<V, T> op, Callable<V, T> stem) {
@@ -44,19 +40,18 @@ public class CallableDirectionChecker extends CallableDecorator {
             return stem;    // known to be safe
         }
 
-        String node = computer.getName();
         if (c.isAnnotationPresent(MasterToSlave.class)) {
-            throw new SecurityException("Sending " + name + " from " + node + " to master is prohibited");
+            throw new SecurityException("Sending " + name + " from slave to master is prohibited");
         } else {
             // No annotation provided, so we do not know whether it is safe or not.
             if (Boolean.getBoolean(BYPASS_PROP)) {
-                LOGGER.log(Level.FINE, "Allowing {0} to be sent from {1} to master", new Object[] {name, node});
+                LOGGER.log(Level.FINE, "Allowing {0} to be sent from slave to master", name);
                 return stem;
             } else if (Boolean.getBoolean(BYPASS_PROP + "." + name)) {
-                LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from {1} to master", new Object[] {name, node});
+                LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from slave to master", name);
                 return stem;
             } else {
-                throw new SecurityException("Sending from " + node + " to master is prohibited unless you run with: -D" + BYPASS_PROP + "." + name);
+                throw new SecurityException("Sending from slave to master is prohibited unless you run with: -D" + BYPASS_PROP + "." + name);
             }
         }
     }
@@ -69,7 +64,7 @@ public class CallableDirectionChecker extends CallableDecorator {
     public static class ComputerListenerImpl extends ComputerListener {
         @Override
         public void onChannelBuilding(ChannelBuilder builder, SlaveComputer sc) {
-            builder.with(new CallableDirectionChecker(sc));
+            builder.with(new CallableDirectionChecker());
         }
     }
 
