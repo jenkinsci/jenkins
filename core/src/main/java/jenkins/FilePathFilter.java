@@ -58,7 +58,7 @@ public abstract class FilePathFilter {
     public void stat(File f) throws SecurityException {}
 
 
-    public void installTo(Channel ch) {
+    public final void installTo(Channel ch) {
         synchronized (ch) {
             FilePathFilterAggregator filters = ch.getProperty(FilePathFilterAggregator.KEY);
             if (filters==null) {
@@ -69,7 +69,7 @@ public abstract class FilePathFilter {
         }
     }
 
-    public void uninstallFrom(Channel ch) {
+    public final void uninstallFrom(Channel ch) {
         synchronized (ch) {
             FilePathFilterAggregator filters = ch.getProperty(FilePathFilterAggregator.KEY);
             if (filters!=null) {
