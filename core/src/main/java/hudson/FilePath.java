@@ -2446,6 +2446,8 @@ public final class FilePath implements Serializable {
     /**
      * Adapts {@link FileCallable} to {@link Callable}.
      */
+    @MasterToSlave // the normal case
+    @SlaveToMaster // possible, but triggers FilePathFilter
     private class FileCallableWrapper<T> implements DelegatingCallable<T,IOException> {
         private final FileCallable<T> callable;
         private transient ClassLoader classLoader;
