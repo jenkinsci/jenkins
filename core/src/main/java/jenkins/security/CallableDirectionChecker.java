@@ -9,20 +9,23 @@ import hudson.slaves.SlaveComputer;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Rejects {@link MasterToSlave} callables.
+ * Rejects non-{@link SlaveToMaster} callables.
  *
  * @author Kohsuke Kawaguchi
- * @since TODO
  */
+@Restricted(NoExternalUse.class) // used implicitly via listener
 public class CallableDirectionChecker extends CallableDecorator {
 
     private static final String BYPASS_PROP = "jenkins.security.CallableDirectionChecker.allowUnmarkedCallables";
 
     private final SlaveComputer computer;
 
-    public CallableDirectionChecker(SlaveComputer computer) {
+    private CallableDirectionChecker(SlaveComputer computer) {
         this.computer = computer;
     }
 
@@ -32,10 +35,12 @@ public class CallableDirectionChecker extends CallableDecorator {
         String name = c.getName();
 
         if (name.startsWith("hudson.remoting")) { // TODO probably insecure
+            LOGGER.log(Level.FINE, "Sending {0} to master is allowed since it is in remoting", name);
             return stem;    // lower level services provided by remoting, such IOSyncer, RPCRequest, Ping, etc. that we allow
         }
 
         if (c.isAnnotationPresent(SlaveToMaster.class)) {
+            LOGGER.log(Level.FINE, "Sending {0} is allowed since it is marked @SlaveToMaster", name);
             return stem;    // known to be safe
         }
 
@@ -59,6 +64,7 @@ public class CallableDirectionChecker extends CallableDecorator {
     /**
      * Installs {@link CallableDirectionChecker} to every channel.
      */
+    @Restricted(DoNotUse.class) // impl
     @Extension
     public static class ComputerListenerImpl extends ComputerListener {
         @Override
