@@ -61,7 +61,37 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.581>What's new in 1.581</a> <!--=DATE=--></h3>
+<h3><a name=v1.582>What's new in 1.582</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Channel reader thread can end up consuming 100% CPU.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23471">issue 23471</a>)
+  <li class=bug>
+    CancelledKeyException can cause all JNLP slaves to disconnect (and the problem remains until restart).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24050">issue 24050</a>)
+  <li class=bug>
+    Consider dynamic label assignments for label load statistics.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15576">issue 15576</a>)
+  <li class=bug>
+    Use Windows line endings for batch file build steps.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7478">issue 7478</a>)
+  <li class=bug>
+    Reduced the logging clutter about the lack of @ExportedBean.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24458">issue 24458</a>)
+  <li class=bug>
+    Character encoding problem in form submission when file parameters are present.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11543">issue 11543</a>)
+  <li class=rfe>
+    Improved error handling and "in-progress" UI feedback in JNLP slave to service installation.
+  <li class=rfe>
+    Winstone 2.4: reverse proxy support in the logging, request header size limit control, and different private key password from keystore password.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23665">issue 23665</a>)
+  <li class=bug>
+    umask setting on Debian did not work.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1397">pull 1397</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.581>What's new in 1.581</a> (2014/09/21)</h3>
 <ul class=image>
   <li class=rfe>
     Use slightly larger Jenkins head icon.
@@ -76,7 +106,6 @@ Upcoming changes</a>
     Wrong Hebrew localization resulted in broken console output since 1.539.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24614">issue 24614</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.580>What's new in 1.580</a> (2014/09/14)</h3>
 <ul class=image>
   <li class=bug>

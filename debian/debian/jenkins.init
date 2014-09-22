@@ -23,7 +23,11 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 #DAEMON=$JENKINS_SH
 DAEMON=/usr/bin/daemon
-DAEMON_ARGS="--name=$NAME --inherit --env=JENKINS_HOME=$JENKINS_HOME --output=$JENKINS_LOG --pidfile=$PIDFILE" 
+DAEMON_ARGS="--name=$NAME --inherit --env=JENKINS_HOME=$JENKINS_HOME --output=$JENKINS_LOG --pidfile=$PIDFILE"
+
+if [ -n "$UMASK" ]; then
+    DAEMON_ARGS="$DAEMON_ARGS --umask=$UMASK"
+fi
 
 SU=/bin/su
 
@@ -108,10 +112,9 @@ do_start()
         ulimit -n $MAXOPENFILES
     fi
     
-    # honor umask setting
+    # notify of explicit umask
     if [ -n "$UMASK" ]; then
         [ "$VERBOSE" != no ] && echo Setting umask to $UMASK
-        umask $UMASK
     fi
 
     # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
