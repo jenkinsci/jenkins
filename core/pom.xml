@@ -43,7 +43,7 @@ THE SOFTWARE.
   <properties>
     <staplerFork>true</staplerFork>
     <stapler.version>1.229</stapler.version>
-    <spring.version>2.5.6.SEC03</spring.version>
+    <spring.version>3.2.5.RELEASE</spring.version>
     <groovy.version>1.8.9</groovy.version>
   </properties>
 
@@ -388,9 +388,9 @@ THE SOFTWARE.
       <version>1.1-jenkins-20111212</version>
     </dependency>
     <dependency>
-      <groupId>org.acegisecurity</groupId>
-      <artifactId>acegi-security</artifactId>
-      <version>1.0.7</version>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
+      <version>${spring.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework</groupId>
