@@ -70,6 +70,8 @@ import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.kohsuke.stapler.Stapler;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -193,6 +195,17 @@ public final class FilePath implements Serializable {
 
     // since the platform of the slave might be different, can't use java.io.File
     private final String remote;
+
+    /**
+     * If this {@link FilePath} is deserialized to handle file access request from a remote computer,
+     * this field is set to the filter that performs access control.
+     *
+     * <p>
+     * If null, no access control is needed.
+     *
+     * @see #filterNonNull()
+     */
+    private transient @Nullable FilePathFilter filter;
 
     /**
      * Creates a {@link FilePath} that represents a path on the given node.
@@ -503,7 +516,7 @@ public final class FilePath implements Serializable {
         });
     }
 
-    private static void unzip(File dir, InputStream in) throws IOException {
+    private void unzip(File dir, InputStream in) throws IOException {
         File tmpFile = File.createTempFile("tmpzip", null); // uses java.io.tmpdir
         try {
             // TODO why does this not simply use ZipInputStream?
@@ -515,7 +528,7 @@ public final class FilePath implements Serializable {
         }
     }
 
-    static private void unzip(File dir, File zipFile) throws IOException {
+    private void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
         ZipFile zip = new ZipFile(zipFile);
         @SuppressWarnings("unchecked")
@@ -774,7 +787,7 @@ public final class FilePath implements Serializable {
     }
 
     @MasterToSlave // this reads from arbitrary URL
-    private static final class Unpack implements FileCallable<Void> {
+    private final class Unpack implements FileCallable<Void> {
         private final URL archive;
         Unpack(URL archive) {
             this.archive = archive;
@@ -2050,7 +2063,7 @@ public final class FilePath implements Serializable {
      * @return
      *      number of files/directories that are written.
      */
-    private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
+    private Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
         Archiver tw = ArchiverFactory.TAR.create(out);
         try {
             scanner.scan(baseDir,reading(tw));
@@ -2063,7 +2076,7 @@ public final class FilePath implements Serializable {
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      */
-    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+    private void readFromTar(String name, File baseDir, InputStream in) throws IOException {
         TarInputStream t = new TarInputStream(in);
         try {
             TarEntry te;
@@ -2434,8 +2447,14 @@ public final class FilePath implements Serializable {
         ois.defaultReadObject();
         if(ois.readBoolean()) {
             this.channel = channel;
+            this.filter = null;
         } else {
             this.channel = null;
+            // If the remote channel wants us to create a FilePath that points to a local file,
+            // we need to make sure the access control takes place.
+            // This covers the immediate case of FileCallables taking FilePath into reference closure implicitly,
+            // but it also covers more general case of FilePath sent as a return value or argument.
+            this.filter = FilePathFilter.current();
         }
     }
 
@@ -2548,13 +2567,16 @@ public final class FilePath implements Serializable {
                 scanSingle(new File(dir, workspacePath), archivedPath, visitor);
             }
         }
+    }
 
+    private @Nonnull FilePathFilter filterNonNull() {
+        return filter!=null ? filter : FilePathFilter.EMPTY;
     }
 
     /**
      * Wraps {@link FileVisitor} to notify read access to {@link FilePathFilter}.
      */
-    private static FileVisitor reading(final FileVisitor v) {
+    private FileVisitor reading(final FileVisitor v) {
         final FilePathFilter filter = FilePathFilter.current();
         if (filter==null)    return v;
 
@@ -2581,32 +2603,32 @@ public final class FilePath implements Serializable {
     /**
      * Pass through 'f' after ensuring that we can read that file.
      */
-    private static File reading(File f) {
-        FilePathFilter.currentNonnull().read(f);
+    private File reading(File f) {
+        filterNonNull().read(f);
         return f;
     }
 
     /**
      * Pass through 'f' after ensuring that we can access the file attributes.
      */
-    private static File stating(File f) {
-        FilePathFilter.currentNonnull().stat(f);
+    private File stating(File f) {
+        filterNonNull().stat(f);
         return f;
     }
 
     /**
      * Pass through 'f' after ensuring that we can create that file/dir.
      */
-    private static File creating(File f) {
-        FilePathFilter.currentNonnull().create(f);
+    private File creating(File f) {
+        filterNonNull().create(f);
         return f;
     }
 
     /**
      * Pass through 'f' after ensuring that we can write to that file.
      */
-    private static File writing(File f) {
-        FilePathFilter filter = FilePathFilter.currentNonnull();
+    private File writing(File f) {
+        FilePathFilter filter = filterNonNull();
         if (!f.exists())
             filter.create(f);
         filter.write(f);
@@ -2614,18 +2636,18 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Pass through 'f' after ensuring that we can write to that file.
+     * Pass through 'f' after ensuring that we can delete that file.
      */
-    private static File deleting(File f) {
-        FilePathFilter.currentNonnull().delete(f);
+    private File deleting(File f) {
+        filterNonNull().delete(f);
         return f;
     }
 
 
-    private static boolean mkdirs(File dir) {
+    private boolean mkdirs(File dir) {
         if (dir.exists())   return false;
 
-        FilePathFilter.currentNonnull().mkdirs(dir);
+        filterNonNull().mkdirs(dir);
         return dir.mkdirs();
     }
 }

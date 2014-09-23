@@ -4,7 +4,6 @@ import hudson.FilePath;
 import hudson.remoting.Channel;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.io.File;
 
 /**
@@ -90,17 +89,17 @@ public abstract class FilePathFilter {
     }
 
     /**
-     * A flavor of {@link #current()} that returns a place holder empty object if none is needed.
-     *
-     * @return
-     *      never null. If no filter is in scope, this method returns a non-null object that
-     *      does nothing.
+     * Immutable instance that represents the empty filter.
      */
-    public static @Nonnull FilePathFilter currentNonnull() {
-        FilePathFilter f = current();
-        if (f==null)   return NOOP;
-        return f;
-    }
+    public static final FilePathFilter EMPTY = new FilePathFilterAggregator() {
+        @Override
+        public void add(FilePathFilter f) {
+            // noop
+        }
 
-    private static final FilePathFilter NOOP = new FilePathFilterAggregator();
+        @Override
+        public String toString() {
+            return "None";
+        }
+    };
 }
