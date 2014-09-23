@@ -60,5 +60,9 @@ class FilePathFilterAggregator extends FilePathFilter {
         }
     }
 
+    @Override public String toString() {
+        return "FilePathFilterAggregator" + all;
+    }
+
     static final ChannelProperty<FilePathFilterAggregator> KEY = new ChannelProperty<FilePathFilterAggregator>(FilePathFilterAggregator.class, "FilePathFilters");
 }

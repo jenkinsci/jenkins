@@ -102,6 +102,5 @@ public abstract class FilePathFilter {
         return f;
     }
 
-    private static final FilePathFilter NOOP = new FilePathFilter() {
-    };
+    private static final FilePathFilter NOOP = new FilePathFilterAggregator();
 }
