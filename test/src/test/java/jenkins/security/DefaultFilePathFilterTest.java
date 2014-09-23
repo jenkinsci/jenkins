@@ -39,25 +39,38 @@ public class DefaultFilePathFilterTest {
 
     @Test public void remotePath() throws Exception {
         Slave s = r.createOnlineSlave();
-        s.getRootPath().child("forward").write("hello", null);
+        FilePath forward = s.getRootPath().child("forward");
+        forward.write("hello", null);
+        assertEquals("hello", s.getRootPath().act(new LocalCallable(forward)));
         FilePath reverse = new FilePath(new File(r.jenkins.root, "reverse"));
         assertFalse(reverse.exists());
         try {
-            s.getChannel().call(new CallableImpl(reverse));
+            s.getChannel().call(new ReverseCallable(reverse));
             fail("should have failed");
         } catch (SecurityException x) {
             // good
         }
         assertFalse(reverse.exists());
         System.setProperty(DefaultFilePathFilter.BYPASS_PROP, "true");
-        s.getChannel().call(new CallableImpl(reverse));
+        s.getChannel().call(new ReverseCallable(reverse));
         assertTrue(reverse.exists());
         assertEquals("goodbye", reverse.readToString());
     }
 
-    private static class CallableImpl implements Callable<Void,Exception> {
+    private static class LocalCallable implements Callable<String,Exception> {
         private final FilePath p;
-        CallableImpl(FilePath p) {
+        LocalCallable(FilePath p) {
+            this.p = p;
+        }
+        @Override public String call() throws Exception {
+            assertFalse(p.isRemote());
+            return p.readToString();
+        }
+    }
+
+    private static class ReverseCallable implements Callable<Void,Exception> {
+        private final FilePath p;
+        ReverseCallable(FilePath p) {
             this.p = p;
         }
         @Override public Void call() throws Exception {
