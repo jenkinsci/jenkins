@@ -21,11 +21,13 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Rejects non-{@link SlaveToMaster} callables.
  *
  * @author Kohsuke Kawaguchi
+ * @since 1.THU
  */
 @Restricted(NoExternalUse.class) // used implicitly via listener
 public class CallableDirectionChecker extends CallableDecorator {
 
-    private static final String BYPASS_PROP = "jenkins.security.CallableDirectionChecker.allowUnmarkedCallables";
+    private static final String BYPASS_PROP = CallableDirectionChecker.class.getName()+".allow";
+    public static boolean BYPASS = Boolean.getBoolean(BYPASS_PROP);
     private static final PrintWriter BYPASS_LOG;
     static {
         String log = System.getProperty("jenkins.security.CallableDirectionChecker.log");
@@ -66,7 +68,7 @@ public class CallableDirectionChecker extends CallableDecorator {
             throw new SecurityException("Sending " + name + " from slave to master is prohibited");
         } else {
             // No annotation provided, so we do not know whether it is safe or not.
-            if (Boolean.getBoolean(BYPASS_PROP)) {
+            if (BYPASS) {
                 LOGGER.log(Level.FINE, "Allowing {0} to be sent from slave to master", name);
                 return stem;
             } else if (Boolean.getBoolean(BYPASS_PROP + "." + name)) {

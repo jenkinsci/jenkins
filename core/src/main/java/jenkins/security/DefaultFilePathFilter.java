@@ -44,11 +44,16 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Blocks slaves from writing to files on the master by default.
+ *
+ * @since 1.THU
  */
 @Restricted(DoNotUse.class) // impl
 @Extension public class DefaultFilePathFilter extends ComputerListener {
 
-    static final String BYPASS_PROP = "jenkins.security.DefaultFilePathFilter.allow";
+    /**
+     * Escape hatch to disable this check completely.
+     */
+    public static boolean BYPASS = Boolean.getBoolean(DefaultFilePathFilter.class.getName()+".allow");
     private static final PrintWriter BYPASS_LOG;
     static {
         String log = System.getProperty("jenkins.security.DefaultFilePathFilter.log");
@@ -71,7 +76,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
                     BYPASS_LOG.println(op + " " + f);
                     return;
                 }
-                if (Boolean.getBoolean(BYPASS_PROP)) {
+                if (BYPASS) {
                     LOGGER.log(Level.FINE, "slave allowed to {0} {1}", new Object[] {op, f});
                 } else {
                     // TODO allow finer-grained control, for example by regexp (or Ant pattern) of relative path inside $JENKINS_HOME
