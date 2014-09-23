@@ -270,7 +270,7 @@ public class JDKInstaller extends ToolInstaller {
     public interface FileSystem {
         void delete(String file) throws IOException, InterruptedException;
         void chmod(String file,int mode) throws IOException, InterruptedException;
-        InputStream read(String file) throws IOException;
+        InputStream read(String file) throws IOException, InterruptedException;
         /**
          * List sub-directories of the given directory and just return the file name portion.
          */
@@ -293,7 +293,7 @@ public class JDKInstaller extends ToolInstaller {
             $(file).chmod(mode);
         }
 
-        public InputStream read(String file) throws IOException {
+        public InputStream read(String file) throws IOException, InterruptedException {
             return $(file).read();
         }
 

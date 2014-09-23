@@ -326,7 +326,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
                 }
             }
             @Override public InputStream open() throws IOException {
-                return f.read();
+                try {
+                    return f.read();
+                } catch (InterruptedException x) {
+                    throw (IOException) new IOException(x.toString()).initCause(x);
+                }
             }
         };
     }

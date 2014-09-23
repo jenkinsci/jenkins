@@ -453,7 +453,7 @@ public final class FilePath implements Serializable {
     public void unzip(final FilePath target) throws IOException, InterruptedException {
         target.act(new FileCallable<Void>() {
 
-            public Void invoke(File dir, VirtualChannel channel) throws IOException {
+            public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
                 if (FilePath.this.isRemote())
                     unzip(dir, FilePath.this.read()); // use streams
                 else
@@ -476,7 +476,7 @@ public final class FilePath implements Serializable {
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
         target.act(new FileCallable<Void>() {
-            public Void invoke(File dir, VirtualChannel channel) throws IOException {
+            public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
                 readFromTar(FilePath.this.getName(),dir,compression.extract(FilePath.this.read()));
                 return null;
             }
@@ -1637,18 +1637,20 @@ public final class FilePath implements Serializable {
     /**
      * Reads this file.
      */
-    public InputStream read() throws IOException {
+    public InputStream read() throws IOException, InterruptedException {
         if(channel==null)
             return new FileInputStream(reading(new File(remote)));
 
         final Pipe p = Pipe.createRemoteToLocal();
-        channel.callAsync(new Callable<Void,IOException>() {
+        actAsync(new FileCallable<Void>() {
             private static final long serialVersionUID = 1L;
-            public Void call() throws IOException {
-                FileInputStream fis=null;
+
+            @Override
+            public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+                FileInputStream fis = null;
                 try {
-                    fis = new FileInputStream(reading(new File(remote)));
-                    Util.copyStream(fis,p.getOut());
+                    fis = new FileInputStream(reading(f));
+                    Util.copyStream(fis, p.getOut());
                     return null;
                 } finally {
                     IOUtils.closeQuietly(fis);
@@ -1663,7 +1665,7 @@ public final class FilePath implements Serializable {
     /**
      * Reads this file into a string, by using the current system encoding.
      */
-    public String readToString() throws IOException {
+    public String readToString() throws IOException, InterruptedException {
         InputStream in = read();
         try {
             return IOUtils.toString(in);
@@ -1694,10 +1696,10 @@ public final class FilePath implements Serializable {
             return new FileOutputStream(writing(f));
         }
 
-        return channel.call(new Callable<OutputStream,IOException>() {
+        return act(new FileCallable<OutputStream>() {
             private static final long serialVersionUID = 1L;
-            public OutputStream call() throws IOException {
-                File f = new File(remote).getAbsoluteFile();
+            public OutputStream invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+                f = f.getAbsoluteFile();
                 mkdirs(f.getParentFile());
                 FileOutputStream fos = new FileOutputStream(writing(f));
                 return new RemoteOutputStream(fos);
