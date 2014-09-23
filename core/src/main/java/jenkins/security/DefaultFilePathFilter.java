@@ -31,7 +31,11 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.slaves.ComputerListener;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.FilePathFilter;
@@ -45,11 +49,28 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 @Extension public class DefaultFilePathFilter extends ComputerListener {
 
     static final String BYPASS_PROP = "jenkins.security.DefaultFilePathFilter.allow";
+    private static final PrintWriter BYPASS_LOG;
+    static {
+        String log = System.getProperty("jenkins.security.DefaultFilePathFilter.log");
+        if (log == null) {
+            BYPASS_LOG = null;
+        } else {
+            try {
+                BYPASS_LOG = new PrintWriter(new OutputStreamWriter(new FileOutputStream(log, true)), true);
+            } catch (FileNotFoundException x) {
+                throw new ExceptionInInitializerError(x);
+            }
+        }
+    }
     private static final Logger LOGGER = Logger.getLogger(DefaultFilePathFilter.class.getName());
 
     @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
         new FilePathFilter() {
             private void op(String op, File f) throws SecurityException {
+                if (BYPASS_LOG != null) {
+                    BYPASS_LOG.println(op + " " + f);
+                    return;
+                }
                 if (Boolean.getBoolean(BYPASS_PROP)) {
                     LOGGER.log(Level.FINE, "slave allowed to {0} {1}", new Object[] {op, f});
                 } else {

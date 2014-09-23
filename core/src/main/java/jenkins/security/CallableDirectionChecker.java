@@ -6,6 +6,10 @@ import hudson.remoting.CallableDecorator;
 import hudson.remoting.ChannelBuilder;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.SlaveComputer;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +26,19 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class CallableDirectionChecker extends CallableDecorator {
 
     private static final String BYPASS_PROP = "jenkins.security.CallableDirectionChecker.allowUnmarkedCallables";
+    private static final PrintWriter BYPASS_LOG;
+    static {
+        String log = System.getProperty("jenkins.security.CallableDirectionChecker.log");
+        if (log == null) {
+            BYPASS_LOG = null;
+        } else {
+            try {
+                BYPASS_LOG = new PrintWriter(new OutputStreamWriter(new FileOutputStream(log, true)), true);
+            } catch (FileNotFoundException x) {
+                throw new ExceptionInInitializerError(x);
+            }
+        }
+    }
 
     private CallableDirectionChecker() {}
 
@@ -38,6 +55,11 @@ public class CallableDirectionChecker extends CallableDecorator {
         if (c.isAnnotationPresent(SlaveToMaster.class)) {
             LOGGER.log(Level.FINE, "Sending {0} is allowed since it is marked @SlaveToMaster", name);
             return stem;    // known to be safe
+        }
+
+        if (BYPASS_LOG != null) {
+            BYPASS_LOG.println(name);
+            return stem;
         }
 
         if (c.isAnnotationPresent(MasterToSlave.class)) {
