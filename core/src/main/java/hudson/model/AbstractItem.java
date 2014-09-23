@@ -42,6 +42,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -306,6 +307,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 ItemListener.fireLocationChange(this, oldFullName);
             }
         }
+    }
+
+    public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
+        newItem.onLoad(destination, name);
     }
 
     /**
@@ -712,4 +717,5 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
 }
