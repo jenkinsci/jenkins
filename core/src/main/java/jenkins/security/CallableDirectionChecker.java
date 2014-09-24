@@ -67,20 +67,22 @@ public class CallableDirectionChecker extends RoleChecker {
     @Override
     public void check(RoleSensitive subject, @Nonnull Collection<Role> roles) throws SecurityException {
         if (Roles.FOR_MASTER.containsAll(roles)) {
-            LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the master role");
+            if (BYPASS_LOG == null) {
+                LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the master role");
+            }
             return;    // known to be safe
         }
 
         final String name = subject.getClass().getName();
 
+        if (BYPASS_LOG != null) {
+            BYPASS_LOG.println(name);
+            return;
+        }
+
         if (isWhitelisted(name)) {
             // this subject is dubious, but we are letting it through as per whitelisting
             LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from slave to master", name);
-
-            // record those that we are letting through
-            if (BYPASS_LOG != null)
-                BYPASS_LOG.println(name);
-
             return;
         }
 
