@@ -118,6 +118,11 @@ public class CallableDirectionChecker extends RoleChecker {
     public static class ChannelConfiguratorImpl extends ChannelConfigurator {
         @Override
         public void onChannelBuilding(ChannelBuilder builder, Object context) {
+            // if the big red emergency button is pressed, then we need to disable the defense mechanism,
+            // including enabling classloading.
+            if (BYPASS)     return;
+
+            builder.withRemoteClassLoadingAllowed(false);
             builder.withRoleChecker(new CallableDirectionChecker());
         }
     }
