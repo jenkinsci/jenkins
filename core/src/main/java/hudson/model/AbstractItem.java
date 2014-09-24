@@ -42,6 +42,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -310,6 +311,20 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 ItemListener.fireLocationChange(this, oldFullName);
             }
         }
+    }
+
+
+    /**
+     * Notify this item it's been moved to another location, replaced by newItem (might be the same object, but not guaranteed).
+     * This method is executed <em>after</em> the item root directory has been moved to it's new location.
+     * <p>
+     * Derived classes can override this method to add some specific behavior on move, but have to call parent method
+     * so the item is actually setup within it's new parent.
+     *
+     * @see hudson.model.Items#move(AbstractItem, jenkins.model.DirectlyModifiableTopLevelItemGroup)
+     */
+    public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
+        newItem.onLoad(destination, name);
     }
 
     /**
@@ -696,4 +711,5 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
 }
