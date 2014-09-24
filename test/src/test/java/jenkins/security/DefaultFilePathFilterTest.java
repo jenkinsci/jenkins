@@ -28,6 +28,8 @@ import hudson.FilePath;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collection;
 
 import org.jenkinsci.remoting.Role;
@@ -53,6 +55,11 @@ public class DefaultFilePathFilterTest {
             fail("should have failed");
         } catch (SecurityException x) {
             // good
+
+            // make sure that the stack trace contains the call site info to help assist diagnosis
+            StringWriter sw = new StringWriter();
+            x.printStackTrace(new PrintWriter(sw));
+            assertTrue(sw.toString().contains(DefaultFilePathFilterTest.class.getName()+".remotePath"));
         }
         assertFalse(reverse.exists());
         DefaultFilePathFilter.BYPASS = true;
