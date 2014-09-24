@@ -48,7 +48,11 @@ public class CallableDirectionChecker extends RoleChecker {
      */
     public static ConcurrentMap<String,Void> BYPASS_CALLABLES = new ConcurrentHashMap<String,Void>();
 
+    /**
+     * Test feature that is meant to replace all logging, and log what would have been violations.
+     */
     private static final PrintWriter BYPASS_LOG;
+
     static {
         String log = System.getProperty(CallableDirectionChecker.class.getName()+".log");
         if (log == null) {
@@ -65,15 +69,15 @@ public class CallableDirectionChecker extends RoleChecker {
     private CallableDirectionChecker() {}
 
     @Override
-    public void check(RoleSensitive subject, @Nonnull Collection<Role> roles) throws SecurityException {
-        if (Roles.FOR_MASTER.containsAll(roles)) {
+    public void check(RoleSensitive subject, @Nonnull Collection<Role> expected) throws SecurityException {
+        final String name = subject.getClass().getName();
+
+        if (expected.contains(Roles.MASTER)) {
             if (BYPASS_LOG == null) {
-                LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the master role");
+                LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the master role", name);
             }
             return;    // known to be safe
         }
-
-        final String name = subject.getClass().getName();
 
         if (BYPASS_LOG != null) {
             BYPASS_LOG.println(name);

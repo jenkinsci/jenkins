@@ -67,7 +67,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
-import org.jenkinsci.remoting.Role;
+import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.stapler.Stapler;
 
@@ -95,8 +95,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
@@ -912,8 +910,8 @@ public final class FilePath implements Serializable {
      */
     public static abstract class MasterToSlaveFileCallable<T> implements FileCallable<T> {
         @Override
-        public Collection<Role> getRecipients() {
-            return Roles.FOR_SLAVE;
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            checker.check(this,Roles.SLAVE);
         }
         private static final long serialVersionUID = 1L;
     }
@@ -923,8 +921,8 @@ public final class FilePath implements Serializable {
      */
     public static abstract class SlaveToMasterFileCallable<T> implements FileCallable<T> {
         @Override
-        public Collection<Role> getRecipients() {
-            return Roles.FOR_MASTER;
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            checker.check(this,Roles.MASTER);
         }
         private static final long serialVersionUID = 1L;
     }
@@ -1085,8 +1083,8 @@ public final class FilePath implements Serializable {
             }
 
             @Override
-            public Collection<Role> getRecipients() {
-                return task.getRecipients();
+            public void checkRoles(RoleChecker checker) throws SecurityException {
+                task.checkRoles(checker);
             }
 
             private static final long serialVersionUID = 1L;
@@ -2537,8 +2535,8 @@ public final class FilePath implements Serializable {
          * Role check comes from {@link FileCallable}s.
          */
         @Override
-        public Collection<Role> getRecipients() {
-            return callable.getRecipients();
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            callable.checkRoles(checker);
         }
 
         public ClassLoader getClassLoader() {

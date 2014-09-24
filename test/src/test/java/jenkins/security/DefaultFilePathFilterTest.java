@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.Collection;
 
 import org.jenkinsci.remoting.Role;
+import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -70,8 +71,8 @@ public class DefaultFilePathFilterTest {
             return p.readToString();
         }
         @Override
-        public Collection<Role> getRecipients() {
-            return null;    // simulate legacy Callable impls
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            throw new NoSuchMethodError(); // simulate legacy Callable impls
         }
     }
 
@@ -86,8 +87,8 @@ public class DefaultFilePathFilterTest {
             return null;
         }
         @Override
-        public Collection<Role> getRecipients() {
-            return null;    // simulate legacy Callable impls
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            throw new NoSuchMethodError(); // simulate legacy Callable impls
         }
     }
 }
