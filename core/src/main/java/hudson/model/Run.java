@@ -440,9 +440,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return result;
     }
 
+    /**
+     * Sets the {@link #getResult} of this build.
+     * Has no effect when the result is already set and worse than the proposed result.
+     * May only be called after the build has started and before it has moved into post-production
+     * (normally meaning both {@link #isInProgress} and {@link #isBuilding} are true).
+     * @param r the proposed new result
+     * @throws IllegalStateException if the build has not yet started, is in post-production, or is complete
+     */
     public void setResult(@Nonnull Result r) {
-        // state can change only when we are building
-        assert state==State.BUILDING : state;
+        if (state != State.BUILDING) {
+            throw new IllegalStateException("cannot change build result while in " + state);
+        }
 
         // result can only get worse
         if (result==null || r.isWorseThan(result)) {
