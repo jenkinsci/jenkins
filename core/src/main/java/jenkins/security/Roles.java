@@ -35,4 +35,7 @@ public class Roles {
      * {@link Role#UNKNOWN})
      */
     public static final Collection<Role> FOR_SLAVE = Collections.singleton(SLAVE);
+
+    private Roles() {}
+
 }
