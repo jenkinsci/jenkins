@@ -15,6 +15,7 @@ import java.util.Collections;
  * not have any role.
  *
  * @author Kohsuke Kawaguchi
+ * @since TODO
  */
 public class Roles {
     public static final Role MASTER = new Role("master");

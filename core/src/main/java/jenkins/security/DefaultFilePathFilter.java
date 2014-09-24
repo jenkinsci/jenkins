@@ -44,8 +44,6 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Blocks slaves from writing to files on the master by default.
- *
- * @since 1.THU
  */
 @Restricted(DoNotUse.class) // impl
 @Extension public class DefaultFilePathFilter extends ComputerListener {
