@@ -1,8 +1,7 @@
 package hudson.cli.util;
 
 import hudson.AbortException;
-import hudson.remoting.Callable;
-import jenkins.security.MasterToSlave;
+import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -17,8 +16,7 @@ import java.net.URL;
  *
  * @author vjuranek
  */
-@MasterToSlave
-public class ScriptLoader implements Callable<String,IOException> {
+public class ScriptLoader extends MasterToSlaveCallable<String,IOException> {
     
     private final String script;
     

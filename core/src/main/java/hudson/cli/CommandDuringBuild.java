@@ -28,7 +28,7 @@ import jenkins.model.Jenkins;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.remoting.Callable;
-import jenkins.security.MasterToSlave;
+import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.args4j.CmdLineException;
 
 import java.io.IOException;
@@ -82,8 +82,7 @@ public abstract class CommandDuringBuild extends CLICommand {
     /**
      * Gets the environment variables that points to the build being executed.
      */
-    @MasterToSlave
-    private static final class GetCharacteristicEnvironmentVariables implements Callable<String[],IOException> {
+    private static final class GetCharacteristicEnvironmentVariables extends MasterToSlaveCallable<String[],IOException> {
         public String[] call() throws IOException {
             return new String[] {
                 System.getenv("JOB_NAME"),

@@ -25,7 +25,7 @@ package hudson.tasks.test;
 
 import hudson.AbortException;
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
+import hudson.FilePath.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
@@ -74,7 +74,7 @@ public abstract class DefaultTestResultParserImpl extends TestResultParser imple
 
     @Override
     public TestResult parse(final String testResultLocations, final AbstractBuild build, final Launcher launcher, final TaskListener listener) throws InterruptedException, IOException {
-        return build.getWorkspace().act(new FileCallable<TestResult>() {
+        return build.getWorkspace().act(new MasterToSlaveFileCallable<TestResult>() {
             final boolean ignoreTimestampCheck = IGNORE_TIMESTAMP_CHECK; // so that the property can be set on the master
             final long buildTime = build.getTimestamp().getTimeInMillis();
             final long nowMaster = System.currentTimeMillis();

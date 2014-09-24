@@ -28,6 +28,9 @@ import hudson.FilePath;
 import hudson.model.Slave;
 import hudson.remoting.Callable;
 import java.io.File;
+import java.util.Collection;
+
+import org.jenkinsci.remoting.Role;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -51,7 +54,7 @@ public class DefaultFilePathFilterTest {
             // good
         }
         assertFalse(reverse.exists());
-        System.setProperty(DefaultFilePathFilter.BYPASS_PROP, "true");
+        DefaultFilePathFilter.BYPASS = true;
         s.getChannel().call(new ReverseCallable(reverse));
         assertTrue(reverse.exists());
         assertEquals("goodbye", reverse.readToString());
@@ -66,6 +69,10 @@ public class DefaultFilePathFilterTest {
             assertFalse(p.isRemote());
             return p.readToString();
         }
+        @Override
+        public Collection<Role> getRecipients() {
+            return null;    // simulate legacy Callable impls
+        }
     }
 
     private static class ReverseCallable implements Callable<Void,Exception> {
@@ -78,6 +85,9 @@ public class DefaultFilePathFilterTest {
             p.write("goodbye", null);
             return null;
         }
+        @Override
+        public Collection<Role> getRecipients() {
+            return null;    // simulate legacy Callable impls
+        }
     }
-
 }

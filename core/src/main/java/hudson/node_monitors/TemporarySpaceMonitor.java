@@ -25,7 +25,7 @@ package hudson.node_monitors;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
+import hudson.FilePath.MasterToSlaveFileCallable;
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
@@ -82,7 +82,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         return null;
     }
     
-    protected static final class GetTempSpace implements FileCallable<DiskSpace> {
+    protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
         @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
             try {

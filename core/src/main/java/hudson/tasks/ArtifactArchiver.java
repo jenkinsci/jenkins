@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.FilePath;
+import hudson.FilePath.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
@@ -169,7 +170,7 @@ public class ArtifactArchiver extends Recorder {
         return true;
     }
 
-    private static final class ListFiles implements FilePath.FileCallable<Map<String,String>> {
+    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String,String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         ListFiles(String includes, String excludes) {

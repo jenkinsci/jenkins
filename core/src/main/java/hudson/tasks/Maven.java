@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.Extension;
+import hudson.FilePath.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.EnvVars;
@@ -219,7 +220,7 @@ public class Maven extends Builder {
      * Looks for <tt>pom.xlm</tt> or <tt>project.xml</tt> to determine the maven executable
      * name.
      */
-    private static final class DecideDefaultMavenCommand implements FileCallable<String> {
+    private static final class DecideDefaultMavenCommand extends MasterToSlaveFileCallable<String> {
         private static final long serialVersionUID = -2327576423452215146L;
         // command line arguments.
         private final String arguments;

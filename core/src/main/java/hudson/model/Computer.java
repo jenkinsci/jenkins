@@ -58,7 +58,7 @@ import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import hudson.util.Futures;
 import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlave;
+import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.StaplerRequest;
@@ -1025,8 +1025,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         oneOffExecutors.remove(e);
     }
 
-    @MasterToSlave
-    private static class ListPossibleNames implements Callable<List<String>,IOException> {
+    private static class ListPossibleNames extends MasterToSlaveCallable<List<String>,IOException> {
         public List<String> call() throws IOException {
             List<String> names = new ArrayList<String>();
 
@@ -1056,8 +1055,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         private static final long serialVersionUID = 1L;
     }
 
-    @MasterToSlave
-    private static class GetFallbackName implements Callable<String,IOException> {
+    private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             return System.getProperty("host.name");
         }
@@ -1146,8 +1144,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         w.close();
     }
 
-    @MasterToSlave
-    private static final class DumpExportTableTask implements Callable<String,IOException> {
+    private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);

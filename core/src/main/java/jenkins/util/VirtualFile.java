@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 
+import static hudson.FilePath.MasterToSlaveFileCallable;
+
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
  * Assumed to be read-only and makes very limited assumptions, just enough to display content and traverse directories.
@@ -334,7 +336,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
             }
         };
     }
-    private static final class Scanner implements FilePath.FileCallable<String[]> {
+    private static final class Scanner extends MasterToSlaveFileCallable<String[]> {
         private final String glob;
         Scanner(String glob) {
             this.glob = glob;
@@ -351,7 +353,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
         }
 
     }
-    private static final class Readable implements FilePath.FileCallable<Boolean> {
+    private static final class Readable extends MasterToSlaveFileCallable<Boolean> {
         @Override public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return f.canRead();
         }

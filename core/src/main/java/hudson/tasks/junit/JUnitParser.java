@@ -23,6 +23,7 @@
  */
 package hudson.tasks.junit;
 
+import hudson.FilePath.MasterToSlaveFileCallable;
 import hudson.model.TaskListener;
 import hudson.tasks.test.TestResultParser;
 import hudson.model.AbstractBuild;
@@ -87,8 +88,8 @@ public class JUnitParser extends TestResultParser {
         return workspace.act(new ParseResultCallable(testResultLocations, buildTime, timeOnMaster, keepLongStdio));
     }
 
-    private static final class ParseResultCallable implements
-            FilePath.FileCallable<TestResult> {
+    private static final class ParseResultCallable extends
+            MasterToSlaveFileCallable<TestResult> {
         private final long buildTime;
         private final String testResults;
         private final long nowMaster;

@@ -23,8 +23,7 @@
  */
 package hudson.node_monitors;
 
-import hudson.FilePath.FileCallable;
-import hudson.model.Computer;
+import hudson.FilePath.MasterToSlaveFileCallable;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
 import hudson.slaves.OfflineCause;
@@ -159,7 +158,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         private static final long serialVersionUID = 2L;
     }
 
-    protected static final class GetUsableSpace implements FileCallable<DiskSpace> {
+    protected static final class GetUsableSpace extends MasterToSlaveFileCallable<DiskSpace> {
         public GetUsableSpace() {}
         @IgnoreJRERequirement
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {

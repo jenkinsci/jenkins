@@ -36,8 +36,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelProperty;
 import hudson.security.CliAuthenticator;
 import hudson.security.SecurityRealm;
-import jenkins.security.MasterToSlave;
-import jenkins.security.SlaveToMaster;
+import jenkins.security.MasterToSlaveCallable;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
@@ -361,8 +360,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         return checkChannel().call(new GetSystemProperty(name));
     }
 
-    @MasterToSlave
-    private static final class GetSystemProperty implements Callable<String, IOException> {
+    private static final class GetSystemProperty extends MasterToSlaveCallable<String, IOException> {
         private final String name;
 
         private GetSystemProperty(String name) {
@@ -391,8 +389,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
     }
 
-    @MasterToSlave @SlaveToMaster
-    private static final class GetCharset implements Callable<String, IOException> {
+    private static final class GetCharset extends MasterToSlaveCallable<String, IOException> {
         public String call() throws IOException {
             return Charset.defaultCharset().name();
         }
@@ -407,8 +404,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         return checkChannel().call(new GetEnvironmentVariable(name));
     }
 
-    @MasterToSlave
-    private static final class GetEnvironmentVariable implements Callable<String, IOException> {
+    private static final class GetEnvironmentVariable extends MasterToSlaveCallable<String, IOException> {
         private final String name;
 
         private GetEnvironmentVariable(String name) {

@@ -26,7 +26,7 @@ package hudson;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.CaseInsensitiveComparator;
-import jenkins.security.MasterToSlave;
+import jenkins.security.MasterToSlaveCallable;
 
 import java.io.File;
 import java.io.IOException;
@@ -213,8 +213,7 @@ public class EnvVars extends TreeMap<String,String> {
         return channel.call(new GetEnvVars());
     }
 
-    @MasterToSlave
-    private static final class GetEnvVars implements Callable<EnvVars,RuntimeException> {
+    private static final class GetEnvVars extends MasterToSlaveCallable<EnvVars,RuntimeException> {
         public EnvVars call() {
             return new EnvVars(EnvVars.masterEnvVars);
         }
