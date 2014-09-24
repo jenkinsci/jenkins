@@ -72,6 +72,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.RequestDispatcher;
 import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import org.kohsuke.stapler.StaplerRequest;
@@ -348,8 +349,8 @@ public class SlaveComputer extends Computer {
             .withMode(Channel.Mode.NEGOTIATE)
             .withHeaderStream(launchLog);
 
-        for (ComputerListener cl : ComputerListener.all()) {
-            cl.onChannelBuilding(cb,this);
+        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+            cc.onChannelBuilding(cb,this);
         }
 
         Channel channel = cb.build(in,out);

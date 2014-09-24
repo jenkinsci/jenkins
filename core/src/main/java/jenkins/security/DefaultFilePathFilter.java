@@ -29,6 +29,7 @@ import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
 import hudson.slaves.ComputerListener;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,7 +47,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * Blocks slaves from writing to files on the master by default.
  */
 @Restricted(DoNotUse.class) // impl
-@Extension public class DefaultFilePathFilter extends ComputerListener {
+@Extension public class DefaultFilePathFilter extends ChannelConfigurator {
 
     /**
      * Escape hatch to disable this check completely.
@@ -67,7 +68,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
     }
     private static final Logger LOGGER = Logger.getLogger(DefaultFilePathFilter.class.getName());
 
-    @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
+    @Override
+    public void onChannelBuilding(ChannelBuilder builder, Object context) {
         new FilePathFilter() {
             private void op(String op, File f) throws SecurityException {
                 if (BYPASS_LOG != null) {
@@ -99,7 +101,6 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
             @Override public void stat(File f) throws SecurityException {
                 op("stat", f);
             }
-        }.installTo(channel);
+        }.installTo(builder);
     }
-
 }

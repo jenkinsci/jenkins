@@ -3,8 +3,6 @@ package jenkins.security;
 import hudson.Extension;
 import hudson.remoting.Callable;
 import hudson.remoting.ChannelBuilder;
-import hudson.slaves.ComputerListener;
-import hudson.slaves.SlaveComputer;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
@@ -117,9 +115,9 @@ public class CallableDirectionChecker extends RoleChecker {
      */
     @Restricted(DoNotUse.class) // impl
     @Extension
-    public static class ComputerListenerImpl extends ComputerListener {
+    public static class ChannelConfiguratorImpl extends ChannelConfigurator {
         @Override
-        public void onChannelBuilding(ChannelBuilder builder, SlaveComputer sc) {
+        public void onChannelBuilding(ChannelBuilder builder, Object context) {
             builder.withRoleChecker(new CallableDirectionChecker());
         }
     }

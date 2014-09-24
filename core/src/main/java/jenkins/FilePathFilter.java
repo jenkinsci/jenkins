@@ -2,6 +2,7 @@ package jenkins;
 
 import hudson.FilePath;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
 
 import javax.annotation.CheckForNull;
 import java.io.File;
@@ -57,12 +58,12 @@ public abstract class FilePathFilter {
     public void stat(File f) throws SecurityException {}
 
 
-    public final void installTo(Channel ch) {
-        synchronized (ch) {
-            FilePathFilterAggregator filters = ch.getProperty(FilePathFilterAggregator.KEY);
+    public final void installTo(ChannelBuilder cb) {
+        synchronized (cb) {
+            FilePathFilterAggregator filters = (FilePathFilterAggregator) cb.getProperties().get(FilePathFilterAggregator.KEY);
             if (filters==null) {
                 filters = new FilePathFilterAggregator();
-                ch.setProperty(FilePathFilterAggregator.KEY,filters);
+                cb.withProperty(FilePathFilterAggregator.KEY,filters);
             }
             filters.add(this);
         }

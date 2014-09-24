@@ -47,16 +47,6 @@ import java.io.IOException;
 public abstract class ComputerListener implements ExtensionPoint {
 
     /**
-     * Called before {@link Channel} is constructed to provide opportunities to affect the way the channel is run.
-     *
-     * <p>
-     * Among other things, this is useful to add {@link CallableDecorator}s.
-     *
-     * @since 1.THU
-     */
-    public void onChannelBuilding(ChannelBuilder builder, SlaveComputer sc) {}
-
-    /**
      * Called before a {@link ComputerLauncher} is asked to launch a connection with {@link Computer}.
      *
      * <p>
