@@ -42,6 +42,7 @@ import org.kohsuke.stapler.QueryParameter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -138,9 +139,9 @@ public class Shell extends CommandInterpreter {
             try {
                 interpreter = channel.call(new Shellinterpreter());
             } catch (IOException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, null, e);
             } catch (InterruptedException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, null, e);
             }
             if (interpreter == null) {
                 interpreter = getShellOrDefault();
