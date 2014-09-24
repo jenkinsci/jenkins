@@ -1,9 +1,7 @@
 package jenkins.security;
 
 import hudson.remoting.Callable;
-import org.jenkinsci.remoting.Role;
-
-import java.util.Collection;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  * {@link Callable} adapter for situations where Callable is not used for remoting but
@@ -14,7 +12,7 @@ import java.util.Collection;
  */
 public abstract class NotReallyRoleSensitiveCallable<V,T extends Throwable> implements Callable<V,T> {
     @Override
-    public final Collection<Role> getRecipients() {
+    public void checkRoles(RoleChecker checker) throws SecurityException {
         // not meant to be used where this matters
         throw new UnsupportedOperationException();
     }
