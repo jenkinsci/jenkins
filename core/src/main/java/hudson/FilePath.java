@@ -1856,7 +1856,7 @@ public final class FilePath implements Serializable {
     private void syncIO() throws InterruptedException {
         try {
             if (channel!=null)
-                _syncIO();
+                channel.syncLocalIO();
         } catch (AbstractMethodError e) {
             // legacy slave.jar. Handle this gracefully
             try {
@@ -1865,14 +1865,6 @@ public final class FilePath implements Serializable {
                 // really ignore this time
             }
         }
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void _syncIO() throws InterruptedException {
-        channel.syncLocalIO();
     }
 
     /**

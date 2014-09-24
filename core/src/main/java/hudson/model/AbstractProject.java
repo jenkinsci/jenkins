@@ -1266,7 +1266,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         SCMRevisionState baseline = build.getAction(SCMRevisionState.class);
         if (baseline==null) {
             try {
-                baseline = getScm()._calcRevisionsFromBuild(build, launcher, listener);
+                baseline = getScm().calcRevisionsFromBuild(build, launcher, listener);
             } catch (AbstractMethodError e) {
                 baseline = SCMRevisionState.NONE; // pre-1.345 SCM implementations, which doesn't use the baseline in polling
             }

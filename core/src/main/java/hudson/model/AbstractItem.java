@@ -301,22 +301,14 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         doSetName(oldName);
                 }
 
-                callOnRenamed(newName, parent, oldName);
+                try {
+                    parent.onRenamed(this, oldName, newName);
+                } catch (AbstractMethodError _) {
+                    // ignore
+                }
 
                 ItemListener.fireLocationChange(this, oldFullName);
             }
-        }
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void callOnRenamed(String newName, ItemGroup parent, String oldName) throws IOException {
-        try {
-            parent.onRenamed(this, oldName, newName);
-        } catch (AbstractMethodError _) {
-            // ignore
         }
     }
 
@@ -560,16 +552,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
             performDelete();
         } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
-        invokeOnDeleted();
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void invokeOnDeleted() throws IOException {
         getParent().onDeleted(AbstractItem.this);
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
 
     /**
