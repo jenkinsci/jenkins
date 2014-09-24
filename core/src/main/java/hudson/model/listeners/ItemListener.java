@@ -26,10 +26,10 @@ package hudson.model.listeners;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
+import hudson.security.ACL;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
@@ -151,26 +151,45 @@ public class ItemListener implements ExtensionPoint {
         return ExtensionList.lookup(ItemListener.class);
     }
 
-    public static void fireOnCopied(Item src, Item result) {
-        for (ItemListener l : all())
-            l.onCopied(src,result);
+    public static void fireOnCopied(final Item src, final Item result) {
+        ACL.impersonate(ACL.SYSTEM, new Runnable() {
+            @Override public void run() {
+                for (ItemListener l : all()) {
+                    l.onCopied(src, result);
+                }
+            }
+        });
     }
 
-    public static void fireOnCreated(Item item) {
-        for (ItemListener l : all())
-            l.onCreated(item);
+    public static void fireOnCreated(final Item item) {
+        ACL.impersonate(ACL.SYSTEM, new Runnable() {
+            @Override public void run() {
+                for (ItemListener l : all()) {
+                    l.onCreated(item);
+                }
+            }
+        });
     }
 
-    public static void fireOnUpdated(Item item) {
-        for (ItemListener l : all())
-            l.onUpdated(item);
+    public static void fireOnUpdated(final Item item) {
+        ACL.impersonate(ACL.SYSTEM, new Runnable() {
+            @Override public void run() {
+                for (ItemListener l : all()) {
+                    l.onUpdated(item);
+                }
+            }
+        });
     }
 
     /** @since 1.548 */
-    public static void fireOnDeleted(Item item) {
-        for (ItemListener l : all()) {
-            l.onDeleted(item);
-        }
+    public static void fireOnDeleted(final Item item) {
+        ACL.impersonate(ACL.SYSTEM, new Runnable() {
+            @Override public void run() {
+                for (ItemListener l : all()) {
+                    l.onDeleted(item);
+                }
+            }
+        });
     }
 
     /**
@@ -179,7 +198,14 @@ public class ItemListener implements ExtensionPoint {
      * @param oldFullName the previous {@link Item#getFullName}
      * @since 1.548
      */
-    public static void fireLocationChange(Item rootItem, String oldFullName) {
+    public static void fireLocationChange(final Item rootItem, final String oldFullName) {
+        ACL.impersonate(ACL.SYSTEM, new Runnable() {
+            @Override public void run() {
+                doFireLocationChange(rootItem, oldFullName);
+            }
+        });
+    }
+    private static void doFireLocationChange(Item rootItem, String oldFullName) {
         String prefix = rootItem.getParent().getFullName();
         if (!prefix.isEmpty()) {
             prefix += '/';
