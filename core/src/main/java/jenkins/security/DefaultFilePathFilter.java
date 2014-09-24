@@ -52,7 +52,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
      * Escape hatch to disable this check completely.
      */
     public static boolean BYPASS = Boolean.getBoolean(DefaultFilePathFilter.class.getName()+".allow");
-    private static final PrintWriter BYPASS_LOG;
+    private static final PrintWriter BYPASS_LOG; // TODO delete before release
     static {
         String log = System.getProperty("jenkins.security.DefaultFilePathFilter.log");
         if (log == null) {

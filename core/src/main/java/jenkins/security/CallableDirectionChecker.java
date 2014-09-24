@@ -50,8 +50,9 @@ public class CallableDirectionChecker extends RoleChecker {
 
     /**
      * Test feature that is meant to replace all logging, and log what would have been violations.
+     * TODO delete before release
      */
-    public static PrintWriter BYPASS_LOG;
+    private static final PrintWriter BYPASS_LOG;
 
     static {
         String log = System.getProperty(CallableDirectionChecker.class.getName()+".log");
