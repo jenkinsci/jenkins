@@ -48,11 +48,7 @@ public class CallableDirectionChecker extends RoleChecker {
      */
     public static ConcurrentMap<String,Void> BYPASS_CALLABLES = new ConcurrentHashMap<String,Void>();
 
-    /**
-     * If non-null, this object will receive the names of the classes that are dubious.
-     * Useful in conjunction with {@link #BYPASS}
-     */
-    public static PrintWriter BYPASS_LOG;
+    private static final PrintWriter BYPASS_LOG;
     static {
         String log = System.getProperty(CallableDirectionChecker.class.getName()+".log");
         if (log == null) {
