@@ -2,9 +2,6 @@ package jenkins.security;
 
 import org.jenkinsci.remoting.Role;
 
-import java.util.Collection;
-import java.util.Collections;
-
 /**
  * Predefined {@link Role}s in Jenkins.
  *
@@ -15,17 +12,13 @@ import java.util.Collections;
  * not have any role.
  *
  * @author Kohsuke Kawaguchi
- * @since TODO
+ * @since 1.THU
  */
 public class Roles {
-    public static final Role MASTER = new Role("master");
-
     /**
      * Indicates that a callable runs on masters, requested by slaves/CLI/maven/whatever.
      */
-    public static final Collection<Role> FOR_MASTER = Collections.singleton(MASTER);
-
-    public static final Role SLAVE = new Role("slave");
+    public static final Role MASTER = new Role("master");
 
     /**
      * Indicates that a callable is meant to run on slaves.
@@ -35,8 +28,7 @@ public class Roles {
      * the master (as opposed to ones that do not have that information, which gets
      * {@link Role#UNKNOWN})
      */
-    public static final Collection<Role> FOR_SLAVE = Collections.singleton(SLAVE);
+    public static final Role SLAVE = new Role("slave");
 
     private Roles() {}
-
 }
