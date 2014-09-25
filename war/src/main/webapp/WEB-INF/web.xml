@@ -37,6 +37,10 @@ THE SOFTWARE.
       <param-name>default-encodings</param-name>
       <param-value>text/html=UTF-8</param-value>
     </init-param>
+    <init-param>
+      <param-name>diagnosticThreadName</param-name>
+      <param-value>false</param-value>
+    </init-param>
   </servlet>
 
   <servlet-mapping>
@@ -44,6 +48,10 @@ THE SOFTWARE.
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
 
+  <filter>
+    <filter-name>diagnostic-name-filter</filter-name>
+    <filter-class>org.kohsuke.stapler.DiagnosticThreadNameFilter</filter-class>
+  </filter>
   <filter>
     <filter-name>encoding-filter</filter-name>
     <filter-class>hudson.util.CharacterEncodingFilter</filter-class>
@@ -110,6 +118,10 @@ THE SOFTWARE.
   </filter-mapping>
   -->
   
+  <filter-mapping>
+    <filter-name>diagnostic-name-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
   <filter-mapping>
     <filter-name>encoding-filter</filter-name>
     <url-pattern>/*</url-pattern>
