@@ -24,14 +24,13 @@
 package hudson.tasks;
 
 import hudson.Extension;
-import hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.CopyOnWrite;
 import hudson.Launcher.LocalLauncher;
-import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -43,7 +42,6 @@ import jenkins.mvn.GlobalMavenConfig;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.NodeSpecific;
 import hudson.tasks._maven.MavenConsoleAnnotator;

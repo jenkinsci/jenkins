@@ -23,7 +23,7 @@
  */
 package hudson.node_monitors;
 
-import hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
 import hudson.slaves.OfflineCause;

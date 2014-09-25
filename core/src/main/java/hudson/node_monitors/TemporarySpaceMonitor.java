@@ -25,7 +25,7 @@ package hudson.node_monitors;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Callable;

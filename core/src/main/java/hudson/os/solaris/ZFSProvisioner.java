@@ -23,7 +23,7 @@
  */
 package hudson.os.solaris;
 
-import hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.FileSystemProvisioner;
 import hudson.FilePath;
 import hudson.WorkspaceSnapshot;

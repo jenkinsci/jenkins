@@ -25,7 +25,7 @@ package hudson.tasks.test;
 
 import hudson.AbortException;
 import hudson.FilePath;
-import hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;

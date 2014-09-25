@@ -54,9 +54,10 @@ import hudson.util.IOUtils;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
 import jenkins.FilePathFilter;
+import jenkins.MasterToSlaveFileCallable;
+import jenkins.SlaveToMasterFileCallable;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.security.Roles;
 import jenkins.util.VirtualFile;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
@@ -903,28 +904,6 @@ public final class FilePath implements Serializable {
          *      with the node from where the code was sent.
          */
         T invoke(File f, VirtualChannel channel) throws IOException, InterruptedException;
-    }
-
-    /**
-     * {@link FileCallable}s that are meant to be only used on the master.
-     */
-    public static abstract class MasterToSlaveFileCallable<T> implements FileCallable<T> {
-        @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
-            checker.check(this,Roles.SLAVE);
-        }
-        private static final long serialVersionUID = 1L;
-    }
-
-    /**
-     * {@link FileCallable}s that can be executed on the master, sent by the slave.
-     */
-    public static abstract class SlaveToMasterFileCallable<T> implements FileCallable<T> {
-        @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
-            checker.check(this,Roles.MASTER);
-        }
-        private static final long serialVersionUID = 1L;
     }
 
     /**

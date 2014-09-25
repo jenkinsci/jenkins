@@ -23,7 +23,7 @@
  */
 package hudson.tasks.junit;
 
-import hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.model.TaskListener;
 import hudson.tasks.test.TestResultParser;
 import hudson.model.AbstractBuild;

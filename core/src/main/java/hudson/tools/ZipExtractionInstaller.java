@@ -26,7 +26,7 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.Functions;

@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-import static hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.

@@ -24,7 +24,7 @@
 package hudson.tasks;
 
 import hudson.FilePath;
-import hudson.FilePath.MasterToSlaveFileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
