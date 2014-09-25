@@ -98,6 +98,8 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -1160,9 +1162,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         description = req.getParameter("description");
 
-        try {
-            JSONObject json = req.getSubmittedForm();
+        JSONObject json = req.getSubmittedForm();
 
+        try {
             setDisplayName(json.optString("displayNameOrNull"));
 
             if (json.optBoolean("logrotate"))
@@ -1206,15 +1208,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 FormApply.success(".").generateResponse(req, rsp, null);
             }
         } catch (JSONException e) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            pw.println("Failed to parse form data. Please report this problem as a bug");
-            pw.println("JSON=" + req.getSubmittedForm());
-            pw.println();
-            e.printStackTrace(pw);
-
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(sw.toString(), req, rsp, true);
+            Logger.getLogger(Job.class.getName()).log(Level.WARNING, "failed to parse " + json, e);
+            sendError(e, req, rsp);
         }
     }
 
