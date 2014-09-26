@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.FilePath;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
@@ -247,7 +248,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
     }
 
-    private static final class ListFiles implements FilePath.FileCallable<Map<String,String>> {
+    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String,String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;
