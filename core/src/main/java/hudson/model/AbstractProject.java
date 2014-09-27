@@ -212,7 +212,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * building. False by default to keep from breaking existing behavior.
      */
     protected volatile boolean blockBuildWhenDownstreamBuilding = false;
-
+    /**
+     * True to keep builds of this project in queue when downstream projects are
+     * blocked. False by default to keep from breaking existing behavior.
+     */
+    protected volatile boolean blockBuildWhenDownstreamBuildingAll = false;
     /**
      * True to keep builds of this project in queue when upstream projects are
      * building. False by default to keep from breaking existing behavior.
@@ -655,6 +659,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     public boolean blockBuildWhenDownstreamBuilding() {
         return blockBuildWhenDownstreamBuilding;
+    }
+
+    public boolean blockBuildWhenDownstreamBuildingAll() {
+        return blockBuildWhenDownstreamBuildingAll;
     }
 
     public void setBlockBuildWhenDownstreamBuilding(boolean b) throws IOException {
@@ -1130,6 +1138,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             AbstractProject<?,?> bup = getBuildingDownstream();
             if (bup!=null)
                 return new BecauseOfDownstreamBuildInProgress(bup);
+            if(blockBuildWhenDownstreamBuildingAll()) {
+                bup = getBlockedBuildingDownstream();
+                if (bup!=null)
+                    return new BecauseOfDownstreamBuildInProgress(bup);
+            }
         }
         if (blockBuildWhenUpstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingUpstream();
@@ -1155,6 +1168,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
         return null;
     }
+
+    public AbstractProject getBlockedBuildingDownstream() {
+        Set<Task> blockedTasks = Jenkins.getInstance().getQueue().getBlockedTasks();
+
+        for (AbstractProject tup : getTransitiveDownstreamProjects()) {
+			if (tup!=this && (tup.isBuilding() || blockedTasks.contains(tup)))
+                return tup;
+        }
+        return null;
+    }
+
 
     /**
      * Returns the project if any of the upstream project is either
@@ -1803,6 +1827,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             scmCheckoutRetryCount = null;
         }
         blockBuildWhenDownstreamBuilding = req.getParameter("blockBuildWhenDownstreamBuilding")!=null;
+        blockBuildWhenDownstreamBuildingAll = req.getParameter("blockBuildWhenDownstreamBuildingAll")!=null;
         blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
 
         if(req.hasParameter("customWorkspace")) {
