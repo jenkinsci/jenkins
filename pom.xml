@@ -99,6 +99,8 @@ THE SOFTWARE.
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
     <java.level>6</java.level>
+
+    <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
   </properties>
 
   <repositories>
@@ -862,6 +864,12 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>lts-release</id>
+      <properties>
+        <changelog.url>https://jenkins-ci.org/changelog-stable</changelog.url>
+      </properties>
     </profile>
   </profiles>
 </project>
