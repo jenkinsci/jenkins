@@ -1789,8 +1789,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         super.submit(req,rsp);
         JSONObject json = req.getSubmittedForm();
 
-        // "disable": {}
-        makeDisabled(json.has("disable"));
+        // "disable": true
+        makeDisabled(json.optBoolean("disable"));
 
         jdk = json.optString("jdk", null);
 
@@ -1810,11 +1810,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             scmCheckoutRetryCount = null;
         }
 
-        // "blockBuildWhenDownstreamBuilding": {}
-        blockBuildWhenDownstreamBuilding = json.has("blockBuildWhenDownstreamBuilding");
+        // "blockBuildWhenDownstreamBuilding": true
+        blockBuildWhenDownstreamBuilding = json.optBoolean("blockBuildWhenDownstreamBuilding");
 
-        // "blockBuildWhenUpstreamBuilding": {}
-        blockBuildWhenUpstreamBuilding = json.has("blockBuildWhenUpstreamBuilding");
+        // "blockBuildWhenUpstreamBuilding": true
+        blockBuildWhenUpstreamBuilding = json.optBoolean("blockBuildWhenUpstreamBuilding");
 
         // "customWorkspace": {"directory": "aaa"}
         JSONObject customWorkspaceJson = json.optJSONObject("customWorkspace");
@@ -1843,7 +1843,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         keepDependencies = json.has("keepDependencies");
 
-        concurrentBuild = json.has("concurrentBuild");
+        concurrentBuild = json.optBoolean("concurrentBuild");
 
         authToken = BuildAuthorizationToken.create(req);
 
