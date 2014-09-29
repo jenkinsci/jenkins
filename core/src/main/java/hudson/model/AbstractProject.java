@@ -1789,24 +1789,38 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         super.submit(req,rsp);
         JSONObject json = req.getSubmittedForm();
 
-        makeDisabled(req.getParameter("disable")!=null);
+        // "disable": {}
+        makeDisabled(json.has("disable"));
 
-        jdk = req.getParameter("jdk");
-        if(req.getParameter("hasCustomQuietPeriod")!=null) {
-            quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
+        jdk = json.optString("jdk", null);
+
+        // "hasCustomQuietPeriod": {"quiet_period": "3"}
+        JSONObject customQuietPeriodJson = json.optJSONObject("hasCustomQuietPeriod");
+        if(customQuietPeriodJson!=null && !customQuietPeriodJson.isNullObject()) {
+            quietPeriod = customQuietPeriodJson.optInt("quiet_period");
         } else {
             quietPeriod = null;
         }
-        if(req.getParameter("hasCustomScmCheckoutRetryCount")!=null) {
-            scmCheckoutRetryCount = Integer.parseInt(req.getParameter("scmCheckoutRetryCount"));
+
+        // "hasCustomScmCheckoutRetryCount": {"scmCheckoutRetryCount": "12"}
+        JSONObject customRetryJson = json.optJSONObject("hasCustomScmCheckoutRetryCount");
+        if(customRetryJson!=null && !customRetryJson.isNullObject()) {
+            scmCheckoutRetryCount = customRetryJson.optInt("scmCheckoutRetryCount");
         } else {
             scmCheckoutRetryCount = null;
         }
-        blockBuildWhenDownstreamBuilding = req.getParameter("blockBuildWhenDownstreamBuilding")!=null;
-        blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
 
-        if(req.hasParameter("customWorkspace")) {
-            customWorkspace = Util.fixEmptyAndTrim(req.getParameter("customWorkspace.directory"));
+        // "blockBuildWhenDownstreamBuilding": {}
+        blockBuildWhenDownstreamBuilding = json.has("blockBuildWhenDownstreamBuilding");
+
+        // "blockBuildWhenUpstreamBuilding": {}
+        blockBuildWhenUpstreamBuilding = json.has("blockBuildWhenUpstreamBuilding");
+
+        // "customWorkspace": {"directory": "aaa"}
+        JSONObject customWorkspaceJson = json.optJSONObject("customWorkspace");
+        if(customWorkspace!=null && !customWorkspaceJson.isNullObject()) {
+            customWorkspace = Util.fixEmptyAndTrim(
+                customWorkspaceJson.optString("directory"));
         } else {
             customWorkspace = null;
         }
@@ -1817,17 +1831,19 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         else
             scmCheckoutStrategy = null;
 
-        
-        if(req.getParameter("hasSlaveAffinity")!=null) {
-            assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
+
+        JSONObject slaveAffinity = json.getJSONObject("hasSlaveAffinity");
+        if(slaveAffinity!=null && !slaveAffinity.isNullObject()) {
+            assignedNode = Util.fixEmptyAndTrim(
+                slaveAffinity.optString("assignedLabelString"));
         } else {
             assignedNode = null;
         }
         canRoam = assignedNode==null;
 
-        keepDependencies = req.getParameter("keepDependencies") != null;
+        keepDependencies = json.has("keepDependencies");
 
-        concurrentBuild = req.getSubmittedForm().has("concurrentBuild");
+        concurrentBuild = json.has("concurrentBuild");
 
         authToken = BuildAuthorizationToken.create(req);
 
