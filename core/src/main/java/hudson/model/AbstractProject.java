@@ -1789,38 +1789,27 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         super.submit(req,rsp);
         JSONObject json = req.getSubmittedForm();
 
-        // "disable": true
         makeDisabled(json.optBoolean("disable"));
 
         jdk = json.optString("jdk", null);
 
-        // "hasCustomQuietPeriod": {"quiet_period": "3"}
-        JSONObject customQuietPeriodJson = json.optJSONObject("hasCustomQuietPeriod");
-        if(customQuietPeriodJson!=null && !customQuietPeriodJson.isNullObject()) {
-            quietPeriod = customQuietPeriodJson.optInt("quiet_period");
+        if(json.optBoolean("hasCustomQuietPeriod", json.has("quiet_period"))) {
+            quietPeriod = json.optInt("quiet_period");
         } else {
             quietPeriod = null;
         }
 
-        // "hasCustomScmCheckoutRetryCount": {"scmCheckoutRetryCount": "12"}
-        JSONObject customRetryJson = json.optJSONObject("hasCustomScmCheckoutRetryCount");
-        if(customRetryJson!=null && !customRetryJson.isNullObject()) {
-            scmCheckoutRetryCount = customRetryJson.optInt("scmCheckoutRetryCount");
+        if(json.optBoolean("hasCustomScmCheckoutRetryCount", json.has("scmCheckoutRetryCount"))) {
+            scmCheckoutRetryCount = json.optInt("scmCheckoutRetryCount");
         } else {
             scmCheckoutRetryCount = null;
         }
 
-        // "blockBuildWhenDownstreamBuilding": true
         blockBuildWhenDownstreamBuilding = json.optBoolean("blockBuildWhenDownstreamBuilding");
-
-        // "blockBuildWhenUpstreamBuilding": true
         blockBuildWhenUpstreamBuilding = json.optBoolean("blockBuildWhenUpstreamBuilding");
 
-        // "customWorkspace": {"directory": "aaa"}
-        JSONObject customWorkspaceJson = json.optJSONObject("customWorkspace");
-        if(customWorkspace!=null && !customWorkspaceJson.isNullObject()) {
-            customWorkspace = Util.fixEmptyAndTrim(
-                customWorkspaceJson.optString("directory"));
+        if(json.optBoolean("hasCustomWorkspace", json.has("customWorkspace"))) {
+            customWorkspace = Util.fixEmptyAndTrim(json.optString("customWorkspace"));
         } else {
             customWorkspace = null;
         }
@@ -1831,11 +1820,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         else
             scmCheckoutStrategy = null;
 
-
-        JSONObject slaveAffinity = json.getJSONObject("hasSlaveAffinity");
-        if(slaveAffinity!=null && !slaveAffinity.isNullObject()) {
-            assignedNode = Util.fixEmptyAndTrim(
-                slaveAffinity.optString("assignedLabelString"));
+        if(json.optBoolean("hasSlaveAffinity", json.has("label"))) {
+            assignedNode = Util.fixEmptyAndTrim(json.optString("label"));
         } else {
             assignedNode = null;
         }
@@ -2032,8 +2018,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;
         }
 
-        public FormValidation doCheckAssignedLabelString(@AncestorInPath AbstractProject<?,?> project,
-                                                         @QueryParameter String value) {
+        public FormValidation doCheckLabel(@AncestorInPath AbstractProject<?,?> project,
+                                           @QueryParameter String value) {
             if (Util.fixEmpty(value)==null)
                 return FormValidation.ok(); // nothing typed yet
             try {
@@ -2070,7 +2056,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             ));
         }
 
-        public FormValidation doCheckCustomWorkspace(@QueryParameter(value="customWorkspace.directory") String customWorkspace){
+        public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
         	if(Util.fixEmptyAndTrim(customWorkspace)==null)
         		return FormValidation.error(Messages.AbstractProject_CustomWorkspaceEmpty());
         	else
@@ -2090,7 +2076,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return candidates;
         }
 
-        public AutoCompletionCandidates doAutoCompleteAssignedLabelString(@QueryParameter String value) {
+        public AutoCompletionCandidates doAutoCompleteLabel(@QueryParameter String value) {
             AutoCompletionCandidates c = new AutoCompletionCandidates();
             Set<Label> labels = Jenkins.getInstance().getLabels();
             List<String> queries = new AutoCompleteSeeder(value).getSeeds();
