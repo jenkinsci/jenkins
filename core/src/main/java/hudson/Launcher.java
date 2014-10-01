@@ -816,7 +816,7 @@ public abstract class Launcher {
                  * Kill the process when the channel is severed.
                  */
                 @Override
-                protected synchronized void terminate(IOException e) {
+                public synchronized void terminate(IOException e) {
                     super.terminate(e);
                     ProcessTree pt = ProcessTree.get();
                     try {

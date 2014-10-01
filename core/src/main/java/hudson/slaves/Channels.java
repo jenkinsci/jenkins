@@ -73,7 +73,7 @@ public class Channels {
              * Kill the process when the channel is severed.
              */
             @Override
-            protected synchronized void terminate(IOException e) {
+            public synchronized void terminate(IOException e) {
                 super.terminate(e);
                 try {
                     proc.kill();
@@ -109,7 +109,7 @@ public class Channels {
              * Kill the process when the channel is severed.
              */
             @Override
-            protected synchronized void terminate(IOException e) {
+            public synchronized void terminate(IOException e) {
                 super.terminate(e);
                 proc.destroy();
                 // the stderr copier should exit by itself
