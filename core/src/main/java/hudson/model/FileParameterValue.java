@@ -39,7 +39,9 @@ import java.io.UnsupportedEncodingException;
 import javax.servlet.ServletException;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemHeaders;
 import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.fileupload.util.FileItemHeadersImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -306,6 +308,15 @@ public class FileParameterValue extends ParameterValue {
         @Deprecated
         public OutputStream getOutputStream() throws IOException {
             return new FileOutputStream(file);
+        }
+
+        @Override
+        public FileItemHeaders getHeaders() {
+            return new FileItemHeadersImpl();
+        }
+
+        @Override
+        public void setHeaders(FileItemHeaders headers) {
         }
     }
 }
