@@ -29,7 +29,16 @@ THE SOFTWARE.
     <l:icon class="icon-monitor icon-xlg"/>
     ${%title(it.displayName)}
   </h1>
-  <j:set var="type" value="${request.getParameter('type') ?: 'min'}" />
+  <j:set var="type" value="${request.getParameter('type')}" />
+  <j:choose>
+    <j:when test="${type == 'sec10'}" />
+    <j:when test="${type == 'min'}" />
+    <j:when test="${type == 'hour'}" />
+    <j:otherwise>
+      <j:set var="type" value="min" />
+    </j:otherwise>
+  </j:choose>
+
   <div>
     ${%Timespan}:
     <j:choose>
