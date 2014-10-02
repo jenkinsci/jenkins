@@ -108,14 +108,14 @@ import static javax.servlet.http.HttpServletResponse.*;
  *
  * <p>
  * {@link Executor}s on one {@link Computer} are transparently interchangeable
- * (that is the definition of {@link Computer}.)
+ * (that is the definition of {@link Computer}).
  *
  * <p>
- * This object is related to {@link Node} but they have some significant difference.
+ * This object is related to {@link Node} but they have some significant differences.
  * {@link Computer} primarily works as a holder of {@link Executor}s, so
  * if a {@link Node} is configured (probably temporarily) with 0 executors,
  * you won't have a {@link Computer} object for it (except for the master node,
- * which always get its {@link Computer} in case we have no static executors and
+ * which always gets its {@link Computer} in case we have no static executors and
  * we need to run a {@link FlyweightTask} - see JENKINS-7291 for more discussion.)
  *
  * Also, even if you remove a {@link Node}, it takes time for the corresponding
@@ -124,8 +124,8 @@ import static javax.servlet.http.HttpServletResponse.*;
  * remains intact, while all the {@link Node} objects will go away.
  *
  * <p>
- * This object also serves UI (since {@link Node} is an interface and can't have
- * related side pages.)
+ * This object also serves UI (unlike {@link Node}), and can be used along with
+ * {@link TransientComputerActionFactory} to add {@link Action}s to {@link Computer}s.
  *
  * @author Kohsuke Kawaguchi
  */
