@@ -103,7 +103,7 @@ do_start()
 
     # Verify that the jenkins port is not already in use, winstone does not exit
     # even for BindException
-    check_tcp_port "http" "$HTTP_PORT" "8080" || return 1
+    check_tcp_port "http" "$HTTP_PORT" "8080" || return 2
     
     # If the var MAXOPENFILES is enabled in /etc/default/jenkins then set the max open files to the 
     # proper value
