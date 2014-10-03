@@ -1483,6 +1483,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                         if (e.isBusy())
                             building.add(e.getCurrentExecutable());
                     }
+                    for (Executor e : c.getOneOffExecutors()) {
+                        if (e.isBusy())
+                            building.add(e.getCurrentExecutable());
+                    }
                 }
                 dumpThreads();
                 throw new AssertionError(String.format("Jenkins is still doing something after %dms: queue=%s building=%s",
