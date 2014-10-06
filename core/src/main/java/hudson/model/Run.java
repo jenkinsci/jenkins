@@ -339,7 +339,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected void onLoad() {
         for (Action a : getAllActions()) {
             if (a instanceof RunAction2) {
-                ((RunAction2) a).onLoad(this);
+                try {
+                    ((RunAction2) a).onLoad(this);
+                } catch (RuntimeException x) {
+                    LOGGER.log(WARNING, "failed to load " + a + " from " + getDataFile(), x);
+                    getActions().remove(a); // if possible; might be in an inconsistent state
+                }
             } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
             }
