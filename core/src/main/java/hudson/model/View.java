@@ -681,15 +681,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         public People(Jenkins parent) {
             this.parent = parent;
-            // for Hudson, really load all users
-            Map<User,UserInfo> users = getUserInfo(parent.getItems());
-            User unknown = User.getUnknown();
-            for (User u : User.getAll()) {
-                if(u==unknown)  continue;   // skip the special 'unknown' user
-                if(!users.containsKey(u))
-                    users.put(u,new UserInfo(u,null,null));
-            }
-            this.users = toList(users);
+            this.users = toList(getUserInfo(parent.getItems()));
         }
 
         public People(View parent) {
@@ -700,7 +692,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
             for (Item item : items) {
+                if (!item.hasPermission(Item.READ)) {
+                    continue;
+                }
                 for (Job job : item.getAllJobs()) {
+                    if (!job.hasPermission(Item.READ)) {
+                        continue;
+                    }
                     if (job instanceof AbstractProject) {
                         AbstractProject<?,?> p = (AbstractProject) job;
                         for (AbstractBuild<?,?> build : p.getBuilds()) {
@@ -763,7 +761,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final class AsynchPeople extends ProgressiveRendering { // JENKINS-15206
 
         private final Collection<TopLevelItem> items;
-        private final User unknown;
         private final Map<User,UserInfo> users = new HashMap<User,UserInfo>();
         private final Set<User> modified = new HashSet<User>();
         private final String iconSize;
@@ -773,14 +770,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public AsynchPeople(Jenkins parent) {
             this.parent = parent;
             items = parent.getItems();
-            unknown = User.getUnknown();
         }
 
         /** @see View#getAsynchPeople */
         public AsynchPeople(View parent) {
             this.parent = parent;
             items = parent.getItems();
-            unknown = null;
         }
 
         {
@@ -791,7 +786,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
         @Override protected void compute() throws Exception {
             int itemCount = 0;
             for (Item item : items) {
+                if (!item.hasPermission(Item.READ)) {
+                    continue;
+                }
                 for (Job<?,?> job : item.getAllJobs()) {
+                    if (!job.hasPermission(Item.READ)) {
+                        continue;
+                    }
                     if (job instanceof AbstractProject) {
                         AbstractProject<?,?> p = (AbstractProject) job;
                         RunList<? extends AbstractBuild<?,?>> builds = p.getBuilds();
@@ -827,29 +828,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     }
                 }
                 itemCount++;
-                progress(1.0 * itemCount / (items.size() + /* handling User.getAll */1));
+                progress(1.0 * itemCount / items.size());
             }
-            if (unknown != null) {
-                if (canceled()) {
-                    return;
-                }
-                for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
-                    if (canceled()) {
-                        return;
-                    }
-                    if (u == unknown) {
-                        continue;
-                    }
-                    if (!users.containsKey(u)) {
-                        UserInfo userInfo = new UserInfo(u, null, null);
-                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
-                        synchronized (this) {
-                            users.put(u, userInfo);
-                            modified.add(u);
-                        }
-                    }
-                }
-            }
+        }
+
+        // for testing purpose
+        @Restricted(NoExternalUse.class)
+        /*package*/ Set<User> getModified() {
+            return modified;
         }
 
         @Override protected synchronized JSON data() {

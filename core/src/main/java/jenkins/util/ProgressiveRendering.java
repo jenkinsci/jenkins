@@ -117,7 +117,14 @@ public abstract class ProgressiveRendering {
             }
         });
     }
-
+    
+    /**
+     * @return whether the computation has finished.
+     */
+    public boolean isFinished() {
+        return (status < 0 || status >= 1);
+    }
+    
     /**
      * Copies important fields from the current HTTP request and makes them available during {@link #compute}.
      * This is necessary because some model methods such as {@link AbstractItem#getUrl} behave differently when called from a request.
