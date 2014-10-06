@@ -23,9 +23,20 @@
  */
 package hudson.model;
 
+import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.Permission;
+import hudson.util.Iterators;
 import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+
+import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * {@link Descriptor} for {@link TopLevelItem}s.
@@ -116,6 +127,87 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      */
     public static ExtensionList<TopLevelItemDescriptor> all() {
         return Items.all();
+    }
+
+    /**
+     * Returns the ACL for this top level item descriptor in the context of the specified {@link ItemGroup}.
+     *
+     * @param context the context
+     * @return the ACL
+     * @since 1.574
+     */
+    @Nonnull
+    public ACL getACL(@Nonnull ItemGroup context) {
+        return Jenkins.getInstance().getAuthorizationStrategy().getACL(context, this);
+    }
+
+    /**
+     * Returns the ACL for this top level item descriptor in the context of the {@link ItemGroup} inferred
+     * from the current {@link StaplerRequest} or {@link Jenkins} if invoked outside of a {@link StaplerRequest}.
+     *
+     * @return the ACL
+     * @since 1.574
+     */
+    @Nonnull
+    public ACL getACL() {
+        final StaplerRequest request = Stapler.getCurrentRequest();
+        if (request != null) {
+            List<Ancestor> ancs = request.getAncestors();
+            for (Ancestor anc : Iterators.reverse(ancs)) {
+                Object o = anc.getObject();
+                if (o instanceof ItemGroup) {
+                    return getACL((ItemGroup) o);
+                }
+            }
+        }
+        return getACL(Jenkins.getInstance());
+    }
+
+    /**
+     * Returns the {@code true} if and only if the current user has the specified permission the context of the
+     * {@link ItemGroup} inferred from the current {@link StaplerRequest} or {@link Jenkins} if invoked outside
+     * of a {@link StaplerRequest} in which case the current user will most likely have been inferred as
+     * {@link ACL#SYSTEM} anyway.
+     *
+     * @param p the permission
+     * @return the {@code true} if the current user has the permission.
+     * @since 1.574
+     */
+    public final boolean hasPermission(@Nonnull Permission p) {
+        return hasPermission(Jenkins.getAuthentication(),p);
+    }
+
+    /**
+     * Returns the {@code true} if and only if the specified authentication has the specified permission the context
+     * of the {@link ItemGroup} inferred from the current {@link StaplerRequest} or {@link Jenkins} if invoked outside
+     * of a {@link StaplerRequest}.
+     *
+     * @param a          the authentication
+     * @param permission the permission
+     * @return the {@code true} if the authentication has the permission.
+     * @since 1.574
+     */
+    public boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
+        return getACL().hasPermission(a, permission);
+    }
+
+    /**
+     * An extension that controls descriptor visibility based on the ACLs defined for each
+     * {@link TopLevelItemDescriptor}
+     *
+     * @since 1.574
+     */
+    @Extension
+    public static class CreatePermissionVisibilityFilter extends DescriptorVisibilityFilter {
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean filter(Object context, Descriptor descriptor) {
+            if (descriptor instanceof TopLevelItemDescriptor && context instanceof ItemGroup) {
+                return ((TopLevelItemDescriptor) descriptor).getACL((ItemGroup) context).hasPermission(Item.CREATE);
+            }
+            return true;
+        }
     }
 
 }
