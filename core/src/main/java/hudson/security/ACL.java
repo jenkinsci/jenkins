@@ -89,14 +89,14 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
-     * @since 1.582
+     * @since TODO
      */
     public final void checkCreatePermission(@Nonnull ItemGroup c,
                                             @Nonnull TopLevelItemDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
         if (!hasCreatePermission(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
-                    "Item/CREATE/" + d.getDisplayName()));
+                    Item.CREATE.getDisplayName() + "/" + d.getDisplayName()));
         }
     }
     /**
@@ -109,7 +109,7 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @return false
      *      if the user doesn't have the permission.
-     * @since 1.582
+     * @since TODO
      */
     public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ItemGroup c,
                                        @Nonnull TopLevelItemDescriptor d) {
