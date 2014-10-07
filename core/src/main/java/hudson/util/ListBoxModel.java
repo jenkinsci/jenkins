@@ -125,6 +125,11 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
             this.value = value;
             this.selected = selected;
         }
+
+        @Override public String toString() {
+            return name + "=" + value + (selected ? "[selected]" : "");
+        }
+
     }
 
     public ListBoxModel(int initialCapacity) {
