@@ -690,9 +690,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Marks the build as disabled.
+     * The method will ignore the disable command if {@link #supportsMakeDisabled()}
+     * returns false. The enable command will be executed in any case.
+     * @param b true - disable, false - enable 
      */
     public void makeDisabled(boolean b) throws IOException {
         if(disabled==b)     return; // noop
+        if (b && !supportsMakeDisabled()) return; // do nothing if the disabling is unsupported
         this.disabled = b;
         if(b)
             Jenkins.getInstance().getQueue().cancel(this);
