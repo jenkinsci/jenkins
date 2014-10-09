@@ -173,7 +173,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.46-SNAPSHOT</version><!-- SECURITY-144 branch -->
+        <version>2.47-SNAPSHOT</version><!-- SECURITY-144 branch -->
       </dependency>
 
       <dependency>
