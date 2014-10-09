@@ -40,9 +40,18 @@ JENKINS_LOG=/var/log/jenkins/$NAME.log
 MAXOPENFILES=8192
 
 # set the umask to control permission bits of files that Jenkins creates.
-#   027 makes files read-only for group and inaccessible for others. comment this out to inherit setting
-#   (as of Ubuntu 12.04, by default umask comes from pam_umask(8) and /etc/login.defs
-UMASK=027
+#   027 makes files read-only for group and inaccessible for others, which some security sensitive users
+#   might consider benefitial, especially if Jenkins runs in a box that's used for multiple purposes.
+#   Beware that 027 permission would interfere with sudo scripts that run on the master (JENKINS-25065.)
+#
+#   Note also that the particularly sensitive part of $JENKINS_HOME (such as credentials) are always
+#   written without 'others' access. So the umask values only affect job configuration, build records,
+#   that sort of things.
+#
+#   If commented out, the value from the OS is inherited,  which is normally 022 (as of Ubuntu 12.04,
+#   by default umask comes from pam_umask(8) and /etc/login.defs
+
+# UMASK=027
 
 # port for HTTP connector (default 8080; disable with -1)
 HTTP_PORT=8080
