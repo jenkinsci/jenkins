@@ -207,7 +207,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * The method also creates a log directory if required.
      * @see #relocateOldLogs()
      */
-    protected File getLogFile() {
+    public File getLogFile() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
         dir.mkdirs();
         return new File(dir,"slave.log");
