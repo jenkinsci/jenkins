@@ -267,7 +267,7 @@ public class UtilTest {
     @Test
     public void testHtmlEscape() {
         assertEquals("<br>", Util.escape("\n"));
-        assertEquals("&lt;a>", Util.escape("<a>"));
+        assertEquals("&lt;a&gt;", Util.escape("<a>"));
         assertEquals("&#039;&quot;", Util.escape("'\""));
         assertEquals("&nbsp; ", Util.escape("  "));
     }
