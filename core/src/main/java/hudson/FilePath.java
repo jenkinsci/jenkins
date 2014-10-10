@@ -84,6 +84,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -1653,7 +1654,7 @@ public final class FilePath implements Serializable {
                 FileInputStream fis=null;
                 try {
                     fis = new FileInputStream(new File(remote));
-                    Util.copyStream(fis,p.getOut());
+                    Util.copyStream(fis, p.getOut());
                     return null;
                 } finally {
                     org.apache.commons.io.IOUtils.closeQuietly(fis);
@@ -1663,6 +1664,77 @@ public final class FilePath implements Serializable {
         });
 
         return p.getIn();
+    }
+
+    /**
+     * Reads this file from the specific offset.
+     */
+    public InputStream readFromOffset(final long offset) throws IOException {
+        if(channel ==null) {
+            final RandomAccessFile raf = new RandomAccessFile(new File(remote), "r");
+            try {
+                raf.seek(offset);
+            } catch (IOException e) {
+                try {
+                    raf.close();
+                } catch (IOException e1) {
+                    // ignore
+                }
+                throw e;
+            }
+            return new InputStream() {
+                @Override
+                public int read() throws IOException {
+                    return raf.read();
+                }
+
+                @Override
+                public void close() throws IOException {
+                    raf.close();
+                }
+
+                @Override
+                public int read(byte[] b, int off, int len) throws IOException {
+                    return raf.read(b, off, len);
+                }
+
+                @Override
+                public int read(byte[] b) throws IOException {
+                    return raf.read(b);
+                }
+            };
+        }
+
+        final Pipe p = Pipe.createRemoteToLocal();
+        channel.callAsync(new Callable<Void, IOException>() {
+            private static final long serialVersionUID = 1L;
+
+            public Void call() throws IOException {
+                final OutputStream out = new java.util.zip.GZIPOutputStream(p.getOut(), 8192);
+                RandomAccessFile raf = null;
+                try {
+                    raf = new RandomAccessFile(new File(remote), "r");
+                    raf.seek(offset);
+                    byte[] buf = new byte[8192];
+                    int len;
+                    while ((len = raf.read(buf)) >= 0) {
+                        out.write(buf, 0, len);
+                    }
+                    return null;
+                } finally {
+                    IOUtils.closeQuietly(out);
+                    if (raf != null) {
+                        try {
+                            raf.close();
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+        });
+
+        return new java.util.zip.GZIPInputStream(p.getIn());
     }
 
     /**
