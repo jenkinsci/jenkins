@@ -206,16 +206,28 @@ public abstract class ComputerListener implements ExtensionPoint {
     public void onConfigurationChange() {}
 
     /**
+     * Called when a new {@Computer} is being created.
+     * Instead of the {@link #onConfigurationChange()}, this callback operates 
+     * on the per-computer basis.
+     * @param computer Node owner
+     * @param newNode Newly created node
+     * @since TODO: Define a version
+     */
+    public void onCreated(@Nonnull Computer computer, @Nonnull Node newNode) {}
+    
+    /**
      * Called when the configuration of a {@Computer} changes.
      * Instead of the {@link #onConfigurationChange()}, this callback operates 
-     * on the pre-computer basis.
+     * on the per-computer basis. 
+     * For new nodes the {@link #onCreated(hudson.model.Computer, hudson.model.Node)}
+     * handler will be used.
      * @param computer Node owner
-     * @param oldNode Previous node. May be null on the new node creation
+     * @param oldNode Previous node
      * @param newNode Newly created node
      * @since TODO: Define a version
      */
     public void onConfigurationChange(@Nonnull Computer computer, 
-            @CheckForNull Node oldNode, @Nonnull Node newNode) { }
+            @Nonnull Node oldNode, @Nonnull Node newNode) {}
     
     /**
      * Registers this {@link ComputerListener} so that it will start receiving events.
