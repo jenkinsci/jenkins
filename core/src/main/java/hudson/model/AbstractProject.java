@@ -693,6 +693,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * The method will ignore the disable command if {@link #supportsMakeDisabled()}
      * returns false. The enable command will be executed in any case.
      * @param b true - disable, false - enable 
+     * @since 1.585 Do not disable projects if {@link #supportsMakeDisabled()} returns false
      */
     public void makeDisabled(boolean b) throws IOException {
         if(disabled==b)     return; // noop
