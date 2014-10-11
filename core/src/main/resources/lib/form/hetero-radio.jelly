@@ -48,9 +48,12 @@ THE SOFTWARE.
         <j:set var="instance" value="${currentDescriptor==d?currentInstance:null}" />
         <st:include from="${d}" page="${d.configPage}" optional="true" />
 
-        <f:invisibleEntry><!-- this tells Stapler which block is for which class -->
+        <f:invisibleEntry>
+          <!-- Legacy: Remove once plugins have been staged onto $class -->
           <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
-          <input type="hidden" name="kind" value="${descriptor.id}"/>
+        </f:invisibleEntry>
+        <f:invisibleEntry><!-- this tells Stapler which block is for which class -->
+          <input type="hidden" name="$class" value="${d.clazz.name}" />
         </f:invisibleEntry>
       </f:radioBlock>
     </j:forEach>

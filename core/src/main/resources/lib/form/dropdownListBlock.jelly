@@ -52,7 +52,11 @@ THE SOFTWARE.
       <!-- sandwich them by markers so that we know what to show/hide -->
       <tr class="dropdownList-start rowvg-start">
         <j:if test="${!empty(attrs.staplerClass)}">
-          <td style="display:none"><input type="hidden" name="stapler-class" value="${attrs.staplerClass}"/></td>
+          <td style="display:none">
+            <!-- Legacy: Remove once plugins have been staged onto $class -->
+            <input type="hidden" name="stapler-class" value="${attrs.staplerClass}"/>
+            <input type="hidden" name="$class" value="${attrs.staplerClass}"/>
+          </td>
         </j:if>
       </tr>
       <j:choose>

@@ -57,7 +57,11 @@ THE SOFTWARE.
         <j:set var="instance"
                value="${it.launcher.descriptor==d ? it.launcher : null}"/>
         <f:invisibleEntry>
+          <!-- Legacy: Remove once plugins have been staged onto $class -->
           <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
+        </f:invisibleEntry>
+        <f:invisibleEntry>
+          <input type="hidden" name="$class" value="${d.clazz.name}" />
         </f:invisibleEntry>
         <st:include from="${d}" page="${d.configPage}" optional="true"/>
       </f:dropdownListBlock>
@@ -77,7 +81,9 @@ THE SOFTWARE.
             <j:set var="instance"
                    value="${it.retentionStrategy.descriptor==d ? it.retentionStrategy : null}"/>
             <tr><td>
+              <!-- Legacy: Remove once plugins have been staged onto $class -->
               <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
+              <input type="hidden" name="$class" value="${d.clazz.name}" />
             </td></tr>
             <st:include from="${d}" page="${d.configPage}" optional="true"/>
           </f:dropdownListBlock>

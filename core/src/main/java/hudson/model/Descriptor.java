@@ -909,7 +909,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if (formData!=null) {
             for (Object o : JSONArray.fromObject(formData)) {
                 JSONObject jo = (JSONObject)o;
-                String kind = jo.getString("kind");
+                String kind = jo.getString("$class");
                 Descriptor<T> d = find(descriptors, kind);
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
