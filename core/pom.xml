@@ -117,7 +117,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build217-jenkins-6</version>
+      <version>build217-jenkins-7</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
