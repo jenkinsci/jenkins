@@ -296,6 +296,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            if (project == null) {
+                return FormValidation.ok();
+            }
             return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 
