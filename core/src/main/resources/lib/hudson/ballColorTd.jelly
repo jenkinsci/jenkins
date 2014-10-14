@@ -43,6 +43,10 @@ THE SOFTWARE.
       <j:if test="${iconClassName == null}">
         <j:set var="iconClassName" value="${icons.toNormalizedIconNameClass(it.image)}"/>
       </j:if>
+      <!-- convert legacy @iconSize specification to @iconSizeClass -->
+      <j:if test="${iconSizeClass==null and attrs.iconSize!=null}">
+        <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(attrs.iconSize)}"/>
+      </j:if>
 
       <j:choose>
         <j:when test="${iconClassName != null}">
