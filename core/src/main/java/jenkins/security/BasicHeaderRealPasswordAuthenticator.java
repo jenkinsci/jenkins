@@ -50,7 +50,7 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
             return null;
 
         if (!authenticationIsRequired(username))
-            return null;
+            return SecurityContextHolder.getContext().getAuthentication();
 
         UsernamePasswordAuthenticationToken authRequest =
                 new UsernamePasswordAuthenticationToken(username, password);
