@@ -40,8 +40,11 @@ THE SOFTWARE.
     <f:entry field="fingerprint">
       <f:checkbox title="${%Fingerprint all archived artifacts}"/>
     </f:entry>
-        <f:entry field="defaultExcludes" >
-          <f:checkbox title="${%defaultExcludes}" default="true"/>
-        </f:entry>
+    <f:entry field="defaultExcludes" >
+      <f:checkbox title="${%defaultExcludes}" default="true"/>
+    </f:entry>
+    <f:entry field="caseSensitive" >
+      <f:checkbox title="${%caseSensitive}" default="true"/>
+    </f:entry>
   </f:advanced>
 </j:jelly>

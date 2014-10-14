@@ -97,6 +97,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      */
     @Nonnull
     private Boolean defaultExcludes = true;
+    
+    /**
+     * Indicate whether include and exclude patterns should be considered as case sensitive
+     */
+    @Nonnull
+    private Boolean caseSensitive = true;
 
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
@@ -134,6 +140,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
         if (defaultExcludes == null){
             defaultExcludes = true;
+        }
+        if (caseSensitive == null) {
+            caseSensitive = true;
         }
         return this;
     }
@@ -187,6 +196,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @DataBoundSetter public final void setDefaultExcludes(boolean defaultExcludes) {
         this.defaultExcludes = defaultExcludes;
     }
+    
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
+    @DataBoundSetter public final void setCaseSensitive(boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
+    }
 
     private void listenerWarnOrError(TaskListener listener, String message) {
     	if (allowEmptyArchive) {
@@ -213,7 +230,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         try {
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
-            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes));
+            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
@@ -227,7 +244,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
                     String msg = null;
                     try {
-                    	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND);
+                    	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
                     } catch (Exception e) {
                     	listenerWarnOrError(listener, e.getMessage());
                     }
@@ -252,17 +269,21 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;
+        private final boolean caseSensitive;
 
-        ListFiles(String includes, String excludes, boolean defaultExcludes) {
+        ListFiles(String includes, String excludes, boolean defaultExcludes, boolean caseSensitive) {
             this.includes = includes;
             this.excludes = excludes;
             this.defaultExcludes = defaultExcludes;
+            this.caseSensitive = caseSensitive;
         }
+
         @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
             Map<String,String> r = new HashMap<String,String>();
 
             FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
             fileSet.setDefaultexcludes(defaultExcludes);
+            fileSet.setCaseSensitive(caseSensitive);
 
             for (String f : fileSet.getDirectoryScanner().getIncludedFiles()) {
                 f = f.replace(File.separatorChar, '/');
@@ -294,13 +315,19 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         /**
-         * Performs on-the-fly validation on the file mask wildcard.
+         * Performs on-the-fly validation of the file mask wildcard, when the artifacts
+         * textbox or the caseSensitive checkbox are modified
          */
-        public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+        public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project,
+                @QueryParameter String value,
+                @QueryParameter(value = "caseSensitive") String caseSensitive)
+                throws IOException {
             if (project == null) {
                 return FormValidation.ok();
             }
-            return FilePath.validateFileMask(project.getSomeWorkspace(),value);
+            // defensive approach to remain case sensitive in doubtful situations
+            boolean bCaseSensitive = caseSensitive == null || !"false".equals(caseSensitive);
+            return FilePath.validateFileMask(project.getSomeWorkspace(), value, bCaseSensitive);
         }
 
         @Override
