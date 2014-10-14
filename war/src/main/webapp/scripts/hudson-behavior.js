@@ -2202,11 +2202,22 @@ function validateButton(checkUrl,paramList,button) {
 }
 
 function applyErrorMessage(elt, rsp) {
-    var i;
-    elt.innerHTML = rsp.status==200 ? rsp.responseText
-        : '<a href="" onclick="document.getElementById(\'valerr' + (i=iota++)
-        + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
-        + i + '" style="display:none">' + rsp.responseText + '</div>';
+    if (rsp.status == 200) {
+        elt.innerHTML = rsp.responseText;
+    } else {
+        var id = 'valerr' + (iota++);
+        elt.innerHTML = '<a href="" onclick="document.getElementById(\'' + id
+        + '\').style.display=\'block\';return false">ERROR</a><div id="'
+        + id + '" style="display:none">' + rsp.responseText + '</div>';
+        var error = document.getElementById('error-description'); // cf. oops.jelly
+        if (error) {
+            var div = document.getElementById(id);
+            while (div.firstChild) {
+                div.removeChild(div.firstChild);
+            }
+            div.appendChild(error);
+        }
+    }
     Behaviour.applySubtree(elt);
 }
 
