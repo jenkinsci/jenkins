@@ -2146,6 +2146,11 @@ public final class FilePath implements Serializable {
         return validateAntFileMask(fileMasks, Integer.MAX_VALUE);
     }
 
+    // JENKINS-5253 - case insensitive artifacts archiving patterns
+    // Function provided to be backward compatible
+    public String validateAntFileMask(final String fileMasks, final int bound) throws IOException, InterruptedException {
+        return validateAntFileMask(fileMasks, bound, true);
+    }
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.
      * <p>Whereas the unbounded overload is appropriate for calling from cancelable, long-running tasks such as build steps,
@@ -2159,7 +2164,8 @@ public final class FilePath implements Serializable {
      * @throws InterruptedException not only in case of a channel failure, but also if too many operations were performed without finding any matches
      * @since 1.484
      */
-    public String validateAntFileMask(final String fileMasks, final int bound) throws IOException, InterruptedException {
+    public String validateAntFileMask(final String fileMasks, final int bound,
+            final boolean caseSensitive) throws IOException, InterruptedException {
         return act(new FileCallable<String>() {
             private static final long serialVersionUID = 1;
             public String invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
@@ -2202,6 +2208,8 @@ public final class FilePath implements Serializable {
                     {// check the (2) above next as this is more expensive.
                         // Try prepending "**/" to see if that results in a match
                         FileSet fs = Util.createFileSet(dir,"**/"+fileMask);
+                        // JENKINS-5253 - case insensitive artifacts archiving patterns
+                        fs.setCaseSensitive(caseSensitive);
                         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
                         if(ds.getIncludedFilesCount()!=0) {
                             // try shorter name first so that the suggestion results in least amount of changes
@@ -2272,6 +2280,8 @@ public final class FilePath implements Serializable {
                 };
                 ds.setBasedir(dir);
                 ds.setIncludes(new String[] {pattern});
+                // JENKINS-5253 - case insensitive artifacts archiving patterns
+                ds.setCaseSensitive(caseSensitive);
                 try {
                     ds.scan();
                 } catch (Cancel c) {
@@ -2301,15 +2311,22 @@ public final class FilePath implements Serializable {
      * Shortcut for {@link #validateFileMask(String)} in case the left-hand side can be null.
      */
     public static FormValidation validateFileMask(@CheckForNull FilePath path, String value) throws IOException {
+        return FilePath.validateFileMask(path, value, true);
+    }
+    
+    /**
+     * JENKINS-5253 - case insensitive artifacts archiving patterns
+     */
+    public static FormValidation validateFileMask(@CheckForNull FilePath path, String value, boolean caseSensitive) throws IOException {
         if(path==null) return FormValidation.ok();
-        return path.validateFileMask(value);
+        return path.validateFileMask(value, caseSensitive);
     }
 
     /**
-     * Short for {@code validateFileMask(value,true)} 
+     * Short for {@code validateFileMask(value, true, caseSensitive)} 
      */
-    public FormValidation validateFileMask(String value) throws IOException {
-        return validateFileMask(value,true);
+    public FormValidation validateFileMask(String value, boolean caseSensitive) throws IOException {
+        return validateFileMask(value, true, caseSensitive);
     }
 
     /**
@@ -2318,7 +2335,7 @@ public final class FilePath implements Serializable {
      * or admin permission if no such ancestor is found.
      * @since 1.294
      */
-    public FormValidation validateFileMask(String value, boolean errorIfNotExist) throws IOException {
+    public FormValidation validateFileMask(String value, boolean errorIfNotExist, boolean caseSensitive) throws IOException {
         checkPermissionForValidate();
 
         value = fixEmpty(value);
@@ -2329,7 +2346,7 @@ public final class FilePath implements Serializable {
             if(!exists()) // no workspace. can't check
                 return FormValidation.ok();
 
-            String msg = validateAntFileMask(value, 10000);
+            String msg = validateAntFileMask(value, 10000, caseSensitive);
             if(errorIfNotExist)     return FormValidation.error(msg);
             else                    return FormValidation.warning(msg);
         } catch (InterruptedException e) {

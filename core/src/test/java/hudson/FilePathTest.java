@@ -27,11 +27,13 @@ import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.NullStream;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
@@ -521,6 +523,25 @@ public class FilePathTest extends ChannelTestCase {
             } catch (InterruptedException x) {
                 // good
             }
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
+    
+    @Issue("5253")
+    public void testValidateCaseSensitivity() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath d = new FilePath(french, tmp.getPath());
+            d.child("d1/d2/d3").mkdirs();
+            d.child("d1/d2/d3/f.txt").touch(0);
+            d.child("d1/d2/d3/f.html").touch(0);
+            d.child("d1/d2/f.txt").touch(0);
+            
+            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", 10000, true));
+            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", 10000, false));
+            assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/D1/**/F.*", "**", "**/D1/**/F.*"), d.validateAntFileMask("**/D1/**/F.*", 10000, true));
+            assertEquals(null, d.validateAntFileMask("**/D1/**/F.*", 10000, false));
         } finally {
             Util.deleteRecursive(tmp);
         }
