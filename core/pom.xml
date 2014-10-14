@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.581-SNAPSHOT</version>
+    <version>1.586-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,7 +42,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.228</stapler.version>
+    <stapler.version>1.231</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>1.8.9</groovy.version>
   </properties>
@@ -117,7 +117,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build217-jenkins-5</version>
+      <version>build217-jenkins-7</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -156,7 +156,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-zeroclipboard</artifactId>
-      <version>1.1.7-1</version>
+      <version>1.3.5-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -484,7 +484,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.21</version>
+      <version>1.22</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -566,6 +566,12 @@ THE SOFTWARE.
       <artifactId>annotations</artifactId>
       <version>1.0.0</version>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+      <version>1.3.1-jenkins-1</version>
     </dependency>
 
     <dependency>

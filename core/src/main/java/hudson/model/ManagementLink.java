@@ -112,4 +112,14 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     public Permission getRequiredPermission() {
         return null;
     }
+
+    /**
+     * Define if the rendered link will use the default GET method or POST.
+     * @return true if POST must be used
+     * @see RequirePOST
+     * @since TODO
+     */
+    public boolean getRequiresPOST() {
+        return false;
+    }
 }

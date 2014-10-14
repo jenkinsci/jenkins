@@ -32,6 +32,8 @@ import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.io.ObjectStreamException;
+import hudson.util.LineEndingConversion;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -40,6 +42,7 @@ import org.kohsuke.stapler.QueryParameter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -50,29 +53,7 @@ import java.util.logging.Logger;
 public class Shell extends CommandInterpreter {
     @DataBoundConstructor
     public Shell(String command) {
-        super(fixCrLf(command));
-    }
-
-    /**
-     * Fix CR/LF and always make it Unix style.
-     */
-    private static String fixCrLf(String s) {
-        // eliminate CR
-        int idx;
-        while((idx=s.indexOf("\r\n"))!=-1)
-            s = s.substring(0,idx)+s.substring(idx+1);
-
-        //// add CR back if this is for Windows
-        //if(isWindows()) {
-        //    idx=0;
-        //    while(true) {
-        //        idx = s.indexOf('\n',idx);
-        //        if(idx==-1) break;
-        //        s = s.substring(0,idx)+'\r'+s.substring(idx);
-        //        idx+=2;
-        //    }
-        //}
-        return s;
+        super(LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Unix));
     }
 
     /**
@@ -80,7 +61,7 @@ public class Shell extends CommandInterpreter {
      * makes the shell think the file is a binary file and not a script. Adding
      * a leading line feed works around this problem.
      */
-    private static String addCrForNonASCII(String s) {
+    private static String addLineFeedForNonASCII(String s) {
         if(!s.startsWith("#!")) {
             if (s.indexOf('\n')!=0) {
                 return "\n" + s;
@@ -105,7 +86,7 @@ public class Shell extends CommandInterpreter {
     }
 
     protected String getContents() {
-        return addCrForNonASCII(fixCrLf(command));
+        return addLineFeedForNonASCII(LineEndingConversion.convertEOL(command,LineEndingConversion.EOLType.Unix));
     }
 
     protected String getFileExtension() {
@@ -115,6 +96,10 @@ public class Shell extends CommandInterpreter {
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+        return new Shell(command);
     }
 
     @Extension
@@ -154,9 +139,9 @@ public class Shell extends CommandInterpreter {
             try {
                 interpreter = channel.call(new Shellinterpreter());
             } catch (IOException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, null, e);
             } catch (InterruptedException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, null, e);
             }
             if (interpreter == null) {
                 interpreter = getShellOrDefault();

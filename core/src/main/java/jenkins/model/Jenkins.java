@@ -2949,9 +2949,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             isQuietingDown = true;
         }
         if (block) {
-            if (timeout > 0) timeout += System.currentTimeMillis();
+            long waitUntil = timeout;
+            if (timeout > 0) waitUntil += System.currentTimeMillis();
             while (isQuietingDown
-                   && (timeout <= 0 || System.currentTimeMillis() < timeout)
+                   && (timeout <= 0 || System.currentTimeMillis() < waitUntil)
                    && !RestartListener.isAllReady()) {
                 Thread.sleep(1000);
             }

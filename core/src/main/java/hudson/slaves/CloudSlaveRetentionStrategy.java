@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * If a slave is idle for 10 mins, this retention strategy will remove the slave. This can be used as-is for
  * a {@link Node} provisioned by cloud to implement the auto-scaling semantics, it can be subtyped to tweak
  * the behavior, or it can be used as an example.
- *
+ * <p>TODO {@link CloudRetentionStrategy} seems to be a better implementation.
  * @author Kohsuke Kawaguchi
  * @since 1.510
  */

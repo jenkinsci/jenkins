@@ -31,8 +31,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <j:set var="buildHealth" value="${job.buildHealth}"/>
     <j:set var="healthReports" value="${job.buildHealthReports}"/>
+    <j:new var="emptyHealthReport" className="hudson.model.HealthReport"/>
+    <j:set var="buildHealth" value="${empty(healthReports) ? emptyHealthReport : healthReports[0]}"/>
     <j:if test="${td}"><j:set var="useTdElement" value="x"/></j:if>
     <x:element name="${useTdElement!=null?'td':'div'}">
         <x:attribute name="data">${buildHealth.score}</x:attribute>
@@ -74,7 +75,7 @@ THE SOFTWARE.
                         </tr>
                     </thead>
                     <tbody>
-                        <j:forEach var="rpt" items="${job.buildHealthReports}">
+                        <j:forEach var="rpt" items="${healthReports}">
                             <tr>
                                 <td align="left">
                                     <l:icon class="${rpt.iconClassName} icon-sm" />

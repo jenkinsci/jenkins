@@ -42,7 +42,9 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.WebMethod;
@@ -210,7 +212,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Not all the Items need to support this operation, but if you decide to do so,
      * you can use this method.
      */
-    protected void renameTo(String newName) throws IOException {
+    protected void renameTo(final String newName) throws IOException {
         // always synchronize from bigger objects first
         final ItemGroup parent = getParent();
         synchronized (parent) {
@@ -223,13 +225,28 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 if (this.name.equals(newName))
                     return;
 
-                Item existing = parent.getItem(newName);
-                if (existing != null && existing!=this)
-                    // the look up is case insensitive, so we need "existing!=this"
-                    // to allow people to rename "Foo" to "foo", for example.
-                    // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
-                    throw new IllegalArgumentException("Job " + newName
-                            + " already exists");
+                // the test to see if the project already exists or not needs to be done in escalated privilege
+                // to avoid overwriting
+                ACL.impersonate(ACL.SYSTEM,new Callable<Void,IOException>() {
+                    final Authentication user = Jenkins.getAuthentication();
+                    @Override
+                    public Void call() throws IOException {
+                        Item existing = parent.getItem(newName);
+                        if (existing != null && existing!=AbstractItem.this) {
+                            if (existing.getACL().hasPermission(user,Item.DISCOVER))
+                                // the look up is case insensitive, so we need "existing!=this"
+                                // to allow people to rename "Foo" to "foo", for example.
+                                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
+                                throw new IllegalArgumentException("Job " + newName + " already exists");
+                            else {
+                                // can't think of any real way to hide this, but at least the error message could be vague.
+                                throw new IOException("Unable to rename to " + newName);
+                            }
+                        }
+                        return null;
+                    }
+                });
+
 
                 String oldName = this.name;
                 String oldFullName = getFullName();
@@ -301,23 +318,29 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         doSetName(oldName);
                 }
 
-                callOnRenamed(newName, parent, oldName);
+                try {
+                    parent.onRenamed(this, oldName, newName);
+                } catch (AbstractMethodError _) {
+                    // ignore
+                }
 
                 ItemListener.fireLocationChange(this, oldFullName);
             }
         }
     }
 
+
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
+     * Notify this item it's been moved to another location, replaced by newItem (might be the same object, but not guaranteed).
+     * This method is executed <em>after</em> the item root directory has been moved to it's new location.
+     * <p>
+     * Derived classes can override this method to add some specific behavior on move, but have to call parent method
+     * so the item is actually setup within it's new parent.
+     *
+     * @see hudson.model.Items#move(AbstractItem, jenkins.model.DirectlyModifiableTopLevelItemGroup)
      */
-    private void callOnRenamed(String newName, ItemGroup parent, String oldName) throws IOException {
-        try {
-            parent.onRenamed(this, oldName, newName);
-        } catch (AbstractMethodError _) {
-            // ignore
-        }
+    public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
+        newItem.onLoad(destination, name);
     }
 
     /**
@@ -560,16 +583,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
             performDelete();
         } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
-        invokeOnDeleted();
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void invokeOnDeleted() throws IOException {
         getParent().onDeleted(AbstractItem.this);
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
 
     /**
@@ -634,7 +649,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
 
             // try to reflect the changes by reloading
-            new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
+            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
+            if (o!=this) {
+                // ensure that we've got the same job type. extending this code to support updating
+                // to different job type requires destroying & creating a new job type
+                throw new IOException("Expecting "+this.getClass()+" but got "+o.getClass()+" instead");
+            }
+
             Items.whileUpdatingByXml(new Callable<Void,IOException>() {
                 @Override public Void call() throws IOException {
                     onLoad(getParent(), getRootDir().getName());
@@ -712,4 +733,5 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
 }

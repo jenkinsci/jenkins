@@ -260,6 +260,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         public FormValidation doCheckTargets(@AncestorInPath AbstractProject<?,?> project, @QueryParameter String value) throws IOException {
+            if (project == null) {
+                return FormValidation.ok();
+            }
             return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 

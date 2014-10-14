@@ -25,6 +25,8 @@ package hudson.util.jna;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -73,4 +75,12 @@ public class SHELLEXECUTEINFO extends Structure {
     public static final int SEE_MASK_NOCLOSEPROCESS = 0x40;
     public static final int SW_HIDE = 0;
     public static final int SW_SHOW = 0;
+
+    @Override
+    protected List getFieldOrder() {
+        return Arrays.asList("cbSize", "fMask", "hwnd", "lpVerb",
+                "lpFile", "lpParameters", "lpDirectory", "nShow", "hInstApp",
+                "lpIDList", "lpClass", "hkeyClass", "dwHotKey", "hIcon",
+                "hProcess", "SEE_MASK_NOCLOSEPROCESS", "SW_HIDE", "SW_SHOW");
+    }
 }

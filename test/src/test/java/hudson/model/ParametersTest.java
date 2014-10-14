@@ -1,7 +1,13 @@
 package hudson.model;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -180,4 +186,22 @@ public class ParametersTest extends HudsonTestCase {
         assertFalse("file must not exist", project.getSomeWorkspace().child("filename").exists());
     }
 
+    @Bug(11543)
+    public void testUnicodeParametersArePresetedCorrectly() throws Exception {
+        final FreeStyleProject p = createFreeStyleProject();
+        ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
+                new StringParameterDefinition("sname:a¶‱ﻷ", "svalue:a¶‱ﻷ", "sdesc:a¶‱ﻷ"),
+                new FileParameterDefinition("fname:a¶‱ﻷ", "fdesc:a¶‱ﻷ")
+        );
+        p.addProperty(pdb);
+
+        WebClient wc = createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false); // Ignore 405
+        HtmlPage page = wc.getPage(p, "build");
+
+        // java.lang.IllegalArgumentException: No such parameter definition: <gibberish>.
+        wc.setThrowExceptionOnFailingStatusCode(true);
+        final HtmlForm form = page.getFormByName("parameters");
+        form.submit(form.getButtonByCaption("Build"));
+    }
 }
