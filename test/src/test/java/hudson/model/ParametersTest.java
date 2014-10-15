@@ -14,6 +14,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
+import org.jvnet.hudson.test.Issue;
 
 import java.util.Set;
 
@@ -163,6 +164,26 @@ public class ParametersTest extends HudsonTestCase {
         assertFalse(sensitiveVars.contains("string"));
         assertTrue(sensitiveVars.contains("password"));
         assertFalse(sensitiveVars.contains("string2"));
+    }
+
+    @Issue("JENKINS-3539")
+    public void testFileParameterNotSet() throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
+                new FileParameterDefinition("filename", "description"));
+        project.addProperty(pdp);
+
+        WebClient wc = new WebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.goTo("/job/" + project.getName() + "/build?delay=0sec");
+        HtmlForm form = page.getFormByName("parameters");
+
+        submit(form);
+        Queue.Item q = jenkins.getQueue().getItem(project);
+        if (q != null) q.getFuture().get();
+        else Thread.sleep(1000);
+
+        assertFalse("file must not exist", project.getSomeWorkspace().child("filename").exists());
     }
 
     @Bug(11543)

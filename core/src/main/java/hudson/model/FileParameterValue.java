@@ -140,7 +140,7 @@ public class FileParameterValue extends ParameterValue {
         return new BuildWrapper() {
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            	if (!StringUtils.isEmpty(location)) {
+            	if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
             	    listener.getLogger().println("Copying file to "+location);
                     FilePath locationFilePath = build.getWorkspace().child(location);
                     locationFilePath.getParent().mkdirs();
