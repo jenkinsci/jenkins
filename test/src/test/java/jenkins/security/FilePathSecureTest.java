@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package hudson.security;
+package jenkins.security;
 
 import hudson.FilePath;
 import hudson.slaves.DumbSlave;
