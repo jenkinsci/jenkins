@@ -26,8 +26,11 @@ package jenkins.security;
 
 import hudson.FilePath;
 import hudson.slaves.DumbSlave;
+import hudson.util.DirScanner;
+import java.io.OutputStream;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -35,16 +38,63 @@ public class FilePathSecureTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
+    private DumbSlave s;
+    private FilePath root, remote;
+
+    @Before public void init() throws Exception {
+        s = r.createOnlineSlave();
+        root = r.jenkins.getRootPath();
+        remote = s.getRootPath();
+        // to see the difference: DefaultFilePathFilter.BYPASS = true;
+    }
+
     @Test public void unzip() throws Exception {
-        DumbSlave s = r.createOnlineSlave();
-        FilePath root = r.jenkins.getRootPath();
         FilePath dir = root.child("dir");
         dir.mkdirs();
         dir.child("stuff").write("hello", null);
         FilePath zip = root.child("dir.zip");
         dir.zip(zip);
-        FilePath remote = s.getRootPath();
         zip.unzip(remote);
+        assertEquals("hello", remote.child("dir/stuff").readToString());
+    }
+
+    @Test public void untar() throws Exception {
+        FilePath dir = root.child("dir");
+        dir.mkdirs();
+        dir.child("stuff").write("hello", null);
+        FilePath tar = root.child("dir.tar");
+        OutputStream os = tar.write();
+        try {
+            dir.tar(os, new DirScanner.Full());
+        } finally {
+            os.close();
+        }
+        tar.untar(remote, FilePath.TarCompression.NONE);
+        assertEquals("hello", remote.child("dir/stuff").readToString());
+    }
+
+    @Test public void zip() throws Exception {
+        FilePath dir = remote.child("dir");
+        dir.mkdirs();
+        dir.child("stuff").write("hello", null);
+        FilePath zip = root.child("dir.zip");
+        dir.zip(zip);
+        zip.unzip(root);
+        assertEquals("hello", remote.child("dir/stuff").readToString());
+    }
+
+    @Test public void tar() throws Exception {
+        FilePath dir = remote.child("dir");
+        dir.mkdirs();
+        dir.child("stuff").write("hello", null);
+        FilePath tar = root.child("dir.tar");
+        OutputStream os = tar.write();
+        try {
+            dir.tar(os, new DirScanner.Full());
+        } finally {
+            os.close();
+        }
+        tar.untar(root, FilePath.TarCompression.NONE);
         assertEquals("hello", remote.child("dir/stuff").readToString());
     }
 
