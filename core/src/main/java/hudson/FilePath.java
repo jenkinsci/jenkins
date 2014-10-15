@@ -1686,11 +1686,13 @@ public final class FilePath implements Serializable {
                 try {
                     fis = new FileInputStream(reading(f));
                     Util.copyStream(fis, p.getOut());
-                    return null;
+                } catch (Exception x) {
+                    p.error(x);
                 } finally {
                     IOUtils.closeQuietly(fis);
                     IOUtils.closeQuietly(p.getOut());
                 }
+                return null;
             }
         });
 
