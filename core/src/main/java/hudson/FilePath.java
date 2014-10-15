@@ -41,6 +41,7 @@ import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteInputStream;
+import hudson.remoting.RemoteInputStream.Flag;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
@@ -466,17 +467,28 @@ public final class FilePath implements Serializable {
      * @see #unzipFrom(InputStream)
      */
     public void unzip(final FilePath target) throws IOException, InterruptedException {
-        target.act(new SecureFileCallable<Void>() {
+        if (this.channel!=target.channel) {// local -> remote or remote->local
+            final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
+            target.act(new SecureFileCallable<Void>() {
+                public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+                    unzip(dir, in);
+                    return null;
+                }
 
-            public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-                if (FilePath.this.isRemote())
-                    unzip(dir, FilePath.this.read()); // use streams
-                else
+                private static final long serialVersionUID = 1L;
+            });
+        } else {// local -> local or remote->remote
+            target.act(new SecureFileCallable<Void>() {
+
+                public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+                    assert !FilePath.this.isRemote();       // this.channel==target.channel above
                     unzip(dir, reading(new File(FilePath.this.getRemote()))); // shortcut to local file
-                return null;
-            }
-            private static final long serialVersionUID = 1L;
-        });
+                    return null;
+                }
+
+                private static final long serialVersionUID = 1L;
+            });
+        }
     }
 
     /**
