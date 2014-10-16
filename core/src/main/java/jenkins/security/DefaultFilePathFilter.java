@@ -31,15 +31,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Blocks slaves from writing to files on the master by default.
+ * Blocks slaves from writing to files on the master by default (and also provide the kill switch.)
  */
 @Restricted(DoNotUse.class) // impl
 @Extension public class DefaultFilePathFilter extends ChannelConfigurator {
@@ -48,35 +44,17 @@ import java.util.logging.Logger;
      * Escape hatch to disable this check completely.
      */
     public static boolean BYPASS = Boolean.getBoolean(DefaultFilePathFilter.class.getName()+".allow");
-    private static final PrintWriter BYPASS_LOG; // TODO delete before release
-    static {
-        String log = System.getProperty("jenkins.security.DefaultFilePathFilter.log");
-        if (log == null) {
-            BYPASS_LOG = null;
-        } else {
-            try {
-                BYPASS_LOG = new PrintWriter(new OutputStreamWriter(new FileOutputStream(log, true)), true);
-            } catch (FileNotFoundException x) {
-                throw new ExceptionInInitializerError(x);
-            }
-        }
-    }
+
     private static final Logger LOGGER = Logger.getLogger(DefaultFilePathFilter.class.getName());
 
     @Override
     public void onChannelBuilding(ChannelBuilder builder, Object context) {
         new ReflectiveFilePathFilter() {
             protected boolean op(String op, File f) throws SecurityException {
-                if (BYPASS_LOG != null) {
-                    BYPASS_LOG.println(op + " " + f);
-                    return true;
-                }
                 if (BYPASS) {
                     LOGGER.log(Level.FINE, "slave allowed to {0} {1}", new Object[] {op, f});
                     return true;
                 } else {
-                    // TODO allow finer-grained control, for example by regexp (or Ant pattern) of relative path inside $JENKINS_HOME
-                    // will do this by writing other FilePathFilters
                     return false;
                 }
             }
