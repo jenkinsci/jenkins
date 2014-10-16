@@ -3,6 +3,7 @@ package jenkins;
 import hudson.FilePath;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
+import jenkins.security.ChannelConfigurator;
 
 import javax.annotation.CheckForNull;
 import java.io.File;
@@ -15,6 +16,10 @@ import java.io.File;
  * will be consulted to reject the execution, and the access will go through. Returning {@link false}
  * indicates "I don't know". Other {@link FilePathFilter}s get to inspect the access, and they might
  * accept/reject access. And finally, throwing {@link SecurityException} is to reject the access.
+ *
+ * <p>
+ * To insert a custom {@link FilePathFilter} into a connection,
+ * see {@link ChannelConfigurator#onChannelBuilding(ChannelBuilder, Object)}
  *
  * @author Kohsuke Kawaguchi
  * @see FilePath
@@ -115,7 +120,7 @@ public abstract class FilePathFilter {
 
         @Override
         public String toString() {
-            return "None";
+            return "Unrestricted";
         }
     };
 }
