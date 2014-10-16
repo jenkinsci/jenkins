@@ -467,6 +467,7 @@ public final class FilePath implements Serializable {
      * @see #unzipFrom(InputStream)
      */
     public void unzip(final FilePath target) throws IOException, InterruptedException {
+        // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
             target.act(new SecureFileCallable<Void>() {
@@ -502,13 +503,26 @@ public final class FilePath implements Serializable {
      * @see #untarFrom(InputStream, TarCompression)
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
-        target.act(new SecureFileCallable<Void>() {
-            public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-                readFromTar(FilePath.this.getName(),dir,compression.extract(FilePath.this.read()));
-                return null;
-            }
-            private static final long serialVersionUID = 1L;
-        });
+        // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
+        if (this.channel!=target.channel) {// local -> remote or remote->local
+            final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
+            target.act(new SecureFileCallable<Void>() {
+                public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+                    readFromTar(FilePath.this.getName(),dir,compression.extract(in));
+                    return null;
+                }
+
+                private static final long serialVersionUID = 1L;
+            });
+        } else {// local -> local or remote->remote
+            target.act(new SecureFileCallable<Void>() {
+                public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+                    readFromTar(FilePath.this.getName(),dir,compression.extract(FilePath.this.read()));
+                    return null;
+                }
+                private static final long serialVersionUID = 1L;
+            });
+        }
     }
 
     /**
