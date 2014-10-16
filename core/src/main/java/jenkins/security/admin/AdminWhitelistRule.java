@@ -4,9 +4,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.HttpResponses;
-import hudson.util.TextFile;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.stapler.HttpResponse;
@@ -15,7 +13,6 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -29,9 +26,6 @@ import java.util.logging.Logger;
  */
 @Extension
 public class AdminWhitelistRule implements StaplerProxy {
-    @Inject
-    Jenkins jenkins;
-
     /**
      * Ones that we rejected but want to run by admins.
      */
@@ -47,7 +41,11 @@ public class AdminWhitelistRule implements StaplerProxy {
      */
     public final FilePathRuleConfig filePathRules;
 
+    private final Jenkins jenkins;
+
     public AdminWhitelistRule() throws IOException, InterruptedException {
+        this.jenkins = Jenkins.getInstance();
+
         // while this file is not a secret, write access to this file is dangerous,
         // so put this in the better-protected part of $JENKINS_HOME, which is in secrets/
 
