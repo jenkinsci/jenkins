@@ -39,7 +39,13 @@ public class AdminFilePathFilter extends ReflectiveFilePathFilter {
 
         @Override
         public void onChannelBuilding(ChannelBuilder builder, @Nullable Object context) {
-            new AdminFilePathFilter(rule).installTo(builder);
+            new AdminFilePathFilter(rule).installTo(builder,ORDINAL);
         }
     }
+
+    /**
+     * Local user preference should have higher priority than random FilePathFilters that
+     * plugins might provide.
+     */
+    public static final double ORDINAL = 100;
 }

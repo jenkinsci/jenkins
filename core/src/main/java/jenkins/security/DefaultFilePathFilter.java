@@ -27,6 +27,7 @@ package jenkins.security;
 import hudson.Extension;
 import hudson.remoting.ChannelBuilder;
 import jenkins.ReflectiveFilePathFilter;
+import jenkins.security.admin.AdminFilePathFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -58,6 +59,7 @@ import java.util.logging.Logger;
                     return false;
                 }
             }
-        }.installTo(builder);
+        }.installTo(builder, AdminFilePathFilter.ORDINAL+100);
+        // for the bypass switch to be effective, it should have a high priority
     }
 }
