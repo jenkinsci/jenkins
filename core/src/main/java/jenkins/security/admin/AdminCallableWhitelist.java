@@ -1,4 +1,4 @@
-package jenkins.security;
+package jenkins.security.admin;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.Extension;
@@ -9,7 +9,7 @@ import hudson.remoting.Callable;
 import hudson.util.HttpResponses;
 import hudson.util.TextFile;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
+import jenkins.security.CallableWhitelist;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.stapler.HttpResponse;

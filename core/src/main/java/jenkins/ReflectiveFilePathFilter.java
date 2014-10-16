@@ -10,7 +10,10 @@ import java.io.File;
  * @since 1.THU
  */
 public abstract class ReflectiveFilePathFilter extends FilePathFilter {
-
+    /**
+     * @param name
+     *      Name of the operation.
+     */
     protected abstract boolean op(String name, File path) throws SecurityException;
 
     @Override
