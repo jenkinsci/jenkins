@@ -81,6 +81,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Represents a user.
@@ -191,11 +192,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return id;
     }
 
-    public String getUrl() {
+    public @Nonnull String getUrl() {
         return "user/"+Util.rawEncode(idStrategy().keyFor(id));
     }
 
-    public String getSearchUrl() {
+    public @Nonnull String getSearchUrl() {
         return "/user/"+Util.rawEncode(idStrategy().keyFor(id));
     }
 
@@ -203,24 +204,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * The URL of the user page.
      */
     @Exported(visibility=999)
-    public String getAbsoluteUrl() {
+    public @Nonnull String getAbsoluteUrl() {
         return Jenkins.getInstance().getRootUrl()+getUrl();
     }
 
     /**
      * Gets the human readable name of this user.
      * This is configurable by the user.
-     *
-     * @return
-     *      never null.
      */
     @Exported(visibility=999)
-    public String getFullName() {
+    public @Nonnull String getFullName() {
         return fullName;
     }
 
     /**
-     * Sets the human readable name of thie user.
+     * Sets the human readable name of the user.
+     * If the input parameter is empty, the user's ID will be set.
      */
     public void setFullName(String name) {
         if(Util.fixEmptyAndTrim(name)==null)    name=id;
@@ -228,7 +227,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     @Exported
-    public String getDescription() {
+    public @CheckForNull String getDescription() {
         return description;
     }
 
@@ -242,7 +241,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Updates the user object by adding a property.
      */
-    public synchronized void addProperty(UserProperty p) throws IOException {
+    public synchronized void addProperty(@Nonnull UserProperty p) throws IOException {
         UserProperty old = getProperty(p.getClass());
         List<UserProperty> ps = new ArrayList<UserProperty>(properties);
         if(old!=null)
@@ -284,7 +283,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      If this user is not a valid user in the backend {@link SecurityRealm}.
      * @since 1.419
      */
-    public Authentication impersonate() throws UsernameNotFoundException {
+    public @Nonnull Authentication impersonate() throws UsernameNotFoundException {
         try {
             UserDetails u = new ImpersonatingUserDetailsService(
                     Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails).loadUserByUsername(id);
@@ -332,9 +331,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      (by creating a new {@link User} object if none exists.)
      *      If false, this method will return null if {@link User} object
      *      with the given name doesn't exist.
+     * @return Requested user. May be {@code null} if a user does not exist and
+     *      {@code create} is false.
      * @deprecated use {@link User#get(String, boolean, java.util.Map)}
      */
-    public static User get(String idOrFullName, boolean create) {
+    public static @Nullable User get(String idOrFullName, boolean create) {
         return get(idOrFullName, create, Collections.emptyMap());
     }
 
@@ -350,8 +351,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @param context
      *      contextual environment this user idOfFullName was retrieved from,
      *      that can help resolve the user ID
+     * 
+     * @return
+     *      An existing or created user. May be {@code null} if a user does not exist and
+     *      {@code create} is false.
      */
-    public static User get(String idOrFullName, boolean create, Map context) {
+    public static @Nullable User get(String idOrFullName, boolean create, Map context) {
 
         if(idOrFullName==null)
             return null;
@@ -369,14 +374,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         }
         // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
-
+        if (id == null) {
+            throw new IllegalStateException("The user id should be always non-null thanks to DefaultUserCanonicalIdResolver");
+        }
         return getOrCreate(id, idOrFullName, create);
     }
 
     /**
-     * retrieve a user by its ID, and create a new one if requested
+     * Retrieve a user by its ID, and create a new one if requested.
+     * @return
+     *      An existing or created user. May be {@code null} if a user does not exist and
+     *      {@code create} is false.
      */
-    private static User getOrCreate(String id, String fullName, boolean create) {
+    private static @Nullable User getOrCreate(@Nonnull String id, @Nonnull String fullName, boolean create) {
         String idkey = idStrategy().keyFor(id);
 
         byNameLock.readLock().lock();
@@ -468,7 +478,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets all the users.
      */
-    public static Collection<User> getAll() {
+    public static @Nonnull Collection<User> getAll() {
         final IdStrategy strategy = idStrategy();
         if(System.currentTimeMillis() -lastScanned>10000) {
             // occasionally scan the file system to check new users
@@ -555,12 +565,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Returns the user name.
      */
-    public String getDisplayName() {
+    public @Nonnull String getDisplayName() {
         return getFullName();
     }
 
     /** true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause} */
-    private boolean relatedTo(AbstractBuild<?,?> b) {
+    private boolean relatedTo(@Nonnull AbstractBuild<?,?> b) {
         if (b.hasParticipant(this)) {
             return true;
         }
@@ -580,7 +590,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * by the timestamp order.
      */
     @WithBridgeMethods(List.class)
-    public RunList getBuilds() {
+    public @Nonnull RunList getBuilds() {
     	return new RunList<Run<?,?>>(Jenkins.getInstance().getAllItems(Job.class)).filter(new Predicate<Run<?,?>>() {
             @Override public boolean apply(Run<?,?> r) {
                 return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
@@ -592,7 +602,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Gets all the {@link AbstractProject}s that this user has committed to.
      * @since 1.191
      */
-    public Set<AbstractProject<?,?>> getProjects() {
+    public @Nonnull Set<AbstractProject<?,?>> getProjects() {
         Set<AbstractProject<?,?>> r = new HashSet<AbstractProject<?,?>>();
         for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
             if(p.hasParticipant(this))
