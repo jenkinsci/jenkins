@@ -76,7 +76,8 @@ import java.util.logging.Logger;
                     return true;
                 } else {
                     // TODO allow finer-grained control, for example by regexp (or Ant pattern) of relative path inside $JENKINS_HOME
-                    throw new SecurityException("slave may not " + op + " " + f);
+                    // will do this by writing other FilePathFilters
+                    return false;
                 }
             }
             @Override public boolean read(File f) throws SecurityException {
