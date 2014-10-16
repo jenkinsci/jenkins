@@ -17,7 +17,7 @@ import java.util.Collection;
  */
 abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
     @CopyOnWrite
-    private volatile COL parsed;
+    protected volatile COL parsed;
 
     public ConfigFile(File file) {
         super(file);

@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi
  */
-class CallableWhitelistConfig extends ConfigFile<String,Set<String>> {
+class CallableWhitelistConfig extends ConfigDirectory<String,Set<String>> {
     CallableWhitelistConfig(File file) {
         super(file);
     }

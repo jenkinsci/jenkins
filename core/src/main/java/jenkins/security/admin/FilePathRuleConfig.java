@@ -2,6 +2,8 @@ package jenkins.security.admin;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import hudson.Util;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ import java.util.regex.Pattern;
  *
  * @author Kohsuke Kawaguchi
  */
-class FilePathRuleConfig extends ConfigFile<FilePathRule,List<FilePathRule>> {
+class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>> {
     FilePathRuleConfig(File file) {
         super(file);
     }
@@ -32,6 +34,9 @@ class FilePathRuleConfig extends ConfigFile<FilePathRule,List<FilePathRule>> {
     @Override
     protected FilePathRule parse(String line) {
         line = line.trim();
+        line = line.replace("<BUILDDIR>","<JENKIN_HOME>/jobs/.+/builds/<BUILDID>");
+        line = line.replace("<JENKINS_HOME>",Jenkins.getInstance().getRootDir().getPath());
+        line = line.replace("<BUILDID>","[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]");
 
         Matcher m = PARSER.matcher(line);
         if (!m.matches())
