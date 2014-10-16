@@ -196,6 +196,7 @@ import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
@@ -2034,7 +2035,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
-        return new Callable<ClockDifference, IOException>() {
+        return new MasterToSlaveCallable<ClockDifference, IOException>() {
             public ClockDifference call() throws IOException {
                 return new ClockDifference(0);
             }

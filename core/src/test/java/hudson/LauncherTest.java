@@ -26,9 +26,10 @@ package hudson;
 
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
+import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 
@@ -73,7 +74,7 @@ public class LauncherTest extends ChannelTestCase {
         }
     }
 
-    private static final Callable<Object,RuntimeException> NOOP = new Callable<Object,RuntimeException>() {
+    private static final Callable<Object,RuntimeException> NOOP = new MasterToSlaveCallable<Object,RuntimeException>() {
         public Object call() throws RuntimeException {
             return null;
         }
