@@ -65,13 +65,17 @@ public abstract class FilePathFilter {
 
 
     public final void installTo(ChannelBuilder cb) {
+        installTo(cb,FilePathFilterAggregator.DEFAULT_ORDINAL);
+    }
+
+    public final void installTo(ChannelBuilder cb, double d) {
         synchronized (cb) {
             FilePathFilterAggregator filters = (FilePathFilterAggregator) cb.getProperties().get(FilePathFilterAggregator.KEY);
             if (filters==null) {
                 filters = new FilePathFilterAggregator();
                 cb.withProperty(FilePathFilterAggregator.KEY,filters);
             }
-            filters.add(this);
+            filters.add(this,d);
         }
     }
 

@@ -39,7 +39,7 @@ class FilePathFilterAggregator extends FilePathFilter {
     }
 
     public final void add(FilePathFilter f) {
-        add(f,0);
+        add(f, DEFAULT_ORDINAL);
     }
 
     /**
@@ -126,4 +126,6 @@ class FilePathFilterAggregator extends FilePathFilter {
     }
 
     static final ChannelProperty<FilePathFilterAggregator> KEY = new ChannelProperty<FilePathFilterAggregator>(FilePathFilterAggregator.class, "FilePathFilters");
+
+    public static final int DEFAULT_ORDINAL = 0;
 }
