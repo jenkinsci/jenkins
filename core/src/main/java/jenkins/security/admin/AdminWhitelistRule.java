@@ -1,6 +1,5 @@
 package jenkins.security.admin;
 
-import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
@@ -18,9 +17,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -38,10 +35,15 @@ public class AdminWhitelistRule implements StaplerProxy {
      */
     public final CallableRejectionConfig rejected;
 
+    /**
+     * Callables that admins have whitelisted explicitly.
+     */
     public final CallableWhitelistConfig whitelisted;
 
-    @CopyOnWrite
-    private final List<FilePathRule> filePathRules = Collections.emptyList();
+    /**
+     * FilePath access pattern rules specified by the admin
+     */
+    public final FilePathRuleConfig filePathRules;
 
     public AdminWhitelistRule() {
         // while this file is not a secret, write access to this file is dangerous,
@@ -51,30 +53,9 @@ public class AdminWhitelistRule implements StaplerProxy {
         this.rejected = new CallableRejectionConfig(
                 new File(jenkins.getRootDir(),"secrets/rejected-callables.txt"),
                 whitelisted);
+        this.filePathRules = new FilePathRuleConfig(
+                new File(jenkins.getRootDir(),"secrets/filepath-filter.txt"));
     }
-
-    public boolean checkFileAccess(String op, File path) throws SecurityException {
-        String pathStr = null;
-
-        for (FilePathRule rule : filePathRules) {
-            if (rule.op.matches(op)) {
-                if (pathStr==null)
-                    // do not canonicalize nor absolutize, so that JENKINS_HOME that spans across
-                    // multiple volumes via symlinks can look logically like one unit.
-                    pathStr = path.getPath();
-
-                if (rule.path.matcher(pathStr).matches()) {
-                    // exclusion rule is only to bypass later path rules within #filePathRules,
-                    // and we still want other FilePathFilters to whitelist/blacklist access.
-                    // therefore I'm not throwing a SecurityException here
-                    return rule.allow;
-                }
-            }
-        }
-
-        return false;
-    }
-
 
     public boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context) {
         String name = subject.getClass().getName();

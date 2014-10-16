@@ -4,8 +4,10 @@ import hudson.CopyOnWrite;
 import hudson.util.TextFile;
 import jenkins.model.Jenkins;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Collection;
 
 /**
@@ -38,6 +40,22 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
         }
 
         parsed = readOnly(result);
+    }
+
+    /**
+     * Goes through the parser with the given text to make sure it doesn't yield any error.
+     */
+    public void parseTest(String candidate) {
+        try {
+            BufferedReader r = new BufferedReader(new StringReader(candidate));
+            String line;
+            while ((line=r.readLine())!=null) {
+                if (line.startsWith("#")) continue;   // comment
+                parse(line);
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);  // can't happen but just in case
+        }
     }
 
     protected abstract T parse(String line);

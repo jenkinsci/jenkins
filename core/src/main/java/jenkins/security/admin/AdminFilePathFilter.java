@@ -29,7 +29,7 @@ public class AdminFilePathFilter extends ReflectiveFilePathFilter {
 
     @Override
     protected boolean op(String op, File path) throws SecurityException {
-        return rule.checkFileAccess(op,path);
+        return rule.filePathRules.checkFileAccess(op,path);
     }
 
     @Extension
