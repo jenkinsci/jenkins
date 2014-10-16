@@ -26,38 +26,65 @@ class FilePathFilterAggregator extends FilePathFilter {
         all.remove(f);
     }
 
-    public void read(File f) throws SecurityException {
-        for (FilePathFilter filter : all) {
-            filter.read(f);
-        }
+    /**
+     * If no filter cares, what to do?
+     */
+    protected boolean defaultAction() throws SecurityException {
+        return false;
     }
 
     @Override
-    public void mkdirs(File f) throws SecurityException {
+    public boolean read(File f) throws SecurityException {
         for (FilePathFilter filter : all) {
-            filter.mkdirs(f);
+            if (filter.read(f))
+                return true;
         }
+        return defaultAction();
     }
 
-    public void write(File f) throws SecurityException {
+    @Override
+    public boolean mkdirs(File f) throws SecurityException {
         for (FilePathFilter filter : all) {
-            filter.write(f);
+            if (filter.mkdirs(f))
+                return true;
         }
+        return defaultAction();
     }
-    public void create(File f) throws SecurityException {
+
+    @Override
+    public boolean write(File f) throws SecurityException {
         for (FilePathFilter filter : all) {
-            filter.create(f);
+            if (filter.write(f))
+                return true;
         }
+        return defaultAction();
     }
-    public void delete(File f) throws SecurityException {
+
+    @Override
+    public boolean create(File f) throws SecurityException {
         for (FilePathFilter filter : all) {
-            filter.delete(f);
+            if (filter.create(f))
+                return true;
         }
+        return defaultAction();
     }
-    public void stat(File f) throws SecurityException {
+
+    @Override
+    public boolean delete(File f) throws SecurityException {
         for (FilePathFilter filter : all) {
-            filter.stat(f);
+            if (filter.delete(f))
+                return true;
         }
+        return defaultAction();
+    }
+
+    @Override
+    public boolean stat(File f) throws SecurityException {
+        for (FilePathFilter filter : all) {
+            if (filter.stat(f))
+                return true;
+        }
+        return defaultAction();
     }
 
     @Override public String toString() {
