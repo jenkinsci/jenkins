@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-class CallableRejectionConfig extends ConfigFile<Class,Set<Class>> {
+public class CallableRejectionConfig extends ConfigFile<Class,Set<Class>> {
     private final CallableWhitelistConfig whitelist;
 
     CallableRejectionConfig(File file, CallableWhitelistConfig whitelist) {
@@ -68,7 +68,8 @@ class CallableRejectionConfig extends ConfigFile<Class,Set<Class>> {
     public List<RejectedCallable> describe() {
         List<RejectedCallable> l = new ArrayList<RejectedCallable>();
         for (Class c : get()) {
-            l.add(new RejectedCallable(c));
+            if (!whitelist.contains(c.getName()))
+                l.add(new RejectedCallable(c));
         }
         return l;
     }
