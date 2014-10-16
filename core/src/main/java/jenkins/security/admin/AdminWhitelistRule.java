@@ -4,7 +4,9 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.HttpResponses;
+import hudson.util.TextFile;
 import jenkins.model.Jenkins;
+import org.apache.commons.io.FileUtils;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.stapler.HttpResponse;
@@ -45,16 +47,25 @@ public class AdminWhitelistRule implements StaplerProxy {
      */
     public final FilePathRuleConfig filePathRules;
 
-    public AdminWhitelistRule() {
+    public AdminWhitelistRule() throws IOException, InterruptedException {
         // while this file is not a secret, write access to this file is dangerous,
         // so put this in the better-protected part of $JENKINS_HOME, which is in secrets/
+
+        // overwrite 30-default.conf with what we think is the best from the core.
+        // this file shouldn't be touched by anyone. For local customization, use other files in the conf dir.
+        // 0-byte file is used as a signal from the admin to prevent this overwriting
+        File ourRules = new File(jenkins.getRootDir(), "secrets/filepath-filters.d/30-default.conf");
+        if (!ourRules.exists() || ourRules.length()>0) {
+            new FilePath(ourRules).copyFrom(getClass().getResource("filepath-filter.conf"));
+        }
+
         this.whitelisted = new CallableWhitelistConfig(
-                new File(jenkins.getRootDir(),"secrets/whitelisted-callables.txt"));
+                new File(jenkins.getRootDir(),"secrets/whitelisted-callables.d/gui.conf"));
         this.rejected = new CallableRejectionConfig(
                 new File(jenkins.getRootDir(),"secrets/rejected-callables.txt"),
                 whitelisted);
         this.filePathRules = new FilePathRuleConfig(
-                new File(jenkins.getRootDir(),"secrets/filepath-filter.txt"));
+                new File(jenkins.getRootDir(),"secrets/filepath-filters.d/50-local.conf"));
     }
 
     public boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context) {
