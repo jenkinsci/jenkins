@@ -21,7 +21,6 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
 
     public ConfigFile(File file) {
         super(file);
-        load();
     }
 
     protected abstract COL create();
