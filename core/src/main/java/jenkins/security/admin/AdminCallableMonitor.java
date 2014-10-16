@@ -29,12 +29,12 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        return rule.hasRejection();
+        return !rule.rejected.get().isEmpty();
     }
 
     @Override
     public String getDisplayName() {
-        return "Slave \u2192 Master Command Whitelisting";
+        return "Slave \u2192 Master Access Control";
     }
 
     // bind this to URL
