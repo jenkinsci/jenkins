@@ -2,7 +2,8 @@ package jenkins.security.admin;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import hudson.Util;
+import hudson.Functions;
+import hudson.model.Failure;
 import jenkins.model.Jenkins;
 
 import java.io.File;
@@ -34,13 +35,15 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
     @Override
     protected FilePathRule parse(String line) {
         line = line.trim();
+        if (line.isEmpty())     return null;
+
         line = line.replace("<BUILDDIR>","<JENKIN_HOME>/jobs/.+/builds/<BUILDID>");
         line = line.replace("<JENKINS_HOME>",Jenkins.getInstance().getRootDir().getPath());
         line = line.replace("<BUILDID>","[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]");
 
         Matcher m = PARSER.matcher(line);
         if (!m.matches())
-            throw new IllegalArgumentException("Invalid filter rule line: "+line);
+            throw new Failure("Invalid filter rule line: "+line);
 
         try {
             return new FilePathRule(
@@ -48,7 +51,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
                     createOpMatcher(m.group(2)),
                     m.group(1).equals("allow"));
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid filter rule line: "+line,e);
+            throw new Failure("Invalid filter rule line: "+line+"\n"+ Functions.printThrowable(e));
         }
     }
 
