@@ -53,7 +53,7 @@ class FilePathFilterAggregator extends FilePathFilter {
      */
     public void add(FilePathFilter f, double ordinal) {
         all.add(new Entry(f,ordinal));
-        Collections.sort(all);
+        Collections.sort(all,Collections.reverseOrder());
     }
 
     public void remove(FilePathFilter f) {
