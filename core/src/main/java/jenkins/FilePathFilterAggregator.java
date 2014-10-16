@@ -34,7 +34,10 @@ class FilePathFilterAggregator extends FilePathFilter {
             double d = this.ordinal - that.ordinal;
             if (d<0)    return -1;
             if (d>0)    return 1;
-            return 0;
+
+            // to create predictable order that doesn't depend on the insertion order, use class name
+            // to break a tie
+            return this.filter.getClass().getName().compareTo(that.filter.getClass().getName());
         }
     }
 
