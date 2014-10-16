@@ -53,4 +53,8 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
             return HttpResponses.redirectTo("rule/");
         }
     }
+
+    public HttpResponse doIndex() {
+        return HttpResponses.redirectTo("rule/");
+    }
 }
