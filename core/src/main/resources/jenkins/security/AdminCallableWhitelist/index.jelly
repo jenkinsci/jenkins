@@ -45,7 +45,7 @@ THE SOFTWARE.
         The following commands are currently whitelisted for slaves to execute them on the master.
         Type in any fully-qualified class names to white list them:
       </p>
-      <textarea id="whitelist" name="whitelist" style="width:100%">${it.whitelistText}</textarea>
+      <textarea id="whitelist" name="whitelist" style="width:100%">${it.whitelistFile.read()}</textarea>
 
       <j:set var="rejectedList" value="${it.rejectedList}"/>
 
