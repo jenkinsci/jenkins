@@ -26,7 +26,7 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.remoting.ChannelBuilder;
-import jenkins.FilePathFilter;
+import jenkins.ReflectiveFilePathFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -65,8 +65,8 @@ import java.util.logging.Logger;
 
     @Override
     public void onChannelBuilding(ChannelBuilder builder, Object context) {
-        new FilePathFilter() {
-            private boolean op(String op, File f) throws SecurityException {
+        new ReflectiveFilePathFilter() {
+            protected boolean op(String op, File f) throws SecurityException {
                 if (BYPASS_LOG != null) {
                     BYPASS_LOG.println(op + " " + f);
                     return true;
@@ -79,24 +79,6 @@ import java.util.logging.Logger;
                     // will do this by writing other FilePathFilters
                     return false;
                 }
-            }
-            @Override public boolean read(File f) throws SecurityException {
-                return op("read", f);
-            }
-            @Override public boolean write(File f) throws SecurityException {
-                return op("write", f);
-            }
-            @Override public boolean mkdirs(File f) throws SecurityException {
-                return op("mkdirs", f);
-            }
-            @Override public boolean create(File f) throws SecurityException {
-                return op("create", f);
-            }
-            @Override public boolean delete(File f) throws SecurityException {
-                return op("delete", f);
-            }
-            @Override public boolean stat(File f) throws SecurityException {
-                return op("stat", f);
             }
         }.installTo(builder);
     }
