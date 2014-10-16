@@ -24,6 +24,7 @@
 package hudson.security;
 
 import javax.annotation.Nonnull;
+import hudson.remoting.Callable;
 import jenkins.security.NonSerializableSecurityContext;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
@@ -33,6 +34,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.
@@ -141,6 +144,21 @@ public abstract class ACL {
         SecurityContext old = impersonate(auth);
         try {
             body.run();
+        } finally {
+            SecurityContextHolder.setContext(old);
+        }
+    }
+
+    /**
+     * Safer variant of {@link #impersonate(Authentication)} that does not require a finally-block.
+     * @param auth authentication, such as {@link #SYSTEM}
+     * @param body an action to run with this alternate authentication in effect
+     */
+    @Restricted(NoExternalUse.class)
+    public static <V,T extends Exception> V impersonate(Authentication auth, Callable<V,T> body) throws T {
+        SecurityContext old = impersonate(auth);
+        try {
+            return body.call();
         } finally {
             SecurityContextHolder.setContext(old);
         }

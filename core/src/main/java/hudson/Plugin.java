@@ -30,19 +30,19 @@ import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.Descriptor.FormException;
-import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.File;
-import java.net.URL;
 
 import net.sf.json.JSONObject;
 import com.thoughtworks.xstream.XStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Base class of Hudson plugin.
@@ -201,14 +201,12 @@ public abstract class Plugin implements Saveable {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
 
+        if (path.startsWith("/META-INF/") || path.startsWith("/WEB-INF/")) {
+            throw HttpResponses.notFound();
+        }
+
         if(path.length()==0)
             path = "/";
-
-        if(path.indexOf("..")!=-1 || path.length()<1) {
-            // don't serve anything other than files in the sub directory.
-            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
 
         // Stapler routes requests like the "/static/.../foo/bar/zot" to be treated like "/foo/bar/zot"
         // and this is used to serve long expiration header, by using Jenkins.VERSION_HASH as "..."
@@ -219,7 +217,11 @@ public abstract class Plugin implements Saveable {
         long expires = staticLink ? TimeUnit2.DAYS.toMillis(365) : -1;
 
         // use serveLocalizedFile to support automatic locale selection
-        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path),expires);
+        try {
+            rsp.serveLocalizedFile(req, wrapper.baseResourceURL.toURI().resolve(new URI(null, '.' + path, null)).toURL(), expires);
+        } catch (URISyntaxException x) {
+            throw new IOException(x);
+        }
     }
 
 //

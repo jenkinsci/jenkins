@@ -1,3 +1,6 @@
+.copy-button {
+    display: inline-block;
+}
 .copy-button BUTTON {
     background: url('clipboard.png') center center no-repeat;
     width: 20px;
