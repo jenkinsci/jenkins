@@ -77,8 +77,11 @@ public class JSONSignatureValidator {
                 Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
                 Jenkins j = Jenkins.getInstance();
                 for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
-                    if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
+                    if (cert.endsWith("/") || cert.endsWith(".txt"))  {
+                        continue;       // skip directories also any text files that are meant to be documentation
+                    }
                     InputStream in = j.servletContext.getResourceAsStream(cert);
+                    if (in == null) continue; // our test for paths ending in / should prevent this from happening
                     Certificate certificate;
                     try {
                         certificate = cf.generateCertificate(in);
