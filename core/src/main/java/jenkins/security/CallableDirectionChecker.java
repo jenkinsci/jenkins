@@ -29,6 +29,10 @@ import java.util.logging.Logger;
  */
 @Restricted(NoExternalUse.class) // used implicitly via listener
 public class CallableDirectionChecker extends RoleChecker {
+    /**
+     * Context parameter given to {@link ChannelConfigurator#onChannelBuilding(ChannelBuilder, Object)}.
+     */
+    private final Object context;
 
     private static final String BYPASS_PROP = CallableDirectionChecker.class.getName()+".allow";
 
@@ -65,7 +69,9 @@ public class CallableDirectionChecker extends RoleChecker {
         }
     }
 
-    private CallableDirectionChecker() {}
+    private CallableDirectionChecker(Object context) {
+        this.context = context;
+    }
 
     @Override
     public void check(RoleSensitive subject, @Nonnull Collection<Role> expected) throws SecurityException {
@@ -83,30 +89,23 @@ public class CallableDirectionChecker extends RoleChecker {
             return;
         }
 
-        if (isWhitelisted(name)) {
+        if (isWhitelisted(subject,expected)) {
             // this subject is dubious, but we are letting it through as per whitelisting
             LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from slave to master", name);
             return;
         }
 
-        throw new SecurityException("Sending " + name + " from slave to master is prohibited");
+        throw new SecurityException("Sending " + name + " from slave to master is prohibited. See http://jenkins-ci.org/security-144 for more details");
     }
 
     /**
      * Is this subject class name whitelisted?
      */
-    private boolean isWhitelisted(String name) {
-        if (BYPASS) // everything is whitelisted
-            return true;
-
-        if (BYPASS_CALLABLES.containsKey(name))
-            return true;
-
-        if (Boolean.getBoolean(BYPASS_PROP+"."+name)) {
-            BYPASS_CALLABLES.put(name,null);
-            return true;
+    private boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected) {
+        for (CallableWhitelist w : CallableWhitelist.all()) {
+            if (w.isWhitelisted(subject, expected, context))
+                return true;
         }
-
         return false;
     }
 
@@ -124,7 +123,31 @@ public class CallableDirectionChecker extends RoleChecker {
                 builder.withRemoteClassLoadingAllowed(false);
             }
             // In either of the above cases, the check method will return normally, but may log things.
-            builder.withRoleChecker(new CallableDirectionChecker());
+            builder.withRoleChecker(new CallableDirectionChecker(context));
+        }
+    }
+
+    /**
+     * Whitelist rule based on system properties.
+     */
+    @Extension
+    public static class DefaultWhitelist extends CallableWhitelist {
+        @Override
+        public boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context) {
+            final String name = subject.getClass().getName();
+
+            if (BYPASS) // everything is whitelisted
+                return true;
+
+            if (BYPASS_CALLABLES.containsKey(name))
+                return true;
+
+            if (Boolean.getBoolean(BYPASS_PROP+"."+name)) {
+                BYPASS_CALLABLES.put(name,null);
+                return true;
+            }
+
+            return false;
         }
     }
 

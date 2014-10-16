@@ -1,0 +1,82 @@
+<!--
+The MIT License
+
+Copyright (c) 2014, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="${%Whitelist}" permission="${app.ADMINISTER}">
+  <st:include page="sidepanel.jelly" it="${app}"/>
+  <l:main-panel>
+    <h1>${%Slave &#8594; Master Command Whitelisting}</h1>
+
+    <p>
+      Jenkins master is now more strict about what commands its slaves can send to the master.
+      Unfortunately, this prevents some plugins from functioning correctly, as those plugins do not
+      specify which commands are open for slaves to execute and which ones are not.
+      While plugin developers work on updating this,
+      as an administrator, you can mark commands as OK for slaves to execute (aka "whitelisting".)
+    </p><p>
+      Please see <a href="http://jenkins-ci.org/security-144">the discussion of this feature</a> to
+      understand the security implication of this.
+    </p>
+
+    <form method="post" action="submit">
+      <h2>Currently Whitelisted</h2>
+      <p>
+        The following commands are currently whitelisted for slaves to execute them on the master.
+        Type in any fully-qualified class names to white list them:
+      </p>
+      <textarea id="whitelist" name="whitelist" style="width:100%">${it.whitelistFile.read()}</textarea>
+
+      <j:set var="rejectedList" value="${it.rejectedList}"/>
+
+      <j:if test="${!empty(rejectedList)}">
+        <h2>Currently Rejected</h2>
+        <p>
+          Slaves have attempted to use the following functionalities but the plugins that implement them
+          did not specify whether they are usable from slaves or not. Check ones you want to whitelist:
+        </p>
+        <ul style="list-style:none">
+          <j:forEach var="r" items="${it.rejectedList}">
+            <li>
+              <input type="checkbox" name="class:${r.clazz.name}" /> <tt>${r.clazz.name}</tt>
+
+              <st:nbsp/>
+
+              <j:set var="plugin" value="${r.plugin}"/>
+              <j:choose>
+                <j:when test="${plugin==null}">
+                  (from core)
+                </j:when>
+                <j:otherwise>
+                  (from <a href="${plugin.url}">${plugin.longName}</a>)
+                </j:otherwise>
+              </j:choose>
+            </li>
+          </j:forEach>
+        </ul>
+      </j:if>
+      <f:submit value="${%Update}"/>
+    </form>
+  </l:main-panel>
+</l:layout>
+</j:jelly>
