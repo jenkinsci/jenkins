@@ -52,10 +52,12 @@ public class AdminWhitelistRule implements StaplerProxy {
         // overwrite 30-default.conf with what we think is the best from the core.
         // this file shouldn't be touched by anyone. For local customization, use other files in the conf dir.
         // 0-byte file is used as a signal from the admin to prevent this overwriting
-        File ourRules = new File(jenkins.getRootDir(), "secrets/filepath-filters.d/30-default.conf");
-        if (!ourRules.exists() || ourRules.length()>0) {
-            new FilePath(ourRules).copyFrom(getClass().getResource("filepath-filter.conf"));
-        }
+        placeDefaultRule(
+                new File(jenkins.getRootDir(), "secrets/whitelisted-callables.d/default.conf"),
+                "callable.conf");
+        placeDefaultRule(
+                new File(jenkins.getRootDir(), "secrets/filepath-filters.d/30-default.conf"),
+                "filepath-filter.conf");
 
         this.whitelisted = new CallableWhitelistConfig(
                 new File(jenkins.getRootDir(),"secrets/whitelisted-callables.d/gui.conf"));
@@ -64,6 +66,12 @@ public class AdminWhitelistRule implements StaplerProxy {
                 whitelisted);
         this.filePathRules = new FilePathRuleConfig(
                 new File(jenkins.getRootDir(),"secrets/filepath-filters.d/50-local.conf"));
+    }
+
+    private void placeDefaultRule(File f, String resource) throws IOException, InterruptedException {
+        if (!f.exists() || f.length()>0) {
+            new FilePath(f).copyFrom(getClass().getResource(resource));
+        }
     }
 
     public boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context) {
