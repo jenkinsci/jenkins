@@ -34,10 +34,10 @@ THE SOFTWARE.
       specify which commands are open for slaves to execute and which ones are not.
       While plugin developers work on updating this,
       as an administrator, you can mark commands as OK for slaves to execute (aka "whitelisting".)
-    </p><p>
+    </p><div class="warning">
       Please see <a href="http://jenkins-ci.org/security-144">the discussion of this feature</a> to
       understand the security implication of this.
-    </p>
+    </div>
 
     <form method="post" action="submit">
       <h2>Currently Whitelisted Commands</h2>
