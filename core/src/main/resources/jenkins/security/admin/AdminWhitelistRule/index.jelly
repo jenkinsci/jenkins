@@ -75,6 +75,28 @@ THE SOFTWARE.
           </j:forEach>
         </ul>
       </j:if>
+
+      <h2>File Access Rules</h2>
+      <p>
+        The following rules control which part of <tt>$JENKINS_HOME</tt> can be access from slaves:
+      </p>
+      <textarea id="filePathRules" name="filePathRules" style="width:100%">${it.filePathRules.read()}</textarea>
+      <p>
+        Example:
+      </p>
+<pre>
+# deny access to anything in the SkunkWorks folder, regardless of what later rules say
+deny read /jobs/SkunkWorks/.*
+
+# allow any access under builds
+allow all .+/jobs/.+/builds/.*
+
+# allow read-only access under userContent
+allow read,stat /userContent/.*
+
+# GENERAL SYNTAX: (allow|deny) Op,Op,Op,... PathRegExp
+</pre>
+
       <f:submit value="${%Update}"/>
     </form>
   </l:main-panel>

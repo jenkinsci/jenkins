@@ -86,6 +86,10 @@ public class AdminWhitelistRule implements StaplerProxy {
 
         whitelisted.set(whitelist);
 
+        String newRules = Util.fixNull(req.getParameter("filePathRules"));
+        filePathRules.parseTest(newRules);  // test first before writing a potentially broken rules
+        filePathRules.set(newRules);
+
         return HttpResponses.redirectToDot();
     }
 
