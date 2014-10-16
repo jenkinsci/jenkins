@@ -1,9 +1,11 @@
 package jenkins;
 
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.remoting.ChannelProperty;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -16,14 +18,46 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @since 1.THU
  */
 class FilePathFilterAggregator extends FilePathFilter {
-    private final CopyOnWriteArrayList<FilePathFilter> all = new CopyOnWriteArrayList<FilePathFilter>();
+    private final CopyOnWriteArrayList<Entry> all = new CopyOnWriteArrayList<Entry>();
 
-    public void add(FilePathFilter f) {
-        all.add(f);
+    private class Entry implements Comparable<Entry> {
+        final FilePathFilter filter;
+        final double ordinal;
+
+        private Entry(FilePathFilter filter, double ordinal) {
+            this.filter = filter;
+            this.ordinal = ordinal;
+        }
+
+        @Override
+        public int compareTo(Entry that) {
+            double d = this.ordinal - that.ordinal;
+            if (d<0)    return -1;
+            if (d>0)    return 1;
+            return 0;
+        }
+    }
+
+    public final void add(FilePathFilter f) {
+        add(f,0);
+    }
+
+    /**
+     *
+     * @param ordinal
+     *      Crude ordering control among {@link FilePathFilter} ala {@link Extension#ordinal()}.
+     *      A filter with a bigger value will get precedence. Defaults to 0.
+     */
+    public void add(FilePathFilter f, double ordinal) {
+        all.add(new Entry(f,ordinal));
+        Collections.sort(all);
     }
 
     public void remove(FilePathFilter f) {
-        all.remove(f);
+        for (Entry e : all) {
+            if (e.filter==f)
+                all.remove(e);
+        }
     }
 
     /**
@@ -35,8 +69,8 @@ class FilePathFilterAggregator extends FilePathFilter {
 
     @Override
     public boolean read(File f) throws SecurityException {
-        for (FilePathFilter filter : all) {
-            if (filter.read(f))
+        for (Entry e : all) {
+            if (e.filter.read(f))
                 return true;
         }
         return defaultAction();
@@ -44,8 +78,8 @@ class FilePathFilterAggregator extends FilePathFilter {
 
     @Override
     public boolean mkdirs(File f) throws SecurityException {
-        for (FilePathFilter filter : all) {
-            if (filter.mkdirs(f))
+        for (Entry e : all) {
+            if (e.filter.mkdirs(f))
                 return true;
         }
         return defaultAction();
@@ -53,8 +87,8 @@ class FilePathFilterAggregator extends FilePathFilter {
 
     @Override
     public boolean write(File f) throws SecurityException {
-        for (FilePathFilter filter : all) {
-            if (filter.write(f))
+        for (Entry e : all) {
+            if (e.filter.write(f))
                 return true;
         }
         return defaultAction();
@@ -62,8 +96,8 @@ class FilePathFilterAggregator extends FilePathFilter {
 
     @Override
     public boolean create(File f) throws SecurityException {
-        for (FilePathFilter filter : all) {
-            if (filter.create(f))
+        for (Entry e : all) {
+            if (e.filter.create(f))
                 return true;
         }
         return defaultAction();
@@ -71,8 +105,8 @@ class FilePathFilterAggregator extends FilePathFilter {
 
     @Override
     public boolean delete(File f) throws SecurityException {
-        for (FilePathFilter filter : all) {
-            if (filter.delete(f))
+        for (Entry e : all) {
+            if (e.filter.delete(f))
                 return true;
         }
         return defaultAction();
@@ -80,8 +114,8 @@ class FilePathFilterAggregator extends FilePathFilter {
 
     @Override
     public boolean stat(File f) throws SecurityException {
-        for (FilePathFilter filter : all) {
-            if (filter.stat(f))
+        for (Entry e : all) {
+            if (e.filter.stat(f))
                 return true;
         }
         return defaultAction();

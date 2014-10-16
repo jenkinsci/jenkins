@@ -105,7 +105,7 @@ public abstract class FilePathFilter {
         }
 
         @Override
-        public void add(FilePathFilter f) {
+        public void add(FilePathFilter f, double d) {
             // noop because we are immutable
         }
 
