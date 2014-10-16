@@ -900,6 +900,9 @@ public class Util {
             if(ch=='<')
                 buf.append("&lt;");
             else
+            if(ch=='>')
+                buf.append("&gt;");
+            else
             if(ch=='&')
                 buf.append("&amp;");
             else
@@ -929,6 +932,9 @@ public class Util {
             char ch = text.charAt(i);
             if(ch=='<')
                 buf.append("&lt;");
+            else
+            if(ch=='>')
+                buf.append("&gt;");
             else
             if(ch=='&')
                 buf.append("&amp;");

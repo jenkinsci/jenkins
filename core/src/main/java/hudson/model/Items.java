@@ -381,7 +381,7 @@ public class Items {
         FileUtils.moveDirectory(item.getRootDir(), destDir);
         oldParent.remove(item);
         I newItem = destination.add(item, name);
-        newItem.onLoad(destination, name);
+        item.movedTo(destination, newItem, destDir);
         ItemListener.fireLocationChange(newItem, oldFullName);
         return newItem;
     }

@@ -41,6 +41,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import org.acegisecurity.Authentication;
@@ -317,23 +318,29 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         doSetName(oldName);
                 }
 
-                callOnRenamed(newName, parent, oldName);
+                try {
+                    parent.onRenamed(this, oldName, newName);
+                } catch (AbstractMethodError _) {
+                    // ignore
+                }
 
                 ItemListener.fireLocationChange(this, oldFullName);
             }
         }
     }
 
+
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
+     * Notify this item it's been moved to another location, replaced by newItem (might be the same object, but not guaranteed).
+     * This method is executed <em>after</em> the item root directory has been moved to it's new location.
+     * <p>
+     * Derived classes can override this method to add some specific behavior on move, but have to call parent method
+     * so the item is actually setup within it's new parent.
+     *
+     * @see hudson.model.Items#move(AbstractItem, jenkins.model.DirectlyModifiableTopLevelItemGroup)
      */
-    private void callOnRenamed(String newName, ItemGroup parent, String oldName) throws IOException {
-        try {
-            parent.onRenamed(this, oldName, newName);
-        } catch (AbstractMethodError _) {
-            // ignore
-        }
+    public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
+        newItem.onLoad(destination, name);
     }
 
     /**
@@ -576,16 +583,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
             performDelete();
         } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
-        invokeOnDeleted();
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void invokeOnDeleted() throws IOException {
         getParent().onDeleted(AbstractItem.this);
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
 
     /**
@@ -734,4 +733,5 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
 }

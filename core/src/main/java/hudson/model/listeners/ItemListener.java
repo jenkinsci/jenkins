@@ -23,13 +23,16 @@
  */
 package hudson.model.listeners;
 
+import com.google.common.base.Function;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
+import hudson.security.ACL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
@@ -38,6 +41,9 @@ import hudson.model.Items;
  * @author Kohsuke Kawaguchi
  */
 public class ItemListener implements ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(ItemListener.class.getName());
+
     /**
      * Called after a new job is created and added to {@link jenkins.model.Jenkins},
      * before the initial configuration page is provided.
@@ -151,26 +157,61 @@ public class ItemListener implements ExtensionPoint {
         return ExtensionList.lookup(ItemListener.class);
     }
 
-    public static void fireOnCopied(Item src, Item result) {
-        for (ItemListener l : all())
-            l.onCopied(src,result);
+    // TODO JENKINS-21224 generalize this to a method perhaps in ExtensionList and use consistently from all listeners
+    private static void forAll(final /* java.util.function.Consumer<ItemListener> */Function<ItemListener,Void> consumer, boolean asSystem) {
+        Runnable r = new Runnable() {
+            @Override public void run() {
+                for (ItemListener l : all()) {
+                    try {
+                        consumer.apply(l);
+                    } catch (RuntimeException x) {
+                        LOGGER.log(Level.WARNING, "failed to send event to listener of " + l.getClass(), x);
+                    }
+                }
+            }
+        };
+        if (asSystem) {
+            ACL.impersonate(ACL.SYSTEM, r);
+        } else {
+            r.run();
+        }
     }
 
-    public static void fireOnCreated(Item item) {
-        for (ItemListener l : all())
-            l.onCreated(item);
+    public static void fireOnCopied(final Item src, final Item result) {
+        forAll(new Function<ItemListener,Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onCopied(src, result);
+                return null;
+            }
+        }, true);
     }
 
-    public static void fireOnUpdated(Item item) {
-        for (ItemListener l : all())
-            l.onUpdated(item);
+    public static void fireOnCreated(final Item item) {
+        forAll(new Function<ItemListener,Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onCreated(item);
+                return null;
+            }
+        }, true);
+    }
+
+    public static void fireOnUpdated(final Item item) {
+        forAll(new Function<ItemListener,Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onUpdated(item);
+                return null;
+            }
+        }, true);
     }
 
     /** @since 1.548 */
-    public static void fireOnDeleted(Item item) {
-        for (ItemListener l : all()) {
-            l.onDeleted(item);
-        }
+    public static void fireOnDeleted(final Item item) {
+        forAll(new Function<ItemListener,Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onDeleted(item);
+                return null;
+            }
+        }, true);
     }
 
     /**
@@ -179,34 +220,50 @@ public class ItemListener implements ExtensionPoint {
      * @param oldFullName the previous {@link Item#getFullName}
      * @since 1.548
      */
-    public static void fireLocationChange(Item rootItem, String oldFullName) {
+    public static void fireLocationChange(final Item rootItem, final String oldFullName) {
+        ACL.impersonate(ACL.SYSTEM, new Runnable() {
+            @Override public void run() {
+                doFireLocationChange(rootItem, oldFullName);
+            }
+        });
+    }
+    private static void doFireLocationChange(final Item rootItem, final String oldFullName) {
         String prefix = rootItem.getParent().getFullName();
         if (!prefix.isEmpty()) {
             prefix += '/';
         }
-        String newFullName = rootItem.getFullName();
+        final String newFullName = rootItem.getFullName();
         assert newFullName.startsWith(prefix);
         int prefixS = prefix.length();
         if (oldFullName.startsWith(prefix) && oldFullName.indexOf('/', prefixS) == -1) {
-            String oldName = oldFullName.substring(prefixS);
-            String newName = rootItem.getName();
+            final String oldName = oldFullName.substring(prefixS);
+            final String newName = rootItem.getName();
             assert newName.equals(newFullName.substring(prefixS));
-            for (ItemListener l : all()) {
-                l.onRenamed(rootItem, oldName, newName);
+            forAll(new Function<ItemListener, Void>() {
+                @Override public Void apply(ItemListener l) {
+                    l.onRenamed(rootItem, oldName, newName);
+                    return null;
+                }
+            }, false);
+        }
+        forAll(new Function<ItemListener, Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onLocationChanged(rootItem, oldFullName, newFullName);
+                return null;
             }
-        }
-        for (ItemListener l : all()) {
-            l.onLocationChanged(rootItem, oldFullName, newFullName);
-        }
+        }, false);
         if (rootItem instanceof ItemGroup) {
-            for (Item child : Items.getAllItems((ItemGroup) rootItem, Item.class)) {
-                String childNew = child.getFullName();
+            for (final Item child : Items.getAllItems((ItemGroup) rootItem, Item.class)) {
+                final String childNew = child.getFullName();
                 assert childNew.startsWith(newFullName);
                 assert childNew.charAt(newFullName.length()) == '/';
-                String childOld = oldFullName + childNew.substring(newFullName.length());
-                for (ItemListener l : all()) {
-                    l.onLocationChanged(child, childOld, childNew);
-                }
+                final String childOld = oldFullName + childNew.substring(newFullName.length());
+                forAll(new Function<ItemListener, Void>() {
+                    @Override public Void apply(ItemListener l) {
+                        l.onLocationChanged(child, childOld, childNew);
+                        return null;
+                    }
+                }, false);
             }
         }
     }

@@ -143,10 +143,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      */
     public abstract <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins);
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
+    @Deprecated
     public <T> Collection<ExtensionComponent<T>> _find(Class<T> type, Hudson hudson) {
         return find(type, hudson);
     }

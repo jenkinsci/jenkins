@@ -690,9 +690,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Marks the build as disabled.
+     * The method will ignore the disable command if {@link #supportsMakeDisabled()}
+     * returns false. The enable command will be executed in any case.
+     * @param b true - disable, false - enable 
+     * @since 1.585 Do not disable projects if {@link #supportsMakeDisabled()} returns false
      */
     public void makeDisabled(boolean b) throws IOException {
         if(disabled==b)     return; // noop
+        if (b && !supportsMakeDisabled()) return; // do nothing if the disabling is unsupported
         this.disabled = b;
         if(b)
             Jenkins.getInstance().getQueue().cancel(this);
@@ -1266,7 +1271,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         SCMRevisionState baseline = build.getAction(SCMRevisionState.class);
         if (baseline==null) {
             try {
-                baseline = getScm()._calcRevisionsFromBuild(build, launcher, listener);
+                baseline = getScm().calcRevisionsFromBuild(build, launcher, listener);
             } catch (AbstractMethodError e) {
                 baseline = SCMRevisionState.NONE; // pre-1.345 SCM implementations, which doesn't use the baseline in polling
             }
@@ -1789,24 +1794,27 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         super.submit(req,rsp);
         JSONObject json = req.getSubmittedForm();
 
-        makeDisabled(req.getParameter("disable")!=null);
+        makeDisabled(json.optBoolean("disable"));
 
-        jdk = req.getParameter("jdk");
-        if(req.getParameter("hasCustomQuietPeriod")!=null) {
-            quietPeriod = Integer.parseInt(req.getParameter("quiet_period"));
+        jdk = json.optString("jdk", null);
+
+        if(json.optBoolean("hasCustomQuietPeriod", json.has("quiet_period"))) {
+            quietPeriod = json.optInt("quiet_period");
         } else {
             quietPeriod = null;
         }
-        if(req.getParameter("hasCustomScmCheckoutRetryCount")!=null) {
-            scmCheckoutRetryCount = Integer.parseInt(req.getParameter("scmCheckoutRetryCount"));
+
+        if(json.optBoolean("hasCustomScmCheckoutRetryCount", json.has("scmCheckoutRetryCount"))) {
+            scmCheckoutRetryCount = json.optInt("scmCheckoutRetryCount");
         } else {
             scmCheckoutRetryCount = null;
         }
-        blockBuildWhenDownstreamBuilding = req.getParameter("blockBuildWhenDownstreamBuilding")!=null;
-        blockBuildWhenUpstreamBuilding = req.getParameter("blockBuildWhenUpstreamBuilding")!=null;
 
-        if(req.hasParameter("customWorkspace")) {
-            customWorkspace = Util.fixEmptyAndTrim(req.getParameter("customWorkspace.directory"));
+        blockBuildWhenDownstreamBuilding = json.optBoolean("blockBuildWhenDownstreamBuilding");
+        blockBuildWhenUpstreamBuilding = json.optBoolean("blockBuildWhenUpstreamBuilding");
+
+        if(json.optBoolean("hasCustomWorkspace", json.has("customWorkspace"))) {
+            customWorkspace = Util.fixEmptyAndTrim(json.optString("customWorkspace"));
         } else {
             customWorkspace = null;
         }
@@ -1817,17 +1825,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         else
             scmCheckoutStrategy = null;
 
-        
-        if(req.getParameter("hasSlaveAffinity")!=null) {
-            assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
+        if(json.optBoolean("hasSlaveAffinity", json.has("label"))) {
+            assignedNode = Util.fixEmptyAndTrim(json.optString("label"));
         } else {
             assignedNode = null;
         }
         canRoam = assignedNode==null;
 
-        keepDependencies = req.getParameter("keepDependencies") != null;
+        keepDependencies = json.has("keepDependencies");
 
-        concurrentBuild = req.getSubmittedForm().has("concurrentBuild");
+        concurrentBuild = json.optBoolean("concurrentBuild");
 
         authToken = BuildAuthorizationToken.create(req);
 
@@ -2016,8 +2023,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;
         }
 
-        public FormValidation doCheckAssignedLabelString(@AncestorInPath AbstractProject<?,?> project,
-                                                         @QueryParameter String value) {
+        public FormValidation doCheckLabel(@AncestorInPath AbstractProject<?,?> project,
+                                           @QueryParameter String value) {
             if (Util.fixEmpty(value)==null)
                 return FormValidation.ok(); // nothing typed yet
             try {
@@ -2054,7 +2061,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             ));
         }
 
-        public FormValidation doCheckCustomWorkspace(@QueryParameter(value="customWorkspace.directory") String customWorkspace){
+        public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
         	if(Util.fixEmptyAndTrim(customWorkspace)==null)
         		return FormValidation.error(Messages.AbstractProject_CustomWorkspaceEmpty());
         	else
@@ -2074,7 +2081,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return candidates;
         }
 
-        public AutoCompletionCandidates doAutoCompleteAssignedLabelString(@QueryParameter String value) {
+        public AutoCompletionCandidates doAutoCompleteLabel(@QueryParameter String value) {
             AutoCompletionCandidates c = new AutoCompletionCandidates();
             Set<Label> labels = Jenkins.getInstance().getLabels();
             List<String> queries = new AutoCompleteSeeder(value).getSeeds();

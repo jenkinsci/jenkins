@@ -41,60 +41,28 @@ import jenkins.security.QueueItemAuthenticatorConfiguration;
  */
 public class Tasks {
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private static Collection<? extends SubTask> _getSubTasksOf(Task task) {
-        return task.getSubTasks();
-    }
-
     public static Collection<? extends SubTask> getSubTasksOf(Task task) {
         try {
-            return _getSubTasksOf(task);
+            return task.getSubTasks();
         } catch (AbstractMethodError e) {
             return Collections.singleton(task);
         }
     }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private static Object _getSameNodeConstraintOf(SubTask t) {
-        return t.getSameNodeConstraint();
-    }
-
     public static Object getSameNodeConstraintOf(SubTask t) {
         try {
-            return _getSameNodeConstraintOf(t);
+            return t.getSameNodeConstraint();
         } catch (AbstractMethodError e) {
             return null;
         }
     }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    public static Task _getOwnerTaskOf(SubTask t) {
-        return t.getOwnerTask();
-    }
-
     public static @Nonnull Task getOwnerTaskOf(@Nonnull SubTask t) {
         try {
-            return _getOwnerTaskOf(t);
+            return t.getOwnerTask();
         } catch (AbstractMethodError e) {
             return (Task)t;
         }
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private static Authentication _getDefaultAuthenticationOf(Task t) {
-        return t.getDefaultAuthentication();
     }
 
     /**
@@ -104,7 +72,7 @@ public class Tasks {
      */
     public static Authentication getDefaultAuthenticationOf(Task t) {
         try {
-            return _getDefaultAuthenticationOf(t);
+            return t.getDefaultAuthentication();
         } catch (AbstractMethodError e) {
             return ACL.SYSTEM;
         }

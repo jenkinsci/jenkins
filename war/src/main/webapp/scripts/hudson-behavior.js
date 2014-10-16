@@ -1726,8 +1726,8 @@ function createSearchBox(searchURL) {
  * @return null
  *      if the given element shouldn't be a part of the final submission.
  */
-function findFormParent(e,form,static) {
-    static = static || false;
+function findFormParent(e,form,isStatic) {
+    isStatic = isStatic || false;
 
     if (form==null) // caller can pass in null to have this method compute the owning form
         form = findAncestor(e,"FORM");
@@ -1741,12 +1741,12 @@ function findFormParent(e,form,static) {
         else
             e = e.parentNode;
 
-        if(!static && e.getAttribute("field-disabled")!=null)
+        if(!isStatic && e.getAttribute("field-disabled")!=null)
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
         if(name!=null && name.length>0) {
-            if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
+            if(e.tagName=="INPUT" && !isStatic && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
             return e;

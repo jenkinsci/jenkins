@@ -61,7 +61,76 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.582>What's new in 1.582</a> <!--=DATE=--></h3>
+<h3><a name=v1.585>What's new in 1.585</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=bug>
+    Build health computed repeatedly for a single Weather column cell.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25074">issue 25074</a>)
+  <li class=rfe>
+    Missing workspace page should use 404 status code.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10450">issue 10450</a>)
+  <li class=bug>
+    Fixed memory leak occurring on pages producing incremental output with a progress bar.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25081">issue 25081</a>)
+  <li class=bug>
+    Updated SSH Slaves plugin to 1.8.
+  <li class=bug>
+    Due to the reaction, default umask in debian package is set back to 022
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25065">issue 25065</a>)
+  <li class=bug>
+    Greater-than characters are not escaped in HTML outputs like e-mails
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16184">issue 16184</a>)  
+  <li class=bug>
+    Thread starvation from <code>OldDataMonitor</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24763">issue 24763</a>)  
+  <li class=bug>
+    Integer overflow in quiet-down timeout calculation 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24914">issue 24914</a>)  
+  <li class=bug>
+    Don't put session IDs in URLs even when cookies are disabled.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22358">issue 22358</a>)
+  <li class=rfe>
+    Show keep build log reason in tool tips
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1422">pull request 1422</a>)  
+  <li class=bug>
+    Do not disable projects, which do not support such operation (like Matrix configurations)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24340">issue 24340</a>)  
+  <li class=rfe>
+    Improved the scalability of SSH slaves plugin caused by global lock in <tt>SecureRandom</tt>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20108">issue 20108</a>)
+  <li class=bug>
+    Incorporated a fix for "Poodle" (CVE-2014-3566) vulnerability in the HTTPS connector of "java -jar jenkins.war"
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25169">issue 25169</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.584>What's new in 1.584</a> (2014/10/12)</h3>
+<ul class=image>
+  <li class=rfe>
+    Diagnostic thread names are now available while requests are still in filters
+  <li class=rfe>
+    When killing Windows processes, check its critical flag to avoid BSoD
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24453">issue 24453</a>)
+  <li class=bug>
+    When a user could not see a view, but could delete/move/rename jobs contained in it, the view was not properly updated.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22769">issue 22769</a>)
+</ul>
+<h3><a name=v1.583>What's new in 1.583</a> (2014/10/01)</h3>
+<ul class=image>
+  <li class='major bug'>
+    Fixes to multiple security vulnerabilities.
+    (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2014-10-01">security advisory</a>)
+</ul>
+<ul class=image>
+  <li class=rfe>
+    Diagnostic thread names are now available while requests are still in filters
+  <li class=rfe>
+    When killing Windows processes, check its critical flag to avoid BSoD
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24453">issue 24453</a>)
+  <li class=bug>
+    When a user could not see a view, but could delete/move/rename jobs contained in it, the view was not properly updated.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22769">issue 22769</a>)
+</ul>
+<h3><a name=v1.582>What's new in 1.582</a> (2014/09/28)</h3>
 <ul class=image>
   <li class=bug>
     Channel reader thread can end up consuming 100% CPU.
@@ -89,8 +158,10 @@ Upcoming changes</a>
   <li class=bug>
     umask setting on Debian did not work.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1397">pull 1397</a>)
+  <li class=bug>
+    handle job move when buildDir is configured to a custom location.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24825">issue 24825</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.581>What's new in 1.581</a> (2014/09/21)</h3>
 <ul class=image>
   <li class=rfe>

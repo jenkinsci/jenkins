@@ -1921,7 +1921,7 @@ public final class FilePath implements Serializable {
     private void syncIO() throws InterruptedException {
         try {
             if (channel!=null)
-                _syncIO();
+                channel.syncLocalIO();
         } catch (AbstractMethodError e) {
             // legacy slave.jar. Handle this gracefully
             try {
@@ -1938,6 +1938,21 @@ public final class FilePath implements Serializable {
      */
     private void _syncIO() throws InterruptedException {
         channel.syncLocalIO();
+    }
+
+    /**
+     * Remoting interface used for {@link FilePath#copyRecursiveTo(String, FilePath)}.
+     *
+     * TODO: this might not be the most efficient way to do the copy.
+     */
+    interface RemoteCopier {
+        /**
+         * @param fileName
+         *      relative path name to the output file. Path separator must be '/'.
+         */
+        void open(String fileName) throws IOException;
+        void write(byte[] buf, int len) throws IOException;
+        void close() throws IOException;
     }
 
     /**

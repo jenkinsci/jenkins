@@ -340,7 +340,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         List<ExtensionComponent<T>> r = Lists.newArrayList();
         for (ExtensionFinder finder : finders) {
             try {
-                r.addAll(finder._find(type, hudson));
+                r.addAll(finder.find(type, hudson));
             } catch (AbstractMethodError e) {
                 // backward compatibility
                 for (T t : finder.findExtensions(type, hudson))

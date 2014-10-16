@@ -28,5 +28,6 @@ THE SOFTWARE.
   <f:optionalBlock name="blockBuildWhenUpstreamBuilding"
 		   title="${%Block build when upstream project is building}"
 		   help="/help/project-config/block-upstream-building.html"
-		   checked="${it.blockBuildWhenUpstreamBuilding()}" />
+		   checked="${it.blockBuildWhenUpstreamBuilding()}"
+		   inline="true" />
 </j:jelly>
