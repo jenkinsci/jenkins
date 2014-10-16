@@ -93,7 +93,10 @@ public class TextFile {
                         protected String computeNext() {
                             try {
                                 String r = in.readLine();
-                                if (r==null)    in.close();
+                                if (r==null) {
+                                    in.close();
+                                    return endOfData();
+                                }
                                 return r;
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
