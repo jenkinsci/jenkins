@@ -54,8 +54,11 @@ import javax.annotation.Nonnull;
  * Extensible property of {@link Node}.
  *
  * <p>
- * Plugins can contribute this extension point to add additional data or UI actions to {@link Node}.
+ * Plugins can contribute this extension point to add additional data to {@link Node}.
  * {@link NodeProperty}s show up in the configuration screen of a node, and they are persisted with the {@link Node} object.
+ * 
+ * <p>
+ * To add UI action to {@link Node}s, i.e. a new link shown in the left side menu on a node page (<code>./computer/&lt;a node&gt;</code>), see instead {@link hudson.model.TransientComputerActionFactory}.
  *
  *
  * <h2>Views</h2>

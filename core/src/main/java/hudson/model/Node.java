@@ -69,7 +69,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
+ * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type).
  *
  * <p>
  * As a special case, {@link Jenkins} extends from here.
@@ -77,6 +77,10 @@ import org.kohsuke.stapler.export.Exported;
  * <p>
  * Nodes are persisted objects that capture user configurations, and instances get thrown away and recreated whenever
  * the configuration changes. Running state of nodes are captured by {@link Computer}s.
+ * 
+ * <p>
+ * There is no URL binding for {@link Node}. {@link Computer} and {@link TransientComputerActionFactory} must
+ * be used to associate new {@link Action}s to slaves. 
  *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
