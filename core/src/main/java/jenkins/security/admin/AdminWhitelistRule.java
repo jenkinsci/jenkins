@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -60,7 +61,7 @@ public class AdminWhitelistRule implements StaplerProxy {
                 "filepath-filter.conf");
 
         this.whitelisted = new CallableWhitelistConfig(
-                new File(jenkins.getRootDir(),"secrets/whitelisted-callables.d/gui.conf"));
+                new File(jenkins.getRootDir(),"secrets/whitelisted-callables.d/local.conf"));
         this.rejected = new CallableRejectionConfig(
                 new File(jenkins.getRootDir(),"secrets/rejected-callables.txt"),
                 whitelisted);
@@ -69,8 +70,13 @@ public class AdminWhitelistRule implements StaplerProxy {
     }
 
     private void placeDefaultRule(File f, String resource) throws IOException, InterruptedException {
-        if (!f.exists() || f.length()>0) {
+        try {
             new FilePath(f).copyFrom(getClass().getResource(resource));
+        } catch (IOException e) {
+            // we allow admins to create a read-only file here to block overwrite,
+            // so this can fail legitimately
+            if (!f.canWrite())  return;
+            LOGGER.log(Level.WARNING, "Failed to generate "+f,e);
         }
     }
 
