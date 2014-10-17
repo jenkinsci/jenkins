@@ -120,8 +120,8 @@ public class NodeProvisioner {
      */
     private final Label label;
 
-    @GuardedBy("this")
-    private List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
+    @GuardedBy("self")
+    private final List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
 
     private transient volatile long lastSuggestedReview;
 
@@ -147,8 +147,10 @@ public class NodeProvisioner {
      *      Can be empty but never null
      * @since 1.401
      */
-    public synchronized List<PlannedNode> getPendingLaunches() {
-        return new ArrayList<PlannedNode>(pendingLaunches);
+    public List<PlannedNode> getPendingLaunches() {
+        synchronized (pendingLaunches) {
+            return new ArrayList<PlannedNode>(pendingLaunches);
+        }
     }
 
     /**
@@ -173,41 +175,53 @@ public class NodeProvisioner {
      * Launches additional nodes if necessary.
      */
     private synchronized void update() {
-        Jenkins hudson = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.getInstance();
         lastSuggestedReview = System.currentTimeMillis();
 
         // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
         int plannedCapacitySnapshot = 0;
-        for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext();) {
-            PlannedNode f = itr.next();
-            if(f.future.isDone()) {
-                try {
-                    Node node = f.future.get();
-                    for (CloudProvisioningListener cl : CloudProvisioningListener.all())
-                        cl.onComplete(f,node);
+        List<PlannedNode> completedLaunches = new ArrayList<PlannedNode>();
 
-                    hudson.addNode(node);
-                    LOGGER.log(Level.INFO,
-                            "{0} provisioning successfully completed. We have now {1,number,integer} computer(s)",
-                            new Object[]{f.displayName, hudson.getComputers().length});
-                } catch (InterruptedException e) {
-                    throw new AssertionError(e); // since we confirmed that the future is already done
-                } catch (ExecutionException e) {
-                    LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e.getCause());
-                    for (CloudProvisioningListener cl : CloudProvisioningListener.all())
-                        cl.onFailure(f,e.getCause());
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Provisioned slave "+f.displayName+" failed to launch",e);
-                    for (CloudProvisioningListener cl : CloudProvisioningListener.all())
-                        cl.onFailure(f,e);
+        synchronized (pendingLaunches) {
+            for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext(); ) {
+                PlannedNode f = itr.next();
+                if (f.future.isDone()) {
+                    completedLaunches.add(f);
+                    itr.remove();
+                } else {
+                    plannedCapacitySnapshot += f.numExecutors;
+                }
+            }
+        }
+
+        for (PlannedNode f : completedLaunches) {
+            try {
+                Node node = f.future.get();
+                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                    cl.onComplete(f, node);
                 }
 
-                f.spent();
+                jenkins.addNode(node);
+                LOGGER.log(Level.INFO,
+                        "{0} provisioning successfully completed. We have now {1,number,integer} computer(s)",
+                        new Object[]{f.displayName, jenkins.getComputers().length});
+            } catch (InterruptedException e) {
+                throw new AssertionError(e); // since we confirmed that the future is already done
+            } catch (ExecutionException e) {
+                LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch", e.getCause());
+                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                    cl.onFailure(f, e.getCause());
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch", e);
+                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                    cl.onFailure(f, e);
+                }
+            }
 
-                itr.remove();
-            } else
-                plannedCapacitySnapshot += f.numExecutors;
+            f.spent();
         }
+
         float plannedCapacity = plannedCapacitySnapshot;
         plannedCapacitiesEMA.update(plannedCapacity);
 
@@ -432,7 +446,7 @@ public class NodeProvisioner {
                     additionalPlannedCapacity += f.numExecutors;
                 }
             }
-            synchronized (NodeProvisioner.this) {
+            synchronized (pendingLaunches) {
                 pendingLaunches.addAll(plannedNodes);
             }
             if (additionalPlannedCapacity > 0) {
