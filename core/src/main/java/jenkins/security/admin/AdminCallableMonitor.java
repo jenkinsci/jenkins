@@ -27,6 +27,10 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
     @Inject
     AdminWhitelistRule rule;
 
+    public AdminCallableMonitor() {
+        super("slaveToMasterAccessControl");
+    }
+
     @Override
     public boolean isActivated() {
         return !rule.rejected.describe().isEmpty();
