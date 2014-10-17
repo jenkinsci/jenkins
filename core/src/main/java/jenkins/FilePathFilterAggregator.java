@@ -52,8 +52,10 @@ class FilePathFilterAggregator extends FilePathFilter {
      *      A filter with a bigger value will get precedence. Defaults to 0.
      */
     public void add(FilePathFilter f, double ordinal) {
-        all.add(new Entry(f,ordinal));
-        Collections.sort(all,Collections.reverseOrder());
+        Entry e = new Entry(f, ordinal);
+        int i = Collections.binarySearch(all, e, Collections.reverseOrder());
+        if (i>=0)   all.add(i,e);
+        else        all.add(-i-1,e);
     }
 
     public void remove(FilePathFilter f) {
