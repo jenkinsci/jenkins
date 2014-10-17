@@ -294,7 +294,8 @@ public class NodeProvisioner {
     }
 
     /**
-     * Parameter object for {@link NodeProvisioner.Strategy#apply(NodeProvisioner.StrategyState)}
+     * Parameter object for {@link hudson.slaves.NodeProvisioner.Strategy}.
+     * Intentionally non-static as we need to reference some fields in {@link hudson.slaves.NodeProvisioner}
      * @since 1.586
      */
     public final class StrategyState {
@@ -318,6 +319,7 @@ public class NodeProvisioner {
          * The total number of executors for this {@link #label}
          */
         private final int totalSnapshot;
+        private final List<PlannedNode> pendingLaunches;
         /**
          * The additional planned capacity for this {@link #label} and provisioned by previous strategies during the
          * current updating of the {@link NodeProvisioner}.
@@ -340,6 +342,7 @@ public class NodeProvisioner {
             this.idleSnapshot = idleSnapshot;
             this.totalSnapshot = totalSnapshot;
             this.plannedCapacitySnapshot = plannedCapacitySnapshot;
+            pendingLaunches = NodeProvisioner.this.pendingLaunches;
         }
 
         /**
@@ -458,6 +461,9 @@ public class NodeProvisioner {
             }
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("StrategyState{");
