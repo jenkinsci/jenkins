@@ -2,8 +2,10 @@ package jenkins.security.admin;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.util.HttpResponses;
+import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleSensitive;
@@ -13,8 +15,17 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.logging.Level;
@@ -55,10 +66,10 @@ public class AdminWhitelistRule implements StaplerProxy {
         // 0-byte file is used as a signal from the admin to prevent this overwriting
         placeDefaultRule(
                 new File(jenkins.getRootDir(), "secrets/whitelisted-callables.d/default.conf"),
-                "callable.conf");
+                getClass().getResourceAsStream("callable.conf"));
         placeDefaultRule(
                 new File(jenkins.getRootDir(), "secrets/filepath-filters.d/30-default.conf"),
-                "filepath-filter.conf");
+                transformForWindows(getClass().getResourceAsStream("filepath-filter.conf")));
 
         this.whitelisted = new CallableWhitelistConfig(
                 new File(jenkins.getRootDir(),"secrets/whitelisted-callables.d/gui.conf"));
@@ -69,9 +80,26 @@ public class AdminWhitelistRule implements StaplerProxy {
                 new File(jenkins.getRootDir(),"secrets/filepath-filters.d/50-gui.conf"));
     }
 
-    private void placeDefaultRule(File f, String resource) throws IOException, InterruptedException {
+    /**
+     * Transform path for Windows.
+     */
+    private InputStream transformForWindows(InputStream src) throws IOException {
+        BufferedReader r = new BufferedReader(new InputStreamReader(src));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream p = new PrintStream(out);
+        String line;
+        while ((line=r.readLine())!=null) {
+            if (!line.startsWith("#") && Functions.isWindows())
+                line = line.replace("/","\\\\");
+            p.println(line);
+        }
+        p.close();
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    private void placeDefaultRule(File f, InputStream src) throws IOException, InterruptedException {
         try {
-            new FilePath(f).copyFrom(getClass().getResource(resource));
+            new FilePath(f).copyFrom(src);
         } catch (IOException e) {
             // we allow admins to create a read-only file here to block overwrite,
             // so this can fail legitimately
