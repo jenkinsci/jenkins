@@ -61,12 +61,12 @@ public class AdminWhitelistRule implements StaplerProxy {
                 "filepath-filter.conf");
 
         this.whitelisted = new CallableWhitelistConfig(
-                new File(jenkins.getRootDir(),"secrets/whitelisted-callables.d/local.conf"));
+                new File(jenkins.getRootDir(),"secrets/whitelisted-callables.d/gui.conf"));
         this.rejected = new CallableRejectionConfig(
                 new File(jenkins.getRootDir(),"secrets/rejected-callables.txt"),
                 whitelisted);
         this.filePathRules = new FilePathRuleConfig(
-                new File(jenkins.getRootDir(),"secrets/filepath-filters.d/50-local.conf"));
+                new File(jenkins.getRootDir(),"secrets/filepath-filters.d/50-gui.conf"));
     }
 
     private void placeDefaultRule(File f, String resource) throws IOException, InterruptedException {
