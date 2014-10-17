@@ -264,12 +264,15 @@ public class NodeProvisioner {
     public static abstract class Strategy implements ExtensionPoint {
 
         /**
-         * Applies the strategy to the specified state. Any provisioning activities should be recorded by calling
+         * Called by {@link NodeProvisioner#update()} to applies the strategy to the specified state.
+         * Any provisioning activities should be recorded by calling
          * {@link NodeProvisioner.StrategyState#recordPendingLaunches(java.util.Collection)}
+         * This method will be called by a thread that is holding a lock on {@link hudson.slaves.NodeProvisioner}
          * @param state the current state.
          * @return the decision.
          */
         @Nonnull
+        @GuardedBy("NodeProvisioner.this")
         public abstract StrategyDecision apply(@Nonnull StrategyState state);
 
     }
