@@ -12,8 +12,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,12 +37,6 @@ public class CallableDirectionChecker extends RoleChecker {
      * to keep operation.
      */
     public static boolean BYPASS = Boolean.getBoolean(BYPASS_PROP);
-
-    /**
-     * Whitelist of {@link RoleSensitive} class names (mostly {@link Callable} classes) that are allowed
-     * to pass through.
-     */
-    public static ConcurrentMap<String,Void> BYPASS_CALLABLES = new ConcurrentHashMap<String,Void>();
 
     private CallableDirectionChecker(Object context) {
         this.context = context;
@@ -106,20 +98,7 @@ public class CallableDirectionChecker extends RoleChecker {
     public static class DefaultWhitelist extends CallableWhitelist {
         @Override
         public boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context) {
-            final String name = subject.getClass().getName();
-
-            if (BYPASS) // everything is whitelisted
-                return true;
-
-            if (BYPASS_CALLABLES.containsKey(name))
-                return true;
-
-            if (Boolean.getBoolean(BYPASS_PROP+"."+name)) {
-                BYPASS_CALLABLES.put(name,null);
-                return true;
-            }
-
-            return false;
+            return BYPASS;
         }
     }
 
