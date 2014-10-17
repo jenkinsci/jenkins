@@ -266,7 +266,9 @@ public class NodeProvisioner {
         /**
          * This decision indicates that the {@link hudson.slaves.NodeProvisioner.Strategy} has taken sufficient
          * action so as to ensure that the required resources are available, and therefore there is no requirement
-         * to consult the remaining strategies. Only return this decision when you are certain that
+         * to consult the remaining strategies. Only return this decision when you are certain that there is no
+         * need for additional provisioning actions (i.e. you detected an excess workload and have provisioned enough
+         * for that excess workload).
          */
         PROVISIONING_COMPLETED
     }
@@ -280,7 +282,7 @@ public class NodeProvisioner {
         /**
          * Called by {@link NodeProvisioner#update()} to applies the strategy to the specified state.
          * Any provisioning activities should be recorded by calling
-         * {@link NodeProvisioner.StrategyState#recordPendingLaunches(java.util.Collection)}
+         * {@link hudson.slaves.NodeProvisioner.StrategyState#recordPendingLaunches(java.util.Collection)}
          * This method will be called by a thread that is holding a lock on {@link hudson.slaves.NodeProvisioner}
          * @param state the current state.
          * @return the decision.
