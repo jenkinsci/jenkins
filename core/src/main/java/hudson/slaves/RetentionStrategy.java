@@ -75,6 +75,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @param c the computer.
      * @return {@code true} if the computer is accepting tasks
      * @see hudson.model.Computer#isAcceptingTasks()
+     * @since 1.586
      */
     public boolean isAcceptingTasks(T c) {
         return true;

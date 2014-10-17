@@ -202,6 +202,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *
      * @return {@code true} if the node is accepting tasks.
      * @see Computer#isAcceptingTasks()
+     * @since 1.586
      */
     public boolean isAcceptingTasks() {
         return true;
