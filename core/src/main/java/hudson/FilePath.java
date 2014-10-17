@@ -58,6 +58,10 @@ import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
+import jenkins.FilePathFilter;
+import jenkins.MasterToSlaveFileCallable;
+import jenkins.SlaveToMasterFileCallable;
+import jenkins.SoloFilePathFilter;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.VirtualFile;
@@ -114,9 +118,6 @@ import static hudson.FilePath.TarCompression.*;
 import static hudson.Util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import jenkins.FilePathFilter;
-import jenkins.MasterToSlaveFileCallable;
-import jenkins.SlaveToMasterFileCallable;
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
@@ -214,7 +215,8 @@ public final class FilePath implements Serializable {
      *
      * @see #filterNonNull()
      */
-    private transient @Nullable FilePathFilter filter;
+    private transient @Nullable
+    SoloFilePathFilter filter;
 
     /**
      * Creates a {@link FilePath} that represents a path on the given node.
@@ -2558,7 +2560,7 @@ public final class FilePath implements Serializable {
             // we need to make sure the access control takes place.
             // This covers the immediate case of FileCallables taking FilePath into reference closure implicitly,
             // but it also covers more general case of FilePath sent as a return value or argument.
-            this.filter = FilePathFilter.current();
+            this.filter = SoloFilePathFilter.wrap(FilePathFilter.current());
         }
     }
 
@@ -2687,8 +2689,8 @@ public final class FilePath implements Serializable {
 
     public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
 
-    private @Nonnull FilePathFilter filterNonNull() {
-        return filter!=null ? filter : FilePathFilter.EMPTY;
+    private @Nonnull SoloFilePathFilter filterNonNull() {
+        return filter!=null ? filter : UNRESTRICTED;
     }
 
     /**
@@ -2775,4 +2777,6 @@ public final class FilePath implements Serializable {
         filterNonNull().mkdirs(dir);
         return IOUtils.mkdirs(dir);
     }
+
+    private static final SoloFilePathFilter UNRESTRICTED = SoloFilePathFilter.wrap(FilePathFilter.UNRESTRICTED);
 }

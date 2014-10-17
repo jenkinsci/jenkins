@@ -26,7 +26,7 @@ THE SOFTWARE.
 <l:layout title="${%Whitelist}" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" it="${app}"/>
   <l:main-panel>
-    <h1>${%Slave &#8594; Master Command Whitelisting}</h1>
+    <h1>${%Slave &#8594; Master Access Control}</h1>
 
     <p>
       Jenkins master is now more strict about what commands its slaves can send to the master.
@@ -34,29 +34,29 @@ THE SOFTWARE.
       specify which commands are open for slaves to execute and which ones are not.
       While plugin developers work on updating this,
       as an administrator, you can mark commands as OK for slaves to execute (aka "whitelisting".)
-    </p><p>
+    </p><div class="warning">
       Please see <a href="http://jenkins-ci.org/security-144">the discussion of this feature</a> to
       understand the security implication of this.
-    </p>
+    </div>
 
     <form method="post" action="submit">
-      <h2>Currently Whitelisted</h2>
+      <h2>Currently Whitelisted Commands</h2>
       <p>
         The following commands are currently whitelisted for slaves to execute them on the master.
         Type in any fully-qualified class names to white list them:
       </p>
-      <textarea id="whitelist" name="whitelist" style="width:100%">${it.whitelistFile.read()}</textarea>
+      <textarea id="whitelist" name="whitelist" style="width:100%; height:5em">${it.whitelisted.read()}</textarea>
 
-      <j:set var="rejectedList" value="${it.rejectedList}"/>
+      <j:set var="rejectedList" value="${it.rejected.describe()}"/>
 
       <j:if test="${!empty(rejectedList)}">
-        <h2>Currently Rejected</h2>
+        <h2>Currently Rejected Commands</h2>
         <p>
           Slaves have attempted to use the following functionalities but the plugins that implement them
           did not specify whether they are usable from slaves or not. Check ones you want to whitelist:
         </p>
         <ul style="list-style:none">
-          <j:forEach var="r" items="${it.rejectedList}">
+          <j:forEach var="r" items="${rejectedList}">
             <li>
               <input type="checkbox" name="class:${r.clazz.name}" /> <tt>${r.clazz.name}</tt>
 
@@ -75,6 +75,28 @@ THE SOFTWARE.
           </j:forEach>
         </ul>
       </j:if>
+
+      <h2>File Access Rules</h2>
+      <p>
+        The following rules control which part of <tt>$JENKINS_HOME</tt> can be access from slaves:
+      </p>
+      <textarea id="filePathRules" name="filePathRules" style="width:100%; height:5em">${it.filePathRules.read()}</textarea>
+      <p>
+        Example:
+      </p>
+<pre>
+# deny access to anything in the SkunkWorks folder, regardless of what later rules say
+deny read &lt;JENKINS_HOME>/jobs/SkunkWorks/.*
+
+# allow any access under builds
+allow all &lt;BUILDDIR>/.*
+
+# allow read-only access under userContent
+allow read,stat &lt;JENKINS_HOME>/userContent/.*
+
+# GENERAL SYNTAX: (allow|deny) <i>Op,Op,Op,...</i> <i>PathRegExp</i>
+</pre>
+
       <f:submit value="${%Update}"/>
     </form>
   </l:main-panel>
