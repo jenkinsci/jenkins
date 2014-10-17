@@ -29,7 +29,7 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        return !rule.rejected.get().isEmpty();
+        return !rule.rejected.describe().isEmpty();
     }
 
     @Override
