@@ -44,7 +44,9 @@ import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -199,7 +201,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
 		this.manifest = manifest;
-		this.shortName = computeShortName(manifest, archive);
+		this.shortName = computeShortName(manifest, archive.getName());
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
@@ -235,7 +237,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return idx != null && idx.toString().contains(shortName) ? idx : null;
     }
 
-    private String computeShortName(Manifest manifest, File archive) {
+    static String computeShortName(Manifest manifest, String fileName) {
         // use the name captured in the manifest, as often plugins
         // depend on the specific short name in its URLs.
         String n = manifest.getMainAttributes().getValue("Short-Name");
@@ -247,19 +249,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         // otherwise infer from the file name, since older plugins don't have
         // this entry.
-        return getBaseName(archive);
-    }
-
-
-    /**
-     * Gets the "abc" portion from "abc.ext".
-     */
-    static String getBaseName(File archive) {
-        String n = archive.getName();
-        int idx = n.lastIndexOf('.');
-        if(idx>=0)
-            n = n.substring(0,idx);
-        return n;
+        return getBaseName(fileName);
     }
 
     @Exported
@@ -338,6 +328,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Exported
     public String getVersion() {
+        return getVersionOf(manifest);
+    }
+
+    private String getVersionOf(Manifest manifest) {
         String v = manifest.getMainAttributes().getValue("Plugin-Version");
         if(v!=null)      return v;
 
@@ -580,6 +574,22 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             return null;
         }
     }
+
+    /**
+     * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
+     */
+    public boolean isPinningForcingOldVersion() {
+        if (!isPinned())    return false;
+
+        Manifest bundled = Jenkins.getInstance().pluginManager.getBundledPluginManifest(getShortName());
+        if (bundled==null)  return false;
+
+        VersionNumber you = new VersionNumber(getVersionOf(bundled));
+        VersionNumber me = getVersionNumber();
+
+        return me.isOlderThan(you);
+    }
+
 //
 //
 // Action methods
@@ -623,4 +633,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
 
+    /**
+     * Name of the plugin manifest file (to help find where we parse them.)
+     */
+    public static final String MANIFEST_FILENAME = "META-INF/MANIFEST.MF";
 }

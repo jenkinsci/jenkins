@@ -72,6 +72,8 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.apache.commons.io.FilenameUtils.getBaseName;
+
 public class ClassicPluginStrategy implements PluginStrategy {
     private final ClassLoaderReflectionToolkit clt = new ClassLoaderReflectionToolkit();
 
@@ -125,11 +127,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (archive.isDirectory()) {// already expanded
                 expandDir = archive;
             } else {
-                expandDir = new File(archive.getParentFile(), PluginWrapper.getBaseName(archive));
+                expandDir = new File(archive.getParentFile(), getBaseName(archive.getName()));
                 explode(archive, expandDir);
             }
 
-            File manifestFile = new File(expandDir, "META-INF/MANIFEST.MF");
+            File manifestFile = new File(expandDir, PluginWrapper.MANIFEST_FILENAME);
             if (!manifestFile.exists()) {
                 throw new IOException(
                         "Plugin installation failed. No manifest at "
