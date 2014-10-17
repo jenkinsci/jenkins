@@ -24,6 +24,8 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
+import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Launcher.ProcStarter;
 import hudson.Util;
@@ -1318,9 +1320,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * scheduling that does not overlap with being offline.
      *
      * @return {@code true} if the computer is accepting tasks
+     * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
+     * @see hudson.model.Node#isAcceptingTasks()
      */
+    @OverrideMustInvoke(When.ANYTIME)
     public boolean isAcceptingTasks() {
-        return true;
+        final Node node = getNode();
+        return getRetentionStrategy().isAcceptingTasks(this) && (node == null || node.isAcceptingTasks());
     }
 
     /**

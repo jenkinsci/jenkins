@@ -195,6 +195,19 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     protected abstract Computer createComputer();
 
     /**
+     * Returns {@code true} if the node is accepting tasks. Needed to allow slaves programmatic suspension of task
+     * scheduling that does not overlap with being offline. Called by {@link Computer#isAcceptingTasks()}.
+     * This method is distinct from {@link Computer#isAcceptingTasks()} as sometimes the {@link Node} concrete
+     * class may not have control over the {@link hudson.model.Computer} concrete class associated with it.
+     *
+     * @return {@code true} if the node is accepting tasks.
+     * @see Computer#isAcceptingTasks()
+     */
+    public boolean isAcceptingTasks() {
+        return true;
+    }
+
+    /**
      * Let Nodes be aware of the lifecycle of their own {@link Computer}.
      */
     @Extension
