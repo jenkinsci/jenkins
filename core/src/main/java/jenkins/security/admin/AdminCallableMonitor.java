@@ -1,4 +1,4 @@
-package jenkins.security;
+package jenkins.security.admin;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -25,21 +25,21 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
     Jenkins jenkins;
 
     @Inject
-    AdminCallableWhitelist whitelist;
+    AdminWhitelistRule rule;
 
     @Override
     public boolean isActivated() {
-        return whitelist.hasRejection();
+        return !rule.rejected.describe().isEmpty();
     }
 
     @Override
     public String getDisplayName() {
-        return "Slave \u2192 Master Command Whitelisting";
+        return "Slave \u2192 Master Access Control";
     }
 
     // bind this to URL
-    public AdminCallableWhitelist getWhitelist() {
-        return whitelist;
+    public AdminWhitelistRule getRule() {
+        return rule;
     }
 
     /**
@@ -50,7 +50,11 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
             disable(true);
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return HttpResponses.redirectTo("whitelist/");
+            return HttpResponses.redirectTo("rule/");
         }
+    }
+
+    public HttpResponse doIndex() {
+        return HttpResponses.redirectTo("rule/");
     }
 }

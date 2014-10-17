@@ -129,8 +129,10 @@ public class CallableDirectionChecker extends RoleChecker {
 
     /**
      * Whitelist rule based on system properties.
+     *
+     * For the bypass "kill" switch to be effective, it needs to have a high enough priority
      */
-    @Extension
+    @Extension(ordinal=100)
     public static class DefaultWhitelist extends CallableWhitelist {
         @Override
         public boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context) {
