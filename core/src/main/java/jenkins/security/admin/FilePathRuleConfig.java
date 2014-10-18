@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static hudson.Functions.isWindows;
+
 /**
  * Config file that lists {@link FilePathRule} rules.
  *
@@ -37,9 +39,10 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         line = line.trim();
         if (line.isEmpty())     return null;
 
-        line = line.replace("<BUILDDIR>","<JENKINS_HOME>/jobs/.+/builds/<BUILDID>");
-        line = line.replace("<JENKINS_HOME>",Jenkins.getInstance().getRootDir().getPath());
-        line = line.replace("<BUILDID>","[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]");
+        line = line.replace("<BUILDDIR>",path("<JOBDIR>/builds/<BUILDID>"));
+        line = line.replace("<BUILDID>",path("[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]"));
+        line = line.replace("<JOBDIR>",path("<JENKINS_HOME>/jobs/.+"));
+        line = line.replace("<JENKINS_HOME>",path(Jenkins.getInstance().getRootDir().getPath()));
 
         Matcher m = PARSER.matcher(line);
         if (!m.matches())
@@ -53,6 +56,11 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         } catch (Exception e) {
             throw new Failure("Invalid filter rule line: "+line+"\n"+ Functions.printThrowable(e));
         }
+    }
+
+    private String path(String s) {
+        if (isWindows())  return s.replace('/','\\');
+        return s;
     }
 
     private OpMatcher createOpMatcher(String token) {
@@ -73,10 +81,13 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
 
         for (FilePathRule rule : get()) {
             if (rule.op.matches(op)) {
-                if (pathStr==null)
+                if (pathStr==null) {
                     // do not canonicalize nor absolutize, so that JENKINS_HOME that spans across
                     // multiple volumes via symlinks can look logically like one unit.
                     pathStr = path.getPath();
+                    if (isWindows())
+                        pathStr = pathStr.replace('/','\\');
+                }
 
                 if (rule.path.matcher(pathStr).matches()) {
                     // exclusion rule is only to bypass later path rules within #filePathRules,
