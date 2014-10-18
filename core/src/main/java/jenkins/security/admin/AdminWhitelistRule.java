@@ -100,7 +100,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     }
 
     private File getMasterKillSwitchFile() {
-        return new File(jenkins.getRootDir(),"secrets/master-kill-switch");
+        return new File(jenkins.getRootDir(),"secrets/slave-to-master-security-kill-switch");
     }
 
     /**
