@@ -5,8 +5,9 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.util.HttpResponses;
-import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
+import jenkins.util.io.FileBoolean;
+import org.apache.commons.io.FileUtils;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleSensitive;
 import org.kohsuke.stapler.HttpResponse;
@@ -23,13 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Rules of whitelisting for {@link RoleSensitive} objects and {@link FilePath}s.
@@ -55,6 +54,8 @@ public class AdminWhitelistRule implements StaplerProxy {
 
     private final Jenkins jenkins;
 
+    private boolean masterKillSwitch;
+
     public AdminWhitelistRule() throws IOException, InterruptedException {
         this.jenkins = Jenkins.getInstance();
 
@@ -78,6 +79,28 @@ public class AdminWhitelistRule implements StaplerProxy {
                 whitelisted);
         this.filePathRules = new FilePathRuleConfig(
                 new File(jenkins.getRootDir(),"secrets/filepath-filters.d/50-gui.conf"));
+        this.masterKillSwitch = loadMasterKillSwitchFile();
+    }
+
+    /**
+     * Reads the master kill switch.
+     *
+     * Instead of {@link FileBoolean}, we use a text file so that the admin can prevent Jenkins from
+     * writing this to file.
+     */
+    private boolean loadMasterKillSwitchFile() {
+        File f = getMasterKillSwitchFile();
+        try {
+            if (!f.exists())    return false;
+            return Boolean.parseBoolean(FileUtils.readFileToString(f).trim());
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to read "+f, e);
+            return false;
+        }
+    }
+
+    private File getMasterKillSwitchFile() {
+        return new File(jenkins.getRootDir(),"secrets/master-kill-switch");
     }
 
     /**
@@ -104,11 +127,14 @@ public class AdminWhitelistRule implements StaplerProxy {
             // we allow admins to create a read-only file here to block overwrite,
             // so this can fail legitimately
             if (!f.canWrite())  return;
-            LOGGER.log(Level.WARNING, "Failed to generate "+f,e);
+            LOGGER.log(WARNING, "Failed to generate "+f,e);
         }
     }
 
     public boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context) {
+        if (masterKillSwitch)
+            return true;    // master kill switch is on. subsystem deactivated
+
         String name = subject.getClass().getName();
 
         if (whitelisted.contains(name))
@@ -117,6 +143,14 @@ public class AdminWhitelistRule implements StaplerProxy {
         // otherwise record the problem and refuse to execute that
         rejected.report(subject.getClass());
         return false;
+    }
+
+    public boolean checkFileAccess(String op, File f) {
+        // if the master kill switch is off, we allow everything
+        if (masterKillSwitch)
+            return true;
+
+        return filePathRules.checkFileAccess(op, f);
     }
 
     @RequirePOST
@@ -165,6 +199,21 @@ public class AdminWhitelistRule implements StaplerProxy {
     public HttpResponse doApprove(@QueryParameter String value) throws IOException {
         whitelisted.append(value);
         return HttpResponses.ok();
+    }
+
+    public boolean getMasterKillSwitch() {
+        return masterKillSwitch;
+    }
+
+    public void setMasterKillSwitch(boolean state) {
+        try {
+            jenkins.checkPermission(Jenkins.ADMINISTER);
+            FileUtils.writeStringToFile(getMasterKillSwitchFile(),Boolean.toString(state));
+            // treat the file as the canonical source of information in case write fails
+            masterKillSwitch = loadMasterKillSwitchFile();
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to write master kill switch", e);
+        }
     }
 
     /**
