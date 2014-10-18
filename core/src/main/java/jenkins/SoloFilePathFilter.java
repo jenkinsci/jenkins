@@ -43,6 +43,11 @@ public final class SoloFilePathFilter extends FilePathFilter {
     }
 
     @Override
+    public boolean symlink(File f) throws SecurityException {
+        return noFalse("symlink",f,base.write(f));
+    }
+
+    @Override
     public boolean mkdirs(File f) throws SecurityException {
         return noFalse("mkdirs",f,base.mkdirs(f));
     }

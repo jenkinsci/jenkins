@@ -617,7 +617,7 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                writing(f);
+                symlinking(f);
                 Util.createSymlink(f.getParentFile(),target,f.getName(),listener);
                 return null;
             }
@@ -2689,6 +2689,17 @@ public final class FilePath implements Serializable {
         if (!f.exists())
             filter.create(f);
         filter.write(f);
+        return f;
+    }
+
+    /**
+     * Pass through 'f' after ensuring that we can create that symlink.
+     */
+    private File symlinking(File f) {
+        FilePathFilter filter = filterNonNull();
+        if (!f.exists())
+            filter.create(f);
+        filter.symlink(f);
         return f;
     }
 
