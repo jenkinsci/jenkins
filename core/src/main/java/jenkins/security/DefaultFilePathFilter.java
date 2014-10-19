@@ -27,7 +27,7 @@ package jenkins.security;
 import hudson.Extension;
 import hudson.remoting.ChannelBuilder;
 import jenkins.ReflectiveFilePathFilter;
-import jenkins.security.admin.AdminFilePathFilter;
+import jenkins.security.s2m.AdminFilePathFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 

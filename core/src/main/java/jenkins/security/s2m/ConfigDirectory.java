@@ -1,4 +1,4 @@
-package jenkins.security.admin;
+package jenkins.security.s2m;
 
 import java.io.BufferedReader;
 import java.io.File;

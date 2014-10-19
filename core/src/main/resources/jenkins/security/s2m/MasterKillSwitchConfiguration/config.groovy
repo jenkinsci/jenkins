@@ -1,4 +1,4 @@
-package jenkins.security.admin.MasterKillSwitchConfiguration
+package jenkins.security.s2m.MasterKillSwitchConfiguration
 
 def f=namespace(lib.FormTagLib)
 

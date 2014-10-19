@@ -1,4 +1,4 @@
-package jenkins.security.admin;
+package jenkins.security.s2m;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.Util;
