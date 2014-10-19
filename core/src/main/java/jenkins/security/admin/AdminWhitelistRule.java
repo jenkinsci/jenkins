@@ -91,7 +91,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     private boolean loadMasterKillSwitchFile() {
         File f = getMasterKillSwitchFile();
         try {
-            if (!f.exists())    return false;
+            if (!f.exists())    return true;
             return Boolean.parseBoolean(FileUtils.readFileToString(f).trim());
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to read "+f, e);
