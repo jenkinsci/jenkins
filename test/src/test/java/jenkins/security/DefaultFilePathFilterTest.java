@@ -30,9 +30,8 @@ import hudson.remoting.Callable;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collection;
 
-import org.jenkinsci.remoting.Role;
+import jenkins.security.s2m.DefaultFilePathFilter;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Test;
 import static org.junit.Assert.*;
