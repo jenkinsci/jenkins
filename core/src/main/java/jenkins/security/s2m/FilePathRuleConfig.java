@@ -42,7 +42,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         line = line.replace("<BUILDDIR>",path("<JOBDIR>/builds/<BUILDID>"));
         line = line.replace("<BUILDID>",path("[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]"));
         line = line.replace("<JOBDIR>",path("<JENKINS_HOME>/jobs/.+"));
-        line = line.replace("<JENKINS_HOME>",path(Jenkins.getInstance().getRootDir().getPath()));
+        line = line.replace("<JENKINS_HOME>","\\Q"+path(Jenkins.getInstance().getRootDir().getPath())) + "\\E";
 
         Matcher m = PARSER.matcher(line);
         if (!m.matches())
