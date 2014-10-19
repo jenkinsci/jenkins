@@ -41,6 +41,13 @@ public abstract class FilePathFilter {
     public boolean write(File f) throws SecurityException { return false; }
 
     /**
+     * Checks if a symlink can be created at 'f'
+     *
+     * On POSIX, this corresponds to the 'w' permission of the file itself.
+     */
+    public boolean symlink(File f) throws SecurityException { return false; }
+
+    /**
      * Checks if the given directory can be created.
      *
      * On POSIX, this corresponds to the 'w' permission of the parent directory.

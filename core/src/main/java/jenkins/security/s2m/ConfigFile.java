@@ -1,4 +1,4 @@
-package jenkins.security.admin;
+package jenkins.security.s2m;
 
 import hudson.CopyOnWrite;
 import hudson.util.TextFile;

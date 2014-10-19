@@ -1,8 +1,10 @@
-package jenkins.security;
+package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.remoting.Callable;
 import hudson.remoting.ChannelBuilder;
+import jenkins.security.ChannelConfigurator;
+import jenkins.security.Roles;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
@@ -57,7 +59,7 @@ public class CallableDirectionChecker extends RoleChecker {
             return;
         }
 
-        throw new SecurityException("Sending " + name + " from slave to master is prohibited. See http://jenkins-ci.org/security-144 for more details");
+        throw new SecurityException("Sending " + name + " from slave to master is prohibited.\nSee http://jenkins-ci.org/security-144 for more details");
     }
 
     /**

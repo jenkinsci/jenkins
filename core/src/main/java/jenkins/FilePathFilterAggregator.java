@@ -100,6 +100,15 @@ class FilePathFilterAggregator extends FilePathFilter {
     }
 
     @Override
+    public boolean symlink(File f) throws SecurityException {
+        for (Entry e : all) {
+            if (e.filter.symlink(f))
+                return true;
+        }
+        return defaultAction();
+    }
+
+    @Override
     public boolean create(File f) throws SecurityException {
         for (Entry e : all) {
             if (e.filter.create(f))
