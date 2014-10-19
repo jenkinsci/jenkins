@@ -39,10 +39,14 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         line = line.trim();
         if (line.isEmpty())     return null;
 
-        line = line.replace("<BUILDDIR>",path("<JOBDIR>/builds/<BUILDID>"));
-        line = line.replace("<BUILDID>",path("[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]"));
-        line = line.replace("<JOBDIR>",path("<JENKINS_HOME>/jobs/.+"));
-        line = line.replace("<JENKINS_HOME>","\\Q"+path(Jenkins.getInstance().getRootDir().getPath())) + "\\E";
+        line = line.replace("<BUILDDIR>","<JOBDIR>/builds/<BUILDID>");
+        line = line.replace("<BUILDID>","[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]");
+        line = line.replace("<JOBDIR>","<JENKINS_HOME>/jobs/.+");
+        line = line.replace("<JENKINS_HOME>","\\Q"+Jenkins.getInstance().getRootDir().getPath()+"\\E");
+
+        // config file is always /-separated even on Windows, so bring it back to \-separation.
+        // This is done in the context of regex, so it has to be \\, which means in the source code it is \\\\
+        if (isWindows())  line = line.replace("/","\\\\");
 
         Matcher m = PARSER.matcher(line);
         if (!m.matches())
@@ -56,11 +60,6 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         } catch (Exception e) {
             throw new Failure("Invalid filter rule line: "+line+"\n"+ Functions.printThrowable(e));
         }
-    }
-
-    private String path(String s) {
-        if (isWindows())  return s.replace('/','\\');
-        return s;
     }
 
     private OpMatcher createOpMatcher(String token) {
@@ -82,10 +81,10 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         for (FilePathRule rule : get()) {
             if (rule.op.matches(op)) {
                 if (pathStr==null) {
-                    // do not canonicalize nor absolutize, so that JENKINS_HOME that spans across
+                    // do not canonicalize, so that JENKINS_HOME that spans across
                     // multiple volumes via symlinks can look logically like one unit.
                     pathStr = path.getPath();
-                    if (isWindows())
+                    if (isWindows())    // Windows accepts '/' as separator, but for rule matching we want to normalize for consistent comparison
                         pathStr = pathStr.replace('/','\\');
                 }
 
