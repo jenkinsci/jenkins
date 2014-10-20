@@ -1,4 +1,4 @@
-package jenkins.security.admin;
+package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.remoting.ChannelBuilder;
@@ -29,7 +29,7 @@ public class AdminFilePathFilter extends ReflectiveFilePathFilter {
 
     @Override
     protected boolean op(String op, File path) throws SecurityException {
-        return rule.filePathRules.checkFileAccess(op,path);
+        return rule.checkFileAccess(op,path);
     }
 
     @Extension

@@ -28,7 +28,7 @@ public final class SoloFilePathFilter extends FilePathFilter {
 
     private boolean noFalse(String op, File f, boolean b) {
         if (!b)
-            throw new SecurityException("slave may not " + op + " " + f);
+            throw new SecurityException("slave may not " + op + " " + f+"\nSee http://jenkins-ci.org/security-144 for more details");
         return true;
     }
 
@@ -40,6 +40,11 @@ public final class SoloFilePathFilter extends FilePathFilter {
     @Override
     public boolean write(File f) throws SecurityException {
         return noFalse("write",f,base.write(f));
+    }
+
+    @Override
+    public boolean symlink(File f) throws SecurityException {
+        return noFalse("symlink",f,base.write(f));
     }
 
     @Override

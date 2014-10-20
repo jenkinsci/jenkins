@@ -1,4 +1,4 @@
-package jenkins.security.admin;
+package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -26,6 +26,10 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
 
     @Inject
     AdminWhitelistRule rule;
+
+    public AdminCallableMonitor() {
+        super("slaveToMasterAccessControl");
+    }
 
     @Override
     public boolean isActivated() {

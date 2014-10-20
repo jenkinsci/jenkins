@@ -27,6 +27,11 @@ public abstract class ReflectiveFilePathFilter extends FilePathFilter {
     }
 
     @Override
+    public boolean symlink(File f) throws SecurityException {
+        return op("symlink",f);
+    }
+
+    @Override
     public boolean mkdirs(File f) throws SecurityException {
         return op("mkdirs", f);
     }

@@ -30,18 +30,31 @@ import hudson.remoting.Callable;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collection;
 
-import org.jenkinsci.remoting.Role;
+import jenkins.security.s2m.AdminWhitelistRule;
+import jenkins.security.s2m.DefaultFilePathFilter;
+import jenkins.security.s2m.MasterKillSwitchConfiguration;
 import org.jenkinsci.remoting.RoleChecker;
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import javax.inject.Inject;
+
 public class DefaultFilePathFilterTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
+
+    @Inject
+    AdminWhitelistRule rule;
+
+    @Before
+    public void setUp() {
+        r.jenkins.getInjector().injectMembers(this);
+        rule.setMasterKillSwitch(false);
+    }
 
     @Test public void remotePath() throws Exception {
         Slave s = r.createOnlineSlave();

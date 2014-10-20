@@ -34,10 +34,18 @@ THE SOFTWARE.
       specify which commands are open for slaves to execute and which ones are not.
       While plugin developers work on updating this,
       as an administrator, you can mark commands as OK for slaves to execute (aka "whitelisting".)
-    </p><div class="warning">
+    </p>
+    <div class="warning" style="margin:1em">
       Please see <a href="http://jenkins-ci.org/security-144">the discussion of this feature</a> to
       understand the security implication of this.
     </div>
+    <j:if test="${it.masterKillSwitch}">
+      <div class="warning" style="margin:1em">
+        The slave &#8594; master access control subsystem is currently disabled.
+        This is unsafe if you have slaves from other less trusted people.
+        You can put it back on from <a href="${rootURL}/configureSecurity">Global Security Configuration UI</a>
+      </div>
+    </j:if>
 
     <form method="post" action="submit">
       <h2>Currently Whitelisted Commands</h2>
@@ -97,7 +105,9 @@ allow read,stat &lt;JENKINS_HOME>/userContent/.*
 # GENERAL SYNTAX: (allow|deny) <i>Op,Op,Op,...</i> <i>PathRegExp</i>
 </pre>
 
-      <f:submit value="${%Update}"/>
+      <div style="margin:1em">
+        <f:submit value="${%Update}"/>
+      </div>
     </form>
   </l:main-panel>
 </l:layout>

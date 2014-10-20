@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.remoting.ChannelBuilder;
 import jenkins.ReflectiveFilePathFilter;
-import jenkins.security.admin.AdminFilePathFilter;
+import jenkins.security.ChannelConfigurator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 

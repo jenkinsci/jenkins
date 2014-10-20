@@ -1,8 +1,7 @@
-package jenkins.security.admin;
+package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.remoting.Callable;
-import jenkins.security.CallableWhitelist;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleSensitive;
 

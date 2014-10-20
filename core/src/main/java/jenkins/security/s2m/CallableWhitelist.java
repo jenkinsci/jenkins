@@ -1,10 +1,11 @@
-package jenkins.security;
+package jenkins.security.s2m;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Callable;
 import hudson.remoting.ChannelBuilder;
 import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
 import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;

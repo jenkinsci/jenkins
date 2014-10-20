@@ -1,4 +1,4 @@
-package jenkins.security.admin;
+package jenkins.security.s2m;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static hudson.Functions.isWindows;
 
 /**
  * Config file that lists {@link FilePathRule} rules.
@@ -37,9 +39,14 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         line = line.trim();
         if (line.isEmpty())     return null;
 
-        line = line.replace("<BUILDDIR>","<JENKINS_HOME>/jobs/.+/builds/<BUILDID>");
-        line = line.replace("<JENKINS_HOME>",Jenkins.getInstance().getRootDir().getPath());
+        line = line.replace("<BUILDDIR>","<JOBDIR>/builds/<BUILDID>");
         line = line.replace("<BUILDID>","[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]");
+        line = line.replace("<JOBDIR>","<JENKINS_HOME>/jobs/.+");
+        line = line.replace("<JENKINS_HOME>","\\Q"+Jenkins.getInstance().getRootDir().getPath()+"\\E");
+
+        // config file is always /-separated even on Windows, so bring it back to \-separation.
+        // This is done in the context of regex, so it has to be \\, which means in the source code it is \\\\
+        if (isWindows())  line = line.replace("/","\\\\");
 
         Matcher m = PARSER.matcher(line);
         if (!m.matches())
@@ -73,10 +80,13 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
 
         for (FilePathRule rule : get()) {
             if (rule.op.matches(op)) {
-                if (pathStr==null)
-                    // do not canonicalize nor absolutize, so that JENKINS_HOME that spans across
+                if (pathStr==null) {
+                    // do not canonicalize, so that JENKINS_HOME that spans across
                     // multiple volumes via symlinks can look logically like one unit.
                     pathStr = path.getPath();
+                    if (isWindows())    // Windows accepts '/' as separator, but for rule matching we want to normalize for consistent comparison
+                        pathStr = pathStr.replace('/','\\');
+                }
 
                 if (rule.path.matcher(pathStr).matches()) {
                     // exclusion rule is only to bypass later path rules within #filePathRules,
