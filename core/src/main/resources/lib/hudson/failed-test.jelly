@@ -91,7 +91,7 @@ THE SOFTWARE.
     <l:icon class="icon-document-delete icon-sm"/>
   </a>
   <st:nbsp/>
-  <a href="${url}" class="model-link inside"><st:out value="${result.fullDisplayName}"/></a>
+  <a href="${url}" class="model-link inside"><st:out value="${result.displayName}"/></a>
   <j:forEach var="badge" items="${result.testActions}">
     <st:include it="${badge}" page="badge.jelly" optional="true"/>
   </j:forEach>
