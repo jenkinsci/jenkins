@@ -407,6 +407,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Gets the textual representation of the assigned label as it was entered by the user.
      */
+    @Exported(name="labelExpression")
     public String getAssignedLabelString() {
         if (canRoam || assignedNode==null)    return null;
         try {
