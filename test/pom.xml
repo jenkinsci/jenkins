@@ -101,7 +101,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.0</version>
+      <version>1.2-beta-3</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
