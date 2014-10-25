@@ -137,7 +137,7 @@ public abstract class Cause {
     }
 
     /**
-     * A build is triggered by the completion of another build (AKA upstream build.)
+     * A build is triggered by another build (AKA upstream build.)
      */
     public static class UpstreamCause extends Cause {
 
