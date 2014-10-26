@@ -95,7 +95,7 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <slf4jVersion>1.7.4</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
-    <maven-plugin.version>2.0.5-SNAPSHOT</maven-plugin.version> <!-- TODO SECURITY-144 -->
+    <maven-plugin.version>2.0</maven-plugin.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
     <java.level>6</java.level>
