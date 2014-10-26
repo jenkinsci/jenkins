@@ -1764,7 +1764,7 @@ public final class FilePath implements Serializable {
     /**
      * Reads this file from the specific offset.
      */
-    public InputStream readFromOffset(final long offset) throws IOException {
+    public InputStream readFromOffset(final long offset) throws IOException, InterruptedException {
         if(channel ==null) {
             final RandomAccessFile raf = new RandomAccessFile(new File(remote), "r");
             try {
@@ -1801,14 +1801,14 @@ public final class FilePath implements Serializable {
         }
 
         final Pipe p = Pipe.createRemoteToLocal();
-        channel.callAsync(new Callable<Void, IOException>() {
+        actAsync(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
 
-            public Void call() throws IOException {
+            public Void invoke(File f, VirtualChannel channel) throws IOException {
                 final OutputStream out = new java.util.zip.GZIPOutputStream(p.getOut(), 8192);
                 RandomAccessFile raf = null;
                 try {
-                    raf = new RandomAccessFile(new File(remote), "r");
+                    raf = new RandomAccessFile(reading(f), "r");
                     raf.seek(offset);
                     byte[] buf = new byte[8192];
                     int len;
