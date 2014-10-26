@@ -140,7 +140,7 @@ public class FileParameterValue extends ParameterValue {
         return new BuildWrapper() {
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            	if (!StringUtils.isEmpty(location)) {
+            	if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
             	    listener.getLogger().println("Copying file to "+location);
                     FilePath locationFilePath = build.getWorkspace().child(location);
                     locationFilePath.getParent().mkdirs();
@@ -162,7 +162,8 @@ public class FileParameterValue extends ParameterValue {
 	}
 
 	/**
-	 * In practice this will always be false, since location should be unique.
+	 * Compares file parameters (existing files will be considered as different).
+	 * @since 1.586 Function has been modified in order to avoid <a href="https://issues.jenkins-ci.org/browse/JENKINS-19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -173,12 +174,13 @@ public class FileParameterValue extends ParameterValue {
 		if (getClass() != obj.getClass())
 			return false;
 		FileParameterValue other = (FileParameterValue) obj;
-		if (location == null) {
-			if (other.location != null)
-				return false;
-		} else if (!location.equals(other.location))
-			return false;
-		return true;
+		
+		if (location == null && other.location == null) 
+			return true; // Consider null parameters as equal
+
+		//TODO: check fingerprints or checksums to improve the behavior (JENKINS-25211)
+		// Return false even if files are equal
+		return false;
 	}
 
     @Override

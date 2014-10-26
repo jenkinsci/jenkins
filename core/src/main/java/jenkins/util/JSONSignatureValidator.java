@@ -13,11 +13,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.security.DigestOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.Signature;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
@@ -74,18 +77,60 @@ public class JSONSignatureValidator {
                 Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
                 Jenkins j = Jenkins.getInstance();
                 for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
-                    if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
-                    anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(j.servletContext.getResourceAsStream(cert)),null));
+                    if (cert.endsWith("/") || cert.endsWith(".txt"))  {
+                        continue;       // skip directories also any text files that are meant to be documentation
+                    }
+                    InputStream in = j.servletContext.getResourceAsStream(cert);
+                    if (in == null) continue; // our test for paths ending in / should prevent this from happening
+                    Certificate certificate;
+                    try {
+                        certificate = cf.generateCertificate(in);
+                    } catch (CertificateException e) {
+                        LOGGER.log(Level.WARNING, String.format("Webapp resources in /WEB-INF/update-center-rootCAs are "
+                                        + "expected to be either certificates or .txt files documenting the "
+                                        + "certificates, but %s did not parse as a certificate. Skipping this "
+                                        + "resource for now.",
+                                cert), e);
+                        continue;
+                    } finally {
+                        in.close();
+                    }
+                    try {
+                        anchors.add(new TrustAnchor((X509Certificate) certificate, null));
+                    } catch (IllegalArgumentException e) {
+                        LOGGER.log(Level.WARNING,
+                                String.format("The name constraints in the certificate resource %s could not be "
+                                                + "decoded. Skipping this resource for now.",
+                                cert), e);
+                    }
                 }
                 File[] cas = new File(j.root, "update-center-rootCAs").listFiles();
                 if (cas!=null) {
                     for (File cert : cas) {
-                        if (cert.getName().endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
+                        if (cert.isDirectory() || cert.getName().endsWith(".txt"))  {
+                            continue;       // skip directories also any text files that are meant to be documentation
+                        }
                         FileInputStream in = new FileInputStream(cert);
+                        Certificate certificate;
                         try {
-                            anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(in),null));
+                            certificate = cf.generateCertificate(in);
+                        } catch (CertificateException e) {
+                            LOGGER.log(Level.WARNING, String.format("Files in %s are expected to be either "
+                                            + "certificates or .txt files documenting the certificates, "
+                                            + "but %s did not parse as a certificate. Skipping this file for now.",
+                                    cert.getParentFile().getAbsolutePath(),
+                                    cert.getAbsolutePath()), e);
+                            continue;
                         } finally {
                             in.close();
+                        }
+                        try {
+                            anchors.add(new TrustAnchor((X509Certificate) certificate, null));
+                        } catch (IllegalArgumentException e) {
+                            LOGGER.log(Level.WARNING,
+                                    String.format("The name constraints in the certificate file %s could not be "
+                                                    + "decoded. Skipping this file for now.",
+                                    cert.getAbsolutePath()), e);
                         }
                     }
                 }

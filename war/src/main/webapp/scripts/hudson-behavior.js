@@ -167,12 +167,7 @@ var FormChecker = {
         this.sendRequest(next.url, {
             method : next.method,
             onComplete : function(x) {
-                var i;
-                next.target.innerHTML = x.status==200 ? x.responseText
-                    : '<a href="" onclick="document.getElementById(\'valerr' + (i=iota++)
-                    + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
-                    + i + '" style="display:none">' + x.responseText + '</div>';
-                Behaviour.applySubtree(next.target);
+                applyErrorMessage(next.target, x);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
                 layoutUpdateCallback.call();
@@ -2194,12 +2189,7 @@ function validateButton(checkUrl,paramList,button) {
       parameters: parameters,
       onComplete: function(rsp) {
           spinner.style.display="none";
-          var i;
-          target.innerHTML = rsp.status==200 ? rsp.responseText
-                : '<a href="" onclick="document.getElementById(\'valerr' + (i=iota++)
-                + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
-                + i + '" style="display:none">' + rsp.responseText + '</div>';
-          Behaviour.applySubtree(target);
+          applyErrorMessage(target, rsp);
           layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
           try {
@@ -2209,6 +2199,26 @@ function validateButton(checkUrl,paramList,button) {
           }
       }
   });
+}
+
+function applyErrorMessage(elt, rsp) {
+    if (rsp.status == 200) {
+        elt.innerHTML = rsp.responseText;
+    } else {
+        var id = 'valerr' + (iota++);
+        elt.innerHTML = '<a href="" onclick="document.getElementById(\'' + id
+        + '\').style.display=\'block\';return false">ERROR</a><div id="'
+        + id + '" style="display:none">' + rsp.responseText + '</div>';
+        var error = document.getElementById('error-description'); // cf. oops.jelly
+        if (error) {
+            var div = document.getElementById(id);
+            while (div.firstChild) {
+                div.removeChild(div.firstChild);
+            }
+            div.appendChild(error);
+        }
+    }
+    Behaviour.applySubtree(elt);
 }
 
 // create a combobox.

@@ -28,6 +28,11 @@ THE SOFTWARE.
     <st:attribute name="it" type="hudson.model.BallColor">
       Color of the ball or null to skip drawing.
     </st:attribute>
+    <st:attribute name="iconSizeClass">
+      Specifies the size of the icon. If unspecified, it inherits from
+      the nearest setting in the ancestor call tree.
+      Possible values are "icon-sm" (16x16), "icon-md" (24x24), "icon-lg" (32x32), "icon-xlg" (48x48)
+    </st:attribute>
     <st:attribute name="style">
       Additional CSS styles to apply.
     </st:attribute>
@@ -37,6 +42,10 @@ THE SOFTWARE.
       <j:set var="iconClassName" value="${it.iconClassName}"/>
       <j:if test="${iconClassName == null}">
         <j:set var="iconClassName" value="${icons.toNormalizedIconNameClass(it.image)}"/>
+      </j:if>
+      <!-- convert legacy @iconSize specification to @iconSizeClass -->
+      <j:if test="${iconSizeClass==null and attrs.iconSize!=null}">
+        <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(attrs.iconSize)}"/>
       </j:if>
 
       <j:choose>

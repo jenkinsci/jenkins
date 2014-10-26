@@ -61,7 +61,24 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.585>What's new in 1.585</a> <!--=DATE=--></h3>
+<h3><a name=v1.586>What's new in 1.586</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class=rfe>
+    Bumping up JNA to 4.10. This is potentially a breaking change for plugins that depend on JNA 3.x
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24521">issue 24521</a>)
+  <li class=bug>
+    Prevent empty file creation if file parameter is left empty.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-3539">issue 3539</a>)
+  <li class=bug>
+    Servlet containers may refuse to let us set <a href="https://www.owasp.org/index.php/SecureFlag">secure cookie flag</a>.
+    Deal with it gracefully.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25019">issue 25019</a>)
+  <li class=bug>
+    Existing <code>FileParameter</code>s should be handled as different values to avoid merging of queued builds
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19017">issue 19017</a>)  
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.585>What's new in 1.585</a> (2014/10/19)</h3>
 <ul class=image>
   <li class=bug>
     Build health computed repeatedly for a single Weather column cell.
@@ -102,7 +119,6 @@ Upcoming changes</a>
     Incorporated a fix for "Poodle" (CVE-2014-3566) vulnerability in the HTTPS connector of "java -jar jenkins.war"
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25169">issue 25169</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.584>What's new in 1.584</a> (2014/10/12)</h3>
 <ul class=image>
   <li class=rfe>
@@ -113,22 +129,19 @@ Upcoming changes</a>
   <li class=bug>
     When a user could not see a view, but could delete/move/rename jobs contained in it, the view was not properly updated.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22769">issue 22769</a>)
+  <li class=bug>
+    Use POST for cancel quiet down link.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23020">issue 23020</a>,
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-23942">issue 23942</a>)
+  <li class=bug>
+    Do not consider port in use error to be a successful start of Jenkins on Debian.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24966">issue 24966</a>)
 </ul>
 <h3><a name=v1.583>What's new in 1.583</a> (2014/10/01)</h3>
 <ul class=image>
   <li class='major bug'>
     Fixes to multiple security vulnerabilities.
     (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2014-10-01">security advisory</a>)
-</ul>
-<ul class=image>
-  <li class=rfe>
-    Diagnostic thread names are now available while requests are still in filters
-  <li class=rfe>
-    When killing Windows processes, check its critical flag to avoid BSoD
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24453">issue 24453</a>)
-  <li class=bug>
-    When a user could not see a view, but could delete/move/rename jobs contained in it, the view was not properly updated.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22769">issue 22769</a>)
 </ul>
 <h3><a name=v1.582>What's new in 1.582</a> (2014/09/28)</h3>
 <ul class=image>

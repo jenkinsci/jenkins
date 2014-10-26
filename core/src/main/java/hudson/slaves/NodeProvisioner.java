@@ -182,7 +182,7 @@ public class NodeProvisioner {
                         cl.onComplete(f,node);
 
                     hudson.addNode(node);
-                    LOGGER.info(f.displayName+" provisioningE successfully completed. We have now "+hudson.getComputers().length+" computer(s)");
+                    LOGGER.info(f.displayName+" provisioning successfully completed. We have now "+hudson.getComputers().length+" computer(s)");
                 } catch (InterruptedException e) {
                     throw new AssertionError(e); // since we confirmed that the future is already done
                 } catch (ExecutionException e) {

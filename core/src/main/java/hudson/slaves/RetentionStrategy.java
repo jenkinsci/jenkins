@@ -68,6 +68,20 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
     }
 
     /**
+     * Returns {@code true} if the computer is accepting tasks. Needed to allow retention strategies programmatic
+     * suspension of task scheduling that in preparation for going offline. Called by
+     * {@link hudson.model.Computer#isAcceptingTasks()}
+     *
+     * @param c the computer.
+     * @return {@code true} if the computer is accepting tasks
+     * @see hudson.model.Computer#isAcceptingTasks()
+     * @since 1.586
+     */
+    public boolean isAcceptingTasks(T c) {
+        return true;
+    }
+
+    /**
      * Called when a new {@link Computer} object is introduced (such as when Hudson started, or when
      * a new slave is added.)
      *

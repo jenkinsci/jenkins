@@ -23,6 +23,8 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
+import edu.umd.cs.findbugs.annotations.When;
 import hudson.AbortException;
 import hudson.remoting.ChannelBuilder;
 import hudson.util.IOUtils;
@@ -141,8 +143,11 @@ public class SlaveComputer extends Computer {
      * {@inheritDoc}
      */
     @Override
+    @OverrideMustInvoke(When.ANYTIME)
     public boolean isAcceptingTasks() {
-        return acceptingTasks;
+        // our boolean flag is an override on any additional programmatic reasons why this slave might not be
+        // accepting tasks.
+        return acceptingTasks && super.isAcceptingTasks();
     }
 
     /**
@@ -153,8 +158,11 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Allows a {@linkplain hudson.slaves.ComputerLauncher} or a {@linkplain hudson.slaves.RetentionStrategy} to
-     * suspend tasks being accepted by the slave computer.
+     * Allows suspension of tasks being accepted by the slave computer. While this could be called by a
+     * {@linkplain hudson.slaves.ComputerLauncher} or a {@linkplain hudson.slaves.RetentionStrategy}, such usage
+     * can result in fights between multiple actors calling setting differential values. A better approach
+     * is to override {@link hudson.slaves.RetentionStrategy#isAcceptingTasks(hudson.model.Computer)} if the
+     * {@link hudson.slaves.RetentionStrategy} needs to control availability.
      *
      * @param acceptingTasks {@code true} if the slave can accept tasks.
      */

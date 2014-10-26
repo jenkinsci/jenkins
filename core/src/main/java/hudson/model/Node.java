@@ -69,7 +69,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
+ * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type).
  *
  * <p>
  * As a special case, {@link Jenkins} extends from here.
@@ -77,6 +77,10 @@ import org.kohsuke.stapler.export.Exported;
  * <p>
  * Nodes are persisted objects that capture user configurations, and instances get thrown away and recreated whenever
  * the configuration changes. Running state of nodes are captured by {@link Computer}s.
+ * 
+ * <p>
+ * There is no URL binding for {@link Node}. {@link Computer} and {@link TransientComputerActionFactory} must
+ * be used to associate new {@link Action}s to slaves. 
  *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
@@ -189,6 +193,20 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Nobody but {@link Jenkins#updateComputerList()} should call this method.
      */
     protected abstract Computer createComputer();
+
+    /**
+     * Returns {@code true} if the node is accepting tasks. Needed to allow slaves programmatic suspension of task
+     * scheduling that does not overlap with being offline. Called by {@link Computer#isAcceptingTasks()}.
+     * This method is distinct from {@link Computer#isAcceptingTasks()} as sometimes the {@link Node} concrete
+     * class may not have control over the {@link hudson.model.Computer} concrete class associated with it.
+     *
+     * @return {@code true} if the node is accepting tasks.
+     * @see Computer#isAcceptingTasks()
+     * @since 1.586
+     */
+    public boolean isAcceptingTasks() {
+        return true;
+    }
 
     /**
      * Let Nodes be aware of the lifecycle of their own {@link Computer}.
