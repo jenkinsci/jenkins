@@ -13,6 +13,7 @@ import org.springframework.dao.DataAccessException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Properties;
@@ -50,7 +51,12 @@ public class ClientAuthenticationCache implements Serializable {
             }
         });
         if (store.exists()) {
-            props.load(store.read());
+            InputStream istream = store.read();
+            try {
+                props.load(istream);
+            } finally {
+                istream.close();
+            }
         }
     }
 
