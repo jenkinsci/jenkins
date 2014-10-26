@@ -102,7 +102,7 @@ THE SOFTWARE.
     <dependency> <!-- for compatibility only; all new code should use JNR -->
       <groupId>org.jruby.ext.posix</groupId>
       <artifactId>jna-posix</artifactId>
-      <version>1.0.3</version>
+      <version>1.0.3-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>com.github.jnr</groupId>
