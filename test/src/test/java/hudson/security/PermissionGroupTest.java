@@ -23,6 +23,8 @@
  */
 package hudson.security;
 
+import hudson.model.Hudson;
+import hudson.model.Messages;
 import jenkins.model.Jenkins;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -30,9 +32,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.JenkinsRule;
 
-/**
- * @author Kohsuke Kawaguchi
- */
 public class PermissionGroupTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
@@ -44,4 +43,15 @@ public class PermissionGroupTest {
     @Test public void order() {
         assertSame(PermissionGroup.getAll().get(0), Jenkins.PERMISSIONS);
     }
+
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    @Test(expected=IllegalStateException.class) public void duplicatedGroups() {
+        new PermissionGroup(Hudson.class, Messages._Hudson_Permissions_Title());
+    }
+
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    @Test(expected=IllegalStateException.class) public void duplicatedPermissions() {
+        new Permission(Jenkins.PERMISSIONS, "Read", Messages._Hudson_ReadPermission_Description(), Permission.READ, PermissionScope.JENKINS);
+    }
+
 }

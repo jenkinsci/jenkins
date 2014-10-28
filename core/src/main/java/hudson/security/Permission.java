@@ -221,6 +221,14 @@ public final class Permission {
         return owner.getName()+'.'+name;
     }
 
+    @Override public boolean equals(Object o) {
+        return o instanceof Permission && getId().equals(((Permission) o).getId());
+    }
+
+    @Override public int hashCode() {
+        return getId().hashCode();
+    }
+
     /**
      * Convert the ID representation into {@link Permission} object.
      *
