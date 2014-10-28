@@ -470,9 +470,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      is not yet gone.
      */
     public @CheckForNull Node getNode() {
-        if(nodeName==null)
-            return Jenkins.getInstance();
-        return Jenkins.getInstance().getNode(nodeName);
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return null;
+        }
+        if (nodeName == null) {
+            return j;
+        }
+        return j.getNode(nodeName);
     }
 
     @Exported

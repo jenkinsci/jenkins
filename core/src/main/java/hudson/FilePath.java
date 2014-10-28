@@ -1668,6 +1668,7 @@ public final class FilePath implements Serializable {
 
     /**
      * Reads this file from the specific offset.
+     * @since 1.586
      */
     public InputStream readFromOffset(final long offset) throws IOException {
         if(channel ==null) {
