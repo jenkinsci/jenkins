@@ -42,8 +42,8 @@ import org.jvnet.localizer.Localizable;
  * Sortable by the owner class name.
  */
 public final class PermissionGroup implements Iterable<Permission>, Comparable<PermissionGroup> {
-    private final List<Permission> permisisons = new CopyOnWriteArrayList<Permission>();
-    private final List<Permission> permisisonsView = Collections.unmodifiableList(permisisons);
+    private final List<Permission> permissions = new CopyOnWriteArrayList<Permission>();
+    private final List<Permission> permissionsView = Collections.unmodifiableList(permissions);
     public final Class owner;
 
     /**
@@ -67,22 +67,22 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     }
 
     public Iterator<Permission> iterator() {
-        return permisisons.iterator();
+        return permissions.iterator();
     }
 
     /*package*/ void add(Permission p) {
-        permisisons.add(p);
+        permissions.add(p);
     }
 
     /**
      * Lists up all the permissions in this group.
      */
     public List<Permission> getPermissions() {
-        return permisisonsView;
+        return permissionsView;
     }
 
     public boolean hasPermissionContainedBy(PermissionScope scope) {
-        for (Permission p : permisisons)
+        for (Permission p : permissions)
             if (p.isContainedBy(scope))
                 return true;
         return false;
@@ -92,7 +92,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * Finds a permission that has the given name.
      */
     public Permission find(String name) {
-        for (Permission p : permisisons) {
+        for (Permission p : permissions) {
             if(p.name.equals(name))
                 return p;
         }
@@ -116,7 +116,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
     }
 
     public int size() {
-        return permisisons.size();
+        return permissions.size();
     }
 
     /**
