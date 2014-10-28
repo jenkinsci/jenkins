@@ -24,18 +24,24 @@
 package hudson.security;
 
 import jenkins.model.Jenkins;
-import org.jvnet.hudson.test.HudsonTestCase;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class PermissionGroupTest extends HudsonTestCase {
+public class PermissionGroupTest {
+
+    @Rule public JenkinsRule r = new JenkinsRule();
+
     /**
-     * "Overall" persmission group should be always the first.
+     * "Overall" permission group should be always the first.
      */
-    @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
-    public void testOrder() {
+    @Email("http://jenkins-ci.361315.n4.nabble.com/Master-slave-refactor-tp391495.html")
+    @Test public void order() {
         assertSame(PermissionGroup.getAll().get(0), Jenkins.PERMISSIONS);
     }
 }
