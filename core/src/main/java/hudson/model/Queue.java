@@ -658,12 +658,7 @@ public class Queue extends ResourceController implements Saveable {
     
     public synchronized boolean cancel(Item item) {
         LOGGER.log(Level.FINE, "Cancelling {0} item#{1}", new Object[] {item.task, item.id});
-        boolean r = item.cancel(this);
-
-        LeftItem li = new LeftItem(item);
-        li.enter(this);
-
-        return r;
+        return item.cancel(this);
     }
 
     /**
@@ -1588,10 +1583,17 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Cancels this item, which updates {@link #future} to notify the listener, and
          * also leaves the queue.
+         *
+         * @return true
+         *      if the item was successfully cancelled.
          */
         /*package*/ boolean cancel(Queue q) {
             boolean r = leave(q);
-            if (r)  future.setAsCancelled();
+            if (r) {
+                future.setAsCancelled();
+                LeftItem li = new LeftItem(this);
+                li.enter(q);
+            }
             return r;
         }
 
