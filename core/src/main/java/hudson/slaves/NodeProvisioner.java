@@ -254,7 +254,7 @@ public class NodeProvisioner {
 
     /**
      * Represents the decision taken by an individual {@link hudson.slaves.NodeProvisioner.Strategy}.
-     * @since 1.586
+     * @since 1.588
      */
     public static enum StrategyDecision {
         /**
@@ -275,7 +275,7 @@ public class NodeProvisioner {
 
     /**
      * Extension point for node provisioning strategies.
-     * @since 1.586
+     * @since 1.588
      */
     public static abstract class Strategy implements ExtensionPoint {
 
@@ -296,7 +296,7 @@ public class NodeProvisioner {
     /**
      * Parameter object for {@link hudson.slaves.NodeProvisioner.Strategy}.
      * Intentionally non-static as we need to reference some fields in {@link hudson.slaves.NodeProvisioner}
-     * @since 1.586
+     * @since 1.588
      */
     public final class StrategyState {
         /**
@@ -481,7 +481,7 @@ public class NodeProvisioner {
     /**
      * The default strategy.
      *
-     * @since 1.586
+     * @since 1.588
      */
     @Extension
     public static class StandardStrategyImpl extends Strategy {
