@@ -81,6 +81,6 @@ public class SHELLEXECUTEINFO extends Structure {
         return Arrays.asList("cbSize", "fMask", "hwnd", "lpVerb",
                 "lpFile", "lpParameters", "lpDirectory", "nShow", "hInstApp",
                 "lpIDList", "lpClass", "hkeyClass", "dwHotKey", "hIcon",
-                "hProcess", "SEE_MASK_NOCLOSEPROCESS", "SW_HIDE", "SW_SHOW");
+                "hProcess");
     }
 }
