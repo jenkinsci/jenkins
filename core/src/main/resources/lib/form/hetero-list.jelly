@@ -91,11 +91,9 @@ THE SOFTWARE.
 
         <d:invokeBody/>
 
+        <f:class-entry descriptor="${descriptor}" />
         <f:block>
           <div align="right">
-            <!-- Legacy: Remove once plugins have been staged onto $class -->
-            <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
-            <input type="hidden" name="$class" value="${descriptor.clazz.name}" />
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
           </div>
         </f:block>
