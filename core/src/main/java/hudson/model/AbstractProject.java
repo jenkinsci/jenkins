@@ -1813,7 +1813,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         blockBuildWhenDownstreamBuilding = json.optBoolean("blockBuildWhenDownstreamBuilding");
         blockBuildWhenUpstreamBuilding = json.optBoolean("blockBuildWhenUpstreamBuilding");
 
-        if(json.optBoolean("hasCustomWorkspace", json.has("customWorkspace"))) {
+        if(req.hasParameter("customWorkspace.directory")) {
+            // Workaround for JENKINS-25221 while plugins are being updated.
+            customWorkspace = Util.fixEmptyAndTrim(req.getParameter("customWorkspace.directory"));
+        } else if(json.optBoolean("hasCustomWorkspace", json.has("customWorkspace"))) {
             customWorkspace = Util.fixEmptyAndTrim(json.optString("customWorkspace"));
         } else {
             customWorkspace = null;
