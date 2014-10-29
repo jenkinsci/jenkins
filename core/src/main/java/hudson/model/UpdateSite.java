@@ -218,7 +218,16 @@ public class UpdateSite {
      * Verifies the signature in the update center data file.
      */
     private FormValidation verifySignature(JSONObject o) throws IOException {
-        return new JSONSignatureValidator("update site '"+id+"'").verifySignature(o);
+        return getJsonSignatureValidator().verifySignature(o);
+    }
+
+    /**
+     * Let sub-classes of UpdateSite provide their own signature validator.
+     * @return the signature validator.
+     */
+    @Nonnull
+    protected JSONSignatureValidator getJsonSignatureValidator() {
+        return new JSONSignatureValidator("update site '"+id+"'");
     }
 
     /**
