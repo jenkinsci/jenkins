@@ -23,6 +23,7 @@
  */
 package hudson.logging;
 
+import jenkins.security.MasterToSlaveCallable;
 import org.jvnet.hudson.test.Url;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -109,7 +110,7 @@ public class LogRecorderManagerTest {
         assertFalse(text, text.contains("msg #4"));
     }
 
-    private static final class Log implements Callable<Boolean,Error> {
+    private static final class Log extends MasterToSlaveCallable<Boolean,Error> {
         private final Level level;
         private final String logger;
         private final String message;

@@ -3,13 +3,12 @@ package hudson;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Proc.RemoteProc;
-import hudson.remoting.Callable;
-import hudson.remoting.Future;
 import hudson.remoting.Pipe;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
+import jenkins.security.MasterToSlaveCallable;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -70,7 +69,7 @@ public class ProcTest extends HudsonTestCase {
         return ch;
     }
 
-    private static class ChannelFiller implements Callable<Void,IOException> {
+    private static class ChannelFiller extends MasterToSlaveCallable<Void,IOException> {
         private final OutputStream o;
 
         private ChannelFiller(OutputStream o) {

@@ -3,7 +3,6 @@ package jenkins.slaves.restarter;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.remoting.Engine;
 import hudson.remoting.EngineListener;
 import hudson.remoting.EngineListenerAdapter;
@@ -19,6 +18,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.*;
+import jenkins.security.MasterToSlaveCallable;
 
 /**
  * Actual slave restart logic.
@@ -49,7 +49,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             VirtualChannel ch = c.getChannel();
             if (ch==null) return;  // defensive check
 
-            List<SlaveRestarter> effective = ch.call(new Callable<List<SlaveRestarter>, IOException>() {
+            List<SlaveRestarter> effective = ch.call(new MasterToSlaveCallable<List<SlaveRestarter>, IOException>() {
                 public List<SlaveRestarter> call() throws IOException {
                     Engine e = Engine.current();
                     if (e == null) return null;    // not running under Engine

@@ -40,6 +40,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
@@ -74,16 +75,19 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -101,6 +105,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
@@ -175,6 +180,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Strategy for creating and initializing plugins
      */
     private final PluginStrategy strategy;
+
+    /**
+     * Manifest of the plugin binaries that are bundled with core.
+     */
+    private final Map<String,Manifest> bundledPluginManifests = new HashMap<String, Manifest>();
 
     public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
@@ -408,6 +418,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
+     * Returns the manifest of a bundled but not-extracted plugin.
+     */
+    public @CheckForNull Manifest getBundledPluginManifest(String shortName) {
+        return bundledPluginManifests.get(shortName);
+    }
+
+    /**
      * TODO: revisit where/how to expose this. This is an experiment.
      */
     public void dynamicLoad(File arc) throws IOException, InterruptedException, RestartRequiredException {
@@ -526,6 +543,34 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
             // unpacking the plugin itself in ClassicPluginStrategy.explode
+        }
+        if (pinFile.exists())
+            parsePinnedBundledPluginManifest(src);
+    }
+
+    /**
+     * When a pin file prevented a bundled plugin from getting extracted, check if the one we currently have
+     * is older than we bundled.
+     */
+    private void parsePinnedBundledPluginManifest(URL bundledJpi) {
+        try {
+            URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
+            InputStream in=null;
+            try {
+                URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
+                if (res!=null) {
+                    in = res.openStream();
+                    Manifest manifest = new Manifest(in);
+                    String shortName = PluginWrapper.computeShortName(manifest, FilenameUtils.getName(bundledJpi.getPath()));
+                    bundledPluginManifests.put(shortName, manifest);
+                }
+            } finally {
+                IOUtils.closeQuietly(in);
+                if (cl instanceof Closeable)
+                    ((Closeable)cl).close();
+            }
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to parse manifest of "+bundledJpi, e);
         }
     }
 

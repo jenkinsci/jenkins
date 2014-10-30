@@ -28,7 +28,7 @@ import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Computer;
 import jenkins.model.Jenkins;
-import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
@@ -100,7 +100,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
     /**
      * Obtains the string that represents the architecture.
      */
-    private static class MonitorTask implements Callable<MemoryUsage,IOException> {
+    private static class MonitorTask extends MasterToSlaveCallable<MemoryUsage,IOException> {
         public MemoryUsage call() throws IOException {
             MemoryMonitor mm;
             try {

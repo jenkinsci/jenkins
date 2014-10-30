@@ -34,7 +34,6 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.remoting.Callable;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -44,6 +43,7 @@ import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.security.NotReallyRoleSensitiveCallable;
 import org.acegisecurity.Authentication;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -227,7 +227,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
                 // the test to see if the project already exists or not needs to be done in escalated privilege
                 // to avoid overwriting
-                ACL.impersonate(ACL.SYSTEM,new Callable<Void,IOException>() {
+                ACL.impersonate(ACL.SYSTEM,new NotReallyRoleSensitiveCallable<Void,IOException>() {
                     final Authentication user = Jenkins.getAuthentication();
                     @Override
                     public Void call() throws IOException {
@@ -656,7 +656,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 throw new IOException("Expecting "+this.getClass()+" but got "+o.getClass()+" instead");
             }
 
-            Items.whileUpdatingByXml(new Callable<Void,IOException>() {
+            Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void,IOException>() {
                 @Override public Void call() throws IOException {
                     onLoad(getParent(), getRootDir().getName());
                     return null;
@@ -688,7 +688,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
         // try to reflect the changes by reloading
         getConfigFile().unmarshal(this);
-        Items.whileUpdatingByXml(new Callable<Void, IOException>() {
+        Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
             @Override
             public Void call() throws IOException {
                 onLoad(getParent(), getRootDir().getName());

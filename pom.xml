@@ -95,7 +95,7 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
-    <maven-plugin.version>2.5</maven-plugin.version>
+    <maven-plugin.version>2.7.1</maven-plugin.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
     <java.level>6</java.level>
@@ -173,7 +173,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.46</version>
+        <version>2.47</version>
       </dependency>
 
       <dependency>

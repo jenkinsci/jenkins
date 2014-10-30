@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.slaves.OfflineCause;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -85,7 +86,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
     };
 
-    private static final class Step1 implements Callable<Data,IOException> {
+    private static final class Step1 extends MasterToSlaveCallable<Data,IOException> {
         private Data cur;
 
         private Step1(Data cur) {
@@ -104,7 +105,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         private static final long serialVersionUID = 1L;
     }
 
-    private static final class Step2 implements Callable<Step3,IOException> {
+    private static final class Step2 extends MasterToSlaveCallable<Step3,IOException> {
         private final Data cur;
         private final long start = System.currentTimeMillis();
 

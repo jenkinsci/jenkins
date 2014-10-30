@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="warning">
+    <p>
+      ${%blurb}
+    </p>
+    <ul>
+      <j:forEach var="p" items="${it.offenders}">
+        <li>${p.longName}</li>
+      </j:forEach>
+    </ul>
+  </div>
+</j:jelly>
