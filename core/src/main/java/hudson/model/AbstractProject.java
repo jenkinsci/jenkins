@@ -119,6 +119,7 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -2031,6 +2032,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;
         }
 
+        @Restricted(DoNotUse.class)
         public FormValidation doCheckAssignedLabelString(@AncestorInPath AbstractProject<?,?> project,
                                                          @QueryParameter String value) {
           // Provide a legacy interface in case plugins are not going through p:config-assignedLabel
@@ -2097,6 +2099,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return candidates;
         }
 
+        @Restricted(DoNotUse.class)
         public AutoCompletionCandidates doAutoCompleteAssignedLabelString(@QueryParameter String value) {
           // Provide a legacy interface in case plugins are not going through p:config-assignedLabel
           // see: JENKINS-25372
