@@ -119,6 +119,7 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -1815,6 +1816,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         if(req.hasParameter("customWorkspace.directory")) {
             // Workaround for JENKINS-25221 while plugins are being updated.
+            LOGGER.log(Level.WARNING, "label assignment is using legacy 'customWorkspace.directory'");
             customWorkspace = Util.fixEmptyAndTrim(req.getParameter("customWorkspace.directory"));
         } else if(json.optBoolean("hasCustomWorkspace", json.has("customWorkspace"))) {
             customWorkspace = Util.fixEmptyAndTrim(json.optString("customWorkspace"));
@@ -1828,7 +1830,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         else
             scmCheckoutStrategy = null;
 
-        if(json.optBoolean("hasSlaveAffinity", json.has("label"))) {
+        if(req.hasParameter("_.assignedLabelString")) {
+            // Workaround for JENKINS-25372 while plugin is being updated.
+            LOGGER.log(Level.WARNING, "label assignment is using legacy '_.assignedLabelString'");
+            assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
+        } else if(json.optBoolean("hasSlaveAffinity", json.has("label"))) {
             assignedNode = Util.fixEmptyAndTrim(json.optString("label"));
         } else {
             assignedNode = null;
@@ -2026,6 +2032,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;
         }
 
+        @Restricted(DoNotUse.class)
+        public FormValidation doCheckAssignedLabelString(@AncestorInPath AbstractProject<?,?> project,
+                                                         @QueryParameter String value) {
+          // Provide a legacy interface in case plugins are not going through p:config-assignedLabel
+          // see: JENKINS-25372
+          LOGGER.log(Level.WARNING, "checking label via legacy '_.assignedLabelString'");
+          return doCheckLabel(project, value);
+        }
+
         public FormValidation doCheckLabel(@AncestorInPath AbstractProject<?,?> project,
                                            @QueryParameter String value) {
             if (Util.fixEmpty(value)==null)
@@ -2082,6 +2097,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             }
             return candidates;
+        }
+
+        @Restricted(DoNotUse.class)
+        public AutoCompletionCandidates doAutoCompleteAssignedLabelString(@QueryParameter String value) {
+          // Provide a legacy interface in case plugins are not going through p:config-assignedLabel
+          // see: JENKINS-25372
+          LOGGER.log(Level.WARNING, "autocompleting label via legacy '_.assignedLabelString'");
+          return doAutoCompleteLabel(value);
         }
 
         public AutoCompletionCandidates doAutoCompleteLabel(@QueryParameter String value) {
