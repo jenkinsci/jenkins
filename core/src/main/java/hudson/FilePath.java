@@ -1952,10 +1952,13 @@ public final class FilePath implements Serializable {
 
                 File t = new File(target.getRemote());
                 
-                for(File child : reading(tmp).listFiles()) {
-                    File target = new File(t, child.getName());
-                    if(!stating(child).renameTo(creating(target)))
-                        throw new IOException("Failed to rename "+child+" to "+target);
+                File[] children = reading(tmp).listFiles();
+                if (children != null) {
+                    for(File child : children) {
+                        File target = new File(t, child.getName());
+                        if(!stating(child).renameTo(creating(target)))
+                            throw new IOException("Failed to rename "+child+" to "+target);
+                    }
                 }
                 deleting(tmp).delete();
                 return null;
