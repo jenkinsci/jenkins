@@ -37,8 +37,6 @@ THE SOFTWARE.
     <f:entry title="JDK"
              description="${%JDK to be used for this project}">
       <select class="setting-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
-        <j:getStatic var="DEFAULT_NAME" className="hudson.model.JDK" field="DEFAULT_NAME"/>
-        <option>${DEFAULT_NAME}</option>
         <j:forEach var="inst" items="${jdks}">
           <f:option selected="${inst.name==it.JDK.name}" value="${inst.name}">${inst.name}</f:option>
         </j:forEach>
