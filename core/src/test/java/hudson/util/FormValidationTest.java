@@ -23,24 +23,29 @@
  */
 package hudson.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
  * @author sogabe
  */
-public class FormValidationTest extends TestCase {
+public class FormValidationTest {
 
+    @Test
     public void testValidateRequired_OK() {
         FormValidation actual = FormValidation.validateRequired("Name");
         assertEquals(FormValidation.ok(), actual);
     }
 
+    @Test
     public void testValidateRequired_Null() {
         FormValidation actual = FormValidation.validateRequired(null);
         assertNotNull(actual);
         assertEquals(FormValidation.Kind.ERROR, actual.kind);
     }
 
+    @Test
     public void testValidateRequired_Empty() {
         FormValidation actual = FormValidation.validateRequired("  ");
         assertNotNull(actual);
@@ -48,6 +53,7 @@ public class FormValidationTest extends TestCase {
     }
 
     // @Bug(7438)
+    @Test
     public void testMessage() {
         assertEquals("test msg", FormValidation.errorWithMarkup("test msg").getMessage());
     }
