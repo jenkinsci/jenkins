@@ -1313,11 +1313,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by
      * {@link hudson.tasks.Publisher}, {@link hudson.tasks.BuildWrapper}, etc.
+     * @return the {@link Computer} associated with {@link Executor#currentExecutor}, or null if not on an executor thread
      */
-    public static Computer currentComputer() {
+    public static @Nullable Computer currentComputer() {
         Executor e = Executor.currentExecutor();
-        // If no executor then must be on master node
-        return e != null ? e.getOwner() : Jenkins.getInstance().toComputer();
+        return e != null ? e.getOwner() : null;
     }
 
     /**
