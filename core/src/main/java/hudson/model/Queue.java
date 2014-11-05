@@ -87,6 +87,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -836,6 +837,23 @@ public class Queue extends ResourceController implements Saveable {
                 if (null==l || bi.getAssignedLabelFor(st)==l)
                     r++;
         return r;
+    }
+
+    /**
+     * Get the {@link BuildableItem}s that are assigned to the given label
+     */
+    public synchronized Collection<Actionable> getBuildableItemsFor(Label l) {
+        Collection<Actionable> items = new LinkedHashSet<Actionable>();
+
+        for (BuildableItem bi : buildables.values())
+            for (SubTask st : bi.task.getSubTasks())
+                if (null==l || bi.getAssignedLabelFor(st)==l)
+                    items.add(bi);
+        for (BuildableItem bi : pendings.values())
+            for (SubTask st : bi.task.getSubTasks())
+                if (null==l || bi.getAssignedLabelFor(st)==l)
+                    items.add(bi);
+        return items;
     }
 
     /**

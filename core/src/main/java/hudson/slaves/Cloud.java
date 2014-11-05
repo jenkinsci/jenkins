@@ -116,6 +116,21 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
     }
 
     /**
+     * @deprecated Use {@link #provision(CloudProvisioningRequest)}
+     */
+    public Collection<PlannedNode> provision(Label label, int excessWorkload)
+    {
+        // Non-abstract default impl, so newer clients don't have to implement
+        // a deprecated method.
+        throw new AbstractMethodError("You must override a provision method");
+    }
+
+    /**
+     * Returns true if this cloud is capable of provisioning new nodes for the given label.
+     */
+    public abstract boolean canProvision(Label label);
+
+    /**
      * Provisions new {@link Node}s from this cloud.
      *
      * <p>
@@ -127,18 +142,9 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      * The implementation of this method asynchronously starts
      * node provisioning.
      *
-     * @param label
-     *      The label that indicates what kind of nodes are needed now.
-     *      Newly launched node needs to have this label.
-     *      Only those {@link Label}s that this instance returned true
-     *      from the {@link #canProvision(Label)} method will be passed here.
-     *      This parameter is null if Hudson needs to provision a new {@link Node}
-     *      for jobs that don't have any tie to any label.
-     * @param excessWorkload
-     *      Number of total executors needed to meet the current demand.
-     *      Always >= 1. For example, if this is 3, the implementation
-     *      should launch 3 slaves with 1 executor each, or 1 slave with
-     *      3 executors, etc.
+     * @param request
+     *      Information about the node that should be provisioned, such as the label and
+     *      the excess workload.
      * @return
      *      {@link PlannedNode}s that represent asynchronous {@link Node}
      *      provisioning operations. Can be empty but must not be null.
@@ -148,12 +154,9 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      *      When the {@link Future} has completed its work, {@link Future#get} will be called to obtain the
      *      provisioned {@link Node} object.
      */
-    public abstract Collection<PlannedNode> provision(Label label, int excessWorkload);
-
-    /**
-     * Returns true if this cloud is capable of provisioning new nodes for the given label.
-     */
-    public abstract boolean canProvision(Label label);
+    public Collection<PlannedNode> provision(CloudProvisioningRequest request) {
+        return provision(request.getLabel(), request.getWorkloadToProvision());
+    }
 
     public Descriptor<Cloud> getDescriptor() {
         return Jenkins.getInstance().getDescriptorOrDie(getClass());

@@ -579,8 +579,13 @@ public class NodeProvisioner {
                                 }
                             }
 
+                            Label label = state.getLabel();
+                            Collection<Actionable> buildableItems = Jenkins.getInstance().getQueue().getBuildableItemsFor(label);
+
+                            CloudProvisioningRequest cloudProvisioningRequest = new CloudProvisioningRequest(label, workloadToProvision, buildableItems);
+
                             Collection<PlannedNode> additionalCapacities =
-                                    c.provision(state.getLabel(), workloadToProvision);
+                                    c.provision(cloudProvisioningRequest);
 
                             for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
                                 cl.onStarted(c, state.getLabel(), additionalCapacities);
