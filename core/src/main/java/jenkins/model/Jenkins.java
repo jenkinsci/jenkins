@@ -688,7 +688,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #getInstance()} provides the unchecked versions of the method. 
      * @return {@link Jenkins} instance
      * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
-     * @since TODO: define the version
+     * @since 1.590
      */
     public static @Nonnull Jenkins getActiveInstance() throws IllegalStateException {
         Jenkins instance = HOLDER.getInstance();
