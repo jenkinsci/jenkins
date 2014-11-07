@@ -2043,6 +2043,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         public FormValidation doCheckLabel(@AncestorInPath AbstractProject<?,?> project,
                                            @QueryParameter String value) {
+            return validateLabelExpression(value, project);
+        }
+
+        /**
+         * Validate label expression string.
+         *
+         * @param project May be specified to perform project specific validation.
+         * @since 1.590
+         */
+        public static @Nonnull FormValidation validateLabelExpression(String value, @CheckForNull AbstractProject<?, ?> project) {
             if (Util.fixEmpty(value)==null)
                 return FormValidation.ok(); // nothing typed yet
             try {
