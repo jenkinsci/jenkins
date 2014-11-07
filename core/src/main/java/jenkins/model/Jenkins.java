@@ -674,18 +674,35 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Do not use in the production code as the signature may change.
      */
     public interface JenkinsHolder {
-        Jenkins getInstance();
+        @CheckForNull Jenkins getInstance();
     }
 
     static JenkinsHolder HOLDER = new JenkinsHolder() {
-        public Jenkins getInstance() {
+        public @CheckForNull Jenkins getInstance() {
             return theInstance;
         }
     };
 
     /**
-     * Gets the Jenkins singleton.
-     * @return the instance, or null if Jenkins has not been started, or was already shut down
+     * Gets the {@link Jenkins} singleton.
+     * {@link #getInstance()} provides the unchecked versions of the method. 
+     * @return {@link Jenkins} instance
+     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
+     * @since TODO: define the version
+     */
+    public static @Nonnull Jenkins getActiveInstance() throws IllegalStateException {
+        Jenkins instance = HOLDER.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+        }
+        return instance;
+    }
+    
+    /**
+     * Gets the {@link Jenkins} singleton.
+     * {@link #getActiveInstance()} provides the checked versions of the method. 
+     * @return The instance. Null if the {@link Jenkins} instance has not been started, 
+     * or was already shut down
      */
     @CLIResolver
     @CheckForNull
