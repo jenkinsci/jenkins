@@ -34,9 +34,9 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Builder;
-
 import hudson.util.ReflectionUtils.Parameter;
 import jenkins.model.Jenkins;
+
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -44,7 +44,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -53,6 +55,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -209,7 +212,30 @@ public abstract class FormValidation extends IOException implements HttpResponse
         return warning(e,String.format(format,args));
     }
 
+    /**
+     * Aggregate multiple validations into one.
+     *
+     * @return Validation of the least successful kind aggregating all child messages.
+     * @since TODO
+     */
+    public static @Nonnull FormValidation aggregate(@Nonnull Collection<FormValidation> validations) {
+        if (validations == null || validations.isEmpty()) return FormValidation.ok();
 
+        if (validations.size() == 1) return validations.iterator().next();
+
+        final StringBuilder sb = new StringBuilder("<ul style='list-style-type: none; padding-left: 0; margin: 0'>");
+        FormValidation.Kind worst = Kind.OK;
+        for (FormValidation validation: validations) {
+            sb.append("<li>").append(validation.renderHtml()).append("</li>");
+
+            if (validation.kind.ordinal() > worst.ordinal()) {
+                worst = validation.kind;
+            }
+        }
+        sb.append("</ul>");
+
+        return respond(worst, sb.toString());
+    }
 
     /**
      * Sends out an HTML fragment that indicates an error.
