@@ -1,5 +1,15 @@
 Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
-        var h = e.clientHeight;
+        //ensure, that textarea is visible, when obtaining its height, see JENKINS-25455
+        function getTextareaHeight() {
+            var p = e.parentNode.parentNode; //first parent is CodeMirror div, second is actual element which needs to be visible
+            var display = p.style.display; 
+            p.style.display = "";
+            var h = e.clientHeight;
+            p.style.display = display;
+            return h;
+        }
+        
+        var h = e.clientHeight || getTextareaHeight();
         var config = e.getAttribute("codemirror-config") || "";
         config = eval('({'+config+'})');
         var codemirror = CodeMirror.fromTextArea(e,config);
@@ -19,7 +29,13 @@ Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
     		Element.on(e.up('form'),"jenkins:apply", function() {
 			e.value = codemirror.getValue()
 		})
-	}
+        }
+		
+        //refresh CM when there are some layout updates
+        function refreshCM() {
+            codemirror.refresh();
+        }
+        layoutUpdateCallback.add(refreshCM);
     });
 
 Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e) {
