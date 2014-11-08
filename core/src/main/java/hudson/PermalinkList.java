@@ -23,12 +23,14 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.util.EditDistance;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * {@link List} of {@link Permalink}s with some convenience methods.
@@ -49,7 +51,7 @@ public final class PermalinkList extends ArrayList<Permalink> {
      *
      * @return null if not found
      */
-    public Permalink get(String id) {
+    public @CheckForNull Permalink get(String id) {
         for (Permalink p : this)
             if(p.getId().equals(id))
                 return p;
@@ -58,9 +60,10 @@ public final class PermalinkList extends ArrayList<Permalink> {
 
     /**
      * Finds the closest name match by its ID.
+     * @returns The closest id. Null if not found
      */
-    public Permalink findNearest(String id) {
-        List<String> ids = new ArrayList<String>();
+    public @CheckForNull Permalink findNearest(@Nonnull String id) {
+        List<String> ids = new ArrayList<String>(this.size());
         for (Permalink p : this)
             ids.add(p.getId());
         String nearest = EditDistance.findNearest(id, ids);

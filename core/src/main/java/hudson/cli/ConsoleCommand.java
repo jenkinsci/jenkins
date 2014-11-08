@@ -60,7 +60,11 @@ public class ConsoleCommand extends CLICommand {
                     throw new CmdLineException("Permalink "+build+" produced no build");
             } else {
                 Permalink nearest = job.getPermalinks().findNearest(build);
-                throw new CmdLineException(String.format("Not sure what you meant by \"%s\". Did you mean \"%s\"?", build, nearest.getId()));
+                if (nearest != null) { // propose a similar permalink
+                    throw new CmdLineException(String.format("Not sure what you meant by \"%s\". Did you mean \"%s\"?", build, nearest.getId()));
+                } else {
+                    throw new CmdLineException(String.format("Not sure what you meant by \"%s\".", build));
+                }
             }
         }
 
