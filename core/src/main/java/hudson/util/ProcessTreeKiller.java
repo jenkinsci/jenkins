@@ -27,6 +27,7 @@ import hudson.EnvVars;
 import hudson.util.ProcessTree.OSProcess;
 
 import java.util.Map;
+import javax.annotation.CheckForNull;
 
 /**
  * Kills a process tree to clean up the mess left by a build.
@@ -73,10 +74,11 @@ public final class ProcessTreeKiller {
      *      If non-null, search-and-destroy will be performed.
      * @deprecated Use {@link ProcessTree#killAll(Map)} and {@link OSProcess#killRecursively()}
      */
-    public void kill(Process proc, Map<String, String> modelEnvVars) throws InterruptedException {
+    public void kill(@CheckForNull Process proc, @CheckForNull Map<String, String> modelEnvVars) throws InterruptedException {
         ProcessTree pt = ProcessTree.get();
-        if(proc!=null)
-            pt.get(proc).killRecursively();
+        final OSProcess osProcess = proc != null ? pt.get(proc) : null;
+        if(osProcess!=null)
+            osProcess.killRecursively();
         if(modelEnvVars!=null)
             pt.killAll(modelEnvVars);
     }
