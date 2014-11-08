@@ -493,19 +493,26 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @return
      *      This method may return null &mdash; for example,
      *      the user may have installed a plugin locally developed.
+     *      The result may be null if {@link Jenkins} instance is inactive
      */
-    public UpdateSite.Plugin getUpdateInfo() {
-        UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
-        UpdateSite.Plugin p = uc.getPlugin(getShortName());
+    public @CheckForNull UpdateSite.Plugin getUpdateInfo() {
+        UpdateSite.Plugin p = getInfo();
         if(p!=null && p.isNewerThan(getVersion())) return p;
         return null;
     }
     
     /**
-     * returns the {@link hudson.model.UpdateSite.Plugin} object, or null.
+     * Gets info about the plugin.
+     * @return the {@link hudson.model.UpdateSite.Plugin} object.
+     *      The result may be null if {@link Jenkins} instance is inactive. 
      */
-    public UpdateSite.Plugin getInfo() {
-        UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+    public @CheckForNull UpdateSite.Plugin getInfo() {
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return null;
+        }
+        
+        UpdateCenter uc = j.getUpdateCenter();
         return uc.getPlugin(getShortName());
     }
 
