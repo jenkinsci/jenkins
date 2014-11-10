@@ -122,7 +122,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
         return id().hashCode();
     }
 
-    public int size() {
+    public synchronized int size() {
         return permissions.size();
     }
 
