@@ -281,6 +281,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 LOGGER.log(Level.SEVERE, "Failed to create Guice container from all the plugins",e);
                 // failing to load all bindings are disastrous, so recover by creating minimum that works
                 // by just including the core
+                // TODO this recovery is pretty much useless; startup crashes anyway
                 container = Guice.createInjector(new SezpozModule(loadSezpozIndices(Jenkins.class.getClassLoader())));
             }
 
@@ -355,7 +356,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 // which results in a LinkageError
                 LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
                            "Failed to load "+item.className(), e);
-            } catch (InstantiationException e) {
+            } catch (Exception e) {
                 LOGGER.log(isOptional(item.annotation()) ? Level.FINE : Level.WARNING,
                            "Failed to load "+item.className(), e);
             }
@@ -478,8 +479,10 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
                     m.setAccessible(true);
                     m.invoke(ecl, c);
+                    c.getConstructors();
                     c.getMethods();
-                    c.getFields();       
+                    c.getFields();
+                    LOGGER.log(Level.FINER, "{0} looks OK", c);
                     while (c != Object.class) {
                         c.getGenericSuperclass();
                         c = c.getSuperclass();
@@ -534,7 +537,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         // which results in a LinkageError
                         LOGGER.log(optional ? Level.FINE : Level.WARNING,
                                    "Failed to load "+item.className(), e);
-                    } catch (InstantiationException e) {
+                    } catch (Exception e) {
                         LOGGER.log(optional ? Level.FINE : Level.WARNING,
                                    "Failed to load "+item.className(), e);
                     }
@@ -644,7 +647,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     // sometimes the instantiation fails in an indirect classloading failure,
                     // which results in a LinkageError
                     LOGGER.log(logLevel(item), "Failed to load "+item.className(), e);
-                } catch (InstantiationException e) {
+                } catch (Exception e) {
                     LOGGER.log(logLevel(item), "Failed to load "+item.className(), e);
                 }
             }
@@ -675,9 +678,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     // according to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
                     // this appears to be the only way to force a class initialization
                     Class.forName(extType.getName(),true,extType.getClassLoader());
-                } catch (InstantiationException e) {
-                    LOGGER.log(logLevel(item), "Failed to scout "+item.className(), e);
-                } catch (ClassNotFoundException e) {
+                } catch (Exception e) {
                     LOGGER.log(logLevel(item), "Failed to scout "+item.className(), e);
                 } catch (LinkageError e) {
                     LOGGER.log(logLevel(item), "Failed to scout "+item.className(), e);

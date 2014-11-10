@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
+import hudson.security.ACL;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -431,7 +432,14 @@ public class ListView extends View implements DirectlyModifiableView {
 
     @Restricted(NoExternalUse.class)
     @Extension public static final class Listener extends ItemListener {
-        @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+        @Override public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
+            ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                @Override public void run() {
+                    locationChanged(item, oldFullName, newFullName);
+                }
+            });
+        }
+        private void locationChanged(Item item, String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.getInstance();
             for (View view: jenkins.getViews()) {
                 if (view instanceof ListView) {
@@ -469,7 +477,14 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
 
-        @Override public void onDeleted(Item item) {
+        @Override public void onDeleted(final Item item) {
+            ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                @Override public void run() {
+                    deleted(item);
+                }
+            });
+        }
+        private void deleted(Item item) {
             final Jenkins jenkins = Jenkins.getInstance();
             for (View view: jenkins.getViews()) {
                 if (view instanceof ListView) {

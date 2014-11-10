@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.588-SNAPSHOT</version>
+    <version>1.591-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -274,19 +274,19 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <version>1.8</version>
+                  <version>1.9</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>credentials</artifactId>
-                  <version>1.9.4</version>
+                  <version>1.18</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-credentials</artifactId>
-                  <version>1.6.1</version>
+                  <version>1.10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -370,7 +370,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1.2-beta-3</version>
+                  <version>1.2-beta-4</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>

@@ -11,9 +11,11 @@ import jenkins.security.RekeySecretAdminMonitor;
 import org.apache.commons.io.output.NullOutputStream;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Convenient partial implementation of {@link AdministrativeMonitor} that involves a background "fixing" action
@@ -95,19 +97,37 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
 
         @Override
         public void run() {
-            TaskListener listener = TaskListener.NULL;
             ACL.impersonate(ACL.SYSTEM);
-
+            StreamTaskListener listener = null;
             try {
                 listener = new StreamTaskListener(getLogFile());
-
+                try {
+                    doRun(listener);
+                } finally {
+                    listener.close();
+                }
+            } catch (IOException ex) {
+                if (listener == null) {
+                    LOGGER.log(Level.SEVERE, "Cannot create listener for " + getName(), ex);
+                    //TODO: throw IllegalStateException?
+                } else {
+                    LOGGER.log(Level.WARNING, "Cannot close listener for " + getName(), ex);
+                }
+            }
+         }
+        
+        /**
+         * Runs the monitor and encapsulates all errors within. 
+         * @since TODO: define a version
+         */
+        private void doRun(@Nonnull TaskListener listener) {
+            try {
                 fix(listener);
-
             } catch (AbortException e) {
                 listener.error(e.getMessage());
             } catch (Throwable e) {
                 e.printStackTrace(listener.error(getName() + " failed"));
-                LOGGER.log(Level.WARNING, getName()+" failed", e);
+                LOGGER.log(Level.WARNING, getName() + " failed", e);
             }
         }
     }

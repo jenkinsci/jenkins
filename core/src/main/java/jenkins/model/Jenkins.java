@@ -196,6 +196,7 @@ import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
@@ -673,18 +674,35 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Do not use in the production code as the signature may change.
      */
     public interface JenkinsHolder {
-        Jenkins getInstance();
+        @CheckForNull Jenkins getInstance();
     }
 
     static JenkinsHolder HOLDER = new JenkinsHolder() {
-        public Jenkins getInstance() {
+        public @CheckForNull Jenkins getInstance() {
             return theInstance;
         }
     };
 
     /**
-     * Gets the Jenkins singleton.
-     * @return the instance, or null if Jenkins has not been started, or was already shut down
+     * Gets the {@link Jenkins} singleton.
+     * {@link #getInstance()} provides the unchecked versions of the method. 
+     * @return {@link Jenkins} instance
+     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
+     * @since 1.590
+     */
+    public static @Nonnull Jenkins getActiveInstance() throws IllegalStateException {
+        Jenkins instance = HOLDER.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+        }
+        return instance;
+    }
+    
+    /**
+     * Gets the {@link Jenkins} singleton.
+     * {@link #getActiveInstance()} provides the checked versions of the method. 
+     * @return The instance. Null if the {@link Jenkins} instance has not been started, 
+     * or was already shut down
      */
     @CLIResolver
     @CheckForNull
@@ -2034,7 +2052,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
-        return new Callable<ClockDifference, IOException>() {
+        return new MasterToSlaveCallable<ClockDifference, IOException>() {
             public ClockDifference call() throws IOException {
                 return new ClockDifference(0);
             }
@@ -2602,11 +2620,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IOException(projectsDir+" is not a directory");
             throw new IOException("Unable to create "+projectsDir+"\nPermission issue? Please create this directory manually.");
         }
-        File[] subdirs = projectsDir.listFiles(new FileFilter() {
-            public boolean accept(File child) {
-                return child.isDirectory() && Items.getConfigFile(child).exists();
-            }
-        });
+        File[] subdirs = projectsDir.listFiles(); 
 
         final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<String>());
 
@@ -2652,6 +2666,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (final File subdir : subdirs) {
             g.requires(loadHudson).attains(JOB_LOADED).notFatal().add("Loading job "+subdir.getName(),new Executable() {
                 public void run(Reactor session) throws Exception {
+                    if(!Items.getConfigFile(subdir).exists()) {
+                        //Does not have job config file, so it is not a jenkins job hence skip it
+                        return;
+                    }
                     TopLevelItem item = (TopLevelItem) Items.load(Jenkins.this, subdir);
                     items.put(item.getName(), item);
                     loadedNames.add(item.getName());

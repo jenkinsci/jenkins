@@ -29,14 +29,13 @@ import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
-import jenkins.model.Jenkins;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
+import jenkins.security.SlaveToMasterCallable;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
 
@@ -150,7 +149,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                 VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
                 if (channelToMaster!=null) {
-                    killers = channelToMaster.call(new Callable<List<ProcessKiller>, IOException>() {
+                    killers = channelToMaster.call(new SlaveToMasterCallable<List<ProcessKiller>, IOException>() {
                         public List<ProcessKiller> call() throws IOException {
                             return new ArrayList<ProcessKiller>(ProcessKiller.all());
                         }

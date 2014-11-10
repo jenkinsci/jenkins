@@ -26,6 +26,8 @@ package hudson.slaves;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.AbortException;
+import hudson.remoting.ChannelBuilder;
+import hudson.util.IOUtils;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Computer;
@@ -36,7 +38,6 @@ import hudson.model.Queue;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.User;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
@@ -48,18 +49,10 @@ import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
 import hudson.util.io.ReopenableFileOutputStream;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
-import jenkins.model.Jenkins;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
-import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.apache.commons.io.IOUtils;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -83,6 +76,14 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import static hudson.slaves.SlaveComputer.LogHolder.*;
+import jenkins.security.ChannelConfigurator;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.slaves.JnlpSlaveAgentProtocol;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpRedirect;
 
 
 /**
@@ -353,7 +354,15 @@ public class SlaveComputer extends Computer {
      *      so the implementation of the listener doesn't need to do that again.
      */
     public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
-        Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE, in,out, launchLog);
+        ChannelBuilder cb = new ChannelBuilder(nodeName,threadPoolForRemoting)
+            .withMode(Channel.Mode.NEGOTIATE)
+            .withHeaderStream(launchLog);
+
+        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+            cc.onChannelBuilding(cb,this);
+        }
+
+        Channel channel = cb.build(in,out);
         setChannel(channel,launchLog,listener);
     }
 
@@ -401,7 +410,7 @@ public class SlaveComputer extends Computer {
         return channel.call(new LoadingTime(true));
     }
 
-    static class LoadingCount implements Callable<Integer,RuntimeException> {
+    static class LoadingCount extends MasterToSlaveCallable<Integer,RuntimeException> {
         private final boolean resource;
         LoadingCount(boolean resource) {
             this.resource = resource;
@@ -412,13 +421,13 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    static class LoadingPrefetchCacheCount implements Callable<Integer,RuntimeException> {
+    static class LoadingPrefetchCacheCount extends MasterToSlaveCallable<Integer,RuntimeException> {
         @Override public Integer call() {
             return Channel.current().classLoadingPrefetchCacheCount.get();
         }
     }
 
-    static class LoadingTime implements Callable<Long,RuntimeException> {
+    static class LoadingTime extends MasterToSlaveCallable<Long,RuntimeException> {
         private final boolean resource;
         LoadingTime(boolean resource) {
             this.resource = resource;
@@ -685,19 +694,19 @@ public class SlaveComputer extends Computer {
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
 
-    private static final class SlaveVersion implements Callable<String,IOException> {
+    private static final class SlaveVersion extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             try { return Launcher.VERSION; }
             catch (Throwable ex) { return "< 1.335"; } // Older slave.jar won't have VERSION
         }
     }
-    private static final class DetectOS implements Callable<Boolean,IOException> {
+    private static final class DetectOS extends MasterToSlaveCallable<Boolean,IOException> {
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
         }
     }
 
-    private static final class DetectDefaultCharset implements Callable<String,IOException> {
+    private static final class DetectDefaultCharset extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             return Charset.defaultCharset().name();
         }
@@ -714,7 +723,7 @@ public class SlaveComputer extends Computer {
         static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
     }
 
-    private static class SlaveInitializer implements Callable<Void,RuntimeException> {
+    private static class SlaveInitializer extends MasterToSlaveCallable<Void,RuntimeException> {
         public Void call() {
             // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
@@ -768,7 +777,7 @@ public class SlaveComputer extends Computer {
         return SlaveSystemInfo.all();
     }
 
-    private static class SlaveLogFetcher implements Callable<List<LogRecord>,RuntimeException> {
+    private static class SlaveLogFetcher extends MasterToSlaveCallable<List<LogRecord>,RuntimeException> {
         public List<LogRecord> call() {
             return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
         }
