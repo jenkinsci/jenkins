@@ -63,6 +63,11 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
     public Future<Executable> getStartCondition() {
         return start;
     }
+    
+    public synchronized void setAsCancelled(){
+        start.setAsCancelled();
+        super.setAsCancelled();
+    }
 
     public final Executable waitForStart() throws InterruptedException, ExecutionException {
         return getStartCondition().get();
