@@ -354,7 +354,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             } else {
                 relativePath = n;
             }
-            ZipEntry e = new ZipEntry(relativePath);
+            // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
+            // TODO On Linux file names can contain backslashes which should not treated as file separators.
+            //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
+            //      but not the file separator char of the (maybe remote) "dir".
+            ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
             VirtualFile f = dir.child(n);
             e.setTime(f.lastModified());
             zos.putNextEntry(e);
