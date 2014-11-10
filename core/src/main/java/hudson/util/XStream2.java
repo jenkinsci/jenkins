@@ -26,6 +26,7 @@ package hudson.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
@@ -67,6 +68,7 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -303,34 +305,50 @@ public class XStream2 extends XStream {
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
         }
+        
+        /**
+         * Gets a converter for the class.
+         * Non-checked version is {@link #findConverter(java.lang.Class)}.
+         * @param requiredClass Class to be converted
+         * @return Non-null {@link Converter}
+         * @throws XStreamException Cannot find a converter for the class
+         */
+        private @Nonnull Converter getConverter(@Nonnull Class<?> requiredClass) throws XStreamException {
+            final Converter converter = findConverter(requiredClass.getClass());
+            if (converter == null) {
+                throw new XStreamException("Cannot find a converter for class "+requiredClass.getClass());
+            }
+            return converter;
+        }
 
-        private Converter findConverter(Class<?> t) {
+        private @CheckForNull Converter findConverter(@CheckForNull Class<?> t) {
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
                 return result == this ? null : result;
             try {
-                if(t==null || t.getClassLoader()==null)
-                    return null;
-                Class<?> cl = t.getClassLoader().loadClass(t.getName() + "$ConverterImpl");
-                Constructor<?> c = cl.getConstructors()[0];
+                final ClassLoader classLoader = t != null ? t.getClassLoader() : null;
+                if(classLoader != null) {
+                    Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
+                    Constructor<?> c = cl.getConstructors()[0];
 
-                Class<?>[] p = c.getParameterTypes();
-                Object[] args = new Object[p.length];
-                for (int i = 0; i < p.length; i++) {
-                    if(p[i]==XStream.class || p[i]==XStream2.class)
-                        args[i] = xstream;
-                    else if(p[i]== Mapper.class)
-                        args[i] = xstream.getMapper();
-                    else
-                        throw new InstantiationError("Unrecognized constructor parameter: "+p[i]);
+                    Class<?>[] p = c.getParameterTypes();
+                    Object[] args = new Object[p.length];
+                    for (int i = 0; i < p.length; i++) {
+                        if(p[i]==XStream.class || p[i]==XStream2.class)
+                            args[i] = xstream;
+                        else if(p[i]== Mapper.class)
+                            args[i] = xstream.getMapper();
+                        else
+                            throw new InstantiationError("Unrecognized constructor parameter: "+p[i]);
 
+                    }
+                    ConverterMatcher cm = (ConverterMatcher)c.newInstance(args);
+                    result = cm instanceof SingleValueConverter
+                            ? new SingleValueConverterWrapper((SingleValueConverter)cm)
+                            : (Converter)cm;
+                    cache.put(t, result);
                 }
-                ConverterMatcher cm = (ConverterMatcher)c.newInstance(args);
-                result = cm instanceof SingleValueConverter
-                        ? new SingleValueConverterWrapper((SingleValueConverter)cm)
-                        : (Converter)cm;
-                cache.put(t, result);
                 return result;
             } catch (ClassNotFoundException e) {
                 cache.put(t, this);  // See above.. this object in cache represents null
@@ -350,16 +368,27 @@ public class XStream2 extends XStream {
             }
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return findConverter(type)!=null;
         }
-
+        
+        /**
+         * @throws XStreamException Cannot find a converter for the source class
+         */  
+        @Override 
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            findConverter(source.getClass()).marshal(source,writer,context);
+            final Converter converter = getConverter(source.getClass());
+            converter.marshal(source,writer,context);
         }
 
+        /**
+         * @throws XStreamException Cannot find a converter for the class in the context
+         */  
+        @Override 
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            return findConverter(context.getRequiredType()).unmarshal(reader,context);
+            final Converter converter = getConverter(context.getRequiredType());
+            return converter.unmarshal(reader,context);
         }
     }
 
