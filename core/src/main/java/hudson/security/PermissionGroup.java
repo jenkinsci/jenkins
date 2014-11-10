@@ -47,7 +47,13 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      */
     public final Localizable title;
 
-    public PermissionGroup(Class owner, Localizable title) {
+    /**
+     * Both creates a registers a new permission group.
+     * @param owner sets {@link #owner}
+     * @param title sets {@link #title}
+     * @throws IllegalStateException if this group was already registered
+     */
+    public PermissionGroup(Class owner, Localizable title) throws IllegalStateException {
         this.owner = owner;
         this.title = title;
         register(this);
