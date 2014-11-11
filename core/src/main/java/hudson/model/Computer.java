@@ -211,7 +211,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public File getLogFile() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
-        dir.mkdirs();
+        if (!dir.exists() && !dir.mkdirs()) {
+            LOGGER.severe("Failed to create slave log directory " + dir.getAbsolutePath());
+        }
         return new File(dir,"slave.log");
     }
 
