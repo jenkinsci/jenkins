@@ -31,6 +31,8 @@ import hudson.model.User;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.io.Serializable;
+
 /**
  * Records why an {@linkplain Executor#interrupt() executor is interrupted}.
  *
@@ -44,13 +46,16 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Two {@link CauseOfInterruption}s that are {@linkplain Object#equals(Object) equal} will get
  * merged together.
  *
+ * <h2>Persistence</h2>
+ * The implementation should be serializable both in Java serialization and XStream.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.425
  * @see Executor#interrupt(Result, CauseOfInterruption...)
  * @see InterruptedBuildAction
  */
 @ExportedBean
-public abstract class CauseOfInterruption {
+public abstract class CauseOfInterruption implements Serializable {
     /**
      * Human readable description of why the build is cancelled.
      */
@@ -103,5 +108,9 @@ public abstract class CauseOfInterruption {
         public int hashCode() {
             return user.hashCode();
         }
+
+        private static final long serialVersionUID = 1L;
     }
+
+    private static final long serialVersionUID = 1L;
 }
