@@ -69,6 +69,7 @@ public class JSONSignatureValidator {
                     } catch (CertificateNotYetValidException e) {
                         warning = FormValidation.warning(e,String.format("Certificate %s is not yet valid in %s",cert.toString(),name));
                     }
+                    LOGGER.log(Level.FINE, "Add certificate found in json doc: \r\n\tsubjectDN: {0}\r\n\tissuer: {1}", new Object[]{c.getSubjectDN(), c.getIssuerDN()});
                     certs.add(c);
                 }
 
@@ -154,7 +155,10 @@ public class JSONSignatureValidator {
                 in.close();
             }
             try {
-                anchors.add(new TrustAnchor((X509Certificate) certificate, null));
+                TrustAnchor certificateAuthority = new TrustAnchor((X509Certificate) certificate, null);
+                LOGGER.log(Level.FINE, "Add Certificate Authority {0}: {1}",
+                        new Object[]{cert, (certificateAuthority.getTrustedCert() == null ? null : certificateAuthority.getTrustedCert().getSubjectDN())});
+                anchors.add(certificateAuthority);
             } catch (IllegalArgumentException e) {
                 LOGGER.log(Level.WARNING,
                         String.format("The name constraints in the certificate resource %s could not be "
@@ -183,7 +187,10 @@ public class JSONSignatureValidator {
                     in.close();
                 }
                 try {
-                    anchors.add(new TrustAnchor((X509Certificate) certificate, null));
+                    TrustAnchor certificateAuthority = new TrustAnchor((X509Certificate) certificate, null);
+                    LOGGER.log(Level.FINE, "Add Certificate Authority {0}: {1}",
+                            new Object[]{cert, (certificateAuthority.getTrustedCert() == null ? null : certificateAuthority.getTrustedCert().getSubjectDN())});
+                    anchors.add(certificateAuthority);
                 } catch (IllegalArgumentException e) {
                     LOGGER.log(Level.WARNING,
                             String.format("The name constraints in the certificate file %s could not be "
