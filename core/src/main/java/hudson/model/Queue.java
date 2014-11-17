@@ -1377,6 +1377,25 @@ public class Queue extends ResourceController implements Saveable {
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task)
          */
         @Nonnull Authentication getDefaultAuthentication();
+
+        /**
+         * This method allows the task to provide the default fallback authentication object to be used
+         * when {@link QueueItemAuthenticator} fails to authenticate the build.
+         *
+         * <p>
+         * When the task execution touches other objects inside Jenkins, the access control is performed
+         * based on whether this {@link Authentication} is allowed to use them.
+         *
+         * <p>
+         * This method was added to an interface after it was created, so plugins built against
+         * older versions of Jenkins may not have this method implemented. Called private method _getDefaultAuthenticationOf(Task) on {@link Tasks}
+         * to avoid {@link AbstractMethodError}.
+         *
+         * @since 1.592
+         * @see QueueItemAuthenticator
+         * @see Tasks#getDefaultAuthenticationOf(Queue.Task, Queue.Item)
+         */
+        @Nonnull Authentication getDefaultAuthentication(Queue.Item item);
     }
 
     /**
@@ -1649,7 +1668,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (a!=null)
                     return a;
             }
-            return Tasks.getDefaultAuthenticationOf(task);
+            return Tasks.getDefaultAuthenticationOf(task, this);
         }
 
 

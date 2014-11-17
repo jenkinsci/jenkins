@@ -1,22 +1,22 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Brian Westrich, Erik Ramfelt, Ertan Deniz, Jean-Baptiste Quenot,
  * Luca Domenico Milanesio, R. Tyler Ballance, Stephen Connolly, Tom Huybrechts,
  * id:cactusman, Yahoo! Inc., Andrew Bayer, Manufacture Francaise des Pneumatiques
  * Michelin, Romain Seguy
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -176,7 +176,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * The quiet period. Null to delegate to the system default.
      */
     private volatile Integer quietPeriod = null;
-    
+
     /**
      * The retry count. Null to delegate to the system default.
      */
@@ -260,7 +260,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.410
      */
     private String customWorkspace;
-    
+
     protected AbstractProject(ItemGroup parent, String name) {
         super(parent,name);
         buildMixIn = createBuildMixIn();
@@ -510,11 +510,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return b != null ? b.getWorkspace() : null;
 
     }
-    
+
     /**
      * Various deprecated methods in this class all need the 'current' build.  This method returns
      * the build suitable for that purpose.
-     * 
+     *
      * @return An AbstractBuild for deprecated methods to use.
      */
     private AbstractBuild getBuildForDeprecatedMethods() {
@@ -567,7 +567,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
         return null;
     }
-    
+
     private R getSomeBuildWithExistingWorkspace() throws IOException, InterruptedException {
         int cnt=0;
         for (R b = getLastBuild(); cnt<5 && b!=null; b=b.getPreviousBuild()) {
@@ -630,13 +630,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Sets the custom quiet period of this project, or revert to the global default if null is given. 
+     * Sets the custom quiet period of this project, or revert to the global default if null is given.
      */
     public void setQuietPeriod(Integer seconds) throws IOException {
         this.quietPeriod = seconds;
         save();
     }
-    
+
     public boolean hasCustomScmCheckoutRetryCount(){
         return scmCheckoutRetryCount != null;
     }
@@ -675,7 +675,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public boolean isDisabled() {
         return disabled;
     }
-    
+
     /**
      * Validates the retry count Regex
      */
@@ -685,7 +685,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return FormValidation.ok();
         if (!value.matches("[0-9]*")) {
             return FormValidation.error("Invalid retry count");
-        } 
+        }
         return FormValidation.ok();
     }
 
@@ -693,7 +693,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Marks the build as disabled.
      * The method will ignore the disable command if {@link #supportsMakeDisabled()}
      * returns false. The enable command will be executed in any case.
-     * @param b true - disable, false - enable 
+     * @param b true - disable, false - enable
      * @since 1.585 Do not disable projects if {@link #supportsMakeDisabled()} returns false
      */
     public void makeDisabled(boolean b) throws IOException {
@@ -702,7 +702,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.disabled = b;
         if(b)
             Jenkins.getInstance().getQueue().cancel(this);
-        
+
         save();
         ItemListener.fireOnUpdated(this);
     }
@@ -795,7 +795,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public boolean scheduleBuild() {
     	return getParameterizedJobMixIn().scheduleBuild();
     }
-    
+
 	/**
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
@@ -803,7 +803,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public boolean scheduleBuild(int quietPeriod) {
     	return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
     }
-    
+
     /**
      * Schedules a build of this project.
      *
@@ -878,7 +878,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public QueueTaskFuture<R> scheduleBuild2(int quietPeriod) {
         return scheduleBuild2(quietPeriod, new LegacyCodeCause());
     }
-    
+
     /**
      * Schedules a build of this project, and returns a {@link Future} object
      * to wait for the completion of the build.
@@ -1045,7 +1045,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public Object getSameNodeConstraint() {
-        return this; // in this way, any member that wants to run with the main guy can nominate the project itself 
+        return this; // in this way, any member that wants to run with the main guy can nominate the project itself
     }
 
     public final Task getOwnerTask() {
@@ -1056,6 +1056,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public Authentication getDefaultAuthentication() {
         // backward compatible behaviour.
         return ACL.SYSTEM;
+    }
+
+    @Nonnull
+    @Override
+    public Authentication getDefaultAuthentication(Queue.Item item) {
+        return getDefaultAuthentication();
     }
 
     /**
@@ -1095,7 +1101,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return Messages.AbstractProject_BuildInProgress(lbn, eta);
         }
     }
-    
+
     /**
      * Because the downstream build is in progress, and we are configured to wait for that.
      */
@@ -1255,7 +1261,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             new DiskSpaceMonitor().markNodeOfflineIfDiskspaceIsTooLow(build.getBuiltOn().toComputer());
             throw e;
         }
-        
+
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
         if (r) {
             // Only calcRevisionsFromBuild if checkout was successful. Note that modern SCM implementations
@@ -1426,7 +1432,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 WorkspaceList l = b.getBuiltOn().toComputer().getWorkspaceList();
                 return pollWithWorkspace(listener, scm, b, ws, l);
             }
-			
+
         } else {
             // polling without workspace
             LOGGER.fine("Polling SCM changes of " + getName());
@@ -1474,7 +1480,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      */
     private boolean isAllSuitableNodesOffline(R build) {
-        Label label = getAssignedLabel();        
+        Label label = getAssignedLabel();
         List<Node> allNodes = Jenkins.getInstance().getNodes();
 
         if (label != null) {
@@ -1485,14 +1491,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             //Returns true, if all suitable nodes are offline
             return label.isOffline();
         } else {
-            if(canRoam) {                 
-                for (Node n : Jenkins.getInstance().getNodes()) {                
+            if(canRoam) {
+                for (Node n : Jenkins.getInstance().getNodes()) {
                     Computer c = n.toComputer();
                     if (c != null && c.isOnline() && c.isAcceptingTasks() && n.getMode() == Mode.NORMAL) {
                         // Some executor is online that  is ready and this job can run anywhere
                         return false;
                     }
-                }                
+                }
                 //We can roam, check that the master is set to be used as much as possible, and not tied jobs only.
                 if(Jenkins.getInstance().getMode() == Mode.EXCLUSIVE) {
                     return true;
@@ -1508,20 +1514,20 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         FilePath ws = build.getWorkspace();
         Label label = getAssignedLabel();
 
-        if (isAllSuitableNodesOffline(build)) {            
+        if (isAllSuitableNodesOffline(build)) {
             Collection<Cloud> applicableClouds = label == null ? Jenkins.getInstance().clouds : label.getClouds();
-            return applicableClouds.isEmpty() ? WorkspaceOfflineReason.all_suitable_nodes_are_offline : WorkspaceOfflineReason.use_ondemand_slave;            
+            return applicableClouds.isEmpty() ? WorkspaceOfflineReason.all_suitable_nodes_are_offline : WorkspaceOfflineReason.use_ondemand_slave;
         }
 
         if (ws==null || !ws.exists()) {
             return WorkspaceOfflineReason.nonexisting_workspace;
         }
-        
+
         Node builtOn = build.getBuiltOn();
         if (builtOn == null) { // node built-on doesn't exist anymore
             return WorkspaceOfflineReason.builton_node_gone;
         }
-        
+
         if (builtOn.toComputer() == null) { // node still exists, but has 0 executors - o.s.l.t.
             return WorkspaceOfflineReason.builton_node_no_executors;
         }
@@ -1639,10 +1645,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             if (buildTrigger != null)
                 if (buildTrigger.getChildProjects(ap).contains(this))
                     result.add(ap);
-        }        
+        }
         return result;
-    }    
-    
+    }
+
     /**
      * Gets all the upstream projects including transitive upstream projects.
      *
@@ -1716,7 +1722,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     protected HistoryWidget createHistoryWidget() {
         return buildMixIn.createHistoryWidget();
     }
-    
+
     public boolean isParameterized() {
         return getParameterizedJobMixIn().isParameterized();
     }
@@ -1939,7 +1945,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         makeDisabled(false);
         return new HttpRedirect(".");
     }
-    
+
 
     /**
      * RSS feed for changes in this project.
@@ -2023,8 +2029,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          * <p>
          * The default implementation returns true for everything.
          *
-         * @see BuildStepDescriptor#isApplicable(Class) 
-         * @see BuildWrapperDescriptor#isApplicable(AbstractProject) 
+         * @see BuildStepDescriptor#isApplicable(Class)
+         * @see BuildWrapperDescriptor#isApplicable(AbstractProject)
          * @see TriggerDescriptor#isApplicable(Item)
          */
         @Override
@@ -2095,7 +2101,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         	else
         		return FormValidation.ok();
         }
-        
+
         public AutoCompletionCandidates doAutoCompleteUpstreamProjects(@QueryParameter String value) {
             AutoCompletionCandidates candidates = new AutoCompletionCandidates();
             List<Job> jobs = Jenkins.getInstance().getItems(Job.class);
@@ -2242,7 +2248,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * <p>
      * If this path is relative, it's resolved against {@link Node#getRootPath()} on the node where this workspace
-     * is prepared. 
+     * is prepared.
      *
      * @since 1.410
      */
