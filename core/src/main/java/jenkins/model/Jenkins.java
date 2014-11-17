@@ -1710,13 +1710,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public void setNodes(final List<? extends Node> nodes) throws IOException {
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                Jenkins.this.slaves = new NodeList(nodes);
-                updateComputerList();
-            }
-        });
+        Jenkins.this.slaves = new NodeList(nodes);
+        updateComputerList();
         trimLabels();
         save();
     }
