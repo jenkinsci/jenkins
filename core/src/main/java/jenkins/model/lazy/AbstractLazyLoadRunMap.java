@@ -585,6 +585,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             numberOnDisk = a;
         }
 
+        entrySet.clearCache();
+
         return unwrap(old);
     }
 
@@ -741,6 +743,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         numberOnDisk = a;
         BuildReference<R> old = copy.byId.remove(getIdOf(run));
         this.index = copy;
+
+        entrySet.clearCache();
 
         return unwrap(old)!=null;
     }
