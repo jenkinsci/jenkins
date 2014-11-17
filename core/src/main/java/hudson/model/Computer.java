@@ -135,7 +135,7 @@ import static javax.servlet.http.HttpServletResponse.*;
 public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
-    // TODO: 
+    // TODO:
     private final CopyOnWriteArrayList<OneOffExecutor> oneOffExecutors = new CopyOnWriteArrayList<OneOffExecutor>();
 
     private int numExecutors;
@@ -144,7 +144,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Contains info about reason behind computer being offline.
      */
     protected volatile OfflineCause offlineCause;
-    
+
     private long connectTime = 0;
 
     /**
@@ -180,7 +180,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public List<ComputerPanelBox> getComputerPanelBoxs(){
         return ComputerPanelBox.all(this);
     }
-    
+
     /**
      * Returns the transient {@link Action}s associated with the computer.
      */
@@ -342,7 +342,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     	connectTime = System.currentTimeMillis();
     	return _connect(forceReconnect);
     }
-    
+
     /**
      * Allows implementing-classes to provide an implementation for the connect method.
      *
@@ -375,13 +375,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Gets the time (since epoch) when this computer connected.
-     *  
+     *
      * @return The time in ms since epoch when this computer last connected.
      */
     public final long getConnectTime() {
     	return connectTime;
     }
-    
+
     /**
      * Disconnect this computer.
      *
@@ -591,7 +591,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @param cause
      *      If the first argument is true, specify the reason why the node is being put
-     *      offline. 
+     *      offline.
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         offlineCause = temporarilyOffline ? cause : null;
@@ -713,14 +713,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private synchronized void setNumExecutors(int n) {
         this.numExecutors = n;
-        int diff = executors.size()-n;
+        final int diff = executors.size()-n;
 
         if (diff>0) {
             // we have too many executors
             // send signal to all idle executors to potentially kill them off
-            for( Executor e : executors )
-                if(e.isIdle())
-                    e.interrupt();
+            // need the Queue maintenance lock held to prevent concurrent job assignment on the idle executors
+            Queue.withLock(new Runnable() {
+                @Override
+                public void run() {
+                    for( Executor e : executors )
+                        if(e.isIdle())
+                            e.interrupt();
+                }
+            });
         }
 
         if (diff<0) {
@@ -1002,7 +1008,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.300
      * @return
      *      null if the host name cannot be computed (for example because this computer is offline,
-     *      because the slave is behind the firewall, etc.) 
+     *      because the slave is behind the firewall, etc.)
      */
     public String getHostName() throws IOException, InterruptedException {
         if(hostNameCached)
@@ -1197,7 +1203,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);
-        
+
         Node node = getNode();
         if (node == null) {
             throw new ServletException("No such node " + nodeName);
@@ -1382,7 +1388,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
                 newLocation.getParentFile().mkdirs();
                 boolean relocationSuccessfull=f.renameTo(newLocation);
-                if (relocationSuccessfull) { // The operation will fail if mkdir fails 
+                if (relocationSuccessfull) { // The operation will fail if mkdir fails
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
                 } else {
                     LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
