@@ -57,6 +57,11 @@ public abstract class QueueItemAuthenticatorProvider implements ExtensionPoint {
             }
             return delegate.next();
         }
+
+        @Override
+        public void remove() {
+                throw new UnsupportedOperationException("remove");
+            }
     }
 
     private static class IterableImpl implements Iterable<QueueItemAuthenticator> {
