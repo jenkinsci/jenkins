@@ -65,6 +65,7 @@ import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
+import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
 import hudson.util.TimeUnit2;
@@ -1643,7 +1644,7 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Nonnull
         public Authentication authenticate() {
-            for (QueueItemAuthenticator auth : QueueItemAuthenticatorConfiguration.get().getAuthenticators()) {
+            for (QueueItemAuthenticator auth : QueueItemAuthenticatorProvider.authenticators()) {
                 Authentication a = auth.authenticate(this);
                 if (a!=null)
                     return a;
