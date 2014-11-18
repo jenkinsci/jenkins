@@ -322,7 +322,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>external-monitor-job</artifactId>
-                  <version>1.2</version>
+                  <version>1.4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
