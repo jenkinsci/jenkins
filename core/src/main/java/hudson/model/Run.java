@@ -729,7 +729,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public @Nonnull String getDurationString() {
         if(isBuilding())
             return Messages.Run_InProgressDuration(
-                    Util.getTimeSpanString(System.currentTimeMillis()-timestamp));
+                    Util.getTimeSpanString(System.currentTimeMillis()-startTime));
         return Util.getTimeSpanString(duration);
     }
 
