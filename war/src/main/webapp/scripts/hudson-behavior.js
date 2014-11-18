@@ -1554,51 +1554,149 @@ Form.findMatchingInput = function(base, name) {
 
 function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
-    $('buildHistory').headers = ["n",nBuild];
+
+    var bh = $('buildHistory');
+    bh.headers = ["n",nBuild];
+
+    function getDataTable(buildHistoryDiv) {
+        return $(buildHistoryDiv).getElementsBySelector('table.pane')[0];
+    }
+
+    function removeDateSeparatorRows() {
+        var dataTable = getDataTable(bh);
+        var rows = dataTable.rows;
+        var i = rows.length - 1;
+
+        while (i >= 0) {
+            if (Element.hasClassName(rows[i], 'build-date-separator')) {
+                Element.remove(rows[i]);
+            }
+            i--;
+        }
+    }
+
+    var month = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec");
+    function toDateInfo(timeMillis) {
+        var date = new Date(parseInt(timeMillis));
+        return {
+            date: date,
+            asString: month[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear()
+        };
+    }
+
+    function isSameDay(date1, date2) {
+        if (date1.getDate() !== date2.getDate()) {
+            return false;
+        }
+        if (date1.getMonth() !== date2.getMonth()) {
+            return false;
+        }
+        if (date1.getFullYear() !== date2.getFullYear()) {
+            return false;
+        }
+        return true;
+    }
+
+    function insertDateSeparatorRows() {
+        var dataTable = getDataTable(bh);
+        var rows = dataTable.rows;
+        var i = rows.length - 1;
+        var currentDateInfo = undefined;
+        var timeNow = new Date();
+
+        function insertDateSeparatorRow(dateInfo, atIndex) {
+            var separatorRow = document.createElement('tr');
+            var td = document.createElement('td');
+            var div = document.createElement('div');
+
+            Element.addClassName(separatorRow, 'build-date-separator');
+            separatorRow.appendChild(td);
+            td.appendChild(div);
+            td.setAttribute('colspan', '4')
+
+            var dateSpan = document.createElement('span');
+            div.appendChild(dateSpan);
+            dateSpan.textContent = dateInfo.asString;
+
+            if (isSameDay(timeNow, dateInfo.date)) {
+                var todaySpan = document.createElement('span');
+
+                todaySpan.textContent = '(today)';
+                Element.addClassName(todaySpan, 'build-date-today');
+                div.appendChild(todaySpan);
+            }
+
+            rows[atIndex].parentNode.insertBefore(separatorRow, rows[atIndex]);
+        }
+
+        while (i >= 0) {
+            if (Element.hasClassName(rows[i], "build-row")) {
+                var buildRow = rows[i];
+                var buildTimeMillis = buildRow.getAttribute("buildTimeMillis");
+                var dateInfo = toDateInfo(buildTimeMillis);
+
+                if (currentDateInfo === undefined) {
+                    currentDateInfo = dateInfo;
+                }
+
+                if (dateInfo.asString !== currentDateInfo.asString) {
+                    // A different date. Insert the "current" date row into the table.
+                    insertDateSeparatorRow(currentDateInfo, (i + 1));
+                    currentDateInfo = dateInfo;
+                }
+            }
+            i--;
+        }
+
+        if (currentDateInfo !== undefined) {
+            insertDateSeparatorRow(currentDateInfo, 0);
+        }
+    }
+
+    insertDateSeparatorRows();
+
 
     function updateBuilds() {
         if(isPageVisible()){
-            var bh = $('buildHistory');
             if (bh.headers == null) {
                 // Yahoo.log("Missing headers in buildHistory element");
-            }
-
-            function getDataTable(buildHistoryDiv) {
-                return $(buildHistoryDiv).getElementsBySelector('table.pane')[0];
             }
 
             new Ajax.Request(ajaxUrl, {
                 requestHeaders: bh.headers,
                 onSuccess: function(rsp) {
-                    var dataTable = getDataTable(bh);
-                    var rows = dataTable.rows;
 
-                    //delete rows with transitive data
-                    while (rows.length > 0 && Element.hasClassName(rows[0], "transitive")) {
-                        Element.remove(rows[0]);
-                    }
-
-                    // insert new rows
-                    var div = document.createElement('div');
-                    div.innerHTML = rsp.responseText;
-                    Behaviour.applySubtree(div);
-
-                    var pivot = rows[0];
-                    var newRows = getDataTable(div).rows;
-                    while (newRows.length > 0) {
-                        if (pivot !== undefined) {
-                            // The data table has rows.  Insert before a "pivot" row (first row).
-                            pivot.parentNode.insertBefore(newRows[0], pivot);
-                        } else {
-                            // The data table has no rows.  In this case, we just add all new rows directly to the
-                            // table, one after the other i.e. we don't insert before a "pivot" row (first row).
-                            dataTable.appendChild(newRows[0]);
+                    function updateBuildRows() {
+                        var dataTable = getDataTable(bh);
+                        var rows = dataTable.rows;
+                        //delete rows with transitive data
+                        while (rows.length > 0 && Element.hasClassName(rows[0], "transitive")) {
+                            Element.remove(rows[0]);
                         }
+                        // insert new rows
+                        var div = document.createElement('div');
+                        div.innerHTML = rsp.responseText;
+                        Behaviour.applySubtree(div);
+                        var pivot = rows[0];
+                        var newRows = getDataTable(div).rows;
+                        while (newRows.length > 0) {
+                            if (pivot !== undefined) {
+                                // The data table has rows.  Insert before a "pivot" row (first row).
+                                pivot.parentNode.insertBefore(newRows[0], pivot);
+                            } else {
+                                // The data table has no rows.  In this case, we just add all new rows directly to the
+                                // table, one after the other i.e. we don't insert before a "pivot" row (first row).
+                                dataTable.appendChild(newRows[0]);
+                            }
+                        }
+                        // next update
+                        bh.headers = ["n", rsp.getResponseHeader("n")];
+                        window.setTimeout(updateBuilds, 5000);
                     }
 
-                    // next update
-                    bh.headers = ["n",rsp.getResponseHeader("n")];
-                    window.setTimeout(updateBuilds, 5000);
+                    removeDateSeparatorRows();
+                    updateBuildRows();
+                    insertDateSeparatorRows();
                 }
             });
         } else {
