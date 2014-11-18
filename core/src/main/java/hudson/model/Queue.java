@@ -318,7 +318,7 @@ public class Queue extends ResourceController implements Saveable {
         }
     });
 
-    public Queue(LoadBalancer loadBalancer) {
+    public Queue(@Nonnull LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
         // if all the executors are busy doing something, then the queue won't be maintained in
         // timely fashion, so use another thread to make sure it happens.
@@ -329,7 +329,7 @@ public class Queue extends ResourceController implements Saveable {
         return loadBalancer;
     }
 
-    public void setLoadBalancer(LoadBalancer loadBalancer) {
+    public void setLoadBalancer(@Nonnull LoadBalancer loadBalancer) {
         if(loadBalancer==null)  throw new IllegalArgumentException();
         this.loadBalancer = loadBalancer.sanitize();
     }
@@ -530,8 +530,9 @@ public class Queue extends ResourceController implements Saveable {
      *
      * @since 1.311
      * @return
-     *      null if this task is already in the queue and therefore the add operation was no-op.
-     *      Otherwise indicates the {@link WaitingItem} object added, although the nature of the queue
+     *      {@link hudson.model.queue.ScheduleResult.Existing} if this task is already in the queue and
+     *      therefore the add operation was no-op. Otherwise {@link hudson.model.queue.ScheduleResult.Created}
+     *      indicates the {@link WaitingItem} object added, although the nature of the queue
      *      is that such {@link Item} only captures the state of the item at a particular moment,
      *      and by the time you inspect the object, some of its information can be already stale.
      *
@@ -598,7 +599,7 @@ public class Queue extends ResourceController implements Saveable {
         if (queueUpdated)   scheduleMaintenance();
 
         // REVISIT: when there are multiple existing items in the queue that matches the incoming one,
-        // whether the new one should affect all existing ones or not is debateable. I for myself
+        // whether the new one should affect all existing ones or not is debatable. I for myself
         // thought this would only affect one, so the code was bit of surprise, but I'm keeping the current
         // behaviour.
         return ScheduleResult.existing(duplicatesInQueue.get(0));
