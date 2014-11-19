@@ -32,7 +32,7 @@ THE SOFTWARE.
   <tr class="build-row ${transitive}" buildTimeMillis="${build.timestamp.time.time}">
     <td class="pane build-name">
       <a class="build-status-link" href="${link}console"><l:icon alt="${build.iconColor.description} &gt; ${%Console Output}" class="${build.buildStatusIconClassName} icon-sm" tooltip="${build.iconColor.description} &gt; ${%Console Output}"/></a><st:nbsp/>
-      ${build.displayName}
+      <span class="break-words" breakAfter="3">${build.displayName}</span>
     </td>
     <td class="pane build-details">
       <a class="tip model-link inside" href="${link}">
@@ -43,7 +43,7 @@ THE SOFTWARE.
         <t:buildProgressBar build="${build}"/>
       </j:if>
       <j:if test="${!empty build.description}">
-        <div class="desc">
+        <div class="desc break-words" breakAfter="15">
           <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
         </div>
       </j:if>

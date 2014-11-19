@@ -961,13 +961,13 @@ table.parameters > tbody:hover {
 }
 
 #buildHistory .build-name {
-  width: 30%;
+  width: 25%;
 }
 #buildHistory .build-details {
-  width: 50%;
+  width: 45%;
 }
 #buildHistory .build-stop, #buildHistory .build-badge {
-  width: 10%;
+  width: 15%;
 }
 
 /* ========================= editable combobox style ========================= */

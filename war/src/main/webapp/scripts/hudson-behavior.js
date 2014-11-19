@@ -1552,6 +1552,40 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
+function breakWords(container) {
+    container.getElementsBySelector(".break-words").each(function(element) {
+        if (Element.hasClassName(element, 'words-broken')) {
+            // already done.
+            return;
+        }
+
+        var maxWordSize = element.getAttribute('breakAfter');
+        var words = element.textContent.split(/\s+/);
+        var newTextContent = '';
+
+        var splitRegex = new RegExp('.{1,' + maxWordSize + '}', 'g');
+        for (var i = 0; i < words.length; i++) {
+            var word = words[i];
+            var wordTokens = word.match(splitRegex);
+            if (wordTokens) {
+                for (var ii = 0; ii < wordTokens.length; ii++) {
+                    if (newTextContent.length === 0) {
+                        newTextContent += wordTokens[ii];
+                    } else {
+                        newTextContent += String.fromCharCode(8203) + wordTokens[ii];
+                    }
+                }
+            } else {
+                newTextContent += word;
+            }
+            newTextContent += ' ';
+        }
+
+        element.textContent = newTextContent;
+        Element.addClassName(element, 'words-broken');
+    });
+}
+
 function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
 
@@ -1654,7 +1688,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
     }
 
     insertDateSeparatorRows();
-
+    breakWords($(bh));
 
     function updateBuilds() {
         if(isPageVisible()){
@@ -1697,6 +1731,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     removeDateSeparatorRows();
                     updateBuildRows();
                     insertDateSeparatorRows();
+                    breakWords($(bh));
                 }
             });
         } else {
