@@ -450,6 +450,8 @@ public class SlaveComputer extends Computer {
         final TaskListener taskListener = new StreamTaskListener(launchLog);
         PrintStream log = taskListener.getLogger();
 
+        channel.setProperty(SlaveComputer.class, this);
+
         channel.addListener(new Channel.Listener() {
             @Override
             public void onClosed(Channel c, IOException cause) {
