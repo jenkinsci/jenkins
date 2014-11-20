@@ -4066,12 +4066,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Thread-safe reusable {@link XStream}.
      */
-    public static final XStream XSTREAM = new XStream2();
+    public static final XStream XSTREAM;
 
     /**
      * Alias to {@link #XSTREAM} so that one can access additional methods on {@link XStream2} more easily.
      */
-    public static final XStream2 XSTREAM2 = (XStream2)XSTREAM;
+    public static final XStream2 XSTREAM2;
 
     private static final int TWICE_CPU_NUM = Math.max(4, Runtime.getRuntime().availableProcessors() * 2);
 
@@ -4218,24 +4218,39 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 1.343
      */
-    public static final Authentication ANONYMOUS = new AnonymousAuthenticationToken(
-            "anonymous","anonymous",new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
+    public static final Authentication ANONYMOUS;
 
     static {
-        XSTREAM.alias("jenkins",Jenkins.class);
-        XSTREAM.alias("slave", DumbSlave.class);
-        XSTREAM.alias("jdk",JDK.class);
-        // for backward compatibility with <1.75, recognize the tag name "view" as well.
-        XSTREAM.alias("view", ListView.class);
-        XSTREAM.alias("listView", ListView.class);
-        XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
-        XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
-        // this seems to be necessary to force registration of converter early enough
-        Mode.class.getEnumConstants();
+        try {
+            ANONYMOUS = new AnonymousAuthenticationToken(
+                    "anonymous", "anonymous", new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
+            XSTREAM = XSTREAM2 = new XStream2();
 
-        // double check that initialization order didn't do any harm
-        assert PERMISSIONS!=null;
-        assert ADMINISTER!=null;
+            XSTREAM.alias("jenkins", Jenkins.class);
+            XSTREAM.alias("slave", DumbSlave.class);
+            XSTREAM.alias("jdk", JDK.class);
+            // for backward compatibility with <1.75, recognize the tag name "view" as well.
+            XSTREAM.alias("view", ListView.class);
+            XSTREAM.alias("listView", ListView.class);
+            XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
+            XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
+            // this seems to be necessary to force registration of converter early enough
+            Mode.class.getEnumConstants();
+
+            // double check that initialization order didn't do any harm
+            assert PERMISSIONS != null;
+            assert ADMINISTER != null;
+        } catch (RuntimeException e) {
+            // when loaded on a slave and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
+            // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8051847
+            // As we don't know where the first exception will go, let's also send this to logging so that
+            // we have a known place to look at.
+            LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
+            throw e;
+        } catch (Error e) {
+            LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
+            throw e;
+        }
     }
 
 }
