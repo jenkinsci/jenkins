@@ -441,6 +441,23 @@ pre.console {
   width: 480px;
 }
 
+.build-date-separator {
+  font-weight: bold;
+}
+
+.build-date-separator .build-date-today {
+  font-weight: normal;
+  color: #ababab;
+  margin-left: 10px;
+}
+
+.build-date-separator div {
+  padding: 5px 0px;
+  border: 1px dashed #cacaca;
+  border-left: none;
+  border-right: none;
+}
+
 .build-row {
   padding: 3px 4px 3px 4px;
 }
@@ -937,7 +954,6 @@ table.parameters > tbody:hover {
   padding: 0;
   margin-top: 5px;
   white-space: normal;
-  max-width: 200px;
 }
 
 #buildHistory .build-rss-links {
@@ -945,7 +961,13 @@ table.parameters > tbody:hover {
 }
 
 #buildHistory .build-name {
-  max-width: 120px;
+  width: 25%;
+}
+#buildHistory .build-details {
+  width: 45%;
+}
+#buildHistory .build-stop, #buildHistory .build-badge {
+  width: 15%;
 }
 
 /* ========================= editable combobox style ========================= */
