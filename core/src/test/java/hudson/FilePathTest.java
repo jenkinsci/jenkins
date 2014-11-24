@@ -56,6 +56,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.jvnet.hudson.test.Issue;
 
 import static org.mockito.Mockito.*;
 
@@ -496,11 +497,13 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static void assertValidateAntFileMask(String expected, FilePath d, String fileMasks) throws Exception {
         assertEquals(expected, d.validateAntFileMask(fileMasks));
     }
 
-    @Bug(7214)
+    @Issue("JENKINS-7214")
+    @SuppressWarnings("deprecation")
     public void testValidateAntFileMaskBounded() throws Exception {
         File tmp = Util.createTempDir();
         try {
