@@ -938,6 +938,8 @@ table.parameters > tbody:hover {
   margin-top: 5px;
   white-space: normal;
   max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #buildHistory .build-rss-links {
