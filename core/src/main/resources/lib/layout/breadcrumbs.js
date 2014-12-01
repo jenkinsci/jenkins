@@ -93,6 +93,7 @@ var breadcrumbs = (function() {
     var menuSelector = (function() {
         var menuSelector = $(document.createElement("div"));
         var menuSelectorTarget;
+        var parentToUpdate;
 
         document.body.appendChild(menuSelector);
         menuSelector.id = 'menuSelector';
@@ -121,10 +122,15 @@ var breadcrumbs = (function() {
             this.style.visibility = "visible";
 
             menuSelectorTarget = target;
+            var updateParentSelector = menuSelectorTarget.getAttribute('update-parent-class');
+            if (updateParentSelector) {
+                parentToUpdate = $(menuSelectorTarget).up(updateParentSelector);
+            }
         };
         menuSelector.hide = function() {
             this.style.visibility = "hidden";
             menuSelectorTarget = undefined;
+            parentToUpdate = undefined;
         };
         menuSelector.observe("click",function () {
             invokeContextMenu(this.target);
@@ -137,16 +143,20 @@ var breadcrumbs = (function() {
         }.bind(menuSelector), 750);
 
         menuSelector.observe("mouseover",function () {
-            logger("mouse entered 'v'");
             if (menuSelectorTarget) {
+                if (parentToUpdate) {
+                    parentToUpdate.addClassName('model-link-active');
+                }
                 menuSelectorTarget.addClassName('mouseIsOverMenuSelector');
             }
             canceller.cancel();
         });
         menuSelector.observe("mouseout",function () {
-            logger("mouse left 'v'");
             canceller.schedule();
             if (menuSelectorTarget) {
+                if (parentToUpdate) {
+                    parentToUpdate.removeClassName('model-link-active');
+                }
                 menuSelectorTarget.removeClassName('mouseIsOverMenuSelector');
             }
         });

@@ -483,7 +483,7 @@ div.dashboard {
   border-radius: 4px;
 }
 
-#side-panel .pane-frame:hover {
+#side-panel .pane-frame:hover, #side-panel .pane-frame.mouseover {
   border: solid 1px #cecece;
 }
 
@@ -950,7 +950,7 @@ table.parameters > tbody:hover {
   padding: 3px 4px 3px 4px;
 }
 
-.build-row:hover {
+.build-row:hover, .build-row.model-link-active {
   background: #e8e8e8 !important;
 }
 
@@ -959,11 +959,11 @@ table.parameters > tbody:hover {
 }
 
 .build-row-cell .pane.build-name {
-  width: 20%;
+  width: 25%;
   font-weight: bold;
 }
 .build-row-cell .pane.build-details {
-  width: 50%;
+  width: 45%;
 }
 .build-row-cell .pane.build-controls {
   width: 30%;

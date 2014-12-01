@@ -1131,6 +1131,24 @@ var jenkinsRules = {
         new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
     },
 
+    ".track-mouse" : function (element) {
+        var DOM = YAHOO.util.Dom;
+
+        $(element).observe("mouseenter",function () {
+            element.addClassName("mouseover");
+
+            var mousemoveTracker = function (event) {
+                var elementRegion = DOM.getRegion(element);
+                if (event.x < elementRegion.left || event.x > elementRegion.right ||
+                    event.y < elementRegion.top || event.y > elementRegion.bottom) {
+                    element.removeClassName("mouseover");
+                    Element.stopObserving(document, "mousemove", mousemoveTracker);
+                }
+            };
+            Element.observe(document, "mousemove", mousemoveTracker);
+        });
+    },
+
     /*
         Use on div tag to make it sticky visible on the bottom of the page.
         When page scrolls it remains in the bottom of the page

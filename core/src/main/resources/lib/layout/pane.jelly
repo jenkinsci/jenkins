@@ -48,7 +48,7 @@ THE SOFTWARE.
       Footer of the box. Can include HTML.
     </st:attribute>
   </st:documentation>
-  <div class="container-fluid pane-frame" id="${attrs.id}">
+  <div class="container-fluid pane-frame track-mouse" id="${attrs.id}">
     <div class="row">
       <div class="col-xs-24 pane-header">
         <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
