@@ -225,17 +225,17 @@ public class NodeProvisioner {
         float plannedCapacity = plannedCapacitySnapshot;
         plannedCapacitiesEMA.update(plannedCapacity);
 
-        int idleSnapshot = stat.computeIdleExecutors();
-        int queueLengthSnapshot = stat.computeQueueLength();
+        final LoadStatistics.LoadStatisticsSnapshot snapshot = stat.computeSnapshot();
 
-        if (queueLengthSnapshot <= idleSnapshot) {
+        int availableSnapshot = snapshot.getAvailableExecutors();
+        int queueLengthSnapshot = snapshot.getQueueLength();
+
+        if (queueLengthSnapshot <= availableSnapshot) {
             LOGGER.log(Level.FINE,
-                    "Queue length {0} is less than the idle capacity {1}. No provisioning strategy required",
-                    new Object[]{queueLengthSnapshot, idleSnapshot});
+                    "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
+                    new Object[]{queueLengthSnapshot, availableSnapshot});
         } else {
-            StrategyState state =
-                    new StrategyState(queueLengthSnapshot, label, idleSnapshot, stat.computeTotalExecutors(),
-                            plannedCapacitySnapshot);
+            StrategyState state = new StrategyState(snapshot, label, plannedCapacitySnapshot);
             List<Strategy> strategies = Jenkins.getInstance().getExtensionList(Strategy.class);
             for (Strategy strategy : strategies.isEmpty()
                     ? Arrays.<Strategy>asList(new StandardStrategyImpl())
@@ -304,21 +304,13 @@ public class NodeProvisioner {
          */
         private final Label label;
         /**
-         * The number of items in the queue requiring this {@link #label}.
-         */
-        private final int queueLengthSnapshot;
-        /**
          * The planned capacity for this {@link #label}.
          */
         private final int plannedCapacitySnapshot;
         /**
-         * The number of idle executors for this {@link #label}
+         * The current statistics snapshot for this {@link #label}.
          */
-        private final int idleSnapshot;
-        /**
-         * The total number of executors for this {@link #label}
-         */
-        private final int totalSnapshot;
+        private final LoadStatistics.LoadStatisticsSnapshot snapshot;
         private final List<PlannedNode> pendingLaunches;
         /**
          * The additional planned capacity for this {@link #label} and provisioned by previous strategies during the
@@ -329,18 +321,12 @@ public class NodeProvisioner {
 
         /**
          * Should only be instantiated by {@link NodeProvisioner#update()}
-         * @param queueLengthSnapshot the queue length.
          * @param label the label.
-         * @param idleSnapshot the idle executor count.
-         * @param totalSnapshot the totoal executor count.
          * @param plannedCapacitySnapshot the planned executor count.
          */
-        private StrategyState(int queueLengthSnapshot, Label label, int idleSnapshot, int totalSnapshot,
-                              int plannedCapacitySnapshot) {
-            this.queueLengthSnapshot = queueLengthSnapshot;
+        private StrategyState(LoadStatistics.LoadStatisticsSnapshot snapshot, Label label, int plannedCapacitySnapshot) {
+            this.snapshot = snapshot;
             this.label = label;
-            this.idleSnapshot = idleSnapshot;
-            this.totalSnapshot = totalSnapshot;
             this.plannedCapacitySnapshot = plannedCapacitySnapshot;
             pendingLaunches = NodeProvisioner.this.pendingLaunches;
         }
@@ -353,10 +339,19 @@ public class NodeProvisioner {
         }
 
         /**
+         * The current snapshot of the load statistics for this {@link #getLabel()}.
+         * @since 1.FIXME
+         */
+        public LoadStatistics.LoadStatisticsSnapshot getSnapshot() {
+            return snapshot;
+        }
+
+        /**
          * The number of items in the queue requiring this {@link #getLabel()}.
+         * @deprecated use {@link #getSnapshot()}, {@link LoadStatistics.LoadStatisticsSnapshot#getQueueLength()}
          */
         public int getQueueLengthSnapshot() {
-            return queueLengthSnapshot;
+            return snapshot.getQueueLength();
         }
 
         /**
@@ -368,16 +363,18 @@ public class NodeProvisioner {
 
         /**
          * The number of idle executors for this {@link #getLabel()}
+         * @deprecated use {@link #getSnapshot()}, {@link LoadStatistics.LoadStatisticsSnapshot#getAvailableExecutors()}
          */
         public int getIdleSnapshot() {
-            return idleSnapshot;
+            return snapshot.getAvailableExecutors();
         }
 
         /**
          * The total number of executors for this {@link #getLabel()}
+         * @deprecated use {@link #getSnapshot()}, {@link LoadStatistics.LoadStatisticsSnapshot#getOnlineExecutors()}
          */
         public int getTotalSnapshot() {
-            return totalSnapshot;
+            return snapshot.getOnlineExecutors();
         }
 
         /**
@@ -404,16 +401,66 @@ public class NodeProvisioner {
 
         /**
          * The time series average number of idle executors for this {@link #getLabel()}
+         * @deprecated use {@link #getAvailableExecutorsLatest()}
          */
         public float getIdleLatest() {
-            return stat.getLatestIdleExecutors(TIME_SCALE);
+            return getAvailableExecutorsLatest();
         }
 
         /**
          * The time series average total number of executors for this {@link #getLabel()}
+         * @deprecated use {@link #getOnlineExecutorsLatest()}
          */
         public float getTotalLatest() {
-            return stat.totalExecutors.getLatest(TIME_SCALE);
+            return getOnlineExecutorsLatest();
+        }
+
+        /**
+         * The time series average number of defined executors for this {@link #getLabel()}
+         * @since 1.FIXME
+         */
+        public float getDefinedExecutorsLatest() {
+            return stat.definedExecutors.getLatest(TIME_SCALE);
+        }
+
+        /**
+         * The time series average number of online executors for this {@link #getLabel()}
+         * @since 1.FIXME
+         */
+        public float getOnlineExecutorsLatest() {
+            return stat.onlineExecutors.getLatest(TIME_SCALE);
+        }
+
+        /**
+         * The time series average number of connecting executors for this {@link #getLabel()}
+         * @since 1.FIXME
+         */
+        public float getConnectingExecutorsLatest() {
+            return stat.connectingExecutors.getLatest(TIME_SCALE);
+        }
+
+        /**
+         * The time series average number of busy executors for this {@link #getLabel()}
+         * @since 1.FIXME
+         */
+        public float getBusyExecutorsLatest() {
+            return stat.busyExecutors.getLatest(TIME_SCALE);
+        }
+
+        /**
+         * The time series average number of idle executors for this {@link #getLabel()}
+         * @since 1.FIXME
+         */
+        public float getIdleExecutorsLatest() {
+            return stat.idleExecutors.getLatest(TIME_SCALE);
+        }
+
+        /**
+         * The time series average number of available executors for this {@link #getLabel()}
+         * @since 1.FIXME
+         */
+        public float getAvailableExecutorsLatest() {
+            return stat.availableExecutors.getLatest(TIME_SCALE);
         }
 
         /**
@@ -468,10 +515,8 @@ public class NodeProvisioner {
         public String toString() {
             final StringBuilder sb = new StringBuilder("StrategyState{");
             sb.append("label=").append(label);
-            sb.append(", queueLengthSnapshot=").append(queueLengthSnapshot);
+            sb.append(", snapshot=").append(snapshot);
             sb.append(", plannedCapacitySnapshot=").append(plannedCapacitySnapshot);
-            sb.append(", idleSnapshot=").append(idleSnapshot);
-            sb.append(", totalSnapshot=").append(totalSnapshot);
             sb.append(", additionalPlannedCapacity=").append(additionalPlannedCapacity);
             sb.append('}');
             return sb.toString();
@@ -522,21 +567,24 @@ public class NodeProvisioner {
             estimate won't create a starvation.
          */
 
-            boolean needSomeWhenNoneAtAll = (state.getIdleSnapshot() == 0)
-                    && (state.getTotalSnapshot() + state.getPlannedCapacitySnapshot() + state.getAdditionalPlannedCapacity() == 0)
-                    && (state.getQueueLengthSnapshot() > 0);
-            float idle = Math.max(state.getIdleLatest(), state.getIdleSnapshot());
-            if (idle < MARGIN || needSomeWhenNoneAtAll) {
+            final LoadStatistics.LoadStatisticsSnapshot snapshot = state.getSnapshot();
+            boolean needSomeWhenNoneAtAll = (snapshot.getAvailableExecutors() + snapshot.getConnectingExecutors() == 0)
+                    && (snapshot.getOnlineExecutors() + state.getPlannedCapacitySnapshot() + state.getAdditionalPlannedCapacity() == 0)
+                    && (snapshot.getQueueLength() > 0);
+            float available = Math.max(snapshot.getAvailableExecutors(), state.getAvailableExecutorsLatest());
+            if (available < MARGIN || needSomeWhenNoneAtAll) {
                 // make sure the system is fully utilized before attempting any new launch.
 
                 // this is the amount of work left to be done
-                float qlen = Math.min(state.getQueueLengthLatest(), state.getQueueLengthSnapshot());
+                float qlen = Math.min(state.getQueueLengthLatest(), snapshot.getQueueLength());
+
+                float connectingCapacity = Math.min(state.getConnectingExecutorsLatest(), snapshot.getConnectingExecutors());
 
                 // ... and this is the additional executors we've already provisioned.
                 float plannedCapacity = Math.max(state.getPlannedCapacityLatest(), state.getPlannedCapacitySnapshot())
                         + state.getAdditionalPlannedCapacity();
 
-                float excessWorkload = qlen - plannedCapacity;
+                float excessWorkload = qlen - plannedCapacity - connectingCapacity;
                 if (needSomeWhenNoneAtAll && excessWorkload < 1) {
                     // in this specific exceptional case we should just provision right now
                     // the exponential smoothing will delay the build unnecessarily
@@ -545,12 +593,12 @@ public class NodeProvisioner {
                 float m = calcThresholdMargin(state.getTotalSnapshot());
                 if (excessWorkload > 1 - m) {// and there's more work to do...
                     LOGGER.log(Level.FINE, "Excess workload {0,number,#.###} detected. "
-                                    + "(planned capacity={1,number,#.###},"
-                                    + "Qlen={2,number,#.###},idle={3,number,#.###}&{4,number,integer},"
-                                    + "total={5,number,integer},m={6,number,#.###})",
+                                    + "(planned capacity={1,number,#.###},connecting capacity={7,number,#.###},"
+                                    + "Qlen={2,number,#.###},available={3,number,#.###}&{4,number,integer},"
+                                    + "online={5,number,integer},m={6,number,#.###})",
                             new Object[]{
-                                    excessWorkload, plannedCapacity, qlen, idle, state.getIdleSnapshot(),
-                                    state.getTotalSnapshot(), m
+                                    excessWorkload, plannedCapacity, qlen, available, snapshot.getAvailableExecutors(),
+                                    snapshot.getOnlineExecutors(), m , snapshot.getConnectingExecutors()
                             });
 
                     CLOUD:

@@ -39,6 +39,7 @@ import hudson.model.labels.LabelExpressionLexer;
 import hudson.model.labels.LabelExpressionParser;
 import hudson.model.labels.LabelOperatorPrecedence;
 import hudson.model.labels.LabelVisitor;
+import hudson.model.queue.SubTask;
 import hudson.security.ACL;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.Cloud;
@@ -106,6 +107,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             @Override
             public int computeQueueLength() {
                 return Jenkins.getInstance().getQueue().countBuildableItemsFor(Label.this);
+            }
+
+            @Override
+            protected Set<Node> getNodes() {
+                return Label.this.getNodes();
+            }
+
+            @Override
+            protected boolean matches(SubTask item) {
+                return item.getAssignedLabel() == Label.this;
             }
         };
         this.nodeProvisioner = new NodeProvisioner(this, loadStatistics);

@@ -24,6 +24,8 @@
 package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
+import hudson.model.queue.SubTask;
+import junit.framework.TestCase;
 
 import org.apache.commons.io.IOUtils;
 import org.jfree.chart.JFreeChart;
@@ -54,17 +56,28 @@ public class LoadStatisticsTest {
             public int computeQueueLength() {
                 throw new UnsupportedOperationException();
             }
+            @Override
+            protected Iterable<Node> getNodes() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected boolean matches(SubTask item) {
+                throw new UnsupportedOperationException();
+            }
         };
 
         for (int i = 0; i < 50; i++) {
-            ls.totalExecutors.update(4);
+            ls.onlineExecutors.update(4);
             ls.busyExecutors.update(3);
+            ls.availableExecutors.update(1);
             ls.queueLength.update(3);
         }
 
         for (int i = 0; i < 50; i++) {
-            ls.totalExecutors.update(0);
+            ls.onlineExecutors.update(0);
             ls.busyExecutors.update(0);
+            ls.availableExecutors.update(0);
             ls.queueLength.update(1);
         }
 

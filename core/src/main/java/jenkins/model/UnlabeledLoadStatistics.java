@@ -29,6 +29,14 @@ import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.OverallLoadStatistics;
 import hudson.model.Queue.Task;
+import hudson.model.queue.SubTask;
+import hudson.util.Iterators;
+
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * {@link LoadStatistics} that track the "free roam" jobs (whose {@link Task#getAssignedLabel()} is null)
@@ -40,6 +48,8 @@ import hudson.model.Queue.Task;
  * @author Kohsuke Kawaguchi
  */
 public class UnlabeledLoadStatistics extends LoadStatistics {
+
+    private final Iterable<Node> nodes = new UnlabeledNodesIterable();
 
     UnlabeledLoadStatistics() {
         super(0, 0);
@@ -72,5 +82,43 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
     @Override
     public int computeQueueLength() {
         return Jenkins.getInstance().getQueue().countBuildableItemsFor(null);
+    }
+
+    @Override
+    protected Iterable<Node> getNodes() {
+        return nodes;
+    }
+
+    @Override
+    protected boolean matches(SubTask item) {
+        return true;
+    }
+
+    private static class UnlabeledNodesIterable implements Iterable<Node> {
+
+        @Override
+        public Iterator<Node> iterator() {
+            return new UnlabeledNodesIterator();
+        }
+    }
+
+    private static class UnlabeledNodesIterator extends Iterators.FilterIterator<Node> {
+
+        protected UnlabeledNodesIterator() {
+            super(Jenkins.getActiveInstance().getNodes().iterator());
+        }
+
+        @Override
+        protected boolean filter(Node n) {
+            return n != null && n.getMode() == Mode.NORMAL;
+        }
+
+        public void remove() {
+            // why does Iterators.FilterIterator do the stupid thing and allow remove?
+            // (remove should remove the object last returned by next(), but it won't if hasNext() is called
+            // the way Iterators.FilterIterator is written... it should just return a read-only
+            // view... which is what we do!
+            throw new UnsupportedOperationException("remove");
+        }
     }
 }

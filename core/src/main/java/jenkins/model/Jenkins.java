@@ -3492,8 +3492,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.
-                    while (isQuietingDown
-                           && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())) {
+                    while (isQuietingDown && (overallLoad.computeSnapshot().getBusyExecutors() > 0)) {
                         Thread.sleep(5000);
                     }
                     // Make sure isQuietingDown is still true.
