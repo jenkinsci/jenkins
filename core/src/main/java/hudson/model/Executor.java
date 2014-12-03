@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Red Hat, Inc., Stephen Connolly, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -64,8 +64,8 @@ import javax.annotation.Nonnull;
 
 /**
  * Thread that executes builds.
- * Since 1.536, {@link Executor}s start threads on-demand. 
- * The entire logic should use {@link #isActive()} instead of {@link #isAlive()} 
+ * Since 1.536, {@link Executor}s start threads on-demand.
+ * The entire logic should use {@link #isActive()} instead of {@link #isAlive()}
  * in order to check if the {@link Executor} it ready to take tasks.
  * @author Kohsuke Kawaguchi
  */
@@ -221,12 +221,12 @@ public class Executor extends Thread implements ModelObject {
                 workUnit.context.synchronizeStart();
 
                 // this code handles the behavior of null Executables returned
-                // by tasks. In such case Jenkins starts the workUnit in order 
-                // to report results to console outputs. 
+                // by tasks. In such case Jenkins starts the workUnit in order
+                // to report results to console outputs.
                 if (executable == null) {
                     throw new Error("The null Executable has been created for "+workUnit+". The task cannot be executed");
                 }
-                
+
                 if (executable instanceof Actionable) {
                     for (Action action: workUnit.context.actions) {
                         ((Actionable) executable).addAction(action);
@@ -357,7 +357,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Check if executor is ready to accept tasks.
      * This method becomes the critical one since 1.536, which introduces the
-     * on-demand creation of executor threads. The entire logic should use 
+     * on-demand creation of executor threads. The entire logic should use
      * this method instead of {@link #isAlive()}, because it provides wrong
      * information for non-started threads.
      * @return True if the executor is available for tasks
@@ -510,7 +510,7 @@ public class Executor extends Thread implements ModelObject {
 
     /**
      * Stops the current build.
-     * 
+     *
      * @since 1.489
      */
     @RequirePOST
@@ -568,7 +568,7 @@ public class Executor extends Thread implements ModelObject {
 
     /**
      * Creates a proxy object that executes the callee in the context that impersonates
-     * this executor. Useful to export an object to a remote channel. 
+     * this executor. Useful to export an object to a remote channel.
      */
     public <T> T newImpersonatingProxy(Class<T> type, T core) {
         return new InterceptingProxy() {
@@ -592,7 +592,7 @@ public class Executor extends Thread implements ModelObject {
         if (t instanceof Executor) return (Executor) t;
         return IMPERSONATION.get();
     }
-    
+
     /**
      * Returns the estimated duration for the executable.
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
