@@ -57,7 +57,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     }
 
     @Override protected void execute(TaskListener listener) throws InterruptedException, IOException {
-        if (disabled) {
+        if (!enabled) {
             LOGGER.fine("Disabled. Skipping execution");
             return;
         }
@@ -141,7 +141,9 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     private static final Logger LOGGER = Logger.getLogger(WorkspaceCleanupThread.class.getName());
 
     /**
-     * Can be used to disable workspace clean up.
+     * Do not clean up by default as this can be extremely confusing
+     * when files disappear after a long period of Jenkins running
+     * without a hitch.
      */
-    public static final boolean disabled = Boolean.getBoolean(WorkspaceCleanupThread.class.getName()+".disabled");
+    public static final boolean enabled = Boolean.getBoolean(WorkspaceCleanupThread.class.getName()+".enabled");
 }
