@@ -1836,13 +1836,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         else
             scmCheckoutStrategy = null;
 
-        if(req.hasParameter("_.assignedLabelString")) {
+        if(json.optBoolean("hasSlaveAffinity", json.has("label"))) {
+            assignedNode = Util.fixEmptyAndTrim(json.optString("label"));
+        } else if(req.hasParameter("_.assignedLabelString")) {
             // Workaround for JENKINS-25372 while plugin is being updated.
+            // Keep this condition second for JENKINS-25533
             LOGGER.log(Level.WARNING, "label assignment is using legacy '_.assignedLabelString'");
             assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
-        } else if(json.optBoolean("hasSlaveAffinity", json.has("label"))) {
-            assignedNode = Util.fixEmptyAndTrim(json.optString("label"));
-        } else {
+        } else  {
             assignedNode = null;
         }
         canRoam = assignedNode==null;
