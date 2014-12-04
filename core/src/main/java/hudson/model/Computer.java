@@ -806,6 +806,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public final boolean isIdle() {
+        // TODO to fix JENKINS-25683 we need to hold the correct lock in this method such that no new jobs will sneak in
         if (!oneOffExecutors.isEmpty())
             return false;
         for (Executor e : executors)
