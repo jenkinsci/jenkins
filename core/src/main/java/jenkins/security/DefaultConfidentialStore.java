@@ -106,7 +106,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             byte[] bytes = IOUtils.toByteArray(cis);
             return verifyMagic(bytes);
         } catch (GeneralSecurityException e) {
-            throw new IOException("Failed to persist the key: "+key.getId(),e);
+            throw new IOException("Failed to load the key: "+key.getId(),e);
         } finally {
             IOUtils.closeQuietly(cis);
             IOUtils.closeQuietly(fis);
