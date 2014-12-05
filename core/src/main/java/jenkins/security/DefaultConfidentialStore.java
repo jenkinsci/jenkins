@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import javax.crypto.BadPaddingException;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -107,6 +108,12 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             return verifyMagic(bytes);
         } catch (GeneralSecurityException e) {
             throw new IOException("Failed to load the key: "+key.getId(),e);
+        } catch (IOException x) {
+            if (x.getCause() instanceof BadPaddingException) {
+                return null; // broken somehow
+            } else {
+                throw x;
+            }
         } finally {
             IOUtils.closeQuietly(cis);
             IOUtils.closeQuietly(fis);
