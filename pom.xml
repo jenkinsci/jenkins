@@ -287,7 +287,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.gmaven</groupId>
           <artifactId>gmaven-plugin</artifactId>
-          <version>1.5-jenkins-2</version>
+          <version>1.5-jenkins-3</version>
           <dependencies>
             <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
               <groupId>org.apache.ant</groupId>
