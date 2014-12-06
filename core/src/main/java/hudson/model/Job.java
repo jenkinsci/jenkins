@@ -376,6 +376,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * This is for process launching outside the build execution (such as polling, tagging, deployment, etc.)
      * that happens in a context of a specific job.
      *
+     * <p>
+     * Variables with colliding names can be contributed from various sources.
+     * In case of conflict, values are applied in following order where latter
+     * groups can not override earlier ones:
+     * <ul>
+     *   <li>Characteristic variables,</li>
+     *   <li>Variables from extension points,</li>
+     *   <li>Inherited variables from computer.</li>
+     * </ul>
+     *
      * @param node
      *      Node to eventually run a process on. The implementation must cope with this parameter being null
      *      (in which case none of the node specific properties would be reflected in the resulting override.)
@@ -390,8 +400,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             env = new EnvVars();
         }
 
-        env.putAll(getCharacteristicEnvVars());
-
         // servlet container may have set CLASSPATH in its launch script,
         // so don't let that inherit to the new child process.
         // see http://www.nabble.com/Run-Job-with-JDK-1.4.2-tf4468601.html
@@ -401,7 +409,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,listener);
 
-
+        env.putAll(getCharacteristicEnvVars());
         return env;
     }
 

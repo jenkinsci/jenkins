@@ -914,12 +914,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
-        EnvVars env = super.getEnvironment(log);
+        Computer c = Computer.currentComputer();
+        Node n = c==null ? null : c.getNode();
+        EnvVars env = getParent().getEnvironment(n,log);
+
+        env.putAll(getParent().getEnvironment(n,log));
+
         FilePath ws = getWorkspace();
         if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
             env.put("WORKSPACE", ws.getRemote());
 
         project.getScm().buildEnvVars(this,env);
+
+        // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
+        for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
+            ec.buildEnvironmentFor(this,env,log);
 
         if (buildEnvironments!=null)
             for (Environment e : buildEnvironments)
@@ -928,6 +937,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
             a.buildEnvVars(this,env);
 
+        env.putAll(getCharacteristicEnvVars());
         EnvVars.resolve(env);
 
         return env;

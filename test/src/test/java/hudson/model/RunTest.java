@@ -23,9 +23,24 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.Launcher;
+import hudson.slaves.DumbSlave;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.Builder;
+import hudson.tasks.Shell;
+
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -38,7 +53,7 @@ public class RunTest  {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Issue("JENKINS-17935")
+    @Issue("JENKINS-17935") @SuppressWarnings("deprecation")
     @Test public void getDynamicInvisibleTransientAction() throws Exception {
         TransientBuildActionFactory.all().add(0, new TransientBuildActionFactory() {
             @Override public Collection<? extends Action> createFor(Run target) {
@@ -59,4 +74,129 @@ public class RunTest  {
         j.createWebClient().assertFails("job/stuff/1/nonexistent", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
+    @Test public void doNotOverrideCharacteristicBuildEnvVar() throws Exception {
+        DumbSlave slave = slaveContributing("BUILD_NUMBER", "FROM_SLAVE");
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildWrappersList().add(new ContributingWrapper("BUILD_NUMBER", "FROM_WRAPPER"));
+        p.getBuildersList().add(new ContributingBuildStep("BUILD_NUMBER", "FROM_CONTRIBUTOR"));
+        p.setAssignedNode(slave);
+
+        String buildLog = buildLog(p, "BUILD_NUMBER");
+        assertThat(buildLog, containsString("actual=1"));
+    }
+
+    @Test public void doNotOverrideCharacteristicJobEnvVar() throws Exception {
+        DumbSlave slave = slaveContributing("JOB_NAME", "FROM_SLAVE");
+        FreeStyleProject p = j.createFreeStyleProject("job_name");
+
+        p.getBuildWrappersList().add(new ContributingWrapper("JOB_NAME", "FROM_WRAPPER"));
+        p.getBuildersList().add(new ContributingBuildStep("JOB_NAME", "FROM_CONTRIBUTOR"));
+        p.setAssignedNode(slave);
+
+        String buildLog = buildLog(p, "JOB_NAME");
+        assertThat(buildLog, containsString("actual=job_name"));
+    }
+
+    @Test public void doNotOverrideBuildWrapperEnvVar() throws Exception {
+        DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
+        p.setAssignedNode(slave);
+
+        String buildLog = buildLog(p, "DISPLAY");
+        assertThat(buildLog, containsString("actual=BUILD_VAL"));
+    }
+
+    @Test public void doNotOverrideBuildContributorEnvVar() throws Exception {
+        DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildersList().add(new ContributingBuildStep("DISPLAY", "BUILD_VAL"));
+        p.setAssignedNode(slave);
+
+        String buildLog = buildLog(p, "DISPLAY");
+        assertThat(buildLog, containsString("actual=BUILD_VAL"));
+    }
+
+    @SuppressWarnings("deprecation")
+    private String buildLog(FreeStyleProject p, final String key) throws IOException, InterruptedException, ExecutionException {
+        p.getBuildersList().add(new Shell("echo actual=$" + key));
+        final FreeStyleBuild build = p.scheduleBuild2(0).get();
+        return build.getLog();
+    }
+
+    private DumbSlave slaveContributing(String key, String value) throws Exception {
+        return j.createOnlineSlave(null, new EnvVars(key, value));
+    }
+
+    private static final class ContributingWrapper extends BuildWrapper {
+        private final String value;
+        private final String key;
+
+        private ContributingWrapper(String key, String value) {
+            this.value = value;
+            this.key = key;
+        }
+
+        @Override
+        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            return new Environment() {
+                @Override
+                public void buildEnvVars(Map<String, String> env) {
+                    env.put(key, value);
+                }
+            };
+        }
+
+        @Extension
+        public static class Descriptor extends hudson.model.Descriptor<BuildWrapper> {
+            @Override
+            public String getDisplayName() {
+                return null;
+            }
+        }
+    }
+
+    private static final class ContributingBuildStep extends Builder {
+        private final String value;
+        private final String key;
+
+        private ContributingBuildStep(String key, String value) {
+            this.value = value;
+            this.key = key;
+        }
+
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            build.addAction(new EnvironmentContributingAction() {
+
+                public String getUrlName() {
+                    return null;
+                }
+
+                public String getIconFileName() {
+                    return null;
+                }
+
+                public String getDisplayName() {
+                    return null;
+                }
+
+                public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
+                    env.put(key, value);
+                }
+            });
+            return true;
+        }
+
+        @Extension
+        public static class Descriptor extends hudson.model.Descriptor<Builder> {
+            @Override
+            public String getDisplayName() {
+                return null;
+            }
+        }
+    }
 }

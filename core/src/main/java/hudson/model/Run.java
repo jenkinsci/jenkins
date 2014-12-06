@@ -2206,6 +2206,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * to take effect.
      *
      * <p>
+     * Variables with colliding names can be contributed from various sources.
+     * In case of conflict, values are applied in following order where latter
+     * groups can not override earlier ones:
+     * <ul>
+     *   <li>Characteristic variables,</li>
+     *   <li>Variables from extension points,</li>
+     *   <li>Inherited variables from computer.</li>
+     * </ul>
+     *
+     * <p>
      * Unlike earlier {@link #getEnvVars()}, this map contains the whole environment,
      * not just the overrides, so one can introspect values to change its behavior.
      * 
@@ -2217,12 +2227,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         Node n = c==null ? null : c.getNode();
 
         EnvVars env = getParent().getEnvironment(n,listener);
-        env.putAll(getCharacteristicEnvVars());
 
         // apply them in a reverse order so that higher ordinal ones can modify values added by lower ordinal ones
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,listener);
 
+        env.putAll(getCharacteristicEnvVars());
         return env;
     }
 
