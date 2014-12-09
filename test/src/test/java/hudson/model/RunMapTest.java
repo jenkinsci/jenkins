@@ -9,9 +9,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
-/**
- * @author Kohsuke Kawaguchi
- */
 public class RunMapTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
@@ -72,5 +69,22 @@ public class RunMapTest {
     }
 
     private static boolean bombed;
+
+    @Issue("JENKINS-25788")
+    @Test public void remove() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
+        RunMap<FreeStyleBuild> runs = p._getRuns();
+        assertEquals(2, runs.size());
+        assertTrue(runs.remove(b1));
+        assertEquals(1, runs.size());
+        assertFalse(runs.remove(b1));
+        assertEquals(1, runs.size());
+        assertTrue(runs.remove(b2));
+        assertEquals(0, runs.size());
+        assertFalse(runs.remove(b2));
+        assertEquals(0, runs.size());
+    }
 
 }
