@@ -746,7 +746,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
         entrySet.clearCache();
 
-        return unwrap(old)!=null;
+        return old != null;
     }
 
     /**
