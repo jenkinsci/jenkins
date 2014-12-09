@@ -240,7 +240,7 @@ public class JDKInstaller extends ToolInstaller {
                 // Prevent a trailing slash from escaping quotes
                 expectedLocation = expectedLocation.substring(0, expectedLocation.length() - 1);
             }
-            String logFile = expectedLocation + "\\jdk.exe.install.log";
+            String logFile = new FilePath(launcher.getChannel(), expectedLocation).getParent().createTempFile("install", "log").getRemote();
 
 
             ArgumentListBuilder args = new ArgumentListBuilder();
