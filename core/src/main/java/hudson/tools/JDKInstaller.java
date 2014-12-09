@@ -234,13 +234,15 @@ public class JDKInstaller extends ToolInstaller {
                 - http://java.sun.com/j2se/1.5.0/sdksilent.html
                 - http://java.sun.com/j2se/1.4.2/docs/guide/plugin/developer_guide/silent.html
              */
-            String logFile = jdkBundle+".install.log";
 
             expectedLocation = expectedLocation.trim();
             if (expectedLocation.endsWith("\\")) {
                 // Prevent a trailing slash from escaping quotes
                 expectedLocation = expectedLocation.substring(0, expectedLocation.length() - 1);
             }
+            String logFile = new FilePath(launcher.getChannel(), expectedLocation).getParent().createTempFile("install", "log").getRemote();
+
+
             ArgumentListBuilder args = new ArgumentListBuilder();
             assert (new File(expectedLocation).exists()) : expectedLocation
                     + " must exist, otherwise /L will cause the installer to fail with error 1622";
@@ -248,20 +250,19 @@ public class JDKInstaller extends ToolInstaller {
                 // Installer uses InstallShield.
                 args.add("CMD.EXE", "/C");
 
+                // see http://docs.oracle.com/javase/1.5.0/docs/guide/deployment/deployment-guide/silent.html
                 // CMD.EXE /C must be followed by a single parameter (do not split it!)
                 args.add(jdkBundle + " /s /v\"/qn REBOOT=ReallySuppress INSTALLDIR=\\\""
-                        + expectedLocation + "\\\" /L \\\"" + expectedLocation
-                        + "\\jdk.exe.install.log\\\"\"");
+                        + expectedLocation + "\\\" /L \\\"" + logFile + "\\\"\"");
             } else {
                 // Installed uses Windows Installer (MSI)
                 args.add(jdkBundle, "/s");
 
                 // Create a private JRE by omitting "PublicjreFeature"
                 // @see http://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#jdk-silent-installation
-                args.add("ADDLOCAL=\"ToolsFeature\"");
-
-                args.add("REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
-                        "/L \\\"" + expectedLocation + "\\jdk.exe.install.log\\\"");
+                args.add("ADDLOCAL=\"ToolsFeature\"",
+                        "REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
+                        "/L",  logFile);
             }
             int r = launcher.launch().cmds(args).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
@@ -716,7 +717,7 @@ public class JDKInstaller extends ToolInstaller {
             if (value) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense()); 
+                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense());
             }
         }
 
