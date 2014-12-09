@@ -1,27 +1,30 @@
 package hudson.model;
 
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.SleepBuilder;
-import org.jvnet.hudson.test.TestEnvironment;
-
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SleepBuilder;
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
-public class RunMapTest extends HudsonTestCase {
+public class RunMapTest {
+
+    @Rule public JenkinsRule r = new JenkinsRule();
+
     /**
      * Makes sure that reloading the project while a build is in progress won't clobber that in-progress build.
      */
-    @Bug(12318)
-    public void testReloadWhileBuildIsInProgress() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+    @Issue("JENKNS-12318")
+    @Test public void reloadWhileBuildIsInProgress() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
 
         // want some completed build records
-        FreeStyleBuild b1 = assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
         // now create a build that hangs until we signal the OneShotEvent
         p.getBuildersList().add(new SleepBuilder(9999999));
@@ -29,7 +32,7 @@ public class RunMapTest extends HudsonTestCase {
         assertEquals(2, b2.number);
 
         // now reload
-        p.updateByXml(new StreamSource(p.getConfigFile().getFile()));
+        p.updateByXml((Source) new StreamSource(p.getConfigFile().getFile()));
 
         // we should still see the same object for #2 because that's in progress
         assertSame(p.getBuildByNumber(b2.number), b2);
@@ -45,10 +48,10 @@ public class RunMapTest extends HudsonTestCase {
     /**
      * Testing if the lazy loading can gracefully tolerate a RuntimeException during unmarshalling.
      */
-    @Bug(15533)
-    public void testRuntimeExceptionInUnmarshalling() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
-        FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0));
+    @Issue("JENKINS-15533")
+    @Test public void runtimeExceptionInUnmarshalling() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
         b.addAction(new BombAction());
         b.save();
 
@@ -63,12 +66,11 @@ public class RunMapTest extends HudsonTestCase {
 
     public static class BombAction extends InvisibleAction {
         public Object readResolve() {
-            ((RunMapTest) TestEnvironment.get().testCase).bombed = true;
+            bombed = true;
             throw new NullPointerException();
         }
     }
 
-    private boolean bombed;
-
+    private static boolean bombed;
 
 }
