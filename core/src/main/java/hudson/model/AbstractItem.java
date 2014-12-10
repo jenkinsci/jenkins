@@ -45,8 +45,10 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import org.acegisecurity.Authentication;
+import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+import org.json.XML;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -611,6 +613,24 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         if (req.getMethod().equals("POST")) {
             // submission
             updateByXml((Source)new StreamSource(req.getReader()));
+            return;
+        }
+
+        // huh?
+        rsp.sendError(SC_BAD_REQUEST);
+    }
+
+    /**
+     * Accepts <tt>config.json</tt> request.
+     */
+    @WebMethod(name = "config.json")
+    public void doConfigDotJson(StaplerRequest req, StaplerResponse rsp)
+            throws IOException {
+        if (req.getMethod().equals("GET")) {
+            // read
+            checkPermission(EXTENDED_READ);
+            rsp.setContentType("application/json");
+            org.apache.commons.io.IOUtils.write(XML.toJSONObject(FileUtils.readFileToString(getConfigFile().getFile())).toString(),rsp.getOutputStream());
             return;
         }
 
