@@ -67,7 +67,7 @@ public final class WorkUnitContext {
         this.item = item;
         this.task = item.task;
         this.future = (FutureImpl)item.getFuture();
-        this.actions = item.getActions();
+        this.actions = new ArrayList<Action>(item.getAllActions());
         
         // +1 for the main task
         int workUnitSize = Tasks.getSubTasksOf(task).size();
@@ -91,7 +91,10 @@ public final class WorkUnitContext {
      * to create its {@link WorkUnit}.
      */
     public WorkUnit createWorkUnit(SubTask execUnit) {
-        future.addExecutor(Executor.currentExecutor());
+        Executor executor = Executor.currentExecutor();
+        if (executor != null) { // TODO is it legal for this to be called by a non-executor thread?
+            future.addExecutor(executor);
+        }
         WorkUnit wu = new WorkUnit(this, execUnit);
         workUnits.add(wu);
         return wu;

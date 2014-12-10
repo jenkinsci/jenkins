@@ -26,6 +26,7 @@ package jenkins.util;
 
 import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
@@ -34,10 +35,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
+
+import jenkins.MasterToSlaveFileCallable;
 
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
@@ -56,7 +60,7 @@ import javax.annotation.Nonnull;
  * @see FilePath
  * @since 1.532
  */
-public abstract class VirtualFile implements Comparable<VirtualFile> {
+public abstract class VirtualFile implements Comparable<VirtualFile>, Serializable {
     
     /**
      * Gets the base name, meaning just the last portion of the path name without any
@@ -185,12 +189,33 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
     }
 
     /**
+     * Does some calculations in batch.
+     * For a remote file, this can be much faster than doing the corresponding operations one by one as separate requests.
+     * The default implementation just calls the block directly.
+     * @param <V> a value type
+     * @param <T> the exception type
+     * @param callable something to run all at once (only helpful if any mentioned files are on the same system)
+     * @return the callable result
+     * @throws IOException if remote communication failed
+     * @since 1.554
+     */
+    public <V> V run(Callable<V,IOException> callable) throws IOException {
+        return callable.call();
+    }
+
+    /**
      * Creates a virtual file wrapper for a local file.
      * @param f a disk file (need not exist)
      * @return a wrapper
      */
     public static VirtualFile forFile(final File f) {
-        return new VirtualFile() {
+        return new FileVF(f);
+    }
+    private static final class FileVF extends VirtualFile {
+        private final File f;
+        FileVF(File f) {
+            this.f = f;
+        }
             @Override public String getName() {
                 return f.getName();
             }
@@ -238,7 +263,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
             @Override public InputStream open() throws IOException {
                 return new FileInputStream(f);
             }
-        };
     }
 
     /**
@@ -247,7 +271,13 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
      * @return a wrapper
      */
     public static VirtualFile forFilePath(final FilePath f) {
-        return new VirtualFile() {
+        return new FilePathVF(f);
+    }
+    private static final class FilePathVF extends VirtualFile {
+        private final FilePath f;
+        FilePathVF(FilePath f) {
+            this.f = f;
+        }
             @Override public String getName() {
                 return f.getName();
             }
@@ -326,11 +356,21 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
                 }
             }
             @Override public InputStream open() throws IOException {
-                return f.read();
+                try {
+                    return f.read();
+                } catch (InterruptedException x) {
+                    throw (IOException) new IOException(x.toString()).initCause(x);
+                }
             }
-        };
+            @Override public <V> V run(Callable<V,IOException> callable) throws IOException {
+                try {
+                    return f.act(callable);
+                } catch (InterruptedException x) {
+                    throw (IOException) new IOException(x.toString()).initCause(x);
+                }
+            }
     }
-    private static final class Scanner implements FilePath.FileCallable<String[]> {
+    private static final class Scanner extends MasterToSlaveFileCallable<String[]> {
         private final String glob;
         Scanner(String glob) {
             this.glob = glob;
@@ -347,7 +387,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile> {
         }
 
     }
-    private static final class Readable implements FilePath.FileCallable<Boolean> {
+    private static final class Readable extends MasterToSlaveFileCallable<Boolean> {
         @Override public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return f.canRead();
         }

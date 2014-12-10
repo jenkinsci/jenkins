@@ -48,6 +48,7 @@ public abstract class SCMPollListener implements ExtensionPoint {
      * @param listener
      *      Connected to the polling log.
      */
+    // TODO switch to Job
 	public void onBeforePolling( AbstractProject<?, ?> project, TaskListener listener ) {}
 
     /**
@@ -101,6 +102,6 @@ public abstract class SCMPollListener implements ExtensionPoint {
 	 * Returns all the registered {@link SCMPollListener}s.
 	 */
 	public static ExtensionList<SCMPollListener> all() {
-		return Jenkins.getInstance().getExtensionList( SCMPollListener.class );
+		return ExtensionList.lookup( SCMPollListener.class );
 	}
 }

@@ -224,6 +224,7 @@ public class MyViewsPropertyTest {
 
     @Test
     public void testCheckPermission() throws IOException {
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         User user = User.get("User");
         User user2 = User.get("User2");
         MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
@@ -260,6 +261,7 @@ public class MyViewsPropertyTest {
 
     @Test
     public void testHasPermission() throws IOException {
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         User user = User.get("User");
         User user2 = User.get("User2");
         MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());

@@ -25,11 +25,14 @@ package hudson.tasks;
 
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Launcher.ProcStarter;
+import hudson.Proc;
 import hudson.Util;
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Node;
+import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.remoting.ChannelClosedException;
 
@@ -91,7 +94,7 @@ public abstract class CommandInterpreter extends Builder {
                 for(Map.Entry<String,String> e : build.getBuildVariables().entrySet())
                     envVars.put(e.getKey(),e.getValue());
 
-                r = launcher.launch().cmds(buildCommandLine(script)).envs(envVars).stdout(listener).pwd(ws).join();
+                r = join(launcher.launch().cmds(buildCommandLine(script)).envs(envVars).stdout(listener).pwd(ws).start());
             } catch (IOException e) {
                 Util.displayIOException(e, listener);
                 e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
@@ -119,6 +122,19 @@ public abstract class CommandInterpreter extends Builder {
                 e.printStackTrace( listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)) );
             }
         }
+    }
+
+    /**
+     * Reports the exit code from the process.
+     *
+     * This allows subtypes to treat the exit code differently (for example by treating non-zero exit code
+     * as if it's zero, or to set the status to {@link Result#UNSTABLE}). Any non-zero exit code will cause
+     * the build step to fail.
+     *
+     * @since 1.549
+     */
+    protected int join(Proc p) throws IOException, InterruptedException {
+        return p.join();
     }
 
     /**

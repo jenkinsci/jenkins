@@ -31,24 +31,29 @@ import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponses.HttpResponseException;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.Extension;
 import hudson.model.FullDuplexHttpChannel;
-import hudson.model.RootAction;
 import hudson.remoting.Channel;
 
 /**
+ * Shows usage of CLI and commands.
+ *
  * @author ogondza
  */
 @Extension
 @Restricted(NoExternalUse.class)
-public class CLIAction implements RootAction {
+public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
     private transient final Map<UUID,FullDuplexHttpChannel> duplexChannels = new HashMap<UUID, FullDuplexHttpChannel>();
 
@@ -62,8 +67,7 @@ public class CLIAction implements RootAction {
     }
 
     public String getUrlName() {
-
-        return "/cli";
+        return "cli";
     }
 
     public void doCommand(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
@@ -82,42 +86,51 @@ public class CLIAction implements RootAction {
         req.getView(this, "command.jelly").forward(req, rsp);
     }
 
-    /**
-     * Handles HTTP requests for duplex channels for CLI.
-     */
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
-        final Jenkins jenkins = Jenkins.getInstance();
-        if (!"POST".equals(req.getMethod())) {
-            // for GET request, serve _cli.jelly, assuming this is a browser
-            jenkins.checkPermission(Jenkins.READ);
-            req.setAttribute("command", CLICommand.clone("help"));
-            req.getView(this,"index.jelly").forward(req,rsp);
-            return;
-        }
-
-        // do not require any permission to establish a CLI connection
-        // the actual authentication for the connecting Channel is done by CLICommand
-
-        UUID uuid = UUID.fromString(req.getHeader("Session"));
-        rsp.setHeader("Hudson-Duplex",""); // set the header so that the client would know
-
-        FullDuplexHttpChannel server;
-        if(req.getHeader("Side").equals("download")) {
-            duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !jenkins.hasPermission(Jenkins.ADMINISTER)) {
-                @Override
-                protected void main(Channel channel) throws IOException, InterruptedException {
-                    // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
-                    channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION, Jenkins.getAuthentication());
-                    channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
-                }
-            });
-            try {
-                server.download(req,rsp);
-            } finally {
-                duplexChannels.remove(uuid);
-            }
+    @Override
+    public Object getTarget() {
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (req.getRestOfPath().length()==0 && "POST".equals(req.getMethod())) {
+            // CLI connection request
+            throw new CliEndpointResponse();
         } else {
-            duplexChannels.get(uuid).upload(req,rsp);
+            return this;
+        }
+    }
+
+    /**
+     * Serves CLI-over-HTTP response.
+     */
+    private class CliEndpointResponse extends HttpResponseException {
+        @Override
+        public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            try {
+                // do not require any permission to establish a CLI connection
+                // the actual authentication for the connecting Channel is done by CLICommand
+
+                UUID uuid = UUID.fromString(req.getHeader("Session"));
+                rsp.setHeader("Hudson-Duplex",""); // set the header so that the client would know
+
+                FullDuplexHttpChannel server;
+                if(req.getHeader("Side").equals("download")) {
+                    duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+                        @Override
+                        protected void main(Channel channel) throws IOException, InterruptedException {
+                            // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
+                            channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION, Jenkins.getAuthentication());
+                            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
+                        }
+                    });
+                    try {
+                        server.download(req,rsp);
+                    } finally {
+                        duplexChannels.remove(uuid);
+                    }
+                } else {
+                    duplexChannels.get(uuid).upload(req,rsp);
+                }
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
         }
     }
 }

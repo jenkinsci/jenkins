@@ -28,6 +28,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.util.IOUtils;
 import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
 
@@ -156,7 +157,7 @@ public class UsageStatistics extends PageDecorator {
         o.put("plugins",plugins);
 
         JSONObject jobs = new JSONObject();
-        List<TopLevelItem> items = j.getItems();
+        List<TopLevelItem> items = j.getAllItems(TopLevelItem.class);
         for (TopLevelItemDescriptor d : Items.all()) {
             int cnt=0;
             for (TopLevelItem item : items) {
@@ -172,8 +173,11 @@ public class UsageStatistics extends PageDecorator {
 
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
             OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getKey(),"AES")), "UTF-8");
-            o.write(w);
-            w.close();
+            try {
+                o.write(w);
+            } finally {
+                IOUtils.closeQuietly(w);
+            }
 
             return new String(Base64.encode(baos.toByteArray()));
         } catch (GeneralSecurityException e) {

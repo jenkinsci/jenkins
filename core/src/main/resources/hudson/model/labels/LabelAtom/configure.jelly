@@ -37,12 +37,18 @@ THE SOFTWARE.
           <f:textbox value="${it.name}" readonly="true" />
         </f:entry>
 
+        <f:entry title="${%Description}">
+          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+        </f:entry>
+
         <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
 
         <f:block>
           <f:submit value="${%Save}"/>
+          <f:apply />
         </f:block>
       </f:form>
+      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

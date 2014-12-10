@@ -5,7 +5,7 @@
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.540-SNAPSHOT</version>
+    <version>1.595-SNAPSHOT</version>
   </parent>
 
   <artifactId>cli</artifactId>
@@ -13,6 +13,16 @@
   <name>Jenkins CLI</name>
 
   <dependencies>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>

@@ -23,17 +23,18 @@
  */
 package hudson.scm;
 
-import hudson.ExtensionPoint;
-import hudson.MarkupText;
-import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.util.CopyOnWriteList;
-import hudson.scm.ChangeLogSet.Entry;
+import hudson.ExtensionListView;
+import hudson.ExtensionPoint;
+import hudson.MarkupText;
+import hudson.Util;
 import hudson.model.AbstractBuild;
-import jenkins.model.Jenkins;
-
+import hudson.model.Run;
+import hudson.scm.ChangeLogSet.Entry;
+import hudson.util.CopyOnWriteList;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * Performs mark up on changelog messages to be displayed.
@@ -75,8 +76,20 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      *      are registered, the object may already contain some markups when this
      *      method is invoked. Never null. {@link MarkupText#getText()} on this instance
      *      will return the same string as {@link Entry#getMsgEscaped()}.
+     * @since 1.568
      */
-    public abstract void annotate(AbstractBuild<?,?> build, Entry change, MarkupText text );
+    public void annotate(Run<?,?> build, Entry change, MarkupText text) {
+        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogAnnotator.class, getClass(), "annotate", AbstractBuild.class, Entry.class, MarkupText.class)) {
+            annotate((AbstractBuild) build, change, text);
+        } else {
+            throw new AbstractMethodError("You must override the newer overload of annotate");
+        }
+    }
+
+    @Deprecated
+    public void annotate(AbstractBuild<?,?> build, Entry change, MarkupText text) {
+        annotate((Run) build, change, text);
+    }
 
     /**
      * Registers this annotator, so that Hudson starts using this object
@@ -108,6 +121,6 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      * Returns all the registered {@link ChangeLogAnnotator} descriptors.
      */
     public static ExtensionList<ChangeLogAnnotator> all() {
-        return Jenkins.getInstance().getExtensionList(ChangeLogAnnotator.class);
+        return ExtensionList.lookup(ChangeLogAnnotator.class);
     }
 }

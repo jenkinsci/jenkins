@@ -23,70 +23,68 @@
  */
 package hudson.slaves;
 
-import hudson.model.*;
-import hudson.util.IOException2;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
+import edu.umd.cs.findbugs.annotations.When;
+import hudson.AbortException;
+import hudson.remoting.ChannelBuilder;
 import hudson.util.IOUtils;
-import hudson.util.io.ReopenableRotatingFileOutputStream;
-import jenkins.model.Jenkins.MasterComputer;
-import hudson.remoting.Channel;
-import hudson.remoting.VirtualChannel;
-import hudson.remoting.Callable;
-import hudson.util.StreamTaskListener;
-import hudson.util.NullStream;
-import hudson.util.RingBufferLogHandler;
-import hudson.util.Futures;
 import hudson.FilePath;
 import hudson.Util;
-import hudson.AbortException;
+import hudson.model.Computer;
+import hudson.model.Executor;
+import hudson.model.ExecutorListener;
+import hudson.model.Node;
+import hudson.model.Queue;
+import hudson.model.Slave;
+import hudson.model.TaskListener;
+import hudson.model.User;
+import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
+import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
-import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import hudson.slaves.OfflineCause.ChannelTermination;
-import hudson.util.Secret;
+import hudson.util.Futures;
+import hudson.util.NullStream;
+import hudson.util.RingBufferLogHandler;
+import hudson.util.StreamTaskListener;
+import hudson.util.io.ReopenableFileOutputStream;
+import hudson.util.io.ReopenableRotatingFileOutputStream;
+import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
+import jenkins.slaves.systemInfo.SlaveSystemInfo;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.servlet.ServletException;
 import java.io.File;
-import java.io.OutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
-import java.security.SecureRandom;
+import java.nio.charset.Charset;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.Handler;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.nio.charset.Charset;
-import java.util.concurrent.Future;
-import java.security.Security;
 
-import hudson.util.io.ReopenableFileOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.security.GeneralSecurityException;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.RequestDispatcher;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
+import static hudson.slaves.SlaveComputer.LogHolder.*;
+import jenkins.security.ChannelConfigurator;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
-import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponseWrapper;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.kohsuke.stapler.ResponseImpl;
-import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.compression.FilterServletOutputStream;
 
 /**
  * {@link Computer} for {@link Slave}s.
@@ -145,8 +143,11 @@ public class SlaveComputer extends Computer {
      * {@inheritDoc}
      */
     @Override
+    @OverrideMustInvoke(When.ANYTIME)
     public boolean isAcceptingTasks() {
-        return acceptingTasks;
+        // our boolean flag is an override on any additional programmatic reasons why this slave might not be
+        // accepting tasks.
+        return acceptingTasks && super.isAcceptingTasks();
     }
 
     /**
@@ -157,8 +158,11 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Allows a {@linkplain hudson.slaves.ComputerLauncher} or a {@linkplain hudson.slaves.RetentionStrategy} to
-     * suspend tasks being accepted by the slave computer.
+     * Allows suspension of tasks being accepted by the slave computer. While this could be called by a
+     * {@linkplain hudson.slaves.ComputerLauncher} or a {@linkplain hudson.slaves.RetentionStrategy}, such usage
+     * can result in fights between multiple actors calling setting differential values. A better approach
+     * is to override {@link hudson.slaves.RetentionStrategy#isAcceptingTasks(hudson.model.Computer)} if the
+     * {@link hudson.slaves.RetentionStrategy} needs to control availability.
      *
      * @param acceptingTasks {@code true} if the slave can accept tasks.
      */
@@ -176,9 +180,16 @@ public class SlaveComputer extends Computer {
         return isUnix;
     }
 
+    @CheckForNull
     @Override
     public Slave getNode() {
-        return (Slave)super.getNode();
+        Node node = super.getNode();
+        if (node == null || node instanceof Slave) {
+            return (Slave)node;
+        } else {
+            logger.log(Level.WARNING, "found an unexpected kind of node {0} from {1} with nodeName={2}", new Object[] {node, this, nodeName});
+            return null;
+        }
     }
 
     @Override
@@ -343,7 +354,15 @@ public class SlaveComputer extends Computer {
      *      so the implementation of the listener doesn't need to do that again.
      */
     public void setChannel(InputStream in, OutputStream out, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
-        Channel channel = new Channel(nodeName,threadPoolForRemoting, Channel.Mode.NEGOTIATE, in,out, launchLog);
+        ChannelBuilder cb = new ChannelBuilder(nodeName,threadPoolForRemoting)
+            .withMode(Channel.Mode.NEGOTIATE)
+            .withHeaderStream(launchLog);
+
+        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+            cc.onChannelBuilding(cb,this);
+        }
+
+        Channel channel = cb.build(in,out);
         setChannel(channel,launchLog,listener);
     }
 
@@ -391,7 +410,7 @@ public class SlaveComputer extends Computer {
         return channel.call(new LoadingTime(true));
     }
 
-    static class LoadingCount implements Callable<Integer,RuntimeException> {
+    static class LoadingCount extends MasterToSlaveCallable<Integer,RuntimeException> {
         private final boolean resource;
         LoadingCount(boolean resource) {
             this.resource = resource;
@@ -402,13 +421,13 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    static class LoadingPrefetchCacheCount implements Callable<Integer,RuntimeException> {
+    static class LoadingPrefetchCacheCount extends MasterToSlaveCallable<Integer,RuntimeException> {
         @Override public Integer call() {
             return Channel.current().classLoadingPrefetchCacheCount.get();
         }
     }
 
-    static class LoadingTime implements Callable<Long,RuntimeException> {
+    static class LoadingTime extends MasterToSlaveCallable<Long,RuntimeException> {
         private final boolean resource;
         LoadingTime(boolean resource) {
             this.resource = resource;
@@ -420,7 +439,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Sets up the connection through an exsting channel.
+     * Sets up the connection through an existing channel.
      *
      * @since 1.444
      */
@@ -430,6 +449,8 @@ public class SlaveComputer extends Computer {
 
         final TaskListener taskListener = new StreamTaskListener(launchLog);
         PrintStream log = taskListener.getLogger();
+
+        channel.setProperty(SlaveComputer.class, this);
 
         channel.addListener(new Channel.Listener() {
             @Override
@@ -456,10 +477,15 @@ public class SlaveComputer extends Computer {
 
         String defaultCharsetName = channel.call(new DetectDefaultCharset());
 
-        String remoteFs = getNode().getRemoteFS();
+        Slave node = getNode();
+        if (node == null) { // Node has been disabled/removed during the connection
+            throw new IOException("Node "+nodeName+" has been deleted during the channel setup");
+        }
+        
+        String remoteFs = node.getRemoteFS();
         if(_isUnix && !remoteFs.contains("/") && remoteFs.contains("\\"))
             log.println("WARNING: "+remoteFs+" looks suspiciously like Windows path. Maybe you meant "+remoteFs.replace('\\','/')+"?");
-        FilePath root = new FilePath(channel,getNode().getRemoteFS());
+        FilePath root = new FilePath(channel,remoteFs);
 
         // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
         // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
@@ -527,15 +553,13 @@ public class SlaveComputer extends Computer {
             return channel.call(new SlaveLogFetcher());
     }
 
+    @RequirePOST
     public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) throws IOException, ServletException {
         if (channel!=null) {
             //does nothing in case computer is already disconnected
             checkPermission(DISCONNECT);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
-            disconnect(OfflineCause.create(Messages._SlaveComputer_DisconnectedBy(
-                    Jenkins.getAuthentication().getName(),
-                    offlineMessage!=null ? " : " + offlineMessage : "")
-            ));
+            disconnect(new OfflineCause.UserCause(User.current(), offlineMessage));
         }
         return new HttpRedirect(".");
     }
@@ -554,6 +578,7 @@ public class SlaveComputer extends Computer {
         });
     }
 
+    @RequirePOST
     public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(channel!=null) {
             req.getView(this,"already-launched.jelly").forward(req, rsp);
@@ -588,40 +613,8 @@ public class SlaveComputer extends Computer {
     }
 
     @WebMethod(name="slave-agent.jnlp")
-    public void doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
-        RequestDispatcher view = req.getView(this, "slave-agent.jnlp.jelly");
-        if ("true".equals(req.getParameter("encrypt"))) {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            StaplerResponse temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
-                @Override public ServletOutputStream getOutputStream() throws IOException {
-                    return new FilterServletOutputStream(baos);
-                }
-                @Override public PrintWriter getWriter() throws IOException {
-                    throw new IllegalStateException();
-                }
-            });
-            view.forward(req, temp);
-
-            byte[] iv = new byte[128/8];
-            new SecureRandom().nextBytes(iv);
-
-            byte[] jnlpMac = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName().getBytes("UTF-8"));
-            SecretKey key = new SecretKeySpec(jnlpMac, 0, /* export restrictions */ 128 / 8, "AES");
-            byte[] encrypted;
-            try {
-                Cipher c = Secret.getCipher("AES/CFB8/NoPadding");
-                c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-                encrypted = c.doFinal(baos.toByteArray());
-            } catch (GeneralSecurityException x) {
-                throw new IOException2(x);
-            }
-            res.setContentType("application/octet-stream");
-            res.getOutputStream().write(iv);
-            res.getOutputStream().write(encrypted);
-        } else {
-            checkPermission(CONNECT);
-            view.forward(req, res);
-        }
+    public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
+        return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
     }
 
     @Override
@@ -651,7 +644,7 @@ public class SlaveComputer extends Computer {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
             for (ComputerListener cl : ComputerListener.all())
-                cl.onOffline(this);
+                cl.onOffline(this, offlineCause);
         }
     }
 
@@ -703,19 +696,19 @@ public class SlaveComputer extends Computer {
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
 
-    private static final class SlaveVersion implements Callable<String,IOException> {
+    private static final class SlaveVersion extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             try { return Launcher.VERSION; }
             catch (Throwable ex) { return "< 1.335"; } // Older slave.jar won't have VERSION
         }
     }
-    private static final class DetectOS implements Callable<Boolean,IOException> {
+    private static final class DetectOS extends MasterToSlaveCallable<Boolean,IOException> {
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
         }
     }
 
-    private static final class DetectDefaultCharset implements Callable<String,IOException> {
+    private static final class DetectDefaultCharset extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             return Charset.defaultCharset().name();
         }
@@ -732,7 +725,7 @@ public class SlaveComputer extends Computer {
         static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
     }
 
-    private static class SlaveInitializer implements Callable<Void,RuntimeException> {
+    private static class SlaveInitializer extends MasterToSlaveCallable<Void,RuntimeException> {
         public Void call() {
             // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
@@ -769,7 +762,7 @@ public class SlaveComputer extends Computer {
      */
     public static VirtualChannel getChannelToMaster() {
         if (Jenkins.getInstance()!=null)
-            return MasterComputer.localChannel;
+            return FilePath.localChannel;
 
         // if this method is called from within the slave computation thread, this should work
         Channel c = Channel.current();
@@ -779,7 +772,14 @@ public class SlaveComputer extends Computer {
         return null;
     }
 
-    private static class SlaveLogFetcher implements Callable<List<LogRecord>,RuntimeException> {
+    /**
+     * Helper method for Jelly.
+     */
+    public static List<SlaveSystemInfo> getSystemInfoExtensions() {
+        return SlaveSystemInfo.all();
+    }
+
+    private static class SlaveLogFetcher extends MasterToSlaveCallable<List<LogRecord>,RuntimeException> {
         public List<LogRecord> call() {
             return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
         }

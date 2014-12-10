@@ -42,19 +42,26 @@ public class InstallerTranslator extends ToolLocationTranslator {
     private static final Map<Node,Map<ToolInstallation,Semaphore>> mutexByNode = new WeakHashMap<Node,Map<ToolInstallation,Semaphore>>();
 
     public String getToolHome(Node node, ToolInstallation tool, TaskListener log) throws IOException, InterruptedException {
+        if (node.getRootPath() == null) {
+            log.error(node.getDisplayName() + " is offline; cannot locate " + tool.getName());
+            return null;
+        }
         InstallSourceProperty isp = tool.getProperties().get(InstallSourceProperty.class);
         if (isp == null) {
             return null;
         }
         for (ToolInstaller installer : isp.installers) {
             if (installer.appliesTo(node)) {
-                Map<ToolInstallation, Semaphore> mutexByTool = mutexByNode.get(node);
-                if (mutexByTool == null) {
-                    mutexByNode.put(node, mutexByTool = new WeakHashMap<ToolInstallation, Semaphore>());
-                }
-                Semaphore semaphore = mutexByTool.get(tool);
-                if (semaphore == null) {
-                    mutexByTool.put(tool, semaphore = new Semaphore(1));
+                Semaphore semaphore;
+                synchronized (mutexByNode) {
+                    Map<ToolInstallation, Semaphore> mutexByTool = mutexByNode.get(node);
+                    if (mutexByTool == null) {
+                        mutexByNode.put(node, mutexByTool = new WeakHashMap<ToolInstallation, Semaphore>());
+                    }
+                    semaphore = mutexByTool.get(tool);
+                    if (semaphore == null) {
+                        mutexByTool.put(tool, semaphore = new Semaphore(1));
+                    }
                 }
                 semaphore.acquire();
                 try {

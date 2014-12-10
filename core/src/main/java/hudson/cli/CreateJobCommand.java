@@ -23,8 +23,6 @@
  */
 package hudson.cli;
 
-import hudson.model.ModifiableItemGroup;
-import hudson.model.TopLevelItem;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.Item;
@@ -48,7 +46,6 @@ public class CreateJobCommand extends CLICommand {
 
     protected int run() throws Exception {
         Jenkins h = Jenkins.getInstance();
-        h.checkPermission(Item.CREATE);
 
         if (h.getItemByFullName(name)!=null) {
             stderr.println("Job '"+name+"' already exists");
@@ -72,6 +69,7 @@ public class CreateJobCommand extends CLICommand {
             name = name.substring(i + 1);
         }
 
+        Jenkins.checkGoodName(name);
         ig.createProjectFromXML(name, stdin);
         return 0;
     }

@@ -29,11 +29,9 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.model.AbstractModelObject;
-import hudson.model.Computer;
+import hudson.model.*;
+import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
-import hudson.model.Saveable;
-import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -42,25 +40,18 @@ import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
@@ -84,14 +75,51 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     public final CopyOnWriteList<Target> targets = new CopyOnWriteList<Target>();
 
-    private transient /*almost final*/ RingBufferLogHandler handler = new RingBufferLogHandler() {
+    @Restricted(NoExternalUse.class)
+    Target[] orderedTargets() {
+        // will contain targets ordered by reverse name length (place specific targets at the beginning)
+        Target[] ts = targets.toArray(new Target[]{});
+
+        Arrays.sort(ts, new Comparator<Target>() {
+            public int compare(Target left, Target right) {
+                return right.getName().length() - left.getName().length();
+            }
+        });
+
+        return ts;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public AutoCompletionCandidates doAutoCompleteLoggerName(@QueryParameter String value) {
+        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+        Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
+        while (loggerNames.hasMoreElements()) {
+            String loggerName = loggerNames.nextElement();
+            if (loggerName.toLowerCase(Locale.ENGLISH).contains(value.toLowerCase(Locale.ENGLISH))) {
+                candidates.add(loggerName);
+            }
+        }
+        return candidates;
+    }
+
+    @Restricted(NoExternalUse.class)
+    transient /*almost final*/ RingBufferLogHandler handler = new RingBufferLogHandler() {
         @Override
         public void publish(LogRecord record) {
-            for (Target t : targets) {
-                if(t.includes(record)) {
-                    super.publish(record);
-                    return;
+            for (Target t : orderedTargets()) {
+                Boolean match = t.matches(record);
+                if (match == null) {
+                    // domain does not match, so continue looking
+                    continue;
                 }
+
+                if (match.booleanValue()) {
+                    // most specific logger matches, so publish
+                    super.publish(record);
+                }
+                // most specific logger does not match, so don't publish
+                // allows reducing log level for more specific loggers
+                return;
             }
         }
     };
@@ -123,6 +151,11 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             return Level.parse(String.valueOf(level));
         }
 
+        public String getName() {
+            return name;
+        }
+
+        @Deprecated
         public boolean includes(LogRecord r) {
             if(r.getLevel().intValue() < level)
                 return false;   // below the threshold
@@ -134,6 +167,21 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
                 return false;   // not within this logger
             String rest = logName.substring(name.length());
             return rest.startsWith(".") || rest.length()==0;
+        }
+
+        public Boolean matches(LogRecord r) {
+            boolean levelSufficient = r.getLevel().intValue() >= level;
+            if (name.length() == 0) {
+                return Boolean.valueOf(levelSufficient); // include if level matches
+            }
+            String logName = r.getLoggerName();
+            if(logName==null || !logName.startsWith(name))
+                return null; // not in the domain of this logger
+            String rest = logName.substring(name.length());
+            if (rest.startsWith(".") || rest.length()==0) {
+                return Boolean.valueOf(levelSufficient); // include if level matches
+            }
+            return null;
         }
 
         public Logger getLogger() {
@@ -160,7 +208,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     }
 
-    private static final class SetLevel implements Callable<Void,Error> {
+    private static final class SetLevel extends MasterToSlaveCallable<Void,Error> {
         /** known loggers (kept per slave), to avoid GC */
         @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<Logger>();
         private final String name;
@@ -253,6 +301,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         rsp.sendRedirect2(redirect);
     }
 
+    @RequirePOST
+    public HttpResponse doClear() throws IOException {
+        handler.clear();
+        return HttpResponses.redirectToDot();
+    }
+
     /**
      * Loads the settings from a file.
      */
@@ -299,7 +353,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * The file we save our configuration.
      */
     private XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().getRootDir(),"log/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(LogRecorderManager.configDir(), name + ".xml"));
     }
 
     /**

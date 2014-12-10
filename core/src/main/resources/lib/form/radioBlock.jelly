@@ -62,11 +62,7 @@ THE SOFTWARE.
         ${title}
       </label>
     </td>
-    <j:if test="${attrs.help!=null}">
-      <td>
-        <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
-      </td>
-    </j:if>
+    <f:helpLink url="${help}" featureName="${title}" />
 	</tr>
   <j:if test="${attrs.help!=null}">
     <f:helpArea />

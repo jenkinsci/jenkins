@@ -28,6 +28,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -77,8 +78,7 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, succeeded());
-        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeededSilently());
 
         assertThat("Update should not modify view name", j.jenkins.getView("ViewFromXML"), nullValue());
 

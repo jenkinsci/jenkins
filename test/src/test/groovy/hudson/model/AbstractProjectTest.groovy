@@ -28,10 +28,19 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.security.*
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.BuildTrigger
+import hudson.tasks.Publisher
+import hudson.tasks.Recorder;
+import com.gargoylesoftware.htmlunit.html.HtmlPage
+import hudson.maven.MavenModuleSet;
 import hudson.security.*;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.scm.NullSCM;
+import hudson.scm.SCM
+import hudson.scm.SCMDescriptor
 import hudson.Launcher;
 import hudson.FilePath;
 import hudson.Functions;
@@ -44,16 +53,17 @@ import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.context.SecurityContextHolder
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.MemoryAssert;
+import org.jvnet.hudson.test.MemoryAssert
+import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet
 import org.apache.commons.io.FileUtils;
 import java.lang.ref.WeakReference
 
-import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.MockFolder
 
 /**
  * @author Kohsuke Kawaguchi
@@ -188,6 +198,13 @@ public class AbstractProjectTest extends HudsonTestCase {
             @Override public boolean requiresWorkspaceForPolling() {
                 return true;
             }
+            @Override public SCMDescriptor<?> getDescriptor() {
+                return new SCMDescriptor<SCM>(null) {
+                    @Override public String getDisplayName() {
+                        return "";
+                    }
+                };
+            }
         };
         Thread t = new Thread() {
             @Override public void run() {
@@ -274,6 +291,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertSymlinkForBuild(lastStable, 1);
     }
 
+    /* TODO too slow, seems capable of causing testWorkspaceLock to time out:
     @Bug(15156)
     public void testGetBuildAfterGC() {
         FreeStyleProject job = createFreeStyleProject();
@@ -282,41 +300,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
         assert job.lastBuild != null;
     }
-
-    @Bug(13502)
-    public void testHandleBuildTrigger() {
-        Project u = createFreeStyleProject("u"),
-                d = createFreeStyleProject("d"),
-                e = createFreeStyleProject("e");
-
-        u.addPublisher(new BuildTrigger("d", Result.SUCCESS));
-
-        jenkins.setSecurityRealm(createDummySecurityRealm());
-        ProjectMatrixAuthorizationStrategy authorizations = new ProjectMatrixAuthorizationStrategy();
-        jenkins.setAuthorizationStrategy(authorizations);
-
-        authorizations.add(Jenkins.ADMINISTER, "admin");
-        authorizations.add(Jenkins.READ, "user");
-
-        // user can READ u and CONFIGURE e
-        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
-        permissions.put(Job.READ, Collections.singleton("user"));
-        u.addProperty(new AuthorizationMatrixProperty(permissions));
-
-        permissions = new HashMap<Permission, Set<String>>();
-        permissions.put(Job.CONFIGURE, Collections.singleton("user"));
-        e.addProperty(new AuthorizationMatrixProperty(permissions));
-
-        User user = User.get("user");
-        SecurityContext sc = ACL.impersonate(user.impersonate());
-        try {
-            e.convertUpstreamBuildTrigger(Collections.<AbstractProject> emptySet());
-        } finally {
-            SecurityContextHolder.setContext(sc);
-        }
-
-        assert 1 == u.getPublishersList().size();
-    }
+    */
 
     @Bug(17137)
     public void testExternalBuildDirectorySymlinks() {
@@ -369,6 +353,25 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert !b.rootDir.isDirectory();
     }
 
+    @Bug(18678)
+    public void testRenameJobLostBuilds() throws Exception {
+        def p = createFreeStyleProject("initial");
+        assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(1, p.getBuilds().size());
+        p.renameTo("edited");
+        p._getRuns().purgeCache();
+        assertEquals(1, p.getBuilds().size());
+        def d = jenkins.createProject(MockFolder.class, "d");
+        Items.move(p, d);
+        assertEquals(p, jenkins.getItemByFullName("d/edited"));
+        p._getRuns().purgeCache();
+        assertEquals(1, p.getBuilds().size());
+        d.renameTo("d2");
+        p = jenkins.getItemByFullName("d2/edited");
+        p._getRuns().purgeCache();
+        assertEquals(1, p.getBuilds().size());
+    }
+
     @Bug(17575)
     public void testDeleteRedirect() {
         createFreeStyleProject("j1");
@@ -382,6 +385,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert "job/d/" == deleteRedirectTarget("job/d/job/j3");
         assert "job/d/view/v2/" == deleteRedirectTarget("job/d/view/v2/job/j4");
         assert "view/v1/job/d/" == deleteRedirectTarget("view/v1/job/d/job/j5");
+        assert "view/v1/" == deleteRedirectTarget("view/v1/job/d"); // JENKINS-23375
     }
 
     private String deleteRedirectTarget(String job) {
@@ -482,5 +486,112 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert j.triggers().size()==2
         def t = j.triggers()[1]
         assert t == newTrigger
+    }
+
+    @Bug(10615)
+    public void testWorkspaceLock() {
+        def p = createFreeStyleProject()
+        p.concurrentBuild = true;
+        def e1 = new OneShotEvent(), e2=new OneShotEvent()
+        def done = new OneShotEvent()
+
+        p.publishersList.add(new Recorder() {
+            BuildStepMonitor getRequiredMonitorService() {
+                return BuildStepMonitor.NONE;
+            }
+
+            @Override
+            boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                if (build.number==1) {
+                    e1.signal();  // signal that build #1 is in publisher
+                } else {
+                    assert build.number==2;
+                    e2.signal()
+                }
+
+                done.block()
+
+                return true;
+            }
+            private Object writeReplace() { return new Object(); }
+        })
+
+        def b1 = p.scheduleBuild2(0)
+        e1.block()
+
+        def b2 = p.scheduleBuild2(0)
+        e2.block()
+
+        // at this point both builds are in the publisher, so we verify that
+        // the workspace are differently allocated
+        assert b1.startCondition.get().workspace!=b2.startCondition.get().workspace
+
+        done.signal()
+    }
+
+    public void testRenameToPrivileged() {
+        def secret = jenkins.createProject(FreeStyleProject.class,"secret");
+        def regular = jenkins.createProject(FreeStyleProject.class,"regular")
+
+        jenkins.securityRealm = createDummySecurityRealm();
+        def auth = new ProjectMatrixAuthorizationStrategy();
+        jenkins.authorizationStrategy = auth;
+
+        auth.add(Jenkins.ADMINISTER, "alice");
+        auth.add(Jenkins.READ, "bob");
+
+        // bob the regular user can only see regular jobs
+        regular.addProperty(new AuthorizationMatrixProperty([(Job.READ) : ["bob"] as Set]));
+
+        def wc = createWebClient()
+        wc.login("bob")
+        wc.executeOnServer {
+            assert jenkins.getItem("secret")==null;
+            try {
+                regular.renameTo("secret")
+                fail("rename as an overwrite should have failed");
+            } catch (Exception e) {
+                // expected rename to fail in some non-descriptive generic way
+                e.printStackTrace()
+            }
+        }
+
+        // those two jobs should still be there
+        assert jenkins.getItem("regular")!=null;
+        assert jenkins.getItem("secret")!=null;
+    }
+
+
+    /**
+     * Trying to POST to config.xml by a different job type should fail.
+     */
+    public void testConfigDotXmlSubmissionToDifferentType() {
+        jenkins.crumbIssuer = null
+        def p = createFreeStyleProject()
+
+        HttpURLConnection con = postConfigDotXml(p, "<maven2-moduleset />")
+
+        // this should fail with a type mismatch error
+        // the error message should report both what was submitted and what was expected
+        assert con.responseCode == 500
+        def msg = con.errorStream.text
+        println msg
+        assert msg.contains(FreeStyleProject.class.name)
+        assert msg.contains(MavenModuleSet.class.name)
+
+        // control. this should work
+        con = postConfigDotXml(p, "<project />")
+        assert con.responseCode == 200
+    }
+
+    private HttpURLConnection postConfigDotXml(FreeStyleProject p, String xml) {
+        HttpURLConnection con = new URL(getURL(), "job/${p.name}/config.xml").openConnection()
+        con.requestMethod = "POST"
+        con.setRequestProperty("Content-Type", "application/xml")
+        con.doOutput = true
+        con.outputStream.withStream { s ->
+            s.write(xml.bytes)
+        }
+        return con
     }
 }

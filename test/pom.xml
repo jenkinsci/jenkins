@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.540-SNAPSHOT</version>
+    <version>1.595-SNAPSHOT</version>
   </parent>
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-test-harness</artifactId>
@@ -42,6 +42,8 @@ THE SOFTWARE.
   <properties>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
+    <ignore.random.failures>false</ignore.random.failures>
+    <jacocoSurefireArgs /><!-- empty by default -->
   </properties>
 
   <dependencies>
@@ -79,7 +81,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>1.5</version>
+      <version>1.10</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -87,14 +89,29 @@ THE SOFTWARE.
       <version>1.0.2</version>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>antisamy-markup-formatter</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>1.0-beta-1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <version>1.2-beta-4</version>
+    </dependency>
+    <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty</artifactId>
       <version>6.1.26</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
       <scope>compile</scope>
       <!-- in this module we need this as a compile scope, whereas in the parent it's test -->
     </dependency>
@@ -181,16 +198,16 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>-Dfile.encoding=UTF-8 -XX:MaxPermSize=128m</argLine>
+          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx256m -XX:MaxPermSize=128m</argLine>
           <systemPropertyVariables>
               <!-- use AntClassLoader that supports predictable file handle release -->
               <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
               <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
               <buildDirectory>${project.build.directory}</buildDirectory>
+              <ignore.random.failures>${ignore.random.failures}</ignore.random.failures>
           </systemPropertyVariables>
           <reuseForks>true</reuseForks>
           <forkCount>${concurrency}</forkCount>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
       <plugin>
@@ -251,6 +268,17 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
+      <id>all-tests</id>
+      <activation>
+        <property>
+          <name>!test</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+      </properties>
+    </profile>
+    <profile>
       <!--
         Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
       -->
@@ -281,5 +309,51 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>    
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.6.3.201306030806</version>
+            <executions>
+              <!--
+                Prepares the property pointing to the JaCoCo runtime agent which
+                is passed as VM argument when Maven the Surefire plugin is executed.
+              -->
+              <execution>
+                <id>pre-unit-test</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <!-- Sets the path to the file which contains the execution data. -->
+                  <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
+                  <propertyName>jacocoSurefireArgs</propertyName>
+                </configuration>
+              </execution>
+              <!--
+                Ensures that the code coverage report for unit tests is created after
+                unit tests have been run.
+              -->
+              <execution>
+                <id>post-unit-test</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <configuration>
+                  <!-- Sets the path to the file which contains the execution data. -->
+                  <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+                  <!-- Sets the output directory for the code coverage report. -->
+                  <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>

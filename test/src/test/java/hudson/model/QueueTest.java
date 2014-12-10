@@ -26,29 +26,51 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.Launcher;
 import hudson.matrix.AxisList;
+import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixRun;
 import hudson.matrix.TextAxis;
-import hudson.model.Cause.*;
-import hudson.model.Queue.*;
+import hudson.model.Cause.RemoteCause;
+import hudson.model.Cause.UserIdCause;
+import hudson.model.Queue.BlockedItem;
+import hudson.model.Queue.Executable;
+import hudson.model.Queue.WaitingItem;
+import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.model.queue.ScheduleResult;
+import hudson.model.queue.SubTask;
 import hudson.security.ACL;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.DummyCloudImpl;
+import hudson.slaves.NodeProvisioner;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
-import hudson.util.XStream2;
 import hudson.util.OneShotEvent;
-import hudson.Launcher;
-import hudson.matrix.LabelAxis;
-import hudson.matrix.MatrixRun;
-import hudson.slaves.DummyCloudImpl;
-import hudson.slaves.NodeProvisioner;
+import hudson.util.XStream2;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
-import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
@@ -60,29 +82,13 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.TestExtension;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
-
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -348,6 +354,50 @@ public class QueueTest extends HudsonTestCase {
         assertEquals("slave0", runs.get(0).getBuiltOnStr());
     }
 
+    public void testTaskEquality() throws Exception {
+        AtomicInteger cnt = new AtomicInteger();
+        ScheduleResult result = jenkins.getQueue().schedule2(new TestTask(cnt), 0);
+        assertTrue(result.isCreated());
+        WaitingItem item = result.getCreateItem();
+        assertFalse(jenkins.getQueue().schedule2(new TestTask(cnt), 0).isCreated());
+        item.getFuture().get();
+        waitUntilNoActivity();
+        assertEquals(1, cnt.get());
+    }
+    private static final class TestTask extends AbstractQueueTask {
+        private final AtomicInteger cnt;
+        TestTask(AtomicInteger cnt) {
+            this.cnt = cnt;
+        }
+        @Override public boolean equals(Object o) {
+            return o instanceof TestTask && cnt == ((TestTask) o).cnt;
+        }
+        @Override public int hashCode() {
+            return cnt.hashCode();
+        }
+        @Override public boolean isBuildBlocked() {return false;}
+        @Override public String getWhyBlocked() {return null;}
+        @Override public String getName() {return "test";}
+        @Override public String getFullDisplayName() {return "Test";}
+        @Override public void checkAbortPermission() {}
+        @Override public boolean hasAbortPermission() {return true;}
+        @Override public String getUrl() {return "test/";}
+        @Override public String getDisplayName() {return "Test";}
+        @Override public Label getAssignedLabel() {return null;}
+        @Override public Node getLastBuiltOn() {return null;}
+        @Override public long getEstimatedDuration() {return -1;}
+        @Override public ResourceList getResourceList() {return new ResourceList();}
+        @Override public Executable createExecutable() throws IOException {
+            return new Executable() {
+                @Override public SubTask getParent() {return TestTask.this;}
+                @Override public long getEstimatedDuration() {return -1;}
+                @Override public void run() {
+                    cnt.incrementAndGet();
+                }
+            };
+        }
+    }
+
     public void testWaitForStart() throws Exception {
         final OneShotEvent ev = new OneShotEvent();
         FreeStyleProject p = createFreeStyleProject();
@@ -378,8 +428,8 @@ public class QueueTest extends HudsonTestCase {
      */
     public void testAccessControl() throws Exception {
         configureUserRealm();
-        qac.getAuthenticators().add(new QueueItemAuthenticatorImpl());
         FreeStyleProject p = createFreeStyleProject();
+        qac.getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -388,14 +438,6 @@ public class QueueTest extends HudsonTestCase {
             }
         });
         assertBuildStatusSuccess(p.scheduleBuild2(0));
-    }
-
-    @TestExtension
-    public static class QueueItemAuthenticatorImpl extends QueueItemAuthenticator {
-        @Override
-        public Authentication authenticate(Queue.Item item) {
-            return alice;
-        }
     }
 
     private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice",new GrantedAuthority[0]);
@@ -413,8 +455,8 @@ public class QueueTest extends HudsonTestCase {
         DumbSlave s2 = createSlave();
 
         configureUserRealm();
-        qac.getAuthenticators().add(new QueueItemAuthenticatorImpl());
         FreeStyleProject p = createFreeStyleProject();
+        qac.getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -505,6 +547,36 @@ public class QueueTest extends HudsonTestCase {
         List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
         for(Queue.BuildableItem item : items){
             assertFalse("Project " + project2.getDisplayName() + " stuck in pendings",item.task.getName().equals(project2.getName())); 
+        }
+    }
+    
+    public void testCancelInQueue() throws Exception
+    {
+        // parepare an offline slave.
+        DumbSlave slave = createOnlineSlave();
+        assertFalse(slave.toComputer().isOffline());
+        slave.toComputer().disconnect(null).get();
+        assertTrue(slave.toComputer().isOffline());
+        
+        FreeStyleProject p = createFreeStyleProject();
+        p.setAssignedNode(slave);
+        
+        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
+        try {
+            f.get(3, TimeUnit.SECONDS);
+            fail("Should time out (as the slave is offline).");
+        } catch (TimeoutException e) {
+        }
+        
+        Queue.Item item = Queue.getInstance().getItem(p);
+        assertNotNull(item);
+        Queue.getInstance().doCancelItem(item.id);
+        assertNull(Queue.getInstance().getItem(p));
+        
+        try {
+            f.get(10, TimeUnit.SECONDS);
+            fail("Should not get (as it is cancelled).");
+        } catch (CancellationException e) {
         }
     }
 }

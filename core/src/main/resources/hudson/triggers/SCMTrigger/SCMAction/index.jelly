@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout>
-    <st:include it="${it.owner}" page="sidepanel.jelly" />
+    <st:include it="${it.item}" page="sidepanel.jelly" optional="true"/>
     <l:main-panel>
       <h1>${%title(it.displayName)}</h1>
       <j:set var="log" value="${it.log}" />

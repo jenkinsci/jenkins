@@ -27,28 +27,19 @@ import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.Util;
-import jenkins.model.Jenkins;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
-import org.apache.commons.io.FileUtils;
+import jenkins.security.SlaveToMasterCallable;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -158,7 +149,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                 VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
                 if (channelToMaster!=null) {
-                    killers = channelToMaster.call(new Callable<List<ProcessKiller>, IOException>() {
+                    killers = channelToMaster.call(new SlaveToMasterCallable<List<ProcessKiller>, IOException>() {
                         public List<ProcessKiller> call() throws IOException {
                             return new ArrayList<ProcessKiller>(ProcessKiller.all());
                         }
@@ -278,7 +269,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * Executes a chunk of code at the same machine where this process resides.
          */
         public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
-            return callable.invoke(this, Jenkins.MasterComputer.localChannel);
+            return callable.invoke(this, FilePath.localChannel);
         }
 
         Object writeReplace() {
@@ -359,7 +350,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Empty process list as a default value if the platform doesn't support it.
      */
-    private static final ProcessTree DEFAULT = new Local() {
+    /*package*/ static final ProcessTree DEFAULT = new Local() {
         public OSProcess get(final Process proc) {
             return new OSProcess(-1) {
                 public OSProcess getParent() {
@@ -428,15 +419,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     public synchronized EnvVars getEnvironmentVariables() {
                         if(env !=null)
                           return env;
-                        env = new EnvVars();   
-                        
-                        try 
+                        env = new EnvVars();
+
+                        try
                         {
                            env.putAll(p.getEnvironmentVariables());
                         } catch (WinpException e)
                         {
                            LOGGER.log(FINE, "Failed to get environment variable ", e);
-                        }                          
+                        }
                         return env;
                     }
                 });
@@ -549,7 +540,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                 int pid = getPid();
                 LOGGER.fine("Killing pid="+pid);
-                UnixReflection.DESTROY_PROCESS.invoke(null, pid);
+                UnixReflection.destroy(pid);
             } catch (IllegalAccessException e) {
                 // this is impossible
                 IllegalAccessError x = new IllegalAccessError();
@@ -604,7 +595,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 PID_FIELD = clazz.getDeclaredField("pid");
                 PID_FIELD.setAccessible(true);
 
-                DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                if (isPreJava8()) {
+                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class);
+                } else {
+                    DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess",int.class, boolean.class);
+                }
                 DESTROY_PROCESS.setAccessible(true);
             } catch (ClassNotFoundException e) {
                 LinkageError x = new LinkageError();
@@ -619,6 +614,19 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 x.initCause(e);
                 throw x;
             }
+        }
+
+        public static void destroy(int pid) throws IllegalAccessException, InvocationTargetException {
+            if (isPreJava8()) {
+                DESTROY_PROCESS.invoke(null, pid);
+            } else {
+                DESTROY_PROCESS.invoke(null, pid, false);
+            }
+        }
+
+        private static boolean isPreJava8() {
+            int javaVersionAsAnInteger = Integer.parseInt(System.getProperty("java.version").replaceAll("\\.", "").replaceAll("_", "").substring(0, 2));
+            return javaVersionAsAnInteger < 18;
         }
     }
 
@@ -662,7 +670,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return arguments;
                 arguments = new ArrayList<String>();
                 try {
-                    byte[] cmdline = FileUtils.readFileToByteArray(getFile("cmdline"));
+                    byte[] cmdline = readFileToByteArray(getFile("cmdline"));
                     int pos=0;
                     for (int i = 0; i < cmdline.length; i++) {
                         byte b = cmdline[i];
@@ -684,7 +692,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return envVars;
                 envVars = new EnvVars();
                 try {
-                    byte[] environ = FileUtils.readFileToByteArray(getFile("environ"));
+                    byte[] environ = readFileToByteArray(getFile("environ"));
                     int pos=0;
                     for (int i = 0; i < environ.length; i++) {
                         byte b = environ[i];
@@ -698,6 +706,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // so don't report this as an error.
                 }
                 return envVars;
+            }
+        }
+
+        public byte[] readFileToByteArray(File file) throws IOException {
+            InputStream in = org.apache.commons.io.FileUtils.openInputStream(file);
+            try {
+                return org.apache.commons.io.IOUtils.toByteArray(in);
+            } finally {
+                    in.close();
             }
         }
     }

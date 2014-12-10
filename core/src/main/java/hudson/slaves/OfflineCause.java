@@ -24,7 +24,12 @@
 
 package hudson.slaves;
 
+import jenkins.model.Jenkins;
+import hudson.Functions;
 import hudson.model.Computer;
+import hudson.model.User;
+
+import org.acegisecurity.Authentication;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
@@ -50,7 +55,10 @@ public abstract class OfflineCause {
     public static class SimpleOfflineCause extends OfflineCause {
         public final Localizable description;
 
-        private SimpleOfflineCause(Localizable description) {
+        /**
+         * @since 1.571
+         */
+        protected SimpleOfflineCause(Localizable description) {
             this.description = description;
         }
 
@@ -79,6 +87,10 @@ public abstract class OfflineCause {
         public String getShortDescription() {
             return cause.toString();
         }
+
+        @Override public String toString() {
+            return Messages.OfflineCause_connection_was_broken_(Functions.printThrowable(cause));
+        }
     }
 
     /**
@@ -91,19 +103,33 @@ public abstract class OfflineCause {
         }
     }
 
-    public static class ByCLI extends OfflineCause {
+    /**
+     * Taken offline by user.
+     * @since 1.551
+     */
+    public static class UserCause extends SimpleOfflineCause {
+        private final User user;
+
+        public UserCause(User user, String message) {
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
+                    user!=null ? user.getId() : Jenkins.ANONYMOUS.getName(),
+                    message != null ? " : " + message : ""
+            ));
+            this.user = user;
+        }
+
+        public User getUser() {
+            return user;
+        }
+    }
+
+    public static class ByCLI extends UserCause {
         @Exported
         public final String message;
 
         public ByCLI(String message) {
+            super(User.current(), message);
             this.message = message;
-        }
-
-        @Override
-        public String toString() {
-            if (message==null)
-                return Messages.OfflineCause_DisconnectedFromCLI();
-            return message;
         }
     }
 }

@@ -23,12 +23,12 @@
  */
 package hudson;
 
-import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.VariableResolver;
+import jenkins.security.MasterToSlaveCallable;
 
 import java.io.File;
 import java.io.IOException;
@@ -356,6 +356,14 @@ public class EnvVars extends TreeMap<String,String> {
         if (value==null)    throw new IllegalArgumentException("Null value not allowed as an environment variable: "+key);
         return super.put(key,value);
     }
+
+    /**
+     * Add a key/value but only if the value is not-null. Otherwise no-op.
+     */
+    public void putIfNotNull(String key, String value) {
+        if (value!=null)
+            put(key,value);
+    }
     
     /**
      * Takes a string that looks like "a=b" and adds that to this map.
@@ -396,7 +404,7 @@ public class EnvVars extends TreeMap<String,String> {
         return channel.call(new GetEnvVars());
     }
 
-    private static final class GetEnvVars implements Callable<EnvVars,RuntimeException> {
+    private static final class GetEnvVars extends MasterToSlaveCallable<EnvVars,RuntimeException> {
         public EnvVars call() {
             return new EnvVars(EnvVars.masterEnvVars);
         }

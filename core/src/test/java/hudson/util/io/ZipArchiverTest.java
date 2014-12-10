@@ -9,14 +9,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 
 public class ZipArchiverTest extends TestCase {
-    private final Log logger = LogFactory.getLog(getClass());
+    private static final Logger LOGGER = Logger.getLogger(ZipArchiverTest.class.getName());
     
     private File tmpDir;
     
@@ -65,13 +65,13 @@ public class ZipArchiverTest extends TestCase {
         } catch (Exception e) {
             fail("exception driving ZipArchiver", e);
         } finally {
-            try {
-                archiver.close();
-            } catch (IOException e) {
-                // ignored
+            if (archiver != null) {
+                try {
+                    archiver.close();
+                } catch (IOException e) {
+                    // ignored
+                }
             }
-            
-            archiver = null;
         }
         
         // examine zip contents and assert that none of the entry names (paths) have
@@ -86,10 +86,12 @@ public class ZipArchiverTest extends TestCase {
         } catch (Exception e) {
             fail("failure enumerating zip entries", e);
         } finally {
-            try {
-                zipFileVerify.close();
-            } catch (IOException e) {
-                // ignored
+            if (zipFileVerify != null) {
+                try {
+                    zipFileVerify.close();
+                } catch (IOException e) {
+                    // ignored
+                }
             }
         }
         
@@ -103,7 +105,7 @@ public class ZipArchiverTest extends TestCase {
      * @param cause the root cause of the failure
      */
     private final void fail(final String msg, final Throwable cause) {
-        logger.error(msg, cause);
+        LOGGER.log(Level.SEVERE, msg, cause);
         fail(msg);
     }
     

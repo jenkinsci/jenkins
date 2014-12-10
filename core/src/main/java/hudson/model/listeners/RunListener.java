@@ -235,7 +235,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     }
 
     /**
-     * Fires the {@link #onFinalized(Run)} event.
+     * Fires the {@link #onDeleted} event.
      */
     public static void fireDeleted(Run r) {
         for (RunListener l : all()) {
@@ -252,7 +252,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Returns all the registered {@link RunListener}s.
      */
     public static ExtensionList<RunListener> all() {
-        return Jenkins.getInstance().getExtensionList(RunListener.class);
+        return ExtensionList.lookup(RunListener.class);
     }
 
     private static void report(Throwable e) {

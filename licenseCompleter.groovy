@@ -68,12 +68,8 @@ complete {
 
     // these are our own modules that have license in the trunk but not in these released versions
     // as we upgrade them, we should just pick up the license info from POM
-    match(["org.jvnet.hudson:task-reactor","org.jvnet.hudson:annotation-indexer","*:jinterop-wmi","*:maven2.1-interceptor","*:lib-jenkins-maven-embedder"]) {
+    match(["*:maven2.1-interceptor","*:lib-jenkins-maven-embedder"]) {
         rewriteLicense([],jenkinsLicense)
-    }
-
-    match("*:jna") {
-        rewriteLicense([],lgpl)
     }
 
     match(["org.jvnet.localizer:localizer"]) {

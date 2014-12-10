@@ -1,8 +1,10 @@
 package hudson.model;
 
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.Jenkins;
 
 /**
  * Adds box rendered in the computer side panel.
@@ -37,7 +39,7 @@ public abstract class ComputerPanelBox implements ExtensionPoint{
      */
     public static List<ComputerPanelBox> all(Computer computer) {
         List<ComputerPanelBox> boxs = new ArrayList<ComputerPanelBox>();
-        for(ComputerPanelBox box:  Hudson.getInstance().getExtensionList(ComputerPanelBox.class)){
+        for(ComputerPanelBox box:  ExtensionList.lookup(ComputerPanelBox.class)){
             box.setComputer(computer);
             boxs.add(box);
         }

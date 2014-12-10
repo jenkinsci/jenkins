@@ -5,6 +5,7 @@ import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTree.ProcessCallable;
+import jenkins.security.MasterToSlaveCallable;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -21,6 +22,10 @@ public class ProcessTreeTest extends ChannelTestCase {
     }
     
     public void testRemoting() throws Exception {
+        // on some platforms where we fail to list any processes, this test will just not work
+        if (ProcessTree.get()==ProcessTree.DEFAULT)
+            return;
+
         Tag t = french.call(new MyCallable());
 
         // make sure the serialization preserved the reference graph
@@ -35,7 +40,7 @@ public class ProcessTreeTest extends ChannelTestCase {
         t.p.act(new ProcessCallableImpl());
     }
 
-    private static class MyCallable implements Callable<Tag, IOException>, Serializable {
+    private static class MyCallable extends MasterToSlaveCallable<Tag, IOException> implements Serializable {
         public Tag call() throws IOException {
             Tag t = new Tag();
             t.tree = ProcessTree.get();

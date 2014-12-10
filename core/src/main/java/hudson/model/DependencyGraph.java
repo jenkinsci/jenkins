@@ -415,6 +415,10 @@ public class DependencyGraph implements Comparator<AbstractProject> {
          * Decide whether build should be triggered and provide any Actions for the build.
          * Default implementation always returns true (for backward compatibility), and
          * adds no Actions. Subclasses may override to control how/if the build is triggered.
+         * <p>The authentication in effect ({@link Jenkins#getAuthentication}) will be that of the upstream build.
+         * An implementation is expected to perform any relevant access control checks:
+         * that an upstream project can both see and build a downstream project,
+         * or that a downstream project can see an upstream project.
          * @param build Build of upstream project that just completed
          * @param listener For any error/log output
          * @param actions Add Actions for the triggered build to this list; never null
@@ -447,6 +451,10 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             hash = 23 * hash + this.upstream.hashCode();
             hash = 23 * hash + this.downstream.hashCode();
             return hash;
+        }
+
+        @Override public String toString() {
+            return super.toString() + "[" + upstream + "->" + downstream + "]";
         }
     }
 

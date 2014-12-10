@@ -37,6 +37,8 @@ import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.CheckPoint;
 import hudson.model.Run;
+import hudson.security.ACL;
+import hudson.security.Permission;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -44,6 +46,9 @@ import java.util.List;
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.WeakHashMap;
+import jenkins.model.Jenkins;
+import jenkins.security.QueueItemAuthenticator;
+import org.acegisecurity.Authentication;
 
 /**
  * One step of the whole build process.
@@ -91,6 +96,14 @@ public interface BuildStep {
      * A plugin can contribute the action object to {@link Build#getActions()}
      * so that a 'report' becomes a part of the persisted data of {@link Build}.
      * This is how JUnit plugin attaches the test report to a build page, for example.
+     *
+     * <p>When this build step needs to make (direct or indirect) permission checks to {@link ACL}
+     * (for example, to locate other projects by name, build them, or access their artifacts)
+     * then it must be run under a specific {@link Authentication}.
+     * In such a case, the implementation should check whether {@link Jenkins#getAuthentication} is {@link ACL#SYSTEM},
+     * and if so, replace it for the duration of this step with {@link Jenkins#ANONYMOUS}.
+     * (Either using {@link ACL#impersonate}, or by making explicit calls to {@link ACL#hasPermission(Authentication, Permission)}.)
+     * This would typically happen when no {@link QueueItemAuthenticator} was available, configured, and active.
      *
      * @return
      *      true if the build can continue, false if there was an error

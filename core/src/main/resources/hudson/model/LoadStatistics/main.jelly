@@ -26,10 +26,19 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h1>
-    <img src="${imagesURL}/48x48/monitor.png" alt="" height="48" width="48"/>
+    <l:icon class="icon-monitor icon-xlg"/>
     ${%title(it.displayName)}
   </h1>
-  <j:set var="type" value="${request.getParameter('type') ?: 'min'}" />
+  <j:set var="type" value="${request.getParameter('type')}" />
+  <j:choose>
+    <j:when test="${type == 'sec10'}" />
+    <j:when test="${type == 'min'}" />
+    <j:when test="${type == 'hour'}" />
+    <j:otherwise>
+      <j:set var="type" value="min" />
+    </j:otherwise>
+  </j:choose>
+
   <div>
     ${%Timespan}:
     <j:choose>
@@ -58,8 +67,14 @@ THE SOFTWARE.
         ${%Long}
       </j:otherwise>
     </j:choose>
-  </div>  
-  <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" alt="[${%Load statistics graph}]" />
+  </div>
+  <script type="text/javascript">
+    var w = document.getElementById('main-panel').offsetWidth - 30;
+    document.write('<img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=' + w + '&amp;height=500" alt="[${%Load statistics graph}]" />');
+  </script>
+  <noscript>
+    <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" alt="[${%Load statistics graph}]" />
+  </noscript>
   <div style="margin-top: 2em;">
     ${%blurb}
   </div>

@@ -14,13 +14,15 @@ defaults="defaults read /Library/Preferences/org.jenkins-ci"
 
 war=`$defaults war` || war="/Applications/Jenkins/jenkins.war"
 
-javaArgs=""
+javaArgs="-Dfile.encoding=UTF-8"
 
 minPermGen=`$defaults minPermGen` && javaArgs="$javaArgs -XX:PermSize=${minPermGen}"
 permGen=`$defaults permGen` && javaArgs="$javaArgs -XX:MaxPermSize=${permGen}"
 
 minHeapSize=`$defaults minHeapSize` && javaArgs="$javaArgs -Xms${minHeapSize}"
 heapSize=`$defaults heapSize` && javaArgs="$javaArgs -Xmx${heapSize}"
+
+tmpdir=`$defaults tmpdir` && javaArgs="$javaArgs -Djava.io.tmpdir=${tmpdir}"
 
 home=`$defaults JENKINS_HOME` && export JENKINS_HOME="$home"
 

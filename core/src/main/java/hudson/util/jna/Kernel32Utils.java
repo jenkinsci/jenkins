@@ -27,6 +27,7 @@ import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
@@ -95,6 +96,15 @@ public class Kernel32Utils {
 
     public static boolean isJunctionOrSymlink(File file) throws IOException {
         return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
+    }
+
+    public static File getTempDir() {
+        Memory buf = new Memory(1024);
+        if (Kernel32.INSTANCE.GetTempPathW(512,buf)!=0) {// the first arg is number of wchar
+            return new File(buf.getString(0, true));
+        } else {
+            return null;
+        }
     }
 
     /*package*/ static Kernel32 load() {

@@ -277,4 +277,12 @@ public class JobTest {
         }).intValue());
     }
 
+    @Bug(19764)
+    @Test public void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
+        j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
+        final FreeStyleProject p = j.createFreeStyleProject();
+        p.scheduleBuild2(0).get();
+        p.renameTo("different-name");
+    }
+
 }

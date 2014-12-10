@@ -1,0 +1,25 @@
+<!description="PRs #1135, #1138: use IOUtils from Apache commons">
+hudson.util.IOUtils.DIR_SEPARATOR_UNIX => org.apache.commons.io.IOUtils.DIR_SEPARATOR_UNIX;;
+hudson.util.IOUtils.DIR_SEPARATOR_WINDOWS => org.apache.commons.io.IOUtils.DIR_SEPARATOR_WINDOWS;;
+hudson.util.IOUtils.DIR_SEPARATOR => org.apache.commons.io.IOUtils.DIR_SEPARATOR;;
+hudson.util.IOUtils.LINE_SEPARATOR_UNIX => org.apache.commons.io.IOUtils.LINE_SEPARATOR_UNIX;;
+hudson.util.IOUtils.LINE_SEPARATOR_WINDOWS => org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;;
+hudson.util.IOUtils.LINE_SEPARATOR => org.apache.commons.io.IOUtils.LINE_SEPARATOR;;
+hudson.util.IOUtils.closeQuietly($args$) => org.apache.commons.io.IOUtils.closeQuietly($args$);;
+hudson.util.IOUtils.toByteArray($args$) => org.apache.commons.io.IOUtils.toByteArray($args$);;
+hudson.util.IOUtils.toCharArray($args$) => org.apache.commons.io.IOUtils.toCharArray($args$);;
+hudson.util.IOUtils.toString($args$) => org.apache.commons.io.IOUtils.toString($args$);;
+hudson.util.IOUtils.readLines($args$) => org.apache.commons.io.IOUtils.readLines($args$);;
+hudson.util.IOUtils.lineIterator($args$) => org.apache.commons.io.IOUtils.lineIterator($args$);;
+hudson.util.IOUtils.toInputStream($args$) => org.apache.commons.io.IOUtils.toInputStream($args$);;
+hudson.util.IOUtils.write($args$) => org.apache.commons.io.IOUtils.write($args$);;
+hudson.util.IOUtils.writeLines($args$) => org.apache.commons.io.IOUtils.writeLines($args$);;
+// Cannot use $args$ wildcard for copy since there are two non-deprecated overloads:
+hudson.util.IOUtils.copy($input, $output) :: $input instanceof java.io.InputStream && $output instanceof java.io.OutputStream => org.apache.commons.io.IOUtils.copy($input, $output);;
+hudson.util.IOUtils.copy($input, $output) :: $input instanceof java.io.InputStream && $output instanceof java.io.Writer => org.apache.commons.io.IOUtils.copy($input, $output);;
+hudson.util.IOUtils.copy($input, $output, $encoding) :: $input instanceof java.io.InputStream && $output instanceof java.io.Writer && $encoding instanceof java.lang.String => org.apache.commons.io.IOUtils.copy($input, $output, $encoding);;
+hudson.util.IOUtils.copy($input, $output) :: $input instanceof java.io.Reader && $output instanceof java.io.Writer => org.apache.commons.io.IOUtils.copy($input, $output);;
+hudson.util.IOUtils.copy($input, $output) :: $input instanceof java.io.Reader && $output instanceof java.io.OutputStream => org.apache.commons.io.IOUtils.copy($input, $output);;
+hudson.util.IOUtils.copy($input, $output, $encoding) :: $input instanceof java.io.Reader && $output instanceof java.io.OutputStream && $encoding instanceof java.lang.String => org.apache.commons.io.IOUtils.copy($input, $output, $encoding);;
+hudson.util.IOUtils.copyLarge($args$) => org.apache.commons.io.IOUtils.copyLarge($args$);;
+hudson.util.IOUtils.contentEquals($args$) => org.apache.commons.io.IOUtils.contentEquals($args$);;

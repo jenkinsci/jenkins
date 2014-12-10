@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.google.common.collect.ImmutableList;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -38,6 +39,7 @@ import hudson.BulkChange;
 import hudson.Extension;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.ACL;
 import hudson.util.AtomicFileWriter;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
@@ -119,8 +121,9 @@ public class Fingerprint implements ModelObject, Saveable {
          * Gets the {@link Job} that this pointer points to,
          * or null if such a job no longer exists.
          */
-        public AbstractProject getJob() {
-            return Jenkins.getInstance().getItemByFullName(name,AbstractProject.class);
+        @WithBridgeMethods(value=AbstractProject.class, castRequired=true)
+        public Job<?,?> getJob() {
+            return Jenkins.getInstance().getItemByFullName(name, Job.class);
         }
 
         /**
@@ -727,9 +730,16 @@ public class Fingerprint implements ModelObject, Saveable {
     @Extension
     public static final class ProjectRenameListener extends ItemListener {
         @Override
-        public void onRenamed(Item item, String oldName, String newName) {
+        public void onLocationChanged(final Item item, final String oldName, final String newName) {
+            ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                @Override public void run() {
+                    locationChanged(item, oldName, newName);
+                }
+            });
+        }
+        private void locationChanged(Item item, String oldName, String newName) {
             if (item instanceof AbstractProject) {
-                AbstractProject p = Hudson.getInstance().getItemByFullName(newName, AbstractProject.class);
+                AbstractProject p = Jenkins.getInstance().getItemByFullName(newName, AbstractProject.class);
                 if (p != null) {
                     RunList builds = p.getBuilds();
                     for (Object build : builds) {
@@ -894,7 +904,15 @@ public class Fingerprint implements ModelObject, Saveable {
         return r;
     }
 
+    @Deprecated
     public synchronized void add(AbstractBuild b) throws IOException {
+        addFor((Run) b);
+    }
+
+    /**
+     * @since 1.577
+     */
+    public synchronized void addFor(Run b) throws IOException {
         add(b.getParent().getFullName(), b.getNumber());
     }
 
@@ -1073,6 +1091,17 @@ public class Fingerprint implements ModelObject, Saveable {
             }
         });
         return r;
+    }
+
+    /**
+     * Finds a facet of the specific type (including subtypes.)
+     */
+    public <T extends FingerprintFacet> T getFacet(Class<T> type) {
+        for (FingerprintFacet f : getFacets()) {
+            if (type.isInstance(f))
+                return type.cast(f);
+        }
+        return null;
     }
 
     /**

@@ -55,7 +55,8 @@ public interface GNUCLibrary extends Library {
     int chdir(String dir);
     int getdtablesize();
 
-    int execv(String file, StringArray args);
+    int execv(String path, StringArray args);
+    int execvp(String file, StringArray args);
     int setenv(String name, String value,int replace);
     int unsetenv(String name);
     void perror(String msg);

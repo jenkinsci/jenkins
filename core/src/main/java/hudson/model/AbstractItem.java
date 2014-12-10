@@ -40,9 +40,11 @@ import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.acegisecurity.Authentication;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.WebMethod;
@@ -52,6 +54,10 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -71,6 +77,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import org.kohsuke.stapler.Ancestor;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -81,6 +88,9 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 // Java doesn't let multiple inheritance.
 @ExportedBean
 public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner {
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
+
     /**
      * Project name.
      */
@@ -202,7 +212,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Not all the Items need to support this operation, but if you decide to do so,
      * you can use this method.
      */
-    protected void renameTo(String newName) throws IOException {
+    protected void renameTo(final String newName) throws IOException {
         // always synchronize from bigger objects first
         final ItemGroup parent = getParent();
         synchronized (parent) {
@@ -215,15 +225,31 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 if (this.name.equals(newName))
                     return;
 
-                Item existing = parent.getItem(newName);
-                if (existing != null && existing!=this)
-                    // the look up is case insensitive, so we need "existing!=this"
-                    // to allow people to rename "Foo" to "foo", for example.
-                    // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
-                    throw new IllegalArgumentException("Job " + newName
-                            + " already exists");
+                // the test to see if the project already exists or not needs to be done in escalated privilege
+                // to avoid overwriting
+                ACL.impersonate(ACL.SYSTEM,new NotReallyRoleSensitiveCallable<Void,IOException>() {
+                    final Authentication user = Jenkins.getAuthentication();
+                    @Override
+                    public Void call() throws IOException {
+                        Item existing = parent.getItem(newName);
+                        if (existing != null && existing!=AbstractItem.this) {
+                            if (existing.getACL().hasPermission(user,Item.DISCOVER))
+                                // the look up is case insensitive, so we need "existing!=this"
+                                // to allow people to rename "Foo" to "foo", for example.
+                                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
+                                throw new IllegalArgumentException("Job " + newName + " already exists");
+                            else {
+                                // can't think of any real way to hide this, but at least the error message could be vague.
+                                throw new IOException("Unable to rename to " + newName);
+                            }
+                        }
+                        return null;
+                    }
+                });
+
 
                 String oldName = this.name;
+                String oldFullName = getFullName();
                 File oldRoot = this.getRootDir();
 
                 doSetName(newName);
@@ -292,24 +318,29 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         doSetName(oldName);
                 }
 
-                callOnRenamed(newName, parent, oldName);
+                try {
+                    parent.onRenamed(this, oldName, newName);
+                } catch (AbstractMethodError _) {
+                    // ignore
+                }
 
-                for (ItemListener l : ItemListener.all())
-                    l.onRenamed(this, oldName, newName);
+                ItemListener.fireLocationChange(this, oldFullName);
             }
         }
     }
 
+
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
+     * Notify this item it's been moved to another location, replaced by newItem (might be the same object, but not guaranteed).
+     * This method is executed <em>after</em> the item root directory has been moved to it's new location.
+     * <p>
+     * Derived classes can override this method to add some specific behavior on move, but have to call parent method
+     * so the item is actually setup within it's new parent.
+     *
+     * @see hudson.model.Items#move(AbstractItem, jenkins.model.DirectlyModifiableTopLevelItemGroup)
      */
-    private void callOnRenamed(String newName, ItemGroup parent, String oldName) throws IOException {
-        try {
-            parent.onRenamed(this, oldName, newName);
-        } catch (AbstractMethodError _) {
-            // ignore
-        }
+    public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
+        newItem.onLoad(destination, name);
     }
 
     /**
@@ -367,7 +398,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Called right after when a {@link Item} is loaded from disk.
-     * This is an opporunity to do a post load processing.
+     * This is an opportunity to do a post load processing.
      */
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         this.parent = parent;
@@ -392,16 +423,41 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public final String getUrl() {
         // try to stick to the current view if possible
         StaplerRequest req = Stapler.getCurrentRequest();
+        String shortUrl = getShortUrl();
+        String uri = req == null ? null : req.getRequestURI();
         if (req != null) {
             String seed = Functions.getNearestAncestorUrl(req,this);
+            LOGGER.log(Level.FINER, "seed={0} for {1} from {2}", new Object[] {seed, this, uri});
             if(seed!=null) {
                 // trim off the context path portion and leading '/', but add trailing '/'
                 return seed.substring(req.getContextPath().length()+1)+'/';
             }
+            List<Ancestor> ancestors = req.getAncestors();
+            if (!ancestors.isEmpty()) {
+                Ancestor last = ancestors.get(ancestors.size() - 1);
+                if (last.getObject() instanceof View) {
+                    View view = (View) last.getObject();
+                    if (view.getOwnerItemGroup() == getParent() && !view.isDefault()) {
+                        // Showing something inside a view, so should use that as the base URL.
+                        String base = last.getUrl().substring(req.getContextPath().length() + 1) + '/';
+                        LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
+                        return base + shortUrl;
+                    } else {
+                        LOGGER.log(Level.FINER, "irrelevant {0} for {1} from {2}", new Object[] {view.getViewName(), this, uri});
+                    }
+                } else {
+                    LOGGER.log(Level.FINER, "inapplicable {0} for {1} from {2}", new Object[] {last.getObject(), this, uri});
+                }
+            } else {
+                LOGGER.log(Level.FINER, "no ancestors for {0} from {1}", new Object[] {this, uri});
+            }
+        } else {
+            LOGGER.log(Level.FINER, "no current request for {0}", this);
         }
-
         // otherwise compute the path normally
-        return getParent().getUrl()+getShortUrl();
+        String base = getParent().getUrl();
+        LOGGER.log(Level.FINER, "falling back to {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
+        return base + shortUrl;
     }
 
     public String getShortUrl() {
@@ -487,8 +543,23 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @RequirePOST
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         delete();
-        if (rsp != null) // null for CLI
-            rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
+        if (req == null || rsp == null) { // CLI
+            return;
+        }
+        List<Ancestor> ancestors = req.getAncestors();
+        ListIterator<Ancestor> it = ancestors.listIterator(ancestors.size());
+        String url = getParent().getUrl(); // fallback but we ought to get to Jenkins.instance at the root
+        while (it.hasPrevious()) {
+            Object a = it.previous().getObject();
+            if (a instanceof View) {
+                url = ((View) a).getUrl();
+                break;
+            } else if (a instanceof ViewGroup && a != this) {
+                url = ((ViewGroup) a).getUrl();
+                break;
+            }
+        }
+        rsp.sendRedirect2(req.getContextPath() + '/' + url);
     }
 
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -507,25 +578,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
      * from showing the stack trace. This
      */
-    public synchronized void delete() throws IOException, InterruptedException {
+    public void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
-        performDelete();
-
-        try {
-            invokeOnDeleted();
-        } catch (AbstractMethodError e) {
-            // ignore
-        }
-
+        synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
+            performDelete();
+        } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
+        getParent().onDeleted(AbstractItem.this);
         Jenkins.getInstance().rebuildDependencyGraphAsync();
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void invokeOnDeleted() throws IOException {
-        getParent().onDeleted(this);
     }
 
     /**
@@ -586,17 +645,23 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         new StreamResult(out));
                 out.close();
             } catch (TransformerException e) {
-                throw new IOException2("Failed to persist configuration.xml", e);
+                throw new IOException("Failed to persist config.xml", e);
             }
 
             // try to reflect the changes by reloading
-            new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
-            Items.updatingByXml.set(true);
-            try {
-                onLoad(getParent(), getRootDir().getName());
-            } finally {
-                Items.updatingByXml.set(false);
+            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
+            if (o!=this) {
+                // ensure that we've got the same job type. extending this code to support updating
+                // to different job type requires destroying & creating a new job type
+                throw new IOException("Expecting "+this.getClass()+" but got "+o.getClass()+" instead");
             }
+
+            Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void,IOException>() {
+                @Override public Void call() throws IOException {
+                    onLoad(getParent(), getRootDir().getName());
+                    return null;
+                }
+            });
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             // if everything went well, commit this new version
@@ -605,6 +670,34 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         } finally {
             out.abort(); // don't leave anything behind
         }
+    }
+
+    /**
+     * Reloads this job from the disk.
+     *
+     * Exposed through CLI as well.
+     *
+     * TODO: think about exposing this to UI
+     *
+     * @since 1.556
+     */
+    @CLIMethod(name="reload-job")
+    @RequirePOST
+    public void doReload() throws IOException {
+        checkPermission(CONFIGURE);
+
+        // try to reflect the changes by reloading
+        getConfigFile().unmarshal(this);
+        Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
+            @Override
+            public Void call() throws IOException {
+                onLoad(getParent(), getRootDir().getName());
+                return null;
+            }
+        });
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
+
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 
@@ -619,8 +712,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return getName();
     }
 
-    public String toString() {
-        return super.toString()+'['+getFullName()+']';
+    @Override public String toString() {
+        return super.toString() + '[' + (parent != null ? getFullName() : "?/" + name) + ']';
     }
 
     /**
@@ -629,6 +722,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @CLIResolver
     public static AbstractItem resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+        // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
         if (item==null)
             throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
@@ -639,4 +733,5 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
 }

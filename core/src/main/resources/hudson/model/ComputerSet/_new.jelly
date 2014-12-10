@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:layout norefresh="true" permission="${it.CREATE}">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
-      <f:form method="post" action="doCreateItem">
+      <f:form method="post" action="doCreateItem" name="config">
         <f:entry title="${%Name}" help="/help/system-config/master-slave/name.html">
           <f:textbox name="name" value="${request.getParameter('name')}" clazz="required" checkMessage="${%Name is mandatory}"/>
         </f:entry>
@@ -46,6 +46,7 @@ THE SOFTWARE.
           <f:submit value="${%Save}"/>
         </f:block>
       </f:form>
+      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -304,21 +304,6 @@ PLEASE NOTE:
     font-weight:bold;
 }
 
-.button-group button:hover, 
-.button-group button.hover {
-    border:2px solid #90A029;
-    background-color:#EBF09E;
-    border-top-color:#FFF;
-    border-left-color:#FFF;
-}
-
-.button-group button:active {
-    border:2px solid #E4E4E4;
-    background-color:#BBB;
-    border-top-color:#333;
-    border-left-color:#333;
-}
-
 .yui-override-padding {
     padding:0 !important;
 }

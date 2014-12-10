@@ -23,22 +23,37 @@
  */
 package hudson.scm;
 
+import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.Build;
+import hudson.model.Run;
 import hudson.scm.ChangeLogSet.Entry;
-import org.xml.sax.SAXException;
-
 import java.io.File;
 import java.io.IOException;
+import org.xml.sax.SAXException;
 
 /**
  * Encapsulates the file format of the changelog.
  *
  * Instances should be stateless, but
- * persisted as a part of {@link Build}.
+ * persisted as a part of build.
  *
  * @author Kohsuke Kawaguchi
  */
 public abstract class ChangeLogParser {
-    public abstract ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile) throws IOException, SAXException;
+
+    /**
+     * @since 1.568
+     */
+    public ChangeLogSet<? extends Entry> parse(Run build, RepositoryBrowser<?> browser, File changelogFile) throws IOException, SAXException {
+        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parse", AbstractBuild.class, File.class)) {
+            return parse((AbstractBuild) build, changelogFile);
+        } else {
+            throw new AbstractMethodError("You must override the newer overload of parse");
+        }
+    }
+
+    @Deprecated
+    public ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile) throws IOException, SAXException {
+        return parse((Run) build, build.getProject().getScm().getEffectiveBrowser(), changelogFile);
+    }
 }

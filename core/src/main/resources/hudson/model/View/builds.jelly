@@ -29,18 +29,19 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/notepad.png" alt="" height="48" width="48"/>
+        <l:icon class="icon-notepad icon-xlg"/>
         ${%buildHistory(it.class.name=='hudson.model.AllView' ? app.displayName : it.displayName)}
       </h1>
 
-      <st:include page="control.jelly" it="${it.timeline}" />
+      <j:if test="${!request.getParameter('suppressTimelineControl')}"> <!-- cf. BuildListTableTest; breaks HtmlUnit -->
+        <st:include page="control.jelly" it="${it.timeline}"/>
+      </j:if>
       <div style="height:2em"/><!-- spacer -->
 
       <div>
           <a href="cc.xml">${%Export as plain XML}</a>
       </div>
-      <!-- set @jobBaseUrl="" so that links to jobs will be under this view. -->
-      <t:buildListTable builds="${it.builds}" jobBaseUrl="" />
+      <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

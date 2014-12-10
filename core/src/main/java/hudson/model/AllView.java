@@ -34,6 +34,7 @@ import java.util.Collection;
 
 import hudson.model.Descriptor.FormException;
 import hudson.Extension;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link View} that contains everything.
@@ -62,6 +63,7 @@ public class AllView extends View {
         return true;
     }
 
+    @RequirePOST
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
@@ -79,11 +81,6 @@ public class AllView extends View {
     @Override
     public String getPostConstructLandingPage() {
         return ""; // there's no configuration page
-    }
-
-    @Override
-    public void onJobRenamed(Item item, String oldName, String newName) {
-        // noop
     }
 
     @Override

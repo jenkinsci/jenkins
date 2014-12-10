@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     Used in the &lt;l:side-panel> to draw a box with a title.
 
@@ -41,11 +41,43 @@ THE SOFTWARE.
     <st:attribute name="id">
       @id of the table, if specified.
     </st:attribute>
+    <st:attribute name="class">
+      Pane table class specification.
+    </st:attribute>
+    <st:attribute name="footer">
+      Footer of the box. Can include HTML.
+    </st:attribute>
   </st:documentation>
-  <table class="pane" id="${attrs.id}">
-    <tr><td class="pane-header" colspan="${width}">
-      <j:out value="${title}"/>
-    </td></tr>
-    <d:invokeBody />
-  </table>
+  <div class="container-fluid pane-frame track-mouse" id="${attrs.id}">
+    <div class="row">
+      <div class="col-xs-24 pane-header">
+        <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
+           title="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}">
+          <l:icon alt="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}" class="${h.isCollapsed(attrs.id) ? 'icon-expand' : 'icon-collapse'} icon-sm"/>
+        </a>
+        <j:out value="${title}"/>
+      </div>
+    </div>
+    <j:choose>
+      <div class="row pane-content">
+        <j:when test="${h.isCollapsed(attrs.id)}">
+          <div class="row">
+            <div class="col-xs-24 cell">${attrs.collapsedText}</div>
+          </div>
+        </j:when>
+        <j:otherwise>
+          <table class="pane ${attrs.class}">
+            <d:invokeBody />
+          </table>
+        </j:otherwise>
+      </div>
+    </j:choose>
+    <j:if test="${attrs.footer != null}">
+      <div class="row">
+        <div class="col-xs-24 pane-footer">
+          <j:out value="${attrs.footer}"/>
+        </div>
+      </div>
+    </j:if>
+  </div>
 </j:jelly>

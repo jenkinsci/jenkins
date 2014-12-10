@@ -108,12 +108,5 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         return data;
     }
 
-    /**
-     * Controls the time out of monitoring.
-     */
-    protected long getMonitoringTimeOut() {
-        return TimeUnit.SECONDS.toMillis(30);
-    }
-
     private static final Logger LOGGER = Logger.getLogger(AbstractAsyncNodeMonitorDescriptor.class.getName());
 }

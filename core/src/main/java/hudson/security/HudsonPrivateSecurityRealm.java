@@ -25,6 +25,7 @@ package hudson.security;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
@@ -76,8 +77,12 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -127,6 +132,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         return !disableSignup;
     }
 
+    @Restricted(NoExternalUse.class) // Jelly
+    public boolean getAllowsSignup() {
+        return allowsSignup();
+    }
+
     /**
      * Checks if captcha is enabled on user signup.
      *
@@ -171,8 +181,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     @Override
     protected Details authenticate(String username, String password) throws AuthenticationException {
         Details u = loadUserByUsername(username);
-        if (!u.isPasswordCorrect(password))
-            throw new BadCredentialsException("Failed to login as "+username);
+        if (!u.isPasswordCorrect(password)) {
+            String message;
+            try {
+                message = ResourceBundle.getBundle("org.acegisecurity.messages").getString("AbstractUserDetailsAuthenticationProvider.badCredentials");
+            } catch (MissingResourceException x) {
+                message = "Bad credentials";
+            }
+            throw new BadCredentialsException(message);
+        }
         return u;
     }
 
@@ -278,7 +295,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     private void tryToMakeAdmin(User u) {
         AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
-        for (PermissionAdder adder : Jenkins.getInstance().getExtensionList(PermissionAdder.class)) {
+        for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
             if (adder.add(as, u, Jenkins.ADMINISTER)) {
                 return;
             }
@@ -357,7 +374,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
      */
     public String getDisplayName() {
-        return "User Database";
+        return Messages.HudsonPrivateSecurityRealm_DisplayName();
     }
 
     public ACL getACL() {
@@ -670,11 +687,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
-        }
-
-        @Override
-        public String getHelpFile() {
-            return "/help/security/private-realm.html"; 
         }
     }
 

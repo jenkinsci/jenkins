@@ -29,6 +29,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.util.Collections;
+
+import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.PollingResult;
@@ -58,12 +60,15 @@ import java.io.File;
 import hudson.FilePath;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.EnvVars;
+import hudson.model.labels.LabelAtom;
+import hudson.scm.SCMDescriptor;
+import hudson.slaves.Cloud;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.NodeProvisioner;
 import hudson.tasks.Shell;
-import org.jvnet.hudson.test.MilliSecLogFormatter;
 import org.jvnet.hudson.test.TestExtension;
 import java.util.List;
 import java.util.ArrayList;
-import hudson.util.HudsonIsLoading;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -73,12 +78,17 @@ import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.BuildTrigger;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  *
@@ -92,15 +102,13 @@ public class ProjectTest {
     public static boolean createSubTask = false;
     
     @Test
-    public void testSave() throws IOException, InterruptedException {
+    public void testSave() throws IOException, InterruptedException, ReactorException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.disabled = true;
         p.nextBuildNumber = 5;
         p.description = "description";
         p.save();
-        j.jenkins.doReload();
-        //wait until all configuration are reloaded
-        reload(); 
+        j.jenkins.reload();
         assertEquals("All persistent data should be saved.", "description", p.description);
         assertEquals("All persistent data should be saved.", 5, p.nextBuildNumber);
         assertEquals("All persistent data should be saved", true, p.disabled);
@@ -194,6 +202,18 @@ public class ProjectTest {
         assertEquals("Last build should have workspace.", p.getLastBuild(), p.getSomeBuildWithWorkspace());
         p.getLastBuild().delete();
         assertNull("Project should not have build with some workspace.", p.getSomeBuildWithWorkspace());
+    }
+
+    @Issue("JENKINS-10450")
+    @Test public void workspaceBrowsing() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.getBuildersList().add(new Shell("echo ahoj > some.log"));
+        j.buildAndAssertSuccess(p);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.goTo("job/project/ws/some.log", "text/plain");
+        wc.assertFails("job/project/ws/other.log", 404);
+        p.doDoWipeOutWorkspace();
+        wc.assertFails("job/project/ws/some.log", 404);
     }
     
     @Test
@@ -296,7 +316,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testSaveAfterSet() throws Exception{
+    public void testSaveAfterSet() throws Exception, ReactorException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setScm(new NullSCM());
         p.setScmCheckoutStrategy(new SCMCheckoutStrategyImpl());
@@ -307,7 +327,7 @@ public class ProjectTest {
         j.jenkins.save();
         p.setJDK(j.jenkins.getJDK("jdk"));
         p.setCustomWorkspace("/some/path");
-        reload();
+        j.jenkins.reload();
         assertNotNull("Project did not save scm.", p.getScm());
         assertTrue("Project did not save scm checkout strategy.", p.getScmCheckoutStrategy() instanceof SCMCheckoutStrategyImpl);
         assertEquals("Project did not save quiet period.", 15, p.getQuietPeriod());
@@ -315,14 +335,6 @@ public class ProjectTest {
         assertTrue("Project did not save block if upstream is buildidng.", p.blockBuildWhenUpstreamBuilding());
         assertNotNull("Project did not save jdk", p.getJDK());
         assertEquals("Project did not save custom workspace.", "/some/path", p.getCustomWorkspace());
-    }
-    
-    private void reload() throws IOException, InterruptedException{
-        j.jenkins.doReload();
-        //wait until all configuration are reloaded
-        if(j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading){
-            Thread.sleep(500);
-        } 
     }
     
     @Test
@@ -350,7 +362,7 @@ public class ProjectTest {
 
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
         downstream.getBuildersList().add(new Shell("sleep 10"));
-        downstream.convertUpstreamBuildTrigger(Collections.<AbstractProject>singleton(p));
+        p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
         Jenkins.getInstance().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b2 = waitForStart(downstream);
@@ -420,7 +432,9 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         Slave slave = j.createOnlineSlave();
         AbstractBuild build = p.createExecutable();
-        FilePath path = slave.toComputer().getWorkspaceList().allocate(slave.getWorkspaceFor(p), build).path;
+        FilePath ws = slave.getWorkspaceFor(p);
+        assertNotNull(ws);
+        FilePath path = slave.toComputer().getWorkspaceList().allocate(ws, build).path;
         build.setWorkspace(path);
         BuildListener listener = new StreamBuildListener(BuildListener.NULL.getLogger(), Charset.defaultCharset());
         assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
@@ -500,14 +514,14 @@ public class ProjectTest {
     
     @Test
     public void testDoCancelQueue() throws Exception{
-        User user = User.get("John Smith", true, Collections.emptyMap());
         FreeStyleProject project = j.createFreeStyleProject("project");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
+        User user = realm.createAccount("John Smith", "password");
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
         try{
             project.doCancelQueue(null, null);
             fail("User should not have permission to build project");
@@ -646,6 +660,132 @@ public class ProjectTest {
        assertFalse("Project should be enabled.", project.isDisabled());
     }
     
+    /**
+     * Job is un-restricted (no nabel), this is submitted to queue, which spawns an on demand slave
+     * @throws Exception 
+     */
+    @Test
+    public void testJobSubmittedShouldSpawnCloud() throws Exception {
+        /**
+         * Setup a project with an SCM. Jenkins should have no executors in itself. 
+         */
+        FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-spawn");        
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
+        proj.setScm(requiresWorkspaceScm);        
+        j.jenkins.setNumExecutors(0);        
+        /*
+         * We have a cloud
+         */
+        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
+        c2.label = new LabelAtom("test-cloud-label");        
+        j.jenkins.clouds.add(c2);
+        
+        SCMTrigger t = new SCMTrigger("@daily", true);
+        t.start(proj, true);
+        proj.addTrigger(t);
+        t.new Runner().run();
+        
+        Thread.sleep(1000);
+        //Assert that the job IS submitted to Queue.
+        assertEquals(1, j.jenkins.getQueue().getItems().length);        
+    }
+    
+    /**
+     * Job is restricted, but label can not be provided by any cloud, only normal slaves. Then job will not submit, because no slave is available.
+     * @throws Exception
+     */
+    @Test
+    public void testUnrestrictedJobNoLabelByCloudNoQueue() throws Exception {
+        assertTrue(j.jenkins.clouds.isEmpty());
+        //Create slave. (Online)
+        Slave s1 = j.createOnlineSlave();
+        
+        //Create a project, and bind the job to the created slave
+        FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-noqueue");
+        proj.setAssignedLabel(s1.getSelfLabel());
+                        
+        //Add an SCM to the project. We require a workspace for the poll
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
+        proj.setScm(requiresWorkspaceScm);
+ 
+        j.buildAndAssertSuccess(proj);        
+
+        //Now create another slave. And restrict the job to that slave. The slave is offline, leaving the job with no assignable nodes.
+        //We tell our mock SCM to return that it has got changes. But since there are no slaves, we get the desired result. 
+        Slave s2 = j.createSlave();
+        proj.setAssignedLabel(s2.getSelfLabel());
+        requiresWorkspaceScm.hasChange = true;
+        
+        //Poll (We now should have NO online slaves, this should now return NO_CHANGES.
+        PollingResult pr = proj.poll(j.createTaskListener());
+        assertFalse(pr.hasChanges());
+        
+        SCMTrigger t = new SCMTrigger("@daily", true);
+        t.start(proj, true);
+        proj.addTrigger(t);
+        
+        t.new Runner().run();
+        
+        /**
+         * Assert that the log contains the correct message.
+         */
+        HtmlPage log = j.createWebClient().getPage(proj, "scmPollLog");
+        String logastext = log.asText();
+        assertTrue(logastext.contains("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
+        
+    }
+    
+    /**
+     * Job is restricted. Label is on slave that can be started in cloud. Job is submitted to queue, which spawns an on demand slave.
+     * @throws Exception 
+     */
+    @Test
+    public void testRestrictedLabelOnSlaveYesQueue() throws Exception {        
+        FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yesqueue");
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
+        proj.setScm(requiresWorkspaceScm);        
+        j.jenkins.setNumExecutors(0);
+        
+        /*
+         * We have a cloud
+         */
+        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
+        c2.label = new LabelAtom("test-cloud-label");        
+        j.jenkins.clouds.add(c2);
+        proj.setAssignedLabel(c2.label);
+        
+        SCMTrigger t = new SCMTrigger("@daily", true);
+        t.start(proj, true);
+        proj.addTrigger(t);
+        t.new Runner().run();
+        
+        Thread.sleep(1000);
+        //The job should be in queue
+        assertEquals(1, j.jenkins.getQueue().getItems().length);    
+    }
+
+    @Bug(22750)
+    @Test
+    public void testMasterJobPutInQueue() throws Exception {
+        FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yes-master-queue");
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
+        proj.setAssignedLabel(null);        
+        proj.setScm(requiresWorkspaceScm);        
+        j.jenkins.setNumExecutors(1);    
+        proj.setScm(requiresWorkspaceScm);
+        
+        //First build is not important
+        j.buildAndAssertSuccess(proj);
+
+        SCMTrigger t = new SCMTrigger("@daily", true);
+        t.start(proj, true);
+        proj.addTrigger(t);
+        t.new Runner().run();
+
+
+        assertFalse(j.jenkins.getQueue().isEmpty());
+    }
+
     public static class TransientAction extends InvisibleAction{
         
     }
@@ -663,13 +803,51 @@ public class ProjectTest {
         
     }
     
+    @TestExtension 
+    public static class RequiresWorkspaceSCM extends NullSCM {
+        
+        public boolean hasChange = false;
+        
+        public RequiresWorkspaceSCM() { }
+         
+        public RequiresWorkspaceSCM(boolean hasChange) {
+            this.hasChange = hasChange;
+        }
+        
+        @Override
+        public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+            return hasChange;
+        }
+                       
+        @Override
+        public boolean requiresWorkspaceForPolling(){
+            return true;
+        }
+        @Override public SCMDescriptor<?> getDescriptor() {
+            return new SCMDescriptor<SCM>(null) {
+                @Override public String getDisplayName() {
+                    return "";
+                }
+            };
+        }
+        
+        @Override
+        protected PollingResult compareRemoteRevisionWith(AbstractProject project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {            
+            if(!hasChange) {
+                return PollingResult.NO_CHANGES;
+            }
+            return PollingResult.SIGNIFICANT;
+        }
+    }
+    
     @TestExtension
-    public static class AlwaysChangedSCM extends NullSCM{
+    public static class AlwaysChangedSCM extends NullSCM {
 
         @Override
         public boolean pollChanges(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
             return true;
         }
+        
         @Override
         public boolean requiresWorkspaceForPolling(){
             return false;
@@ -756,5 +934,95 @@ public class ProjectTest {
     
     public class ActionImpl extends InvisibleAction{
         
+    }
+    
+    @TestExtension
+    public static class DummyCloudImpl2 extends Cloud {
+        private final transient JenkinsRule caller;
+
+        /**
+         * Configurable delay between the {@link Cloud#provision(Label,int)} and the actual launch of a slave,
+         * to emulate a real cloud that takes some time for provisioning a new system.
+         *
+         * <p>
+         * Number of milliseconds.
+         */
+        private final int delay;
+
+        // stats counter to perform assertions later
+        public int numProvisioned;
+
+        /**
+         * Only reacts to provisioning for this label.
+         */
+        public Label label;
+        
+        public DummyCloudImpl2() { 
+            super("test");
+            this.delay = 0;
+            this.caller = null;
+        }
+
+        public DummyCloudImpl2(JenkinsRule caller, int delay) {
+            super("test");
+            this.caller = caller;
+            this.delay = delay;
+        }
+
+        @Override
+        public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
+            List<NodeProvisioner.PlannedNode> r = new ArrayList<NodeProvisioner.PlannedNode>();
+
+            //Always provision...even if there is no workload.
+            while(excessWorkload >= 0) {
+                System.out.println("Provisioning");
+                numProvisioned++;
+                Future<Node> f = Computer.threadPoolForRemoting.submit(new ProjectTest.DummyCloudImpl2.Launcher(delay));
+                r.add(new NodeProvisioner.PlannedNode(name+" #"+numProvisioned,f,1));
+                excessWorkload-=1;
+            }
+            return r;
+        }
+
+        @Override
+        public boolean canProvision(Label label) {
+            //This cloud can ALWAYS provision 
+           return true;
+            /* return label==this.label; */
+        }
+
+        private final class Launcher implements Callable<Node> {
+            private final long time;
+            /**
+             * This is so that we can find out the status of Callable from the debugger.
+             */
+            private volatile Computer computer;
+
+            private Launcher(long time) {
+                this.time = time;
+            }
+
+            @Override
+            public Node call() throws Exception {
+                // simulate the delay in provisioning a new slave,
+                // since it's normally some async operation.
+                Thread.sleep(time);
+
+                System.out.println("launching slave");
+                DumbSlave slave = caller.createSlave(label);
+                computer = slave.toComputer();
+                computer.connect(false).get();
+                synchronized (ProjectTest.DummyCloudImpl2.this) {
+                    System.out.println(computer.getName()+" launch"+(computer.isOnline()?"ed successfully":" failed"));
+                    System.out.println(computer.getLog());
+                }
+                return slave;
+            }
+        }
+
+        @Override
+        public Descriptor<Cloud> getDescriptor() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

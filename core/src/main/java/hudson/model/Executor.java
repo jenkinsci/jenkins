@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Red Hat, Inc., Stephen Connolly, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -58,16 +58,20 @@ import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.*;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 
 /**
  * Thread that executes builds.
- *
+ * Since 1.536, {@link Executor}s start threads on-demand.
+ * The entire logic should use {@link #isActive()} instead of {@link #isAlive()}
+ * in order to check if the {@link Executor} it ready to take tasks.
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
 public class Executor extends Thread implements ModelObject {
-    protected final Computer owner;
+    protected final @Nonnull Computer owner;
     private final Queue queue;
 
     private long startTime;
@@ -108,7 +112,7 @@ public class Executor extends Thread implements ModelObject {
      */
     private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
 
-    public Executor(Computer owner, int n) {
+    public Executor(@Nonnull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
         this.queue = Jenkins.getInstance().getQueue();
@@ -192,7 +196,6 @@ public class Executor extends Thread implements ModelObject {
     public void run() {
         startTime = System.currentTimeMillis();
 
-        // run as the system user. see ACL.SYSTEM for more discussion about why this is somewhat broken
         ACL.impersonate(ACL.SYSTEM);
 
         try {
@@ -216,6 +219,13 @@ public class Executor extends Thread implements ModelObject {
             Throwable problems = null;
             try {
                 workUnit.context.synchronizeStart();
+
+                // this code handles the behavior of null Executables returned
+                // by tasks. In such case Jenkins starts the workUnit in order
+                // to report results to console outputs.
+                if (executable == null) {
+                    throw new Error("The null Executable has been created for "+workUnit+". The task cannot be executed");
+                }
 
                 if (executable instanceof Actionable) {
                     for (Action action: workUnit.context.actions) {
@@ -273,13 +283,13 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Returns the current {@link hudson.model.Queue.Task} this executor is running.
+     * Returns the current build this executor is running.
      *
      * @return
      *      null if the executor is idle.
      */
     @Exported
-    public Queue.Executable getCurrentExecutable() {
+    public @CheckForNull Queue.Executable getCurrentExecutable() {
         return executable;
     }
 
@@ -344,6 +354,15 @@ public class Executor extends Thread implements ModelObject {
         return executable!=null;
     }
 
+    /**
+     * Check if executor is ready to accept tasks.
+     * This method becomes the critical one since 1.536, which introduces the
+     * on-demand creation of executor threads. The entire logic should use
+     * this method instead of {@link #isAlive()}, because it provides wrong
+     * information for non-started threads.
+     * @return True if the executor is available for tasks
+     * @since 1.536
+     */
     public boolean isActive() {
         return !started || isAlive();
     }
@@ -491,9 +510,10 @@ public class Executor extends Thread implements ModelObject {
 
     /**
      * Stops the current build.
-     * 
+     *
      * @since 1.489
      */
+    @RequirePOST
     public HttpResponse doStop() {
         Queue.Executable e = executable;
         if(e!=null) {
@@ -506,6 +526,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Throws away this executor and get a new one.
      */
+    @RequirePOST
     public HttpResponse doYank() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         if (isAlive())
@@ -522,7 +543,7 @@ public class Executor extends Thread implements ModelObject {
         return e!=null && Tasks.getOwnerTaskOf(getParentOf(e)).hasAbortPermission();
     }
 
-    public Computer getOwner() {
+    public @Nonnull Computer getOwner() {
         return owner;
     }
 
@@ -547,7 +568,7 @@ public class Executor extends Thread implements ModelObject {
 
     /**
      * Creates a proxy object that executes the callee in the context that impersonates
-     * this executor. Useful to export an object to a remote channel. 
+     * this executor. Useful to export an object to a remote channel.
      */
     public <T> T newImpersonatingProxy(Class<T> type, T core) {
         return new InterceptingProxy() {
@@ -566,12 +587,12 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Returns the executor of the current thread or null if current thread is not an executor.
      */
-    public static Executor currentExecutor() {
+    public static @CheckForNull Executor currentExecutor() {
         Thread t = Thread.currentThread();
         if (t instanceof Executor) return (Executor) t;
         return IMPERSONATION.get();
     }
-    
+
     /**
      * Returns the estimated duration for the executable.
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation

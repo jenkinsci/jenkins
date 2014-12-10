@@ -1,14 +1,13 @@
 package hudson.util;
 
-import hudson.model.FreeStyleProject;
+import hudson.Functions;
 import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
 import hudson.tasks.Maven;
-
-import org.easymock.EasyMock;
+import hudson.tasks.Shell;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 public class ProcessTreeKillerTest extends HudsonTestCase {
 
@@ -33,5 +32,22 @@ public class ProcessTreeKillerTest extends HudsonTestCase {
 		b.getWorkspace().deleteRecursive();
 
 	}
+
+    @Bug(22641)
+    public void testProcessProperlyKilledUnix() throws Exception {
+        ProcessTree.enabled = true;
+        if (Functions.isWindows()) return; // This test does not involve windows.
+
+        FreeStyleProject sleepProject = createFreeStyleProject();
+        FreeStyleProject processJob = createFreeStyleProject();
+
+        sleepProject.getBuildersList().add(new Shell("nohup sleep 100000 &"));
+
+        assertBuildStatusSuccess(sleepProject.scheduleBuild2(0).get());
+
+        processJob.getBuildersList().add(new Shell("ps -ef | grep sleep"));
+
+        assertLogNotContains("sleep 100000", processJob.scheduleBuild2(0).get());
+    }
 
 }

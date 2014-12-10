@@ -57,8 +57,9 @@ THE SOFTWARE.
 
         <j:set var="isUpdates" value="${attrs.page=='updates'}" />
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
-        <table id="plugins" class="sortable pane bigtable">
-            <tr style="border-top: 0px;">
+        <div class="pane-frame">
+          <table id="plugins" class="sortable pane bigtable stripped-odd">
+            <tr>
               <th initialSortDir="${isUpdates?null:'down'}"
                   tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
                   width="32" onclick="showhideCategories(this,1)">${%Install}</th>
@@ -83,7 +84,7 @@ THE SOFTWARE.
                   </j:if>
                   <j:set var="installJob" value="${isUpdates ? app.updateCenter.getJob(p) : null}" />
                   <j:set var="installedOk"
-                     value="${installJob.status.success and installJob.plugin.version==p.version}" />
+                         value="${installJob.status.success and installJob.plugin.version==p.version}" />
                   <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin" name="${p.displayName}">
                     <td class="pane" align="center" data="${thisCat}_">
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
@@ -135,13 +136,16 @@ THE SOFTWARE.
                 </tr>
               </j:otherwise>
             </j:choose>
-        </table>
+          </table>
+        </div>
 
         <j:if test="${!empty(list)}">
           <div id="bottom-sticker" >
             <div class="bottom-sticker-inner">
-              <f:submit value="${%Install without restart}" name="dynamicLoad" />
-              <span style="margin-left:2em;"></span>
+              <j:if test="${!isUpdates}">
+                <f:submit value="${%Install without restart}" name="dynamicLoad" />
+                <span style="margin-left:2em;"></span>
+              </j:if>
               <f:submit value="${%Download now and install after restart}" />
             </div>
           </div>

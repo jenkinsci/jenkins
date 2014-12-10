@@ -24,7 +24,7 @@
 package hudson;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.StreamException;
@@ -32,7 +32,6 @@ import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
-import hudson.util.IOException2;
 import hudson.util.XStream2;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -141,12 +140,10 @@ public final class XmlFile {
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             return xs.fromXML(in);
-        } catch(StreamException e) {
-            throw new IOException2("Unable to read "+file,e);
-        } catch(ConversionException e) {
-            throw new IOException2("Unable to read "+file,e);
+        } catch (XStreamException e) {
+            throw new IOException("Unable to read "+file,e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read "+file,e);
+            throw new IOException("Unable to read "+file,e);
         } finally {
             in.close();
         }
@@ -164,12 +161,10 @@ public final class XmlFile {
         try {
             // TODO: expose XStream the driver from XStream
             return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
-        } catch (StreamException e) {
-            throw new IOException2("Unable to read "+file,e);
-        } catch(ConversionException e) {
-            throw new IOException2("Unable to read "+file,e);
+        } catch (XStreamException e) {
+            throw new IOException("Unable to read "+file,e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read "+file,e);
+            throw new IOException("Unable to read "+file,e);
         } finally {
             in.close();
         }
@@ -183,7 +178,7 @@ public final class XmlFile {
             xs.toXML(o,w);
             w.commit();
         } catch(StreamException e) {
-            throw new IOException2(e);
+            throw new IOException(e);
         } finally {
             w.abort();
         }
@@ -294,7 +289,7 @@ public final class XmlFile {
             // in such a case, assume UTF-8 rather than fail, since Jenkins internally always write XML in UTF-8
             return "UTF-8";
         } catch (SAXException e) {
-            throw new IOException2("Failed to detect encoding of "+file,e);
+            throw new IOException("Failed to detect encoding of "+file,e);
         } catch (ParserConfigurationException e) {
             throw new AssertionError(e);    // impossible
         } finally {

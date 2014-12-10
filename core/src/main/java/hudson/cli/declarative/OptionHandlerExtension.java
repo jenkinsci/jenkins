@@ -36,7 +36,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * {@link OptionHandler}s that should be auto-discovered.
- *
+ * TODO is this actually necessary? {@code @MetaInfServices(OptionHandler.class)} seems to work as well.
  * @author Kohsuke Kawaguchi
  */
 @Indexed

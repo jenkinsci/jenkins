@@ -1,0 +1,66 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Eric Lefevre-Ardant, id:cactusman, Yahoo! Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Parts of the configuration that applies to Project and MavenModuleSet.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project" xmlns:this="this">
+  <p:config-disableBuild/>
+  <p:config-concurrentBuild />
+
+  <j:set var="jdks" value="${app.JDKs}" />
+  <j:if test="${jdks.size() gt 1}">
+    <!-- if there's only one JDK configured, always use that. -->
+    <f:entry title="JDK"
+             description="${%JDK to be used for this project}">
+      <select class="setting-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
+        <j:getStatic var="DEFAULT_NAME" className="hudson.model.JDK" field="DEFAULT_NAME"/>
+        <option>${DEFAULT_NAME}</option>
+        <j:forEach var="inst" items="${jdks}">
+          <f:option selected="${inst.name==it.JDK.name}" value="${inst.name}">${inst.name}</f:option>
+        </j:forEach>
+      </select>
+    </f:entry>
+  </j:if>
+
+  <p:config-assignedLabel />
+
+  <f:section title="${%Advanced Project Options}">
+    <f:advanced>
+      <p:config-quietPeriod />
+      <p:config-retryCount />
+      <p:config-blockWhenUpstreamBuilding />
+      <p:config-blockWhenDownstreamBuilding />
+      <st:include page="configure-advanced.jelly" optional="true" />
+      <f:entry title="${%Display Name}" field="displayNameOrNull">
+         <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${h.jsStringEscape(it.name)}')"/>
+      </f:entry>
+      <f:optionalBlock name="keepDependencies" checked="${it.keepDependencies}" title="${%Keep the build logs of dependencies}" help="/help/tasks/fingerprint/keepDependencies.html"/>
+    </f:advanced>
+  </f:section>
+
+  <this:configure-scm/>
+</j:jelly>

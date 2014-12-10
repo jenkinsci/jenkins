@@ -44,6 +44,8 @@ import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -72,7 +74,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      *      Use {@link #jenkins}
      */
     public final Hudson hudson;
-    public final Jenkins jenkins;
+    public final @CheckForNull Jenkins jenkins;
     public final Class<T> extensionType;
 
     /**
@@ -119,6 +121,9 @@ public class ExtensionList<T> extends AbstractList<T> {
         this.jenkins = jenkins;
         this.extensionType = extensionType;
         this.legacyInstances = legacyStore;
+        if (jenkins == null) {
+            extensions = Collections.emptyList();
+        }
     }
 
     /**
@@ -240,7 +245,7 @@ public class ExtensionList<T> extends AbstractList<T> {
     private List<ExtensionComponent<T>> ensureLoaded() {
         if(extensions!=null)
             return extensions; // already loaded
-        if(Jenkins.getInstance().getInitLevel().compareTo(InitMilestone.PLUGINS_PREPARED)<0)
+        if (jenkins.getInitLevel().compareTo(InitMilestone.PLUGINS_PREPARED)<0)
             return legacyInstances; // can't perform the auto discovery until all plugins are loaded, so just make the legacy instances visible
 
         synchronized (getLoadLock()) {
@@ -330,6 +335,20 @@ public class ExtensionList<T> extends AbstractList<T> {
         else {
             return new ExtensionList<T>(jenkins,type,staticLegacyInstances.get(type));
         }
+    }
+
+    /**
+     * Gets the extension list for a given type.
+     * Normally calls {@link Jenkins#getExtensionList(Class)} but falls back to an empty list
+     * in case {@link Jenkins#getInstance} is null.
+     * Thus it is useful to call from {@code all()} methods which need to behave gracefully during startup or shutdown.
+     * @param type the extension point type
+     * @return some list
+     * @since 1.572
+     */
+    public static @Nonnull <T> ExtensionList<T> lookup(Class<T> type) {
+        Jenkins j = Jenkins.getInstance();
+        return j == null ? create((Jenkins) null, type) : j.getExtensionList(type);
     }
 
     /**

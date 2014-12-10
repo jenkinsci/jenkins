@@ -44,7 +44,8 @@ import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
-
+import static org.apache.commons.io.FilenameUtils.getBaseName;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -54,6 +55,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.util.Enumeration;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import javax.annotation.CheckForNull;
 
 /**
  * Represents a Jenkins plug-in and associated control information
@@ -199,7 +202,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 			List<Dependency> dependencies, List<Dependency> optionalDependencies) {
         this.parent = parent;
 		this.manifest = manifest;
-		this.shortName = computeShortName(manifest, archive);
+		this.shortName = computeShortName(manifest, archive.getName());
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
@@ -211,7 +214,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public String getDisplayName() {
-        return getLongName();
+        return StringUtils.removeStart(getLongName(), "Jenkins ");
     }
 
     public Api getApi() {
@@ -235,7 +238,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return idx != null && idx.toString().contains(shortName) ? idx : null;
     }
 
-    private String computeShortName(Manifest manifest, File archive) {
+    static String computeShortName(Manifest manifest, String fileName) {
         // use the name captured in the manifest, as often plugins
         // depend on the specific short name in its URLs.
         String n = manifest.getMainAttributes().getValue("Short-Name");
@@ -247,19 +250,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         // otherwise infer from the file name, since older plugins don't have
         // this entry.
-        return getBaseName(archive);
-    }
-
-
-    /**
-     * Gets the "abc" portion from "abc.ext".
-     */
-    static String getBaseName(File archive) {
-        String n = archive.getName();
-        int idx = n.lastIndexOf('.');
-        if(idx>=0)
-            n = n.substring(0,idx);
-        return n;
+        return getBaseName(fileName);
     }
 
     @Exported
@@ -283,8 +274,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Gets the instance of {@link Plugin} contributed by this plugin.
      */
-    public Plugin getPlugin() {
-        return Jenkins.lookup(PluginInstanceStore.class).store.get(this);
+    public @CheckForNull Plugin getPlugin() {
+        PluginInstanceStore pis = Jenkins.lookup(PluginInstanceStore.class);
+        return pis != null ? pis.store.get(this) : null;
     }
 
     /**
@@ -338,6 +330,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Exported
     public String getVersion() {
+        return getVersionOf(manifest);
+    }
+
+    private String getVersionOf(Manifest manifest) {
         String v = manifest.getMainAttributes().getValue("Plugin-Version");
         if(v!=null)      return v;
 
@@ -372,11 +368,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Terminates the plugin.
      */
     public void stop() {
-        LOGGER.info("Stopping "+shortName);
-        try {
-            getPlugin().stop();
-        } catch(Throwable t) {
-            LOGGER.log(WARNING, "Failed to shut down "+shortName, t);
+        Plugin plugin = getPlugin();
+        if (plugin != null) {
+            try {
+                LOGGER.log(Level.FINE, "Stopping {0}", shortName);
+                plugin.stop();
+            } catch (Throwable t) {
+                LOGGER.log(WARNING, "Failed to shut down " + shortName, t);
+            }
+        } else {
+            LOGGER.log(Level.FINE, "Could not find Plugin instance to stop for {0}", shortName);
         }
         // Work around a bug in commons-logging.
         // See http://www.szegedi.org/articles/memleak.html
@@ -573,13 +574,29 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                     backupPlugin.close();
                 }
             } catch (IOException e) {
-                LOGGER.log(WARNING, "Failed to get backup version ", e);
+                LOGGER.log(WARNING, "Failed to get backup version from " + backup, e);
                 return null;
             }
         } else {
             return null;
         }
     }
+
+    /**
+     * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
+     */
+    public boolean isPinningForcingOldVersion() {
+        if (!isPinned())    return false;
+
+        Manifest bundled = Jenkins.getInstance().pluginManager.getBundledPluginManifest(getShortName());
+        if (bundled==null)  return false;
+
+        VersionNumber you = new VersionNumber(getVersionOf(bundled));
+        VersionNumber me = getVersionNumber();
+
+        return me.isOlderThan(you);
+    }
+
 //
 //
 // Action methods
@@ -623,4 +640,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
 
+    /**
+     * Name of the plugin manifest file (to help find where we parse them.)
+     */
+    public static final String MANIFEST_FILENAME = "META-INF/MANIFEST.MF";
 }

@@ -83,7 +83,7 @@ public abstract class UserNameResolver implements ExtensionPoint {
      * Returns all the registered {@link UserNameResolver} descriptors.
      */
     public static ExtensionList<UserNameResolver> all() {
-        return Jenkins.getInstance().getExtensionList(UserNameResolver.class);
+        return ExtensionList.lookup(UserNameResolver.class);
     }
 
     /**

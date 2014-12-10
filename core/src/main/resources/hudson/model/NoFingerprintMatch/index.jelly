@@ -29,12 +29,12 @@ THE SOFTWARE.
     <l:header title="${%No matching record found}" />
     <l:side-panel>
       <l:tasks>
-        <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
+        <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
       </l:tasks>
     </l:side-panel>
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>
+        <l:icon class="icon-fingerprint icon-xlg"/>
         ${%No matching record found}
       </h1>
 

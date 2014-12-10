@@ -5,8 +5,6 @@ import hudson.ExtensionPoint;
 import hudson.tasks.BuildStep;
 import jenkins.model.Jenkins;
 
-import java.util.List;
-
 /**
  * Receives events that happen as a build executes {@link BuildStep}s.
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -28,6 +26,7 @@ public abstract class BuildStepListener implements ExtensionPoint {
      * Returns all the registered {@link BuildStepListener}s.
      */
     public static ExtensionList<BuildStepListener> all() {
-        return Jenkins.getInstance().getExtensionList(BuildStepListener.class);
+        // TODO should have a null-safe version when Jenkins.getInstance() is null; would require changes in ExtensionList
+        return ExtensionList.lookup(BuildStepListener.class);
     }
 }

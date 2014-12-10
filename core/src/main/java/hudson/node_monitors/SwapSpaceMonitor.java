@@ -25,9 +25,10 @@ package hudson.node_monitors;
 
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.model.Computer;
 import jenkins.model.Jenkins;
-import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
@@ -51,14 +52,16 @@ public class SwapSpaceMonitor extends NodeMonitor {
         if(usage.availableSwapSpace==-1)
             return "N/A";
 
+       String humanReadableSpace = Functions.humanReadableByteSize(usage.availableSwapSpace);
+       
         long free = usage.availableSwapSpace;
         free/=1024L;   // convert to KB
         free/=1024L;   // convert to MB
         if(free>256 || usage.totalSwapSpace<usage.availableSwapSpace*5)
-            return free+"MB"; // if we have more than 256MB free or less than 80% filled up, it's OK
+            return humanReadableSpace; // if we have more than 256MB free or less than 80% filled up, it's OK
 
         // Otherwise considered dangerously low.
-        return Util.wrapToErrorSpan(free+"MB");
+        return Util.wrapToErrorSpan(humanReadableSpace);
     }
 
     public long toMB(MemoryUsage usage) {
@@ -97,7 +100,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
     /**
      * Obtains the string that represents the architecture.
      */
-    private static class MonitorTask implements Callable<MemoryUsage,IOException> {
+    private static class MonitorTask extends MasterToSlaveCallable<MemoryUsage,IOException> {
         public MemoryUsage call() throws IOException {
             MemoryMonitor mm;
             try {

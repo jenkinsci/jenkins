@@ -56,12 +56,13 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 
-import hudson.util.TimeUnit2;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 
 import org.apache.commons.io.IOUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -133,7 +134,6 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String userId;
 
-    @DataBoundConstructor
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
@@ -148,7 +148,7 @@ public abstract class Slave extends Node implements Serializable {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
     
-    public Slave(String name, String nodeDescription, String remoteFS, int numExecutors,
+    public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;
@@ -207,6 +207,10 @@ public abstract class Slave extends Node implements Serializable {
 
     public String getNodeName() {
         return name;
+    }
+
+    @Override public String toString() {
+        return getClass().getName() + "[" + name + "]";
     }
 
     public void setNodeName(String name) {
@@ -284,7 +288,7 @@ public abstract class Slave extends Node implements Serializable {
      * @return
      *      null if not connected.
      */
-    public FilePath getWorkspaceRoot() {
+    public @CheckForNull FilePath getWorkspaceRoot() {
         FilePath r = getRootPath();
         if(r==null) return null;
         return r.child(WORKSPACE_ROOT);
@@ -342,9 +346,21 @@ public abstract class Slave extends Node implements Serializable {
 
     }
 
+    /**
+     * Creates a launcher for the slave.
+     *
+     * @return
+     *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
+     *      will return a {@link hudson.Launcher.RemoteLauncher} instead.
+     */
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
-        return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
+        if (c == null) {
+            listener.error("Issue with creating launcher for slave " + name + ".");
+            return new Launcher.DummyLauncher(listener);
+        } else {
+            return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
+        }
     }
 
     /**
@@ -440,7 +456,7 @@ public abstract class Slave extends Node implements Serializable {
      *     <li>When it's read on this side as a return value, it morphs itself into {@link ClockDifference}.
      * </ol>
      */
-    private static final class GetClockDifference1 implements Callable<ClockDifference,IOException> {
+    private static final class GetClockDifference1 extends MasterToSlaveCallable<ClockDifference,IOException> {
         public ClockDifference call() {
             // this method must be being invoked locally, which means the clock is in sync
             return new ClockDifference(0);
@@ -453,7 +469,7 @@ public abstract class Slave extends Node implements Serializable {
         private static final long serialVersionUID = 1L;
     }
 
-    private static final class GetClockDifference2 implements Callable<GetClockDifference3,IOException> {
+    private static final class GetClockDifference2 extends MasterToSlaveCallable<GetClockDifference3,IOException> {
         /**
          * Capture the time on the master when this object is sent to remote, which is when
          * {@link GetClockDifference1#writeReplace()} is run.

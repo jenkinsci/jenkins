@@ -37,7 +37,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
      * Returns all the registered {@link GlobalConfiguration} descriptors.
      */
     public static ExtensionList<GlobalConfigurationCategory> all() {
-        return Jenkins.getInstance().getExtensionList(GlobalConfigurationCategory.class);
+        return ExtensionList.lookup(GlobalConfigurationCategory.class);
     }
 
     public static <T extends GlobalConfigurationCategory> T get(Class<T> type) {

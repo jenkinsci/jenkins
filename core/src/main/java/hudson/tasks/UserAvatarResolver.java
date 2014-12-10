@@ -114,7 +114,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
      * Returns all the registered {@link UserAvatarResolver} descriptors.
      */
     public static ExtensionList<UserAvatarResolver> all() {
-        return Jenkins.getInstance().getExtensionList(UserAvatarResolver.class);
+        return ExtensionList.lookup(UserAvatarResolver.class);
     }
 
     private static final Logger LOGGER = Logger.getLogger(UserAvatarResolver.class.getName());

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,8 @@ package hudson.model;
 import hudson.Extension;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
+import hudson.model.queue.SubTask;
+import hudson.model.queue.Tasks;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
 import jenkins.model.Jenkins;
@@ -180,7 +182,7 @@ public abstract class LoadStatistics {
     /**
      * Updates {@link #totalExecutors} and {@link #busyExecutors} by using
      * the current snapshot value.
-     * 
+     *
      * {@link #queueLength} is updated separately via {@link LoadStatisticsUpdater} to
      * improve the efficiency because we are counting this for all {@link LoadStatistics} at once.
      */
@@ -230,8 +232,9 @@ public abstract class LoadStatistics {
         private int count(List<Queue.BuildableItem> bis, Label l) {
             int q=0;
             for (Queue.BuildableItem bi : bis) {
-                if(bi.task.getAssignedLabel()==l)
-                    q++;
+                for (SubTask st : Tasks.getSubTasksOf(bi.task))
+                    if (bi.getAssignedLabelFor(st)==l)
+                        q++;
             }
             return q;
         }

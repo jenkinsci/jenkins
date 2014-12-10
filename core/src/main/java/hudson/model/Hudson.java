@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 
 import static hudson.Util.fixEmpty;
+import javax.annotation.CheckForNull;
 
 public class Hudson extends Jenkins {
 
@@ -67,9 +68,10 @@ public class Hudson extends Jenkins {
      */
     private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
-
+    /** @deprecated Here only for compatibility. Use {@link Jenkins#getInstance} instead. */
+    @Deprecated
     @CLIResolver
-    public static Hudson getInstance() {
+    public static @CheckForNull Hudson getInstance() {
         return (Hudson)Jenkins.getInstance();
     }
 

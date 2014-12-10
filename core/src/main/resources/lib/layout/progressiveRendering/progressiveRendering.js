@@ -22,23 +22,23 @@
  * THE SOFTWARE.
  */
 
-function progressivelyRender(handler, callback) {
+function progressivelyRender(handler, callback, statusId) {
     function checkNews(response) {
         var r = response.responseObject();
         if (r.status == 'done') {
             callback(r.data);
-            $('status').style.display = 'none';
+            $(statusId).style.display = 'none';
         } else if (r.status == 'canceled') {
             // TODO ugly; replace with single tr of class=unknown?
-            $$('#status .progress-bar-done')[0].innerHTML = 'Aborted.';
+            $$('#' + statusId + ' .progress-bar-done')[0].innerHTML = 'Aborted.';
         } else if (r.status == 'error') {
-            $$('#status .progress-bar-done')[0].style.width = '100%';
-            $$('#status .progress-bar-left')[0].style.width = '0%';
-            $('status').className = 'progress-bar red';
+            $$('#' + statusId + ' .progress-bar-done')[0].style.width = '100%';
+            $$('#' + statusId + ' .progress-bar-left')[0].style.width = '0%';
+            $(statusId).className = 'progress-bar red';
         } else {
             callback(r.data);
-            $$('#status .progress-bar-done')[0].style.width = (100 * r.status) + '%';
-            $$('#status .progress-bar-left')[0].style.width = (100 - 100 * r.status) + '%';
+            $$('#' + statusId + ' .progress-bar-done')[0].style.width = (100 * r.status) + '%';
+            $$('#' + statusId + ' .progress-bar-left')[0].style.width = (100 - 100 * r.status) + '%';
             checkNewsLater(500);
         }
     }
@@ -47,5 +47,7 @@ function progressivelyRender(handler, callback) {
             handler.news(checkNews);
         }, timeout);
     }
-    checkNewsLater(0);
+    handler.start(function(response) {
+        checkNewsLater(0);
+    });
 }

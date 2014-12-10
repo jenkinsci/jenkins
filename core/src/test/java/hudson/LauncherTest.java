@@ -24,16 +24,16 @@
 
 package hudson;
 
-import jenkins.model.Jenkins;
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
-import hudson.remoting.Callable;
-import java.io.ByteArrayOutputStream;
+import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.Bug;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 public class LauncherTest extends ChannelTestCase {
@@ -57,7 +57,7 @@ public class LauncherTest extends ChannelTestCase {
             p.kill();
             assertTrue(p.join()!=0);
             long end = System.currentTimeMillis();
-            assertTrue("join finished promptly", (end - start < 5000));
+            assertTrue("join finished promptly", (end - start < 15000));
             french.call(NOOP); // this only returns after the other side of the channel has finished executing cancellation
             Thread.sleep(2000); // more delay to make sure it's gone
             assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp).trim())));
@@ -74,7 +74,7 @@ public class LauncherTest extends ChannelTestCase {
         }
     }
 
-    private static final Callable<Object,RuntimeException> NOOP = new Callable<Object,RuntimeException>() {
+    private static final Callable<Object,RuntimeException> NOOP = new MasterToSlaveCallable<Object,RuntimeException>() {
         public Object call() throws RuntimeException {
             return null;
         }
@@ -97,10 +97,10 @@ public class LauncherTest extends ChannelTestCase {
     public void testDecoratedByEnvMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
-        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, false);
+        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByEnv(new EnvVars());
         assertEquals(false, decorated.isUnix());
-        remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, true);
+        remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, true);
         decorated = remoteLauncher.decorateByEnv(new EnvVars());
         assertEquals(true, decorated.isUnix());
     }
@@ -109,10 +109,10 @@ public class LauncherTest extends ChannelTestCase {
     public void testDecoratedByPrefixMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
-        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, false);
+        Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByPrefix("test");
         assertEquals(false, decorated.isUnix());
-        remoteLauncher = new Launcher.RemoteLauncher(listener, Jenkins.MasterComputer.localChannel, true);
+        remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, true);
         decorated = remoteLauncher.decorateByPrefix("test");
         assertEquals(true, decorated.isUnix());
     }

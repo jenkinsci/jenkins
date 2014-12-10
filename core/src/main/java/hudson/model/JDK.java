@@ -23,8 +23,6 @@
  */
 package hudson.model;
 
-import com.infradna.tool.bridge_method_injector.BridgeMethodsAdded;
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
 import hudson.util.FormValidation;
@@ -47,7 +45,6 @@ import java.util.Collections;
 
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Information about JDK installation.
@@ -55,6 +52,13 @@ import org.kohsuke.stapler.QueryParameter;
  * @author Kohsuke Kawaguchi
  */
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
+
+    /**
+     * Name of the “default JDK”, meaning no specific JDK selected.
+     * @since 1.577
+     */
+    public static final String DEFAULT_NAME = "(Default)";
+
     /**
      * @deprecated since 2009-02-25
      */
@@ -175,16 +179,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         /**
          * Checks if the JAVA_HOME is a valid JAVA_HOME path.
          */
-        public FormValidation doCheckHome(@QueryParameter File value) {
-            // this can be used to check the existence of a file on the server, so needs to be protected
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-
-            if(value.getPath().equals(""))
-                return FormValidation.ok();
-
-            if(!value.isDirectory())
-                return FormValidation.error(Messages.Hudson_NotADirectory(value));
-
+        @Override protected FormValidation checkHomeDirectory(File value) {
             File toolsJar = new File(value,"lib/tools.jar");
             File mac = new File(value,"lib/dt.jar");
             if(!toolsJar.exists() && !mac.exists())
@@ -193,9 +188,6 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckName(@QueryParameter String value) {
-            return FormValidation.validateRequired(value);
-        }
     }
 
     public static class ConverterImpl extends ToolConverter {

@@ -6,7 +6,6 @@ import hudson.model.TaskListener;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Comparator;
 
 /**
  * ID and build number of one build.
@@ -48,20 +47,6 @@ public final class BuildPtr implements Comparable<BuildPtr> {
     }
 
 
-    static final Comparator<BuildPtr> BY_NUMBER = new Comparator<BuildPtr>() {
-        @Override
-        public int compare(BuildPtr o1, BuildPtr o2) {
-            return o1.n - o2.n;
-        }
-    };
-
-    static final Comparator<BuildPtr> BY_ID = new Comparator<BuildPtr>() {
-        @Override
-        public int compare(BuildPtr o1, BuildPtr o2) {
-            return o1.id.compareTo(o2.id);
-        }
-    };
-
     /**
      * If this build and that build are inconsistent, in that
      * their numbers and timestamps are ordering in the wrong direction.
@@ -89,7 +74,7 @@ public final class BuildPtr implements Comparable<BuildPtr> {
         File dir = new File(job.getRootDir(), "outOfOrderBuilds");
         dir.mkdirs();
         File dst = new File(dir, buildDir.getName());
-        listener.getLogger().println("Renaming "+dir);
+        listener.getLogger().println("Renaming "+buildDir);
         listener.getLogger().println("  -> "+dst);
         if (!buildDir.renameTo(dst)) {
             FilePath bd = new FilePath(buildDir);
@@ -103,6 +88,6 @@ public final class BuildPtr implements Comparable<BuildPtr> {
 
     @Override
     public int compareTo(BuildPtr that) {
-        return this.n - that.n;
+        return this.id.compareTo(that.id);
     }
 }

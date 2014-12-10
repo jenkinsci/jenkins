@@ -34,6 +34,8 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import hudson.Util;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.CheckForNull;
@@ -68,21 +70,47 @@ public abstract class Cause {
     public abstract String getShortDescription();
 
     /**
-     * Called when the cause is registered to {@link AbstractBuild}.
-     *
-     * @param build
-     *      never null
-     * @since 1.376
+     * Called when the cause is registered.
+     * @since 1.568
      */
-    public void onAddedTo(AbstractBuild build) {}
+    public void onAddedTo(@Nonnull Run build) {
+        if (build instanceof AbstractBuild) {
+            onAddedTo((AbstractBuild) build);
+        }
+    }
+
+    @Deprecated
+    public void onAddedTo(AbstractBuild build) {
+        if (Util.isOverridden(Cause.class, getClass(), "onAddedTo", Run.class)) {
+            onAddedTo((Run) build);
+        }
+    }
 
     /**
      * Called when a build is loaded from disk.
      * Useful in case the cause needs to keep a build reference;
      * this ought to be {@code transient}.
-     * @since 1.540
+     * @since 1.568
      */
-    public void onLoad(@Nonnull AbstractBuild<?,?> build) {}
+    public void onLoad(@Nonnull Run<?,?> build) {
+        if (build instanceof AbstractBuild) {
+            onLoad((AbstractBuild) build);
+        }
+    }
+
+    void onLoad(@Nonnull Job<?,?> job, int buildNumber) {
+        Run<?,?> build = job.getBuildByNumber(buildNumber);
+        if (build != null) {
+            onLoad(build);
+        }
+    }
+
+    @Deprecated
+    public void onLoad(AbstractBuild<?,?> build) {
+        if (Util.isOverridden(Cause.class, getClass(), "onLoad", Run.class)) {
+            onLoad((Run) build);
+        }
+    }
 
     /**
      * Report a line to the listener about this cause.
@@ -109,7 +137,7 @@ public abstract class Cause {
     }
 
     /**
-     * A build is triggered by the completion of another build (AKA upstream build.)
+     * A build is triggered by another build (AKA upstream build.)
      */
     public static class UpstreamCause extends Cause {
 
@@ -154,6 +182,20 @@ public abstract class Cause {
             this.upstreamBuild = upstreamBuild;
             this.upstreamUrl = upstreamUrl;
             this.upstreamCauses = upstreamCauses;
+        }
+
+        @Override
+        public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {
+            Item i = Jenkins.getInstance().getItemByFullName(this.upstreamProject);
+            if (i == null || !(i instanceof Job)) {
+                // cannot initialize upstream causes
+                return;
+            }
+
+            Job j = (Job)i;
+            for (Cause c : this.upstreamCauses) {
+                c.onLoad(j, upstreamBuild);
+            }
         }
 
         /**
@@ -308,6 +350,7 @@ public abstract class Cause {
             @Override public String toString() {
                 return "JENKINS-14814";
             }
+            @Override public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {}
         }
 
     }
@@ -326,8 +369,7 @@ public abstract class Cause {
 
         @Exported(visibility=3)
         public String getUserName() {
-        	User u = User.get(authenticationName, false);
-            return u != null ? u.getDisplayName() : authenticationName;
+        	return User.get(authenticationName).getDisplayName();
         }
 
         @Override
@@ -368,13 +410,7 @@ public abstract class Cause {
 
         @Exported(visibility = 3)
         public String getUserName() {
-            String userName = "anonymous";
-            if (userId != null) {
-                User user = User.get(userId, false);
-                if (user != null)
-                    userName = user.getDisplayName();
-            }
-            return userName;
+            return userId == null ? "anonymous" : User.get(userId).getDisplayName();
         }
 
         @Override
@@ -385,6 +421,7 @@ public abstract class Cause {
         @Override
         public void print(TaskListener listener) {
             listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                    // TODO better to use ModelHyperlinkNote.encodeTo(User), or User.getUrl, since it handles URL escaping
                     ModelHyperlinkNote.encodeTo("/user/"+getUserId(), getUserName())));
         }
 
@@ -412,10 +449,23 @@ public abstract class Cause {
         @Override
         public String getShortDescription() {
             if(note != null) {
-                return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, note);
-            } else {
-                return Messages.Cause_RemoteCause_ShortDescription(addr);
+                try {
+                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, Jenkins.getInstance().getMarkupFormatter().translate(note));
+                } catch (IOException x) {
+                    // ignore
+                }
             }
+            return Messages.Cause_RemoteCause_ShortDescription(addr);
+        }
+        
+        @Exported(visibility = 3)
+        public String getAddr() {
+            return addr;
+        }
+        
+        @Exported(visibility = 3)
+        public String getNote() {
+            return note;
         }
 
         @Override

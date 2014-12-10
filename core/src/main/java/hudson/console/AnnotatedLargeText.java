@@ -28,8 +28,6 @@ package hudson.console;
 import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.IOException2;
-import hudson.util.Secret;
 import hudson.util.TimeUnit2;
 import jenkins.security.CryptoConfidentialKey;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -50,7 +48,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
@@ -134,7 +131,7 @@ public class AnnotatedLargeText<T> extends LargeText {
                 }
             }
         } catch (ClassNotFoundException e) {
-            throw new IOException2(e);
+            throw new IOException(e);
         }
         // start from scratch
         return ConsoleAnnotator.initial(context==null ? null : context.getClass());
@@ -148,9 +145,22 @@ public class AnnotatedLargeText<T> extends LargeText {
             return super.writeLogTo(start,w);
     }
 
+    /**
+     * Strips annotations using a {@link PlainTextConsoleOutputStream}.
+     * @inheritDoc
+     */
     @Override
     public long writeLogTo(long start, OutputStream out) throws IOException {
         return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
+    }
+
+    /**
+     * Calls {@link LargeText#writeLogTo(long, OutputStream)} without stripping annotations as {@link #writeLogTo(long, OutputStream)} would.
+     * @inheritDoc
+     * @since 1.577
+     */
+    public long writeRawLogTo(long start, OutputStream out) throws IOException {
+        return super.writeLogTo(start, out);
     }
 
     public long writeHtmlTo(long start, Writer w) throws IOException {

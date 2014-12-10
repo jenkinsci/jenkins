@@ -14,7 +14,7 @@ def st=namespace("jelly:stapler")
 l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
     l.main_panel {
         h1 {
-            img(src:"${imagesURL}/48x48/secure.png", height:48,width:48)
+            l.icon(class: 'icon-secure icon-xlg')
             text(my.displayName)
         }
 
@@ -22,6 +22,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
         div(class:"behavior-loading", _("LOADING"))
         f.form(method:"post",name:"config",action:"configure") {
             set("instance",my);
+            set("descriptor", my.descriptor);
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
                 f.entry (title:_("TCP port for JNLP slave agents"), field:"slaveAgentPort") {
@@ -32,8 +33,6 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                     f.checkbox()
                 }
 
-                f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
-
                 f.entry(title:_("Access Control")) {
                     table(style:"width:100%") {
                         f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:SecurityRealm.all())
@@ -41,6 +40,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                     }
                 }
             }
+
+            f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
 
             Functions.getSortedDescriptorsForGlobalConfig(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
@@ -55,6 +56,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                 f.apply()
             }
         }
+
+        st.adjunct(includes: "lib.form.confirm")
     }
 }
 

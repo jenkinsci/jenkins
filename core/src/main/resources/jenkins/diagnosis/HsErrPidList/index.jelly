@@ -1,0 +1,63 @@
+<!--
+The MIT License
+
+Copyright (c) 2013-, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:st="jelly:stapler">
+  <l:layout title="${%Java VM Crash Reports}">
+    <st:include page="sidepanel" it="${app}"/>
+    <l:main-panel>
+      <h1>${%Java VM Crash Reports}</h1>
+
+      <p>${%blurb}</p>
+
+      <table class="bigtable sortable pane">
+        <tr>
+          <th>${%Name}</th>
+          <th>${%Date}</th>
+          <th/>
+        </tr>
+        <j:forEach var="f" items="${it.files}" varStatus="idx">
+          <tr>
+            <td style="padding-right:3em">
+              <l:icon class="icon-clipboard icon-lg" style="margin-right:1em"/>
+              <a href="files/${idx.index}/download/${f.name}">
+                ${f.path}
+              </a>
+            </td>
+            <td data="${f.lastModified}">
+              <i:formatDate value="${f.lastModifiedDate}" type="both" dateStyle="medium" timeStyle="medium"/>
+              <st:nbsp />
+              (${%ago(f.timeSpanString)})
+            </td>
+            <td>
+              <form method="post" action="files/${idx.index}/delete" name="${idx}">
+                <f:submit value="${%Delete}"/>
+              </form>
+            </td>
+          </tr>
+        </j:forEach>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

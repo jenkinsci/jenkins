@@ -24,18 +24,15 @@
 
 package hudson.tasks;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
-import hudson.model.AbstractProject;
-import hudson.model.Fingerprint;
-import hudson.model.FingerprintCleanupThread;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.util.RunList;
 import java.io.File;
 
@@ -44,16 +41,20 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 import hudson.util.StreamTaskListener;
-import org.junit.Assume;
+import jenkins.model.Jenkins;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RandomlyFails;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -100,6 +101,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
 
+        j.jenkins.rebuildDependencyGraph();
+
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
 
@@ -107,6 +110,26 @@ public class FingerprinterTest {
         assertEquals(1, upstreamProjects.size());
         assertTrue(upstreamProjects.contains(upstream));
         assertTrue(downstreamProjects.contains(downstream));
+    }
+
+    private static class FingerprintAddingBuilder extends Builder {
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            build.addAction(new Fingerprinter.FingerprintAction(build, ImmutableMap.of(singleFiles2[0], "fakefingerprint")));
+            return true;
+        }
+    }
+
+    @Test public void presentFingerprintActionIsReused() throws Exception {
+        FreeStyleProject project = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
+        project.getBuildersList().add(new FingerprintAddingBuilder());
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+
+        assertThat(build.getActions(Fingerprinter.FingerprintAction.class), hasSize(1));
+
+        Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
+        assertEquals(action.getRecords().keySet(), ImmutableSet.of(singleFiles2[0], singleFiles[0]));
     }
 
     @Test public void multipleUpstreamDependencies() throws Exception {
@@ -117,6 +140,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(upstream2.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
+
+        j.jenkins.rebuildDependencyGraph();
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> downstreamProjects2 = upstream2.getDownstreamProjects();
@@ -138,6 +163,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get());
+
+        j.jenkins.rebuildDependencyGraph();
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
@@ -161,7 +188,7 @@ public class FingerprinterTest {
 
         upstreamBuild.delete();
 
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
@@ -176,6 +203,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         
+        Jenkins.getInstance().rebuildDependencyGraph();
+
         List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = p.getDownstreamProjects();
         
@@ -194,6 +223,8 @@ public class FingerprinterTest {
         j.buildAndAssertSuccess(matrixProject);
         j.buildAndAssertSuccess(freestyleProject);
         j.waitUntilNoActivity();
+
+        j.jenkins.rebuildDependencyGraph();
 
         RunList<FreeStyleBuild> builds = freestyleProject.getBuilds();
         assertEquals("There should only be one FreestyleBuild", 1, builds.size());
@@ -284,10 +315,10 @@ public class FingerprinterTest {
     }
 
     @SuppressWarnings("unchecked")
+    @RandomlyFails("for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>")
     @Bug(18417)
     @Test
     public void fingerprintCleanup() throws Exception {
-        Assume.assumeFalse("for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>", "https://jenkins.ci.cloudbees.com/job/core/job/jenkins_main_trunk/".equals(System.getenv("JOB_URL")));
         // file names shouldn't matter
         FreeStyleProject p1 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject p2 = createFreeStyleProjectWithFingerprints(singleContents, singleFiles2);
@@ -300,6 +331,8 @@ public class FingerprinterTest {
         Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+"\n"));
         assertEquals(3,f.getUsages().size());
 
+        j.jenkins.rebuildDependencyGraph();
+
         assertEquals(Arrays.asList(p1), p2.getUpstreamProjects());
         assertEquals(Arrays.asList(p1), p3.getUpstreamProjects());
         assertEquals(new HashSet(Arrays.asList(p2,p3)), new HashSet(p1.getDownstreamProjects()));
@@ -307,6 +340,8 @@ public class FingerprinterTest {
         // discard the p3 records
         p3.delete();
         new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
+
+        j.jenkins.rebuildDependencyGraph();
 
         // records for p3 should have been deleted now
         assertEquals(2,f.getUsages().size());

@@ -430,6 +430,16 @@ public final class CronTab {
             }
         }
 
+        int daysOfMonth = 0;
+        for (int i = 1; i < 31; i++) {
+            if (checkBits(bits[2], i)) {
+                daysOfMonth++;
+            }
+        }
+        if (daysOfMonth > 5 && daysOfMonth < 28) { // a bit arbitrary
+            return Messages.CronTab_short_cycles_in_the_day_of_month_field_w();
+        }
+
         String hashified = hashify(spec);
         if (hashified != null) {
             return Messages.CronTab_spread_load_evenly_by_using_rather_than_(hashified, spec);

@@ -39,7 +39,7 @@ public class OutOfOrderBuildDetector extends AsyncPeriodicWork {
      */
     public void execute(TaskListener listener, int delay) throws InterruptedException {
         for (Job j : Jenkins.getInstance().getAllItems(Job.class)) {
-            listener.getLogger().println("Scanning "+j.getFullDisplayName());
+            listener.getLogger().println("Scanning " + j.getFullName());
 
             Problem p = Problem.find(j);
             if (p!=null) {

@@ -2,7 +2,6 @@ package hudson.tools;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.DownloadService;
 import hudson.tools.JDKInstaller.DescriptorImpl;
 import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.JDK;
@@ -31,13 +30,10 @@ import org.xml.sax.SAXException;
  * @author Kohsuke Kawaguchi
  */
 public class JDKInstallerTest extends HudsonTestCase {
-    boolean old;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        old = DownloadService.neverUpdate;
-        DownloadService.neverUpdate = false;
 
         File f = new File(new File(System.getProperty("user.home")),".jenkins-ci.org");
         if (!f.exists()) {
@@ -59,12 +55,6 @@ public class JDKInstallerTest extends HudsonTestCase {
                 in.close();
             }
         }
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        DownloadService.neverUpdate = old;
-        super.tearDown();
     }
 
     public void testEnterCredential() throws Exception {

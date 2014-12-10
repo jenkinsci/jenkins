@@ -69,4 +69,10 @@ public abstract class AbstractQueueTask implements Queue.Task {
     public Authentication getDefaultAuthentication() {
         return ACL.SYSTEM;
     }
+
+    @Nonnull
+    @Override
+    public Authentication getDefaultAuthentication(Queue.Item item) {
+        return getDefaultAuthentication();
+    }
 }

@@ -35,6 +35,7 @@ import hudson.Indenter;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
+import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
@@ -50,7 +51,6 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.FormApply;
-import hudson.util.IOException2;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
@@ -61,6 +61,7 @@ import jenkins.util.ProgressiveRendering;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -114,7 +115,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * This is an extension point in Hudson, allowing different kind of
  * rendering to be added as plugins.
  *
- * <h2>Note for implementors</h2>
+ * <h2>Note for implementers</h2>
  * <ul>
  * <li>
  * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
@@ -254,18 +255,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public ItemGroup<? extends TopLevelItem> getOwnerItemGroup() {
         try {
-            return _getOwnerItemGroup();
+            return owner.getItemGroup();
         } catch (AbstractMethodError e) {
-            return Hudson.getInstance();
+            return Jenkins.getInstance();
         }
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private ItemGroup<? extends TopLevelItem> _getOwnerItemGroup() {
-        return owner.getItemGroup();
     }
 
     public View getOwnerPrimaryView() {
@@ -284,7 +277,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             return _getOwnerViewActions();
         } catch (AbstractMethodError e) {
-            return Hudson.getInstance().getActions();
+            return Jenkins.getInstance().getActions();
         }
     }
 
@@ -374,6 +367,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     /**
+     * Enables or disables automatic refreshes of the view.
+     * By default, automatic refreshes are enabled.
+     * @since 1.557
+     */
+    public boolean isAutomaticRefreshEnabled() {
+        return true;
+    }
+    
+    /**
      * If true, only show relevant executors
      */
     public boolean isFilterExecutors() {
@@ -436,22 +438,21 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         for (Computer c : computers) {
-            Node n = c.getNode();
-            if (n != null) {
-                if (labels.contains(null) && n.getMode() == Mode.NORMAL || !isDisjoint(n.getAssignedLabels(), labels)) {
-                    result.add(c);
-                }
-            }
+            if (isRelevant(labels, c)) result.add(c);
         }
 
         return result;
     }
 
-    private boolean isDisjoint(Collection c1, Collection c2) {
-        for (Object o : c1)
-            if (c2.contains(o))
-                return false;
-        return true;
+    private boolean isRelevant(Collection<Label> labels, Computer computer) {
+        Node node = computer.getNode();
+        if (node == null) return false;
+        if (labels.contains(null) && node.getMode() == Mode.NORMAL) return true;
+
+        for (Label l : labels)
+            if (l != null && l.contains(node))
+                return true;
+        return false;
     }
 
     private List<Queue.Item> filterQueue(List<Queue.Item> base) {
@@ -581,21 +582,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getACL().hasPermission(p);
     }
 
-    /**
-     * Called when a job name is changed or deleted.
-     *
-     * <p>
-     * If this view contains this job, it should update the view membership so that
-     * the renamed job will remain in the view, and the deleted job is removed.
-     *
-     * @param item
-     *      The item whose name is being changed.
-     * @param oldName
-     *      Old name of the item. Always non-null.
-     * @param newName
-     *      New name of the item, if the item is renamed. Or null, if the item is removed.
-     */
-    public abstract void onJobRenamed(Item item, String oldName, String newName);
+    /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
+    @Deprecated
+    public void onJobRenamed(Item item, String oldName, String newName) {}
 
     @ExportedBean(defaultVisibility=2)
     public static final class UserInfo implements Comparable<UserInfo> {
@@ -796,7 +785,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         {
             StaplerRequest req = Stapler.getCurrentRequest();
-            iconSize = req != null ? Functions.getCookie(req, "iconSize", "32x32") : "32x32";
+            iconSize = req != null ? Functions.validateIconSize(Functions.getCookie(req, "iconSize", "32x32")) : "32x32";
         }
 
         @Override protected void compute() throws Exception {
@@ -845,6 +834,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     return;
                 }
                 for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
+                    if (canceled()) {
+                        return;
+                    }
                     if (u == unknown) {
                         continue;
                     }
@@ -935,6 +927,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
@@ -1085,7 +1078,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     new StreamResult(out));
             out.close();
         } catch (TransformerException e) {
-            throw new IOException2("Failed to persist configuration.xml", e);
+            throw new IOException("Failed to persist configuration.xml", e);
         }
 
         // try to reflect the changes by reloading
@@ -1097,11 +1090,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
             name = oldname;
         } catch (StreamException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(ConversionException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } finally {
             in.close();
         }
@@ -1173,8 +1166,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         String mode = req.getParameter("mode");
         if (mode==null || mode.length()==0) {
             if(isXmlSubmission) {
-                View v;
-                v = createViewFromXML(name, req.getInputStream());
+                View v = createViewFromXML(name, req.getInputStream());
                 v.owner = owner;
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return v;
@@ -1182,18 +1174,39 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 throw new Failure(Messages.View_MissingMode());
         }
 
-        ViewDescriptor descriptor = all().findByName(mode);
-        if (descriptor == null) {
-            throw new Failure("No view type ‘" + mode + "’ is known");
-        }
+        View v;
+        if (mode!=null && mode.equals("copy")) {
+            v = copy(req, owner, name);
+        } else {
+            ViewDescriptor descriptor = all().findByName(mode);
+            if (descriptor == null) {
+                throw new Failure("No view type ‘" + mode + "’ is known");
+            }
 
-        // create a view
-        View v = descriptor.newInstance(req,req.getSubmittedForm());
+            // create a view
+            v = descriptor.newInstance(req,req.getSubmittedForm());
+        }
         v.owner = owner;
 
         // redirect to the config screen
         rsp.sendRedirect2(req.getContextPath()+'/'+v.getUrl()+v.getPostConstructLandingPage());
 
+        return v;
+    }
+
+    private static View copy(StaplerRequest req, ViewGroup owner, String name) throws IOException {
+        View v;
+        String from = req.getParameter("from");
+        View src = src = owner.getView(from);
+
+        if(src==null) {
+            if(Util.fixEmpty(from)==null)
+                throw new Failure("Specify which view to copy");
+            else
+                throw new Failure("No such view: "+from);
+        }
+        String xml = Jenkins.XSTREAM.toXML(src);
+        v = createViewFromXML(name, new StringInputStream(xml));
         return v;
     }
 
@@ -1210,11 +1223,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             checkGoodName(v.name);
             return v;
         } catch(StreamException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(ConversionException e) {
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read",e);
+            throw new IOException("Unable to read",e);
         } finally {
             in.close();
         }

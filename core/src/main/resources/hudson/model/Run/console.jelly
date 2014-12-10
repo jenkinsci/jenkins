@@ -52,11 +52,11 @@ THE SOFTWARE.
       <j:choose>
         <!-- Do progressive console output -->
         <j:when test="${it.isLogUpdated()}">
-          <pre id="out" />
-          <div id="spinner">
-            <img src="${imagesURL}/spinner.gif" alt="" /> 
-          </div>
-         <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner" startOffset="${offset}" />
+          <pre id="out" class="console-output" />
+            <div id="spinner">
+              <img src="${imagesURL}/spinner.gif" alt="" /> 
+            </div>
+          <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner" startOffset="${offset}" />
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>

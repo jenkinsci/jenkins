@@ -30,7 +30,7 @@ THE SOFTWARE.
         <l:main-panel>
             <h1>${%People}</h1>
             <p>
-                Moved to <a href="../asynchPeople/">asynchPeople</a> for performance reasons.
+                ${%Moved to asyncPeople}
             </p>
         </l:main-panel>
     </l:layout>

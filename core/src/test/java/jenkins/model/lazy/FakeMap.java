@@ -65,6 +65,7 @@ public class FakeMap extends AbstractLazyLoadRunMap<Build> {
     protected Build retrieve(File dir) throws IOException {
         String n = FileUtils.readFileToString(new File(dir, "n")).trim();
         String id = FileUtils.readFileToString(new File(dir, "id")).trim();
+        //new Exception("loading " + id + " #" + n).printStackTrace();
         return new Build(Integer.parseInt(n),id);
     }
 }
@@ -82,4 +83,9 @@ class Build {
         assert this.n==n;
         assert this.id.equals(id);
     }
+
+    @Override public String toString() {
+        return "Build #" + n + " [" + id + "] @" + hashCode();
+    }
+
 }

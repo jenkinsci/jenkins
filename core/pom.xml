@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.540-SNAPSHOT</version>
+    <version>1.595-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,12 +42,17 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.222</stapler.version>
+    <stapler.version>1.233</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>1.8.9</groovy.version>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
+      <artifactId>icon-set</artifactId>
+      <version>1.0.3</version>
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
@@ -97,7 +102,7 @@ THE SOFTWARE.
     <dependency> <!-- for compatibility only; all new code should use JNR -->
       <groupId>org.jruby.ext.posix</groupId>
       <artifactId>jna-posix</artifactId>
-      <version>1.0.3</version>
+      <version>1.0.3-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>com.github.jnr</groupId>
@@ -112,7 +117,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build217-jenkins-3</version>
+      <version>build217-jenkins-8</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -151,7 +156,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-zeroclipboard</artifactId>
-      <version>1.1.7-1</version>
+      <version>1.3.5-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -161,7 +166,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-codemirror</artifactId>
-      <version>1.2</version>
+      <version>1.3</version>
     </dependency>
     <dependency><!-- this helps us see the source code of the control while we edit Jenkins. -->
       <groupId>org.kohsuke.stapler</groupId>
@@ -174,7 +179,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.9</version>
+      <version>1.13</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
@@ -186,7 +191,7 @@ THE SOFTWARE.
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
     </dependency>
-    <dependency>
+    <dependency><!-- JENKINS-21160: remoting also depends on args4j, please update accordingly -->
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
       <version>2.0.23</version>
@@ -194,17 +199,17 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <version>1.6</version>
+      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>bytecode-compatibility-transformer</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>task-reactor</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
@@ -219,7 +224,17 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.4-jenkins-4</version>
+      <version>1.4.7-jenkins-1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xmlpull</groupId>
+          <artifactId>xmlpull</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xpp3</groupId>
+          <artifactId>xpp3_min</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
@@ -469,12 +484,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.16</version>
+      <version>1.22</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-      <version>1.7</version>
+      <version>1.9</version>
     </dependency>
     <dependency><!-- StAX implementation. See HUDSON-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
@@ -489,7 +504,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>3.3.0-jenkins-3</version>
+      <version>4.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -499,7 +514,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>libpam4j</artifactId>
-      <version>1.6</version>
+      <version>1.8</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.libzfs</groupId>
@@ -517,14 +532,9 @@ THE SOFTWARE.
       <version>1.9</version>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>jinterop-wmi</artifactId>
-      <version>1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>windows-remote-command</artifactId>
-      <version>1.4</version>
+      <groupId>org.kohsuke.jinterop</groupId>
+      <artifactId>j-interop</artifactId>
+      <version>2.0.6-kohsuke-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
@@ -559,9 +569,9 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>owasp-html-sanitizer</artifactId>
-      <version>r88</version>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+      <version>1.3.1-jenkins-1</version>
     </dependency>
 
     <dependency>
@@ -583,11 +593,11 @@ THE SOFTWARE.
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
       </dependency>
-    <!-- TODO overridden until Stapler 1.220 -->
+    <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
     <dependency>
       <groupId>com.jcraft</groupId>
       <artifactId>jzlib</artifactId>
-      <version>1.1.3</version>
+      <version>1.1.3-kohsuke-1</version>
     </dependency>
   </dependencies>
 
@@ -640,7 +650,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>com.infradna.tool</groupId>
         <artifactId>bridge-method-injector</artifactId>
-        <version>1.9</version>
         <executions>
           <execution>
             <goals>
@@ -728,7 +737,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>1.13</version>
+                  <version>1.16</version>
                   <classifier>bin</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
@@ -787,7 +796,7 @@ THE SOFTWARE.
       <plugin><!-- generate Jelly tag lib documentation -->
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>1.16</version>
+        <version>${maven-stapler-plugin.version}</version>
         <configuration>
           <patterns>
             <pattern>/lib/.*</pattern>

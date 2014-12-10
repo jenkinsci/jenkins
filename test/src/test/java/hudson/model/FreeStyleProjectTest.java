@@ -64,40 +64,6 @@ public class FreeStyleProjectTest extends HudsonTestCase {
     }
 
     /**
-     * Make sure that the pseudo trigger configuration works.
-     */
-    @Bug(2778)
-    public void testUpstreamPseudoTrigger() throws Exception {
-        pseudoTriggerTest(createMavenProject(), createFreeStyleProject());
-    }
-
-    @Bug(2778)
-    public void testUpstreamPseudoTrigger2() throws Exception {
-        pseudoTriggerTest(createFreeStyleProject(), createFreeStyleProject());
-    }
-
-    @Bug(2778)
-    public void testUpstreamPseudoTrigger3() throws Exception {
-        pseudoTriggerTest(createMatrixProject(), createFreeStyleProject());
-    }
-
-    private void pseudoTriggerTest(AbstractProject up, AbstractProject down) throws Exception {
-        HtmlForm form = new WebClient().getPage(down, "configure").getFormByName("config");
-        form.getInputByName("pseudoUpstreamTrigger").setChecked(true);
-        form.getInputByName("upstreamProjects").setValueAttribute(up.getName());
-        submit(form);
-
-        // make sure this took effect
-        assertTrue(up.getDownstreamProjects().contains(down));
-        assertTrue(down.getUpstreamProjects().contains(up));
-
-        // round trip again and verify that the configuration is still intact.
-        submit(new WebClient().getPage(down, "configure").getFormByName("config"));
-        assertTrue(up.getDownstreamProjects().contains(down));
-        assertTrue(down.getUpstreamProjects().contains(up));
-    }
-
-    /**
      * Custom workspace and concurrent build had a bad interaction.
      */
     @Bug(4206)

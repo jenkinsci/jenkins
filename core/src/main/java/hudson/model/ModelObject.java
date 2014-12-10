@@ -24,8 +24,12 @@
 package hudson.model;
 
 /**
- * A model object has a URL.
- * 
+ * A model object has a human readable name.
+ *
+ * And it normally has URL, but this interface doesn't define one.
+ * (Since there's so many classes that define the <tt>getUrl</tt> method
+ * we should have such one.)
+ *
  * @author Kohsuke Kawaguchi
  */
 public interface ModelObject {

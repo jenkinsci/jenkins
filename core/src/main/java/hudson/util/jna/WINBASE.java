@@ -17,6 +17,8 @@ package hudson.util.jna;
 
 import com.sun.jna.Structure;
 import com.sun.jna.Pointer;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -35,6 +37,12 @@ typedef struct _SECURITY_ATTRIBUTES {
     public int nLength;
     public Pointer lpSecurityDescriptor;
     public boolean bInheritHandle;
+
+    @Override
+    protected List getFieldOrder() {
+        return Arrays.asList("nLength", "lpSecurityDescriptor",
+                "bInheritHandle");
+    }
   }
 
 /*
@@ -45,5 +53,10 @@ typedef struct _FILETIME {
   class FILETIME extends Structure {
     public int dwLowDateTime;
     public int dwHighDateTime;
+
+    @Override
+    protected List getFieldOrder() {
+        return Arrays.asList("dwLowDateTime", "dwHighDateTime");
+    }
   }
 }

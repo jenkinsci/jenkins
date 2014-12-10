@@ -37,11 +37,20 @@ import java.net.URL;
  *
  * @author Kohsuke Kawaguchi
  */
-public class IncompatibleAntVersionDetected extends ErrorObject {
+public class IncompatibleAntVersionDetected extends BootFailure {
     private final Class antClass;
 
     public IncompatibleAntVersionDetected(Class antClass) {
         this.antClass = antClass;
+    }
+
+    @Override
+    public String getMessage() {
+        try {
+            return "Incompatible Ant loaded from "+getWhereAntIsLoaded();
+        } catch (IOException e) {
+            return "Incompatible Ant loaded";
+        }
     }
 
     public URL getWhereAntIsLoaded() throws IOException {

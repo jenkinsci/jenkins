@@ -40,6 +40,6 @@ public abstract class SearchFactory implements ExtensionPoint {
      * Returns all the registered {@link SearchFactory} instances.
      */
     public static ExtensionList<SearchFactory> all() {
-        return Jenkins.getInstance().getExtensionList(SearchFactory.class);
+        return ExtensionList.lookup(SearchFactory.class);
     }
 }

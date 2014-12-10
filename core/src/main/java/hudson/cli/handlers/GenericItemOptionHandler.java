@@ -26,7 +26,11 @@ package hudson.cli.handlers;
 
 import hudson.model.Item;
 import hudson.model.Items;
+import hudson.security.ACL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
@@ -43,6 +47,8 @@ import org.kohsuke.args4j.spi.Setter;
  */
 public abstract class GenericItemOptionHandler<T extends Item> extends OptionHandler<T> {
 
+    private static final Logger LOGGER = Logger.getLogger(GenericItemOptionHandler.class.getName());
+
     protected GenericItemOptionHandler(CmdLineParser parser, OptionDef option, Setter<T> setter) {
         super(parser, option, setter);
     }
@@ -50,10 +56,21 @@ public abstract class GenericItemOptionHandler<T extends Item> extends OptionHan
     protected abstract Class<T> type();
 
     @Override public int parseArguments(Parameters params) throws CmdLineException {
-        Jenkins j = Jenkins.getInstance();
-        String src = params.getParameter(0);
+        final Jenkins j = Jenkins.getInstance();
+        final String src = params.getParameter(0);
         T s = j.getItemByFullName(src, type());
         if (s == null) {
+            final Authentication who = Jenkins.getAuthentication();
+            ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                @Override public void run() {
+                    Item actual = j.getItemByFullName(src);
+                    if (actual == null) {
+                        LOGGER.log(Level.FINE, "really no item exists named {0}", src);
+                    } else {
+                        LOGGER.log(Level.WARNING, "running as {0} could not find {1} of {2}", new Object[] {who.getPrincipal(), actual, type()});
+                    }
+                }
+            });
             T nearest = Items.findNearest(type(), src, j);
             if (nearest != null) {
                 throw new CmdLineException(owner, "No such job '" + src + "'; perhaps you meant '" + nearest.getFullName() + "'?");

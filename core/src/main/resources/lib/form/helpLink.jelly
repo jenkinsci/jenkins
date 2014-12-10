@@ -1,0 +1,65 @@
+<!--
+The MIT License
+
+Copyright (c) 2014, Harald Albers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    Outputs an help link for a &lt;f:form> item if help is available or 
+    a spacer if none is available.
+
+    The help link is rendered as a table cell with an (?) icon.
+    If the user clicks it, the content of the HTML fragment at the given URL 
+    is rendered in the area designated as &lt;f:helpArea> by the caller,
+    usually in a row beneath the item with help.
+    
+    The alternative spacer is just an empty table cell.
+    
+    This tag was introduced to ensure that the space reserved for help items
+    is consistent over the UI whether or not help exists.
+
+    @since 1.576
+    <st:attribute name="url">
+      URL to the HTML page. Optional. If not given, no help icon is displayed.
+
+      The URL should return a UTF-8 encoded HTML fragment wrapped in a &lt;div> tag.
+      The URL is interpreted to be rooted at the context path of Jenkins,
+      so it's normally something like "/plugin/foobar/help/abc.html".
+    </st:attribute>
+    <st:attribute name="featureName">
+      Name of the feature described by the help text, used for constructing the 
+      icon's alt attribute. Optional.
+    </st:attribute>
+  </st:documentation>
+  <j:choose>
+    <j:when test="${attrs.url!=null}">
+      <j:set var="altText" value="${attrs.featureName != null ? '%Help for feature:' + ' ' + attrs.featureName : '%[Help]'}" />
+      <td class="setting-help">
+        <a href="#" class="help-button" helpURL="${rootURL}${attrs.url}"><l:icon class="icon-help icon-sm" alt="${altText}"/></a>
+      </td>
+    </j:when>
+    <j:otherwise>
+      <td class="setting-no-help" />
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

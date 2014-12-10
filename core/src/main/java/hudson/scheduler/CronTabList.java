@@ -24,10 +24,12 @@
 package hudson.scheduler;
 
 import antlr.ANTLRException;
-
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Vector;
+import javax.annotation.CheckForNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link CronTab} list (logically OR-ed).
@@ -89,4 +91,29 @@ public final class CronTabList {
         }
         return new CronTabList(r);
     }
+
+    @Restricted(NoExternalUse.class) // just for form validation
+    public @CheckForNull Calendar previous() {
+        Calendar nearest = null;
+        for (CronTab tab : tabs) {
+            Calendar scheduled = tab.floor(Calendar.getInstance());
+            if (nearest == null || nearest.before(scheduled)) {
+                nearest = scheduled;
+            }
+        }
+        return nearest;
+    }
+
+    @Restricted(NoExternalUse.class) // just for form validation
+    public @CheckForNull Calendar next() {
+        Calendar nearest = null;
+        for (CronTab tab : tabs) {
+            Calendar scheduled = tab.ceil(Calendar.getInstance());
+            if (nearest == null || nearest.after(scheduled)) {
+                nearest = scheduled;
+            }
+        }
+        return nearest;
+    }
+
 }

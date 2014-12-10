@@ -46,6 +46,6 @@ public abstract class URLConnectionDecorator implements ExtensionPoint {
      * Returns all the registered {@link URLConnectionDecorator}s.
      */
     public static ExtensionList<URLConnectionDecorator> all() {
-        return Jenkins.getInstance().getExtensionList(URLConnectionDecorator.class);
+        return ExtensionList.lookup(URLConnectionDecorator.class);
     }
 }

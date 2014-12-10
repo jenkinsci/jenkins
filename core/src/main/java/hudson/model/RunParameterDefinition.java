@@ -122,11 +122,11 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         // use getFilter() method so we dont have to worry about null filter value.
         switch (getFilter()) {
             case COMPLETED:
-                return getProject().getBuilds().overThresholdOnly(Result.ABORTED);
+                return getProject().getBuilds().overThresholdOnly(Result.ABORTED).completedOnly();
             case SUCCESSFUL:
-                return getProject().getBuilds().overThresholdOnly(Result.UNSTABLE);
+                return getProject().getBuilds().overThresholdOnly(Result.UNSTABLE).completedOnly();
             case STABLE	:
-                return getProject().getBuilds().overThresholdOnly(Result.SUCCESS);
+                return getProject().getBuilds().overThresholdOnly(Result.SUCCESS).completedOnly();
             default:
                 return getProject().getBuilds();
         }

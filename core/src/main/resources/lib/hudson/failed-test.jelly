@@ -25,77 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    Display link to the failed test.
-    @since TODO
-    <st:attribute name="url" type="String">
-      Path to the failed test.
-    </st:attribute>
-    <st:attribute name="result" type="TestObject">
-      Failed test object
-    </st:attribute>
+      DEPRECATED
   </st:documentation>
-    <st:once>
-      <script type="text/javascript">
-      <!-- TODO make sure load doesn't happen every time -->
-      function showFailureSummary(id,query) {
-        var element = document.getElementById(id)
-        element.style.display = "";
-        document.getElementById(id + "-showlink").style.display = "none";
-        document.getElementById(id + "-hidelink").style.display = "";
-
-        if (typeof query !== 'undefined') {
-          var rqo = new XMLHttpRequest();
-          rqo.open('GET', query, true);
-          rqo.onreadystatechange = function() { element.innerHTML = rqo.responseText; }
-          rqo.send(null);
-        }
-      }
-
-      function hideFailureSummary(id) {
-        document.getElementById(id).style.display = "none";
-        document.getElementById(id + "-showlink").style.display = "";
-        document.getElementById(id + "-hidelink").style.display = "none";
-      }
-    </script>
-    <style type="text/css">
-      .failure-summary {
-        margin-left: 2em;
-      }
-
-      .failure-summary h4 {
-        margin: 0.5em 0 0.5em 0;
-      }
-
-      .failure-summary h4 a {
-        text-decoration: none;
-        color: inherit;
-      }
-
-      .failure-summary h4 a img {
-        width: 8px;
-        height: 8px;
-      }
-
-      .failure-summary pre {
-        margin-left: 2em;
-      }
-    </style>
-  </st:once>
-  <j:set var="id" value="${h.jsStringEscape(url)}"/>
-  <j:set var="open" value="javascript:showFailureSummary('test-${id}','${url}/summary')"/>
-  <j:set var="close" value="javascript:hideFailureSummary('test-${id}')"/>
-  <a id="test-${id}-showlink" href="${open}" title="${%Show details}">
-    <img src="${imagesURL}/16x16/document_add.png"/>
-  </a>
-  <a id="test-${id}-hidelink" href="${close}" title="${%Hide details}" style="display:none">
-    <img src="${imagesURL}/16x16/document_delete.png"/>
-  </a>
-  <st:nbsp/>
-  <a href="${url}" class="model-link inside"><st:out value="${result.fullDisplayName}"/></a>
-  <j:forEach var="badge" items="${result.testActions}">
-    <st:include it="${badge}" page="badge.jelly" optional="true"/>
-  </j:forEach>
-  <div id="test-${id}" class="failure-summary" style="display: none;">
-    ${%Loading...}
-  </div>
+  <st:include page="/lib/hudson/test/failed-test.jelly"/>
 </j:jelly>

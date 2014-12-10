@@ -21,16 +21,112 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+/* General page layout */
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
   background: white;
+  margin-right: auto;
+  margin-left: auto;
 }
+
+#header {
+  background-color: #000000;
+  height: 40px;
+}
+
+#header div {
+  display: inline-block;
+  height: inherit;
+}
+#header .logo {
+  margin-left: 16px;
+}
+
+#jenkins-home-link {
+  position: absolute;
+  height: 40px;
+}
+
+#jenkins-head-icon {
+  position: absolute;
+  bottom: 0px;
+}
+#jenkins-name-icon {
+  position: absolute;
+  bottom: 3px;
+  left: 32px;
+}
+
+#header .searchbox, #header .login {
+  float: right;
+  padding: 6px 11px;
+}
+
+#breadcrumbBar, #footer-container, .top-sticker-inner {
+  background-color: #f6faf2;
+}
+
+#side-panel, #main-panel {
+  margin: 0px 0px 40px 0px;
+  padding: 0px;
+}
+
+#side-panel-content, #main-panel-content {
+  margin: 15px
+}
+
+#tasks {
+  margin-bottom: 20px;
+}
+
+#side-panel-content .pane-frame {
+  margin-bottom: 15px;
+}
+
+#side-panel-content .task {
+  margin-bottom: 3px;
+}
+#side-panel-content .task-link {
+  font-size: 1.1em;
+  vertical-align: middle;
+}
+
+#footer-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px 0px;
+  border-top: 1px solid #d3d7cf;
+}
+#footer {
+  margin: 0px 15px 0px 15px;
+  text-align: right;
+  font-size: 8pt;
+}
+
+#footer span {
+  margin-left: 15px;
+}
+
+/* Fonts etc */
 
 body, table, form, input, td, th, p, textarea, select
 {
-  font-family: Verdana, Helvetica, sans serif;
-  font-size: 11px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 13px;
+}
+
+body, table, form, td, th, p
+{
+  color: #333;
 }
 
 FORM {
@@ -46,7 +142,7 @@ dt {
 }
 
 .fixed-width {
-  font-family: Courier, monospace;
+  font-family: monospace;
 }
 
 .center {
@@ -79,28 +175,6 @@ dt {
   text-decoration: none;
 }
 
-#main-panel {
-  padding: 10px;
-    padding-top: 0px;
-}
-
-#side-panel {
-  padding: 4px;
-  width: 220px;
-}
-
-#footer {
-  text-align: right;
-  font-size: 8pt;
-  margin-top: 10em;
-  padding: 10px;
-  border-top: 1px solid #bbb;
-}
-
-#tasks {
-  padding: 4px;
-}
-
 .skiplink {
     position: absolute;
     left: -20000px;
@@ -116,6 +190,23 @@ dt {
     margin-bottom: 0.5em;
     padding: 0.5em;
     -moz-border-radius: 0.5em;
+}
+
+#header .login {
+  position: relative;
+  top: 6px;
+  color: white;
+  margin-right: 10px;
+}
+
+#header .login a, #header .login a:visited {
+  color: white;
+  text-decoration: none;
+}
+
+#header .login a:hover {
+    text-decoration: underline;
+    color: #ccc;
 }
 
 a:link {
@@ -170,6 +261,19 @@ a.tip:hover span {
   text-align: left
 }
 
+.call-to-action {
+  display: inline-block;
+  padding: 10px;
+  background-color: #cdf0f2;
+  border-left: 4px solid #577baa;
+}
+
+.call-to-action a, .call-to-action a:visited {
+  color: #000000;
+  font-weight: bold;
+  font-size: larger;
+}
+
 img {
   vertical-align: middle;
   border: 0;
@@ -215,6 +319,10 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
     margin: 0;
 }
 
+pre a {
+    word-wrap: break-word;	
+}
+
 pre.console {
   overflow: auto;
 }
@@ -232,16 +340,88 @@ pre.console {
 }
 .setting-help {
   width: 16px;
+  vertical-align: middle;
+}
+.setting-no-help {
+  width: 16px;
 }
 
 .setting-input {
   width: 100%;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  padding: 6px;
+  box-sizing: border-box;
+  -webkit-box-sizing:border-box;
+  -moz-box-sizing: border-box;
 }
 
 .setting-description {
   font-size: 0.8em;
   margin-top: 0;
   padding-top: 0;
+}
+
+/* tabBar */
+
+.tabBar {
+  clear: both;
+  overflow: auto;
+  position: relative;
+  top: 1px;
+}
+.tabBar .tab {
+  float: left;
+  margin-left: 3px;
+}
+.tabBar .tab:first-child {
+  margin-left: 15px;
+}
+.tabBar .tab a {
+  position: relative;
+  display: block;
+  border: solid 1px #f0f0f0;
+  border-bottom: none;
+  text-decoration: none;
+  color: #999;
+  padding: 7px 10px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+.tabBar .tab a:hover {
+  background: #eee;
+}
+.tabBar .tab a.addTab {
+  font-weight: bold;
+  color: #0460d1;
+  border: 1px solid #d8efff;
+  border-bottom: none;
+}
+.tabBar .tab a.addTab:hover {
+  background: #d8efff;
+}
+.tabBar .tab [type=radio] {
+  display: none;
+}
+.tabBar [type=radio]:checked ~ a {
+  border: solid 1px #f0f0f0;
+  background: #eee;
+  color: #000;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  z-index: 2;
+}
+.tabBarBaseline {
+  border-top: 1px solid #f0f0f0;
+  z-index: 1;
+}
+
+.tabBarBaseline {
+  display: none; /* Baseline is hidden by default.  See next rule fo adding visibility. */
+}
+.tabBarFrame.showBaseline .tabBarBaseline {
+  display: block;
 }
 
 /* div that looks like a hyperlink */
@@ -261,10 +441,6 @@ pre.console {
   width: 480px;
 }
 
-.build-row {
-  padding: 3px 4px 3px 4px;
-}
-
 .build-keep {
   font-weight: bold;
 }
@@ -274,6 +450,14 @@ pre.console {
   border-bottom: 1px #090 solid;
   font-weight: bold;
   font-size: 12pt;
+}
+
+#jenkins .task-link {
+    text-decoration: none;
+}
+
+#jenkins .task-link:hover {
+    text-decoration: underline;
 }
 
 .task {
@@ -292,12 +476,39 @@ div.dashboard {
   clear:both;
 }
 
-.pane  {
-  margin-top: 4px;
-  white-space: nowrap;
+/* pane */
+
+.pane-frame {
+  border: solid 1px #f0f0f0;
+  border-radius: 4px;
 }
+
+#side-panel .pane-frame:hover, #side-panel .pane-frame.mouseover {
+  border: solid 1px #cecece;
+}
+
+.pane-header, .pane-footer {
+  padding: 8px 0px;
+  background-color: #eee;
+  border: solid 1px #f3f3f3;
+  border-left: none;
+  border-right: none;
+  color: #3b3b3b;
+}
+.pane-header {
+  border-top: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+.pane-footer {
+  border-bottom: none;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
 .pane td {
   padding: 4px 4px 3px 4px;
+  vertical-align: middle;
 }
 
 table.pane {
@@ -305,43 +516,66 @@ table.pane {
   border-collapse: collapse;
   border: 1px #bbb solid;
 }
-table.pane > tbody > tr > td:last-child {
-  border-right: 1px #bbb solid;
-}
 
 td.pane {
-  border: 1px #bbb solid;
   padding: 3px 4px 3px 4px;
   vertical-align: middle;
 }
 
-td.pane-header {
-  border: 1px #bbb solid;
-  border-right: none;
-  border-left: none;
-  background-color: #f0f0f0;
+table.stripped tr:nth-child(even) {
+  background: #fbfbfb;
+}
+table.stripped-even tr:nth-child(even) {
+  background: #fbfbfb;
+}
+table.stripped-odd tr:nth-child(odd) {
+  background: #fbfbfb;
+}
+
+div.pane-header {
   font-weight: bold;
+  padding-right: 24px;
+}
+
+div.pane-header .collapse {
+	float: right;
+  margin-left: 3px;
 }
 
 th.pane {
-  border: 1px #bbb solid;
   font-weight: bold;
 }
+
+/* executors */
+
+#executors th.pane {
+  text-align: left;
+  padding: 12px 5px 5px 5px;
+}
+
+#executors th.pane a {
+  text-decoration: none;
+}
+
+/* bigtable */
 
 .bigtable tr {
   border: 1px solid #bbb;
   padding: 3px 4px 3px 4px;
 }
+table.bigtable.pane > tbody > tr > td:last-child {
+  border-right: none;
+}
 
-.bigtable tr:hover {
-  background-color: #f0f0f0;
+.pane-frame table, .pane-frame .bigtable tr {
+  border: none; /* Border will be provided by the pane-frame */
 }
 
 .bigtable th {
   font-weight: bold;
   border: none;
   background-color: #f0f0f0;
-  padding: 3px 4px 3px 4px;
+  padding: 6px 4px;
 }
 
 .bigtable td {
@@ -357,7 +591,7 @@ th.pane {
   padding: 4px 0;
   margin-left: 0;
   border-bottom: 1px solid #090;
-  font: bold 12px Verdana, sans-serif;
+  font: bold 12px Helvetica, Arial, sans-serif;
 }
 
 #foldertab li {
@@ -454,8 +688,8 @@ LABEL.attach-previous {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
 }
 .bottom-sticker-inner {
-    background:white;
-    padding:1em;
+    background: white;
+    padding: 1em 0;
 }
 .bottom-sticker-edge {
     height:16px;
@@ -468,7 +702,6 @@ LABEL.attach-previous {
     z-index: 999;
 }
 .top-sticker-inner {
-    background:white;
     padding:1em;
 }
 .top-sticker-edge {
@@ -582,7 +815,10 @@ LABEL.attach-previous {
 }
 #viewList td.inactive a {
   text-decoration: none;
-  color: #444
+  color: #444;
+}
+#viewList td.inactive a:hover {
+  color: #f1f1f1;
 }
 #viewList td.noleft {
   border-left: none;
@@ -611,8 +847,24 @@ LABEL.attach-previous {
   white-space: nowrap;
 }
 
+#projectstatus .header {
+  border-bottom: 1px solid #ddd;
+}
 #projectstatus th {
   text-align: left;
+  padding: 7px 0px;
+}
+#projectstatus tbody tr:first-child th:first-child {
+  border-top-left-radius: 4px;
+}
+#projectstatus tbody tr:first-child th:last-child {
+  border-top-right-radius: 4px;
+}
+#projectstatus tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 4px;
+}
+#projectstatus tr:last-child td:last-child {
+  border-bottom-right-radius: 4px;
 }
 
 /* ============================ list view entries ======================== */
@@ -677,9 +929,141 @@ table.parameters > tbody:hover {
     padding: 0;
 }
 
-#buildHistory td.desc {
-    padding: 0;
-    white-space: normal;
+#buildHistory .desc {
+  position: relative;
+  padding: 0;
+  margin-top: 5px;
+  white-space: normal;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+#buildHistory .build-row-cell {
+  position: relative;
+}
+
+#buildHistory .build-rss-links {
+  float: right;
+}
+
+.build-row {
+  padding: 3px 4px 3px 4px;
+}
+
+.build-row:hover, .build-row.model-link-active {
+  background: #e8e8e8 !important;
+}
+
+.build-row-cell {
+  font-size: 12px;
+}
+
+.build-row-cell .pane.build-name {
+  width: 25%;
+  font-weight: bold;
+}
+.build-row-cell .pane.build-details {
+  width: 50%;
+}
+.build-row-cell .pane.build-controls {
+  width: 25%;
+  text-align: right;
+}
+.build-row-cell .pane.build-details.block {
+  width: 100%;
+}
+
+.pane.build-name a,
+.pane.build-name a:visited {
+  color: black;
+  text-decoration: underline;
+}
+
+.pane.build-details a,
+.pane.build-details a:visited {
+  color: black;
+  opacity: 0.6;
+  text-decoration: none;
+}
+.pane.build-details a:hover {
+  opacity: 1.0;
+  text-decoration: underline;
+}
+
+.build-row.multi-line .build-row-cell .pane.build-name.block {
+  width: 100%;
+}
+.build-row-cell .pane.build-controls.block {
+  width: 100%;
+}
+
+.build-row-cell .pane.build-name .build-icon,
+.build-row-cell .pane.build-name .display-name {
+  display: inline-block;
+}
+.build-row-cell .pane.build-name .build-icon {
+  position: absolute;
+}
+
+.build-row-cell .build-stop {
+  display: inline-block;
+  width: 30%;
+}
+.build-row-cell .build-badge {
+  display: inline-block;
+  padding: 2px;
+  width: 70%;
+  text-align: right;
+}
+.build-row .build-name-controls .pane.build-name,
+.build-row .build-details-controls .pane.build-details {
+  width: 70%;
+}
+
+.build-row .build-row-cell .pane {
+  padding: 0px 2px; /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
+  display: inline-block;
+  overflow: hidden;
+}
+
+.build-row.multi-line .build-row-cell .block {
+  display: block;
+  overflow: auto;
+}
+
+.build-row.multi-line .build-row-cell .indent-multiline {
+  margin-top: 5px;
+}
+
+.build-row.multi-line .build-row-cell .left-bar {
+  position: absolute;
+  top: 19px;
+  bottom: 3px;
+  left: 14px;
+  border-left: 1px solid #cdcdcd;
+}
+
+.build-row-cell .pane.build-name .display-name,
+.build-row-cell .indent-multiline {
+  padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
+}
+
+.build-row .build-row-cell {
+  /*visibility: hidden;*/
+}
+.build-row.overflow-checked .build-row-cell {
+  visibility: visible;
+}
+
+/* ================ Element overflow calculation helper styles ================ */
+
+.force-wrap, .force-wrap a {
+  white-space: normal !important;
+  overflow: visible !important;
+}
+.force-nowrap, .force-nowrap a {
+  white-space: nowrap !important;
+  overflow: hidden !important;
 }
 
 /* ========================= editable combobox style ========================= */
@@ -888,9 +1272,29 @@ DIV.yahooTree td {
   margin-bottom: 1em;
 }
 
+#jenkins .yuimenuitem {
+    font-size: 12px;
+    padding: 3px;
+}
+
+#jenkins .yuimenuitem,
+#jenkins .yuimenuitemlabel {
+    cursor: pointer;
+}
+
+#jenkins .yuimenu .bd {
+    border: 1px solid #ccc;
+    box-shadow: 0px 3px 10px #bbb;
+}
+
+#jenkins .yui-menu-shadow {
+    display: none;
+}
+
 /* ========================= search box at the top-right of the page ========================= */
 #search-box {
   background: white url(../images/16x16/search.png) no-repeat 2px center;
+  height: 24px;
   padding-left: 20px;
   width: 15em;
   position: static; 
@@ -1127,4 +1531,129 @@ td.matrix-cell {
 /* ========================= legend.jelly ================== */
 table#legend-table td {
 	vertical-align: middle;
+}
+
+/* ========================= Button styles ================= */
+
+#disable-project {
+    margin-top: 6px;
+}
+
+#bottom-sticker .yui-button {
+    margin-right: 20px;
+}
+
+/* This level of nesting is technically unnecessary, but to override the
+ * default Yahoo styles. */
+#jenkins .yui-button {
+  border-width: 0;
+  border-style: none;
+  border-color: transparent;
+  background: none;
+}
+
+#jenkins .yui-button .first-child {
+    border-width: 0;
+    border-style: none;
+    border-color: transparent;
+}
+
+#jenkins .yui-button button {
+  font-size: 12px;
+  padding: 3px 20px;
+  *border: 0;
+  border-radius: 1px;
+
+  border: 1px solid #cccccc;
+  background-color: #e0e0e0;
+  font-family: Helvetica, Arial, sans-serif;
+
+  color: #505050;
+  font-weight: bold;
+}
+
+#jenkins .yui-button .hetero-list-add {
+    padding-right: 35px;
+}
+
+#jenkins .yui-button button:hover,
+#jenkins .yui-button .hover
+{
+    background-color: #d0d0d0;
+    border: 1px solid #c0c0c0;
+}
+
+#jenkins .yui-button button:active,
+#jenkins .yui-button .active {
+    background-color: #bbb;
+    box-shadow: inset 0px 1px 6px 2px #929292;
+    border: 1px solid #bbb;
+}
+
+#jenkins .yui-button button[disabled],
+#jenkins .yui-button button[disabled]:hover,
+#jenkins .yui-button button[disabled]:active,
+#jenkins .yui-button .disabled {
+    background-color: #e5e5e5;
+    color: #999;
+    border: 1px solid #d2d2d2;
+}
+
+/* Color overrides */
+#jenkins .yui-button.primary button {
+    background-color: #4b758b;
+    color: #eee;
+    border: 1px solid #5788a1;
+}
+
+#jenkins .yui-button.primary button:hover,
+#jenkins .yui-button.primary .hover
+{
+    background-color: #3f6275;
+    border: 1px solid #5788a1;
+}
+
+#jenkins .yui-button.primary button:active,
+#jenkins .yui-button.primary .active
+{
+    background-color: #33505f;
+    border: 1px solid #3f6275;
+    box-shadow: inset 0px 1px 6px 2px #1b2b33;
+}
+
+#jenkins .yui-button.primary button:disabled,
+#jenkins .yui-button.primary .disabled
+{
+    background-color: #adc6d3;
+    color: #fff;
+    border: 1px solid #a2becd;
+}
+
+#jenkins .yui-button.danger button {
+    background-color: #d24939;
+    color: #eee;
+    border: 1px solid #be3a2b;
+}
+
+#jenkins .yui-button.danger button:hover,
+#jenkins .yui-button.danger .hover
+{
+    background-color: #a23225;
+    border: 1px solid #942e22;
+}
+
+#jenkins .yui-button.danger button:active,
+#jenkins .yui-button.danger .active
+{
+    background-color: #942e22;
+    border: 1px solid #6b2118;
+    box-shadow: inset 0px 1px 6px 2px #79251b;
+}
+
+#jenkins .yui-button.danger button:disabled,
+#jenkins .yui-button.danger .disabled
+{
+    background-color: #e5958c;
+    color: #f8f8f8;
+    border: 1px solid #e39280;
 }

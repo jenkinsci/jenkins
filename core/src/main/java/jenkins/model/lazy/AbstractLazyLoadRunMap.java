@@ -26,19 +26,14 @@ package jenkins.model.lazy;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.RunMap;
-import org.apache.commons.collections.keyvalue.DefaultMapEntry;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.ref.Reference;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -50,6 +45,9 @@ import javax.annotation.CheckForNull;
 
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import static jenkins.model.lazy.Boundary.*;
+import org.apache.commons.collections.keyvalue.DefaultMapEntry;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link SortedMap} that keeps build records by their build numbers, in the descending order
@@ -111,6 +109,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Updated atomically. Once set to this field, the index object may not be modified.
      */
     private volatile Index index = new Index();
+    private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<R>(this);
 
     /**
      * Pair of two maps into a single class, so that the changes can be made visible atomically,
@@ -212,38 +211,50 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     /**
+     * Updates base directory location after directory changes.
+     * This method should be used on jobs renaming, etc.
+     * @param dir Directory location
+     * @since 1.546
+     */
+    public final void updateBaseDir(File dir) {
+        this.dir = dir;
+    }
+    
+    /**
      * Let go of all the loaded references.
      *
      * This is a bit more sophisticated version of forcing GC.
      * Primarily for debugging and testing lazy loading behaviour.
      * @since 1.507
      */
-    public void purgeCache() {
+    public synchronized void purgeCache() {
         index = new Index();
+        fullyLoaded = false;
         loadIdOnDisk();
     }
 
     private void loadIdOnDisk() {
-        String[] buildDirs = dir.list(createDirectoryFilter());
-        if (buildDirs==null) {
+        String[] kids = dir.list();
+        if (kids == null) {
             // the job may have just been created
-            buildDirs=EMPTY_STRING_ARRAY;
+            kids = EMPTY_STRING_ARRAY;
         }
-        // wrap into ArrayList to enable mutation
-        Arrays.sort(buildDirs);
-        idOnDisk = new SortedList<String>(new ArrayList<String>(Arrays.asList(buildDirs)));
-
-        // TODO: should we check that shortcuts is a symlink?
-        String[] shortcuts = dir.list();
-        if (shortcuts==null)    shortcuts=EMPTY_STRING_ARRAY;
-        SortedIntList list = new SortedIntList(shortcuts.length/2);
-        for (String s : shortcuts) {
-            try {
-                list.add(Integer.parseInt(s));
-            } catch (NumberFormatException e) {
-                // this isn't a shortcut
+        List<String> buildDirs = new ArrayList<String>();
+        FilenameFilter buildDirFilter = createDirectoryFilter();
+        SortedIntList list = new SortedIntList(kids.length / 2);
+        for (String s : kids) {
+            if (buildDirFilter.accept(dir, s)) {
+                buildDirs.add(s);
+            } else {
+                try {
+                    list.add(Integer.parseInt(s));
+                } catch (NumberFormatException e) {
+                    // this isn't a shortcut
+                }
             }
         }
+        Collections.sort(buildDirs);
+        idOnDisk = new SortedList<String>(buildDirs);
         list.sort();
         numberOnDisk = list;
     }
@@ -264,7 +275,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     @Override
     public Set<Entry<Integer, R>> entrySet() {
         assert baseDirInitialized();
-        return Collections.unmodifiableSet(new BuildReferenceMapAdapter<R>(this,all()).entrySet());
+        return entrySet;
     }
 
     /**
@@ -338,7 +349,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public R get(int n) {
-        return search(n,Direction.EXACT);
+        return search(n, Direction.EXACT);
     }
 
     /**
@@ -499,7 +510,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             return getById(idOnDisk.get(lo-1));
         case EXACT:
             if (hi<=0)                 return null;
-            R r = load(idOnDisk.get(hi-1), null);
+            R r = getById(idOnDisk.get(hi-1));
             if (r==null)               return null;
 
             int found = getNumberOf(r);
@@ -533,7 +544,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public R getByNumber(int n) {
-        return search(n,Direction.EXACT);
+        return search(n, Direction.EXACT);
     }
 
     public R put(R value) {
@@ -541,7 +552,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     protected R _put(R value) {
-        return put(getNumberOf(value),value);
+        return put(getNumberOf(value), value);
     }
 
     @Override
@@ -574,10 +585,12 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             numberOnDisk = a;
         }
 
+        entrySet.clearCache();
+
         return unwrap(old);
     }
 
-    private R unwrap(Reference<R> ref) {
+    private R unwrap(BuildReference<R> ref) {
         return ref!=null ? ref.get() : null;
     }
 
@@ -602,7 +615,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * @return
      *      fully populated map.
      */
-    private TreeMap<Integer,BuildReference<R>> all() {
+    /*package*/ TreeMap<Integer,BuildReference<R>> all() {
         if (!fullyLoaded) {
             synchronized (this) {
                 if (!fullyLoaded) {
@@ -731,7 +744,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         BuildReference<R> old = copy.byId.remove(getIdOf(run));
         this.index = copy;
 
-        return unwrap(old)!=null;
+        entrySet.clearCache();
+
+        return old != null;
     }
 
     /**
