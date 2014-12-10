@@ -97,6 +97,7 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
+    <uithemes-plugin.version>1.2-SNAPSHOT</uithemes-plugin.version>
     <maven-plugin.version>2.7.1</maven-plugin.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 

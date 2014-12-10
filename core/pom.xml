@@ -81,6 +81,11 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+        <groupId>org.jenkins-ci.plugins.uithemes</groupId>
+        <artifactId>uithemes-processor</artifactId>
+        <version>${uithemes-plugin.version}</version>
+    </dependency>
 
     <dependency><!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
