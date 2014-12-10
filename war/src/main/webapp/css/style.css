@@ -963,10 +963,10 @@ table.parameters > tbody:hover {
   font-weight: bold;
 }
 .build-row-cell .pane.build-details {
-  width: 45%;
+  width: 50%;
 }
 .build-row-cell .pane.build-controls {
-  width: 30%;
+  width: 25%;
   text-align: right;
 }
 .build-row-cell .pane.build-details.block {
@@ -1049,7 +1049,7 @@ table.parameters > tbody:hover {
 }
 
 .build-row .build-row-cell {
-  visibility: hidden;
+  /*visibility: hidden;*/
 }
 .build-row.overflow-checked .build-row-cell {
   visibility: visible;
