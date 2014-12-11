@@ -192,13 +192,13 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
             }
         } else if (!shouldBeOnline && c.isOnline()) {
             if (keepUpWhenActive) {
-                if (!c.isIdle() && c.isAcceptingTasks()) {
+                if (c.isBusy() && c.isAcceptingTasks()) {
                     c.setAcceptingTasks(false);
                     LOGGER.log(INFO,
                             "Disabling new jobs for computer {0} as it has finished its scheduled uptime",
                             new Object[]{c.getName()});
                     return 1;
-                } else if (c.isIdle() && c.isAcceptingTasks()) {
+                } else if (!c.isBusy() && c.isAcceptingTasks()) {
                     Queue.withLock(new Runnable() {
                         @Override
                         public void run() {
@@ -212,7 +212,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                             }
                         }
                     });
-                } else if (c.isIdle() && !c.isAcceptingTasks()) {
+                } else if (!c.isBusy() && !c.isAcceptingTasks()) {
                     Queue.withLock(new Runnable() {
                         @Override
                         public void run() {

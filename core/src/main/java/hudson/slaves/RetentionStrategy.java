@@ -254,7 +254,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
                     c.connect(false);
                 }
-            } else if (c.isIdle()) {
+            } else if (!c.isBusy()) { // check not busy as we only want to use the lock when confirming disconnect.
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
                     Queue.withLock(new Runnable() {
