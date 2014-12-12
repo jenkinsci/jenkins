@@ -27,9 +27,9 @@ package jenkins.model;
 import hudson.Util;
 import hudson.model.Job;
 import hudson.model.Run;
+import hudson.util.AtomicFileWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -91,16 +91,16 @@ public final class RunIdMigrator {
     }
 
     private void save(File dir) {
-        dir.mkdirs();
         File f = new File(dir, MAP_FILE);
         try {
-            PrintWriter w = new PrintWriter(f);
+            AtomicFileWriter w = new AtomicFileWriter(f);
             try {
                 for (Map.Entry<String,Integer> entry : idToNumber.entrySet()) {
-                    w.println(entry.getKey() + ' ' + entry.getValue());
+                    w.write(entry.getKey() + ' ' + entry.getValue() + '\n');
                 }
+                w.commit();
             } finally {
-                w.close();
+                w.abort();
             }
         } catch (IOException x) {
             LOGGER.log(Level.WARNING, "could not save changes to " + f, x);
