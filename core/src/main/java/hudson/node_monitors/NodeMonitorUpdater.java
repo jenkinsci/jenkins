@@ -8,6 +8,8 @@ import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import jenkins.util.Timer;
 
 /**
@@ -18,7 +20,7 @@ import jenkins.util.Timer;
 @Extension
 public class NodeMonitorUpdater extends ComputerListener {
 
-    private volatile long timestamp;
+    private final AtomicInteger id = new AtomicInteger();
 
     /**
      * Triggers the update with 5 seconds quiet period, to avoid triggering data check too often
@@ -26,10 +28,11 @@ public class NodeMonitorUpdater extends ComputerListener {
      */
     @Override
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
-        timestamp = System.currentTimeMillis();
         Timer.get().schedule(new Runnable() {
+            final int _id = id.incrementAndGet();
+
             public void run() {
-                if (System.currentTimeMillis()-timestamp<4000)
+                if (id.get() != _id)
                     return;
 
                 for (NodeMonitor nm : Jenkins.getInstance().getComputer().getMonitors()) {

@@ -43,7 +43,7 @@ THE SOFTWARE.
               <l:confirmationLink href="${_href}" post="true" message="${%are.you.sure(title)}">${title}</l:confirmationLink>
             </j:when>
             <j:otherwise>
-              <a href="${_href}">${title}</a>
+              <f:link href="${_href}" post="${post}">${title}</f:link>
             </j:otherwise>
           </j:choose>
         </div>
@@ -86,7 +86,7 @@ THE SOFTWARE.
         <l:hasPermission permission="${m.requiredPermission}">
           <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}"/>
           <j:if test="${icon!=null}">
-            <local:feature icon="${icon}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}">
+            <local:feature icon="${icon}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}" post="${m.requiresPOST}">
               <j:out value="${m.description}"/>
               <st:include it="${m}" page="info.jelly" optional="true"/>
             </local:feature>

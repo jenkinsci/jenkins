@@ -51,7 +51,7 @@ THE SOFTWARE.
         <td class="pane" colspan="2" style="white-space: normal;">
           ${%Jenkins is going to shut down. No further builds will be performed.}
           <j:if test="${h.hasPermission(app.ADMINISTER)}">
-            <a href="${rootURL}/cancelQuietDown">(${%cancel})</a>
+            <f:link href="${rootURL}/cancelQuietDown" post="true">(${%cancel})</f:link>
           </j:if>
         </td>
       </tr>

@@ -88,6 +88,7 @@ import java.util.logging.Logger;
 
 import org.junit.Ignore;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  *
@@ -201,6 +202,18 @@ public class ProjectTest {
         assertEquals("Last build should have workspace.", p.getLastBuild(), p.getSomeBuildWithWorkspace());
         p.getLastBuild().delete();
         assertNull("Project should not have build with some workspace.", p.getSomeBuildWithWorkspace());
+    }
+
+    @Issue("JENKINS-10450")
+    @Test public void workspaceBrowsing() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.getBuildersList().add(new Shell("echo ahoj > some.log"));
+        j.buildAndAssertSuccess(p);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.goTo("job/project/ws/some.log", "text/plain");
+        wc.assertFails("job/project/ws/other.log", 404);
+        p.doDoWipeOutWorkspace();
+        wc.assertFails("job/project/ws/some.log", 404);
     }
     
     @Test
@@ -419,7 +432,9 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         Slave slave = j.createOnlineSlave();
         AbstractBuild build = p.createExecutable();
-        FilePath path = slave.toComputer().getWorkspaceList().allocate(slave.getWorkspaceFor(p), build).path;
+        FilePath ws = slave.getWorkspaceFor(p);
+        assertNotNull(ws);
+        FilePath path = slave.toComputer().getWorkspaceList().allocate(ws, build).path;
         build.setWorkspace(path);
         BuildListener listener = new StreamBuildListener(BuildListener.NULL.getLogger(), Charset.defaultCharset());
         assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));

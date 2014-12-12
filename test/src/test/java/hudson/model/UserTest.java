@@ -45,6 +45,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -227,6 +228,7 @@ public class UserTest {
     @Issue("JENKINS-24317")
     @LocalData
     @Test public void migration() throws Exception {
+        assumeFalse("was not a problem on a case-insensitive FS to begin with", new File(j.jenkins.getRootDir(), "users/bob").isDirectory());
         User bob = User.get("bob");
         assertEquals("Bob Smith", bob.getFullName());
         assertEquals("Bob Smith", User.get("Bob").getFullName());

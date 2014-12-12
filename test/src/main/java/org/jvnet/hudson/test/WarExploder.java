@@ -89,6 +89,7 @@ final class WarExploder {
 
         // TODO this assumes that the CWD of the Maven process is the plugin ${basedir}, which may not be the case
         File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();
+        explodeDir.getParentFile().mkdirs();
         while (new File(explodeDir + ".exploding").isFile()) {
             explodeDir = new File(explodeDir + "x");
         }

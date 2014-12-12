@@ -406,7 +406,14 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         @Extension
         public static class ItemListenerImpl extends ItemListener {
             @Override
-            public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
+                ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                    @Override public void run() {
+                        locationChanged(item, oldFullName, newFullName);
+                    }
+                });
+            }
+            private void locationChanged(Item item, String oldFullName, String newFullName) {
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?
                 for( Project<?,?> p : Jenkins.getInstance().getAllItems(Project.class) ) {

@@ -1,12 +1,14 @@
 package jenkins.security;
 
 import hudson.security.ACL;
+import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AuthenticationEntryPoint;
 import org.acegisecurity.ui.rememberme.NullRememberMeServices;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
@@ -67,6 +69,11 @@ public class BasicHeaderProcessor implements Filter {
                 String username = uidpassword.substring(0, idx);
                 String password = uidpassword.substring(idx+1);
 
+                if (!authenticationIsRequired(username)) {
+                    chain.doFilter(request, response);
+                    return;
+                }
+
                 for (BasicHeaderAuthenticator a : all()) {
                     LOGGER.log(FINER, "Attempting to authenticate with {0}", a);
                     Authentication auth = a.authenticate(req, rsp, username, password);
@@ -85,6 +92,44 @@ public class BasicHeaderProcessor implements Filter {
             // not something we care
             chain.doFilter(request, response);
         }
+    }
+
+    /**
+     * If the request is already authenticated to the same user that the Authorization header claims,
+     * for example through the HTTP session, then there's no need to re-authenticate the Authorization header,
+     * so we skip that. This avoids stressing {@link SecurityRealm}.
+     *
+     * This method returns false if we can take this short-cut.
+     */
+    // taken from BasicProcessingFilter.java
+    protected boolean authenticationIsRequired(String username) {
+        // Only reauthenticate if username doesn't match SecurityContextHolder and user isn't authenticated
+        // (see SEC-53)
+        Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
+
+        if(existingAuth == null || !existingAuth.isAuthenticated()) {
+            return true;
+        }
+
+        // Limit username comparison to providers which use usernames (ie UsernamePasswordAuthenticationToken)
+        // (see SEC-348)
+
+        if (existingAuth instanceof UsernamePasswordAuthenticationToken && !existingAuth.getName().equals(username)) {
+            return true;
+        }
+
+        // Handle unusual condition where an AnonymousAuthenticationToken is already present
+        // This shouldn't happen very often, as BasicProcessingFitler is meant to be earlier in the filter
+        // chain than AnonymousProcessingFilter. Nevertheless, presence of both an AnonymousAuthenticationToken
+        // together with a BASIC authentication request header should indicate reauthentication using the
+        // BASIC protocol is desirable. This behaviour is also consistent with that provided by form and digest,
+        // both of which force re-authentication if the respective header is detected (and in doing so replace
+        // any existing AnonymousAuthenticationToken). See SEC-610.
+        if (existingAuth instanceof AnonymousAuthenticationToken) {
+            return true;
+        }
+
+        return false;
     }
 
     protected void success(HttpServletRequest req, HttpServletResponse rsp, FilterChain chain, Authentication auth) throws IOException, ServletException {

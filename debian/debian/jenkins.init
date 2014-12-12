@@ -23,7 +23,11 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 #DAEMON=$JENKINS_SH
 DAEMON=/usr/bin/daemon
-DAEMON_ARGS="--name=$NAME --inherit --env=JENKINS_HOME=$JENKINS_HOME --output=$JENKINS_LOG --pidfile=$PIDFILE" 
+DAEMON_ARGS="--name=$NAME --inherit --env=JENKINS_HOME=$JENKINS_HOME --output=$JENKINS_LOG --pidfile=$PIDFILE"
+
+if [ -n "$UMASK" ]; then
+    DAEMON_ARGS="$DAEMON_ARGS --umask=$UMASK"
+fi
 
 SU=/bin/su
 
@@ -99,7 +103,7 @@ do_start()
 
     # Verify that the jenkins port is not already in use, winstone does not exit
     # even for BindException
-    check_tcp_port "http" "$HTTP_PORT" "8080" || return 1
+    check_tcp_port "http" "$HTTP_PORT" "8080" || return 2
     
     # If the var MAXOPENFILES is enabled in /etc/default/jenkins then set the max open files to the 
     # proper value
@@ -108,6 +112,11 @@ do_start()
         ulimit -n $MAXOPENFILES
     fi
     
+    # notify of explicit umask
+    if [ -n "$UMASK" ]; then
+        [ "$VERBOSE" != no ] && echo Setting umask to $UMASK
+    fi
+
     # --user in daemon doesn't prepare environment variables like HOME, USER, LOGNAME or USERNAME,
     # so we let su do so for us now
     $SU -l $JENKINS_USER --shell=/bin/bash -c "$DAEMON $DAEMON_ARGS -- $JAVA $JAVA_ARGS -jar $JENKINS_WAR $JENKINS_ARGS" || return 2

@@ -24,8 +24,10 @@
 package hudson.security;
 
 import javax.annotation.Nonnull;
+import hudson.remoting.Callable;
 import jenkins.security.NonSerializableSecurityContext;
 import jenkins.model.Jenkins;
+import jenkins.security.NotReallyRoleSensitiveCallable;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -141,6 +143,21 @@ public abstract class ACL {
         SecurityContext old = impersonate(auth);
         try {
             body.run();
+        } finally {
+            SecurityContextHolder.setContext(old);
+        }
+    }
+
+    /**
+     * Safer variant of {@link #impersonate(Authentication)} that does not require a finally-block.
+     * @param auth authentication, such as {@link #SYSTEM}
+     * @param body an action to run with this alternate authentication in effect (try {@link NotReallyRoleSensitiveCallable})
+     * @since 1.587
+     */
+    public static <V,T extends Exception> V impersonate(Authentication auth, Callable<V,T> body) throws T {
+        SecurityContext old = impersonate(auth);
+        try {
+            return body.call();
         } finally {
             SecurityContextHolder.setContext(old);
         }

@@ -39,6 +39,7 @@ import hudson.BulkChange;
 import hudson.Extension;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.ACL;
 import hudson.util.AtomicFileWriter;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
@@ -729,7 +730,14 @@ public class Fingerprint implements ModelObject, Saveable {
     @Extension
     public static final class ProjectRenameListener extends ItemListener {
         @Override
-        public void onLocationChanged(Item item, String oldName, String newName) {
+        public void onLocationChanged(final Item item, final String oldName, final String newName) {
+            ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                @Override public void run() {
+                    locationChanged(item, oldName, newName);
+                }
+            });
+        }
+        private void locationChanged(Item item, String oldName, String newName) {
             if (item instanceof AbstractProject) {
                 AbstractProject p = Jenkins.getInstance().getItemByFullName(newName, AbstractProject.class);
                 if (p != null) {

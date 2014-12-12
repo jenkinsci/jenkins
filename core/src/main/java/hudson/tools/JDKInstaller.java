@@ -40,6 +40,7 @@ import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
@@ -233,13 +234,15 @@ public class JDKInstaller extends ToolInstaller {
                 - http://java.sun.com/j2se/1.5.0/sdksilent.html
                 - http://java.sun.com/j2se/1.4.2/docs/guide/plugin/developer_guide/silent.html
              */
-            String logFile = jdkBundle+".install.log";
 
             expectedLocation = expectedLocation.trim();
             if (expectedLocation.endsWith("\\")) {
                 // Prevent a trailing slash from escaping quotes
                 expectedLocation = expectedLocation.substring(0, expectedLocation.length() - 1);
             }
+            String logFile = new FilePath(launcher.getChannel(), expectedLocation).getParent().createTempFile("install", "log").getRemote();
+
+
             ArgumentListBuilder args = new ArgumentListBuilder();
             assert (new File(expectedLocation).exists()) : expectedLocation
                     + " must exist, otherwise /L will cause the installer to fail with error 1622";
@@ -247,20 +250,19 @@ public class JDKInstaller extends ToolInstaller {
                 // Installer uses InstallShield.
                 args.add("CMD.EXE", "/C");
 
+                // see http://docs.oracle.com/javase/1.5.0/docs/guide/deployment/deployment-guide/silent.html
                 // CMD.EXE /C must be followed by a single parameter (do not split it!)
                 args.add(jdkBundle + " /s /v\"/qn REBOOT=ReallySuppress INSTALLDIR=\\\""
-                        + expectedLocation + "\\\" /L \\\"" + expectedLocation
-                        + "\\jdk.exe.install.log\\\"\"");
+                        + expectedLocation + "\\\" /L \\\"" + logFile + "\\\"\"");
             } else {
                 // Installed uses Windows Installer (MSI)
                 args.add(jdkBundle, "/s");
 
                 // Create a private JRE by omitting "PublicjreFeature"
                 // @see http://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#jdk-silent-installation
-                args.add("ADDLOCAL=\"ToolsFeature\"");
-
-                args.add("REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
-                        "/L \\\"" + expectedLocation + "\\jdk.exe.install.log\\\"");
+                args.add("ADDLOCAL=\"ToolsFeature\"",
+                        "REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
+                        "/L",  logFile);
             }
             int r = launcher.launch().cmds(args).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
@@ -297,7 +299,7 @@ public class JDKInstaller extends ToolInstaller {
     public interface FileSystem {
         void delete(String file) throws IOException, InterruptedException;
         void chmod(String file,int mode) throws IOException, InterruptedException;
-        InputStream read(String file) throws IOException;
+        InputStream read(String file) throws IOException, InterruptedException;
         /**
          * List sub-directories of the given directory and just return the file name portion.
          */
@@ -320,7 +322,7 @@ public class JDKInstaller extends ToolInstaller {
             $(file).chmod(mode);
         }
 
-        public InputStream read(String file) throws IOException {
+        public InputStream read(String file) throws IOException, InterruptedException {
             return $(file).read();
         }
 
@@ -530,7 +532,7 @@ public class JDKInstaller extends ToolInstaller {
             throw new DetectionFailedException("Unknown CPU name: "+arch);
         }
 
-        static class GetCurrentPlatform implements Callable<Platform,DetectionFailedException> {
+        static class GetCurrentPlatform extends MasterToSlaveCallable<Platform,DetectionFailedException> {
             private static final long serialVersionUID = 1L;
             public Platform call() throws DetectionFailedException {
                 return current();
@@ -592,7 +594,7 @@ public class JDKInstaller extends ToolInstaller {
             throw new DetectionFailedException("Unknown CPU architecture: "+arch);
         }
 
-        static class GetCurrentCPU implements Callable<CPU,DetectionFailedException> {
+        static class GetCurrentCPU extends MasterToSlaveCallable<CPU,DetectionFailedException> {
             private static final long serialVersionUID = 1L;
             public CPU call() throws DetectionFailedException {
                 return current();
@@ -715,7 +717,7 @@ public class JDKInstaller extends ToolInstaller {
             if (value) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense()); 
+                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense());
             }
         }
 

@@ -48,7 +48,7 @@ import hudson.util.Iterators.DuplicateFilterIterator;
  * and then we use MD5 to create random enough distribution.
  *
  * <p>
- * This consistent hash implementaiton is consistent both to the addition/removal of Ts, as well
+ * This consistent hash implementation is consistent both to the addition/removal of Ts, as well
  * as increase/decrease of the replicas.
  *
  * <p>
@@ -186,7 +186,7 @@ public class ConsistentHash<T> {
         String hash(T t);
     }
 
-    private static final Hash DEFAULT_HASH = new Hash() {
+    static final Hash DEFAULT_HASH = new Hash() {
         public String hash(Object o) {
             return o.toString();
         }
@@ -201,13 +201,13 @@ public class ConsistentHash<T> {
     }
 
     public ConsistentHash(Hash<T> hash) {
-        this(hash,100);
+        this(hash, 100);
     }
 
     public ConsistentHash(Hash<T> hash, int defaultReplication) {
         this.hash = hash;
         this.defaultReplication = defaultReplication;
-        this.table = new Table(); // initial empty table
+        refreshTable();
     }
 
     public int countAllPoints() {
@@ -229,7 +229,8 @@ public class ConsistentHash<T> {
      */
     public void addAll(T... nodes) {
         for (T node : nodes)
-            add(node);
+            addInternal(node,defaultReplication);
+        refreshTable();
     }
 
     /**
@@ -237,14 +238,24 @@ public class ConsistentHash<T> {
      */
     public void addAll(Collection<? extends T> nodes) {
         for (T node : nodes)
-            add(node);
+            addInternal(node,defaultReplication);
+        refreshTable();
+    }
+
+    /**
+     * Calls {@link #add(Object,int)} with all the arguments.
+     */
+    public void addAll(Map<? extends T,Integer> nodes) {
+        for (Map.Entry<? extends T,Integer> node : nodes.entrySet())
+            addInternal(node.getKey(),node.getValue());
+        refreshTable();
     }
 
     /**
      * Removes the node entirely. This is the same as {@code add(node,0)}
      */
     public void remove(T node) {
-        add(node,0);
+        add(node, 0);
     }
 
     /**
@@ -254,6 +265,11 @@ public class ConsistentHash<T> {
      * This is the only function that manipulates {@link #items}.
      */
     public synchronized void add(T node, int replica) {
+        addInternal(node, replica);
+        refreshTable();
+    }
+
+    private void addInternal(T node, int replica) {
         if(replica==0) {
             items.remove(node);
         } else {
@@ -263,8 +279,12 @@ public class ConsistentHash<T> {
                 points[i] = new Point(md5(seed+':'+i),node);
             items.put(node,points);
         }
+    }
+
+    private void refreshTable() {
         table = new Table();
     }
+
 
     /**
      * Compresses a string into an integer with MD5.
@@ -314,8 +334,8 @@ public class ConsistentHash<T> {
      * Creates a permutation of all the nodes for the given data point.
      *
      * <p>
-     * The returned pemutation is consistent, in the sense that small change
-     * to the consitent hash (like addition/removal/change of replicas) only
+     * The returned permutation is consistent, in the sense that small change
+     * to the consistent hash (like addition/removal/change of replicas) only
      * creates a small change in the permutation.
      *
      * <p>

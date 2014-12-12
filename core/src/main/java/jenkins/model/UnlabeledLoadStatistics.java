@@ -50,7 +50,7 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
         int r=0;
         for (Computer c : Jenkins.getInstance().getComputers()) {
             Node node = c.getNode();
-            if (node != null && node.getMode() == Mode.NORMAL && (c.isOnline() || c.isConnecting())) {
+            if (node != null && node.getMode() == Mode.NORMAL && (c.isOnline() || c.isConnecting()) && c.isAcceptingTasks()) {
                 r += c.countIdle();
             }
         }

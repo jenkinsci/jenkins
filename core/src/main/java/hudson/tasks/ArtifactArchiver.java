@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.FilePath;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
@@ -226,7 +227,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
                     String msg = null;
                     try {
-                    	msg = ws.validateAntFileMask(artifacts);
+                    	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND);
                     } catch (Exception e) {
                     	listenerWarnOrError(listener, e.getMessage());
                     }
@@ -247,7 +248,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
     }
 
-    private static final class ListFiles implements FilePath.FileCallable<Map<String,String>> {
+    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String,String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;
@@ -296,6 +297,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
          * Performs on-the-fly validation on the file mask wildcard.
          */
         public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            if (project == null) {
+                return FormValidation.ok();
+            }
             return FilePath.validateFileMask(project.getSomeWorkspace(),value);
         }
 

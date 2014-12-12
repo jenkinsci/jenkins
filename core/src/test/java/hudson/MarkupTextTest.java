@@ -96,9 +96,9 @@ public class MarkupTextTest extends TestCase {
 
     public void testPreEscape() {
         MarkupText text = new MarkupText("Line\n2   & 3\n<End>\n");
-        assertEquals("Line\n2   &amp; 3\n&lt;End>\n", text.toString(true));
+        assertEquals("Line\n2   &amp; 3\n&lt;End&gt;\n", text.toString(true));
         text.addMarkup(4, "<hr/>");
-        assertEquals("Line<hr/>\n2   &amp; 3\n&lt;End>\n", text.toString(true));
+        assertEquals("Line<hr/>\n2   &amp; 3\n&lt;End&gt;\n", text.toString(true));
     }
 
     /* @Bug(6252) */

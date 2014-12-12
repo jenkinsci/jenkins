@@ -11,7 +11,7 @@ import java.io.PrintWriter;
  * @author Kohsuke Kawaguchi
  */
 public class ReopenableRotatingFileOutputStreamTest extends TestCase {
-    public void testRotation() throws IOException {
+    public void testRotation() throws IOException, InterruptedException {
         File base = File.createTempFile("test", "log");
         ReopenableRotatingFileOutputStream os = new ReopenableRotatingFileOutputStream(base,3);
         PrintWriter w = new PrintWriter(os,true);

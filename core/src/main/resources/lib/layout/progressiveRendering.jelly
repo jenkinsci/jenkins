@@ -37,7 +37,6 @@ THE SOFTWARE.
     <st:adjunct includes="lib.layout.progressiveRendering.progressiveRendering"/>
     <j:set var="id" value="${h.generateId()}"/>
     <t:progressBar id="${id}" pos="0" tooltip="${tooltip ?: '%progressMessage'}"/>
-    <j:invoke method="start" on="${handler}"/>
     <st:bind var="proxy" value="${handler}" />
     <script>progressivelyRender(proxy, ${callback}, '${id}');</script>
 </j:jelly>

@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import hudson.Util;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -107,9 +108,13 @@ public class AtomicFileWriter extends Writer {
 
     public void commit() throws IOException {
         close();
-        if(destFile.exists() && !destFile.delete()) {
-            tmpFile.delete();
-            throw new IOException("Unable to delete "+destFile);
+        if (destFile.exists()) {
+            try {
+                Util.deleteFile(destFile);
+            } catch (IOException x) {
+                tmpFile.delete();
+                throw x;
+            }
         }
         tmpFile.renameTo(destFile);
     }

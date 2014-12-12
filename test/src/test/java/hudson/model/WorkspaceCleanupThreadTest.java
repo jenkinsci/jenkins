@@ -25,7 +25,6 @@
 package hudson.model;
 
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.util.StreamTaskListener;
@@ -35,6 +34,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.MasterToSlaveFileCallable;
 import static org.junit.Assert.*;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -145,7 +145,7 @@ public class WorkspaceCleanupThreadTest {
         assertTrue(ws4.exists());
     }
 
-    private static final class Detouch implements FileCallable<Void> {
+    private static final class Detouch extends MasterToSlaveFileCallable<Void> {
         @Override public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             Assume.assumeTrue("failed to reset lastModified on " + f, f.setLastModified(0));
             return null;

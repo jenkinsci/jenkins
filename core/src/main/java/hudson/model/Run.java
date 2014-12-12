@@ -337,7 +337,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected void onLoad() {
         for (Action a : getAllActions()) {
             if (a instanceof RunAction2) {
-                ((RunAction2) a).onLoad(this);
+                try {
+                    ((RunAction2) a).onLoad(this);
+                } catch (RuntimeException x) {
+                    LOGGER.log(WARNING, "failed to load " + a + " from " + getDataFile(), x);
+                    getActions().remove(a); // if possible; might be in an inconsistent state
+                }
             } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
             }
@@ -411,9 +416,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return result;
     }
 
+    /**
+     * Sets the {@link #getResult} of this build.
+     * Has no effect when the result is already set and worse than the proposed result.
+     * May only be called after the build has started and before it has moved into post-production
+     * (normally meaning both {@link #isInProgress} and {@link #isBuilding} are true).
+     * @param r the proposed new result
+     * @throws IllegalStateException if the build has not yet started, is in post-production, or is complete
+     */
     public void setResult(@Nonnull Result r) {
-        // state can change only when we are building
-        assert state==State.BUILDING : state;
+        if (state != State.BUILDING) {
+            throw new IllegalStateException("cannot change build result while in " + state);
+        }
 
         // result can only get worse
         if (result==null || r.isWorseThan(result)) {
@@ -686,7 +700,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public @Nonnull String getDurationString() {
         if(isBuilding())
             return Messages.Run_InProgressDuration(
-                    Util.getTimeSpanString(System.currentTimeMillis()-timestamp));
+                    Util.getTimeSpanString(System.currentTimeMillis()-startTime));
         return Util.getTimeSpanString(duration);
     }
 
@@ -2224,21 +2238,40 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return env;
     }
 
+    /**
+     * Produces an identifier for this run unique in the system.
+     * @return the {@link Job#getFullName}, then {@code #}, then {@link #getNumber}
+     * @see #fromExternalizableId
+     */
     public @Nonnull String getExternalizableId() {
         return project.getFullName() + "#" + getNumber();
     }
 
-    public @Nonnull static Run<?,?> fromExternalizableId(String id) {
+    /**
+     * Tries to find a run from an persisted identifier.
+     * @param id as produced by {@link #getExternalizableId}
+     * @return the same run, or null if the job or run was not found
+     * @throws IllegalArgumentException if the ID is malformed
+     */
+    public @CheckForNull static Run<?,?> fromExternalizableId(String id) throws IllegalArgumentException {
         int hash = id.lastIndexOf('#');
         if (hash <= 0) {
             throw new IllegalArgumentException("Invalid id");
         }
         String jobName = id.substring(0, hash);
-        int number = Integer.parseInt(id.substring(hash + 1));
-
-        Job<?,?> job = Jenkins.getInstance().getItemByFullName(jobName, Job.class);
+        int number;
+        try {
+            number = Integer.parseInt(id.substring(hash + 1));
+        } catch (NumberFormatException x) {
+            throw new IllegalArgumentException(x);
+        }
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return null;
+        }
+        Job<?,?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
-            throw new IllegalArgumentException("no such job " + jobName);
+            return null;
         }
         return job.getBuildByNumber(number);
     }

@@ -43,9 +43,9 @@ import javax.annotation.CheckForNull;
 import jenkins.model.Configuration;
 
 public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
-    
+
     public static boolean LOG_STARTUP_PERFORMANCE = Configuration.getBooleanConfigParameter("logStartupPerformance", false);
-    
+
     private static final Logger LOGGER = Logger.getLogger(AbstractCIBase.class.getName());
 
     private final transient Object updateComputerLock = new Object();
@@ -171,7 +171,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 byName.put(node.getNodeName(),c);
             }
 
-            Set<Computer> old = new HashSet<Computer>(computers.values());
+            final Set<Computer> old = new HashSet<Computer>(computers.values());
             Set<Computer> used = new HashSet<Computer>();
 
             updateComputer(this, byName, used, automaticSlaveLaunch);

@@ -38,6 +38,7 @@ import hudson.util.HudsonIsRestarting;
 import hudson.util.StreamTaskListener;
 import static hudson.util.jna.GNUCLibrary.*;
 
+import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 import org.jvnet.solaris.libzfs.ACLBuilder;
@@ -167,7 +168,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
 
         // this is the actual creation of the file system.
         // return true indicating a success
-        return SU.execute(listener, rootUsername, rootPassword, new Callable<String,IOException>() {
+        return SU.execute(listener, rootUsername, rootPassword, new MasterToSlaveCallable<String,IOException>() {
             private static final long serialVersionUID = 7731167233498214301L;
 
             public String call() throws IOException {

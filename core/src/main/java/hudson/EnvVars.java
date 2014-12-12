@@ -23,12 +23,12 @@
  */
 package hudson;
 
-import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.VariableResolver;
+import jenkins.security.MasterToSlaveCallable;
 
 import java.io.File;
 import java.io.IOException;
@@ -359,6 +359,7 @@ public class EnvVars extends TreeMap<String,String> {
 
     /**
      * Add a key/value but only if the value is not-null. Otherwise no-op.
+     * @since 1.556
      */
     public void putIfNotNull(String key, String value) {
         if (value!=null)
@@ -404,7 +405,7 @@ public class EnvVars extends TreeMap<String,String> {
         return channel.call(new GetEnvVars());
     }
 
-    private static final class GetEnvVars implements Callable<EnvVars,RuntimeException> {
+    private static final class GetEnvVars extends MasterToSlaveCallable<EnvVars,RuntimeException> {
         public EnvVars call() {
             return new EnvVars(EnvVars.masterEnvVars);
         }

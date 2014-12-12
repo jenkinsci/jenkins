@@ -321,10 +321,6 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
         return calcRevisionsFromBuild(build, launcher != null ? build.getWorkspace() : null, launcher, listener);
     }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
     @Deprecated
     public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return calcRevisionsFromBuild(build, launcher, listener);
@@ -395,7 +391,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             if (baseline!=SCMRevisionState.NONE) {
                 baseline2 = baseline;
             } else {
-                baseline2 = _calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
+                baseline2 = calcRevisionsFromBuild(project.getLastBuild(), launcher, listener);
             }
 
             return compareRemoteRevisionWith(project, launcher, workspace, listener, baseline2);

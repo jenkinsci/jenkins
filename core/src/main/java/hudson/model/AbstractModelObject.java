@@ -47,6 +47,7 @@ public abstract class AbstractModelObject implements SearchableModelObject {
      * Displays the error in a page.
      */
     protected final void sendError(Exception e, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+        req.setAttribute("exception", e);
         sendError(e.getMessage(),req,rsp);
     }
 

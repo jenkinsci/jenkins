@@ -336,7 +336,7 @@ public class FunctionsTest {
     @Test public void printLogRecordHtml() throws Exception {
         LogRecord lr = new LogRecord(Level.INFO, "Bad input <xml/>");
         lr.setLoggerName("test");
-        assertEquals("Bad input &lt;xml/>\n", Functions.printLogRecordHtml(lr, null)[3]);
+        assertEquals("Bad input &lt;xml/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
     }
 
 }

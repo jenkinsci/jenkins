@@ -386,16 +386,19 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             public void run() {
                 if (timeoutTimer!=null) {
                     LOGGER.warning(String.format("Test timed out (after %d seconds).", timeout));
-                    // dump threads
-                    ThreadInfo[] threadInfos = Functions.getThreadInfos();
-                    Functions.ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
-                    for (ThreadInfo ti : threadInfos) {
-                        System.err.println(Functions.dumpThreadInfo(ti, m));
-                    }
+                    dumpThreads();
                     testThread.interrupt();
                 }
             }
         }, TimeUnit.SECONDS.toMillis(timeout));
+    }
+
+    private static void dumpThreads() {
+        ThreadInfo[] threadInfos = Functions.getThreadInfos();
+        Functions.ThreadGroupMap m = Functions.sortThreadsAndGetGroupMap(threadInfos);
+        for (ThreadInfo ti : threadInfos) {
+            System.err.println(Functions.dumpThreadInfo(ti, m));
+        }
     }
 
     /**
@@ -1480,8 +1483,13 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                         if (e.isBusy())
                             building.add(e.getCurrentExecutable());
                     }
+                    for (Executor e : c.getOneOffExecutors()) {
+                        if (e.isBusy())
+                            building.add(e.getCurrentExecutable());
+                    }
                 }
-                throw new AssertionError(String.format("Hudson is still doing something after %dms: queue=%s building=%s",
+                dumpThreads();
+                throw new AssertionError(String.format("Jenkins is still doing something after %dms: queue=%s building=%s",
                         timeout, Arrays.asList(jenkins.getQueue().getItems()), building));
             }
         }
