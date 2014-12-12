@@ -332,7 +332,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
     @Issue("JENKINS-25655")
     @Test public void entrySetChanges() {
         assertEquals(3, a.entrySet().size());
-        a.put(new Build(7, "D"));
+        a.put(new Build(7));
         assertEquals(4, a.entrySet().size());
     }
 
