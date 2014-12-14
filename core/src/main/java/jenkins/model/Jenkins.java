@@ -198,6 +198,7 @@ import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
+import jenkins.uithemes.CoreThemeIntsaller;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
 import net.sf.json.JSONObject;
@@ -871,6 +872,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
+
+            // Install the core UI Themes
+            CoreThemeIntsaller.installCoreThemes();
         } finally {
             SecurityContextHolder.clearContext();
         }
