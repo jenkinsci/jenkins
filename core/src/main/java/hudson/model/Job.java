@@ -654,8 +654,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         File oldBuildDir = getBuildDir();
         super.movedTo(destination, newItem, destDir);
         File newBuildDir = getBuildDir();
-        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
-            FileUtils.forceMkdir(destDir.getParentFile());
+        if (oldBuildDir.isDirectory()) {
             FileUtils.moveDirectory(oldBuildDir, newBuildDir);
         }
     }
