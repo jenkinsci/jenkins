@@ -144,6 +144,10 @@ public final class RunIdMigrator {
             LOGGER.log(Level.FINER, "migration already performed for {0}", dir);
             return false;
         }
+        if (!dir.isDirectory()) {
+            LOGGER.log(/* normal during Job.movedTo */Level.FINE, "{0} was unexpectedly missing", dir);
+            return false;
+        }
         LOGGER.log(Level.INFO, "Migrating build records in {0}", dir);
         doMigrate(dir);
         save(dir);
@@ -173,10 +177,6 @@ public final class RunIdMigrator {
     private void doMigrate(File dir) {
         idToNumber = new TreeMap<String,Integer>();
         File[] kids = dir.listFiles();
-        if (kids == null) {
-            LOGGER.warning("dir was unexpectedly missing");
-            return;
-        }
         // Need to process symlinks first so we can rename to them.
         List<File> kidsList = new ArrayList<File>(Arrays.asList(kids));
         Iterator<File> it = kidsList.iterator();
