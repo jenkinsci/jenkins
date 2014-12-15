@@ -50,6 +50,7 @@ public class CoreThemeIntsaller {
 
         // Add the core contributors.
         themesProcessor.addContributor(new Icons());
+        themesProcessor.addContributor(new StatusBalls());
 
         LOGGER.log(Level.INFO, "Core UI Themes installed.");
     }
