@@ -107,7 +107,7 @@ public class RunTest {
          
             Util.createSymlink(tempDir, buildDir.getAbsolutePath(), buildDirSymLink.getName(), l);
             long time = Run.parseTimestampFromBuildDir(buildDirSymLink);
-            assertEquals(buildDateTime, Run.ID_FORMATTER.get().format(new Date(time)));
+            assertEquals(buildDateTime, Run.getOldIDFormatter().format(new Date(time)));
         } finally {
             Util.deleteRecursive(tempDir);
         }

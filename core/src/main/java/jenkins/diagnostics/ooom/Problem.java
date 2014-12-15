@@ -282,10 +282,15 @@ public final class Problem {
 
         private boolean isID(String s) {
             try {
-                Run.ID_FORMATTER.get().parse(s);
+                Run.getIDFormatter().parse(s);
                 return true;
             } catch (ParseException e) {
-                return false;
+                try {
+                    Run.getOldIDFormatter().parse(s);
+                    return true;
+                } catch (ParseException e2) {
+                    return false;
+                }
             }
         }
 

@@ -169,19 +169,20 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
      * Calls the ({@link Job}) constructor of {@link #getBuildClass}.
      * Suitable for {@link SubTask#createExecutable}.
      */
-    @SuppressWarnings("SleepWhileHoldingLock")
+    @SuppressWarnings({"SleepWhileHoldingLock", "SleepWhileInLoop"})
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("SWL_SLEEP_WITH_LOCK_HELD")
     public final synchronized RunT newBuild() throws IOException {
-    	// make sure we don't start two builds in the same second
+    	// make sure we don't start two builds in the same millisecond
     	// so the build directories will be different too
-    	long timeSinceLast = System.currentTimeMillis() - lastBuildStartTime;
-    	if (timeSinceLast < 1000) {
+        long now = System.currentTimeMillis();
+        while (now <= lastBuildStartTime) {
     		try {
-				Thread.sleep(1000 - timeSinceLast);
+                Thread.sleep(1);
 			} catch (InterruptedException e) {
 			}
-    	}
-    	lastBuildStartTime = System.currentTimeMillis();
+            now = System.currentTimeMillis();
+        }
+    	lastBuildStartTime = now;
         try {
             RunT lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
             builds.put(lastBuild);
