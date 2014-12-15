@@ -100,6 +100,7 @@ THE SOFTWARE.
     <maven-plugin.version>2.7.1</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
+    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
 
     <java.level>7</java.level>
   </properties>
@@ -475,7 +476,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <version>2.5.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -501,7 +501,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.1</version>
+          <version>3.3</version>
           <dependencies>
             <dependency>
               <groupId>org.kohsuke</groupId>
@@ -762,7 +762,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.5.2</version>
             <configuration>
               <threshold>High</threshold>
             </configuration>
