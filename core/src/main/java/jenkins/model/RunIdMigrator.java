@@ -293,15 +293,21 @@ public final class RunIdMigrator {
         unmigrateJobsDir(jobs);
     }
     private static void unmigrateJobsDir(File jobs) throws Exception {
-        System.err.println(jobs + " will be inspected for build directories to restore");
-        for (File kid : jobs.listFiles()) {
-            File builds = new File(kid, "builds");
-            if (builds.isDirectory()) { // kid is a job
-                unmigrateBuildsDir(builds);
+        for (File job : jobs.listFiles()) {
+            File[] kids = job.listFiles();
+            if (kids == null) {
+                continue;
             }
-            File jobs2 = new File(kid, "jobs");
-            if (jobs2.isDirectory()) { // kid is a folder
-                unmigrateJobsDir(jobs2);
+            for (File kid : kids) {
+                if (!kid.isDirectory()) {
+                    continue;
+                }
+                if (kid.getName().equals("builds")) {
+                    unmigrateBuildsDir(kid);
+                } else {
+                    // Might be jobs, modules, promotions, etc.; we assume an ItemGroup.getRootDirFor implementation returns grandchildren.
+                    unmigrateJobsDir(kid);
+                }
             }
         }
     }

@@ -96,7 +96,7 @@ public class RunIdMigratorTest {
 
     @Test public void reverseImmediately() throws Exception {
         File root = dir;
-        dir = new File(dir, "jobs/somefolder/jobs/someproject/builds");
+        dir = new File(dir, "jobs/somefolder/jobs/someproject/promotions/OK/builds");
         write("99/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <id>2014-01-02_03-04-05</id>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
         link("lastFailedBuild", "-1");
         link("lastSuccessfulBuild", "99");
@@ -108,7 +108,7 @@ public class RunIdMigratorTest {
 
     @Test public void reverseAfterNewBuilds() throws Exception {
         File root = dir;
-        dir = new File(dir, "jobs/someproject/builds");
+        dir = new File(dir, "jobs/someproject/modules/test$test/builds");
         write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
         write("legacyIds", "");
         assertEquals("{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, legacyIds=''}", summarize());
