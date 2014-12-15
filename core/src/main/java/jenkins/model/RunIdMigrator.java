@@ -28,26 +28,38 @@ import hudson.Util;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.AtomicFileWriter;
+import hudson.util.StreamTaskListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.tools.ant.BuildException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 /**
  * Converts legacy {@code builds} directories to the current format.
@@ -62,6 +74,7 @@ public final class RunIdMigrator {
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
     private static final Map<String,Integer> EMPTY = new TreeMap<String,Integer>();
+    private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<File>());
 
     private @Nonnull Map<String,Integer> idToNumber = EMPTY;
 
@@ -123,9 +136,10 @@ public final class RunIdMigrator {
      * Newly created builds are untouched.
      * Does not throw {@link IOException} since we make a best effort to migrate but do not consider it fatal to job loading if we cannot.
      * @param dir as in {@link Job#getBuildDir}
+     * @param jenkinsHome root directory of Jenkins (for logging only)
      * @return true if migration was performed
      */
-    public synchronized boolean migrate(File dir) {
+    public synchronized boolean migrate(File dir, @CheckForNull File jenkinsHome) {
         if (load(dir)) {
             LOGGER.log(Level.FINER, "migration already performed for {0}", dir);
             return false;
@@ -133,6 +147,25 @@ public final class RunIdMigrator {
         LOGGER.log(Level.INFO, "Migrating build records in {0}", dir);
         doMigrate(dir);
         save(dir);
+        if (jenkinsHome != null && offeredToUnmigrate.add(jenkinsHome)) {
+            StringBuilder cp = new StringBuilder();
+            for (Class<?> c : new Class<?>[] {RunIdMigrator.class, /* TODO how to calculate transitive dependencies automatically? */Charsets.class, WriterOutputStream.class, BuildException.class, FastDateFormat.class}) {
+                URL location = c.getProtectionDomain().getCodeSource().getLocation();
+                String locationS = location.toString();
+                if (location.getProtocol().equals("file")) {
+                    try {
+                        locationS = new File(location.toURI()).getAbsolutePath();
+                    } catch (URISyntaxException x) {
+                        // never mind
+                    }
+                }
+                if (cp.length() > 0) {
+                    cp.append(File.pathSeparator);
+                }
+                cp.append(locationS);
+            }
+            LOGGER.log(Level.WARNING, "Build record migration is one-way. If you need to downgrade Jenkins, run: java -classpath {0} {1} {2}", new Object[] {cp, RunIdMigrator.class.getName(), jenkinsHome});
+        }
         return true;
     }
 
@@ -242,6 +275,83 @@ public final class RunIdMigrator {
         if (idToNumber.remove(id) != null) {
             save(dir);
         }
+    }
+
+    /**
+     * Reverses the migration, in case you want to revert to the older format.
+     * @param args one parameter, {@code $JENKINS_HOME}
+     */
+    public static void main(String... args) throws Exception {
+        if (args.length != 1) {
+            throw new Exception("pass one parameter, $JENKINS_HOME");
+        }
+        File root = new File(args[0]);
+        File jobs = new File(root, "jobs");
+        if (!jobs.isDirectory()) {
+            throw new FileNotFoundException("no such $JENKINS_HOME " + root);
+        }
+        unmigrateJobsDir(jobs);
+    }
+    private static void unmigrateJobsDir(File jobs) throws Exception {
+        System.err.println(jobs + " will be inspected for build directories to restore");
+        for (File kid : jobs.listFiles()) {
+            File builds = new File(kid, "builds");
+            if (builds.isDirectory()) { // kid is a job
+                unmigrateBuildsDir(builds);
+            }
+            File jobs2 = new File(kid, "jobs");
+            if (jobs2.isDirectory()) { // kid is a folder
+                unmigrateJobsDir(jobs2);
+            }
+        }
+    }
+    private static final Pattern ID_ELT = Pattern.compile("(?m)^  <id>([0-9_-]+)</id>(\r?\n)");
+    private static final Pattern TIMESTAMP_ELT = Pattern.compile("(?m)^  <timestamp>(\\d+)</timestamp>(\r?\n)");
+    /** Inverse of {@link #doMigrate}. */
+    private static void unmigrateBuildsDir(File builds) throws Exception {
+        File mapFile = new File(builds, MAP_FILE);
+        if (!mapFile.isFile()) {
+            System.err.println(builds + " does not look to have been migrated yet; skipping");
+            return;
+        }
+        for (File build : builds.listFiles()) {
+            int number;
+            try {
+                number = Integer.parseInt(build.getName());
+            } catch (NumberFormatException x) {
+                continue;
+            }
+            File buildXml = new File(build, "build.xml");
+            if (!buildXml.isFile()) {
+                System.err.println(buildXml + " did not exist");
+                continue;
+            }
+            String xml = FileUtils.readFileToString(buildXml, Charsets.UTF_8);
+            Matcher m = TIMESTAMP_ELT.matcher(xml);
+            if (!m.find()) {
+                System.err.println(buildXml + " did not contain <timestamp> as expected");
+                continue;
+            }
+            long timestamp = Long.parseLong(m.group(1));
+            String nl = m.group(2);
+            xml = m.replaceFirst("  <number>" + number + "</number>" + nl);
+            m = ID_ELT.matcher(xml);
+            String id;
+            if (m.find()) {
+                id = m.group(1);
+                xml = m.replaceFirst("");
+            } else {
+                // Post-migration build. We give it a new ID based on its timestamp.
+                id = LEGACY_ID_FORMATTER.format(new Date(timestamp));
+            }
+            FileUtils.write(buildXml, xml, Charsets.UTF_8);
+            if (!build.renameTo(new File(builds, id))) {
+                System.err.println(build + " could not be renamed");
+            }
+            Util.createSymlink(builds, id, Integer.toString(number), StreamTaskListener.fromStderr());
+        }
+        Util.deleteFile(mapFile);
+        System.err.println(builds + " has been restored to its original format");
     }
 
 }

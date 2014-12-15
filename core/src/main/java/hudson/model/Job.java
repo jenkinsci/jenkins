@@ -191,7 +191,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         File buildDir = getBuildDir();
         runIdMigrator = new RunIdMigrator();
-        runIdMigrator.migrate(buildDir);
+        runIdMigrator.migrate(buildDir, Jenkins.getInstance().getRootDir());
 
         TextFile f = getNextBuildNumberFile();
         if (f.exists()) {

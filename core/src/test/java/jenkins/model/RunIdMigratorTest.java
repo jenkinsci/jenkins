@@ -72,7 +72,7 @@ public class RunIdMigratorTest {
         assertEquals(0, migrator.findNumber("whatever"));
         migrator.delete(dir, "1");
         migrator = new RunIdMigrator();
-        assertFalse(migrator.migrate(dir));
+        assertFalse(migrator.migrate(dir, null));
         assertEquals("{legacyIds=''}", summarize());
     }
 
@@ -81,16 +81,39 @@ public class RunIdMigratorTest {
         link("99", "2014-01-02_03-04-05");
         link("lastFailedBuild", "-1");
         link("lastSuccessfulBuild", "99");
-        assertTrue(migrator.migrate(dir));
+        assertEquals("{2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>99</number>\n  <otherstuff>ok</otherstuff>\n</run>'}, 99=→2014-01-02_03-04-05, lastFailedBuild=→-1, lastSuccessfulBuild=→99}", summarize());
+        assertTrue(migrator.migrate(dir, null));
         assertEquals("{99={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <id>2014-01-02_03-04-05</id>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-05 99\n'}", summarize());
         assertEquals(99, migrator.findNumber("2014-01-02_03-04-05"));
         migrator = new RunIdMigrator();
-        assertFalse(migrator.migrate(dir));
+        assertFalse(migrator.migrate(dir, null));
         assertEquals(99, migrator.findNumber("2014-01-02_03-04-05"));
         migrator.delete(dir, "2014-01-02_03-04-05");
         FileUtils.deleteDirectory(new File(dir, "99"));
         new File(dir, "lastSuccessfulBuild").delete();
         assertEquals("{lastFailedBuild=→-1, legacyIds=''}", summarize());
+    }
+
+    @Test public void reverseImmediately() throws Exception {
+        File root = dir;
+        dir = new File(dir, "jobs/somefolder/jobs/someproject/builds");
+        write("99/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <id>2014-01-02_03-04-05</id>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
+        link("lastFailedBuild", "-1");
+        link("lastSuccessfulBuild", "99");
+        write("legacyIds", "2014-01-02_03-04-05 99\n");
+        assertEquals("{99={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <id>2014-01-02_03-04-05</id>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-05 99\n'}", summarize());
+        RunIdMigrator.main(root.getAbsolutePath());
+        assertEquals("{2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>99</number>\n  <otherstuff>ok</otherstuff>\n</run>'}, 99=→2014-01-02_03-04-05, lastFailedBuild=→-1, lastSuccessfulBuild=→99}", summarize());
+    }
+
+    @Test public void reverseAfterNewBuilds() throws Exception {
+        File root = dir;
+        dir = new File(dir, "jobs/someproject/builds");
+        write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
+        write("legacyIds", "");
+        assertEquals("{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, legacyIds=''}", summarize());
+        RunIdMigrator.main(root.getAbsolutePath());
+        assertEquals("{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>1</number>\n  <otherstuff>ok</otherstuff>\n</run>'}}", summarize());
     }
 
     // TODO test sane recovery from various error conditions
