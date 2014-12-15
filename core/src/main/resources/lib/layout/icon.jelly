@@ -44,8 +44,6 @@ THE SOFTWARE.
 
   <j:set var="imgSrc" value="${attrs.src}"/>
   <j:set var="imgStyle" value="${attrs.style}"/>
-  <j:if test="${attrs.class != null}">
-  </j:if>
 
   <j:choose>
     <j:when test="${attrs.class != null}">

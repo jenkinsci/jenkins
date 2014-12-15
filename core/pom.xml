@@ -48,7 +48,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
       <artifactId>icon-set</artifactId>
-      <version>1.0.5</version>
+      <version>1.0.6</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
