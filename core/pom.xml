@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.595-SNAPSHOT</version>
+    <version>1.596-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -51,7 +51,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
       <artifactId>icon-set</artifactId>
-      <version>1.0.3</version>
+      <version>1.0.5</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
