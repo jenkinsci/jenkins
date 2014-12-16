@@ -23,6 +23,7 @@
  */
 package jenkins.uithemes;
 
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 
 import java.io.IOException;
@@ -51,6 +52,9 @@ public class CoreThemeIntsaller {
         // Add the core contributors.
         themesProcessor.addContributor(new Icons());
         themesProcessor.addContributor(new StatusBalls());
+
+        // Add plugin contributors.
+        themesProcessor.addPluginContributors(Jenkins.getInstance().getPluginManager());
 
         LOGGER.log(Level.INFO, "Core UI Themes installed.");
     }
