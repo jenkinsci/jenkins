@@ -26,6 +26,8 @@ package jenkins.uithemes;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.uithemes.UIThemeContributor;
 import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
+import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
+import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpecProperty;
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 
 /**
@@ -37,8 +39,9 @@ public class StatusBalls implements UIThemeContributor {
     public void contribute(UIThemeSet uiThemeSet) {
         uiThemeSet.registerTheme("status-balls", "Status Balls/Orbs", "Jenkins Ball/Orb Status Indicators");
 
-        // Register the default status balls
+        // Register core status balls themes
         registerDefaultStatusBalls(uiThemeSet);
+        registerCSS3StatusBalls(uiThemeSet);
 
         // Plugins etc can register other status ball theme "implementations".
     }
@@ -56,12 +59,56 @@ public class StatusBalls implements UIThemeContributor {
         //
 
         // #1 ...
-        themeSet.registerThemeImpl("status-balls", "default", "Default", "Classic Jenkins image-based Status Balls/Orbs");
+        themeSet.registerThemeImpl("status-balls", "default", "Default", "Classic image-based Status Balls/Orbs");
 
         // #2 ...
         themeSet.contribute(new UIThemeContribution("default-status-balls-core", "status-balls", "default", Jenkins.class));
 
         // #3 ...
         // see core/src/main/resources/jenkins-themes/status-balls/default/default-status-balls-core/theme-template.less
+    }
+
+    private void registerCSS3StatusBalls(UIThemeSet themeSet) {
+        // #1 ...
+        themeSet.registerThemeImpl("status-balls", "css3-animated", "CSS3 Animated", "CSS3 Animated Status Balls/Orbs")
+                .setThemeImplSpec(
+                        new UIThemeImplSpec()
+                        .addProperty("successColor", new UIThemeImplSpecProperty()
+                                .setTitle("Success Color")
+                                .setDescription("Success Color Indicator")
+                                .setType(UIThemeImplSpecProperty.Type.COLOR)
+                                .setDefaultValue("008000")) // Green
+                        .addProperty("warningColor", new UIThemeImplSpecProperty()
+                                .setTitle("Warning Color")
+                                .setDescription("Warning Color Indicator")
+                                .setType(UIThemeImplSpecProperty.Type.COLOR)
+                                .setDefaultValue("ff8c00")) // Dark Orange
+                        .addProperty("errorColor", new UIThemeImplSpecProperty()
+                                .setTitle("Error Color")
+                                .setDescription("Error Color Indicator")
+                                .setType(UIThemeImplSpecProperty.Type.COLOR)
+                                .setDefaultValue("ff0000")) // Red
+                        .addProperty("notBuiltColor", new UIThemeImplSpecProperty()
+                                .setTitle("Not Built Color")
+                                .setDescription("Not Built Color Indicator")
+                                .setType(UIThemeImplSpecProperty.Type.COLOR)
+                                .setDefaultValue("808080"))  // Grey
+                        .addProperty("disabledColor", new UIThemeImplSpecProperty()
+                                .setTitle("Disabled Color")
+                                .setDescription("Disabled Color Indicator")
+                                .setType(UIThemeImplSpecProperty.Type.COLOR)
+                                .setDefaultValue("808080"))  // Grey
+                        .addProperty("abortedColor", new UIThemeImplSpecProperty()
+                                .setTitle("Aborted Color")
+                                .setDescription("Aborted Color Indicator")
+                                .setType(UIThemeImplSpecProperty.Type.COLOR)
+                                .setDefaultValue("808080")) // Grey
+                );
+
+        // #2 ...
+        themeSet.contribute(new UIThemeContribution("css3-animated-status-balls-core", "status-balls", "css3-animated", Jenkins.class));
+
+        // #3 ...
+        // see core/src/main/resources/jenkins-themes/status-balls/css3-animated/css3-animated-status-balls-core/theme-template.less
     }
 }
