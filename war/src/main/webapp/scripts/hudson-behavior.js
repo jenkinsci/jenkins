@@ -2017,7 +2017,6 @@ Element.observe(document, 'dom:loaded', function(){
         return;
     }
 
-    var fixedSidePanelWidth = 360;
     var pageBody = $('page-body');
     var sidePanel = $(pageBody).getElementsBySelector('#side-panel')[0];
     var mainPanel = $(pageBody).getElementsBySelector('#main-panel')[0];
@@ -2025,11 +2024,15 @@ Element.observe(document, 'dom:loaded', function(){
     function doPanelResize() {
         var pageBodyWidth = Element.getWidth(pageBody);
         if (pageBodyWidth > 768) {
-            $(sidePanel).setAttribute('style', 'width: ' + fixedSidePanelWidth + 'px;');
-            $(mainPanel).setAttribute('style', 'width: ' + (pageBodyWidth - fixedSidePanelWidth - 5) + 'px;');
+            pageBody.addClassName("fixedGridLayout");
+            pageBody.removeClassName("container-fluid");
+            sidePanel.removeClassName("col-sm-9");
+            mainPanel.removeClassName("col-sm-15");
         } else {
-            $(sidePanel).removeAttribute('style');
-            $(mainPanel).removeAttribute('style');
+            pageBody.removeClassName("fixedGridLayout");
+            pageBody.addClassName("container-fluid");
+            sidePanel.addClassName("col-sm-9");
+            mainPanel.addClassName("col-sm-15");
         }
 
         firePanelResized();
