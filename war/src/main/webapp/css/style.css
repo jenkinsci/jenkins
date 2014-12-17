@@ -46,8 +46,14 @@ body {
   display: inline-block;
   height: inherit;
 }
-#header .logo {
+#header .logo-container {
   margin-left: 16px;
+}
+#header .logo {
+  height: 40px;
+  width: 200px;
+  background-image: url('../images/logo-headshot-white-title.png');
+  background-repeat: no-repeat;
 }
 
 #jenkins-home-link {
