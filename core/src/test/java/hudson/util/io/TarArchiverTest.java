@@ -34,10 +34,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Bug;
 
 public class TarArchiverTest {
+
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     /**
      * Makes sure that permissions are properly stored in the tar file.
@@ -97,7 +101,7 @@ public class TarArchiverTest {
     @Bug(14922)
     @Test public void brokenSymlinks() throws Exception {
         assumeTrue(!Functions.isWindows());
-        File dir = Util.createTempDir();
+        File dir = tmp.getRoot();
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
         new FilePath(dir).tar(new NullStream(), "**");
     }

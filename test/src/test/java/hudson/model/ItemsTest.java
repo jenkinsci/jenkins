@@ -27,10 +27,10 @@ package hudson.model;
 import java.io.File;
 import java.util.Arrays;
 
-import hudson.Util;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
@@ -38,6 +38,7 @@ import org.jvnet.hudson.test.MockFolder;
 public class ItemsTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
+    @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
 
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
@@ -62,7 +63,7 @@ public class ItemsTest {
 
     @Issue("JENKINS-24825")
     @Test public void moveItem() throws Exception {
-        File tmp = Util.createTempDir();
+        File tmp = tmpRule.getRoot();
         r.jenkins.setRawBuildsDir(tmp.getAbsolutePath()+"/${ITEM_FULL_NAME}");
         MockFolder foo = r.createFolder("foo");
         MockFolder bar = r.createFolder("bar");
