@@ -650,4 +650,24 @@ public class FilePathTest extends ChannelTestCase {
           Util.deleteRecursive(tmp);
         }
     }
+    
+    @Issue("CID-1250669")
+    public void testMoveAllChildrenTo_EmptyFolder() throws IOException, InterruptedException {
+        final File tmp = Util.createTempDir();
+        try {
+            final File srcPath = new File(tmp, "test");
+            final File dstPath = new File(tmp, "dst");
+            srcPath.mkdirs();
+            dstPath.mkdirs();
+
+            final FilePath src = new FilePath(srcPath);
+            final FilePath dst = new FilePath(dstPath);
+
+            // Move empty directory
+            src.moveAllChildrenTo(dst);
+            assertTrue("Directory has not been moved", dst.exists());
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
+    }
 }
