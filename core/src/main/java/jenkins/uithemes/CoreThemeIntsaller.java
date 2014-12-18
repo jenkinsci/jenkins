@@ -53,6 +53,7 @@ public class CoreThemeIntsaller {
         themesProcessor.addContributor(new Icons());
         themesProcessor.addContributor(new StatusBalls());
         themesProcessor.addContributor(new PageHeader());
+        themesProcessor.addContributor(new ConsoleOutput());
 
         // Add plugin contributors.
         themesProcessor.addPluginContributors(Jenkins.getInstance().getPluginManager());
