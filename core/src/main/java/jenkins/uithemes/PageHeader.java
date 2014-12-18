@@ -41,6 +41,7 @@ public class PageHeader implements UIThemeContributor {
 
         // Register core header themes
         registerDefaultHeader(uiThemeSet);
+        registerLiteHeader(uiThemeSet);
     }
 
     private void registerDefaultHeader(UIThemeSet themeSet) {
@@ -69,5 +70,25 @@ public class PageHeader implements UIThemeContributor {
 
         // #3 ...
         // see core/src/main/resources/jenkins-themes/page-header/default/default-page-header-core/theme-template.less
+    }
+
+    private void registerLiteHeader(UIThemeSet themeSet) {
+
+        // See Icons class for more details on what's happening here.
+
+        // #1 ...
+        themeSet.registerThemeImpl("page-header", "lite", "Lite", "Lite Page Header")
+                .setThemeImplSpec(
+                        new UIThemeImplSpec()
+                                .addProperty("logoUrl", new UIThemeImplSpecProperty()
+                                        .setTitle("Logo URL")
+                                        .setDefaultValue("@{rootURL}/images/logo-headshot-black-title.png"))
+                );
+
+        // #2 ...
+        themeSet.contribute(new UIThemeContribution("lite-page-header-core", "page-header", "lite", Jenkins.class));
+
+        // #3 ...
+        // see core/src/main/resources/jenkins-themes/page-header/lite/lite-page-header-core/theme-template.less
     }
 }
