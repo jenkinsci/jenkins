@@ -102,7 +102,7 @@
 .icon-notbuilt-anime,
 .icon-nobuilt-anime,
 .icon-green-anime {
-  border: solid #ffffff;
+  border: solid;
   position: relative;
   border-radius: 50%;
   -webkit-animation: load8 5s infinite linear;
@@ -130,8 +130,7 @@
 
 .anime_color(@stateClass, @color) {
   .@{stateClass} {
-    border-top-color: @color;
-    border-right-color: @color;
+    border-color: @color lighten(@color, 40%);
   }
 }
 
