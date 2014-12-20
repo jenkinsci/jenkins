@@ -32,6 +32,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
+import hudson.model.Executor;
 import hudson.model.InvisibleAction;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -63,6 +65,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  *     only makes sense for a step called exactly once per build.
  * <li>Do not implement {@link DependencyDeclarer} since this would be limited to use in {@link AbstractProject}.
  * <li>Return true unconditionally from {@link BuildStepDescriptor#isApplicable} (there is currently no filtering for other {@link Job} types).
+ * <li>Do not expect {@link Executor#currentExecutor} to be non-null, and by extension do not use {@link Computer#currentComputer}.
  * </ul>
  * @see hudson.tasks.BuildStepCompatibilityLayer#perform(AbstractBuild, Launcher, BuildListener)
  * @since 1.577

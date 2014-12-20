@@ -137,7 +137,7 @@ public abstract class Cause {
     }
 
     /**
-     * A build is triggered by the completion of another build (AKA upstream build.)
+     * A build is triggered by another build (AKA upstream build.)
      */
     public static class UpstreamCause extends Cause {
 
@@ -456,6 +456,16 @@ public abstract class Cause {
                 }
             }
             return Messages.Cause_RemoteCause_ShortDescription(addr);
+        }
+        
+        @Exported(visibility = 3)
+        public String getAddr() {
+            return addr;
+        }
+        
+        @Exported(visibility = 3)
+        public String getNote() {
+            return note;
         }
 
         @Override

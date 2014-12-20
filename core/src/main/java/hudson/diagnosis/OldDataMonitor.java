@@ -23,6 +23,7 @@
  */
 package hudson.diagnosis;
 
+import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
 import hudson.XmlFile;
@@ -38,9 +39,11 @@ import hudson.model.listeners.SaveableListener;
 import hudson.util.RobustReflectionConverter;
 import hudson.util.VersionNumber;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -65,7 +68,6 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
     private HashMap<SaveableReference,VersionRange> data = new HashMap<SaveableReference,VersionRange>();
-    private boolean updating = false;
 
     static OldDataMonitor get(Jenkins j) {
         return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
@@ -102,7 +104,6 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static void remove(Saveable obj, boolean isDelete) {
         OldDataMonitor odm = get(Jenkins.getInstance());
         synchronized (odm) {
-            if (odm.updating) return; // Skip during doUpgrade or doDiscard
             odm.data.remove(referTo(obj));
             if (isDelete && obj instanceof Job<?,?>)
                 for (Run r : ((Job<?,?>)obj).getBuilds())
@@ -274,19 +275,18 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public synchronized HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
-        String thruVerParam = req.getParameter("thruVer");
-        VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
-        updating = true;
-        for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<SaveableReference,VersionRange> entry = it.next();
-            VersionNumber version = entry.getValue().max;
-            if (version != null && (thruVer == null || !version.isNewerThan(thruVer))) {
-                it.remove();
-                tryToSave(entry.getKey());
+    public HttpResponse doUpgrade(StaplerRequest req, StaplerResponse rsp) {
+        final String thruVerParam = req.getParameter("thruVer");
+        final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
+
+        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
+            @Override
+            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
+                VersionNumber version = entry.getValue().max;
+                return version != null && (thruVer == null || !version.isNewerThan(thruVer));
             }
-        }
-        updating = false;
+        });
+
         return HttpResponses.forwardToPreviousPage();
     }
 
@@ -295,27 +295,51 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * Remove those items from the data map.
      */
     @RequirePOST
-    public synchronized HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
-        updating = true;
-        for (Iterator<Map.Entry<SaveableReference,VersionRange>> it = data.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<SaveableReference,VersionRange> entry = it.next();
-            if (entry.getValue().max == null) {
-                it.remove();
-                tryToSave(entry.getKey());
+    public HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
+        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
+            @Override
+            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
+                return entry.getValue().max == null;
             }
-        }
-        updating = false;
+        });
+
         return HttpResponses.forwardToPreviousPage();
     }
 
-    private void tryToSave(SaveableReference ref) {
-        Saveable s = ref.get();
-        if (s != null) {
-            try {
-                s.save();
-            } catch (Exception x) {
-                LOGGER.log(Level.WARNING, "failed to save " + s, x);
+    private void saveAndRemoveEntries(Predicate<Map.Entry<SaveableReference, VersionRange>> matchingPredicate) {
+        /*
+         * Note that there a race condition here: we acquire the lock and get localCopy which includes some
+         * project (say); then we go through our loop and save that project; then someone POSTs a new
+         * config.xml for the project with some old data, causing remove to be called and the project to be
+         * added to data (in the new version); then we hit the end of this method and the project is removed
+         * from data again, even though it again has old data.
+         *
+         * In practice this condition is extremely unlikely, and not a major problem even if it
+         * does occur: just means the user will be prompted to discard less than they should have been (and
+         * would see the warning again after next restart).
+         */
+        Map<SaveableReference,VersionRange> localCopy = null;
+        synchronized (this) {
+            localCopy = new HashMap<SaveableReference,VersionRange>(data);
+        }
+
+        List<SaveableReference> removed = new ArrayList<SaveableReference>();
+        for (Map.Entry<SaveableReference,VersionRange> entry : localCopy.entrySet()) {
+            if (matchingPredicate.apply(entry)) {
+                Saveable s = entry.getKey().get();
+                if (s != null) {
+                    try {
+                        s.save();
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "failed to save " + s, x);
+                    }
+                }
+                removed.add(entry.getKey());
             }
+        }
+
+        synchronized (this) {
+            data.keySet().removeAll(removed);
         }
     }
 

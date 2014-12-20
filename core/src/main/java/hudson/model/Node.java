@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Seiji Sogabe, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -69,7 +69,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type.)
+ * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type).
  *
  * <p>
  * As a special case, {@link Jenkins} extends from here.
@@ -77,6 +77,10 @@ import org.kohsuke.stapler.export.Exported;
  * <p>
  * Nodes are persisted objects that capture user configurations, and instances get thrown away and recreated whenever
  * the configuration changes. Running state of nodes are captured by {@link Computer}s.
+ *
+ * <p>
+ * There is no URL binding for {@link Node}. {@link Computer} and {@link TransientComputerActionFactory} must
+ * be used to associate new {@link Action}s to slaves.
  *
  * @author Kohsuke Kawaguchi
  * @see NodeMonitor
@@ -141,7 +145,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Returns a {@link Launcher} for executing programs on this node.
      *
      * <p>
-     * The callee must call {@link Launcher#decorateFor(Node)} before returning to complete the decoration. 
+     * The callee must call {@link Launcher#decorateFor(Node)} before returning to complete the decoration.
      */
     public abstract Launcher createLauncher(TaskListener listener);
 
@@ -177,7 +181,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Gets the current channel, if the node is connected and online, or null.
      *
-     * This is just a convenience method for {@link Computer#getChannel()} with null check. 
+     * This is just a convenience method for {@link Computer#getChannel()} with null check.
      */
     public final @CheckForNull VirtualChannel getChannel() {
         Computer c = toComputer();
@@ -189,6 +193,20 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Nobody but {@link Jenkins#updateComputerList()} should call this method.
      */
     protected abstract Computer createComputer();
+
+    /**
+     * Returns {@code true} if the node is accepting tasks. Needed to allow slaves programmatic suspension of task
+     * scheduling that does not overlap with being offline. Called by {@link Computer#isAcceptingTasks()}.
+     * This method is distinct from {@link Computer#isAcceptingTasks()} as sometimes the {@link Node} concrete
+     * class may not have control over the {@link hudson.model.Computer} concrete class associated with it.
+     *
+     * @return {@code true} if the node is accepting tasks.
+     * @see Computer#isAcceptingTasks()
+     * @since 1.586
+     */
+    public boolean isAcceptingTasks() {
+        return true;
+    }
 
     /**
      * Let Nodes be aware of the lifecycle of their own {@link Computer}.
@@ -273,10 +291,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     /**
      * Returns the manually configured label for a node. The list of assigned
-     * and dynamically determined labels is available via 
+     * and dynamically determined labels is available via
      * {@link #getAssignedLabels()} and includes all labels that have been
      * manually configured.
-     * 
+     *
      * Mainly for form binding.
      */
     public abstract String getLabelString();
@@ -408,11 +426,11 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
         return NodeProperty.for_(this);
     }
-    
+
     public ACL getACL() {
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
-    
+
     public final void checkPermission(Permission permission) {
         getACL().checkPermission(permission);
     }

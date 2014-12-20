@@ -1,10 +1,10 @@
 package hudson.cli;
 
 import hudson.FilePath;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -13,6 +13,7 @@ import org.springframework.dao.DataAccessException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Properties;
@@ -39,7 +40,7 @@ public class ClientAuthenticationCache implements Serializable {
     private final Properties props = new Properties();
 
     public ClientAuthenticationCache(Channel channel) throws IOException, InterruptedException {
-        store = (channel==null ? FilePath.localChannel :  channel).call(new Callable<FilePath, IOException>() {
+        store = (channel==null ? FilePath.localChannel :  channel).call(new MasterToSlaveCallable<FilePath, IOException>() {
             public FilePath call() throws IOException {
                 File home = new File(System.getProperty("user.home"));
                 File hudsonHome = new File(home, ".hudson");
@@ -50,7 +51,12 @@ public class ClientAuthenticationCache implements Serializable {
             }
         });
         if (store.exists()) {
-            props.load(store.read());
+            InputStream istream = store.read();
+            try {
+                props.load(istream);
+            } finally {
+                istream.close();
+            }
         }
     }
 

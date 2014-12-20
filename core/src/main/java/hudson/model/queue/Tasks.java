@@ -23,6 +23,7 @@
  */
 package hudson.model.queue;
 
+import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
@@ -41,72 +42,63 @@ import jenkins.security.QueueItemAuthenticatorConfiguration;
  */
 public class Tasks {
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private static Collection<? extends SubTask> _getSubTasksOf(Task task) {
-        return task.getSubTasks();
-    }
-
     public static Collection<? extends SubTask> getSubTasksOf(Task task) {
         try {
-            return _getSubTasksOf(task);
+            return task.getSubTasks();
         } catch (AbstractMethodError e) {
             return Collections.singleton(task);
         }
     }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private static Object _getSameNodeConstraintOf(SubTask t) {
-        return t.getSameNodeConstraint();
-    }
-
     public static Object getSameNodeConstraintOf(SubTask t) {
         try {
-            return _getSameNodeConstraintOf(t);
+            return t.getSameNodeConstraint();
         } catch (AbstractMethodError e) {
             return null;
         }
     }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    public static Task _getOwnerTaskOf(SubTask t) {
-        return t.getOwnerTask();
-    }
-
     public static @Nonnull Task getOwnerTaskOf(@Nonnull SubTask t) {
         try {
-            return _getOwnerTaskOf(t);
+            return t.getOwnerTask();
         } catch (AbstractMethodError e) {
             return (Task)t;
         }
     }
 
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
+     * Helper method to safely invoke {@link Task#getDefaultAuthentication()} on classes that may come
+     * from plugins compiled against an earlier version of Jenkins.
+     *
+     * @param t the task
+     * @return {@link Task#getDefaultAuthentication()}, or {@link ACL#SYSTEM}
+     * @since 1.520
      */
-    private static Authentication _getDefaultAuthenticationOf(Task t) {
-        return t.getDefaultAuthentication();
+    @Nonnull
+    public static Authentication getDefaultAuthenticationOf(Task t) {
+        try {
+            return t.getDefaultAuthentication();
+        } catch (AbstractMethodError e) {
+            return ACL.SYSTEM;
+        }
     }
 
     /**
-     * @param t a task
-     * @return {@link Task#getDefaultAuthentication}, or {@link ACL#SYSTEM}
-     * @since 1.520
+     * Helper method to safely invoke {@link Task#getDefaultAuthentication(Item)} on classes that may come
+     * from plugins compiled against an earlier version of Jenkins.
+     *
+     * @param t    the task
+     * @param item the item
+     * @return {@link Task#getDefaultAuthentication(hudson.model.Queue.Item)},
+     * or {@link Task#getDefaultAuthentication()}, or {@link ACL#SYSTEM}
+     * @since 1.592
      */
-    public static Authentication getDefaultAuthenticationOf(Task t) {
+    @Nonnull
+    public static Authentication getDefaultAuthenticationOf(Task t, Item item) {
         try {
-            return _getDefaultAuthenticationOf(t);
+            return t.getDefaultAuthentication(item);
         } catch (AbstractMethodError e) {
-            return ACL.SYSTEM;
+            return getDefaultAuthenticationOf(t);
         }
     }
 

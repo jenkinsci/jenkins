@@ -36,7 +36,9 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelProperty;
 import hudson.security.CliAuthenticator;
 import hudson.security.SecurityRealm;
+import jenkins.security.MasterToSlaveCallable;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.discovery.ResourceClassIterator;
@@ -63,6 +65,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -240,6 +243,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             // signals an error without stack trace
             stderr.println(e.getMessage());
             return -1;
+        } catch (BadCredentialsException e) {
+            // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
+            // do that to the server log instead
+            String id = UUID.randomUUID().toString();
+            LOGGER.log(Level.INFO, "CLI login attempt failed: "+id, e);
+            stderr.println("Bad Credentials. Search the server log for "+id+" for more details.");
+            return -1;
         } catch (Exception e) {
             e.printStackTrace(stderr);
             return -1;
@@ -400,7 +410,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         return checkChannel().call(new GetSystemProperty(name));
     }
 
-    private static final class GetSystemProperty implements Callable<String, IOException> {
+    private static final class GetSystemProperty extends MasterToSlaveCallable<String, IOException> {
         private final String name;
 
         private GetSystemProperty(String name) {
@@ -429,7 +439,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
     }
 
-    private static final class GetCharset implements Callable<String, IOException> {
+    private static final class GetCharset extends MasterToSlaveCallable<String, IOException> {
         public String call() throws IOException {
             return Charset.defaultCharset().name();
         }
@@ -444,7 +454,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         return checkChannel().call(new GetEnvironmentVariable(name));
     }
 
-    private static final class GetEnvironmentVariable implements Callable<String, IOException> {
+    private static final class GetEnvironmentVariable extends MasterToSlaveCallable<String, IOException> {
         private final String name;
 
         private GetEnvironmentVariable(String name) {

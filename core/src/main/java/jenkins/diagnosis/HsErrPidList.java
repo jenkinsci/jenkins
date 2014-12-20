@@ -47,9 +47,16 @@ public class HsErrPidList extends AdministrativeMonitor {
             return;
         }
         try {
-            FileChannel ch = new FileInputStream(getSecretKeyFile()).getChannel();
-            map = ch.map(MapMode.READ_ONLY,0,1);
-
+            FileChannel ch = null;
+            try {
+                ch = new FileInputStream(getSecretKeyFile()).getChannel();
+                map = ch.map(MapMode.READ_ONLY,0,1);
+            } finally {
+                if (ch != null) {
+                    ch.close();
+                }
+            }
+                
             scan("./hs_err_pid%p.log");
             if (Functions.isWindows()) {
                 File dir = Kernel32Utils.getTempDir();

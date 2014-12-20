@@ -52,4 +52,9 @@ public class ShutdownLink extends ManagementLink {
     public String getUrlName() {
         return Jenkins.getInstance().isQuietingDown() ? "cancelQuietDown" : "quietDown";
     }
+
+    @Override
+    public boolean getRequiresPOST() {
+        return true;
+    }
 }

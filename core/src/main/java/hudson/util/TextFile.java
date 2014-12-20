@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import com.google.common.collect.*;
+
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,8 +36,8 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.nio.*;
 import java.nio.charset.Charset;
+import java.util.Iterator;
 
 /**
  * Represents a text file.
@@ -74,6 +76,38 @@ public class TextFile {
             in.close();
         }
         return out.toString();
+    }
+
+    /**
+     * Parse text file line by line.
+     */
+    public Iterable<String> lines() {
+        return new Iterable<String>() {
+            @Override
+            public Iterator<String> iterator() {
+                try {
+                    final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
+
+                    return new AbstractIterator<String>() {
+                        @Override
+                        protected String computeNext() {
+                            try {
+                                String r = in.readLine();
+                                if (r==null) {
+                                    in.close();
+                                    return endOfData();
+                                }
+                                return r;
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    };
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
     }
 
     /**

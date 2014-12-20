@@ -167,12 +167,7 @@ var FormChecker = {
         this.sendRequest(next.url, {
             method : next.method,
             onComplete : function(x) {
-                var i;
-                next.target.innerHTML = x.status==200 ? x.responseText
-                    : '<a href="" onclick="document.getElementById(\'valerr' + (i=iota++)
-                    + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
-                    + i + '" style="display:none">' + x.responseText + '</div>';
-                Behaviour.applySubtree(next.target);
+                applyErrorMessage(next.target, x);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
                 layoutUpdateCallback.call();
@@ -1726,8 +1721,8 @@ function createSearchBox(searchURL) {
  * @return null
  *      if the given element shouldn't be a part of the final submission.
  */
-function findFormParent(e,form,static) {
-    static = static || false;
+function findFormParent(e,form,isStatic) {
+    isStatic = isStatic || false;
 
     if (form==null) // caller can pass in null to have this method compute the owning form
         form = findAncestor(e,"FORM");
@@ -1741,12 +1736,12 @@ function findFormParent(e,form,static) {
         else
             e = e.parentNode;
 
-        if(!static && e.getAttribute("field-disabled")!=null)
+        if(!isStatic && e.getAttribute("field-disabled")!=null)
             return null;  // this field shouldn't contribute to the final result
 
         var name = e.getAttribute("name");
         if(name!=null && name.length>0) {
-            if(e.tagName=="INPUT" && !static && !xor(e.checked,Element.hasClassName(e,"negative")))
+            if(e.tagName=="INPUT" && !isStatic && !xor(e.checked,Element.hasClassName(e,"negative")))
                 return null;  // field is not active
 
             return e;
@@ -2194,12 +2189,7 @@ function validateButton(checkUrl,paramList,button) {
       parameters: parameters,
       onComplete: function(rsp) {
           spinner.style.display="none";
-          var i;
-          target.innerHTML = rsp.status==200 ? rsp.responseText
-                : '<a href="" onclick="document.getElementById(\'valerr' + (i=iota++)
-                + '\').style.display=\'block\';return false">ERROR</a><div id="valerr'
-                + i + '" style="display:none">' + rsp.responseText + '</div>';
-          Behaviour.applySubtree(target);
+          applyErrorMessage(target, rsp);
           layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
           try {
@@ -2209,6 +2199,26 @@ function validateButton(checkUrl,paramList,button) {
           }
       }
   });
+}
+
+function applyErrorMessage(elt, rsp) {
+    if (rsp.status == 200) {
+        elt.innerHTML = rsp.responseText;
+    } else {
+        var id = 'valerr' + (iota++);
+        elt.innerHTML = '<a href="" onclick="document.getElementById(\'' + id
+        + '\').style.display=\'block\';return false">ERROR</a><div id="'
+        + id + '" style="display:none">' + rsp.responseText + '</div>';
+        var error = document.getElementById('error-description'); // cf. oops.jelly
+        if (error) {
+            var div = document.getElementById(id);
+            while (div.firstChild) {
+                div.removeChild(div.firstChild);
+            }
+            div.appendChild(error);
+        }
+    }
+    Behaviour.applySubtree(elt);
 }
 
 // create a combobox.

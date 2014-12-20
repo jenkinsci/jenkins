@@ -65,7 +65,7 @@ THE SOFTWARE.
   <!--
       first try getFooBarDescriptors() then fall back to automatic inference by type
   -->
-  <f:hetero-list name="${attrs.field}" items="${instance[attrs.field]}"
+  <f:hetero-list name="${field}" items="${instance[attrs.field]}"
                  descriptors="${descriptor[attrs.field+'Descriptors'] ?: descriptor.getPropertyType(instance,attrs.field).getApplicableItemDescriptors()}"
                  addCaption="${attrs.addCaption}" deleteCaption="${attrs.deleteCaption}"
                  hasHeader="${attrs.hasHeader}" honorOrder="${attrs.honorOrder}"

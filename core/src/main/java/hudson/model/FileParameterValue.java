@@ -39,7 +39,9 @@ import java.io.UnsupportedEncodingException;
 import javax.servlet.ServletException;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemHeaders;
 import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.fileupload.util.FileItemHeadersImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -138,7 +140,7 @@ public class FileParameterValue extends ParameterValue {
         return new BuildWrapper() {
             @Override
             public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            	if (!StringUtils.isEmpty(location)) {
+            	if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(file.getName())) {
             	    listener.getLogger().println("Copying file to "+location);
                     FilePath locationFilePath = build.getWorkspace().child(location);
                     locationFilePath.getParent().mkdirs();
@@ -160,7 +162,8 @@ public class FileParameterValue extends ParameterValue {
 	}
 
 	/**
-	 * In practice this will always be false, since location should be unique.
+	 * Compares file parameters (existing files will be considered as different).
+	 * @since 1.586 Function has been modified in order to avoid <a href="https://issues.jenkins-ci.org/browse/JENKINS-19017">JENKINS-19017</a> issue (wrong merge of builds in the queue).
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -171,12 +174,13 @@ public class FileParameterValue extends ParameterValue {
 		if (getClass() != obj.getClass())
 			return false;
 		FileParameterValue other = (FileParameterValue) obj;
-		if (location == null) {
-			if (other.location != null)
-				return false;
-		} else if (!location.equals(other.location))
-			return false;
-		return true;
+		
+		if (location == null && other.location == null) 
+			return true; // Consider null parameters as equal
+
+		//TODO: check fingerprints or checksums to improve the behavior (JENKINS-25211)
+		// Return false even if files are equal
+		return false;
 	}
 
     @Override
@@ -306,6 +310,15 @@ public class FileParameterValue extends ParameterValue {
         @Deprecated
         public OutputStream getOutputStream() throws IOException {
             return new FileOutputStream(file);
+        }
+
+        @Override
+        public FileItemHeaders getHeaders() {
+            return new FileItemHeadersImpl();
+        }
+
+        @Override
+        public void setHeaders(FileItemHeaders headers) {
         }
     }
 }

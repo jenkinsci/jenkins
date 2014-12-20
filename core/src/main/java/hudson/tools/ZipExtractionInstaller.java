@@ -26,7 +26,7 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.Functions;
@@ -116,7 +116,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
      * Sets execute permission on all files, since unzip etc. might not do this.
      * Hackish, is there a better way?
      */
-    static class ChmodRecAPlusX implements FileCallable<Void> {
+    static class ChmodRecAPlusX extends MasterToSlaveFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         public Void invoke(File d, VirtualChannel channel) throws IOException {
             if(!Functions.isWindows())

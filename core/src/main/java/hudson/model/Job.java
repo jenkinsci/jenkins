@@ -63,6 +63,7 @@ import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
 import jenkins.model.BuildDiscarder;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.HexStringConfidentialKey;
@@ -70,6 +71,7 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.io.FileUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -96,6 +98,8 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -628,6 +632,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
+    @Override
+    public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
+        Job newJob = (Job) newItem; // Missing covariant parameters type here.
+        File oldBuildDir = getBuildDir();
+        super.movedTo(destination, newItem, destDir);
+        File newBuildDir = getBuildDir();
+        if (oldBuildDir.isDirectory() && !newBuildDir.isDirectory()) {
+            FileUtils.forceMkdir(destDir.getParentFile());
+            FileUtils.moveDirectory(oldBuildDir, newBuildDir);
+        }
+    }
+
     @Override public void delete() throws IOException, InterruptedException {
         super.delete();
         Util.deleteRecursive(getBuildDir());
@@ -1146,9 +1162,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         description = req.getParameter("description");
 
-        try {
-            JSONObject json = req.getSubmittedForm();
+        JSONObject json = req.getSubmittedForm();
 
+        try {
             setDisplayName(json.optString("displayNameOrNull"));
 
             if (json.optBoolean("logrotate"))
@@ -1192,15 +1208,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 FormApply.success(".").generateResponse(req, rsp, null);
             }
         } catch (JSONException e) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            pw.println("Failed to parse form data. Please report this problem as a bug");
-            pw.println("JSON=" + req.getSubmittedForm());
-            pw.println();
-            e.printStackTrace(pw);
-
-            rsp.setStatus(SC_BAD_REQUEST);
-            sendError(sw.toString(), req, rsp, true);
+            Logger.getLogger(Job.class.getName()).log(Level.WARNING, "failed to parse " + json, e);
+            sendError(e, req, rsp);
         }
     }
 

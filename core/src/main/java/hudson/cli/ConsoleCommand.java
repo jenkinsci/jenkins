@@ -6,7 +6,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.PermalinkProjectAction.Permalink;
-import hudson.util.IOUtils;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
@@ -16,6 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import org.apache.commons.io.IOUtils;
 
 /**
  * cat/tail/head of the console output.
@@ -75,9 +75,13 @@ public class ConsoleCommand extends CLICommand {
                     pos = logText.writeLogTo(pos, w);
                 } while (!logText.isComplete());
             } else {
-                InputStream in = run.getLogInputStream();
-                IOUtils.skip(in,pos);
-                org.apache.commons.io.IOUtils.copy(new InputStreamReader(in,run.getCharset()),w);
+                InputStream logInputStream = run.getLogInputStream();
+                try {
+                    IOUtils.skip(logInputStream,pos);
+                    org.apache.commons.io.IOUtils.copy(new InputStreamReader(logInputStream,run.getCharset()),w);
+                } finally {
+                    logInputStream.close();
+                }
             }
         } finally {
             w.flush(); // this pointless flush needed to work around SSHD-154

@@ -72,10 +72,6 @@ complete {
         rewriteLicense([],jenkinsLicense)
     }
 
-    match("*:jna") {
-        rewriteLicense([],lgpl)
-    }
-
     match(["org.jvnet.localizer:localizer"]) {
         // see http://java.net/projects/localizer
         // see http://java.net/projects/trilead-putty-extension/

@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import hudson.FilePath;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
@@ -275,7 +276,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
     }
 
-    private static final class ListFiles implements FilePath.FileCallable<Map<String,String>> {
+    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String,String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;
@@ -330,6 +331,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 // if context path is invalid, treat this like no workspace exists rather than e.g. show the same validation error twice
                 return FormValidation.ok();
             }
+            if (project == null) {
+                return FormValidation.ok();
+            }
             FilePath ws = project.getSomeWorkspace();
             if (ws == null) {
                 return FormValidation.ok();
@@ -338,9 +342,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         public FormValidation doCheckContextPath(@AncestorInPath AbstractProject project, @QueryParameter String contextPath) throws IOException, InterruptedException {
-            FilePath ws = project.getSomeWorkspace();
+            if (project == null) {
+                return FormValidation.ok();
+            }
+            FilePath ws;
             FilePath reference;
-            if (ws == null) {
+            if (project == null || (ws = project.getSomeWorkspace()) == null) {
                 // we're not writing anything, just checking whether the contextPath escapes a reference directory
                 // so we can use anything here
                 reference = Jenkins.getInstance().getRootPath();

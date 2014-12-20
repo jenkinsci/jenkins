@@ -28,9 +28,10 @@ import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.slaves.PingFailureAnalyzer;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -89,7 +90,7 @@ public class ChannelPinger extends ComputerListener {
         setUpPingForChannel(channel, pingInterval);
     }
 
-    private static class SetUpRemotePing implements Callable<Void, IOException> {
+    private static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         private int pingInterval;
         public SetUpRemotePing(int pingInterval) {
@@ -107,14 +108,17 @@ public class ChannelPinger extends ComputerListener {
         final PingThread t = new PingThread(channel, interval * 60 * 1000) {
             protected void onDead(Throwable cause) {
                 try {
+                    for (PingFailureAnalyzer pfa : PingFailureAnalyzer.all()) {
+                        pfa.onPingFailure(channel,cause);
+                    }
                     if (isInClosed.get()) {
-                        LOGGER.log(FINE,"Ping failed after the channel is already partially closed",cause);
+                        LOGGER.log(FINE,"Ping failed after the channel "+channel.getName()+" is already partially closed.",cause);
                     } else {
-                        LOGGER.log(INFO,"Ping failed. Terminating the channel.",cause);
+                        LOGGER.log(INFO,"Ping failed. Terminating the channel "+channel.getName()+".",cause);
                         channel.close(cause);
                     }
                 } catch (IOException e) {
-                    LOGGER.log(SEVERE,"Failed to terminate the channel: ",e);
+                    LOGGER.log(SEVERE,"Failed to terminate the channel "+channel.getName(),e);
                 }
             }
             protected void onDead() {
@@ -125,7 +129,7 @@ public class ChannelPinger extends ComputerListener {
         channel.addListener(new Channel.Listener() {
             @Override
             public void onClosed(Channel channel, IOException cause) {
-                LOGGER.fine("Terminating ping thread for " + channel);
+                LOGGER.fine("Terminating ping thread for " + channel.getName());
                 isInClosed.set(true);
                 t.interrupt();  // make sure the ping thread is terminated
             }

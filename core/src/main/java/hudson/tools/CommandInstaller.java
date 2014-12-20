@@ -26,7 +26,9 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.util.LineEndingConversion;
 import org.kohsuke.stapler.DataBoundConstructor;
+import java.io.ObjectStreamException;
 
 /**
  * Installs a tool by running an arbitrary shell command.
@@ -36,7 +38,7 @@ public class CommandInstaller extends AbstractCommandInstaller {
 
     @DataBoundConstructor
     public CommandInstaller(String label, String command, String toolHome) {
-        super(label, command, toolHome);
+        super(label, LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Unix), toolHome);
     }
 
     @Override
@@ -48,6 +50,10 @@ public class CommandInstaller extends AbstractCommandInstaller {
     public String[] getCommandCall(FilePath script) {
         String[] cmd = {"sh", "-e", script.getRemote()};
         return cmd;
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+        return new CommandInstaller(getLabel(), getCommand(), getToolHome());
     }
 
     @Extension

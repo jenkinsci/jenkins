@@ -57,19 +57,23 @@ public abstract class BootFailure extends ErrorObject {
             File f = getBootFailureFile(home);
             try {
                 if (f.exists()) {
-                    BufferedReader r = new BufferedReader(new FileReader(f));
-                    String line;
-                    while ((line=r.readLine())!=null) {
-                        try {
-                            dates.add(new Date(line));
-                        } catch (Exception e) {
-                            // ignore any parse error
+                    BufferedReader failureFileReader = new BufferedReader(new FileReader(f));
+                    try {
+                        String line;
+                        while ((line=failureFileReader.readLine())!=null) {
+                            try {
+                                dates.add(new Date(line));
+                            } catch (Exception e) {
+                                // ignore any parse error
+                            }
                         }
+                    } finally {
+                        failureFileReader.close();
                     }
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING,"Failed to parse "+f,e);
-            }
+            } 
         }
         return dates;
     }

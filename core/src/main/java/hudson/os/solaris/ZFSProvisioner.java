@@ -23,13 +23,13 @@
  */
 package hudson.os.solaris;
 
+import jenkins.MasterToSlaveFileCallable;
 import hudson.FileSystemProvisioner;
 import hudson.FilePath;
 import hudson.WorkspaceSnapshot;
 import hudson.FileSystemProvisionerDescriptor;
 import hudson.Extension;
 import hudson.remoting.VirtualChannel;
-import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
@@ -52,7 +52,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
     private final String rootDataset;
 
     public ZFSProvisioner(Node node) throws IOException, InterruptedException {
-        rootDataset = node.getRootPath().act(new FileCallable<String>() {
+        rootDataset = node.getRootPath().act(new MasterToSlaveFileCallable<String>() {
             private static final long serialVersionUID = -2142349338699797436L;
 
             public String invoke(File f, VirtualChannel channel) throws IOException {
@@ -68,7 +68,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
     public void prepareWorkspace(AbstractBuild<?,?> build, FilePath ws, final TaskListener listener) throws IOException, InterruptedException {
         final String name = build.getProject().getFullName();
         
-        ws.act(new FileCallable<Void>() {
+        ws.act(new MasterToSlaveFileCallable<Void>() {
             private static final long serialVersionUID = 2129531727963121198L;
 
             public Void invoke(File f, VirtualChannel channel) throws IOException {
@@ -87,7 +87,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
     }
 
     public void discardWorkspace(AbstractProject<?, ?> project, FilePath ws) throws IOException, InterruptedException {
-        ws.act(new FileCallable<Void>() {
+        ws.act(new MasterToSlaveFileCallable<Void>() {
             private static final long serialVersionUID = 1916618107019257530L;
 
             public Void invoke(File f, VirtualChannel channel) throws IOException {
