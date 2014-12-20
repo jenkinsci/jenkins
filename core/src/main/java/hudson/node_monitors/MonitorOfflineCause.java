@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2012 Jesse Glick.
+ * Copyright (c) 2014 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package hudson.node_monitors;
 
-package hudson;
+import javax.annotation.Nonnull;
 
-import org.apache.tools.ant.filters.StringInputStream;
-import org.junit.Test;
+import hudson.slaves.OfflineCause;
 
+/**
+ * Offline cause to denote it was node monitor what put computer offline.
+ *
+ * @author ogondza
+ * @since 1.595
+ */
+public abstract class MonitorOfflineCause extends OfflineCause {
 
-import static org.junit.Assert.*;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-
-public class PluginManagerTest {
-
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
-
-    @Test public void parseRequestedPlugins() throws Exception {
-        assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(tmp.getRoot())
-                .parseRequestedPlugins(new StringInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>")).toString());
-    }
-
+    /**
+     * Identify monitor implementation that put computer offline.
+     */
+    public abstract @Nonnull Class<? extends NodeMonitor> getTrigger();
 }

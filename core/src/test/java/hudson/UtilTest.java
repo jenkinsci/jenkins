@@ -40,12 +40,17 @@ import org.jvnet.hudson.test.Bug;
 import hudson.util.StreamTaskListener;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import org.junit.Rule;
 import org.junit.internal.AssumptionViolatedException;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class UtilTest {
+
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+
     @Test
     public void testReplaceMacro() {
         Map<String,String> m = new HashMap<String,String>();
@@ -167,7 +172,7 @@ public class UtilTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos);
-        File d = Util.createTempDir();
+        File d = tmp.getRoot();
         try {
             new FilePath(new File(d, "a")).touch(0);
             assertNull(Util.resolveSymlink(new File(d, "a")));
@@ -215,7 +220,7 @@ public class UtilTest {
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos);
-        File d = Util.createTempDir();
+        File d = tmp.getRoot();
         try {
             new FilePath(new File(d, "original")).touch(0);
             assertFalse(Util.isSymlink(new File(d, "original")));
@@ -247,7 +252,7 @@ public class UtilTest {
         } catch (ClassNotFoundException x) {
             throw new AssumptionViolatedException("prior to JDK 7", x);
         }
-        File d = Util.createTempDir();
+        File d = tmp.getRoot();
         try {
             File f = new File(d, "f");
             OutputStream os = new FileOutputStream(f);

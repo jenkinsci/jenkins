@@ -2037,7 +2037,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         this.buildsDir = buildsDir;
     }
 
-    public FilePath getRootPath() {
+    @Override public @Nonnull FilePath getRootPath() {
         return new FilePath(getRootDir());
     }
 

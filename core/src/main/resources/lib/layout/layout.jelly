@@ -217,9 +217,9 @@ ${h.initPageVariables(context)}
       </l:breadcrumbBar>
     </div>
 
-    <div id="page-body" class="container-fluid">
+    <div id="page-body">
       <div class="row">
-        <div id="side-panel" class="col-sm-9 col-md-7 col-lg-6 col-xlg-4">
+        <div id="side-panel">
           <div id="side-panel-content">
             <j:set var="mode" value="side-panel" />
             <d:invokeBody />
@@ -237,7 +237,7 @@ ${h.initPageVariables(context)}
           </div>
         </div>
 
-        <div id="main-panel" class="col-sm-15 col-md-17 col-lg-18 col-xlg-20">
+        <div id="main-panel">
           <div id="main-panel-content">
             <j:set var="mode" value="main-panel" />
             <d:invokeBody/>
