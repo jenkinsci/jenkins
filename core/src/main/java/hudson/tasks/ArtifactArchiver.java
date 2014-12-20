@@ -50,6 +50,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -253,13 +254,19 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 String dirPath = dir.getRemote() + '/';
                 dirPath = dirPath.endsWith("/") ? dirPath : dirPath + "/";
                 if (!dirPath.startsWith(wsPath)) {
-                    listener.error("context path needs to be relative and inside the workspace");
+                    listener.error(Messages.ArtifactArchiver_ContextOutsideWorkspace());
                     build.setResult(Result.FAILURE);
                     return;
                 }
             }
 
-            Map<String,String> files = dir.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
+            Map<String,String> files;
+
+            if (dir.exists() && dir.isDirectory()) {
+                files = dir.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
+            } else {
+                files = Collections.emptyMap();
+            }
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(dir, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
@@ -276,10 +283,19 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     } catch (Exception e) {
                         Functions.printStackTrace(e, listener.getLogger());
                     }
-                    if (allowEmptyArchive) {
-                        listener.getLogger().println(Messages.ArtifactArchiver_NoMatchFound(artifacts));
+
+                    String message;
+                    if (dir == ws) {
+                        message = Messages.ArtifactArchiver_NoMatchFound(artifacts);
                     } else {
-                        throw new AbortException(Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                        message = Messages.ArtifactArchiver_NoMatchFoundInContext(artifacts, basePath);
+                    }
+
+
+                    if (allowEmptyArchive) {
+                        listener.getLogger().println(message);
+                    } else {
+                        throw new AbortException(message);
                     }
                 } else {
                     // If a freestyle build failed, do not complain that there was no matching artifact:
@@ -372,7 +388,10 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         public FormValidation doCheckBasePath(@AncestorInPath AbstractProject project, @QueryParameter String basePath) throws IOException, InterruptedException {
-            FilePath ws = project.getSomeWorkspace();
+            if (project == null) {
+                return FormValidation.ok();
+            }
+            FilePath ws = null;
             FilePath reference;
             if (ws == null) {
                 // we're not writing anything, just checking whether the basePath escapes a reference directory
@@ -383,15 +402,15 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             }
             FilePath context = reference.child(basePath);
             if (!context.getRemote().startsWith(reference.getRemote())) {
-                return FormValidation.error("Search Base must specify a path inside the job workspace!");
+                return FormValidation.error(Messages.ArtifactArchiver_ContextOutsideWorkspace());
             }
 
             if (ws != null && ws.exists()) {
                 if (!context.exists()) {
-                    return FormValidation.warning("Base Path does not exist inside workspace");
+                    return FormValidation.warning(Messages.ArtifactArchiver_ContextDoesNotExist());
                 }
                 if (!context.isDirectory()) {
-                    return FormValidation.warning("Base Path must not be a file");
+                    return FormValidation.warning(Messages.ArtifactArchiver_ContextIsFile());
                 }
             }
 
