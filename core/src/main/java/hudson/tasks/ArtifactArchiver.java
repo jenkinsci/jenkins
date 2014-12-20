@@ -45,6 +45,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -235,13 +236,19 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 String dirPath = dir.getRemote() + '/';
                 dirPath = dirPath.endsWith("/") ? dirPath : dirPath + "/";
                 if (!dirPath.startsWith(wsPath)) {
-                    listener.error("context path needs to be relative and inside the workspace");
+                    listener.error(Messages.ArtifactArchiver_ContextOutsideWorkspace());
                     build.setResult(Result.FAILURE);
                     return;
                 }
             }
 
-            Map<String,String> files = dir.act(new ListFiles(artifacts, excludes, defaultExcludes));
+            Map<String,String> files;
+
+            if (dir.exists() && dir.isDirectory()) {
+                files = dir.act(new ListFiles(artifacts, excludes, defaultExcludes));
+            } else {
+                files = Collections.emptyMap();
+            }
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(dir, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
@@ -251,8 +258,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 Result result = build.getResult();
                 if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
-                    // The build probably didn't even get to the point where it produces artifacts. 
-                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    // The build probably didn't even get to the point where it produces artifacts.
+                    if (dir == ws) {
+                        listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    } else {
+                        listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFoundInContext(artifacts, contextPath));
+                    }
                     String msg = null;
                     try {
                     	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND);
@@ -345,7 +356,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             if (project == null) {
                 return FormValidation.ok();
             }
-            FilePath ws;
+            FilePath ws = null;
             FilePath reference;
             if (project == null || (ws = project.getSomeWorkspace()) == null) {
                 // we're not writing anything, just checking whether the contextPath escapes a reference directory
@@ -356,15 +367,15 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             }
             FilePath context = reference.child(contextPath);
             if (!context.getRemote().startsWith(reference.getRemote())) {
-                return FormValidation.error("Search Context must specify a path inside the job workspace!");
+                return FormValidation.error(Messages.ArtifactArchiver_ContextOutsideWorkspace());
             }
 
             if (ws != null && ws.exists()) {
                 if (!context.exists()) {
-                    return FormValidation.warning("Context Path does not exist inside workspace");
+                    return FormValidation.warning(Messages.ArtifactArchiver_ContextDoesNotExist());
                 }
                 if (!context.isDirectory()) {
-                    return FormValidation.warning("Context Path must not be a file");
+                    return FormValidation.warning(Messages.ArtifactArchiver_ContextIsFile());
                 }
             }
 

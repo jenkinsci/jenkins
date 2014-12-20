@@ -318,6 +318,40 @@ public class ArtifactArchiverTest {
         Assert.assertEquals("absolute path breakout", FormValidation.Kind.ERROR, desc.doCheckContextPath(p, "/").kind);
     }
 
+    @Test
+    @Issue("JENKINS-12379")
+    public void testContextPathNotExistingButOptional() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForContextPathTest()));
+
+        ArtifactArchiver archiver = new ArtifactArchiver("**");
+        archiver.setContextPath("thisDoesNotExist");
+        archiver.setAllowEmptyArchive(true);
+        p.getPublishersList().replaceBy(Collections.singleton(archiver));
+
+        assertEquals(Result.SUCCESS, build(p));
+        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+
+    }
+
+    @Test
+    @Issue("JENKINS-12379")
+    public void testContextPathIsAFile() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForContextPathTest()));
+
+        ArtifactArchiver archiver = new ArtifactArchiver("**");
+        archiver.setContextPath("module/dist/target/file");
+        archiver.setAllowEmptyArchive(true);
+        p.getPublishersList().replaceBy(Collections.singleton(archiver));
+
+        assertEquals(Result.SUCCESS, build(p));
+        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+
+    }
+
     @LocalData
     @Test public void latestOnlyMigration() throws Exception {
         FreeStyleProject p = j.jenkins.getItemByFullName("sample", FreeStyleProject.class);
