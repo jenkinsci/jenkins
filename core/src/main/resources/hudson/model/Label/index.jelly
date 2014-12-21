@@ -50,6 +50,7 @@ THE SOFTWARE.
             <st:nbsp/>
             <a href="${url}" class="model-link inside">${c.displayName}</a>
           </nobr>
+          <wbr/>
         </j:forEach>
       </div>
 
