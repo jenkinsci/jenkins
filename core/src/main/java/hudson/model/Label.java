@@ -58,6 +58,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -196,6 +197,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
     }
 
+    private static class NodeSorter implements Comparator<Node> {
+        @Override
+        public int compare(Node o1, Node o2) {
+            return o1.getNodeName().compareTo(o2.getNodeName());
+        }
+    }
+
     /**
      * Gets all {@link Node}s that belong to this label.
      */
@@ -204,7 +212,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         Set<Node> nodes = this.nodes;
         if(nodes!=null) return nodes;
 
-        Set<Node> r = new HashSet<Node>();
+        Set<Node> r = new TreeSet<Node>(new NodeSorter());
         Jenkins h = Jenkins.getInstance();
         if(this.matches(h))
             r.add(h);
