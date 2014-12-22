@@ -294,8 +294,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         public FingerprintAction(Run build, Map<String, String> record) {
             this.build = build;
-            this.record = PackedMap.of(record);
-            compact();
+            this.record = compact(record);
         }
 
         @Deprecated
@@ -306,9 +305,8 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         public void add(Map<String,String> moreRecords) {
             Map<String,String> r = new HashMap<String, String>(record);
             r.putAll(moreRecords);
-            record = PackedMap.of(r);
+            record = compact(r);
             ref = null;
-            compact();
         }
 
         public String getIconFileName() {
@@ -341,48 +339,20 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         @Override public void onLoad(Run<?,?> r) {
             build = r;
-            compact();
+            record = compact(record);
         }
 
         @Override public void onAttached(Run<?,?> r) {
             // for historical reasons this setup is done in the constructor instead
         }
 
-        private void compact() {
-            // share data structure with nearby builds, but to keep lazy loading efficient,
-            // don't go back the history forever.
-            if (rand.nextInt(2)!=0) {
-                Run pb = build.getPreviousBuild();
-                if (pb!=null) {
-                    FingerprintAction a = pb.getAction(FingerprintAction.class);
-                    if (a!=null)
-                        compact(a);
-                }
-            }
-        }
-
-        /**
-         * Reuse string instances from another {@link FingerprintAction} to reduce memory footprint.
-         */
-        protected void compact(FingerprintAction a) {
-            Map<String,String> intern = new HashMap<String, String>(); // string intern map
-            for (Entry<String, String> e : a.record.entrySet()) {
-                intern.put(e.getKey(),e.getKey());
-                intern.put(e.getValue(),e.getValue());
-            }
-
-            Map<String,String> b = new HashMap<String, String>();
+        /** Share data structure with other builds, mainly those of the same job. */
+        private PackedMap<String,String> compact(Map<String,String> record) {
+            Map<String,String> b = new HashMap<String,String>();
             for (Entry<String,String> e : record.entrySet()) {
-                String k = intern.get(e.getKey());
-                if (k==null)    k = e.getKey();
-
-                String v = intern.get(e.getValue());
-                if (v==null)    v = e.getValue();
-
-                b.put(k,v);
+                b.put(e.getKey().intern(), e.getValue().intern());
             }
-
-            record = PackedMap.of(b);
+            return PackedMap.of(b);
         }
 
         /**
