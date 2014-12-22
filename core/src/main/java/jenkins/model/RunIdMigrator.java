@@ -64,7 +64,9 @@ import static java.util.logging.Level.*;
 
 /**
  * Converts legacy {@code builds} directories to the current format.
- * There would be one instance associated with each {@link Job}.
+ *
+ * There would be one instance associated with each {@link Job}, to retain ID -> build# mapping.
+ *
  * The {@link Job#getBuildDir} is passed to every method call (rather than being cached) in case it is moved.
  */
 @Restricted(NoExternalUse.class)
@@ -75,6 +77,10 @@ public final class RunIdMigrator {
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
     private static final Map<String,Integer> EMPTY = new TreeMap<String,Integer>();
+
+    /**
+     * Did we record "unmigrate" instruction for this $JENKINS_HOME? Yes if it's in the set.
+     */
     private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<File>());
 
     private @Nonnull Map<String,Integer> idToNumber = EMPTY;
