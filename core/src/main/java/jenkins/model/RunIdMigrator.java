@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,6 +59,8 @@ import org.apache.tools.ant.BuildException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
+
+import static java.util.logging.Level.*;
 
 /**
  * Converts legacy {@code builds} directories to the current format.
@@ -98,7 +99,7 @@ public final class RunIdMigrator {
                 idToNumber.put(line.substring(0, i), Integer.parseInt(line.substring(i + 1)));
             }
         } catch (Exception x) { // IOException, IndexOutOfBoundsException, NumberFormatException
-            LOGGER.log(Level.WARNING, "could not read from " + f, x);
+            LOGGER.log(WARNING, "could not read from " + f, x);
         }
         return true;
     }
@@ -116,7 +117,7 @@ public final class RunIdMigrator {
                 w.abort();
             }
         } catch (IOException x) {
-            LOGGER.log(Level.WARNING, "could not save changes to " + f, x);
+            LOGGER.log(WARNING, "could not save changes to " + f, x);
         }
     }
 
@@ -141,14 +142,14 @@ public final class RunIdMigrator {
      */
     public synchronized boolean migrate(File dir, @CheckForNull File jenkinsHome) {
         if (load(dir)) {
-            LOGGER.log(Level.FINER, "migration already performed for {0}", dir);
+            LOGGER.log(FINER, "migration already performed for {0}", dir);
             return false;
         }
         if (!dir.isDirectory()) {
-            LOGGER.log(/* normal during Job.movedTo */Level.FINE, "{0} was unexpectedly missing", dir);
+            LOGGER.log(/* normal during Job.movedTo */FINE, "{0} was unexpectedly missing", dir);
             return false;
         }
-        LOGGER.log(Level.INFO, "Migrating build records in {0}", dir);
+        LOGGER.log(INFO, "Migrating build records in {0}", dir);
         doMigrate(dir);
         save(dir);
         if (jenkinsHome != null && offeredToUnmigrate.add(jenkinsHome)) {
@@ -168,7 +169,7 @@ public final class RunIdMigrator {
                 }
                 cp.append(locationS);
             }
-            LOGGER.log(Level.WARNING, "Build record migration is one-way. If you need to downgrade Jenkins, run: java -classpath {0} {1} {2}", new Object[] {cp, RunIdMigrator.class.getName(), jenkinsHome});
+            LOGGER.log(WARNING, "Build record migration is one-way. If you need to downgrade Jenkins, run: java -classpath {0} {1} {2}", new Object[] {cp, RunIdMigrator.class.getName(), jenkinsHome});
         }
         return true;
     }
@@ -191,16 +192,16 @@ public final class RunIdMigrator {
                 try {
                     Integer.parseInt(name);
                     if (kid.delete()) {
-                        LOGGER.log(Level.FINE, "deleted build number symlink {0} → {1}", new Object[] {name, link});
+                        LOGGER.log(FINE, "deleted build number symlink {0} → {1}", new Object[] {name, link});
                     } else {
-                        LOGGER.log(Level.WARNING, "could not delete build number symlink {0} → {1}", new Object[] {name, link});
+                        LOGGER.log(WARNING, "could not delete build number symlink {0} → {1}", new Object[] {name, link});
                     }
                 } catch (NumberFormatException x) {
-                    LOGGER.log(Level.FINE, "skipping other symlink {0} → {1}", new Object[] {name, link});
+                    LOGGER.log(FINE, "skipping other symlink {0} → {1}", new Object[] {name, link});
                 }
                 it.remove();
             } catch (Exception x) {
-                LOGGER.log(Level.WARNING, "failed to process " + kid, x);
+                LOGGER.log(WARNING, "failed to process " + kid, x);
             }
         }
         it = kidsList.iterator();
@@ -210,13 +211,13 @@ public final class RunIdMigrator {
                 String name = kid.getName();
                 try {
                     Integer.parseInt(name);
-                    LOGGER.log(Level.FINE, "skipping new build dir {0}", name);
+                    LOGGER.log(FINE, "skipping new build dir {0}", name);
                     continue;
                 } catch (NumberFormatException x) {
                     // OK, next…
                 }
                 if (!kid.isDirectory()) {
-                    LOGGER.log(Level.FINE, "skipping non-directory {0}", name);
+                    LOGGER.log(FINE, "skipping non-directory {0}", name);
                     continue;
                 }
                 long timestamp;
@@ -225,18 +226,18 @@ public final class RunIdMigrator {
                         timestamp = LEGACY_ID_FORMATTER.parse(name).getTime();
                     }
                 } catch (ParseException x) {
-                    LOGGER.log(Level.WARNING, "found unexpected dir {0}", name);
+                    LOGGER.log(WARNING, "found unexpected dir {0}", name);
                     continue;
                 }
                 File buildXml = new File(kid, "build.xml");
                 if (!buildXml.isFile()) {
-                    LOGGER.log(Level.WARNING, "found no build.xml in {0}", name);
+                    LOGGER.log(WARNING, "found no build.xml in {0}", name);
                     continue;
                 }
                 String xml = FileUtils.readFileToString(buildXml, Charsets.UTF_8);
                 Matcher m = NUMBER_ELT.matcher(xml);
                 if (!m.find()) {
-                    LOGGER.log(Level.WARNING, "could not find <number> in {0}/build.xml", name);
+                    LOGGER.log(WARNING, "could not find <number> in {0}/build.xml", name);
                     continue;
                 }
                 int number = Integer.parseInt(m.group(1));
@@ -244,14 +245,14 @@ public final class RunIdMigrator {
                 xml = m.replaceFirst("  <id>" + name + "</id>" + nl + "  <timestamp>" + timestamp + "</timestamp>" + nl);
                 File newKid = new File(dir, Integer.toString(number));
                 if (!kid.renameTo(newKid)) {
-                    LOGGER.log(Level.WARNING, "failed to rename {0} to {1}", new Object[] {name, number});
+                    LOGGER.log(WARNING, "failed to rename {0} to {1}", new Object[] {name, number});
                     continue;
                 }
                 FileUtils.writeStringToFile(new File(newKid, "build.xml"), xml, Charsets.UTF_8);
-                LOGGER.log(Level.FINE, "fully processed {0} → {1}", new Object[] {name, number});
+                LOGGER.log(FINE, "fully processed {0} → {1}", new Object[] {name, number});
                 idToNumber.put(name, number);
             } catch (Exception x) {
-                LOGGER.log(Level.WARNING, "failed to process " + kid, x);
+                LOGGER.log(WARNING, "failed to process " + kid, x);
             }
         }
     }
