@@ -17,6 +17,12 @@ build
 # vim
 *~
 
+# OS X
+.DS_Store
+
+# mvn versions:set
+pom.xml.versionsBackup
+
 war/images/16x16
 war/images/24x24
 war/images/32x32
