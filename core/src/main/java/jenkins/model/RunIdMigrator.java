@@ -175,7 +175,7 @@ public final class RunIdMigrator {
                 }
                 cp.append(locationS);
             }
-            LOGGER.log(WARNING, "Build record migration is one-way. If you need to downgrade Jenkins, run: java -classpath {0} {1} {2}", new Object[] {cp, RunIdMigrator.class.getName(), jenkinsHome});
+            LOGGER.log(WARNING, "Build record migration is one-way. If you need to downgrade Jenkins, run: java -classpath {0} {1} \"{2}\"", new Object[] {cp, RunIdMigrator.class.getName(), jenkinsHome});
         }
         return true;
     }
