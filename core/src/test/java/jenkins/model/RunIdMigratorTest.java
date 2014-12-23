@@ -28,6 +28,7 @@ import hudson.Util;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -65,7 +66,7 @@ public class RunIdMigratorTest {
         migrator = new RunIdMigrator();
         dir = tmp.getRoot();
     }
-    
+
     @Test public void newJob() throws Exception {
         migrator.created(dir);
         assertEquals("{legacyIds=''}", summarize());

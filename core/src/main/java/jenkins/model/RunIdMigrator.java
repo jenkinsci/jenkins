@@ -60,7 +60,6 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
@@ -76,8 +75,9 @@ import static java.util.logging.Level.*;
 @Restricted(NoExternalUse.class)
 public final class RunIdMigrator {
 
+    private final DateFormat legacyIdFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+
     static final Logger LOGGER = Logger.getLogger(RunIdMigrator.class.getName());
-    private static final DateFormat LEGACY_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
     private static final Map<String,Integer> EMPTY = new TreeMap<String,Integer>();
@@ -235,8 +235,8 @@ public final class RunIdMigrator {
                 }
                 long timestamp;
                 try {
-                    synchronized (LEGACY_ID_FORMATTER) {
-                        timestamp = LEGACY_ID_FORMATTER.parse(name).getTime();
+                    synchronized (legacyIdFormatter) {
+                        timestamp = legacyIdFormatter.parse(name).getTime();
                     }
                 } catch (ParseException x) {
                     LOGGER.log(WARNING, "found unexpected dir {0}", name);
@@ -304,9 +304,9 @@ public final class RunIdMigrator {
         if (!jobs.isDirectory()) {
             throw new FileNotFoundException("no such $JENKINS_HOME " + root);
         }
-        unmigrateJobsDir(jobs);
+        new RunIdMigrator().unmigrateJobsDir(jobs);
     }
-    private static void unmigrateJobsDir(File jobs) throws Exception {
+    private void unmigrateJobsDir(File jobs) throws Exception {
         for (File job : jobs.listFiles()) {
             File[] kids = job.listFiles();
             if (kids == null) {
@@ -328,7 +328,7 @@ public final class RunIdMigrator {
     private static final Pattern ID_ELT = Pattern.compile("(?m)^  <id>([0-9_-]+)</id>(\r?\n)");
     private static final Pattern TIMESTAMP_ELT = Pattern.compile("(?m)^  <timestamp>(\\d+)</timestamp>(\r?\n)");
     /** Inverse of {@link #doMigrate}. */
-    private static void unmigrateBuildsDir(File builds) throws Exception {
+    private void unmigrateBuildsDir(File builds) throws Exception {
         File mapFile = new File(builds, MAP_FILE);
         if (!mapFile.isFile()) {
             System.err.println(builds + " does not look to have been migrated yet; skipping");
@@ -362,7 +362,7 @@ public final class RunIdMigrator {
                 xml = m.replaceFirst("");
             } else {
                 // Post-migration build. We give it a new ID based on its timestamp.
-                id = LEGACY_ID_FORMATTER.format(new Date(timestamp));
+                id = legacyIdFormatter.format(new Date(timestamp));
             }
             FileUtils.write(buildXml, xml, Charsets.UTF_8);
             if (!build.renameTo(new File(builds, id))) {
