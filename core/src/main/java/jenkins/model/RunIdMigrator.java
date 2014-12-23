@@ -24,8 +24,10 @@
 
 package jenkins.model;
 
+import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
+import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.util.AtomicFileWriter;
 import hudson.util.StreamTaskListener;
@@ -58,6 +60,8 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 import static java.util.logging.Level.*;
@@ -158,26 +162,29 @@ public final class RunIdMigrator {
         LOGGER.log(INFO, "Migrating build records in {0}", dir);
         doMigrate(dir);
         save(dir);
-        if (jenkinsHome != null && offeredToUnmigrate.add(jenkinsHome)) {
-            StringBuilder cp = new StringBuilder();
-            for (Class<?> c : new Class<?>[] {RunIdMigrator.class, /* TODO how to calculate transitive dependencies automatically? */Charsets.class, WriterOutputStream.class, BuildException.class, FastDateFormat.class}) {
-                URL location = c.getProtectionDomain().getCodeSource().getLocation();
-                String locationS = location.toString();
-                if (location.getProtocol().equals("file")) {
-                    try {
-                        locationS = new File(location.toURI()).getAbsolutePath();
-                    } catch (URISyntaxException x) {
-                        // never mind
-                    }
-                }
-                if (cp.length() > 0) {
-                    cp.append(File.pathSeparator);
-                }
-                cp.append(locationS);
-            }
-            LOGGER.log(WARNING, "Build record migration is one-way. If you need to downgrade Jenkins, run: java -classpath {0} {1} \"{2}\"", new Object[] {cp, RunIdMigrator.class.getName(), jenkinsHome});
-        }
+        if (jenkinsHome != null && offeredToUnmigrate.add(jenkinsHome))
+            LOGGER.log(WARNING, "Build record migration is one-way. If you need to downgrade Jenkins, run: {0}", getUnmigrationCommandLine(jenkinsHome));
         return true;
+    }
+
+    private static String getUnmigrationCommandLine(File jenkinsHome) {
+        StringBuilder cp = new StringBuilder();
+        for (Class<?> c : new Class<?>[] {RunIdMigrator.class, /* TODO how to calculate transitive dependencies automatically? */Charsets.class, WriterOutputStream.class, BuildException.class, FastDateFormat.class}) {
+            URL location = c.getProtectionDomain().getCodeSource().getLocation();
+            String locationS = location.toString();
+            if (location.getProtocol().equals("file")) {
+                try {
+                    locationS = new File(location.toURI()).getAbsolutePath();
+                } catch (URISyntaxException x) {
+                    // never mind
+                }
+            }
+            if (cp.length() > 0) {
+                cp.append(File.pathSeparator);
+            }
+            cp.append(locationS);
+        }
+        return String.format("java -classpath \"%s\" %s \"%s\"", cp, RunIdMigrator.class.getName(), jenkinsHome);
     }
 
     private static final Pattern NUMBER_ELT = Pattern.compile("(?m)^  <number>(\\d+)</number>(\r?\n)");
@@ -367,4 +374,34 @@ public final class RunIdMigrator {
         System.err.println(builds + " has been restored to its original format");
     }
 
+    /**
+     * Expose unmigration instruction to the user.
+     */
+    @Extension
+    public static class UnmigrationInstruction implements RootAction, StaplerProxy {
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return "JENKINS-24380";
+        }
+
+        @Override
+        public Object getTarget() {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            return this;
+        }
+
+        public String getCommand() {
+            return RunIdMigrator.getUnmigrationCommandLine(Jenkins.getInstance().getRootDir());
+        }
+    }
 }
