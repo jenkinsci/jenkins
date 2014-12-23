@@ -110,7 +110,7 @@ throws ANTLRException
   }
   | ("H" "(")=> "H" "(" s=token "-" e=token ")" ( "/" d=token )?
   {
-    bits = doHash(s,e,d);
+    bits = doHash(s,e,d,field);
   }
   | "H" ( "/" d=token )?
   {
