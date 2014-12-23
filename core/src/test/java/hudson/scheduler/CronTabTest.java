@@ -280,4 +280,25 @@ public class CronTabTest {
         assertEquals("[35, 56]", times.toString());
     }
 
+    @Test public void rangeBoundsCheckOK() throws Exception {
+        new CronTab("H(0-59) H(0-23) H(1-31) H(1-12) H(0-7)");
+    }
+
+    @Test public void rangeBoundsCheckFailHour() throws Exception {
+        try {
+            new CronTab("H H(12-24) * * *");
+            fail();
+        } catch (ANTLRException e) {
+            // ok
+        }
+    }
+
+    @Test public void rangeBoundsCheckFailMinute() throws Exception {
+        try {
+            new CronTab("H(33-66) * * * *");
+            fail();
+        } catch (ANTLRException e) {
+            // ok
+        }
+    }
 }
