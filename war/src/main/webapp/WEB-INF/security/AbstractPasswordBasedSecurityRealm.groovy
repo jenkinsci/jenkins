@@ -35,9 +35,9 @@ authenticationManager(ProviderManager) {
         // injected by the parsing code
         authenticator,
 
-    // these providers apply everywhere
+        // these providers apply everywhere
         bean(RememberMeAuthenticationProvider) {
-            key = Jenkins.getInstance().getSecretKey();
+            key = Jenkins.getInstance().getSecretKey()
         },
         // this doesn't mean we allow anonymous access.
         // we just authenticate anonymous users as such,

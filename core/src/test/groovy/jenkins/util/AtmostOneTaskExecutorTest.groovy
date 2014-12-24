@@ -16,16 +16,17 @@ class AtmostOneTaskExecutorTest {
     def lock = new OneShotEvent()
 
     @Test
-    public void doubleBooking() {
+    void doubleBooking() {
         def base = Executors.newCachedThreadPool()
         def es = new AtmostOneTaskExecutor(base,
                 { ->
                     counter.incrementAndGet()
                     lock.block()
-                } as Callable);
+                } as Callable)
         def f1 = es.submit()
-        while (counter.get() == 0)
-        ; // spin lock until executor gets to the choking point
+        while (counter.get() == 0) {
+            ; // spin lock until executor gets to the choking point
+        }
 
         def f2 = es.submit() // this should hang
         Thread.sleep(500) // make sure the 2nd task is hanging

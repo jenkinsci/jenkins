@@ -18,30 +18,30 @@ import lib.JenkinsTagLib
  * @author Stefan Wolf (wolfs)
  */
 abstract class AbstractGroovyViewModule {
-  JellyBuilder builder
-  FormTagLib f
-  LayoutTagLib l
-  JenkinsTagLib t
-  Namespace st
 
-  public AbstractGroovyViewModule(JellyBuilder b) {
-    builder = b
-    f= builder.namespace(FormTagLib)
-    l=builder.namespace(LayoutTagLib)
-    t=builder.namespace(JenkinsTagLib)
-    st=builder.namespace("jelly:stapler")
+    JellyBuilder builder
+    FormTagLib f
+    LayoutTagLib l
+    JenkinsTagLib t
+    Namespace st
 
-  }
+    AbstractGroovyViewModule(JellyBuilder b) {
+        builder = b
+        f = builder.namespace(FormTagLib)
+        l = builder.namespace(LayoutTagLib)
+        t = builder.namespace(JenkinsTagLib)
+        st = builder.namespace("jelly:stapler")
+    }
 
-  def methodMissing(String name, args) {
-    builder.invokeMethod(name,args)
-  }
+    def methodMissing(String name, args) {
+        builder.invokeMethod(name, args)
+    }
 
-  def propertyMissing(String name) {
-    builder.getProperty(name)
-  }
+    def propertyMissing(String name) {
+        builder.getProperty(name)
+    }
 
-  def propertyMissing(String name, value) {
-    builder.setProperty(name, value)
-  }
+    def propertyMissing(String name, value) {
+        builder.setProperty(name, value)
+    }
 }

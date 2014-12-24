@@ -10,7 +10,7 @@ import org.junit.Test
 /**
  * @author Kohsuke Kawaguchi
  */
-public class DefaultConfidentialStoreTest {
+class DefaultConfidentialStoreTest {
 
     def tmp
 
@@ -42,8 +42,9 @@ public class DefaultConfidentialStoreTest {
 
         assert !new File(tmp, "test").text.contains("Hello") // the data shouldn't be a plain text, obviously
 
-        if (!Functions.isWindows())
+        if (!Functions.isWindows()) {
             assert (new FilePath(tmp).mode() & 0777) == 0700 // should be read only
+        }
 
         // if the master key changes, we should gracefully fail to load the store
         new File(tmp, "master.key").delete()
