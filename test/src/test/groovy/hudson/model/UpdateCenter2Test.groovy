@@ -23,39 +23,36 @@
  */
 package hudson.model
 
+import static org.junit.Assert.*
+
 import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.RandomlyFails
 import org.junit.Rule
 import org.junit.Test
-import static org.junit.Assert.*
 import hudson.model.UpdateCenter.DownloadJob.Success
 import hudson.model.UpdateSite
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 public class UpdateCenter2Test {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule public JenkinsRule j = new JenkinsRule()
 
     /**
      * Makes sure a plugin installs fine.
      */
     @RandomlyFails("SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…")
     @Test void install() {
-        UpdateSite.neverUpdate = false;
+        UpdateSite.neverUpdate = false
         j.createWebClient().goTo("") // load the metadata
-        def job = j.jenkins.updateCenter.getPlugin("changelog-history").deploy().get(); // this seems like one of the smallest plugin
-        println job.status;
-        assertTrue(job.status instanceof Success)
+        def job = j.jenkins.updateCenter.getPlugin("changelog-history").deploy().get() // this seems like one of the smallest plugin
+        assert job.status instanceof Success
     }
 
     @Test void getLastUpdatedString() {
         UpdateSite.neverUpdate = false
-        assertTrue(j.jenkins.updateCenter.getById("default").due)
-        assertEquals(hudson.model.Messages.UpdateCenter_n_a(), j.jenkins.updateCenter.lastUpdatedString)
+        assert j.jenkins.updateCenter.getById("default").due
+        assert hudson.model.Messages.UpdateCenter_n_a() == j.jenkins.updateCenter.lastUpdatedString
     }
-
 }

@@ -6,12 +6,10 @@ import org.junit.Test
 import java.nio.charset.Charset
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 class TextFileTest {
-    List<File> files = [];
+    List<File> files = []
 
     @After
     void tearDown() {
@@ -25,8 +23,8 @@ class TextFileTest {
 
         def t = new TextFile(f)
         def first35 = "Lorem ipsum dolor sit amet, consect"
-        assert t.head(35).equals(first35)
-        assert first35.length()==35
+        assert t.head(35) == first35
+        assert first35.length() == 35
     }
 
     @Test
@@ -35,7 +33,7 @@ class TextFileTest {
         f.text = "hello"
 
         def t = new TextFile(f)
-        assert t.head(35).equals("hello")
+        assert t.head(35) == "hello"
     }
 
     @Test
@@ -45,8 +43,8 @@ class TextFileTest {
 
         def t = new TextFile(f)
         def tail35 = "la, vitae interdum quam rutrum id.\n"
-        assert t.fastTail(35).equals(tail35)
-        assert tail35.length()==35
+        assert t.fastTail(35) == tail35
+        assert tail35.length() == 35
     }
 
     @Test
@@ -55,7 +53,7 @@ class TextFileTest {
         f.text = "hello"
 
         def t = new TextFile(f)
-        assert t.fastTail(35).equals("hello")
+        assert t.fastTail(35) == "hello"
     }
 
     /**
@@ -76,13 +74,13 @@ class TextFileTest {
                     o.write(0x83)
                     o.write(0x82)
                 }
-                o.write(0x0A);
+                o.write(0x0A)
             }
         }
 
         def tail = t.fastTail(35, Charset.forName("Shift_JIS"))
-        assert tail.equals("\u30e2"*34+"\n")
-        assert tail.length()==35
+        assert tail == ("\u30e2" * 34 + "\n")
+        assert tail.length() == 35
 
         // add one more byte to force fastTail to read from one byte ahead
         // between this and the previous case, it should start parsing text incorrectly, until it hits NL
@@ -90,8 +88,8 @@ class TextFileTest {
         f.append([0x0A] as byte[])
 
         tail = t.fastTail(35, Charset.forName("Shift_JIS"))
-        assert tail.equals("\u30e2"*33+"\n\n")
-        assert tail.length()==35
+        assert tail == ("\u30e2" * 33 + "\n\n")
+        assert tail.length() == 35
     }
 
     def newFile() {

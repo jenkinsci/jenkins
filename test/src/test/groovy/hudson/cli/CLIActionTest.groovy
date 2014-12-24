@@ -1,13 +1,13 @@
 package hudson.cli
 
 import hudson.remoting.Channel
-import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy
 
 import org.junit.Rule
 import org.junit.Test
 import org.jvnet.hudson.test.JenkinsRule
-import org.jvnet.hudson.test.recipes.PresetData;
-import org.jvnet.hudson.test.recipes.PresetData.DataSet;
+import org.jvnet.hudson.test.recipes.PresetData
+import org.jvnet.hudson.test.recipes.PresetData.DataSet
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -20,7 +20,7 @@ class CLIActionTest {
     @Rule
     public JenkinsRule j = new JenkinsRule()
 
-    ExecutorService pool;
+    ExecutorService pool
 
     /**
      * Makes sure that the /cli endpoint is functioning.
@@ -29,18 +29,18 @@ class CLIActionTest {
     public void testDuplexHttp() {
         pool = Executors.newCachedThreadPool()
         try {
-            FullDuplexHttpStream con = new FullDuplexHttpStream(new URL(j.URL,"cli"));
-            Channel ch = new Channel("test connection", pool, con.inputStream, con.outputStream);
-            ch.close();
+            FullDuplexHttpStream con = new FullDuplexHttpStream(new URL(j.URL, "cli"))
+            Channel ch = new Channel("test connection", pool, con.inputStream, con.outputStream)
+            ch.close()
         } finally {
-            pool.shutdown();
+            pool.shutdown()
         }
     }
 
     @Test
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     public void serveCliActionToAnonymousUser() throws Exception {
-        def wc = j.createWebClient();
-        wc.goTo("cli");
+        def wc = j.createWebClient()
+        wc.goTo("cli")
     }
 }
