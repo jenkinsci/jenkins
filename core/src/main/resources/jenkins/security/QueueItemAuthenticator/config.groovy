@@ -1,2 +1,3 @@
-package jenkins.security.QueueItemAuthenticator;
+package jenkins.security.QueueItemAuthenticator
+
 // the default is empty configuration

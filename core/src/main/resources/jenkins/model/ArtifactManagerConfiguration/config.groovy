@@ -21,15 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package jenkins.model.ArtifactManagerConfiguration
 
-package jenkins.model.ArtifactManagerConfiguration;
-
-f = namespace(lib.FormTagLib);
+f = namespace(lib.FormTagLib)
 
 if (!jenkins.model.ArtifactManagerFactoryDescriptor.all().isEmpty()) {
-    f.section(title: _("Artifact Management for Builds")) {
-        f.block() {
-            f.repeatableHeteroProperty(field: "artifactManagerFactories", hasHeader: true)
+    f.section(title:_("Artifact Management for Builds")) {
+        f.block {
+            f.repeatableHeteroProperty(field:"artifactManagerFactories", hasHeader:true)
         }
     }
 }
