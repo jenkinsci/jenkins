@@ -1,10 +1,11 @@
-package hudson.model.EnvironmentContributor.EnvVarsHtml;
+package hudson.model.EnvironmentContributor.EnvVarsHtml
+
 import hudson.model.EnvironmentContributor
 import hudson.scm.SCM
 
 def st = namespace("jelly:stapler")
 
-st.contentType(value: "text/html;charset=UTF-8")
+st.contentType(value:"text/html;charset=UTF-8")
 
 html {
     head {

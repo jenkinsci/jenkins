@@ -1,5 +1,5 @@
-package hudson.model.UsageStatistics;
+package hudson.model.UsageStatistics
 
-def f=namespace(lib.FormTagLib)
+def f = namespace(lib.FormTagLib)
 
-f.optionalBlock( field:"usageStatisticsCollected", checked:app.usageStatisticsCollected, title:_("statsBlurb"))
+f.optionalBlock(field:"usageStatisticsCollected", checked:app.usageStatisticsCollected, title:_("statsBlurb"))
