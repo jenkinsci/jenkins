@@ -12,7 +12,7 @@ import org.junit.Test
  */
 public class DefaultConfidentialStoreTest {
 
-    def tmp;
+    def tmp
 
     @Before
     void setup() {
@@ -26,29 +26,29 @@ public class DefaultConfidentialStoreTest {
 
     @Test
     void roundtrip() {
-        tmp.deleteDir()   // let ConfidentialStore create a directory
+        tmp.deleteDir() // let ConfidentialStore create a directory
 
-        def store = new DefaultConfidentialStore(tmp);
-        def key = new ConfidentialKey("test") {};
+        def store = new DefaultConfidentialStore(tmp)
+        def key = new ConfidentialKey("test") {}
 
         // basic roundtrip
         def str = "Hello world!"
         store.store(key, str.bytes)
-        assert new String(store.load(key))==str
+        assert new String(store.load(key)) == str
 
         // data storage should have some stuff
-        assert new File(tmp,"test").exists()
-        assert new File(tmp,"master.key").exists()
+        assert new File(tmp, "test").exists()
+        assert new File(tmp, "master.key").exists()
 
-        assert !new File(tmp,"test").text.contains("Hello") // the data shouldn't be a plain text, obviously
+        assert !new File(tmp, "test").text.contains("Hello") // the data shouldn't be a plain text, obviously
 
         if (!Functions.isWindows())
-            assert (new FilePath(tmp).mode()&0777) == 0700 // should be read only
+            assert (new FilePath(tmp).mode() & 0777) == 0700 // should be read only
 
         // if the master key changes, we should gracefully fail to load the store
-        new File(tmp,"master.key").delete()
+        new File(tmp, "master.key").delete()
         def store2 = new DefaultConfidentialStore(tmp)
-        assert new File(tmp,"master.key").exists()  // we should have a new key now
-        assert store2.load(key)==null;
+        assert new File(tmp, "master.key").exists() // we should have a new key now
+        assert store2.load(key) == null
     }
 }
