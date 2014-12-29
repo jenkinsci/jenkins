@@ -468,7 +468,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             Index copy = editInPlace!=null ? editInPlace : new Index(index);
 
             BuildReference<R> ref = createReference(r);
-            copy.byNumber.put(getNumberOf(r),ref);
+            BuildReference<R> old = copy.byNumber.put(getNumberOf(r), ref);
+            assert old == null || old.get() == null : "tried to overwrite " + old + " with " + ref;
 
             if (editInPlace==null)  index = copy;
 
