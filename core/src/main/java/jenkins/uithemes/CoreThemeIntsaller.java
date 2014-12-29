@@ -50,9 +50,9 @@ public class CoreThemeIntsaller {
         themesProcessor.deleteAllUserThemes();
 
         // Add the core contributors.
+        themesProcessor.addContributor(new PageHeader());
         themesProcessor.addContributor(new Icons());
         themesProcessor.addContributor(new StatusBalls());
-        themesProcessor.addContributor(new PageHeader());
         themesProcessor.addContributor(new ConsoleOutput());
 
         // Add plugin contributors.

@@ -40,32 +40,32 @@ public class StatusBalls implements UIThemeContributor {
         uiThemeSet.registerTheme("status-balls", "Status Balls/Orbs", "Jenkins Ball/Orb Status Indicators");
 
         // Register core status balls themes
-        registerDefaultStatusBalls(uiThemeSet);
+        registerClassicStatusBalls(uiThemeSet);
         registerCSS3StatusBalls(uiThemeSet);
 
         // Plugins etc can register other status ball theme "implementations".
     }
 
-    private void registerDefaultStatusBalls(UIThemeSet themeSet) {
+    private void registerClassicStatusBalls(UIThemeSet themeSet) {
         //
-        // The default status balls theme impl is very simple since it is not configurable. All we need to do
+        // The classic status balls theme impl is very simple since it is not configurable. All we need to do
         // here in Jenkins core is:
         //
-        //      1. register the default theme implementation
-        //      2. add a contribution for the default status balls added by Jenkins core
-        //      3. define the LESS template for the core "default" status ball styles
+        //      1. register the classic theme implementation
+        //      2. add a contribution for the classic status balls added by Jenkins core
+        //      3. define the LESS template for the core "classic" status ball styles
         //
         //      See below.
         //
 
         // #1 ...
-        themeSet.registerThemeImpl("status-balls", "default", "Default", "Classic image-based Status Balls/Orbs");
+        themeSet.registerThemeImpl("status-balls", "classic", "Classic", "Classic image-based Status Balls/Orbs");
 
         // #2 ...
-        themeSet.contribute(new UIThemeContribution("default-status-balls-core", "status-balls", "default", Jenkins.class));
+        themeSet.contribute(new UIThemeContribution("classic-status-balls", "status-balls", "classic", Jenkins.class));
 
         // #3 ...
-        // see core/src/main/resources/jenkins-themes/status-balls/default/default-status-balls-core/theme-template.less
+        // see core/src/main/resources/jenkins-themes/status-balls/classic/classic-status-balls/theme-template.less
     }
 
     private void registerCSS3StatusBalls(UIThemeSet themeSet) {
@@ -106,9 +106,9 @@ public class StatusBalls implements UIThemeContributor {
                 );
 
         // #2 ...
-        themeSet.contribute(new UIThemeContribution("css3-animated-status-balls-core", "status-balls", "css3-animated", Jenkins.class));
+        themeSet.contribute(new UIThemeContribution("css3-animated-status-balls", "status-balls", "css3-animated", Jenkins.class));
 
         // #3 ...
-        // see core/src/main/resources/jenkins-themes/status-balls/css3-animated/css3-animated-status-balls-core/theme-template.less
+        // see core/src/main/resources/jenkins-themes/status-balls/css3-animated/css3-animated-status-balls/theme-template.less
     }
 }

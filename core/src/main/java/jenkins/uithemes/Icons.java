@@ -43,33 +43,33 @@ public class Icons implements UIThemeContributor {
     public void contribute(UIThemeSet uiThemeSet) {
         uiThemeSet.registerTheme("icons", "Icons", "The set of Icons used by Jenkins");
 
-        // Register the default icon set
-        registerDefaultIcons(uiThemeSet);
+        // Register the classic icon set
+        registerClassicIcons(uiThemeSet);
 
         // Plugins etc can register other icons sets i.e. other "icon" theme "implementations".
     }
 
-    private void registerDefaultIcons(UIThemeSet themeSet) {
+    private void registerClassicIcons(UIThemeSet themeSet) {
         //
-        // The default icons theme impl is very simple since it is not configurable. All we need to do
+        // The classic icons theme impl is very simple since it is not configurable. All we need to do
         // here in Jenkins core is:
         //
-        //      1. register the default theme implementation
-        //      2. add a contribution for the default icons added by Jenkins core (plugins can also make
-        //         contributions to the "default" impl for their icons)
-        //      3. define the LESS template for the core "default" icon styles
+        //      1. register the classic theme implementation
+        //      2. add a contribution for the classic icons added by Jenkins core (plugins can also make
+        //         contributions to the "classic" impl for their icons)
+        //      3. define the LESS template for the core "classic" icon styles
         //
         //      See below.
         //
 
         // #1 ...
-        themeSet.registerThemeImpl("icons", "default", "Default", "Classic Jenkins Icon Set");
+        themeSet.registerThemeImpl("icons", "classic", "Classic", "Classic Jenkins Icon Set");
 
         // #2 ...
-        themeSet.contribute(new UIThemeContribution("default-icons-core", "icons", "default", Jenkins.class));
+        themeSet.contribute(new UIThemeContribution("classic-icons-core", "icons", "classic", Jenkins.class));
 
         // #3 ...
-        // see core/src/main/resources/jenkins-themes/icons/default/default-icons-core/theme-template.less
+        // see core/src/main/resources/jenkins-themes/icons/classic/classic-icons-core/theme-template.less
     }
 
     /**
