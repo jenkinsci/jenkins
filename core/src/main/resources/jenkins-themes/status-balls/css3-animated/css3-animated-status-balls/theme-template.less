@@ -109,8 +109,26 @@
   animation: load8 5s infinite linear;
 }
 
-.anime_size(@numPixels, @iconSizeClass) {
-  @wh: unit(@numPixels, px);
+.no_anime_size(@numPixels, @margin, @iconSizeClass) {
+  @wh: unit((@numPixels - (@margin * 2)), px);
+
+  .icon-red.@{iconSizeClass},
+  .icon-yellow.@{iconSizeClass},
+  .icon-blue.@{iconSizeClass},
+  .icon-grey.@{iconSizeClass},
+  .icon-disabled.@{iconSizeClass},
+  .icon-aborted.@{iconSizeClass},
+  .icon-notbuilt.@{iconSizeClass},
+  .icon-nobuilt.@{iconSizeClass},
+  .icon-green.@{iconSizeClass} {
+    width: @wh;
+    height: @wh;
+    margin: unit(@margin, px);
+  }
+}
+
+.anime_size(@numPixels, @margin, @iconSizeClass) {
+  @wh: unit((@numPixels - (@margin * 2)), px);
   @borderWidth: unit((@numPixels * 0.2), px);
 
   .icon-red-anime.@{iconSizeClass},
@@ -124,6 +142,7 @@
   .icon-green-anime.@{iconSizeClass} {
     width: @wh;
     height: @wh;
+    margin: unit(@margin, px);
     border-width: @borderWidth;
   }
 }
@@ -134,10 +153,15 @@
   }
 }
 
-.anime_size(16, icon-sm);
-.anime_size(24, icon-md);
-.anime_size(32, icon-lg);
-.anime_size(48, icon-xlg);
+.no_anime_size(16, 1, icon-sm);
+.no_anime_size(24, 2, icon-md);
+.no_anime_size(32, 3, icon-lg);
+.no_anime_size(48, 4, icon-xlg);
+
+.anime_size(16, 1, icon-sm);
+.anime_size(24, 2, icon-md);
+.anime_size(32, 3, icon-lg);
+.anime_size(48, 4, icon-xlg);
 
 .anime_color(icon-red-anime, @errorColor);
 .anime_color(icon-yellow-anime, @warningColor);
