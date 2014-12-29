@@ -27,6 +27,7 @@ import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.NullStream;
+import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -34,6 +35,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -543,6 +545,25 @@ public class FilePathTest {
               .thenReturn(someZippedContent());
 
             assertTrue(d.installIfNecessaryFrom(url, null, null));
+    }
+
+    @Issue("JENKINS-26196")
+    @Test public void installIfNecessarySkipsDownloadWhenErroneous() throws Exception {
+        File tmp = temp.getRoot();
+        final FilePath d = new FilePath(tmp);
+        d.child(".timestamp").touch(123000);
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        final URL url = someUrlToZipFile(con);
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_GATEWAY_TIMEOUT);
+        when(con.getResponseMessage()).thenReturn("Gateway Timeout");
+        when(con.getInputStream()).thenThrow(new ConnectException());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String message = "going ahead";
+        assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+        verify(con).setIfModifiedSince(123000);
+        String log = baos.toString();
+        assertFalse(log, log.contains(message));
+        assertTrue(log, log.contains("504 Gateway Timeout"));
     }
 
     private URL someUrlToZipFile(final URLConnection con) throws IOException {

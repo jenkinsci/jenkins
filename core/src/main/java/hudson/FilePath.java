@@ -756,11 +756,12 @@ public final class FilePath implements Serializable {
     public boolean installIfNecessaryFrom(@Nonnull URL archive, @CheckForNull TaskListener listener, @Nonnull String message) throws IOException, InterruptedException {
         try {
             FilePath timestamp = this.child(".timestamp");
+            long lastModified = timestamp.lastModified();
             URLConnection con;
             try {
                 con = ProxyConfiguration.open(archive);
-                if (timestamp.exists()) {
-                    con.setIfModifiedSince(timestamp.lastModified());
+                if (lastModified != 0) {
+                    con.setIfModifiedSince(lastModified);
                 }
                 con.connect();
             } catch (IOException x) {
@@ -775,15 +776,21 @@ public final class FilePath implements Serializable {
                 }
             }
 
-            if (con instanceof HttpURLConnection
-                    && ((HttpURLConnection)con).getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
-                return false;
+            if (lastModified != 0 && con instanceof HttpURLConnection) {
+                HttpURLConnection httpCon = (HttpURLConnection) con;
+                int responseCode = httpCon.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                    return false;
+                } else if (responseCode != HttpURLConnection.HTTP_OK) {
+                    listener.getLogger().println("Skipping installation of " + archive + " to " + remote + " due to server error: " + responseCode + " " + httpCon.getResponseMessage());
+                    return false;
+                }
             }
 
             long sourceTimestamp = con.getLastModified();
 
             if(this.exists()) {
-                if(timestamp.exists() && sourceTimestamp ==timestamp.lastModified())
+                if (lastModified != 0 && sourceTimestamp == lastModified)
                     return false;   // already up to date
                 this.deleteContents();
             } else {
