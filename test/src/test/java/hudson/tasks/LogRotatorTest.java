@@ -21,8 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package hudson.tasks;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -34,17 +38,24 @@ import hudson.model.Run;
 import hudson.tasks.ArtifactArchiverTest.CreateArtifact;
 import java.util.Arrays;
 import java.util.Collections;
-import org.jvnet.hudson.test.Bug;
+
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.FailureBuilder;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Verifies that the last successful and stable builds of a job will be kept if requested.
  */
-public class LogRotatorTest extends HudsonTestCase {
+public class LogRotatorTest {
 
-    public void testSuccessVsFailure() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void successVsFailure() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
         project.setLogRotator(new LogRotator(-1, 2, -1, -1));
         assertEquals(Result.SUCCESS, build(project)); // #1
         project.getBuildersList().replaceBy(Collections.singleton(new FailureBuilder()));
@@ -59,9 +70,10 @@ public class LogRotatorTest extends HudsonTestCase {
         assertEquals(3, numberOf(project.getLastFailedBuild()));
     }
 
-    @Bug(2417)
-    public void testStableVsUnstable() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+    @Test
+    @Issue("JENKINS-2417")
+    public void stableVsUnstable() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
         project.setLogRotator(new LogRotator(-1, 2, -1, -1));
         assertEquals(Result.SUCCESS, build(project)); // #1
         project.getPublishersList().replaceBy(Collections.singleton(new TestsFail()));
@@ -74,9 +86,10 @@ public class LogRotatorTest extends HudsonTestCase {
         assertEquals(null, project.getBuildByNumber(2));
     }
 
-    @Bug(834)
-    public void testArtifactDelete() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+    @Test
+    @Issue("JENKINS-834")
+    public void artifactDelete() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
         project.setLogRotator(new LogRotator(-1, 6, -1, 2));
         project.getPublishersList().replaceBy(Collections.singleton(new ArtifactArchiver("f", "", true, false)));
         assertEquals("(no artifacts)", Result.FAILURE, build(project)); // #1
@@ -124,7 +137,6 @@ public class LogRotatorTest extends HudsonTestCase {
         assertTrue(project.getBuildByNumber(8).getHasArtifacts());
     }
 
-
     static Result build(FreeStyleProject project) throws Exception {
         return project.scheduleBuild2(0).get().getResult();
     }
@@ -151,5 +163,4 @@ public class LogRotatorTest extends HudsonTestCase {
             };
         }
     }
-
 }

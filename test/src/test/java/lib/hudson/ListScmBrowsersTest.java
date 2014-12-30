@@ -1,10 +1,14 @@
 package lib.hudson;
 
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import hudson.model.Item;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.xml.sax.SAXException;
 
 import java.util.HashSet;
@@ -15,21 +19,28 @@ import java.io.IOException;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ListScmBrowsersTest extends HudsonTestCase {
-    public void testSelectBoxesUnique() throws Exception {
-        check(createFreeStyleProject());
+public class ListScmBrowsersTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void selectBoxesUnique_FreeStyleProject() throws Exception {
+        check(j.createFreeStyleProject());
     }
 
-    public void testSelectBoxesUnique2() throws Exception {
-        check(createMavenProject());
+    @Test
+    public void selectBoxesUnique_MavenProject() throws Exception {
+        check(j.createMavenProject());
     }
 
-    public void testSelectBoxesUnique3() throws Exception {
-        check(createMatrixProject());
+    @Test
+    public void selectBoxesUnique_MatrixProject() throws Exception {
+        check(j.createMatrixProject());
     }
 
     private void check(Item p) throws IOException, SAXException {
-        HtmlPage page = new WebClient().getPage(p, "configure");
+        HtmlPage page = j.createWebClient().getPage(p, "configure");
         List<HtmlSelect> selects = page.selectNodes("//select");
         assertTrue(selects.size()>0);
         for (HtmlSelect select : selects) {

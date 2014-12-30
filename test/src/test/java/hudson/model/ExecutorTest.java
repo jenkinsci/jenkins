@@ -1,13 +1,16 @@
 package hudson.model;
 
+import static org.junit.Assert.*;
+
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Launcher;
 import hudson.util.OneShotEvent;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
-import jenkins.model.Jenkins;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
 import java.io.IOException;
@@ -16,11 +19,16 @@ import java.util.concurrent.Future;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ExecutorTest extends HudsonTestCase {
-    public void testYank() throws Exception {
-        jenkins.setNumExecutors(1);
-        jenkins.updateComputerList(true);
-        Computer c = jenkins.toComputer();
+public class ExecutorTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void yank() throws Exception {
+        j.jenkins.setNumExecutors(1);
+        j.jenkins.updateComputerList(true);
+        Computer c = j.jenkins.toComputer();
         final Executor e = c.getExecutors().get(0);
 
         // kill an executor
@@ -31,21 +39,22 @@ public class ExecutorTest extends HudsonTestCase {
         assertTrue(e.getCauseOfDeath()!=null);
 
         // test the UI
-        HtmlPage p = createWebClient().goTo("/");
+        HtmlPage p = j.createWebClient().goTo("");
         p = p.getAnchorByText("Dead (!)").click();
         assertTrue(p.getWebResponse().getContentAsString().contains(ThreadDeath.class.getName()));
-        submit(p.getFormByName("yank"));
+        j.submit(p.getFormByName("yank"));
 
         assertFalse(c.getExecutors().contains(e));
         waitUntilExecutorSizeIs(c, 1);
     }
 
-    @Bug(4756)
-    public void testWhenAnExecuterIsYankedANewExecuterTakesItsPlace() throws Exception {
-        jenkins.setNumExecutors(1);
-        jenkins.updateComputerList(true);
+    @Test
+    @Issue("JENKINS-4756")
+    public void whenAnExecutorIsYankedANewExecutorTakesItsPlace() throws Exception {
+        j.jenkins.setNumExecutors(1);
+        j.jenkins.updateComputerList(true);
 
-        Computer c = jenkins.toComputer();
+        Computer c = j.jenkins.toComputer();
         Executor e = getExecutorByNumber(c, 0);
 
         kill(e);
@@ -67,7 +76,7 @@ public class ExecutorTest extends HudsonTestCase {
     private void kill(Executor e) throws InterruptedException, IOException {
         e.killHard();
         // trigger a new build which causes the forced death of the executor
-        createFreeStyleProject().scheduleBuild2(0);
+        j.createFreeStyleProject().scheduleBuild2(0);
         while (e.isActive())
             Thread.sleep(10);
     }
@@ -84,10 +93,11 @@ public class ExecutorTest extends HudsonTestCase {
     /**
      * Makes sure that the cause of interruption is properly recorded.
      */
-    public void testAbortCause() throws Exception {
+    @Test
+    public void abortCause() throws Exception {
         final OneShotEvent e = new OneShotEvent();
 
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -118,5 +128,4 @@ public class ExecutorTest extends HudsonTestCase {
         // make sure it shows up in the log
         assertTrue(b.getLog().contains("Johnny"));
     }
-
 }
