@@ -27,6 +27,14 @@ var breadcrumbs = (function() {
         return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
     }
 
+    function makeMenuHtmlV2(menuItemDef) {
+        if (menuItemDef.useCSSIconRendering) {
+            return "<span class='" + menuItemDef.iconClassSpec + "'></span> " + menuItemDef.displayName;
+        } else {
+            return makeMenuHtml(menuItemDef.icon, menuItemDef.displayName);
+        }
+    }
+
     Event.observe(window,"load",function(){
       menu = new YAHOO.widget.Menu("breadcrumb-menu", {position:"dynamic", hidedelay:1000, zIndex:2001});
     });
@@ -200,7 +208,7 @@ var breadcrumbs = (function() {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
-                        e.text = makeMenuHtml(e.icon, e.displayName);
+                        e.text = makeMenuHtmlV2(e);
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
                         if (e.requiresConfirmation) {

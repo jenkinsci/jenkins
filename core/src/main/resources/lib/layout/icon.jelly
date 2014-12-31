@@ -59,13 +59,12 @@ THE SOFTWARE.
   <j:choose>
     <j:when test="${iconMetadata != null}">
       <j:choose>
-        <j:when test="${iconMetadata.url != null}">
-          <img class="${attrs.class}" src="${iconMetadata.getQualifiedUrl(context)}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
-               alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"/>
+        <j:when test="${iconMetadata.useCSSRendering}">
+          <span class="${attrs.class}" title="${attrs.title}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"></span>
         </j:when>
         <j:otherwise>
-          <!-- There's no URL on the icon definition, so the assumptions is that we're using pure CSS for that icon e.g. via a theme. -->
-          <span class="${attrs.class}" style="${attrs.style}" title="${attrs.title}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"></span>
+          <img class="${attrs.class}" src="${iconMetadata.getQualifiedUrl(context)}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
+               alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"/>
         </j:otherwise>
       </j:choose>
     </j:when>

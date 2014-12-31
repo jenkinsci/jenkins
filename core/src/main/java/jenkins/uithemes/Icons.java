@@ -74,14 +74,13 @@ public class Icons implements UIThemeContributor {
 
     /**
      * The core icons need to be redefined from the base/default definitions as defined in
-     * the IconSet class in the icon-shim plugin. We redefine by removing the image url from
-     * the definition, forcing the <l:icon> tag (see icon.jelly in Jenkins core) to render
-     * a <span> instead of an <img>. The theme impl CSS will style the <span>.
+     * the IconSet class in the icon-shim plugin. We redefine by setting them to use pure CSS rendering,
+     * forcing the <l:icon> tag (see icon.jelly in Jenkins core) to render a <span> instead of
+     * an <img>. The theme impl CSS will style the <span>.
      */
     private void redefineCoreIcons() {
-        // Re-add all of the core icons, but without the URL
         for (Icon coreIcon : IconSet.icons.getCoreIcons().values()) {
-            IconSet.icons.addIcon(new Icon(coreIcon.getClassSpec(), coreIcon.getStyle()));
+            coreIcon.setUseCSSRendering(true);
         }
     }
 }
