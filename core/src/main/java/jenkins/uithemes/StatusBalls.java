@@ -71,6 +71,7 @@ public class StatusBalls implements UIThemeContributor {
     private void registerCSS3StatusBalls(UIThemeSet themeSet) {
         // #1 ...
         themeSet.registerThemeImpl("status-balls", "css3-animated", "CSS3 Animated", "CSS3 Animated Status Balls/Orbs")
+                .setUsageDetails("<strong>Note</strong> that CSS3 Animations can cause browser performance issues in some browser environments.")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                         .addProperty("successColor", new UIThemeImplSpecProperty()
