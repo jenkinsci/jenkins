@@ -323,6 +323,7 @@ var Sortable = (function() {
             if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d\d\d$/)) sortfn = this.date;
             if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d$/)) sortfn = this.date;
             if (itm.match(/^[�$]/)) sortfn = this.currency;
+            if (itm.match(/\%$/)) sortfn = this.currency;
             if (itm.match(/^-?[\d\.]+$/)) sortfn = this.numeric;
             return sortfn;
         },
