@@ -26,12 +26,7 @@ package hudson.slaves;
 import hudson.BulkChange;
 import hudson.Launcher;
 import hudson.model.*;
-import hudson.slaves.NodeProvisioner.NodeProvisionerInvoker;
 import hudson.tasks.Builder;
-
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.SleepBuilder;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,31 +35,19 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RandomlyFails;
+import org.jvnet.hudson.test.SleepBuilder;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class NodeProvisionerTest extends HudsonTestCase {
-    private int original;
+public class NodeProvisionerTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        original = LoadStatistics.CLOCK;
-        LoadStatistics.CLOCK = 10; // run x1000 the regular speed to speed up the test
-        NodeProvisionerInvoker.INITIALDELAY = 100;
-        NodeProvisionerInvoker.RECURRENCEPERIOD = 10;
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        LoadStatistics.CLOCK = original;
-        NodeProvisionerInvoker.INITIALDELAY = original*10;
-        NodeProvisionerInvoker.RECURRENCEPERIOD = original;
-    }
-
-    public void testDummy() {} // just to make Surefire happy
+    @Rule public JenkinsRule r = new NodeProvisionerRule(/* run x1000 the regular speed to speed up the test */10, 100, 10);
 
     /**
      * Latch synchronization primitive that waits for N thread to pass the checkpoint.
@@ -102,8 +85,9 @@ public class NodeProvisionerTest extends HudsonTestCase {
     /**
      * Scenario: schedule a build and see if one slave is provisioned.
      */
-    public void _testAutoProvision() throws Exception {// excluded since it's fragile
-        BulkChange bc = new BulkChange(jenkins);
+    @RandomlyFails("fragile")
+    @Test public void autoProvision() throws Exception {
+        BulkChange bc = new BulkChange(r.jenkins);
         try {
             DummyCloudImpl cloud = initHudson(10);
 
@@ -123,8 +107,9 @@ public class NodeProvisionerTest extends HudsonTestCase {
     /**
      * Scenario: we got a lot of jobs all of the sudden, and we need to fire up a few nodes.
      */
-    public void _testLoadSpike() throws Exception {// excluded since it's fragile
-        BulkChange bc = new BulkChange(jenkins);
+    @RandomlyFails("fragile")
+    @Test public void loadSpike() throws Exception {
+        BulkChange bc = new BulkChange(r.jenkins);
         try {
             DummyCloudImpl cloud = initHudson(0);
 
@@ -141,13 +126,14 @@ public class NodeProvisionerTest extends HudsonTestCase {
     /**
      * Scenario: make sure we take advantage of statically configured slaves.
      */
-    public void _testBaselineSlaveUsage() throws Exception {// excluded since it's fragile
-        BulkChange bc = new BulkChange(jenkins);
+    @RandomlyFails("fragile")
+    @Test public void baselineSlaveUsage() throws Exception {
+        BulkChange bc = new BulkChange(r.jenkins);
         try {
             DummyCloudImpl cloud = initHudson(0);
             // add slaves statically upfront
-            createSlave().toComputer().connect(false).get();
-            createSlave().toComputer().connect(false).get();
+            r.createSlave().toComputer().connect(false).get();
+            r.createSlave().toComputer().connect(false).get();
 
             verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5))));
 
@@ -161,12 +147,13 @@ public class NodeProvisionerTest extends HudsonTestCase {
     /**
      * Scenario: loads on one label shouldn't translate to load on another label.
      */
-    public void _testLabels() throws Exception {// excluded since it's fragile
-        BulkChange bc = new BulkChange(jenkins);
+    @RandomlyFails("fragile")
+    @Test public void labels() throws Exception {
+        BulkChange bc = new BulkChange(r.jenkins);
         try {
             DummyCloudImpl cloud = initHudson(0);
-            Label blue = jenkins.getLabel("blue");
-            Label red = jenkins.getLabel("red");
+            Label blue = r.jenkins.getLabel("blue");
+            Label red = r.jenkins.getLabel("red");
             cloud.label = red;
 
             // red jobs
@@ -196,7 +183,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
 
 
     private FreeStyleProject createJob(Builder builder) throws IOException {
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedLabel(null);   // let it roam free, or else it ties itself to the master since we have no slaves
         p.getBuildersList().add(builder);
         return p;
@@ -204,12 +191,12 @@ public class NodeProvisionerTest extends HudsonTestCase {
 
     private DummyCloudImpl initHudson(int delay) throws IOException {
         // start a dummy service
-        DummyCloudImpl cloud = new DummyCloudImpl(this, delay);
-        jenkins.clouds.add(cloud);
+        DummyCloudImpl cloud = new DummyCloudImpl(r, delay);
+        r.jenkins.clouds.add(cloud);
 
         // no build on the master, to make sure we get everything from the cloud
-        jenkins.setNumExecutors(0);
-        jenkins.setNodes(Collections.<Node>emptyList());
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.setNodes(Collections.<Node>emptyList());
         return cloud;
     }
 
@@ -237,7 +224,7 @@ public class NodeProvisionerTest extends HudsonTestCase {
         System.out.println("Waiting for a completion");
         for (Future<FreeStyleBuild> f : builds) {
             try {
-                assertBuildStatus(Result.SUCCESS, f.get(90, TimeUnit.SECONDS));
+                r.assertBuildStatus(Result.SUCCESS, f.get(90, TimeUnit.SECONDS));
             } catch (TimeoutException e) {
                 // time out so that the automated test won't hang forever, even when we have bugs
                 System.out.println("Build didn't complete in time");
