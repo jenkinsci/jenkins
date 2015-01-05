@@ -1165,7 +1165,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private void makeBuildable(BuildableItem p) {
-        if (p.task instanceof FlyweightTask && !ifBlockedByHudsonShutdown(p.task)) {
+        if (p.task instanceof FlyweightTask && !isBlockedByShutdown(p.task)) {
 
 
             Jenkins h = Jenkins.getInstance();
@@ -1211,7 +1211,18 @@ public class Queue extends ResourceController implements Saveable {
         return pendings.add(p);
     }
 
+    /** @deprecated Use {@link #isBlockedByShutdown} instead. */
     public static boolean ifBlockedByHudsonShutdown(Task task) {
+        return isBlockedByShutdown(task);
+    }
+
+    /**
+     * Checks whether a task should not be scheduled because {@link Jenkins#isQuietingDown()}.
+     * @param task some queue task
+     * @return true if {@link Jenkins#isQuietingDown()} unless this is a {@link NonBlockingTask}
+     * @since TODO
+     */
+    public static boolean isBlockedByShutdown(Task task) {
         return Jenkins.getInstance().isQuietingDown() && !(task instanceof NonBlockingTask);
     }
 
@@ -1235,7 +1246,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Marks {@link Task}s that are not affected by the {@linkplain Jenkins#isQuietingDown()}  quieting down},
      * because these tasks keep other tasks executing.
-     *
+     * @see #isBlockedByShutdown
      * @since 1.336
      */
     public interface NonBlockingTask extends Task {}
@@ -1926,7 +1937,7 @@ public class Queue extends ResourceController implements Saveable {
 
         public CauseOfBlockage getCauseOfBlockage() {
             Jenkins jenkins = Jenkins.getInstance();
-            if(ifBlockedByHudsonShutdown(task))
+            if(isBlockedByShutdown(task))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
             Label label = getAssignedLabel();
