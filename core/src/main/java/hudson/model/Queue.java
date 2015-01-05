@@ -1165,7 +1165,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private void makeBuildable(BuildableItem p) {
-        if(Jenkins.FLYWEIGHT_SUPPORT && p.task instanceof FlyweightTask && !ifBlockedByHudsonShutdown(p.task)) {
+        if (p.task instanceof FlyweightTask && !ifBlockedByHudsonShutdown(p.task)) {
 
 
             Jenkins h = Jenkins.getInstance();
