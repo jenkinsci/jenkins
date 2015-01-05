@@ -106,7 +106,6 @@ import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.util.AtmostOneTaskExecutor;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
@@ -1098,8 +1097,11 @@ public class Queue extends ResourceController implements Saveable {
             for (BlockedItem p : new ArrayList<BlockedItem>(blockedProjects.values())) {// copy as we'll mutate the list
                 if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
                     // ready to be executed
-                    p.leave(this);
-                    makeBuildable(new BuildableItem(p));
+                    Runnable r = makeBuildable(new BuildableItem(p));
+                    if (r != null) {
+                        p.leave(this);
+                        r.run();
+                    }
                 }
             }
         }
@@ -1115,7 +1117,12 @@ public class Queue extends ResourceController implements Saveable {
             Task p = top.task;
             if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
                 // ready to be executed immediately
-                makeBuildable(new BuildableItem(top));
+                Runnable r = makeBuildable(new BuildableItem(top));
+                if (r != null) {
+                    r.run();
+                } else {
+                    new BlockedItem(top).enter(this);
+                }
             } else {
                 // this can't be built now because another build is in progress
                 // set this project aside.
@@ -1164,10 +1171,14 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
 
-    private void makeBuildable(BuildableItem p) {
-        if (p.task instanceof FlyweightTask && !isBlockedByShutdown(p.task)) {
-
-
+    /**
+     * Tries to make an item ready to build.
+     * @param p a proposed buildable item
+     * @return a thunk to actually prepare it (after leaving an earlier list), or null if it cannot be run now
+     */
+    private @CheckForNull Runnable makeBuildable(final BuildableItem p) {
+        if (p.task instanceof FlyweightTask) {
+            if (!isBlockedByShutdown(p.task)) {
             Jenkins h = Jenkins.getInstance();
             Map<Node,Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
 
@@ -1183,19 +1194,27 @@ public class Queue extends ResourceController implements Saveable {
 
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
-                Computer c = n.toComputer();
+                final Computer c = n.toComputer();
                 if (c==null || c.isOffline())    continue;
                 if (lbl!=null && !lbl.contains(n))  continue;
                 if (n.canTake(p) != null) continue;
-                c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                makePending(p);
-                return;
+                return new Runnable() {
+                    @Override public void run() {
+                        c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+                        makePending(p);
+                    }
+                };
+            }
             }
             // if the execution get here, it means we couldn't schedule it anywhere.
-            // so do the scheduling like other normal jobs.
+            return null;
+        } else { // regular heavyweight task
+            return new Runnable() {
+                @Override public void run() {
+                    p.enter(Queue.this);
+                }
+            };
         }
-
-        p.enter(this);
     }
 
 
