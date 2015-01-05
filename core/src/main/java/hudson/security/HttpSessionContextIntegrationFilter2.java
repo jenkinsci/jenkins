@@ -27,6 +27,8 @@ import jenkins.security.NonSerializableSecurityContext;
 import org.acegisecurity.context.HttpSessionContextIntegrationFilter;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.checker.AccountStatusUserDetailsChecker;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -60,6 +62,11 @@ public class HttpSessionContextIntegrationFilter2 extends HttpSessionContextInte
                             // don't let Acegi see invalid security context
                             session.setAttribute(ACEGI_SECURITY_CONTEXT_KEY,null);
                     }
+
+					if (a.getPrincipal() instanceof UserDetails) {
+						AccountStatusUserDetailsChecker asudc = new AccountStatusUserDetailsChecker();
+						asudc.check((UserDetails) a.getPrincipal());
+					}
                 }
             }
         }

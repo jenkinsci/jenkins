@@ -28,13 +28,8 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import jenkins.model.Jenkins;
-import hudson.model.ManagementLink;
-import hudson.model.ModelObject;
-import hudson.model.User;
-import hudson.model.UserProperty;
-import hudson.model.UserPropertyDescriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.util.PluginServletFilter;
@@ -42,10 +37,7 @@ import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.*;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.encoding.PasswordEncoder;
@@ -62,6 +54,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataAccessException;
 
+import javax.security.auth.login.AccountLockedException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -455,6 +448,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private /*almost final*/ String passwordHash;
 
         /**
+         * Enable/disable user.
+         * Boolean because parameter existence should be checked during deserialization.
+         */
+        private Boolean enabled;
+
+        /**
          * @deprecated Scrambled password.
          * Field kept here to load old (pre 1.283) user records,
          * but now marked transient so field is no longer saved.
@@ -463,6 +462,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private Details(String passwordHash) {
             this.passwordHash = passwordHash;
+            this.enabled = true;
+        }
+
+        private Object readResolve() throws IOException {
+            //check that enabled field exist
+            if (this.enabled == null) this.enabled = true;
+            return this;
         }
 
         static Details fromHashedPassword(String hashed) {
@@ -512,11 +518,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         public boolean isEnabled() {
-            return true;
+            return enabled;
         }
 
         public boolean isInvalid() {
-            return user==null;
+            return user == null || !isEnabled();
+        }
+
+        private void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
@@ -548,13 +558,28 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
                     throw new FormException("Please confirm the password by typing it twice","user.password2");
 
+				boolean enabled;
+				if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+					enabled = req.hasParameter("user.enabled") && req.getParameter("user.enabled").equals("on");
+				} else {
+					//get User and check whether it was enabled before
+					//if user changes itself, then he is enabled. Possible self-unlock while session not expired.
+					enabled = true;
+				}
+
                 String data = Protector.unprotect(pwd);
                 if(data!=null) {
-                    String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
-                    if(data.startsWith(prefix))
-                        return Details.fromHashedPassword(data.substring(prefix.length()));
+                    String prefix = req.getSession().getId() + ':';
+                    if(data.startsWith(prefix)){
+						Details details = Details.fromHashedPassword(data.substring(prefix.length()));
+						details.setEnabled(enabled);
+						return details;
+                    }
                 }
-                return Details.fromPlainPassword(Util.fixNull(pwd));
+
+                Details details = Details.fromPlainPassword(Util.fixNull(pwd));
+                details.setEnabled(enabled);
+                return details;
             }
 
             @Override

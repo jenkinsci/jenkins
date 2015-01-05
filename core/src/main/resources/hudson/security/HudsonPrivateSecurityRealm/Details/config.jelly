@@ -31,5 +31,10 @@ THE SOFTWARE.
     <f:entry title="${%Confirm Password}:">
       <input name="user.password2" type="password" value="${instance.protectedPassword}" />
     </f:entry>
+    <j:if test="${h.hasPermission(app.ADMINISTER)}">
+      <f:entry title="${%Enabled}:">
+        <f:checkbox name="user.enabled" checked="${instance.enabled}"/>
+      </f:entry>
+    </j:if>
   </j:if>
 </j:jelly>
