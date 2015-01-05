@@ -346,7 +346,7 @@ public class QueueTest {
         assertEquals("slave0", runs.get(0).getBuiltOnStr());
     }
 
-     @Test public void taskEquality() throws Exception {
+    @Test public void taskEquality() throws Exception {
         AtomicInteger cnt = new AtomicInteger();
         ScheduleResult result = r.jenkins.getQueue().schedule2(new TestTask(cnt), 0);
         assertTrue(result.isCreated());
@@ -539,8 +539,7 @@ public class QueueTest {
         }
     }
     
-     @Test public void cancelInQueue() throws Exception
-    {
+    @Test public void cancelInQueue() throws Exception {
         // parepare an offline slave.
         DumbSlave slave = r.createOnlineSlave();
         assertFalse(slave.toComputer().isOffline());
