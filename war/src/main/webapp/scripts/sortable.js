@@ -302,6 +302,8 @@ var Sortable = (function() {
             else if (a == ">0") a = "0.1";
             if (b == "<100") b = "99.9";
             else if (b == ">0") b = "0.1";
+            a = a.replace(/[^0-9.]/g,'');
+            b = b.replace(/[^0-9.]/g,'');
             return parseFloat(a) - parseFloat(b);
         },
 
