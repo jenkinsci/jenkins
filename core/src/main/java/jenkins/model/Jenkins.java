@@ -198,7 +198,7 @@ import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
-import jenkins.uithemes.CoreThemeIntsaller;
+import jenkins.uithemes.CoreThemeInstaller;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
 import net.sf.json.JSONObject;
@@ -253,7 +253,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -874,7 +873,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         System.currentTimeMillis()-start));
 
             // Install the core UI Themes
-            CoreThemeIntsaller.installCoreThemes();
+            CoreThemeInstaller.installCoreThemes();
         } finally {
             SecurityContextHolder.clearContext();
         }

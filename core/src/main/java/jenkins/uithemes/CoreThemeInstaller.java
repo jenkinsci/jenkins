@@ -34,9 +34,9 @@ import java.util.logging.Logger;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class CoreThemeIntsaller {
+public class CoreThemeInstaller {
 
-    private static final Logger LOGGER = Logger.getLogger(CoreThemeIntsaller.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CoreThemeInstaller.class.getName());
 
     public static void installCoreThemes() throws IOException {
         UIThemesProcessor themesProcessor = UIThemesProcessor.getInstance();
