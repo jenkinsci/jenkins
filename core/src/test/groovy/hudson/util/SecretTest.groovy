@@ -23,13 +23,13 @@
  */
 package hudson.util
 
-import com.trilead.ssh2.crypto.Base64;
+import com.trilead.ssh2.crypto.Base64
 import jenkins.model.Jenkins
-import jenkins.security.ConfidentialStoreRule;
+import jenkins.security.ConfidentialStoreRule
 import org.junit.Rule
 import org.junit.Test
 
-import javax.crypto.Cipher;
+import javax.crypto.Cipher
 
 /**
  * @author Kohsuke Kawaguchi
@@ -43,35 +43,35 @@ public class SecretTest {
 
     @Test
     void testEncrypt() {
-        def secret = Secret.fromString("abc");
-        assert "abc"==secret.plainText;
+        def secret = Secret.fromString("abc")
+        assert "abc" == secret.plainText
 
         // make sure we got some encryption going
-        println secret.encryptedValue;
-        assert !"abc".equals(secret.encryptedValue);
+        println secret.encryptedValue
+        assert "abc" != secret.encryptedValue
 
         // can we round trip?
-        assert secret==Secret.fromString(secret.encryptedValue);
+        assert secret == Secret.fromString(secret.encryptedValue)
     }
 
     @Test
     void testDecrypt() {
-        assert "abc"==Secret.toString(Secret.fromString("abc"))
+        assert "abc" == Secret.toString(Secret.fromString("abc"))
     }
 
     @Test
     void testSerialization() {
-        def s = Secret.fromString("Mr.Jenkins");
-        def xml = Jenkins.XSTREAM.toXML(s);
+        def s = Secret.fromString("Mr.Jenkins")
+        def xml = Jenkins.XSTREAM.toXML(s)
         assert !xml.contains(s.plainText)
         assert xml.contains(s.encryptedValue)
 
-        def o = Jenkins.XSTREAM.fromXML(xml);
-        assert o==s : xml;
+        def o = Jenkins.XSTREAM.fromXML(xml)
+        assert o == s : xml
     }
 
     public static class Foo {
-        Secret password;
+        Secret password
     }
 
     /**
@@ -79,11 +79,11 @@ public class SecretTest {
      */
     @Test
     void testCompatibilityFromString() {
-        def tagName = Foo.class.name.replace("\$","_-");
-        def xml = "<$tagName><password>secret</password></$tagName>";
-        def foo = new Foo();
-        Jenkins.XSTREAM.fromXML(xml, foo);
-        assert "secret"==Secret.toString(foo.password)
+        def tagName = Foo.class.name.replace("\$", "_-")
+        def xml = "<$tagName><password>secret</password></$tagName>"
+        def foo = new Foo()
+        Jenkins.XSTREAM.fromXML(xml, foo)
+        assert "secret" == Secret.toString(foo.password)
     }
 
     /**
@@ -92,13 +92,13 @@ public class SecretTest {
     @Test
     void migrationFromLegacyKeyToConfidentialStore() {
         def legacy = Secret.legacyKey
-        ["Hello world","","\u0000unprintable"].each { str ->
-            def cipher = Secret.getCipher("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, legacy);
+        ["Hello world", "", "\u0000unprintable"].each { str ->
+            def cipher = Secret.getCipher("AES")
+            cipher.init(Cipher.ENCRYPT_MODE, legacy)
             def old = new String(Base64.encode(cipher.doFinal((str + Secret.MAGIC).getBytes("UTF-8"))))
             def s = Secret.fromString(old)
-            assert s.plainText==str : "secret by the old key should decrypt"
-            assert s.encryptedValue!=old : "but when encrypting, ConfidentialKey should be in use"
+            assert s.plainText == str : "secret by the old key should decrypt"
+            assert s.encryptedValue != old : "but when encrypting, ConfidentialKey should be in use"
         }
     }
 }

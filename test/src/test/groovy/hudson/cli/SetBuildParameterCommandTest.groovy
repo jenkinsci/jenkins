@@ -18,37 +18,37 @@ import org.jvnet.hudson.test.TestBuilder
  */
 public class SetBuildParameterCommandTest {
     @Rule
-    public JenkinsRule j = new JenkinsRule();
+    public JenkinsRule j = new JenkinsRule()
 
     @Test
     public void cli()  {
-        JenkinsLocationConfiguration.get().url = j.URL;
+        JenkinsLocationConfiguration.get().url = j.URL
 
-        def p = j.createFreeStyleProject();
+        def p = j.createFreeStyleProject()
         p.buildersList.add(new TestBuilder() {
             @Override
             boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 def jar = j.jenkins.servletContext.getResource("/WEB-INF/jenkins-cli.jar")
-                build.workspace.child("cli.jar").copyFrom(jar);
+                build.workspace.child("cli.jar").copyFrom(jar)
 
-                return true;
+                return true
             }
-        });
+        })
         p.buildersList.add(new Shell("java -jar cli.jar set-build-parameter a b"))
         p.buildersList.add(new Shell("java -jar cli.jar set-build-parameter a x"))
         p.buildersList.add(new Shell("java -jar cli.jar set-build-parameter b y"))
 
-        def r = [:];
+        def r = [:]
 
         def b = j.assertBuildStatusSuccess(p.scheduleBuild2(0))
-        b.getAction(ParametersAction.class).parameters.each { v -> r[v.name]=v.value }
+        b.getAction(ParametersAction.class).parameters.each { v -> r[v.name] = v.value }
 
-        assert r.equals(["a":"x", "b":"y"]);
+        assert r == ["a":"x", "b":"y"]
 
-        p.buildersList.add(new Shell("BUILD_NUMBER=1 java -jar cli.jar set-build-parameter a b"));
-        def b2 = j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        r = [:];
-        b.getAction(ParametersAction.class).parameters.each { v -> r[v.name]=v.value }
-        assert r.equals(["a":"x", "b":"y"]);
+        p.buildersList.add(new Shell("BUILD_NUMBER=1 java -jar cli.jar set-build-parameter a b"))
+        def b2 = j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get())
+        r = [:]
+        b.getAction(ParametersAction.class).parameters.each { v -> r[v.name] = v.value }
+        assert r == ["a":"x", "b":"y"]
     }
 }

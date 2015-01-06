@@ -50,7 +50,7 @@ class SlaveTest {
     @Test
     void formValidation() {
         j.executeOnServer {
-            assertNotNull(j.jenkins.getDescriptor(DumbSlave).getCheckUrl("remoteFS"))
+            assert j.jenkins.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS") != null
         }
     }
 
@@ -63,41 +63,41 @@ class SlaveTest {
         def wc = j.createWebClient()
         def p = wc.goTo("computer/${s.name}/config.xml", "application/xml")
         def xml = p.webResponse.contentAsString
-        new XmlSlurper().parseText(xml)   // verify that it is XML
+        new XmlSlurper().parseText(xml) // verify that it is XML
 
         // make sure it survives the roundtrip
-        post("computer/${s.name}/config.xml",xml);
+        post("computer/${s.name}/config.xml", xml)
 
-        assertNotNull(j.jenkins.getNode(s.name))
+        assert j.jenkins.getNode(s.name) != null
 
-        xml = IOUtils.toString(getClass().getResource("SlaveTest/slave.xml").openStream());
-        xml = xml.replace("NAME",s.name)
-        post("computer/${s.name}/config.xml",xml);
+        xml = IOUtils.toString(getClass().getResource("SlaveTest/slave.xml").openStream())
+        xml = xml.replace("NAME", s.name)
+        post("computer/${s.name}/config.xml", xml)
 
         s = j.jenkins.getNode(s.name)
-        assertNotNull(s)
-        assertEquals("some text",s.nodeDescription)
-        assertEquals(JNLPLauncher.class,s.launcher.class)
+        assert s != null
+        assert s.nodeDescription == "some text"
+        assert s.launcher.class == JNLPLauncher
     }
 
-    def post(url,String xml) {
-        HttpURLConnection con = new URL(j.getURL(),url).openConnection();
+    def post(url, String xml) {
+        HttpURLConnection con = new URL(j.getURL(), url).openConnection()
         con.requestMethod = "POST"
-        con.setRequestProperty("Content-Type","application/xml;charset=UTF-8")
-        con.setRequestProperty(".crumb","test")
-        con.doOutput = true;
+        con.setRequestProperty("Content-Type", "application/xml;charset=UTF-8")
+        con.setRequestProperty(".crumb", "test")
+        con.doOutput = true
         con.outputStream.write(xml.getBytes("UTF-8"))
-        con.outputStream.close();
-        IOUtils.copy(con.inputStream,System.out)
+        con.outputStream.close()
+        IOUtils.copy(con.inputStream, System.out)
     }
 
     @Test
     void remoteFsCheck() {
-        def d = j.jenkins.getDescriptorByType(DumbSlave.DescriptorImpl.class)
-        assert d.doCheckRemoteFS("c:\\")==FormValidation.ok();
-        assert d.doCheckRemoteFS("/tmp")==FormValidation.ok();
-        assert d.doCheckRemoteFS("relative/path").kind==ERROR;
-        assert d.doCheckRemoteFS("/net/foo/bar/zot").kind==WARNING;
-        assert d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind==WARNING;
+        def d = j.jenkins.getDescriptorByType(DumbSlave.DescriptorImpl)
+        assert d.doCheckRemoteFS("c:\\") == FormValidation.ok()
+        assert d.doCheckRemoteFS("/tmp") == FormValidation.ok()
+        assert d.doCheckRemoteFS("relative/path").kind == ERROR
+        assert d.doCheckRemoteFS("/net/foo/bar/zot").kind == WARNING
+        assert d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind == WARNING
     }
 }

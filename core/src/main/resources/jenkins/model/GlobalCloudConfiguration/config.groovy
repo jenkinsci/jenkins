@@ -2,7 +2,7 @@ package jenkins.model.GlobalCloudConfiguration
 
 import hudson.slaves.Cloud
 
-def f=namespace(lib.FormTagLib)
+def f = namespace(lib.FormTagLib)
 
 def clouds = Cloud.all()
 

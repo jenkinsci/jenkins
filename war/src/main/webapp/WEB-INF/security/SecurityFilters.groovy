@@ -53,7 +53,7 @@ def commonProviders() {
         bean(ExceptionTranslationFilter) {
             accessDeniedHandler = new AccessDeniedHandlerImpl()
             authenticationEntryPoint = bean(HudsonAuthenticationEntryPoint) {
-                loginFormUrl = '/'+securityRealm.getLoginUrl()+"?from={0}";
+                loginFormUrl = '/' + securityRealm.getLoginUrl() + "?from={0}"
             }
         },
         bean(UnwrapSecurityExceptionFilter)
@@ -69,7 +69,7 @@ filter(ChainedServletFilter) {
             // I suspect this is related to JENKINS-12585, in that
             // it ends up setting Set-Cookie for image responses.
             // Instead, we use layout.jelly to create sessions.
-            allowSessionCreation = false;
+            allowSessionCreation = false
         },
         // if any "Authorization: Basic xxx:yyy" is sent this is the filter that processes it
         bean(BasicHeaderProcessor) {

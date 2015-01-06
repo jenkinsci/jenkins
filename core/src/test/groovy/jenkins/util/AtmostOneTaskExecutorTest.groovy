@@ -8,8 +8,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 class AtmostOneTaskExecutorTest {
@@ -18,30 +16,29 @@ class AtmostOneTaskExecutorTest {
     def lock = new OneShotEvent()
 
     @Test
-    public void doubleBooking() {
-        def f1,f2;
-
+    void doubleBooking() {
         def base = Executors.newCachedThreadPool()
         def es = new AtmostOneTaskExecutor(base,
                 { ->
                     counter.incrementAndGet()
                     lock.block()
-                } as Callable);
-        f1 = es.submit()
-        while (counter.get() == 0)
-        ;   // spin lock until executor gets to the choking point
+                } as Callable)
+        def f1 = es.submit()
+        while (counter.get() == 0) {
+            ; // spin lock until executor gets to the choking point
+        }
 
-        f2 = es.submit() // this should hang
-        Thread.sleep(500)   // make sure the 2nd task is hanging
+        def f2 = es.submit() // this should hang
+        Thread.sleep(500) // make sure the 2nd task is hanging
         assert counter.get() == 1
         assert !f2.isDone()
 
         lock.signal() // let the first one go
 
-        f1.get();   // first one should complete
+        f1.get() // first one should complete
 
         // now 2nd one gets going and hits the choke point
         f2.get()
-        assert counter.get()==2
+        assert counter.get() == 2
     }
 }

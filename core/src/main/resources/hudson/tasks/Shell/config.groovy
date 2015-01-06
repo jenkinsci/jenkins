@@ -21,10 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks.Shell;
-f=namespace(lib.FormTagLib)
+package hudson.tasks.Shell
 
-f.entry(title:_("Command"),description:_("description",rootURL)) {
+f = namespace(lib.FormTagLib)
+
+f.entry(title:_("Command"), description:_("description", rootURL)) {
     // TODO JENKINS-23151 'codemirror-mode': 'shell' is broken
-    f.textarea(name: "command", value: instance?.command, class: "fixed-width")
+    f.textarea(name:"command", value:instance?.command, class:"fixed-width")
 }

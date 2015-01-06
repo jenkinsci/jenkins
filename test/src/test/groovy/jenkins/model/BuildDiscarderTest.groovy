@@ -9,13 +9,11 @@ import org.jvnet.hudson.test.recipes.LocalData
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 
-
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 public class BuildDiscarderTest extends HudsonTestCase {
+
     @Bug(16979)
     @LocalData
     void testCompatibility() {
@@ -37,9 +35,9 @@ public class BuildDiscarderTest extends HudsonTestCase {
 
     private static void verifyLogRotatorSanity(AbstractProject p) {
         LogRotator d = p.buildDiscarder
-        assert d.daysToKeep == 4;
-        assert d.numToKeep == 3;
-        assert d.artifactDaysToKeep == 2;
-        assert d.artifactNumToKeep == 1;
+        assert d.daysToKeep == 4
+        assert d.numToKeep == 3
+        assert d.artifactDaysToKeep == 2
+        assert d.artifactNumToKeep == 1
     }
 }

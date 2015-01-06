@@ -32,14 +32,14 @@ import org.jvnet.hudson.test.JenkinsRule
  *
  * @author Kohsuke Kawaguchi
  */
-public class GroovyTest {
+class GroovyTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule()
 
     @Test
     void test() {
-        def wc = j.createWebClient();
-        wc.goTo("");
+        def wc = j.createWebClient()
+        wc.goTo('')
     }
 }

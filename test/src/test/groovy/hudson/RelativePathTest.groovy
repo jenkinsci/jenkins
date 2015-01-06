@@ -21,43 +21,43 @@ class RelativePathTest extends HudsonTestCase implements Describable<RelativePat
         jenkins.getDescriptorOrDie(RelativePathTest.class)
         jenkins.getDescriptorOrDie(Model.class)
 
-        createWebClient().goTo("/self/");
+        createWebClient().goTo("/self/")
         assert jenkins.getDescriptorOrDie(Model.class).touched
     }
 
     String getName() {
-        return "Alice";
+        return "Alice"
     }
 
     Model getModel() {
-        return new Model();
+        return new Model()
     }
 
     DescriptorImpl getDescriptor() {
-        return jenkins.getDescriptorOrDie(getClass());
+        return jenkins.getDescriptorOrDie(getClass())
     }
 
     @TestExtension
     static class DescriptorImpl extends Descriptor<RelativePathTest> {
         @Override
         String getDisplayName() {
-            return "";
+            return ""
         }
     }
 
     static class Model extends AbstractDescribableImpl<Model> {
         @TestExtension
         static class DescriptorImpl extends Descriptor<Model> {
-            boolean touched;
+            boolean touched
 
             @Override
             String getDisplayName() {
-                return "test";
+                return "test"
             }
 
             ListBoxModel doFillAbcItems(@RelativePath("..") @QueryParameter String name) {
-                assert name=="Alice";
-                touched = true;
+                assert name == "Alice"
+                touched = true
                 return new ListBoxModel().add("foo").add("bar")
             }
         }

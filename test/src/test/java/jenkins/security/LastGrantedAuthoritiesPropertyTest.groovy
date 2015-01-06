@@ -16,13 +16,11 @@ import org.jvnet.hudson.test.JenkinsRule
 import org.springframework.dao.DataAccessException
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 class LastGrantedAuthoritiesPropertyTest {
     @Rule
-    public JenkinsRule j = new JenkinsRule();
+    public JenkinsRule j = new JenkinsRule()
 
     @Test
     public void basicflow() {
@@ -30,30 +28,30 @@ class LastGrantedAuthoritiesPropertyTest {
 
         // login, and make sure it leaves the LastGrantedAuthoritiesProperty object
         def wc = j.createWebClient()
-        wc.login("alice","alice:development:us")
+        wc.login("alice", "alice:development:us")
 
         def u = hudson.model.User.get("alice")
         def p = u.getProperty(LastGrantedAuthoritiesProperty.class)
-        assertAuthorities(p,"authenticated:alice:development:us")
-        assertAuthorities(u.impersonate(),"authenticated:alice:development:us")
+        assertAuthorities(p, "authenticated:alice:development:us")
+        assertAuthorities(u.impersonate(), "authenticated:alice:development:us")
 
         // visiting the configuration page shouldn't change authorities
-        def pg = wc.goTo("user/alice/configure");
-        j.submit(pg.getFormByName("config"));
+        def pg = wc.goTo("user/alice/configure")
+        j.submit(pg.getFormByName("config"))
 
         p = u.getProperty(LastGrantedAuthoritiesProperty.class)
-        assertAuthorities(p,"authenticated:alice:development:us")
-        assertAuthorities(u.impersonate(),"authenticated:alice:development:us")
+        assertAuthorities(p, "authenticated:alice:development:us")
+        assertAuthorities(u.impersonate(), "authenticated:alice:development:us")
 
         // change should be reflected right away
-        wc.login("alice","alice:development:uk")
+        wc.login("alice", "alice:development:uk")
         p = u.getProperty(LastGrantedAuthoritiesProperty.class)
-        assertAuthorities(p,"authenticated:alice:development:uk")
-        assertAuthorities(u.impersonate(),"authenticated:alice:development:uk")
+        assertAuthorities(p, "authenticated:alice:development:uk")
+        assertAuthorities(u.impersonate(), "authenticated:alice:development:uk")
     }
 
-    void assertAuthorities(p,expected) {
-        assert p.authorities*.authority.join(":")==expected
+    void assertAuthorities(p, expected) {
+        assert p.authorities*.authority.join(":") == expected
     }
 
     /**
@@ -62,11 +60,11 @@ class LastGrantedAuthoritiesPropertyTest {
     private class TestSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {
-            if (password=="error")
-                throw new BadCredentialsException(username);
+            if (password == "error")
+                throw new BadCredentialsException(username)
             def authorities = password.split(":").collect { new GrantedAuthorityImpl(it) }
 
-            return new User(username,"",true,authorities.toArray(new GrantedAuthority[0]))
+            return new User(username, "", true, authorities.toArray(new GrantedAuthority[0]))
         }
 
         @Override
@@ -76,7 +74,7 @@ class LastGrantedAuthoritiesPropertyTest {
 
         @Override
         UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-            throw new UserMayOrMayNotExistException("fallback");
+            throw new UserMayOrMayNotExistException("fallback")
         }
     }
 }

@@ -24,15 +24,13 @@ import java.util.logging.Logger
 import static java.util.logging.Level.FINEST
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 class TokenBasedRememberMeServices2Test {
     @Rule
-    public JenkinsRule j = new JenkinsRule();
+    public JenkinsRule j = new JenkinsRule()
 
-    private boolean failureInduced;
+    private boolean failureInduced
 
     private Logger logger = Logger.getLogger(TokenBasedRememberMeServices.class.name)
 
@@ -40,11 +38,11 @@ class TokenBasedRememberMeServices2Test {
     private Handler loghandler
 
     @Before
-    public void setUp() {
+    void setUp() {
         loghandler = new Handler() {
             @Override
             void publish(LogRecord record) {
-                logs.add(record);
+                logs.add(record)
             }
 
             @Override
@@ -61,26 +59,26 @@ class TokenBasedRememberMeServices2Test {
     }
 
     @After
-    public void tearDown() {
-        logger.removeHandler(loghandler);
+    void tearDown() {
+        logger.removeHandler(loghandler)
         logger.level = null
     }
 
     @Test
-    public void rememberMeAutoLoginFailure()  {
+    void rememberMeAutoLoginFailure() {
         j.jenkins.securityRealm = new InvalidUserWhenLoggingBackInRealm()
 
         def wc = j.createWebClient()
-        wc.login("alice","alice",true)
+        wc.login("alice", "alice", true)
 
         // we should see a remember me cookie
         def c = getRememberMeCookie(wc)
-        assert c!=null
+        assert c != null
 
         // start a new session and attempt to access Jenkins,
         // which should cause autoLogin failures
         wc = j.createWebClient()
-        wc.cookieManager.addCookie(c);
+        wc.cookieManager.addCookie(c)
 
         // even if SecurityRealm chokes, it shouldn't kill the page
         logs.clear()
@@ -88,9 +86,9 @@ class TokenBasedRememberMeServices2Test {
 
         // make sure that the server recorded this failure
         assert failureInduced
-        assert logs.find { it.message.contains("contained username 'alice' but was not found")}!=null
+        assert logs.find { it.message.contains("contained username 'alice' but was not found")} != null
         // and the problematic cookie should have been removed
-        assert getRememberMeCookie(wc)==null
+        assert getRememberMeCookie(wc) == null
     }
 
     private Cookie getRememberMeCookie(JenkinsRule.WebClient wc) {
@@ -100,9 +98,9 @@ class TokenBasedRememberMeServices2Test {
     private class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {
-            if (username==password)
-                return new User(username,password,true,[new GrantedAuthorityImpl("myteam")] as GrantedAuthority[])
-            throw new BadCredentialsException(username);
+            if (username == password)
+                return new User(username, password, true, [new GrantedAuthorityImpl("myteam")] as GrantedAuthority[])
+            throw new BadCredentialsException(username)
         }
 
         @Override
@@ -113,25 +111,24 @@ class TokenBasedRememberMeServices2Test {
         @Override
         UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
             failureInduced = true
-            throw new UsernameNotFoundException("intentionally not working");
+            throw new UsernameNotFoundException("intentionally not working")
         }
     }
 
-
     @Test
-    public void basicFlow()  {
+    void basicFlow() {
         j.jenkins.securityRealm = new StupidRealm()
 
         def wc = j.createWebClient()
-        wc.login("bob","bob",true)
+        wc.login("bob", "bob", true)
 
         // we should see a remember me cookie
         def c = getRememberMeCookie(wc)
-        assert c!=null
+        assert c != null
 
-        // start a new session and attempt to access Jenkins,
+        // start a new session and attempt to access Jenkins
         wc = j.createWebClient()
-        wc.cookieManager.addCookie(c);
+        wc.cookieManager.addCookie(c)
 
         // this will trigger remember me
         wc.goTo("")
@@ -141,8 +138,8 @@ class TokenBasedRememberMeServices2Test {
         // but we should have logged in
         wc.executeOnServer {
             def a = Jenkins.getAuthentication()
-            assert a.name=="bob"
-            assert a.authorities*.authority.join(":")=="authenticated:myteam"
+            assert a.name == "bob"
+            assert a.authorities*.authority.join(":") == "authenticated:myteam"
         }
     }
 
@@ -150,7 +147,7 @@ class TokenBasedRememberMeServices2Test {
         @Override
         UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
             failureInduced = true
-            throw new UserMayOrMayNotExistException("I cannot tell");
+            throw new UserMayOrMayNotExistException("I cannot tell")
         }
     }
 }

@@ -10,8 +10,6 @@ import org.junit.rules.TemporaryFolder
 import javax.crypto.Cipher
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 class SecretRewriterTest {
@@ -19,7 +17,7 @@ class SecretRewriterTest {
     public MockSecretRule mockSecretRule = new MockSecretRule()
 
     @Rule
-    public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
+    public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule()
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder()
 
@@ -48,16 +46,16 @@ class SecretRewriterTest {
     }
 
     void roundtrip(String before, String after) {
-        def sr = new SecretRewriter(null);
+        def sr = new SecretRewriter(null)
         def f = File.createTempFile("test", "xml", tmp.root)
         f.text = before
-        sr.rewrite(f,null)
-        assert after.replaceAll(System.getProperty("line.separator"), "\n").trim()==f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
+        sr.rewrite(f, null)
+        assert after.replaceAll(System.getProperty("line.separator"), "\n").trim() == f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
     }
 
     String encryptOld(str) {
-        def cipher = Secret.getCipher("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, Secret.legacyKey);
+        def cipher = Secret.getCipher("AES")
+        cipher.init(Cipher.ENCRYPT_MODE, Secret.legacyKey)
         return new String(Base64.encode(cipher.doFinal((str + Secret.MAGIC).getBytes("UTF-8"))))
     }
 
@@ -71,7 +69,7 @@ class SecretRewriterTest {
     @Test
     void recursionDetection() {
         def backup = tmp.newFolder("backup")
-        def sw = new SecretRewriter(backup);
+        def sw = new SecretRewriter(backup)
         def st = StreamTaskListener.fromStdout()
 
         def o = encryptOld("Hello world")
@@ -85,27 +83,26 @@ class SecretRewriterTest {
         dirs.each { p ->
             def d = new File(t, p)
             d.mkdir()
-            new File(d,"foo.xml").text = payload
+            new File(d, "foo.xml").text = payload
         }
 
         // stuff outside
         def t2 = tmp.newFolder("t2")
-        new File(t2,"foo.xml").text = payload
+        new File(t2, "foo.xml").text = payload
 
         // some recursions as well as valid symlinks
-        new FilePath(t).child("c/symlink").symlinkTo("..",st)
-        new FilePath(t).child("b/symlink").symlinkTo(".",st)
-        new FilePath(t).child("a/symlink").symlinkTo(t2.absolutePath,st)
+        new FilePath(t).child("c/symlink").symlinkTo("..", st)
+        new FilePath(t).child("b/symlink").symlinkTo(".", st)
+        new FilePath(t).child("a/symlink").symlinkTo(t2.absolutePath, st)
 
-        assert 6==sw.rewriteRecursive(t, st)
+        assert 6 == sw.rewriteRecursive(t, st)
 
-        dirs.each { p->
-            assert new File(t,"$p/foo.xml").text.trim()==answer
-            assert new File(backup,"$p/foo.xml").text.trim()==payload
+        dirs.each { p ->
+            assert new File(t, "$p/foo.xml").text.trim() == answer
+            assert new File(backup, "$p/foo.xml").text.trim() == payload
         }
 
         // t2 is only reachable by following a symlink. this should be covered, too
-        assert new File(t2,"foo.xml").text.trim()==answer.trim();
+        assert new File(t2, "foo.xml").text.trim() == answer.trim()
     }
-
 }

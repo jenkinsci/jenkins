@@ -15,59 +15,56 @@ import org.kohsuke.stapler.QueryParameter
 import javax.inject.Inject
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 class TextAreaTest {
     @Rule
-    public JenkinsRule j = new JenkinsRule();
+    public JenkinsRule j = new JenkinsRule()
 
     @Inject
-    TestBuilder.DescriptorImpl d;
+    TestBuilder.DescriptorImpl d
 
     @Test @Bug(19457)
-    public void validation() {
+    void validation() {
         j.jenkins.injector.injectMembers(this)
         def p = j.createFreeStyleProject()
         p.buildersList.add(new TestBuilder())
         j.configRoundtrip(p)
-        assert d.text1=="This is text1"
-        assert d.text2=="Received This is text1"
+        assert d.text1 == "This is text1"
+        assert d.text2 == "Received This is text1"
     }
 
     public static class TestBuilder extends Builder {
         @DataBoundConstructor
-        TestBuilder() {
-        }
+        TestBuilder() {}
 
-        public String getText1() { return "This is text1" }
-        public String getText2() { return "This is text2" }
+        String getText1() { return "This is text1" }
+        String getText2() { return "This is text2" }
 
         @TestExtension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
-            def text1,text2;
+            def text1
+            def text2
 
             @Override
             boolean isApplicable(Class<? extends AbstractProject> jobType) {
-                return true;
+                return true
             }
 
             FormValidation doCheckText1(@QueryParameter String value) {
-                this.text1 = value;
-                return FormValidation.ok();
+                this.text1 = value
+                return FormValidation.ok()
             }
 
             FormValidation doCheckText2(@QueryParameter String text1) {
-                this.text2 = "Received "+text1;
-                return FormValidation.ok();
+                this.text2 = "Received " + text1
+                return FormValidation.ok()
             }
 
             @Override
             String getDisplayName() {
-                return this.class.name;
+                return this.class.name
             }
         }
-
     }
 }

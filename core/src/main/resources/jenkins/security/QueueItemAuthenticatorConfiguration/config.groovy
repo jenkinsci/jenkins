@@ -23,14 +23,14 @@
  */
 package jenkins.security.QueueItemAuthenticatorConfiguration
 
-import jenkins.security.QueueItemAuthenticatorDescriptor;
+import jenkins.security.QueueItemAuthenticatorDescriptor
 
-f=namespace(lib.FormTagLib)
+f = namespace(lib.FormTagLib)
 
 if (!QueueItemAuthenticatorDescriptor.all().isEmpty()) {
     f.section(title:_("Access Control for Builds")) {
-        f.block() {
-            f.repeatableHeteroProperty(field:"authenticators",hasHeader:true)
+        f.block {
+            f.repeatableHeteroProperty(field:"authenticators", hasHeader:true)
         }
     }
 }

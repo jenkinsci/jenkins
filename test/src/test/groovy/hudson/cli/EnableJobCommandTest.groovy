@@ -26,24 +26,21 @@ package hudson.cli
 import org.jvnet.hudson.test.HudsonTestCase
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 public class EnableJobCommandTest extends HudsonTestCase {
     void test1() {
-        def p = createFreeStyleProject();
+        def p = createFreeStyleProject()
 
         def cli = new CLI(getURL())
 
         try {
-            cli.execute(["disable-job",p.name])
-            assertTrue(p.disabled)
-            cli.execute(["enable-job",p.name])
-            assertFalse(p.disabled)
+            cli.execute(["disable-job", p.name])
+            assert p.disabled
+            cli.execute(["enable-job", p.name])
+            assert !p.disabled
         } finally {
-            cli.close();
+            cli.close()
         }
     }
-
 }

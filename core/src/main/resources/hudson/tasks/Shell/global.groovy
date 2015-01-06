@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks.Shell;
-f=namespace(lib.FormTagLib)
+package hudson.tasks.Shell
+
+f = namespace(lib.FormTagLib)
 
 f.section(title:_("Shell")) {
-    f.entry(field: 'shell', title:_("Shell executable")) {
+    f.entry(field:'shell', title:_("Shell executable")) {
         f.textbox()
     }
 }

@@ -18,22 +18,20 @@ import org.kohsuke.stapler.WebApp
 import javax.servlet.ServletContextEvent
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
 class BootFailureTest extends Assert {
     @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+    public TemporaryFolder tmpDir = new TemporaryFolder()
 
-    static boolean makeBootFail = true;
+    static boolean makeBootFail = true
 
     @Rule
     public JenkinsRule j = new JenkinsRule() {
         @Override
         void before() throws Throwable {
-            env = new TestEnvironment(testDescription);
-            env.pin();
+            env = new TestEnvironment(testDescription)
+            env.pin()
             // don't let Jenkins start automatically
         }
 
@@ -43,16 +41,16 @@ class BootFailureTest extends Assert {
             def wa = new WebAppMain() {
                 @Override
                 WebAppMain.FileAndDescription getHomeDir(ServletContextEvent event) {
-                    return new WebAppMain.FileAndDescription(homeLoader.allocate(),"test");
+                    return new WebAppMain.FileAndDescription(homeLoader.allocate(), "test")
                 }
             }
-            wa.contextInitialized(new ServletContextEvent(ws));
-            wa.joinInit();
+            wa.contextInitialized(new ServletContextEvent(ws))
+            wa.joinInit()
 
-            def a = WebApp.get(ws).app;
+            def a = WebApp.get(ws).app
             if (a instanceof Jenkins)
-                return a;
-            return null;    // didn't boot
+                return a
+            return null // didn't boot
         }
     }
 
@@ -68,40 +66,40 @@ class BootFailureTest extends Assert {
         @Override
         void onLoaded() {
             if (makeBootFail)
-                throw new SeriousError();
+                throw new SeriousError()
         }
     }
 
     @Test
     void runBootFailureScript() {
         final def home = tmpDir.newFolder()
-        j.with({ -> home} as HudsonHomeLoader)
+        j.with({ -> home } as HudsonHomeLoader)
 
         // creates a script
-        new File(home,"boot-failure.groovy").text = "hudson.util.BootFailureTest.problem = exception";
+        new File(home, "boot-failure.groovy").text = "hudson.util.BootFailureTest.problem = exception"
         def d = new File(home, "boot-failure.groovy.d")
-        d.mkdirs();
-        new File(d,"1.groovy").text = "hudson.util.BootFailureTest.runRecord << '1'";
-        new File(d,"2.groovy").text = "hudson.util.BootFailureTest.runRecord << '2'";
+        d.mkdirs()
+        new File(d, "1.groovy").text = "hudson.util.BootFailureTest.runRecord << '1'"
+        new File(d, "2.groovy").text = "hudson.util.BootFailureTest.runRecord << '2'"
 
         // first failed boot
-        makeBootFail = true;
-        assert j.newHudson()==null;
-        assert bootFailures(home)==1;
+        makeBootFail = true
+        assert j.newHudson() == null
+        assert bootFailures(home) == 1
 
         // second failed boot
-        problem = null;
-        runRecord = [];
-        assert j.newHudson()==null;
-        assert bootFailures(home)==2;
-        assert runRecord==["1","2"]
+        problem = null
+        runRecord = []
+        assert j.newHudson() == null
+        assert bootFailures(home) == 2
+        assert runRecord == ["1", "2"]
 
         // make sure the script has actually run
         assert problem.cause instanceof SeriousError
 
         // if it boots well, the failure record should be gone
-        makeBootFail = false;
-        assert j.newHudson()!=null;
+        makeBootFail = false
+        assert j.newHudson() != null
         assert !BootFailure.getBootFailureFile(home).exists()
     }
 
@@ -110,7 +108,7 @@ class BootFailureTest extends Assert {
     }
 
     // to be set by the script
-    public static Exception problem;
-    public static def runRecord = [];
+    public static Exception problem
+    public static def runRecord = []
 
 }
