@@ -569,7 +569,7 @@ public class QueueTest {
         }
     }
 
-    public void testWaitForStartAndCancelBeforeStart() throws Exception {
+    @Test public void waitForStartAndCancelBeforeStart() throws Exception {
         final OneShotEvent ev = new OneShotEvent();
         FreeStyleProject p = r.createFreeStyleProject();
 
