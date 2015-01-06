@@ -45,10 +45,16 @@ import static java.util.logging.Level.*;
  */
 public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudComputer> {
     private int idleMinutes;
-    private ReentrantLock checkLock = new ReentrantLock();
+    private transient ReentrantLock checkLock;
 
     public CloudRetentionStrategy(int idleMinutes) {
         this.idleMinutes = idleMinutes;
+        readResolve();
+    }
+
+    protected Object readResolve() {
+        checkLock = new ReentrantLock();
+        return this;
     }
 
     @Override
