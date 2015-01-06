@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -612,4 +613,33 @@ public class QueueTest {
         } catch (CancellationException e) {
         }
     }
+
+    @Test public void waitForStartAndCancelBeforeStart() throws Exception {
+        final OneShotEvent ev = new OneShotEvent();
+        FreeStyleProject p = r.createFreeStyleProject();
+
+        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(10);
+        final Queue.Item item = Queue.getInstance().getItem(p);
+        assertNotNull(item);
+
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+        executor.schedule(new Runnable() {
+            @Override
+            public void run() {
+                   try {
+                       Queue.getInstance().doCancelItem(item.id);
+                   } catch (IOException e) {
+                       e.printStackTrace();
+                   } catch (ServletException e) {
+                       e.printStackTrace();
+                   }
+                }
+            }, 2, TimeUnit.SECONDS);
+
+        try {
+            f.waitForStart();
+            fail("Expected an CancellationException to be thrown");
+        } catch (CancellationException e) {}
+    }
+
 }
