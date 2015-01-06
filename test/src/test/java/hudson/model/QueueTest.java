@@ -571,7 +571,7 @@ public class QueueTest {
 
     public void testWaitForStartAndCancelBeforeStart() throws Exception {
         final OneShotEvent ev = new OneShotEvent();
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = r.createFreeStyleProject();
 
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(10);
         final Queue.Item item = Queue.getInstance().getItem(p);
