@@ -871,9 +871,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
-
-            // Install the core UI Themes
-            CoreThemeInstaller.installCoreThemes();
         } finally {
             SecurityContextHolder.clearContext();
         }

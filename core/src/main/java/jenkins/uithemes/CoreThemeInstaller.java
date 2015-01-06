@@ -23,6 +23,9 @@
  */
 package jenkins.uithemes;
 
+import hudson.Extension;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 
@@ -38,6 +41,7 @@ public class CoreThemeInstaller {
 
     private static final Logger LOGGER = Logger.getLogger(CoreThemeInstaller.class.getName());
 
+    @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
     public static void installCoreThemes() throws IOException {
         UIThemesProcessor themesProcessor = UIThemesProcessor.getInstance();
 
