@@ -23,40 +23,54 @@
  */
 package hudson.tasks;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Extension;
 import hudson.model.User;
 
 import java.util.regex.Matcher;
 
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.WithoutJenkins;
 
-public class UserAvatarResolverTest extends HudsonTestCase {
+public class UserAvatarResolverTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     private static User expUser;
-    
-    public void testThatDefaultImageIsReturnedIfRegexFails() {
+
+    @Test
+    public void defaultImageIsReturnedIfRegexFails() {
         String avatar = UserAvatarResolver.resolve(User.get("USER"), "meh");
         assertTrue(avatar.endsWith("/images/meh/user.png"));
     }
-    
-    public void testThatResolverIsUsed() {
+
+    @Test
+    public void resolverIsUsed() {
         expUser = User.get("unique-user-not-used-in-anyother-test", true);
         String avatar = UserAvatarResolver.resolve(expUser, "20x20");
         assertEquals(avatar, "http://myown.image");
     }
-    
-    public void testThatNoResolverCanFindAvatar() {
+
+    @Test
+    public void noResolverCanFindAvatar() {
         String avatar = UserAvatarResolver.resolve(User.get("USER"), "20x20");
         assertTrue(avatar.endsWith("/images/20x20/user.png"));
     }
 
-    public void testIconSizeRegex() {
+    @Test
+    @WithoutJenkins
+    public void iconSizeRegex() {
         Matcher matcher = UserAvatarResolver.iconSizeRegex.matcher("12x15");
         assertTrue(matcher.matches());
         assertEquals("12", matcher.group(1));
         assertEquals("15", matcher.group(2));
     }
-    
+
     @Extension
     public static final class UserAvatarResolverImpl extends UserAvatarResolver {
 
@@ -66,6 +80,6 @@ public class UserAvatarResolverTest extends HudsonTestCase {
                 return "http://myown.image";
             }
             return null;
-        }   
+        }
     }
 }
