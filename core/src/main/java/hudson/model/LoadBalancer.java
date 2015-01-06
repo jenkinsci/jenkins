@@ -140,7 +140,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
         return new LoadBalancer() {
             @Override
             public Mapping map(Task task, MappingWorksheet worksheet) {
-                if (Queue.ifBlockedByHudsonShutdown(task)) {
+                if (Queue.isBlockedByShutdown(task)) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.
                     return null;
