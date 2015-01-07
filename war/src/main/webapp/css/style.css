@@ -75,34 +75,19 @@ body {
 }
 
 #side-panel, #main-panel {
+  margin: 0px 0px 40px 0px;
   padding: 0px;
 }
 
-#page-body.fixedGridLayout, .fixedGridLayout #side-panel, .fixedGridLayout #main-panel {
-  left: 0px;
-}
-
-#page-body.fixedGridLayout {
-  position: fixed;
-  top: 66px; /* height of #header + #breadcrumbBar */
-  bottom: 37px; /* height of #footer-container */
-  right: 0px;
-  overflow: scroll;
-}
-.fixedGridLayout #side-panel, .fixedGridLayout #main-panel {
-  position: absolute;
-  top: 0px;
-  bottom: 0px;
-}
-
 .fixedGridLayout #side-panel {
-  width: 375px;
-  padding-left: 15px;
+  float:left;
+  position: fixed;
+  width: 360px;
+  margin-left: 15px;
 }
 
 .fixedGridLayout #main-panel {
-  right: 0px;
-  margin-left: 375px;
+  margin-left: 370px;
   margin-right: 15px;
 }
 
@@ -127,7 +112,7 @@ body {
 }
 
 #footer-container {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   width: 100%;
   padding: 10px 0px;
