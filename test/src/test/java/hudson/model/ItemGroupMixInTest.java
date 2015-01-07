@@ -39,6 +39,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
+import java.util.List;
 
 public class ItemGroupMixInTest {
 
