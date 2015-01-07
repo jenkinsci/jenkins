@@ -28,7 +28,7 @@ import java.util.Collection;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -37,7 +37,7 @@ public class ItemGroupMixInTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Bug(20951)
+    @Issue("JENKINS-20951")
     @LocalData
     @Test public void xmlFileReadCannotResolveClassException() throws Exception {
         MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);

@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.recipes.PresetData;
@@ -38,7 +38,7 @@ public class DefaultCrumbIssuerTest {
     };
     private static final String HEADER_NAME = "X-Forwarded-For";
 
-    @Bug(3854)
+    @Issue("JENKINS-3854")
     @Test public void clientIPFromHeader() throws Exception {
         WebClient wc = r.createWebClient();
 
@@ -47,7 +47,7 @@ public class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
     }
 
-    @Bug(3854)
+    @Issue("JENKINS-3854")
     @Test public void headerChange() throws Exception {
         WebClient wc = r.createWebClient();
 
@@ -64,7 +64,7 @@ public class DefaultCrumbIssuerTest {
         }
     }
 
-    @Bug(3854)
+    @Issue("JENKINS-3854")
     @Test public void proxyIPChanged() throws Exception {
         WebClient wc = r.createWebClient();
 
@@ -78,7 +78,7 @@ public class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
     }
 
-    @Bug(3854)
+    @Issue("JENKINS-3854")
     @Test public void proxyIPChain() throws Exception {
         WebClient wc = r.createWebClient();
 
@@ -87,7 +87,7 @@ public class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
     }
 
-    @Bug(7518)
+    @Issue("JENKINS-7518")
     @Test public void proxyCompatibilityMode() throws Exception {
         CrumbIssuer issuer = new DefaultCrumbIssuer(true);
         assertNotNull(issuer);

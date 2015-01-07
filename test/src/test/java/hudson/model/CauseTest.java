@@ -31,14 +31,14 @@ import java.util.regex.Pattern;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class CauseTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(14814)
+    @Issue("JENKINS-14814")
     @Test public void deeplyNestedCauses() throws Exception {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");
@@ -56,7 +56,7 @@ public class CauseTest {
         assertFalse("too big:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
     }
 
-    @Bug(15747)
+    @Issue("JENKINS-15747")
     @Test public void broadlyNestedCauses() throws Exception {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");

@@ -55,7 +55,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder
 import org.jvnet.hudson.test.HudsonTestCase
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.MemoryAssert
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.recipes.PresetData;
@@ -150,7 +150,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Tests round trip configuration of the blockBuildWhenUpstreamBuilding field
      */
-    @Bug(4423)
+    @Issue("JENKINS-4423")
     public void testConfiguringBlockBuildWhenUpstreamBuildingRoundtrip() {
         def p = createFreeStyleProject();
         p.blockBuildWhenUpstreamBuilding = false;
@@ -172,7 +172,7 @@ public class AbstractProjectTest extends HudsonTestCase {
      * Unless the concurrent build option is enabled, polling and build should be mutually exclusive
      * to avoid allocating unnecessary workspaces.
      */
-    @Bug(4202)
+    @Issue("JENKINS-4202")
     public void testPollingAndBuildExclusion() {
         final OneShotEvent sync = new OneShotEvent();
 
@@ -230,7 +230,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         }
     }
 
-    @Bug(1986)
+    @Issue("JENKINS-1986")
     public void testBuildSymlinks() {
         // If we're on Windows, don't bother doing this.
         if (Functions.isWindows())
@@ -266,7 +266,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert s.contains("Build #" + buildNumber + "\n") : "link should point to build #$buildNumber, but link was: ${Util.resolveSymlink(file, TaskListener.NULL)}\nand log was:\n$s";
     }
 
-    @Bug(2543)
+    @Issue("JENKINS-2543")
     public void testSymlinkForPostBuildFailure() {
         // If we're on Windows, don't bother doing this.
         if (Functions.isWindows())
@@ -292,7 +292,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     /* TODO too slow, seems capable of causing testWorkspaceLock to time out:
-    @Bug(15156)
+    @Issue("JENKINS-15156")
     public void testGetBuildAfterGC() {
         FreeStyleProject job = createFreeStyleProject();
         job.scheduleBuild2(0, new Cause.UserIdCause()).get();
@@ -302,7 +302,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
     */
 
-    @Bug(17137)
+    @Issue("JENKINS-17137")
     public void testExternalBuildDirectorySymlinks() {
         // TODO when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
         def form = createWebClient().goTo("configure").getFormByName("config");
@@ -333,7 +333,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         }
     }
 
-    @Bug(17138)
+    @Issue("JENKINS-17138")
     public void testExternalBuildDirectoryRenameDelete() {
         def form = createWebClient().goTo("configure").getFormByName("config");
         def builds = createTmpDir();
@@ -353,7 +353,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert !b.rootDir.isDirectory();
     }
 
-    @Bug(18678)
+    @Issue("JENKINS-18678")
     public void testRenameJobLostBuilds() throws Exception {
         def p = createFreeStyleProject("initial");
         assertBuildStatusSuccess(p.scheduleBuild2(0));
@@ -372,7 +372,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assertEquals(1, p.getBuilds().size());
     }
 
-    @Bug(17575)
+    @Issue("JENKINS-17575")
     public void testDeleteRedirect() {
         createFreeStyleProject("j1");
         assert "" == deleteRedirectTarget("job/j1");
@@ -396,7 +396,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         return loc.substring(base.length());
     }
 
-    @Bug(18407)
+    @Issue("JENKINS-18407")
     public void testQueueSuccessBehavior() {
         // prevent any builds to test the behaviour
         jenkins.numExecutors = 0;
@@ -415,7 +415,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Do the same as {@link #testQueueSuccessBehavior()} but over HTTP
      */
-    @Bug(18407)
+    @Issue("JENKINS-18407")
     public void testQueueSuccessBehaviorOverHTTP() {
         // prevent any builds to test the behaviour
         jenkins.numExecutors = 0;
@@ -454,7 +454,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert t.spec=="*/10 * * * *"
     }
 
-    @Bug(18813)
+    @Issue("JENKINS-18813")
     public void testRemoveTrigger() {
         AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
 
@@ -463,7 +463,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert j.triggers().size()==0
     }
 
-    @Bug(18813)
+    @Issue("JENKINS-18813")
     public void testAddTriggerSameType() {
         AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
 
@@ -476,7 +476,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert t.spec=="H/5 * * * *"
     }
 
-    @Bug(18813)
+    @Issue("JENKINS-18813")
     public void testAddTriggerDifferentType() {
         AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
 
@@ -488,7 +488,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert t == newTrigger
     }
 
-    @Bug(10615)
+    @Issue("JENKINS-10615")
     public void testWorkspaceLock() {
         def p = createFreeStyleProject()
         p.concurrentBuild = true;

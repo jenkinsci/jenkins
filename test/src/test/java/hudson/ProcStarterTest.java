@@ -31,7 +31,7 @@ import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import java.io.IOException;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import hudson.Launcher.DecoratedLauncher;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class ProcStarterTest {
     public JenkinsRule rule = new JenkinsRule();
     
     @Test
-    @Bug(20559)
+    @Issue("JENKINS-20559")
     public void testNonInitializedEnvsNPE() throws Exception {
         // Create nodes and other test stuff
         rule.hudson.setNumExecutors(0);

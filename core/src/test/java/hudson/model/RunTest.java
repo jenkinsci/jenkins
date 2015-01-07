@@ -34,11 +34,11 @@ import java.util.concurrent.Executors;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 public class RunTest {
 
-    @Bug(15816)
+    @Issue("JENKINS-15816")
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test public void timezoneOfID() throws Exception {
         TimeZone origTZ = TimeZone.getDefault();

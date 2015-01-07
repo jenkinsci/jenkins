@@ -273,7 +273,7 @@ public class FilePathTest {
         compare("abc/..",".");
         compare(".",".");
 
-        // @Bug(5951)
+        // @Issue("JENKINS-5951")
         compare("C:\\Hudson\\jobs\\foo\\workspace/../../otherjob/workspace/build.xml",
                 "C:\\Hudson\\jobs/otherjob/workspace/build.xml");
         // Other cases that failed before

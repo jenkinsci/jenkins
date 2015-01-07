@@ -42,7 +42,7 @@ import java.util.zip.ZipFile;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
@@ -145,7 +145,7 @@ public class DirectoryBrowserSupportTest {
         assertFalse(text, text.contains("x.txt"));
     }
 
-    @Bug(19752)
+    @Issue("JENKINS-19752")
     @Test
     public void zipDownload() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
