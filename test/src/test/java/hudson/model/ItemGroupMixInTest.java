@@ -36,6 +36,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
@@ -107,7 +108,7 @@ public class ItemGroupMixInTest {
     assertEquals("valid", items.iterator().next().getName());
   }
 
-  @Extension
+  @TestExtension
   public static class MockBuilderThrowsError extends BuildWrapper {
     @Override
     public Collection<? extends Action> getProjectActions(AbstractProject project){
