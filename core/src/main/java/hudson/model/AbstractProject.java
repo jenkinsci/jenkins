@@ -751,8 +751,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (JobProperty<? super P> p : Util.fixNull(properties))
             ta.addAll(p.getJobActions((P)this));
 
-        for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
-            ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
+        for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all()) {
+            try {
+                ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error loading transient project action factory.");
+            }
+        }
         return ta;
     }
 
