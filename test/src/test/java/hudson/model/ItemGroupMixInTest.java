@@ -24,11 +24,15 @@
 
 package hudson.model;
 
-import java.util.Collection;
-import static org.junit.Assert.*;
 import hudson.Extension;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.tasks.Builder;
+import hudson.tasks.Publisher;
+import hudson.triggers.Trigger;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +44,13 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class ItemGroupMixInTest {
 
@@ -104,12 +114,17 @@ public class ItemGroupMixInTest {
     MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
     assertNotNull(d);
     Collection<TopLevelItem> items = d.getItems();
-    assertEquals(1, items.size());
-    assertEquals("valid", items.iterator().next().getName());
+    assertEquals(5, items.size());
+    Iterator<TopLevelItem> iterator = items.iterator();
+    assertEquals("badBuildStep", iterator.next().getName());
+    assertEquals("badBuildTrigger", iterator.next().getName());
+    assertEquals("badBuildWrapper", iterator.next().getName());
+    assertEquals("badPublisher", iterator.next().getName());
+    assertEquals("valid", iterator.next().getName());
   }
 
   @TestExtension
-  public static class MockBuilderThrowsError extends BuildWrapper {
+  public static class MockBuildWrapperThrowsError extends BuildWrapper {
     @Override
     public Collection<? extends Action> getProjectActions(AbstractProject project){
       throw new NullPointerException();
@@ -120,6 +135,64 @@ public class ItemGroupMixInTest {
       @Override
       public boolean isApplicable(AbstractProject<?, ?> item) {
         return true;
+      }
+
+      @Override
+      public String getDisplayName() {
+        return null;
+      }
+    }
+  }
+
+  @TestExtension
+  public static class MockBuilderThrowsError extends Builder {
+    @Override
+    public Collection<? extends Action> getProjectActions(AbstractProject project){
+      throw new NullPointerException();
+    }
+    @Extension public static final Descriptor DESCRIPTOR = new DescriptorImpl();
+
+    public static class DescriptorImpl extends BuildStepDescriptor {
+      @Override
+      public boolean isApplicable(Class jobType) {
+        return false;
+      }
+
+      @Override
+      public String getDisplayName() {
+        return null;
+      }
+    }
+  }
+
+  @TestExtension
+  public static class MockBuildTriggerThrowsError extends Trigger {
+    @Override
+    public Collection<? extends Action> getProjectActions() {
+      throw new NullPointerException();
+    }
+
+    @Extension public static final Descriptor DESCRIPTOR = new BuildTrigger.DescriptorImpl();
+  }
+
+  @TestExtension
+  public static class MockPublisherThrowsError extends Publisher {
+    @Override
+    public Collection<? extends Action> getProjectActions(AbstractProject project) {
+      throw new NullPointerException();
+    }
+
+    @Override
+    public BuildStepMonitor getRequiredMonitorService() {
+      return null;
+    }
+
+    @Extension public static final Descriptor DESCRIPTOR = new DescriptorImpl();
+
+    public static class DescriptorImpl extends BuildStepDescriptor {
+      @Override
+      public boolean isApplicable(Class jobType) {
+        return false;
       }
 
       @Override
