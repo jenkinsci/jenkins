@@ -44,7 +44,7 @@ import static org.junit.Assume.*;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -54,7 +54,7 @@ public class ArtifactArchiverTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
-    @Bug(3227)
+    @Issue("JENKINS-3227")
     public void testEmptyDirectories() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         Publisher artifactArchiver = new ArtifactArchiver("dir/");
@@ -83,7 +83,7 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    @Bug(10502)
+    @Issue("JENKINS-10502")
     public void testAllowEmptyArchive() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ArtifactArchiver aa = new ArtifactArchiver("f");
@@ -93,7 +93,7 @@ public class ArtifactArchiverTest {
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
     }
 
-    @Bug(21958)
+    @Issue("JENKINS-21958")
     @Test public void symlinks() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -153,7 +153,7 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    @Bug(22698)
+    @Issue("JENKINS-22698")
     public void testArchivingSkippedWhenOnlyIfSuccessfulChecked() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ArtifactArchiver aa = new ArtifactArchiver("f");
@@ -187,7 +187,7 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    @Bug(20086)
+    @Issue("JENKINS-20086")
     public void testDefaultExcludesOn() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 
@@ -203,7 +203,7 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    @Bug(20086)
+    @Issue("JENKINS-20086")
     public void testDefaultExcludesOff() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 

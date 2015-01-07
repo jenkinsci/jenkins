@@ -111,7 +111,7 @@ public class MarkupTextTest {
         assertEquals("Line<hr/>\n2   &amp; 3\n&lt;End&gt;\n", text.toString(true));
     }
 
-    /* @Bug(6252) */
+    /* @Issue("JENKINS-6252") */
     @Test
     public void subTextSubText() {
         MarkupText text = new MarkupText("abcdefgh");

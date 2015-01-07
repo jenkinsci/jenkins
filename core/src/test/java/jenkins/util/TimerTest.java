@@ -3,7 +3,7 @@ package jenkins.util;
 import hudson.triggers.SafeTimerTask;
 import org.junit.Assert;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +15,7 @@ public class TimerTest {
      * by running doRun() concurrently.
      */
     @Test
-    @Bug(19622)
+    @Issue("JENKINS-19622")
     public void timersArentBlocked() throws InterruptedException {
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch stopLatch = new CountDownLatch(1);

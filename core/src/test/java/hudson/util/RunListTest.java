@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import hudson.model.Run;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -72,7 +72,7 @@ public class RunListTest {
 		assertEquals(2, tested.toArray().length);
 	}
 
-    @Bug(21159)
+    @Issue("JENKINS-21159")
 	@PrepareForTest({Run.class})
 	@Test
 	public void byTimestampFirstRun() {

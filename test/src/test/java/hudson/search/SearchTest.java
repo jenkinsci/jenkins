@@ -40,7 +40,7 @@ import net.sf.json.JSONSerializer;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
@@ -72,7 +72,7 @@ public class SearchTest {
     /**
      * Makes sure the script doesn't execute.
      */
-    @Bug(3415)
+    @Issue("JENKINS-3415")
     @Test
     public void testXSS() throws Exception {
         try {
@@ -227,7 +227,7 @@ public class SearchTest {
     /**
      * Disable/enable status shouldn't affect the search
      */
-    @Bug(13148)
+    @Issue("JENKINS-13148")
     @Test
     public void testDisabledJobShouldBeSearchable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo-bar");
@@ -240,7 +240,7 @@ public class SearchTest {
     /**
      * All top-level jobs should be searchable, not just jobs in the current view.
      */
-    @Bug(13148)
+    @Issue("JENKINS-13148")
     @Test
     public void testCompletionOutsideView() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo-bar");

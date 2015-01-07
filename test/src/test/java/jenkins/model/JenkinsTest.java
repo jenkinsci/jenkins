@@ -49,7 +49,7 @@ import hudson.util.FormValidation;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
@@ -220,7 +220,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         }
     }
     
-    @Bug(12251)
+    @Issue("JENKINS-12251")
     public void testItemFullNameExpansion() throws Exception {
         HtmlForm f = createWebClient().goTo("/configure").getFormByName("config");
         f.getInputByName("_.rawBuildsDir").setValueAttribute("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
@@ -240,7 +240,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
      */
-    @Bug(14113)
+    @Issue("JENKINS-14113")
     public void testUnprotectedRootAction() throws Exception {
         jenkins.setSecurityRealm(createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
@@ -364,7 +364,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         }
     }
 
-    @Bug(20866)
+    @Issue("JENKINS-20866")
     public void testErrorPageShouldBeAnonymousAccessible() throws Exception {
         HudsonPrivateSecurityRealm s = new HudsonPrivateSecurityRealm(false, false, null);
         User alice = s.createAccount("alice", "alice");
@@ -388,7 +388,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         return new Failure("My car is black");
     }
 
-    @Bug(23551)
+    @Issue("JENKINS-23551")
     public void testComputerListenerNotifiedOnRestart() {
         // Simulate restart calling listeners
         for (RestartListener listener : RestartListener.all())

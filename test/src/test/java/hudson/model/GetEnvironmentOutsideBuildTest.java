@@ -12,7 +12,7 @@ import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -21,7 +21,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
  * 
  * @author kutzi
  */
-@Bug(11592)
+@Issue("JENKINS-11592")
 public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
 
     private int oldExecNum;

@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MemoryAssert;
@@ -66,7 +66,7 @@ public class OldDataMonitorTest {
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Ignore("constantly failing on CI builders, makes problems for memory()")
-    @Bug(19544)
+    @Issue("JENKINS-19544")
     @LocalData
     @Test public void robustness() throws Exception {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
@@ -86,7 +86,7 @@ public class OldDataMonitorTest {
         // did not manage to save p, but at least we are not holding onto a reference to it anymore
     }
 
-    @Bug(19544)
+    @Issue("JENKINS-19544")
     @Test public void memory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("p");
         FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
