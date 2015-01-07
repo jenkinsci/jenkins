@@ -834,7 +834,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         // designated to use a specific loader first
         // (this one or the parent one)
 
-        // XXX - shouldn't this always return false in isolated mode?
+        // TODO shouldn't this always return false in isolated mode?
 
         boolean useParentFirst = parentFirst;
 

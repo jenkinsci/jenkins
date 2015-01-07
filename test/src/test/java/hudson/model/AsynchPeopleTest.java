@@ -30,7 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -39,7 +39,7 @@ public class AsynchPeopleTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(18641)
+    @Issue("JENKINS-18641")
     @Test public void display() throws Exception {
         User.get("bob");
         JenkinsRule.WebClient wc = j.createWebClient();

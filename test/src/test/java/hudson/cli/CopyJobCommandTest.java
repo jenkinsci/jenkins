@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
@@ -72,7 +72,7 @@ public class CopyJobCommandTest {
         // TODO test copying from/to root, or into nonexistent folder
     }
 
-    @Bug(22262)
+    @Issue("JENKINS-22262")
     @Test public void folderPermissions() throws Exception {
         final MockFolder d1 = j.createFolder("d1");
         final FreeStyleProject p = d1.createProject(FreeStyleProject.class, "p");

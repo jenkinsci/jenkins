@@ -28,7 +28,7 @@ import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
@@ -93,7 +93,7 @@ public class DisplayNameTest {
         
     }
 
-    @Bug(18074)
+    @Issue("JENKINS-18074")
     @Test public void copyJobWithDisplayNameToDifferentFolder() throws Exception {
         MockFolder d1 = j.createFolder("d1");
         FreeStyleProject job = d1.createProject(FreeStyleProject.class, "job");

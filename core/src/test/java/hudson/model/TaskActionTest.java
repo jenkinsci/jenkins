@@ -1,19 +1,19 @@
 package hudson.model;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 
 import hudson.console.AnnotatedLargeText;
 import hudson.security.ACL;
 import hudson.security.Permission;
-import hudson.security.PermissionGroup;
 import org.acegisecurity.Authentication;
+import org.junit.Test;
 
 /**
  * @author Jerome Lacoste
  */
-public class TaskActionTest extends TestCase {
+public class TaskActionTest {
 
     private static class MyTaskThread extends TaskThread {
         MyTaskThread(TaskAction taskAction) {
@@ -21,22 +21,22 @@ public class TaskActionTest extends TestCase {
         }
         protected void perform(TaskListener listener) throws Exception {
             listener.hyperlink("/localpath", "a link");
-        }            
+        }
     }
-  
+
     private static class MyTaskAction extends TaskAction {
         void start() {
             workerThread = new MyTaskThread(this);
             workerThread.start();
-        }  
-    
+        }
+
         public String getIconFileName() {
             return "Iconfilename";
         }
         public String getDisplayName() {
             return "My Task Thread";
         }
-        
+
         public String getUrlName() {
             return "xyz";
         }
@@ -53,7 +53,8 @@ public class TaskActionTest extends TestCase {
         }
     }
 
-    public void testAnnotatedText() throws Exception {
+    @Test
+    public void annotatedText() throws Exception {
         MyTaskAction action = new MyTaskAction();
         action.start();
         AnnotatedLargeText annotatedText = action.obtainLog();

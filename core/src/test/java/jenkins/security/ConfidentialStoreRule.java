@@ -1,34 +1,26 @@
 package jenkins.security;
 
-import hudson.Util;
 import org.junit.rules.ExternalResource;
 
-import java.io.File;
-import java.io.IOException;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Test rule that injects a temporary {@link DefaultConfidentialStore}
  * @author Kohsuke Kawaguchi
  */
 public class ConfidentialStoreRule extends ExternalResource {
-    public ConfidentialStore store;
-    public File tmp;
+    private final TemporaryFolder tmp = new TemporaryFolder();
 
     @Override
     protected void before() throws Throwable {
-        tmp = Util.createTempDir();
-        store = new DefaultConfidentialStore(tmp);
-        ConfidentialStore.TEST.set(store);
+        tmp.create();
+        ConfidentialStore.TEST.set(new DefaultConfidentialStore(tmp.getRoot()));
     }
 
     @Override
     protected void after() {
         ConfidentialStore.TEST.set(null);
-        try {
-            Util.deleteRecursive(tmp);
-        } catch (IOException e) {
-            throw new Error(e);
-        }
+        tmp.delete();
     }
 
     static {

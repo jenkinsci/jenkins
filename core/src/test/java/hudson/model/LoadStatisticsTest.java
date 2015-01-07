@@ -24,10 +24,10 @@
 package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import junit.framework.TestCase;
 
 import org.apache.commons.io.IOUtils;
 import org.jfree.chart.JFreeChart;
+import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -38,8 +38,10 @@ import java.io.IOException;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LoadStatisticsTest extends TestCase {
-    public void testGraph() throws IOException {
+public class LoadStatisticsTest {
+
+    @Test
+    public void graph() throws IOException {
         LoadStatistics ls = new LoadStatistics(0, 0) {
             public int computeIdleExecutors() {
                 throw new UnsupportedOperationException();

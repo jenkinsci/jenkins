@@ -63,7 +63,7 @@ public class ComputerRetentionWork extends PeriodicWork {
             if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
                 // at the moment I don't trust strategies to wait more than 60 minutes
                 // strategies need to wait at least one minute
-                final long waitInMins = Math.min(1, Math.max(60, c.getRetentionStrategy().check(c)));
+                final long waitInMins = Math.max(1, Math.min(60, c.getRetentionStrategy().check(c)));
                 nextCheck.put(c, startRun + waitInMins*1000*60 /*MINS->MILLIS*/);
             }
         }

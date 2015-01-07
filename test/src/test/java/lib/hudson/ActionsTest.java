@@ -23,17 +23,26 @@
  */
 package lib.hudson;
 
+import static org.junit.Assert.assertNotNull;
+
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ActionsTest extends HudsonTestCase {
-    public void testOverride() throws Exception {
-        assertNotNull(createWebClient().goTo("").getElementById("bravo"));
+public class ActionsTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void override() throws Exception {
+        assertNotNull(j.createWebClient().goTo("").getElementById("bravo"));
     }
 
     @TestExtension

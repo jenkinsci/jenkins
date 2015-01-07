@@ -40,7 +40,7 @@ import hudson.slaves.SlaveComputer;
  * When using JenkinsRule, the exception is squashed in after(),
  * and does not cause failures.
  */
-@Bug(18259)
+@Issue("JENKINS-18259")
 public class HudsonTestCaseShutdownSlaveTest extends HudsonTestCase {
     public void testShutdownSlave() throws Exception {
         DumbSlave slave1 = createOnlineSlave(); // online, and a build finished.

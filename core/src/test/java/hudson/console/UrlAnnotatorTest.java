@@ -28,7 +28,7 @@ import hudson.MarkupText;
 
 import org.junit.Test;
 
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Alan Harder
@@ -59,7 +59,7 @@ public class UrlAnnotatorTest {
     }
 
     @Test
-    @Bug(19866)
+    @Issue("JENKINS-19866")
     public void annotateFileScheme() {
         assertEquals(
                 "Get this <a href='file://here/in/this/folder/'>file://here/in/this/folder/</a>.",

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,8 +23,10 @@
  */
 package hudson;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.Saveable;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.io.IOException;
 
@@ -33,7 +35,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class BulkChangeTest extends TestCase {
+public class BulkChangeTest {
 
     private class Point implements Saveable {
         /**
@@ -68,7 +70,8 @@ public class BulkChangeTest extends TestCase {
     /**
      * If there is no BulkChange, we should see two saves.
      */
-    public void testNoBulkChange() throws Exception {
+    @Test
+    public void noBulkChange() throws Exception {
         Point pt = new Point();
         pt.set(0,0);
         assertEquals(2,pt.saveCount);
@@ -77,7 +80,8 @@ public class BulkChangeTest extends TestCase {
     /**
      * With a {@link BulkChange}, this will become just one save.
      */
-    public void testBulkChange() throws Exception {
+    @Test
+    public void bulkChange() throws Exception {
         Point pt = new Point();
         BulkChange bc = new BulkChange(pt);
         try {
@@ -91,7 +95,8 @@ public class BulkChangeTest extends TestCase {
     /**
      * {@link BulkChange}s can be nested.
      */
-    public void testNestedBulkChange() throws Exception {
+    @Test
+    public void nestedBulkChange() throws Exception {
         Point pt = new Point();
         Point _ = new Point();
         BulkChange bc1 = new BulkChange(pt);

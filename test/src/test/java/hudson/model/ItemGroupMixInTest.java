@@ -32,7 +32,6 @@ import hudson.tasks.BuildWrapperDescriptor;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
@@ -46,7 +45,7 @@ public class ItemGroupMixInTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Bug(20951)
+    @Issue("JENKINS-20951")
     @LocalData
     @Test public void xmlFileReadCannotResolveClassException() throws Exception {
         MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);

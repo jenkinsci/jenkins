@@ -2037,7 +2037,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         this.buildsDir = buildsDir;
     }
 
-    public FilePath getRootPath() {
+    @Override public @Nonnull FilePath getRootPath() {
         return new FilePath(getRootDir());
     }
 
@@ -3585,7 +3585,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Sign up for the user account.
      */
     public void doSignup( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        req.getView(getSecurityRealm(), "signup.jelly").forward(req, rsp);
+        if (getSecurityRealm().allowsSignup()) {
+            req.getView(getSecurityRealm(), "signup.jelly").forward(req, rsp);
+            return;
+        }
+        req.getView(SecurityRealm.class, "signup.jelly").forward(req, rsp);
     }
 
     /**

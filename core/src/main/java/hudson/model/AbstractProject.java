@@ -1451,9 +1451,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
         // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
         // by having multiple workspaces
-        WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
         Node node = lb.getBuiltOn();
         Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(node,listener));
+        WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
         try {
             listener.getLogger().println("Polling SCM changes on " + node.getSelfLabel().getName());
             LOGGER.fine("Polling SCM changes of " + getName());
@@ -1836,13 +1836,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         else
             scmCheckoutStrategy = null;
 
-        if(req.hasParameter("_.assignedLabelString")) {
+        if(json.optBoolean("hasSlaveAffinity", json.has("label"))) {
+            assignedNode = Util.fixEmptyAndTrim(json.optString("label"));
+        } else if(req.hasParameter("_.assignedLabelString")) {
             // Workaround for JENKINS-25372 while plugin is being updated.
+            // Keep this condition second for JENKINS-25533
             LOGGER.log(Level.WARNING, "label assignment is using legacy '_.assignedLabelString'");
             assignedNode = Util.fixEmptyAndTrim(req.getParameter("_.assignedLabelString"));
-        } else if(json.optBoolean("hasSlaveAffinity", json.has("label"))) {
-            assignedNode = Util.fixEmptyAndTrim(json.optString("label"));
-        } else {
+        } else  {
             assignedNode = null;
         }
         canRoam = assignedNode==null;

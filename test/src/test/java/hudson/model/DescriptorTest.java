@@ -29,14 +29,14 @@ import hudson.tasks.Shell;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class DescriptorTest {
 
     public @Rule JenkinsRule rule = new JenkinsRule();
 
-    @Bug(12307)
+    @Issue("JENKINS-12307")
     @Test public void getItemTypeDescriptorOrDie() throws Exception {
         Describable<?> instance = new Shell("echo hello");
         Descriptor<?> descriptor = instance.getDescriptor();

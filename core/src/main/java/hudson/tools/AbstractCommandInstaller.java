@@ -70,7 +70,7 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
     @Override
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = preferredLocation(tool, node);
-        // XXX support Windows batch scripts, Unix scripts with interpreter line, etc. (see CommandInterpreter subclasses)
+        // TODO support Unix scripts with interpreter line (see Shell.buildCommandLine)
         FilePath script = dir.createTextTempFile("hudson", getCommandFileExtension(), command);
         try {
             String cmd[] = getCommandCall(script);

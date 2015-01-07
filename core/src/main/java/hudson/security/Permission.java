@@ -144,10 +144,11 @@ public final class Permission {
      *      See {@link #description}.
      * @param impliedBy
      *      See {@link #impliedBy}.
+     * @throws IllegalStateException if this permission was already defined
      */
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, 
             @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable, 
-            @Nonnull PermissionScope[] scopes) {
+            @Nonnull PermissionScope[] scopes) throws IllegalStateException {
         if(!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name+" is not a Java identifier");
         this.owner = group.owner;
@@ -219,6 +220,14 @@ public final class Permission {
      */
     public @Nonnull String getId() {
         return owner.getName()+'.'+name;
+    }
+
+    @Override public boolean equals(Object o) {
+        return o instanceof Permission && getId().equals(((Permission) o).getId());
+    }
+
+    @Override public int hashCode() {
+        return getId().hashCode();
     }
 
     /**
