@@ -26,12 +26,19 @@ package hudson.model;
 
 import java.util.Collection;
 import static org.junit.Assert.*;
+import hudson.Extension;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
+import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
+
+import java.io.File;
 
 public class ItemGroupMixInTest {
 
@@ -47,4 +54,76 @@ public class ItemGroupMixInTest {
         assertEquals("valid", items.iterator().next().getName());
     }
 
+  /**
+   * This test unit makes sure that if part of the config.xml file is
+   * deleted it will still load everything else inside the folder.
+   * The test unit expects an IOException is thrown, and the one failed
+   * job fails to load.
+   */
+  @Issue("JENKINS-22811")
+  @Test
+  public void xmlFileFailsToLoad() throws Exception {
+    MockFolder folder = r.createFolder("folder");
+    assertNotNull(folder);
+
+    AbstractProject project = folder.createProject(FreeStyleProject.class, "job1");
+    AbstractProject project2 = folder.createProject(FreeStyleProject.class, "job2");
+    AbstractProject project3 = folder.createProject(FreeStyleProject.class, "job3");
+
+    File configFile = project.getConfigFile().getFile();
+
+    List<String> lines = FileUtils.readLines(configFile).subList(0, 5);
+    configFile.delete();
+
+    // Remove half of the config.xml file to make "invalid" or fail to load
+    FileUtils.writeByteArrayToFile(configFile, lines.toString().getBytes());
+    for (int i = lines.size() / 2; i < lines.size(); i++) {
+      FileUtils.writeStringToFile(configFile, lines.get(i), true);
+    }
+
+    // Reload Jenkins.
+    r.jenkins.reload();
+
+    // Folder
+    assertNotNull("Folder failed to load.", folder);
+    assertNull("Job should have failed to load.", r.jenkins.getItemByFullName("folder/job1"));
+    assertNotNull("Other job in folder should have loaded.", r.jenkins.getItemByFullName("folder/job2"));
+    assertNotNull("Other job in folder should have loaded.", r.jenkins.getItemByFullName("folder/job3"));
+  }
+
+  /**
+   * This test unit makes sure that any exception that is thrown is caught, however the folder
+   * will continue to load not impacting any other jobs in the folder.
+   */
+  @LocalData
+  @Issue("JENKINS-22811")
+  @Test
+  public void xmlFileReadExceptionOnLoad() throws Exception {
+    MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
+    assertNotNull(d);
+    Collection<TopLevelItem> items = d.getItems();
+    assertEquals(1, items.size());
+    assertEquals("valid", items.iterator().next().getName());
+  }
+
+  @Extension
+  public static class MockBuilderThrowsError extends BuildWrapper {
+    @Override
+    public Collection<? extends Action> getProjectActions(AbstractProject project){
+      throw new NullPointerException();
+    }
+
+    @Extension
+    public static class DescriptorImpl extends BuildWrapperDescriptor {
+      @Override
+      public boolean isApplicable(AbstractProject<?, ?> item) {
+        return true;
+      }
+
+      @Override
+      public String getDisplayName() {
+        return null;
+      }
+    }
+  }
 }
