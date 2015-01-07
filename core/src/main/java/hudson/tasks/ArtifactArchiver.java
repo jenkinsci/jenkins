@@ -37,6 +37,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -44,6 +45,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -97,6 +99,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      */
     @Nonnull
     private Boolean defaultExcludes = true;
+
+    private String contextPath;
 
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
@@ -196,6 +200,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     	}
     }
 
+    public String getContextPath() {
+        return this.contextPath;
+    }
+
+    @DataBoundSetter public final void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+    }
+
     @Override
     public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException {
         if(artifacts.length()==0) {
@@ -213,18 +225,45 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         try {
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
-            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes));
+            FilePath dir = ws;
+            if (this.contextPath != null && this.contextPath.length() > 0) {
+                String path = build.getEnvironment(listener).expand(this.contextPath);
+                dir = ws.child(path);
+
+                // add trailing slash so we don't allow '../workspacefoo' to escape the workspace
+                String wsPath = ws.getRemote();
+                wsPath = wsPath.endsWith("/") ? wsPath : wsPath + "/";
+                String dirPath = dir.getRemote() + '/';
+                dirPath = dirPath.endsWith("/") ? dirPath : dirPath + "/";
+                if (!dirPath.startsWith(wsPath)) {
+                    listener.error(Messages.ArtifactArchiver_ContextOutsideWorkspace());
+                    build.setResult(Result.FAILURE);
+                    return;
+                }
+            }
+
+            Map<String,String> files;
+
+            if (dir.exists() && dir.isDirectory()) {
+                files = dir.act(new ListFiles(artifacts, excludes, defaultExcludes));
+            } else {
+                files = Collections.emptyMap();
+            }
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
+                build.pickArtifactManager().archive(dir, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
-                    new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
+                    new Fingerprinter(artifacts).perform(build, dir, launcher, listener);
                 }
             } else {
                 Result result = build.getResult();
                 if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
-                    // The build probably didn't even get to the point where it produces artifacts. 
-                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    // The build probably didn't even get to the point where it produces artifacts.
+                    if (dir == ws) {
+                        listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    } else {
+                        listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFoundInContext(artifacts, contextPath));
+                    }
                     String msg = null;
                     try {
                     	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND);
@@ -296,11 +335,51 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         /**
          * Performs on-the-fly validation on the file mask wildcard.
          */
-        public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+        public FormValidation doCheckArtifacts(@AncestorInPath AbstractProject project, @QueryParameter String value, @QueryParameter String contextPath) throws IOException, InterruptedException {
+            // Make sure context path is valid first, otherwise this suggests files outside the workspace
+            FormValidation contextPathValidation = doCheckContextPath(project, contextPath);
+            if (contextPathValidation.kind != FormValidation.Kind.OK) {
+                // if context path is invalid, treat this like no workspace exists rather than e.g. show the same validation error twice
+                return FormValidation.ok();
+            }
             if (project == null) {
                 return FormValidation.ok();
             }
-            return FilePath.validateFileMask(project.getSomeWorkspace(),value);
+            FilePath ws = project.getSomeWorkspace();
+            if (ws == null) {
+                return FormValidation.ok();
+            }
+            return FilePath.validateFileMask(ws.child(contextPath),value);
+        }
+
+        public FormValidation doCheckContextPath(@AncestorInPath AbstractProject project, @QueryParameter String contextPath) throws IOException, InterruptedException {
+            if (project == null) {
+                return FormValidation.ok();
+            }
+            FilePath ws = null;
+            FilePath reference;
+            if (project == null || (ws = project.getSomeWorkspace()) == null) {
+                // we're not writing anything, just checking whether the contextPath escapes a reference directory
+                // so we can use anything here
+                reference = Jenkins.getInstance().getRootPath();
+            } else {
+                reference = ws;
+            }
+            FilePath context = reference.child(contextPath);
+            if (!context.getRemote().startsWith(reference.getRemote())) {
+                return FormValidation.error(Messages.ArtifactArchiver_ContextOutsideWorkspace());
+            }
+
+            if (ws != null && ws.exists()) {
+                if (!context.exists()) {
+                    return FormValidation.warning(Messages.ArtifactArchiver_ContextDoesNotExist());
+                }
+                if (!context.isDirectory()) {
+                    return FormValidation.warning(Messages.ArtifactArchiver_ContextIsFile());
+                }
+            }
+
+            return FormValidation.ok();
         }
 
         @Override
