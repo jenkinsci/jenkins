@@ -86,7 +86,7 @@ public class ItemGroupMixInTest {
     r.jenkins.reload();
 
     // Folder
-    assertNotNull("Folder failed to load.", folder);
+    assertNotNull("Folder failed to load.", r.jenkins.getItemByFullName("folder"));
     assertNull("Job should have failed to load.", r.jenkins.getItemByFullName("folder/job1"));
     assertNotNull("Other job in folder should have loaded.", r.jenkins.getItemByFullName("folder/job2"));
     assertNotNull("Other job in folder should have loaded.", r.jenkins.getItemByFullName("folder/job3"));
