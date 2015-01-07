@@ -1,0 +1,67 @@
+//
+// The MIT License
+//
+// Copyright (c) 2013-2014, CloudBees, Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+@import "/jenkins-themes/env";
+
+//
+//  This is a utility mixin that generates styles for the "classic" 4 icons
+//  i.e. 16x16, 24x24 etc.
+//
+.generateClassicIcons(@iconClass, @imURLPrefix) {
+  @escapedClassName: e(@iconClass);
+
+  .@{escapedClassName}.icon-sm {
+    background-image: url('@{imURLPrefix}/16x16/@{iconFileName}');
+  }
+  .@{escapedClassName}.icon-md {
+    background-image: url('@{imURLPrefix}/24x24/@{iconFileName}');
+  }
+  .@{escapedClassName}.icon-lg {
+    background-image: url('@{imURLPrefix}/32x32/@{iconFileName}');
+  }
+  .@{escapedClassName}.icon-xlg {
+    background-image: url('@{imURLPrefix}/48x48/@{iconFileName}');
+  }
+}
+
+//
+//  This is a utility mixin that generates styles for the "classic" 4 icons
+//  i.e. 16x16, 24x24 etc for Jenkins core.
+//
+.generateClassicIconsForCore(@iconClass, @iconFileName) {
+  @imURLPrefix: '@{rootURL}/images';
+
+  .generateClassicIcons(@iconClass, @imURLPrefix);
+}
+
+//
+//  This is a utility mixin that generates styles for the "classic" 4 icons
+//  i.e. 16x16 etc for a plugin.  It assumes the plugin houses the icon image
+//  files in it's 'webapp/images/16x16' etc. folders
+//
+.generateClassicIconsForPlugin(@iconClass, @iconFileName, @pluginName) {
+  @imURLPrefix: '@{rootURL}/plugin/@{pluginName}/images';
+
+  .generateClassicIcons(@iconClass, @imURLPrefix);
+}
