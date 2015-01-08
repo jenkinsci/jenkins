@@ -1,6 +1,8 @@
 package hudson.security;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import hudson.cli.CLI;
@@ -11,7 +13,6 @@ import hudson.cli.LogoutCommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.NullInputStream;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -71,7 +72,7 @@ public class CliAuthenticationTest {
         @Override
         protected int run() throws Exception {
             Authentication auth = Jenkins.getAuthentication();
-            Assert.assertNotSame(Jenkins.ANONYMOUS,auth);
+            assertNotSame(Jenkins.ANONYMOUS,auth);
             assertEquals("abc", auth.getName());
             return 0;
         }
@@ -87,7 +88,7 @@ public class CliAuthenticationTest {
         @Override
         protected int run() throws Exception {
             Authentication auth = Jenkins.getAuthentication();
-            Assert.assertSame(Jenkins.ANONYMOUS,auth);
+            assertSame(Jenkins.ANONYMOUS,auth);
             return 0;
         }
     }
