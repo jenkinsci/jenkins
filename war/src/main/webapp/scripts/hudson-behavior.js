@@ -2043,9 +2043,9 @@ Element.observe(document, 'dom:loaded', function(){
         minPageBodyHeight = Math.max(minPageBodyHeight, sidePanelHeight);
         minPageBodyHeight = Math.max(minPageBodyHeight, mainPanelHeight);
 
-        $(pageBody).setStyle({'min-height': minPageBodyHeight + 'px'});
-        $(sidePanel).setStyle({'min-height': minPageBodyHeight + 'px'});
-        $(mainPanel).setStyle({'min-height': minPageBodyHeight + 'px'});
+        $(pageBody).setStyle({minHeight: minPageBodyHeight + 'px'});
+        $(sidePanel).setStyle({minHeight: minPageBodyHeight + 'px'});
+        $(mainPanel).setStyle({minHeight: minPageBodyHeight + 'px'});
     }
 
     var doPanelLayouts = function() {
