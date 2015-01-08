@@ -104,8 +104,8 @@ public class ItemGroupMixInTest {
   }
 
   /**
-   * This test unit makes sure that any exception that is thrown is caught, however the folder
-   * will continue to load not impacting any other jobs in the folder.
+   * This test unit makes sure that jobs that contain bad get*Action methods will continue to
+   * load the project.
    */
   @LocalData
   @Issue("JENKINS-22811")
@@ -115,12 +115,6 @@ public class ItemGroupMixInTest {
     assertNotNull(d);
     Collection<TopLevelItem> items = d.getItems();
     assertEquals(5, items.size());
-    Iterator<TopLevelItem> iterator = items.iterator();
-    assertEquals("badBuildStep", iterator.next().getName());
-    assertEquals("badBuildTrigger", iterator.next().getName());
-    assertEquals("badBuildWrapper", iterator.next().getName());
-    assertEquals("badPublisher", iterator.next().getName());
-    assertEquals("valid", iterator.next().getName());
   }
 
   @TestExtension
