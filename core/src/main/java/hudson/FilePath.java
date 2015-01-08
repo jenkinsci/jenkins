@@ -2236,10 +2236,17 @@ public final class FilePath implements Serializable {
      *      null if no error was found. Otherwise returns a human readable error message.
      * @since 1.90
      * @see #validateFileMask(FilePath, String)
+     * @deprecated use {@link #validateAntFileMask(String, int)} instead
      */
     public String validateAntFileMask(final String fileMasks) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, Integer.MAX_VALUE);
     }
+
+    /**
+     * Default bound for {@link #validateAntFileMask(String, int)}.
+     * @since 1.592
+     */
+    public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.
@@ -2250,7 +2257,7 @@ public final class FilePath implements Serializable {
      * A message is returned in case the file pattern can definitely be determined to not match anything in the directory within the alloted time.
      * If the time runs out without finding a match but without ruling out the possibility that there might be one, {@link InterruptedException} is thrown,
      * in which case the calling code should give the user the benefit of the doubt and use {@link hudson.util.FormValidation.Kind#OK} (with or without a message).
-     * @param bound a maximum number of negative operations (deliberately left vague) to perform before giving up on a precise answer; 10_000 is a reasonable pick
+     * @param bound a maximum number of negative operations (deliberately left vague) to perform before giving up on a precise answer; try {@link #VALIDATE_ANT_FILE_MASK_BOUND}
      * @throws InterruptedException not only in case of a channel failure, but also if too many operations were performed without finding any matches
      * @since 1.484
      */
@@ -2358,10 +2365,15 @@ public final class FilePath implements Serializable {
                 class Cancel extends RuntimeException {}
                 DirectoryScanner ds = bound == Integer.MAX_VALUE ? new DirectoryScanner() : new DirectoryScanner() {
                     int ticks;
+                    long start = System.currentTimeMillis();
                     @Override public synchronized boolean isCaseSensitive() {
-                        if (!filesIncluded.isEmpty() || !dirsIncluded.isEmpty() || ticks++ > bound) {
+                        if (!filesIncluded.isEmpty() || !dirsIncluded.isEmpty() || ticks++ > bound || System.currentTimeMillis() - start > 5000) {
                             throw new Cancel();
                         }
+                        filesNotIncluded.clear();
+                        dirsNotIncluded.clear();
+                        // notFollowedSymlinks might be large, but probably unusual
+                        // scannedDirs will typically be largish, but seems to be needed
                         return super.isCaseSensitive();
                     }
                 };
@@ -2424,7 +2436,7 @@ public final class FilePath implements Serializable {
             if(!exists()) // no workspace. can't check
                 return FormValidation.ok();
 
-            String msg = validateAntFileMask(value, 10000);
+            String msg = validateAntFileMask(value, VALIDATE_ANT_FILE_MASK_BOUND);
             if(errorIfNotExist)     return FormValidation.error(msg);
             else                    return FormValidation.warning(msg);
         } catch (InterruptedException e) {

@@ -2603,11 +2603,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IOException(projectsDir+" is not a directory");
             throw new IOException("Unable to create "+projectsDir+"\nPermission issue? Please create this directory manually.");
         }
-        File[] subdirs = projectsDir.listFiles(new FileFilter() {
-            public boolean accept(File child) {
-                return child.isDirectory() && Items.getConfigFile(child).exists();
-            }
-        });
+        File[] subdirs = projectsDir.listFiles(); 
 
         final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<String>());
 
@@ -2653,6 +2649,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (final File subdir : subdirs) {
             g.requires(loadHudson).attains(JOB_LOADED).notFatal().add("Loading job "+subdir.getName(),new Executable() {
                 public void run(Reactor session) throws Exception {
+                    if(!Items.getConfigFile(subdir).exists()) {
+                        //Does not have job config file, so it is not a jenkins job hence skip it
+                        return;
+                    }
                     TopLevelItem item = (TopLevelItem) Items.load(Jenkins.this, subdir);
                     items.put(item.getName(), item);
                     loadedNames.add(item.getName());

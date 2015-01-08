@@ -19,9 +19,7 @@ import jenkins.ExtensionFilter;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AuthenticationDetailsSource;
 import org.acegisecurity.ui.AuthenticationDetailsSourceImpl;
 
@@ -49,9 +47,6 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
         if (DISABLE)
             return null;
 
-        if (!authenticationIsRequired(username))
-            return null;
-
         UsernamePasswordAuthenticationToken authRequest =
                 new UsernamePasswordAuthenticationToken(username, password);
         authRequest.setDetails(authenticationDetailsSource.buildDetails(req));
@@ -66,37 +61,6 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
             LOGGER.log(FINER, "Authentication request for user: {0} failed: {1}", new Object[]{username,failed});
             return null;
         }
-    }
-
-    // taken from BasicProcessingFilter.java
-    protected boolean authenticationIsRequired(String username) {
-        // Only reauthenticate if username doesn't match SecurityContextHolder and user isn't authenticated
-        // (see SEC-53)
-        Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
-
-        if(existingAuth == null || !existingAuth.isAuthenticated()) {
-            return true;
-        }
-
-        // Limit username comparison to providers which use usernames (ie UsernamePasswordAuthenticationToken)
-        // (see SEC-348)
-
-        if (existingAuth instanceof UsernamePasswordAuthenticationToken && !existingAuth.getName().equals(username)) {
-            return true;
-        }
-
-        // Handle unusual condition where an AnonymousAuthenticationToken is already present
-        // This shouldn't happen very often, as BasicProcessingFitler is meant to be earlier in the filter
-        // chain than AnonymousProcessingFilter. Nevertheless, presence of both an AnonymousAuthenticationToken
-        // together with a BASIC authentication request header should indicate reauthentication using the
-        // BASIC protocol is desirable. This behaviour is also consistent with that provided by form and digest,
-        // both of which force re-authentication if the respective header is detected (and in doing so replace
-        // any existing AnonymousAuthenticationToken). See SEC-610.
-        if (existingAuth instanceof AnonymousAuthenticationToken) {
-            return true;
-        }
-
-        return false;
     }
 
     private static final Logger LOGGER = Logger.getLogger(BasicHeaderRealPasswordAuthenticator.class.getName());
