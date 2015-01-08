@@ -755,7 +755,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             try {
                 ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Error loading transient project action factory.");
+                LOGGER.log(Level.SEVERE, "Could not load actions from " + tpaf + " for " + this, e);
             }
         }
         return ta;
