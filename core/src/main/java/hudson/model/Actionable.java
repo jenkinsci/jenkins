@@ -97,7 +97,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 try {
                     _actions.addAll(createFor(taf));
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Error loading action.", e);
+                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
                 }
             }
         }
