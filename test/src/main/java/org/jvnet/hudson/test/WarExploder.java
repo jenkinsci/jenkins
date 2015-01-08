@@ -88,7 +88,8 @@ final class WarExploder {
         File war = Which.jarFile(Class.forName("executable.Executable"));
 
         // TODO this assumes that the CWD of the Maven process is the plugin ${basedir}, which may not be the case
-        File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();
+        File buildDirectory = new File(System.getProperty("buildDirectory", "target"));
+        File explodeDir = new File(buildDirectory, "jenkins-for-test").getAbsoluteFile();
         explodeDir.getParentFile().mkdirs();
         while (new File(explodeDir + ".exploding").isFile()) {
             explodeDir = new File(explodeDir + "x");
