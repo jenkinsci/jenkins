@@ -346,6 +346,49 @@ public class QueueTest {
         assertEquals(1, runs.size());
         assertEquals("slave0", runs.get(0).getBuiltOnStr());
     }
+    
+    @Issue("JENKINS-10944")
+    @Test public void flyweightTasksBlockedByShutdown() throws Exception {
+        r.jenkins.doQuietDown(true, 0);
+        AtomicInteger cnt = new AtomicInteger();
+        TestFlyweightTask task = new TestFlyweightTask(cnt, null);
+        assertTrue(Queue.isBlockedByShutdown(task));
+        r.jenkins.getQueue().schedule2(task, 0);
+        r.jenkins.getQueue().maintain();
+        r.jenkins.doCancelQuietDown();
+        assertFalse(Queue.isBlockedByShutdown(task));
+        r.waitUntilNoActivity();
+        assertEquals(1, cnt.get());
+        assert task.exec instanceof OneOffExecutor : task.exec;
+    }
+
+    @Issue("JENKINS-24519")
+    @Test public void flyweightTasksBlockedBySlave() throws Exception {
+        Label label = Label.get("myslave");
+        AtomicInteger cnt = new AtomicInteger();
+        TestFlyweightTask task = new TestFlyweightTask(cnt, label);
+        r.jenkins.getQueue().schedule2(task, 0);
+        r.jenkins.getQueue().maintain();
+        r.createSlave(label);
+        r.waitUntilNoActivity();
+        assertEquals(1, cnt.get());
+        assert task.exec instanceof OneOffExecutor : task.exec;
+    }
+
+    private static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
+        Executor exec;
+        private final Label assignedLabel;
+        TestFlyweightTask(AtomicInteger cnt, Label assignedLabel) {
+            super(cnt);
+            this.assignedLabel = assignedLabel;
+        }
+        @Override protected void doRun() {
+            exec = Executor.currentExecutor();
+        }
+        @Override public Label getAssignedLabel() {
+            return assignedLabel;
+        }
+    }
 
     @Test public void taskEquality() throws Exception {
         AtomicInteger cnt = new AtomicInteger();
@@ -357,7 +400,7 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
-    private static final class TestTask extends AbstractQueueTask {
+    private static class TestTask extends AbstractQueueTask {
         private final AtomicInteger cnt;
         TestTask(AtomicInteger cnt) {
             this.cnt = cnt;
@@ -380,11 +423,13 @@ public class QueueTest {
         @Override public Node getLastBuiltOn() {return null;}
         @Override public long getEstimatedDuration() {return -1;}
         @Override public ResourceList getResourceList() {return new ResourceList();}
+        protected void doRun() {}
         @Override public Executable createExecutable() throws IOException {
             return new Executable() {
                 @Override public SubTask getParent() {return TestTask.this;}
                 @Override public long getEstimatedDuration() {return -1;}
                 @Override public void run() {
+                    doRun();
                     cnt.incrementAndGet();
                 }
             };

@@ -4183,9 +4183,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
     public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
     /**
-     * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
+     * @deprecated No longer used.
      */
-    public static boolean FLYWEIGHT_SUPPORT = Configuration.getBooleanConfigParameter("flyweightSupport", true);
+    public static boolean FLYWEIGHT_SUPPORT = true;
 
     /**
      * Tentative switch to activate the concurrent build behavior.
