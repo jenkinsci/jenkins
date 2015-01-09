@@ -172,6 +172,30 @@ public class DownloadService extends PageDecorator {
     }
 
     /**
+     * Loads JSON from a JSON-with-{@code postMessage} URL.
+     * @param src a URL to a JSON HTML file (typically including {@code id} and {@code version} query parameters)
+     * @return the embedded JSON text
+     * @throws IOException if either downloading or processing failed
+     */
+    @Restricted(NoExternalUse.class)
+    public static String loadJSONHTML(URL src) throws IOException {
+        InputStream is = ProxyConfiguration.open(src).getInputStream();
+        try {
+            String jsonp = IOUtils.toString(is, "UTF-8");
+            String preamble = "window.parent.postMessage(JSON.stringify(";
+            int start = jsonp.indexOf(preamble);
+            int end = jsonp.lastIndexOf("),'*');");
+            if (start >= 0 && end > start) {
+                return jsonp.substring(start + preamble.length(), end);
+            } else {
+                throw new IOException("Could not find JSON in " + src);
+            }
+        } finally {
+            is.close();
+        }
+    }
+
+    /**
      * Represents a periodically updated JSON data file obtained from a remote URL.
      *
      * <p>
@@ -205,7 +229,7 @@ public class DownloadService extends PageDecorator {
 
         public Downloadable() {
             this.id = getClass().getName().replace('$','.');
-            this.url = this.id+".json";
+            this.url = this.id + ".json.html";
             this.interval = DEFAULT_INTERVAL;
         }
 
@@ -217,7 +241,7 @@ public class DownloadService extends PageDecorator {
         }
 
         public Downloadable(String id) {
-            this(id,id+".json");
+            this(id, id + ".json.html");
         }
 
         public Downloadable(String id, String url) {
@@ -318,7 +342,7 @@ public class DownloadService extends PageDecorator {
 
         @Restricted(NoExternalUse.class)
         public FormValidation updateNow() throws IOException {
-            return load(loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), System.currentTimeMillis());
+            return load(loadJSONHTML(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), System.currentTimeMillis());
         }
 
         /**
