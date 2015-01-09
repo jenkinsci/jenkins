@@ -54,7 +54,7 @@ public class FormValidationTest {
         assertEquals(FormValidation.Kind.ERROR, actual.kind);
     }
 
-    // @Bug(7438)
+    // @Issue("JENKINS-7438")
     @Test
     public void testMessage() {
         assertEquals("test msg", FormValidation.errorWithMarkup("test msg").getMessage());

@@ -33,7 +33,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.util.ComboBoxModel;
 
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.HudsonTestCase.WebClient;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -45,7 +45,7 @@ import org.kohsuke.stapler.QueryParameter;
 public class ComboBoxTest extends HudsonTestCase {
 
     /**
-     * Used in testCompoundFieldDependentCombobox for Bug(16719)
+     * Used in testCompoundFieldDependentCombobox for Issue("JENKINS-16719")
      */
     public static class CompoundFieldComboBoxBuilder extends Publisher {
         private CompoundField compoundField;
@@ -88,7 +88,7 @@ public class ComboBoxTest extends HudsonTestCase {
     }
 
     /**
-     * Used in testCompoundFieldDependentCombobox for Bug(16719)
+     * Used in testCompoundFieldDependentCombobox for Issue("JENKINS-16719")
      */
     public static class CompoundField extends AbstractDescribableImpl<CompoundField> {
         private final String abc;
@@ -117,7 +117,7 @@ public class ComboBoxTest extends HudsonTestCase {
     /**
      * Confirms that relative paths work when prefilling a combobox text field
      */
-    @Bug(16719)
+    @Issue("JENKINS-16719")
     public void testCompoundFieldDependentComboBox() throws Exception {
         Descriptor d1 = new CompoundFieldComboBoxBuilder.DescriptorImpl();
         Publisher.all().add(d1);

@@ -1,9 +1,10 @@
 package jenkins.util;
 
+import static org.junit.Assert.fail;
+
 import hudson.triggers.SafeTimerTask;
-import org.junit.Assert;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +16,7 @@ public class TimerTest {
      * by running doRun() concurrently.
      */
     @Test
-    @Bug(19622)
+    @Issue("JENKINS-19622")
     public void timersArentBlocked() throws InterruptedException {
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch stopLatch = new CountDownLatch(1);
@@ -39,7 +40,7 @@ public class TimerTest {
         startLatch.await();
         Timer.get().schedule(task2, 2, TimeUnit.MILLISECONDS);
         if (! stopLatch.await(10000, TimeUnit.MILLISECONDS)) {
-            Assert.fail("Failed to run the two tasks simultaneously");
+            fail("Failed to run the two tasks simultaneously");
         }
 
     }

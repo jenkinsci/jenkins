@@ -32,7 +32,7 @@ import java.util.Locale;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
@@ -81,7 +81,7 @@ public class CronTabTest {
     }
 
     @Test(timeout = 1000)
-    @Bug(12357)
+    @Issue("JENKINS-12357")
     public void testCeil3_DoW7() throws Exception {
         // similar to testCeil3, but DoW=7 may stuck in an infinite loop
         CronTab x = new CronTab("0 0 1 * 7");
@@ -162,7 +162,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2010,7,1,0,0),x.floor(c));
     }
 
-    @Bug(8401)
+    @Issue("JENKINS-8401")
     @Test
     public void testFloor4() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010

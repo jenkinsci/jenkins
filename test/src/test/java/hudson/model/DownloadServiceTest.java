@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.Set;
 import java.util.TreeSet;
 import net.sf.json.JSONObject;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.kohsuke.stapler.StaplerResponse;
@@ -32,7 +32,7 @@ public class DownloadServiceTest extends HudsonTestCase {
         Downloadable.all().add(job);
     }
 
-    @Bug(5536)
+    @Issue("JENKINS-5536")
     public void testPost() throws Exception {
         // initially it should fail because the data doesn't have a signature
         assertNull(job.getData());

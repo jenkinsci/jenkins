@@ -114,7 +114,7 @@ public abstract class ItemGroupMixIn {
                     item.onLoad(parent, subdir.getName());
                 }
                 configurations.put(key.call(item), item);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not load " + subdir, e);
             }
         }

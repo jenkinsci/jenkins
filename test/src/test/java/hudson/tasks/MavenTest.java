@@ -55,7 +55,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -261,7 +261,7 @@ public class MavenTest {
         }
     }
 
-    @Bug(18898)
+    @Issue("JENKINS-18898")
     public void testNullHome() throws Exception {
         EnvVars env = new EnvVars();
         new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);

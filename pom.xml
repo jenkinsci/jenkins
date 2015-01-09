@@ -33,11 +33,12 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.597-SNAPSHOT</version>
+  <version>1.598-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
   <description>The module that constitutes the main jenkins.war</description>
+
   <licenses>
     <license>
       <name>The MIT license</name>
@@ -60,6 +61,7 @@ THE SOFTWARE.
     <url>https://github.com/jenkinsci/jenkins</url>
     <tag>HEAD</tag>
   </scm>
+
   <distributionManagement>
     <site>
       <id>github-pages</id>
@@ -113,6 +115,7 @@ THE SOFTWARE.
       </snapshots>
     </repository>
   </repositories>
+
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
@@ -128,7 +131,6 @@ THE SOFTWARE.
 
   <dependencyManagement>
     <dependencies>
-
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
@@ -185,8 +187,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <version>4.0-beta</version>
-        <classifier>no_aop</classifier>
+        <version>4.0-beta5</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -222,6 +223,7 @@ THE SOFTWARE.
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
     <dependency>
       <!-- for JRE requirement check annotation -->
@@ -327,6 +329,7 @@ THE SOFTWARE.
           </configuration>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
           <version>1.4</version>
         </plugin>
@@ -476,7 +479,7 @@ THE SOFTWARE.
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-pmd-plugin</artifactId>
           <version>2.7.1</version>
-         </plugin>
+        </plugin>
         <plugin>
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>

@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -102,7 +102,7 @@ public class UserTest {
       }
     }
 
-    @Bug(2331)
+    @Issue("JENKINS-2331")
     @Test public void userPropertySummaryAndActionAreShownInUserPage() throws Exception {
         
         UserProperty property = new UserPropertyImpl("NeedleInPage");
@@ -121,7 +121,7 @@ public class UserTest {
     /**
      * Asserts that the default user avatar can be fetched (ie no 404)
      */
-    @Bug(7494)
+    @Issue("JENKINS-7494")
     @Test public void defaultUserAvatarCanBeFetched() throws Exception {
         User user = User.get("avatar-user", true);
         HtmlPage page = j.createWebClient().goTo("user/" + user.getDisplayName());
@@ -343,7 +343,7 @@ public class UserTest {
         assertNotNull("User should be saved with all changes.", user.getProperty(SomeUserProperty.class));
     }
 
-    @Bug(16332)
+    @Issue("JENKINS-16332")
     @Test public void unrecoverableFullName() throws Throwable {
         User u = User.get("John Smith <jsmith@nowhere.net>");
         assertEquals("jsmith@nowhere.net", MailAddressResolver.resolve(u));

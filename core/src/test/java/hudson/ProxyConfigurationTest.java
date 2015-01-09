@@ -23,13 +23,16 @@
  */
 package hudson;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 import java.net.Proxy;
 
-public class ProxyConfigurationTest extends TestCase {
+public class ProxyConfigurationTest {
 
-    public void testNoProxyHost() {
+    @Test
+    public void noProxyHost() {
         String noProxyHost = "*.example.com|192.168.*";
         assertEquals(Proxy.Type.HTTP, ProxyConfiguration.createProxy("test.example.co.jp", "proxy.example.com", 8080, noProxyHost).type());
         assertEquals(Proxy.Type.DIRECT, ProxyConfiguration.createProxy("test.example.com", "proxy.example.com", 8080, noProxyHost).type());

@@ -24,12 +24,7 @@
 
 package hudson.model;
 
-import hudson.Util;
 import hudson.model.Run.Artifact;
-import hudson.util.StreamTaskListener;
-
-import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
@@ -39,11 +34,11 @@ import java.util.concurrent.Executors;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 public class RunTest {
 
-    @Bug(15816)
+    @Issue("JENKINS-15816")
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test public void timezoneOfID() throws Exception {
         TimeZone origTZ = TimeZone.getDefault();
@@ -86,32 +81,6 @@ public class RunTest {
         }
     }
     
-
-    @Bug(15587)
-    @Test 
-    public void testParseTimestampFromBuildDir() throws Exception {
-        //Assume.assumeTrue(!Functions.isWindows() || (NTFS && JAVA7) || ...);
-        
-        String buildDateTime = "2012-12-21_04-02-28";
-        int buildNumber = 155;
-        
-        StreamTaskListener l = StreamTaskListener.fromStdout();
-
-        File tempDir = Util.createTempDir();    
-        File buildDir = new File(tempDir, buildDateTime);
-        assertEquals(true, buildDir.mkdir());
-        File buildDirSymLink = new File(tempDir, Integer.toString(buildNumber));
-        
-        try {
-        	buildDir.mkdir();
-         
-            Util.createSymlink(tempDir, buildDir.getAbsolutePath(), buildDirSymLink.getName(), l);
-            long time = Run.parseTimestampFromBuildDir(buildDirSymLink);
-            assertEquals(buildDateTime, Run.ID_FORMATTER.get().format(new Date(time)));
-        } finally {
-            Util.deleteRecursive(tempDir);
-        }
-    }
 
     private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) throws Exception {
         Run r = new Run(new StubJob(), 0) {};

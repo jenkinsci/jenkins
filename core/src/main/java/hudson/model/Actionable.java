@@ -30,6 +30,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -91,7 +94,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         List<Action> _actions = new ArrayList<Action>(getActions());
         for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
             if (taf.type().isInstance(this)) {
-                _actions.addAll(createFor(taf));
+                try {
+                    _actions.addAll(createFor(taf));
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+                }
             }
         }
         return Collections.unmodifiableList(_actions);
@@ -177,4 +184,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this,request,response);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(Actionable.class.getName());
 }

@@ -38,12 +38,12 @@ import javax.xml.transform.stream.StreamSource;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-@Bug(14759)
+@Issue("JENKINS-14759")
 public class TriggerStartTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();

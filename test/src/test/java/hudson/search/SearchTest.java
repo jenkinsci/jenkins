@@ -26,7 +26,9 @@ package hudson.search;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 
@@ -37,10 +39,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
@@ -72,7 +73,7 @@ public class SearchTest {
     /**
      * Makes sure the script doesn't execute.
      */
-    @Bug(3415)
+    @Issue("JENKINS-3415")
     @Test
     public void testXSS() throws Exception {
         try {
@@ -96,12 +97,12 @@ public class SearchTest {
         j.createFreeStyleProject(projectName);
         
         Page result = j.search(projectName);
-        Assert.assertNotNull(result);
+        assertNotNull(result);
         j.assertGoodStatus(result);
         
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        Assert.assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
     }
 
     @Test
@@ -112,12 +113,12 @@ public class SearchTest {
         project.setDisplayName(displayName);
         
         Page result = j.search(displayName);
-        Assert.assertNotNull(result);
+        assertNotNull(result);
         j.assertGoodStatus(result);
         
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        Assert.assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
     }
     
     @Test
@@ -140,13 +141,13 @@ public class SearchTest {
         // matter which one as long as the one that is returned has displayName
         // as the display name
         Page result = j.search(displayName);
-        Assert.assertNotNull(result);
+        assertNotNull(result);
         j.assertGoodStatus(result);
 
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
-        Assert.assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
-        Assert.assertFalse(contents.contains(otherDisplayName));
+        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        assertFalse(contents.contains(otherDisplayName));
     }
     
     @Test
@@ -172,16 +173,16 @@ public class SearchTest {
         
         // search for foo
         Page result = j.search(project1Name);
-        Assert.assertNotNull(result);
+        assertNotNull(result);
         j.assertGoodStatus(result);
         
         // make sure we get the project with the name foo
         String contents = result.getWebResponse().getContentAsString();
-        Assert.assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName)));
+        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName)));
         // make sure projects 2 and 3 were not picked up
-        Assert.assertFalse(contents.contains(project2Name));
-        Assert.assertFalse(contents.contains(project3Name));
-        Assert.assertFalse(contents.contains(project3DisplayName));
+        assertFalse(contents.contains(project2Name));
+        assertFalse(contents.contains(project3Name));
+        assertFalse(contents.contains(project3DisplayName));
     }
     
     @Test
@@ -194,17 +195,17 @@ public class SearchTest {
         
         WebClient wc = j.createWebClient();
         Page result = wc.goTo("search/suggest?query=name", "application/json");
-        Assert.assertNotNull(result);
+        assertNotNull(result);
         j.assertGoodStatus(result);
         
         String content = result.getWebResponse().getContentAsString();
         System.out.println(content);
         JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
-        Assert.assertNotNull(jsonContent);
+        assertNotNull(jsonContent);
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
-        Assert.assertNotNull(jsonArray);
+        assertNotNull(jsonArray);
         
-        Assert.assertEquals(2, jsonArray.size());
+        assertEquals(2, jsonArray.size());
         
         boolean foundProjectName = false;
         boolean foundDispayName = false;
@@ -220,14 +221,14 @@ public class SearchTest {
             }
         }
         
-        Assert.assertTrue(foundProjectName);
-        Assert.assertTrue(foundDispayName);
+        assertTrue(foundProjectName);
+        assertTrue(foundDispayName);
     }
 
     /**
      * Disable/enable status shouldn't affect the search
      */
-    @Bug(13148)
+    @Issue("JENKINS-13148")
     @Test
     public void testDisabledJobShouldBeSearchable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo-bar");
@@ -240,7 +241,7 @@ public class SearchTest {
     /**
      * All top-level jobs should be searchable, not just jobs in the current view.
      */
-    @Bug(13148)
+    @Issue("JENKINS-13148")
     @Test
     public void testCompletionOutsideView() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo-bar");

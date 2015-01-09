@@ -37,7 +37,7 @@ import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 public class TarArchiverTest {
 
@@ -46,7 +46,7 @@ public class TarArchiverTest {
     /**
      * Makes sure that permissions are properly stored in the tar file.
      */
-    @Bug(9397)
+    @Issue("JENKINS-9397")
     @Test public void permission() throws Exception {
         assumeTrue(!Functions.isWindows());
 
@@ -98,7 +98,7 @@ public class TarArchiverTest {
         }
     }
 
-    @Bug(14922)
+    @Issue("JENKINS-14922")
     @Test public void brokenSymlinks() throws Exception {
         assumeTrue(!Functions.isWindows());
         File dir = tmp.getRoot();

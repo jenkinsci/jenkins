@@ -1,5 +1,8 @@
 package hudson.model;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.Descriptor.FormException;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -14,7 +17,6 @@ import java.util.List;
 
 import javax.servlet.ServletException;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -59,19 +61,19 @@ public class ViewTest {
         // now make sure we can fetch item1 from the index
         List<SearchItem> result = new ArrayList<SearchItem>();
         index.find(displayName1, result);
-        Assert.assertEquals(1, result.size());
+        assertEquals(1, result.size());
         SearchItem actual = result.get(0);
-        Assert.assertEquals(actual.getSearchName(), item1.getDisplayName());
-        Assert.assertEquals(actual.getSearchUrl(), item1.getSearchUrl());
+        assertEquals(actual.getSearchName(), item1.getDisplayName());
+        assertEquals(actual.getSearchUrl(), item1.getSearchUrl());
 
         // clear the result array for the next search result to test
         result.clear();
         // make sure we can fetch item 2 from the index
         index.find(displayName2, result);
-        Assert.assertEquals(1, result.size());
+        assertEquals(1, result.size());
         actual = result.get(0);
-        Assert.assertEquals(actual.getSearchName(), item2.getDisplayName());
-        Assert.assertEquals(actual.getSearchUrl(), item2.getSearchUrl());
+        assertEquals(actual.getSearchName(), item2.getDisplayName());
+        assertEquals(actual.getSearchUrl(), item2.getSearchUrl());
     }
 
     /*
@@ -100,7 +102,7 @@ public class ViewTest {
 
         final TopLevelItem[] expected = new TopLevelItem[] {rootJob, sharedJob, leftJob, rightJob};
 
-        Assert.assertArrayEquals(expected, rootView.getAllItems().toArray());
+        assertArrayEquals(expected, rootView.getAllItems().toArray());
     }
 
     private TopLevelItem createJob(String jobName) {

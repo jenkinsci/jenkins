@@ -28,13 +28,13 @@ import hudson.model.Descriptor;
 import hudson.model.Node;
 import hudson.model.Label;
 import hudson.slaves.NodeProvisioner.PlannedNode;
-import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * {@link Cloud} implementation useful for testing.
@@ -45,7 +45,7 @@ import java.util.concurrent.Future;
  * @author Kohsuke Kawaguchi
 */
 public class DummyCloudImpl extends Cloud {
-    private final transient HudsonTestCase caller;
+    private final transient JenkinsRule rule;
 
     /**
      * Configurable delay between the {@link Cloud#provision(Label,int)} and the actual launch of a slave,
@@ -64,9 +64,9 @@ public class DummyCloudImpl extends Cloud {
      */
     public Label label;
 
-    public DummyCloudImpl(HudsonTestCase caller, int delay) {
+    public DummyCloudImpl(JenkinsRule rule, int delay) {
         super("test");
-        this.caller = caller;
+        this.rule = rule;
         this.delay = delay;
     }
 
@@ -105,7 +105,7 @@ public class DummyCloudImpl extends Cloud {
             Thread.sleep(time);
             
             System.out.println("launching slave");
-            DumbSlave slave = caller.createSlave(label);
+            DumbSlave slave = rule.createSlave(label);
             computer = slave.toComputer();
             computer.connect(false).get();
             synchronized (DummyCloudImpl.this) {

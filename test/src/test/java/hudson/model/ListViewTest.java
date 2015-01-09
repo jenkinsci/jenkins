@@ -46,7 +46,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -58,7 +58,7 @@ public class ListViewTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(15309)
+    @Issue("JENKINS-15309")
     @LocalData
     @Test public void nullJobNames() throws Exception {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
@@ -108,7 +108,7 @@ public class ListViewTest {
       webClient.getPage(top, link.getHrefAttribute());
     }
 
-    @Bug(20415)
+    @Issue("JENKINS-20415")
     @Test public void nonTopLevelItemGroup() throws Exception {
         MatrixProject mp = j.createMatrixProject();
         mp.setAxes(new AxisList(new TextAxis("axis", "one", "two")));
@@ -121,7 +121,7 @@ public class ListViewTest {
         assertEquals(Collections.singletonList(mp), v.getItems());
     }
 
-    @Bug(18680)
+    @Issue("JENKINS-18680")
     @Test public void renamesMovesAndDeletes() throws Exception {
         MockFolder top = j.createFolder("top");
         MockFolder sub = top.createProject(MockFolder.class, "sub");
@@ -145,7 +145,7 @@ public class ListViewTest {
         assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
     }
 
-    @Bug(23893)
+    @Issue("JENKINS-23893")
     @Test public void renameJobContainedInTopLevelView() throws Exception {
         ListView view = new ListView("view", j.jenkins);
         j.jenkins.addView(view);
@@ -180,7 +180,7 @@ public class ListViewTest {
         assertTrue(view.jobNamesContains(job));
     }
 
-    @Bug(23893)
+    @Issue("JENKINS-23893")
     @Test public void deleteJobContainedInTopLevelView() throws Exception {
         ListView view = new ListView("view", j.jenkins);
         j.jenkins.addView(view);

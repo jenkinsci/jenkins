@@ -38,7 +38,7 @@ import org.jvnet.hudson.test.UnstableBuilder
 import static org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
-import org.jvnet.hudson.test.Bug
+import org.jvnet.hudson.test.Issue
 
 public class AbstractBuildTest {
 
@@ -123,7 +123,7 @@ public class AbstractBuildTest {
         assertCulprits(b,["george"])
     }
 
-    @Bug(19920)
+    @Issue("JENKINS-19920")
     @Test void lastBuildNextBuild() {
         FreeStyleProject p = j.createFreeStyleProject();
         AbstractBuild b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0));

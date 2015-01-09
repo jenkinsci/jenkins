@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
@@ -49,7 +49,7 @@ public class RunParameterDefinitionTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Bug(16462)
+    @Issue("JENKINS-16462")
     @Test public void inFolders() throws Exception {
         MockFolder dir = j.createFolder("dir");
         MockFolder subdir = dir.createProject(MockFolder.class, "sub dir");

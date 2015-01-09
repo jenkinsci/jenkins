@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,14 +23,19 @@
  */
 package hudson.model;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Random;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Stephen Connolly
  */
-public class ResourceListTest extends TestCase {
+public class ResourceListTest {
+
     private Resource a1, a2, a3, a4, a;
     private Resource b1, b2, b3, b4, b;
     private Resource c1, c2, c3, c4, c;
@@ -41,6 +46,7 @@ public class ResourceListTest extends TestCase {
     private ResourceList y;
     private ResourceList z;
 
+    @Before
     public void setUp() {
         entropy = new Random(0);
         a = new Resource("A" + entropy.nextLong());
@@ -67,7 +73,8 @@ public class ResourceListTest extends TestCase {
         z = new ResourceList();
     }
 
-    public void testEmptyLists() throws Exception {
+    @Test
+    public void emptyLists() {
         z.r(a);
         ResourceList w = new ResourceList();
         w.w(a);
@@ -79,7 +86,8 @@ public class ResourceListTest extends TestCase {
         assertFalse("Write vs Empty", w.isCollidingWith(x));
     }
 
-    public void testSimpleR() throws Exception {
+    @Test
+    public void simpleR() {
         x.r(a);
         y.r(b);
         z.r(a);
@@ -92,7 +100,8 @@ public class ResourceListTest extends TestCase {
         assertFalse("Read-Read", y.isCollidingWith(z));
     }
 
-    public void testSimpleRW() throws Exception {
+    @Test
+    public void simpleRW() {
         x.r(a);
         y.r(b);
         z.w(a);
@@ -105,7 +114,8 @@ public class ResourceListTest extends TestCase {
         assertFalse("Read-Write different resources", y.isCollidingWith(z));
     }
 
-    public void testSimpleW() throws Exception {
+    @Test
+    public void simpleW() {
         x.w(a);
         y.w(b);
         z.w(a);
@@ -127,7 +137,8 @@ public class ResourceListTest extends TestCase {
         assertTrue(z.isCollidingWith(w));
     }
 
-    public void testParentChildR() throws Exception {
+    @Test
+    public void parentChildR() {
         x.r(a1);
         x.r(a2);
         y.r(a3);
@@ -141,7 +152,8 @@ public class ResourceListTest extends TestCase {
         assertFalse("Reads should never conflict", y.isCollidingWith(z));
     }
 
-    public void testParentChildW() throws Exception {
+    @Test
+    public void parentChildW() {
         x.w(a1);
         x.w(a2);
         y.w(a3);
@@ -155,7 +167,8 @@ public class ResourceListTest extends TestCase {
         assertTrue("Taking parent resource assumes all children are taken too", y.isCollidingWith(z));
     }
 
-    public void testParentChildR3() throws Exception {
+    @Test
+    public void parentChildR3() {
         x.r(c1);
         x.r(c2);
         y.r(c3);
@@ -169,7 +182,8 @@ public class ResourceListTest extends TestCase {
         assertFalse("Reads should never conflict", y.isCollidingWith(z));
     }
 
-    public void testParentChildW3() throws Exception {
+    @Test
+    public void parentChildW3() {
         x.w(c1);
         x.w(c2);
         y.w(c3);
@@ -199,7 +213,8 @@ public class ResourceListTest extends TestCase {
         assertTrue("Total count = 4, limit is 3", x.isCollidingWith(v));
     }
 
-    public void testMultiWrite1() throws Exception {
+    @Test
+    public void multiWrite1() {
         y.w(e);
         assertFalse(x.isCollidingWith(y));
         assertFalse(y.isCollidingWith(x));
@@ -217,7 +232,8 @@ public class ResourceListTest extends TestCase {
         }
     }
 
-    public void testMultiWriteN() throws Exception {
+    @Test
+    public void multiWriteN() {
         y.w(f);
         for (int i=0; i<f.numConcurrentWrite; i++) {
             assertFalse("Total = W" + i + ", Limit = W" + f.numConcurrentWrite, x.isCollidingWith(y));
@@ -232,7 +248,8 @@ public class ResourceListTest extends TestCase {
         }
     }
 
-    public void testMultiRead1() throws Exception {
+    @Test
+    public void multiRead1() {
         y.r(e);
         for (int i = 0; i < fWriteCount; i++) {
             assertFalse("Total = R" + (i + 1) + ", Limit = W1", x.isCollidingWith(y));
@@ -247,7 +264,8 @@ public class ResourceListTest extends TestCase {
         }
     }
 
-    public void testMultiReadN() throws Exception {
+    @Test
+    public void multiReadN() {
         y.r(f);
         for (int i = 0; i < fWriteCount; i++) {
             assertFalse("Total = R" + (i + 1) + ", Limit = W" + fWriteCount, x.isCollidingWith(y));
@@ -261,5 +279,4 @@ public class ResourceListTest extends TestCase {
             x.r(f);
         }
     }
-
 }

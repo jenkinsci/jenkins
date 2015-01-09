@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -22,23 +23,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.597-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>1.598-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
 
   <name>Jenkins core</name>
-  <description>
-    Contains the core Jenkins code and view files to render HTML.
-  </description>
+  <description>Jenkins core code and view files to render HTML.</description>
 
   <properties>
     <staplerFork>true</staplerFork>
@@ -96,7 +93,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
-      <classifier>no_aop</classifier>
     </dependency>
 
     <dependency> <!-- for compatibility only; all new code should use JNR -->
@@ -862,7 +858,7 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- run FindBugs for better error detection. run as "mvn -Pfindbugs install site" -->
+      <!-- Run FindBugs for better error detection. Run as "mvn -Pfindbugs install site". -->
       <id>findbugs</id>
       <reporting>
         <plugins>
@@ -880,9 +876,7 @@ THE SOFTWARE.
       </reporting>
     </profile>
     <profile>
-      <!--
-        Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
-      -->
+      <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
       <id>cobertura</id>
       <build>
         <plugins>

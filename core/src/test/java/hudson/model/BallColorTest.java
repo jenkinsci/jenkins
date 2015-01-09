@@ -1,16 +1,21 @@
 package hudson.model;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class BallColorTest extends TestCase {
-    public void testHtmlColor() {
+public class BallColorTest {
+
+    @Test
+    public void htmlColor() {
         assertEquals("#EF2929",BallColor.RED.getHtmlBaseColor());
     }
 
-    public void testIconClassName() {
+    @Test
+    public void iconClassName() {
         assertEquals("icon-red",BallColor.RED.getIconClassName());
         assertEquals("icon-aborted-anime",BallColor.ABORTED_ANIME.getIconClassName());
     }

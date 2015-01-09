@@ -1,33 +1,31 @@
 package hudson;
 
-import junit.framework.TestCase;
-
-import java.io.IOException;
-import java.util.concurrent.Future;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import hudson.remoting.Channel;
 import hudson.remoting.FastPipedInputStream;
 import hudson.remoting.FastPipedOutputStream;
+import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import org.junit.rules.ExternalResource;
 
 /**
  * Test that uses a connected channel.
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class ChannelTestCase extends TestCase {
+public final class ChannelRule extends ExternalResource {
     /**
      * Two channels that are connected to each other, but shares the same classloader.
      */
-    protected Channel french;
-    protected Channel british;
-    private ExecutorService executors = Executors.newCachedThreadPool();
+    public Channel french;
+    public Channel british;
+    private ExecutorService executors;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Override protected void before() throws Exception {
+        executors = Executors.newCachedThreadPool();
         final FastPipedInputStream p1i = new FastPipedInputStream();
         final FastPipedInputStream p2i = new FastPipedInputStream();
         final FastPipedOutputStream p1o = new FastPipedOutputStream(p1i);
@@ -47,8 +45,7 @@ public abstract class ChannelTestCase extends TestCase {
         british = f2.get();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @Override protected void after() {
         try {
             french.close(); // this will automatically initiate the close on the other channel, too.
             french.join();
@@ -98,6 +95,8 @@ public abstract class ChannelTestCase extends TestCase {
 
              */
             e.printStackTrace();
+        } catch (InterruptedException x) {
+            throw new AssertionError(x);
         }
         executors.shutdownNow();
     }

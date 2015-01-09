@@ -1,8 +1,9 @@
 package hudson.cli;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.remoting.FastPipedInputStream;
 import hudson.remoting.FastPipedOutputStream;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,7 +14,8 @@ import java.io.IOException;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ConnectionTest extends Assert {
+public class ConnectionTest {
+
     Throwable e;
     private Connection c1;
     private Connection c2;

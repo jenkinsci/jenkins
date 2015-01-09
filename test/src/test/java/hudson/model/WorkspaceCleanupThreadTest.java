@@ -40,7 +40,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
@@ -84,7 +84,7 @@ public class WorkspaceCleanupThreadTest {
         assertFalse(ws2.exists());
     }
 
-    @Bug(21023)
+    @Issue("JENKINS-21023")
     @Test public void modernMasterWorkspaceLocation() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
@@ -105,7 +105,7 @@ public class WorkspaceCleanupThreadTest {
         assertTrue(ws2.exists());
     }
 
-    @Bug(21023)
+    @Issue("JENKINS-21023")
     @Test public void jobInFolder() throws Exception {
         MockFolder d = r.createFolder("d");
         FreeStyleProject p1 = d.createProject(FreeStyleProject.class, "p");

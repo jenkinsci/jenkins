@@ -87,7 +87,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 
 /**
@@ -764,7 +764,7 @@ public class ProjectTest {
         assertEquals(1, j.jenkins.getQueue().getItems().length);    
     }
 
-    @Bug(22750)
+    @Issue("JENKINS-22750")
     @Test
     public void testMasterJobPutInQueue() throws Exception {
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yes-master-queue");
