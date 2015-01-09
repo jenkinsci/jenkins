@@ -73,6 +73,7 @@ THE SOFTWARE.
                 }
                 else p.innerHTML = text;
                 Behaviour.applySubtree(p);
+                ElementResizeTracker.fireResizeCheck();
                 if(stickToBottom) scroller.scrollToBottom();
               }
 
