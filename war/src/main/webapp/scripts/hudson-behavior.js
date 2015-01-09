@@ -2093,9 +2093,14 @@ function ElementResizeTracker() {
             }
             element.lastDimensions = currDims;
         }
-        setTimeout(checkForResize, 200);
     }
-    checkForResize();
+    Event.observe(window, 'jenkins:resizeCheck', checkForResize);
+
+    function checkForResizeLoop() {
+        checkForResize();
+        setTimeout(checkForResizeLoop, 200);
+    }
+    checkForResizeLoop();
 }
 ElementResizeTracker.prototype.addElement = function(element) {
     for (var i = 0; i < this.trackedElements.length; i++) {
@@ -2110,6 +2115,9 @@ ElementResizeTracker.prototype.onResize = function(element, handler) {
     element.lastDimensions = Element.getDimensions(element);
     Event.observe(element, 'jenkins:resize', handler);
     this.addElement(element);
+}
+ElementResizeTracker.fireResizeCheck = function() {
+    Event.fire(window, 'jenkins:resizeCheck');
 }
 var elementResizeTracker = new ElementResizeTracker();
 
