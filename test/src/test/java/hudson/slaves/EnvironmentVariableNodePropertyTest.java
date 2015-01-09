@@ -1,5 +1,7 @@
 package hudson.slaves;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
@@ -12,7 +14,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -35,7 +36,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	public void testSlavePropertyOnSlave() throws Exception {
 		setVariables(slave, new Entry("KEY", "slaveValue"));
 		Map<String, String> envVars = executeBuild(slave);
-		Assert.assertEquals("slaveValue", envVars.get("KEY"));
+		assertEquals("slaveValue", envVars.get("KEY"));
 	}
 	
 	/**
@@ -48,7 +49,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 
 		Map<String, String> envVars = executeBuild(jenkins);
 
-		Assert.assertEquals("masterValue", envVars.get("KEY"));
+		assertEquals("masterValue", envVars.get("KEY"));
 	}
 
 	/**
@@ -62,7 +63,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 
 		Map<String, String> envVars = executeBuild(slave);
 
-		Assert.assertEquals("slaveValue", envVars.get("KEY"));
+		assertEquals("slaveValue", envVars.get("KEY"));
 	}
 
 	/**
@@ -81,7 +82,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 
 		Map<String, String> envVars = executeBuild(slave);
 
-		Assert.assertEquals("parameterValue", envVars.get("KEY"));
+		assertEquals("parameterValue", envVars.get("KEY"));
 	}
 	
 	public void testVariableResolving() throws Exception {
@@ -89,8 +90,8 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new Entry("KEY1", "value"), new Entry("KEY2", "$KEY1"))));
 		Map<String,String> envVars = executeBuild(jenkins);
-		Assert.assertEquals("value", envVars.get("KEY1"));
-		Assert.assertEquals("value", envVars.get("KEY2"));
+		assertEquals("value", envVars.get("KEY1"));
+		assertEquals("value", envVars.get("KEY2"));
 	}
 	
 	public void testFormRoundTripForMaster() throws Exception {
@@ -103,11 +104,11 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 		HtmlForm form = page.getFormByName("config");
 		submit(form);
 		
-		Assert.assertEquals(1, jenkins.getGlobalNodeProperties().toList().size());
+		assertEquals(1, jenkins.getGlobalNodeProperties().toList().size());
 		
 		EnvironmentVariablesNodeProperty prop = jenkins.getGlobalNodeProperties().get(EnvironmentVariablesNodeProperty.class);
-		Assert.assertEquals(1, prop.getEnvVars().size());
-		Assert.assertEquals("value", prop.getEnvVars().get("KEY"));
+		assertEquals(1, prop.getEnvVars().size());
+		assertEquals("value", prop.getEnvVars().get("KEY"));
 	}
 
 	public void testFormRoundTripForSlave() throws Exception {
@@ -118,11 +119,11 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 		HtmlForm form = page.getFormByName("config");
 		submit(form);
 		
-		Assert.assertEquals(1, slave.getNodeProperties().toList().size());
+		assertEquals(1, slave.getNodeProperties().toList().size());
 		
 		EnvironmentVariablesNodeProperty prop = slave.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
-		Assert.assertEquals(1, prop.getEnvVars().size());
-		Assert.assertEquals("value", prop.getEnvVars().get("KEY"));
+		assertEquals(1, prop.getEnvVars().size());
+		assertEquals("value", prop.getEnvVars().get("KEY"));
 	}
 	
 	// //////////////////////// setup //////////////////////////////////////////
@@ -155,7 +156,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 		FreeStyleBuild build = project.scheduleBuild2(0).get(/*10, TimeUnit.SECONDS*/);
 		
 		System.out.println(build.getLog());
-		Assert.assertEquals(Result.SUCCESS, build.getResult());
+		assertEquals(Result.SUCCESS, build.getResult());
 
 		return builder.getEnvVars();
 	}

@@ -1,7 +1,8 @@
 package jenkins.util;
 
+import static org.junit.Assert.fail;
+
 import hudson.triggers.SafeTimerTask;
-import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -39,7 +40,7 @@ public class TimerTest {
         startLatch.await();
         Timer.get().schedule(task2, 2, TimeUnit.MILLISECONDS);
         if (! stopLatch.await(10000, TimeUnit.MILLISECONDS)) {
-            Assert.fail("Failed to run the two tasks simultaneously");
+            fail("Failed to run the two tasks simultaneously");
         }
 
     }

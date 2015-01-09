@@ -23,6 +23,11 @@
  */
 package jenkins.model;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
@@ -47,7 +52,6 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -77,8 +81,8 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         p.setDisplayName("displayName");
         
         Jenkins jenkins = Jenkins.getInstance();
-        Assert.assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
-        Assert.assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique("displayName1", curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(jobName, curJobName));
     }
 
     @Test
@@ -94,7 +98,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         p.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
-        Assert.assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertFalse(jenkins.isDisplayNameUnique(displayName, curJobName));
     }
     
     @Test
@@ -107,7 +111,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         
         Jenkins jenkins = Jenkins.getInstance();
         // should be true as we don't test against the current job
-        Assert.assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
+        assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
         
     }
     
@@ -119,7 +123,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         createFreeStyleProject(jobName);
         
         Jenkins jenkins = Jenkins.getInstance();
-        Assert.assertTrue(jenkins.isNameUnique("jobName1", curJobName));
+        assertTrue(jenkins.isNameUnique("jobName1", curJobName));
     }
 
     @Test
@@ -130,7 +134,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         createFreeStyleProject(jobName);
         
         Jenkins jenkins = Jenkins.getInstance();
-        Assert.assertFalse(jenkins.isNameUnique(jobName, curJobName));
+        assertFalse(jenkins.isNameUnique(jobName, curJobName));
     }
 
     @Test
@@ -142,7 +146,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         
         Jenkins jenkins = Jenkins.getInstance();
         // true because we don't test against the current job
-        Assert.assertTrue(jenkins.isNameUnique(curJobName, curJobName));        
+        assertTrue(jenkins.isNameUnique(curJobName, curJobName));
     }
     
     @Test
@@ -157,7 +161,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         
         Jenkins jenkins = Jenkins.getInstance();
         FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
-        Assert.assertEquals(FormValidation.ok(), v);
+        assertEquals(FormValidation.ok(), v);
     }
 
     @Test
@@ -173,7 +177,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         
         Jenkins jenkins = Jenkins.getInstance();
         FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
-        Assert.assertEquals(FormValidation.Kind.WARNING, v.kind);        
+        assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
     @Test
@@ -189,7 +193,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         
         Jenkins jenkins = Jenkins.getInstance();
         FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
-        Assert.assertEquals(FormValidation.Kind.WARNING, v.kind);                
+        assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
     @Test
@@ -201,7 +205,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         Jenkins jenkins = Jenkins.getInstance();
         for (String viewName : viewNames) {
             FormValidation v = jenkins.doCheckViewName(viewName);
-            Assert.assertEquals(FormValidation.Kind.OK, v.kind);
+            assertEquals(FormValidation.Kind.OK, v.kind);
         }
     }
 
@@ -216,7 +220,7 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         
         for (String viewName : viewNames) {
             FormValidation v = jenkins.doCheckViewName(viewName);
-            Assert.assertEquals(FormValidation.Kind.ERROR, v.kind);
+            assertEquals(FormValidation.Kind.ERROR, v.kind);
         }
     }
     
