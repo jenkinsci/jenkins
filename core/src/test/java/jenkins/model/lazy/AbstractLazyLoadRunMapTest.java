@@ -23,8 +23,9 @@
  */
 package jenkins.model.lazy;
 
+import static org.junit.Assert.*;
+
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +45,7 @@ import org.jvnet.hudson.test.Issue;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class AbstractLazyLoadRunMapTest extends Assert {
+public class AbstractLazyLoadRunMapTest {
     // A=1, B=3, C=5
     @Rule
     public FakeMapBuilder aBuilder = new FakeMapBuilder();
