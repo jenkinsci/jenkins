@@ -261,12 +261,6 @@ THE SOFTWARE.
                 </artifactItem>
                 <!-- bundled plugins -->
                 <artifactItem>
-                  <groupId>org.jenkins-ci.plugins.uithemes</groupId>
-                  <artifactId>uithemes</artifactId>
-                  <version>${uithemes-plugin.version}</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>maven-plugin</artifactId>
                   <type>hpi</type>
