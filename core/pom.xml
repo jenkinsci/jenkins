@@ -93,7 +93,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
-      <classifier>no_aop</classifier>
     </dependency>
 
     <dependency> <!-- for compatibility only; all new code should use JNR -->
