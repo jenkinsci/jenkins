@@ -40,16 +40,10 @@ public class PageHeader implements UIThemeContributor {
         uiThemeSet.registerTheme("page-header", "Page Header", "Jenkins Page Header");
 
         // Register core header themes
-        registerClassicHeader(uiThemeSet);
-        registerLiteHeader(uiThemeSet);
-    }
-
-    private void registerClassicHeader(UIThemeSet themeSet) {
-
         // See Icons class for more details on what's happening here.
 
         // #1 ...
-        themeSet.registerThemeImpl("page-header", "classic", "Classic", "Classic Page Header")
+        uiThemeSet.registerThemeImpl("page-header", "classic", "Classic", "Classic Page Header")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("logoUrl", new UIThemeImplSpecProperty()
@@ -66,29 +60,9 @@ public class PageHeader implements UIThemeContributor {
                 );
 
         // #2 ...
-        themeSet.contribute(new UIThemeContribution("classic-page-header", "page-header", "classic", Jenkins.class));
+        uiThemeSet.contribute(new UIThemeContribution("classic-page-header", "page-header", "classic", Jenkins.class));
 
         // #3 ...
         // see core/src/main/resources/jenkins-themes/page-header/classic/classic-page-header/theme-template.less
-    }
-
-    private void registerLiteHeader(UIThemeSet themeSet) {
-
-        // See Icons class for more details on what's happening here.
-
-        // #1 ...
-        themeSet.registerThemeImpl("page-header", "lite", "Lite", "Lite Page Header")
-                .setThemeImplSpec(
-                        new UIThemeImplSpec()
-                                .addProperty("logoUrl", new UIThemeImplSpecProperty()
-                                        .setTitle("Logo URL")
-                                        .setDefaultValue("@{rootURL}/images/logo-headshot-black-title.png"))
-                );
-
-        // #2 ...
-        themeSet.contribute(new UIThemeContribution("lite-page-header", "page-header", "lite", Jenkins.class));
-
-        // #3 ...
-        // see core/src/main/resources/jenkins-themes/page-header/lite/lite-page-header/theme-template.less
     }
 }

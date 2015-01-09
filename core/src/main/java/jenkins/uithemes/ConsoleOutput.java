@@ -38,35 +38,15 @@ public class ConsoleOutput implements UIThemeContributor {
         uiThemeSet.registerTheme("console-output", "Console Output", "Console Output");
 
         // Register core console-output themes
-        registerClassicConsoleOutput(uiThemeSet);
-        registerDarkConsoleOutput(uiThemeSet);
-    }
-
-    private void registerClassicConsoleOutput(UIThemeSet themeSet) {
-
         // See Icons class for more details on what's happening here.
 
         // #1 ...
-        themeSet.registerThemeImpl("console-output", "classic", "Classic", "Classic Console Output");
+        uiThemeSet.registerThemeImpl("console-output", "classic", "Classic", "Classic Console Output");
 
         // #2 ...
-        themeSet.contribute(new UIThemeContribution("classic-console-output", "console-output", "classic", Jenkins.class));
+        uiThemeSet.contribute(new UIThemeContribution("classic-console-output", "console-output", "classic", Jenkins.class));
 
         // #3 ...
         // see core/src/main/resources/jenkins-themes/console-output/classic/classic-console-output/theme-template.less
-    }
-
-    private void registerDarkConsoleOutput(UIThemeSet themeSet) {
-
-        // See Icons class for more details on what's happening here.
-
-        // #1 ...
-        themeSet.registerThemeImpl("console-output", "dark", "Dark", "Dark Background Console Output");
-
-        // #2 ...
-        themeSet.contribute(new UIThemeContribution("dark-console-output", "console-output", "dark", Jenkins.class));
-
-        // #3 ...
-        // see core/src/main/resources/jenkins-themes/console-output/dark/dark-console-output/theme-template.less
     }
 }
