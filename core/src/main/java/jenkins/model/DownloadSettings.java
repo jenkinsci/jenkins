@@ -49,7 +49,7 @@ import org.kohsuke.stapler.StaplerRequest;
         return Jenkins.getInstance().getInjector().getInstance(DownloadSettings.class);
     }
 
-    private boolean useBrowser = false; // TODO switch saved preferences one time, or add an admin monitor, or just delete the option (in which case can also delete DownloadServiceTest and its testPost.jelly and its *Installer.json)
+    private boolean useBrowser = false;
     
     public DownloadSettings() {
         load();
