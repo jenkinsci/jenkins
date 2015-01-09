@@ -182,7 +182,11 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         @Override protected FormValidation checkHomeDirectory(File value) {
             File toolsJar = new File(value,"lib/tools.jar");
             File mac = new File(value,"lib/dt.jar");
-            if(!toolsJar.exists() && !mac.exists())
+
+            // JENKINS-25601: JDK 9+ no longer has tools.jar. Keep the existing dt.jar/tools.jar checks to be safe.
+            File javac = new File(value, "bin/javac");
+            File javacExe = new File(value, "bin/javac.exe");
+            if(!toolsJar.exists() && !mac.exists() && !javac.exists() && !javacExe.exists())
                 return FormValidation.error(Messages.Hudson_NotJDKDir(value));
 
             return FormValidation.ok();
