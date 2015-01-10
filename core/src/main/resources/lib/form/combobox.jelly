@@ -37,10 +37,6 @@ THE SOFTWARE.
     <st:attribute name="field">
       Used for databinding.
     </st:attribute>
-    <st:attribute name="displayonfocus">
-      Displays the drop-down also when the field is selected.
-      The default is false and displays only when the value is changed.
-    </st:attribute>
   </st:documentation>
 
   <st:once>
@@ -54,7 +50,6 @@ THE SOFTWARE.
 
   <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary" ATTRIBUTES="${attrs}" EXCEPT="field items clazz"
          autocomplete="off" class="combobox2 setting-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
-         displayonfocus="${attrs.displayonfocus?'on':'off'}"
          name="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field]}" />
   <!-- TODO consider customizedFields -->
