@@ -1,6 +1,10 @@
-<div>
+<p>
     Check to force the user’s browser to download metadata rather than Jenkins itself doing it.
     Actual file downloads (plugins, tools) will still happen from Jenkins itself,
     but this can be used to at least <em>see</em> new metadata when Jenkins cannot access the Internet
     (but your own browser can, perhaps using some special proxy that Jenkins is not configured to use).
-</div>
+</p>
+<p>
+    Use of browser mode is discouraged.
+    It is not very secure, as malicious users could submit signed but obsolete information, causing denials of service or build errors.
+</p>

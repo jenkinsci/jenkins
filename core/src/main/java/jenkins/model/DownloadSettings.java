@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
 import hudson.model.TaskListener;
@@ -69,6 +70,10 @@ import org.kohsuke.stapler.StaplerRequest;
         save();
     }
 
+    @Override public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
+    }
+
     @Extension public static final class DailyCheck extends AsyncPeriodicWork {
 
         public DailyCheck() {
@@ -87,6 +92,14 @@ import org.kohsuke.stapler.StaplerRequest;
             if (rsp instanceof FormValidation) {
                 listener.error(((FormValidation) rsp).renderHtml());
             }
+        }
+
+    }
+
+    @Extension public static final class Warning extends AdministrativeMonitor {
+
+        @Override public boolean isActivated() {
+            return DownloadSettings.get().isUseBrowser();
         }
 
     }
