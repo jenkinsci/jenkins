@@ -84,6 +84,10 @@ import org.kohsuke.stapler.StaplerRequest;
             return DAY;
         }
 
+        @Override public long getInitialDelay() {
+            return 0;
+        }
+
         @Override protected void execute(TaskListener listener) throws IOException, InterruptedException {
             if (get().isUseBrowser()) {
                 return;
