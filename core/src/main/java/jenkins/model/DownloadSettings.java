@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.Main;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
@@ -85,7 +86,7 @@ import org.kohsuke.stapler.StaplerRequest;
         }
 
         @Override public long getInitialDelay() {
-            return 0;
+            return Main.isUnitTest ? DAY : 0;
         }
 
         @Override protected void execute(TaskListener listener) throws IOException, InterruptedException {
