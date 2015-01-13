@@ -93,6 +93,16 @@ import org.kohsuke.stapler.StaplerRequest;
             if (get().isUseBrowser()) {
                 return;
             }
+            boolean due = false;
+            for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+                if (site.isDue()) {
+                    due = true;
+                    break;
+                }
+            }
+            if (!due) {
+                return;
+            }
             HttpResponse rsp = Jenkins.getInstance().getPluginManager().doCheckUpdatesServer();
             if (rsp instanceof FormValidation) {
                 listener.error(((FormValidation) rsp).renderHtml());
