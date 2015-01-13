@@ -229,7 +229,7 @@ public class DownloadService extends PageDecorator {
 
         public Downloadable() {
             this.id = getClass().getName().replace('$','.');
-            this.url = this.id + ".json.html";
+            this.url = this.id+".json";
             this.interval = DEFAULT_INTERVAL;
         }
 
@@ -241,7 +241,7 @@ public class DownloadService extends PageDecorator {
         }
 
         public Downloadable(String id) {
-            this(id, id + ".json.html");
+            this(id,id+".json");
         }
 
         public Downloadable(String id, String url) {
@@ -342,7 +342,7 @@ public class DownloadService extends PageDecorator {
 
         @Restricted(NoExternalUse.class)
         public FormValidation updateNow() throws IOException {
-            return load(loadJSONHTML(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), System.currentTimeMillis());
+            return load(loadJSONHTML(new URL(getUrl() + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), System.currentTimeMillis());
         }
 
         /**
