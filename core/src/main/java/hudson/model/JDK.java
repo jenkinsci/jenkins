@@ -54,10 +54,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
 
     /**
-     * Name of the “default JDK”, meaning no specific JDK selected.
+     * Name of the “System JDK”, which is just the JDK on Jenkins' $PATH.
      * @since 1.577
      */
-    public static final String DEFAULT_NAME = "(Default)";
+    public static final String DEFAULT_NAME = "(System)";
 
     /**
      * @deprecated since 2009-02-25
