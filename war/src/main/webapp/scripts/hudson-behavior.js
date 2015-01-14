@@ -1478,7 +1478,10 @@ function refreshPart(id,url) {
             new Ajax.Request(url, {
                 onSuccess: function(rsp) {
                     var hist = $(id);
-                    if (hist==null) console.log("There's no element that has ID of "+id)
+                    if (hist == null) {
+                        console.log("There's no element that has ID of " + id);
+                        return;
+                    }
                     var p = hist.up();
 
                     var div = document.createElement('div');
