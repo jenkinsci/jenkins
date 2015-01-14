@@ -104,7 +104,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
     }
 
-    private static class EnvironmentWrapper extends Environment {
+    private class EnvironmentWrapper extends Environment {
         private final Context c;
         private final Launcher launcher;
         EnvironmentWrapper(Context c, Launcher launcher) {
