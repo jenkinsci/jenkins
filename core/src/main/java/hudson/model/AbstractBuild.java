@@ -38,6 +38,7 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SCMListener;
+import hudson.remoting.RequestAbortedException;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -47,6 +48,7 @@ import hudson.scm.SCMRevisionState;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildTrigger;
@@ -537,23 +539,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 // use multiple environment variables so that people can escape this massacre by overriding an environment
                 // variable for some processes
                 launcher.kill(getCharacteristicEnvVars());
-            } else {
-                // As can be seen in HUDSON-5073, when a build fails because of the slave connectivity problem,
-                // error message doesn't point users to the slave. So let's do it here.
-                listener.hyperlink("/computer/"+builtOn+"/log","Looks like the node went offline during the build. Check the slave log for the details.");
-
-                // TODO: Offline cause seems more reliable here. Plus, this misses permission check log.jelly does.
-                Computer c = node.toComputer();
-                if (c != null) {
-                    // grab the end of the log file. This might not work very well if the slave already
-                    // starts reconnecting. Fixing this requires a ring buffer in slave logs.
-                    AnnotatedLargeText<Computer> log = c.getLogText();
-                    StringWriter w = new StringWriter();
-                    log.writeHtmlTo(Math.max(0,c.getLogFile().length()-10240),w);
-
-                    listener.getLogger().print(ExpandableDetailsNote.encodeTo("details",w.toString()));
-                    listener.getLogger().println();
-                }
             }
 
             // this is ugly, but for historical reason, if non-null value is returned
@@ -771,7 +756,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             boolean canContinue = false;
             try {
+
                 canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
+            } catch (RequestAbortedException ex) {
+                // Channel is closed, do not continue
+                listener.error("Slave went offline during the build.");
+                final OfflineCause offlineCause = getCurrentNode().toComputer().getOfflineCause();
+                if (offlineCause != null) {
+                    listener.error(offlineCause.toString());
+                }
             } catch (RuntimeException ex) {
 
                 ex.printStackTrace(listener.error("Build step failed with exception"));
