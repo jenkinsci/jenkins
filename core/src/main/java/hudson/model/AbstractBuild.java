@@ -532,12 +532,18 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             Result result = doRun(listener);
 
-            Computer c = node.toComputer();
-            if (c==null || c.isOffline()) {
+            if (node.getChannel() != null) {
+                // kill run-away processes that are left
+                // use multiple environment variables so that people can escape this massacre by overriding an environment
+                // variable for some processes
+                launcher.kill(getCharacteristicEnvVars());
+            } else {
                 // As can be seen in HUDSON-5073, when a build fails because of the slave connectivity problem,
                 // error message doesn't point users to the slave. So let's do it here.
                 listener.hyperlink("/computer/"+builtOn+"/log","Looks like the node went offline during the build. Check the slave log for the details.");
 
+                // TODO: Offline cause seems more reliable here. Plus, this misses permission check log.jelly does.
+                Computer c = node.toComputer();
                 if (c != null) {
                     // grab the end of the log file. This might not work very well if the slave already
                     // starts reconnecting. Fixing this requires a ring buffer in slave logs.
@@ -549,11 +555,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     listener.getLogger().println();
                 }
             }
-
-            // kill run-away processes that are left
-            // use multiple environment variables so that people can escape this massacre by overriding an environment
-            // variable for some processes
-            launcher.kill(getCharacteristicEnvVars());
 
             // this is ugly, but for historical reason, if non-null value is returned
             // it should become the final result.
@@ -767,7 +768,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             for (BuildStepListener bsl : BuildStepListener.all()) {
                 bsl.started(AbstractBuild.this, bs, listener);
             }
-            boolean canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
+
+            boolean canContinue = false;
+            try {
+                canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
+            } catch (RuntimeException ex) {
+
+                ex.printStackTrace(listener.error("Build step failed with exception"));
+            }
+
             for (BuildStepListener bsl : BuildStepListener.all()) {
                 bsl.finished(AbstractBuild.this, bs, listener, canContinue);
             }
@@ -1307,7 +1316,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         public List<AbstractBuild> getBuilds() {
             List<AbstractBuild> r = new ArrayList<AbstractBuild>();
 
-            AbstractBuild<?,?> b = (AbstractBuild)project.getNearestBuild(fromId);
+            AbstractBuild<?,?> b = project.getNearestBuild(fromId);
             if (b!=null && b.getNumber()==fromId)
                 b = b.getNextBuild(); // fromId exclusive
 

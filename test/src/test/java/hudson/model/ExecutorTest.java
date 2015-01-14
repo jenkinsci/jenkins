@@ -1,12 +1,17 @@
 package hudson.model;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import hudson.Launcher;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import hudson.util.OneShotEvent;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -14,6 +19,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -95,23 +101,10 @@ public class ExecutorTest {
      */
     @Test
     public void abortCause() throws Exception {
-        final OneShotEvent e = new OneShotEvent();
-
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new TestBuilder() {
-            @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                e.signal(); // we are safe to be interrupted
-                synchronized (this) {
-                    wait();
-                }
-                throw new AssertionError();
-            }
-        });
 
-        Future<FreeStyleBuild> r = p.scheduleBuild2(0);
-        e.block();  // wait until we are safe to interrupt
-        assertTrue(p.getLastBuild().isBuilding());
+        Future<FreeStyleBuild> r = startBlockingBuild(p);
+
         User johnny = User.get("Johnny");
         p.getLastBuild().getExecutor().interrupt(Result.FAILURE,
                 new UserInterruption(johnny),   // test the merge semantics
@@ -120,12 +113,63 @@ public class ExecutorTest {
         FreeStyleBuild b = r.get();
 
         // make sure this information is recorded
-        assertEquals(b.getResult(),Result.FAILURE);
+        assertEquals(b.getResult(), Result.FAILURE);
         InterruptedBuildAction iba = b.getAction(InterruptedBuildAction.class);
         assertEquals(1,iba.getCauses().size());
-        assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(),johnny);
+        assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(), johnny);
 
         // make sure it shows up in the log
-        assertTrue(b.getLog().contains("Johnny"));
+        assertTrue(b.getLog().contains(johnny.getId()));
+    }
+
+    @Test
+    public void disconnectCause() throws Exception {
+        DumbSlave slave = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(slave);
+
+        Future<FreeStyleBuild> r = startBlockingBuild(p);
+        User johnny = User.get("Johnny");
+
+        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                new OfflineCause.UserCause(johnny, "Taking offline to break your build")
+        );
+
+        FreeStyleBuild b = r.get();
+
+        String log = b.getLog();
+        assertEquals(b.getResult(), Result.FAILURE);
+        assertThat(log, containsString("Finished: FAILURE"));
+        assertThat(log, containsString("Build step 'Bogus' marked build as failure"));
+    }
+
+    private Future<FreeStyleBuild> startBlockingBuild(FreeStyleProject p) throws Exception {
+        final OneShotEvent e = new OneShotEvent();
+
+        p.getBuildersList().add(new BlockingBuilder(e));
+
+        Future<FreeStyleBuild> r = p.scheduleBuild2(0);
+        e.block();  // wait until we are safe to interrupt
+        assertTrue(p.getLastBuild().isBuilding());
+
+        return r;
+    }
+
+    private static final class BlockingBuilder extends TestBuilder {
+        private final OneShotEvent e;
+
+        private BlockingBuilder(OneShotEvent e) {
+            this.e = e;
+        }
+
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            e.signal(); // we are safe to be interrupted
+            for (;;) {
+                // Keep using the channel
+                build.getBuiltOn().getClockDifference();
+                Thread.sleep(100);
+            }
+        }
     }
 }
