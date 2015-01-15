@@ -74,7 +74,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * An optional callback to run at the end of the wrapped block.
      */
     public static abstract class Disposer implements Serializable {
-        public abstract void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener);
+        public abstract void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
     }
 
     /**
