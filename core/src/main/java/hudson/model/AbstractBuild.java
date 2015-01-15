@@ -760,8 +760,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
             } catch (RequestAbortedException ex) {
                 // Channel is closed, do not continue
-                listener.error("Slave went offline during the build.");
-                final OfflineCause offlineCause = getCurrentNode().toComputer().getOfflineCause();
+                final Node node = getCurrentNode();
+                listener.hyperlink("/" + node.toComputer().getUrl() + "log", "Slave went offline during the build");
+                listener.getLogger().println();
+                final OfflineCause offlineCause = node.toComputer().getOfflineCause();
                 if (offlineCause != null) {
                     listener.error(offlineCause.toString());
                 }
