@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import hudson.Launcher;
+import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.OneShotEvent;
@@ -166,10 +167,13 @@ public class ExecutorTest {
 
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            VirtualChannel channel = launcher.getChannel();
+            Node node = build.getBuiltOn();
+
             e.signal(); // we are safe to be interrupted
             for (;;) {
                 // Keep using the channel
-                build.getBuiltOn().getClockDifference();
+                channel.call(node.getClockDifferenceCallable());
                 Thread.sleep(100);
             }
         }

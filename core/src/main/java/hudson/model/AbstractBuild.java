@@ -38,6 +38,7 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SCMListener;
+import hudson.remoting.ChannelClosedException;
 import hudson.remoting.RequestAbortedException;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
@@ -760,13 +761,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
             } catch (RequestAbortedException ex) {
                 // Channel is closed, do not continue
-                final Node node = getCurrentNode();
-                listener.hyperlink("/" + node.toComputer().getUrl() + "log", "Slave went offline during the build");
-                listener.getLogger().println();
-                final OfflineCause offlineCause = node.toComputer().getOfflineCause();
-                if (offlineCause != null) {
-                    listener.error(offlineCause.toString());
-                }
+                reportBrokenChannel(listener);
+            } catch (ChannelClosedException ex) {
+                // Channel is closed, do not continue
+                reportBrokenChannel(listener);
             } catch (RuntimeException ex) {
 
                 ex.printStackTrace(listener.error("Build step failed with exception"));
@@ -785,6 +783,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 listener.getLogger().format("Build step '%s' marked build as failure%n", buildStepName);
             }
             return canContinue;
+        }
+
+        private void reportBrokenChannel(BuildListener listener) throws IOException {
+            final Node node = getCurrentNode();
+            listener.hyperlink("/" + node.toComputer().getUrl() + "log", "Slave went offline during the build");
+            listener.getLogger().println();
+            final OfflineCause offlineCause = node.toComputer().getOfflineCause();
+            if (offlineCause != null) {
+                listener.error(offlineCause.toString());
+            }
         }
 
         private String getBuildStepName(BuildStep bs) {
