@@ -93,7 +93,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * If not specified, nothing special happens.
          */
         public void setDisposer(@Nonnull Disposer disposer) {
-            if (disposer != null) {
+            if (this.disposer != null) {
                 throw new IllegalStateException("just one disposer");
             }
             this.disposer = disposer;
