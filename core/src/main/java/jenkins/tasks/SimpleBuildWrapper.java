@@ -40,8 +40,11 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * A generalization of {@link BuildWrapper} that, like {@link SimpleBuildStep}, may be called at various points within a build.
@@ -64,16 +67,53 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      */
     public abstract void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException;
 
+    /**
+     * Parameter passed to {@link #setUp} to allow an implementation to specify its behavior after the initial setup.
+     */
     public static final class Context {
-        // TODO convert to bean or builder pattern
-        public Disposer disposer;
-        public EnvVars env;
+        private Disposer disposer;
+        private final Map<String,String> env = new HashMap<String,String>();
+        public @Nonnull Map<String,String> getEnv() {
+            return env;
+        }
+        /**
+         * Specify an environment variable override (as in {@link EnvVars#override}) to apply to processes launched within the block.
+         * If unspecified, environment variables will be inherited unmodified.
+         */
+        public void env(String key, String value) {
+            if (env.put(key, value) != null) {
+                throw new IllegalStateException("just one binding for " + key);
+            }
+        }
+        public @CheckForNull Disposer getDisposer() {
+            return disposer;
+        }
+        /**
+         * Specify an action to take when the block ends.
+         * If not specified, nothing special happens.
+         */
+        public void setDisposer(@Nonnull Disposer disposer) {
+            if (disposer != null) {
+                throw new IllegalStateException("just one disposer");
+            }
+            this.disposer = disposer;
+        }
     }
 
     /**
      * An optional callback to run at the end of the wrapped block.
+     * Must be safely serializable, so it receives runtime context comparable to that of the original setup.
      */
     public static abstract class Disposer implements Serializable {
+        /**
+         * Attempt to clean up anything that was done in the initial setup.
+         * @param build a build being run
+         * @param workspace a workspace of the build
+         * @param launcher a way to start commands
+         * @param listener a way to report progress
+         * @throws IOException if something fails; {@link AbortException} for user errors
+         * @throws InterruptedException if tear down is interrupted
+         */
         public abstract void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
     }
 
