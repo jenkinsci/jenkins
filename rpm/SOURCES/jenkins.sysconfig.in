@@ -29,6 +29,16 @@ JENKINS_JAVA_CMD=""
 JENKINS_USER="jenkins"
 
 ## Type:        string
+## Default:     "false"
+## ServiceRestart: jenkins
+#
+# Whether to skip potentially long-running chown at the
+# $JENKINS_HOME location. Do not enable this, "true", unless
+# you know what you're doing. See JENKINS-23273.
+#
+#JENKINS_INSTALL_SKIP_CHOWN="false"
+
+## Type:        string
 ## Default:     "-Djava.awt.headless=true"
 ## ServiceRestart: jenkins
 #
