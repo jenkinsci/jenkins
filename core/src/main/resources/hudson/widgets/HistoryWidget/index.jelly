@@ -88,7 +88,6 @@ THE SOFTWARE.
                   newhist.headers = hist.headers
 
                   replace(hist, newhist);
-                  fireBuildHistoryChanged();
                 }
             });
             }
