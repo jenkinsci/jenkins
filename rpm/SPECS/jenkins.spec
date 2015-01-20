@@ -111,6 +111,7 @@ fi
 # Ensure the right ownership on files
 . /etc/sysconfig/jenkins
 chown -R ${JENKINS_USER:-jenkins} /var/log/jenkins
+chown -R ${JENKINS_USER:-jenkins} /var/cache/jenkins
 chown -R ${JENKINS_USER:-jenkins} ${JENKINS_HOME:-%{workdir}}
 
 %preun
