@@ -81,9 +81,10 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * If unspecified, environment variables will be inherited unmodified.
          */
         public void env(String key, String value) {
-            if (env.put(key, value) != null) {
+            if (env.containsKey(key)) {
                 throw new IllegalStateException("just one binding for " + key);
             }
+            env.put(key, value);
         }
         public @CheckForNull Disposer getDisposer() {
             return disposer;
