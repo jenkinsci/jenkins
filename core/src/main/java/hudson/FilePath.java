@@ -1581,6 +1581,7 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
+                // TODO first check for Java 7+ and use PosixFileAttributeView
                 _chmod(writing(f), mask);
 
                 return null;
@@ -1592,7 +1593,9 @@ public final class FilePath implements Serializable {
      * Run chmod via jnr-posix
      */
     private static void _chmod(File f, int mask) throws IOException {
-        if (Functions.isWindows())  return; // noop
+        // TODO WindowsPosix actually does something here (WindowsLibC._wchmod); should we let it?
+        // Anyway the existing calls already skip this method if on Windows.
+        if (File.pathSeparatorChar==';')  return; // noop
 
         PosixAPI.jnr().chmod(f.getAbsolutePath(),mask);
     }
