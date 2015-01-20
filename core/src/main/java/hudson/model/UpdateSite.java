@@ -174,9 +174,7 @@ public class UpdateSite {
      * This is the endpoint that receives the update center data file from the browser.
      */
     public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
-        if (!DownloadSettings.get().isUseBrowser()) {
-            throw new IOException("not allowed");
-        }
+        DownloadSettings.checkPostBackAccess();
         return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
     }
 

@@ -67,7 +67,7 @@ public class DownloadService extends PageDecorator {
      * Builds up an HTML fragment that starts all the download jobs.
      */
     public String generateFragment() {
-        if (!DownloadSettings.get().isUseBrowser()) {
+        if (!DownloadSettings.usePostBack()) {
             return "";
         }
     	if (neverUpdate) return "";
@@ -308,9 +308,7 @@ public class DownloadService extends PageDecorator {
          * This is where the browser sends us the data. 
          */
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            if (!DownloadSettings.get().isUseBrowser()) {
-                throw new IOException("not allowed");
-            }
+            DownloadSettings.checkPostBackAccess();
             long dataTimestamp = System.currentTimeMillis();
             due = dataTimestamp+getInterval();  // success or fail, don't try too often
 

@@ -34,6 +34,7 @@ import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import net.sf.json.JSONObject;
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -73,6 +74,17 @@ import org.kohsuke.stapler.StaplerRequest;
 
     @Override public GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
+    }
+
+    public static boolean usePostBack() {
+        return get().isUseBrowser() && Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
+    }
+
+    public static void checkPostBackAccess() throws AccessDeniedException {
+        if (!get().isUseBrowser()) {
+            throw new AccessDeniedException("browser-based download disabled");
+        }
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
     }
 
     @Extension public static final class DailyCheck extends AsyncPeriodicWork {
