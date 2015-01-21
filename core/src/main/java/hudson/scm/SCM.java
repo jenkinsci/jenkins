@@ -703,7 +703,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns the list of {@link SCMDescriptor}s that are applicable to the given project.
      * @since 1.568
      */
-    public static List<SCMDescriptor<?>> _for(@Nonnull final Job project) {
+    public static List<SCMDescriptor<?>> _for(@CheckForNull final Job project) {
         if(project==null)   return all();
         
         final Descriptor pd = Jenkins.getInstance().getDescriptor((Class) project.getClass());
