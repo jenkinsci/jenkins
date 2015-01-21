@@ -199,7 +199,9 @@ public final class RunIdMigrator {
             String name = kid.getName();
             try {
                 String link = Util.resolveSymlink(kid);
-                if (link == null) {
+                if (link == null && name.matches("\\d+") && kid.isFile()) { // legacy Windows format
+                    link = FileUtils.readFileToString(kid);
+                } else if (link == null) {
                     continue;
                 }
                 try {
