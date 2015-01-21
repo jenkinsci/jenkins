@@ -309,7 +309,12 @@ public final class RunIdMigrator {
         new RunIdMigrator().unmigrateJobsDir(jobs);
     }
     private void unmigrateJobsDir(File jobs) throws Exception {
-        for (File job : jobs.listFiles()) {
+        File[] jobDirs = jobs.listFiles();
+        if (jobDirs == null) {
+            System.err.println(jobs + " claimed to exist, but cannot be listed");
+            return;
+        }
+        for (File job : jobDirs) {
             File[] kids = job.listFiles();
             if (kids == null) {
                 continue;
