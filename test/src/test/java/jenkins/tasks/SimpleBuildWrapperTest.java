@@ -57,6 +57,7 @@ public class SimpleBuildWrapperTest {
     }
     public static class WrapperWithEnvOverride extends SimpleBuildWrapper {
         @Override public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+            assertNotNull(initialEnvironment.get("PATH"));
             context.env("PATH+STUFF", workspace.child("bin").getRemote());
         }
         @TestExtension("envOverride") public static class DescriptorImpl extends BuildWrapperDescriptor {
