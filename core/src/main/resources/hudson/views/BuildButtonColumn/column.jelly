@@ -30,11 +30,11 @@ THE SOFTWARE.
               <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
                   <j:choose>
                       <j:when test="${job.parameterized}">
-                          <j:set var="title" value="${%Schedule a build with parameters}"/>
+                          <j:set var="title" value="${%Schedule a build with parameters} for ${job.fullDisplayName}"/>
                           <j:set var="onclick" value="${null}"/>
                       </j:when>
                       <j:otherwise>
-                          <j:set var="title" value="${%Schedule a build}"/>
+                          <j:set var="title" value="${%Schedule a build} for ${job.fullDisplayName}"/>
                           <j:set var="onclick" value="return build_${id}(this)"/>
                       </j:otherwise>
                   </j:choose>
