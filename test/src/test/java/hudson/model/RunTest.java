@@ -45,6 +45,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -77,10 +78,11 @@ public class RunTest  {
     @Test public void doNotOverrideCharacteristicBuildEnvVar() throws Exception {
         DumbSlave slave = slaveContributing("BUILD_NUMBER", "FROM_SLAVE");
         FreeStyleProject p = j.createFreeStyleProject();
-
-        p.getBuildWrappersList().add(new ContributingWrapper("BUILD_NUMBER", "FROM_WRAPPER"));
-        p.getBuildersList().add(new ContributingBuildStep("BUILD_NUMBER", "FROM_CONTRIBUTOR"));
         p.setAssignedNode(slave);
+
+        ContributingExtension.values("BUILD_NUMBER", "FROM_CONTRIBUTOR");
+        p.getBuildWrappersList().add(new ContributingWrapper("BUILD_NUMBER", "FROM_WRAPPER"));
+        p.getBuildersList().add(new ContributingBuilder("BUILD_NUMBER", "FROM_CONTRIBUTOR"));
 
         String buildLog = buildLog(p, "BUILD_NUMBER");
         assertThat(buildLog, containsString("actual=1"));
@@ -89,10 +91,11 @@ public class RunTest  {
     @Test public void doNotOverrideCharacteristicJobEnvVar() throws Exception {
         DumbSlave slave = slaveContributing("JOB_NAME", "FROM_SLAVE");
         FreeStyleProject p = j.createFreeStyleProject("job_name");
-
-        p.getBuildWrappersList().add(new ContributingWrapper("JOB_NAME", "FROM_WRAPPER"));
-        p.getBuildersList().add(new ContributingBuildStep("JOB_NAME", "FROM_CONTRIBUTOR"));
         p.setAssignedNode(slave);
+
+        ContributingExtension.values("JOB_NAME", "FROM_CONTRIBUTOR");
+        p.getBuildWrappersList().add(new ContributingWrapper("JOB_NAME", "FROM_WRAPPER"));
+        p.getBuildersList().add(new ContributingBuilder("JOB_NAME", "FROM_CONTRIBUTOR"));
 
         String buildLog = buildLog(p, "JOB_NAME");
         assertThat(buildLog, containsString("actual=job_name"));
@@ -101,20 +104,31 @@ public class RunTest  {
     @Test public void doNotOverrideBuildWrapperEnvVar() throws Exception {
         DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
         FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(slave);
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
-        p.setAssignedNode(slave);
 
         String buildLog = buildLog(p, "DISPLAY");
         assertThat(buildLog, containsString("actual=BUILD_VAL"));
     }
 
-    @Test public void doNotOverrideBuildContributorEnvVar() throws Exception {
+    @Test public void doNotOverrideBuilderEnvVar() throws Exception {
         DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
         FreeStyleProject p = j.createFreeStyleProject();
-
-        p.getBuildersList().add(new ContributingBuildStep("DISPLAY", "BUILD_VAL"));
         p.setAssignedNode(slave);
+
+        p.getBuildersList().add(new ContributingBuilder("DISPLAY", "BUILD_VAL"));
+
+        String buildLog = buildLog(p, "DISPLAY");
+        assertThat(buildLog, containsString("actual=BUILD_VAL"));
+    }
+
+    @Test public void doNotOverrideContributorEnvVar() throws Exception {
+        DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(slave);
+
+        ContributingExtension.values("DISPLAY", "BUILD_VAL");
 
         String buildLog = buildLog(p, "DISPLAY");
         assertThat(buildLog, containsString("actual=BUILD_VAL"));
@@ -159,11 +173,11 @@ public class RunTest  {
         }
     }
 
-    private static final class ContributingBuildStep extends Builder {
+    private static final class ContributingBuilder extends Builder {
         private final String value;
         private final String key;
 
-        private ContributingBuildStep(String key, String value) {
+        private ContributingBuilder(String key, String value) {
             this.value = value;
             this.key = key;
         }
@@ -197,6 +211,33 @@ public class RunTest  {
             public String getDisplayName() {
                 return null;
             }
+        }
+    }
+
+    @Extension
+    public static final class ContributingExtension extends EnvironmentContributor {
+        private static String value;
+        private static String key;
+
+        private static void values(String k, String v) {
+            value = v;
+            key = k;
+        }
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public void buildEnvironmentFor(
+                Run r, EnvVars envs, TaskListener listener
+        ) throws IOException, InterruptedException {
+            envs.put(key, value);
+        }
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public void buildEnvironmentFor(
+                Job j, EnvVars envs, TaskListener listener
+        ) throws IOException, InterruptedException {
+            envs.put(key, value);
         }
     }
 }
