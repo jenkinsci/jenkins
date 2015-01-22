@@ -32,6 +32,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;
@@ -49,6 +50,14 @@ import javax.annotation.Nonnull;
 /**
  * A generalization of {@link BuildWrapper} that, like {@link SimpleBuildStep}, may be called at various points within a build.
  * <p>Such a build wrapper would typically be written according to make few assumptions about how it is being used.
+ * Some hints about this refactoring:
+ * <ul>
+ * <li>Replace {@link AbstractBuild#getWorkspace} with the provided path.
+ * <li>Replace {@link AbstractBuild#getProject} with {@link Run#getParent}.
+ * <li>Use {@link FilePath#toComputer} rather than {@link Computer#currentComputer}.
+ * <li>Do not bother with {@link AbstractBuild#getBuildVariables} if you are not passed an {@link AbstractBuild} (treat it like an empty map).
+ * <li>The {@link Disposer} must be safely serializable. This means it should be a {@code static} class if nested, and define a {@code serialVersionUID}.
+ * </ul>
  * @since TODO
  */
 @SuppressWarnings("rawtypes") // inherited
@@ -77,8 +86,9 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
             return env;
         }
         /**
-         * Specify an environment variable override (as in {@link EnvVars#override}) to apply to processes launched within the block.
+         * Specify an environment variable override to apply to processes launched within the block.
          * If unspecified, environment variables will be inherited unmodified.
+         * @param key handles the special {@code PATH+SOMETHING} syntax as in {@link EnvVars#override}
          */
         public void env(String key, String value) {
             if (env.containsKey(key)) {
