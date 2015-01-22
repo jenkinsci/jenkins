@@ -431,6 +431,10 @@ pre.console {
   width: 480px;
 }
 
+.build-row {
+  padding: 3px 4px 3px 4px;
+}
+
 .build-keep {
   font-weight: bold;
 }
@@ -920,140 +924,18 @@ table.parameters > tbody:hover {
 }
 
 #buildHistory .desc {
-  position: relative;
   padding: 0;
   margin-top: 5px;
   white-space: normal;
-  opacity: 0.6;
-  font-style: italic;
-}
-
-#buildHistory .build-row-cell {
-  position: relative;
+  max-width: 200px;
 }
 
 #buildHistory .build-rss-links {
   float: right;
 }
 
-.build-row {
-  padding: 3px 4px 3px 4px;
-}
-
-.build-row:hover {
-  background: #e8e8e8 !important;
-}
-
-.build-row-cell {
-  font-size: 12px;
-}
-
-.build-row-cell .pane.build-name {
-  width: 20%;
-  font-weight: bold;
-}
-.build-row-cell .pane.build-details {
-  width: 50%;
-}
-.build-row-cell .pane.build-controls {
-  width: 30%;
-  text-align: right;
-}
-.build-row-cell .pane.build-details.block {
-  width: 100%;
-}
-
-.pane.build-name a,
-.pane.build-name a:visited {
-  color: black;
-  text-decoration: underline;
-}
-
-.pane.build-details a,
-.pane.build-details a:visited {
-  color: black;
-  opacity: 0.6;
-  text-decoration: none;
-}
-.pane.build-details a:hover {
-  opacity: 1.0;
-  text-decoration: underline;
-}
-
-.build-row.multi-line .build-row-cell .pane.build-name.block {
-  width: 100%;
-}
-.build-row-cell .pane.build-controls.block {
-  width: 100%;
-}
-
-.build-row-cell .pane.build-name .build-icon,
-.build-row-cell .pane.build-name .display-name {
-  display: inline-block;
-}
-.build-row-cell .pane.build-name .build-icon {
-  position: absolute;
-}
-
-.build-row-cell .build-stop {
-  display: inline-block;
-  width: 30%;
-}
-.build-row-cell .build-badge {
-  display: inline-block;
-  padding: 2px;
-  width: 70%;
-  text-align: right;
-}
-.build-row .build-name-controls .pane.build-name,
-.build-row .build-details-controls .pane.build-details {
-  width: 70%;
-}
-
-.build-row .build-row-cell .pane {
-  padding: 0px 2px; /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
-  display: inline-block;
-  overflow: hidden;
-}
-
-.build-row.multi-line .build-row-cell .block {
-  display: block;
-  overflow: auto;
-}
-
-.build-row.multi-line .build-row-cell .indent-multiline {
-  margin-top: 5px;
-}
-
-.build-row.multi-line .build-row-cell .left-bar {
-  position: absolute;
-  top: 19px;
-  bottom: 3px;
-  left: 14px;
-  border-left: 1px solid #cdcdcd;
-}
-
-.build-row-cell .pane.build-name .display-name,
-.build-row-cell .indent-multiline {
-  padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
-}
-
-.build-row .build-row-cell {
-  visibility: hidden;
-}
-.build-row.overflow-checked .build-row-cell {
-  visibility: visible;
-}
-
-/* ================ Element overflow calculation helper styles ================ */
-
-.force-wrap, .force-wrap a {
-  white-space: normal !important;
-  overflow: visible !important;
-}
-.force-nowrap, .force-nowrap a {
-  white-space: nowrap !important;
-  overflow: hidden !important;
+#buildHistory .build-name {
+  max-width: 120px;
 }
 
 /* ========================= editable combobox style ========================= */
