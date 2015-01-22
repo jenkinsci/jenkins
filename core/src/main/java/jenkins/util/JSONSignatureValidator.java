@@ -73,6 +73,9 @@ public class JSONSignatureValidator {
                 // which isn't useful at all
                 Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
                 Jenkins j = Jenkins.getInstance();
+                if (j == null) {
+                    return FormValidation.error("Jenkins has shut down, cannot find root CAs");
+                }
                 for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
                     if (cert.endsWith(".txt"))  continue;       // skip text files that are meant to be documentation
                     anchors.add(new TrustAnchor((X509Certificate)cf.generateCertificate(j.servletContext.getResourceAsStream(cert)),null));
