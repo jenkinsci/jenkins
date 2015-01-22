@@ -26,20 +26,25 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.ProxyConfiguration;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.logging.Logger;
+import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import net.sf.json.JSONException;
-import org.kohsuke.stapler.Stapler;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
-
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -62,6 +67,9 @@ public class DownloadService extends PageDecorator {
      * Builds up an HTML fragment that starts all the download jobs.
      */
     public String generateFragment() {
+        if (!DownloadSettings.usePostBack()) {
+            return "";
+        }
     	if (neverUpdate) return "";
         if (doesNotSupportPostMessage())  return "";
 
@@ -133,6 +141,58 @@ public class DownloadService extends PageDecorator {
             if(d.getId().equals(id))
                 return d;
         return null;
+    }
+
+    /**
+     * Loads JSON from a JSONP URL.
+     * Metadata for downloadables and update centers is offered in two formats, both designed for download from the browser (predating {@link DownloadSettings}):
+     * HTML using {@code postMessage} for newer browsers, and JSONP as a fallback.
+     * Confusingly, the JSONP files are given the {@code *.json} file extension, when they are really JavaScript and should be {@code *.js}.
+     * This method extracts the JSON from a JSONP URL, since that is what we actually want when we download from the server.
+     * (Currently the true JSON is not published separately, and extracting from the {@code *.json.html} is more work.)
+     * @param src a URL to a JSONP file (typically including {@code id} and {@code version} query parameters)
+     * @return the embedded JSON text
+     * @throws IOException if either downloading or processing failed
+     */
+    @Restricted(NoExternalUse.class)
+    public static String loadJSON(URL src) throws IOException {
+        InputStream is = ProxyConfiguration.open(src).getInputStream();
+        try {
+            String jsonp = IOUtils.toString(is, "UTF-8");
+            int start = jsonp.indexOf('{');
+            int end = jsonp.lastIndexOf('}');
+            if (start >= 0 && end > start) {
+                return jsonp.substring(start, end + 1);
+            } else {
+                throw new IOException("Could not find JSON in " + src);
+            }
+        } finally {
+            is.close();
+        }
+    }
+
+    /**
+     * Loads JSON from a JSON-with-{@code postMessage} URL.
+     * @param src a URL to a JSON HTML file (typically including {@code id} and {@code version} query parameters)
+     * @return the embedded JSON text
+     * @throws IOException if either downloading or processing failed
+     */
+    @Restricted(NoExternalUse.class)
+    public static String loadJSONHTML(URL src) throws IOException {
+        InputStream is = ProxyConfiguration.open(src).getInputStream();
+        try {
+            String jsonp = IOUtils.toString(is, "UTF-8");
+            String preamble = "window.parent.postMessage(JSON.stringify(";
+            int start = jsonp.indexOf(preamble);
+            int end = jsonp.lastIndexOf("),'*');");
+            if (start >= 0 && end > start) {
+                return jsonp.substring(start + preamble.length(), end).trim();
+            } else {
+                throw new IOException("Could not find JSON in " + src);
+            }
+        } finally {
+            is.close();
+        }
     }
 
     /**
@@ -248,17 +308,26 @@ public class DownloadService extends PageDecorator {
          * This is where the browser sends us the data. 
          */
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
+            DownloadSettings.checkPostBackAccess();
             long dataTimestamp = System.currentTimeMillis();
             due = dataTimestamp+getInterval();  // success or fail, don't try too often
 
             String json = IOUtils.toString(req.getInputStream(),"UTF-8");
+            FormValidation e = load(json, dataTimestamp);
+            if (e.kind != Kind.OK) {
+                LOGGER.severe(e.renderHtml());
+                throw e;
+            }
+            rsp.setContentType("text/plain");  // So browser won't try to parse response
+        }
+
+        private FormValidation load(String json, long dataTimestamp) throws IOException {
             JSONObject o = JSONObject.fromObject(json);
 
             if (signatureCheck) {
                 FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
                 if (e.kind!= Kind.OK) {
-                    LOGGER.severe(e.renderHtml());
-                    throw e;
+                    return e;
                 }
             }
 
@@ -266,8 +335,12 @@ public class DownloadService extends PageDecorator {
             df.write(json);
             df.file.setLastModified(dataTimestamp);
             LOGGER.info("Obtained the updated data file for "+id);
+            return FormValidation.ok();
+        }
 
-            rsp.setContentType("text/plain");  // So browser won't try to parse response
+        @Restricted(NoExternalUse.class)
+        public FormValidation updateNow() throws IOException {
+            return load(loadJSONHTML(new URL(getUrl() + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), System.currentTimeMillis());
         }
 
         /**
@@ -296,7 +369,10 @@ public class DownloadService extends PageDecorator {
     public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
 
     /**
-     * Off by default until we know this is reasonably working.
+     * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
+     * Useful when upstream signatures are broken, such as due to expired certificates.
+     * Should only be used when {@link DownloadSettings#isUseBrowser};
+     * disabling signature checks for in-browser downloads is <em>very dangerous</em> as unprivileged users could submit spoofed metadata!
      */
     public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }

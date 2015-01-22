@@ -96,7 +96,8 @@ THE SOFTWARE.
       </tr>
     </table>
     <div align="right" style="margin-top:1em">
-      <form method="post" action="checkUpdates">
+      <j:invokeStatic var="ds" className="jenkins.model.DownloadSettings" method="get"/>
+      <form method="post" action="${ds.useBrowser ? 'checkUpdates' : 'checkUpdatesServer'}">
         ${%lastUpdated(app.updateCenter.lastUpdatedString)}
         <f:submit value="${%Check now}" />
       </form>
