@@ -21,15 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model
+package hudson.model;
 
-import org.jvnet.hudson.test.JenkinsRule
-import org.jvnet.hudson.test.RandomlyFails
-import org.junit.Rule
-import org.junit.Test
-import static org.junit.Assert.*
-import hudson.model.UpdateCenter.DownloadJob.Success
-import hudson.model.UpdateSite
+import hudson.model.UpdateCenter.DownloadJob;
+import hudson.model.UpdateCenter.DownloadJob.Success;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RandomlyFails;
 
 /**
  *
@@ -44,18 +44,18 @@ public class UpdateCenter2Test {
      * Makes sure a plugin installs fine.
      */
     @RandomlyFails("SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…")
-    @Test void install() {
+    @Test public void install() throws Exception {
         UpdateSite.neverUpdate = false;
-        j.createWebClient().goTo("") // load the metadata
-        def job = j.jenkins.updateCenter.getPlugin("changelog-history").deploy().get(); // this seems like one of the smallest plugin
-        println job.status;
-        assertTrue(job.status instanceof Success)
+        j.createWebClient().goTo(""); // load the metadata
+        DownloadJob job = (DownloadJob) j.jenkins.getUpdateCenter().getPlugin("changelog-history").deploy().get(); // this seems like one of the smallest plugin
+        System.out.println(job.status);
+        assertTrue(job.status instanceof Success);
     }
 
-    @Test void getLastUpdatedString() {
-        UpdateSite.neverUpdate = false
-        assertTrue(j.jenkins.updateCenter.getById("default").due)
-        assertEquals(hudson.model.Messages.UpdateCenter_n_a(), j.jenkins.updateCenter.lastUpdatedString)
+    @Test public void getLastUpdatedString() {
+        UpdateSite.neverUpdate = false;
+        assertTrue(j.jenkins.getUpdateCenter().getById("default").isDue());
+        assertEquals(Messages.UpdateCenter_n_a(), j.jenkins.getUpdateCenter().getLastUpdatedString());
     }
 
 }

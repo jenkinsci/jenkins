@@ -21,33 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package hudson.util;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.Slave;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.StringWriter;
 
 /**
- *
  * @author Kohsuke Kawaguchi
  */
-public class ArgumentListBuilder2Test extends HudsonTestCase {
+public class ArgumentListBuilder2Test {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * Makes sure {@link RemoteLauncher} properly masks arguments.
      */
+    @Test
     @Email("http://n4.nabble.com/Password-masking-when-running-commands-on-a-slave-tp1753033p1753033.html")
-    public void testSlaveMask() throws Exception {
+    public void slaveMask() throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add("java");
         args.addMasked("-version");
 
-        Slave s = createSlave();
+        Slave s = j.createSlave();
         s.toComputer().connect(false).get();
-        
+
         StringWriter out = new StringWriter();
         assertEquals(0,s.createLauncher(new StreamTaskListener(out)).launch().cmds(args).join());
         System.out.println(out);

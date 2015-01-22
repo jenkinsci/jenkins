@@ -30,7 +30,7 @@ import hudson.model.listeners.RunListener;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
@@ -39,7 +39,7 @@ public class LazyBuildMixInTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Bug(22395)
+    @Issue("JENKINS-22395")
     @Test public void dropLinksAfterGC() throws Exception {
         RunListener.all().clear();  // see commit message for the discussion
 
@@ -83,7 +83,7 @@ public class LazyBuildMixInTest {
         assertEquals(b3, b1a.getNextBuild());
     }
 
-    @Bug(20662)
+    @Issue("JENKINS-20662")
     @Test public void newRunningBuildRelationFromPrevious() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new SleepBuilder(1000));

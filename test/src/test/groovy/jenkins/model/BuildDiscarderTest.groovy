@@ -2,24 +2,28 @@ package jenkins.model
 
 import hudson.model.AbstractProject
 import hudson.tasks.LogRotator
-import org.jvnet.hudson.test.Bug
-import org.jvnet.hudson.test.HudsonTestCase
+import org.junit.Rule
+import org.junit.Test
+import org.jvnet.hudson.test.Issue
+import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.recipes.LocalData
 
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 
-
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
-public class BuildDiscarderTest extends HudsonTestCase {
-    @Bug(16979)
+public class BuildDiscarderTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule()
+
+    @Test
+    @Issue("JENKINS-16979")
     @LocalData
-    void testCompatibility() {
-        AbstractProject p = jenkins.getItem("foo")
+    void compatibility() {
+        AbstractProject p = j.jenkins.getItem("foo")
         verifyLogRotatorSanity(p)
 
         // now persist in the new format
@@ -37,9 +41,9 @@ public class BuildDiscarderTest extends HudsonTestCase {
 
     private static void verifyLogRotatorSanity(AbstractProject p) {
         LogRotator d = p.buildDiscarder
-        assert d.daysToKeep == 4;
-        assert d.numToKeep == 3;
-        assert d.artifactDaysToKeep == 2;
-        assert d.artifactNumToKeep == 1;
+        assert d.daysToKeep == 4
+        assert d.numToKeep == 3
+        assert d.artifactDaysToKeep == 2
+        assert d.artifactNumToKeep == 1
     }
 }

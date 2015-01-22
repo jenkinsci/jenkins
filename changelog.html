@@ -61,7 +61,57 @@ Upcoming changes</a>
 
 <!-- these changes are controlled by the release process. DO NOT MODIFY -->
 <div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.597>What's new in 1.597</a> <!--=DATE=--></h3>
+<h3><a name=v1.598>What's new in 1.598</a> <!--=DATE=--></h3>
+<ul class=image>
+  <li class='major bug'>
+    Build format change migrator in 1.597 did not work on some Windows systems.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26519">issue 26519</a>)
+  <li class=bug>
+    FutureImpl does not cancel its start future.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25514">issue 25514</a>)
+  <li class=bug>
+    Flyweight tasks were under some conditions actually being run on heavyweight executors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10944">issue 10944</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24519">issue 24519</a>)
+  <li class=bug>
+    Folder loading broken when child item loading throws exception.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22811">issue 22811</a>)
+  <li class=bug>
+    Plugin icon images were broken when running Jenkins from a UNC path.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26203">issue 26203</a>)
+  <li class=bug>
+    Allow admin signup from <code>/manage</code> as well.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26382">issue 26382</a>)
+  <li class=bug>
+    Amend <code>JAVA_HOME</code> check to work with JDK 9.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25601">issue 25601</a>)
+  <li class=bug>
+    CLI <code>list-jobs</code> command should display raw name, not display name, where they differ.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25338">issue 25338</a>)
+  <li class=rfe>
+    Show queue item parameters in tool tip.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22311">issue 22311</a>)
+  <li class=bug>
+    Better support functional tests from Gradle-based plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26331">issue 26331</a>)
+  <li class=rfe>
+    Allow users to delete builds even if they are supposed to be kept.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26281">issue 26281</a>)
+  <li class=bug>
+    Fixed side/main panel scrolling issues.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26312">issue 26312</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-26298">issue 26298</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-26306">issue 26306</a>)
+  <li class=rfe>
+    Improve error reporting when channel closed during build.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26411">issue 26411</a>)
+  <li class=bug>
+    Fixed CodeMirror issue with height and re-enabled syntax highlighting in shell build step.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25455">issue 25455</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-23151">issue 23151</a>)
+</ul>
+</div><!--=END=-->
+<h3><a name=v1.597>What's new in 1.597</a> (2015/01/19)</h3>
 <ul class=image>
   <li class='major rfe'>
     <b><tt>JENKINS_HOME</tt> layout change</b>: builds are now keyed by build numbers and not timestamps.
@@ -90,7 +140,6 @@ Upcoming changes</a>
     Add range check for H(X-Y) syntax.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25897">issue 25897</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.596>What's new in 1.596</a> (2015/01/04)</h3>
 <ul class=image>
   <li class=bug>

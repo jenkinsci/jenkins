@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.597-SNAPSHOT</version>
+  <version>1.598-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -187,8 +187,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <version>4.0-beta</version>
-        <classifier>no_aop</classifier>
+        <version>4.0-beta5</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->

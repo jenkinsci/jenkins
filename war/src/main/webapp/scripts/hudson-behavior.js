@@ -1478,7 +1478,10 @@ function refreshPart(id,url) {
             new Ajax.Request(url, {
                 onSuccess: function(rsp) {
                     var hist = $(id);
-                    if (hist==null) console.log("There's no element that has ID of "+id)
+                    if (hist == null) {
+                        console.log("There's no element that has ID of " + id);
+                        return;
+                    }
                     var p = hist.up();
 
                     var div = document.createElement('div');
@@ -1931,9 +1934,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
     }
     window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
 
-    onPanelResize(function() {
-        checkAllRowCellOverflows();
-    });
     onBuildHistoryChange(function() {
         checkAllRowCellOverflows();
     });
@@ -2005,43 +2005,68 @@ function removeZeroWidthSpaces(element) {
     }
 }
 
-function onPanelResize(handler) {
-    Event.observe(window, 'jenkins:panelResized', handler);
-}
-function firePanelResized() {
-    Event.fire(window, 'jenkins:panelResized');
-}
-
 Element.observe(document, 'dom:loaded', function(){
     if(isRunAsTest) {
         return;
     }
 
+    var pageHead = $('page-head');
     var pageBody = $('page-body');
     var sidePanel = $(pageBody).getElementsBySelector('#side-panel')[0];
+    var sidePanelContent = $(sidePanel).getElementsBySelector('#side-panel-content')[0];
     var mainPanel = $(pageBody).getElementsBySelector('#main-panel')[0];
+    var mainPanelContent = $(mainPanel).getElementsBySelector('#main-panel-content')[0];
+    var pageFooter = $('footer-container');
 
-    function doPanelResize() {
+    function applyFixedGridLayout() {
         var pageBodyWidth = Element.getWidth(pageBody);
         if (pageBodyWidth > 768) {
             pageBody.addClassName("fixedGridLayout");
             pageBody.removeClassName("container-fluid");
             sidePanel.removeClassName("col-sm-9");
             mainPanel.removeClassName("col-sm-15");
+            return true; // It's a fixedGridLayout
         } else {
             pageBody.removeClassName("fixedGridLayout");
             pageBody.addClassName("container-fluid");
             sidePanel.addClassName("col-sm-9");
             mainPanel.addClassName("col-sm-15");
+            return false; // It's not a fixedGridLayout
         }
-
-        firePanelResized();
     }
-    doPanelResize();
 
-    Event.observe(window, 'resize', function() {
-        doPanelResize();
-    });
+    function applyFixedGridHeights() {
+        var windowHeight = document.viewport.getDimensions().height;
+        var headHeight = Element.getHeight(pageHead);
+        var footerHeight = Element.getHeight(pageFooter);
+        var sidePanelHeight = Element.getHeight(sidePanel);
+        var mainPanelHeight = Element.getHeight(mainPanel);
+        var minPageBodyHeight = (windowHeight - headHeight - footerHeight);
+
+        minPageBodyHeight = Math.max(minPageBodyHeight, sidePanelHeight);
+        minPageBodyHeight = Math.max(minPageBodyHeight, mainPanelHeight);
+
+        $(pageBody).setStyle({minHeight: minPageBodyHeight + 'px'});
+        $(sidePanel).setStyle({minHeight: minPageBodyHeight + 'px'});
+        $(mainPanel).setStyle({minHeight: minPageBodyHeight + 'px'});
+    }
+
+    var doPanelLayouts = function() {
+        // remove all style
+        pageBody.removeAttribute('style');
+        sidePanel.removeAttribute('style');
+        mainPanel.removeAttribute('style');
+        if (applyFixedGridLayout()) {
+            applyFixedGridHeights();
+        }
+    }
+
+    Event.observe(window, 'resize', doPanelLayouts);
+    elementResizeTracker.onResize(sidePanelContent, doPanelLayouts);
+    elementResizeTracker.onResize(mainPanelContent, doPanelLayouts);
+
+    doPanelLayouts();
+    fireBuildHistoryChanged();
 });
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
@@ -2052,6 +2077,52 @@ function getStyle(e,a){
     return e.currentStyle[a];
   return null;
 }
+
+function ElementResizeTracker() {
+    this.trackedElements = [];
+
+    if(isRunAsTest) {
+        return;
+    }
+
+    var thisTracker = this;
+    function checkForResize() {
+        for (var i = 0; i < thisTracker.trackedElements.length; i++) {
+            var element = thisTracker.trackedElements[i];
+            var currDims = Element.getDimensions(element);
+            var lastDims = element.lastDimensions;
+            if (currDims.width !== lastDims.width || currDims.height !== lastDims.height) {
+                Event.fire(element, 'jenkins:resize');
+            }
+            element.lastDimensions = currDims;
+        }
+    }
+    Event.observe(window, 'jenkins:resizeCheck', checkForResize);
+
+    function checkForResizeLoop() {
+        checkForResize();
+        setTimeout(checkForResizeLoop, 200);
+    }
+    checkForResizeLoop();
+}
+ElementResizeTracker.prototype.addElement = function(element) {
+    for (var i = 0; i < this.trackedElements.length; i++) {
+        if (this.trackedElements[i] === element) {
+            // we're already tracking it so no need to add it.
+            return;
+        }
+    }
+    this.trackedElements.push(element);
+}
+ElementResizeTracker.prototype.onResize = function(element, handler) {
+    element.lastDimensions = Element.getDimensions(element);
+    Event.observe(element, 'jenkins:resize', handler);
+    this.addElement(element);
+}
+ElementResizeTracker.fireResizeCheck = function() {
+    Event.fire(window, 'jenkins:resizeCheck');
+}
+var elementResizeTracker = new ElementResizeTracker();
 
 /**
  * Makes sure the given element is within the viewport.

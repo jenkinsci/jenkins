@@ -1,5 +1,10 @@
 package jenkins.security;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.HttpWebConnection;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -13,33 +18,41 @@ import org.apache.commons.httpclient.auth.AuthScheme;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.auth.CredentialsNotAvailableException;
 import org.apache.commons.httpclient.auth.CredentialsProvider;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 import java.util.concurrent.Callable;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ApiTokenPropertyTest extends HudsonTestCase {
+public class ApiTokenPropertyTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * Tests the UI interaction and authentication.
      */
-    public void testBasics() throws Exception {
-        jenkins.setSecurityRealm(createDummySecurityRealm());
+    @Test
+    public void basics() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.get("foo");
         ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
         final String token = t.getApiToken();
 
         // make sure the UI shows the token
-        HtmlPage config = createWebClient().goTo(u.getUrl() + "/configure");
+        HtmlPage config = j.createWebClient().goTo(u.getUrl() + "/configure");
         HtmlForm form = config.getFormByName("config");
         assertEquals(token, form.getInputByName("_.apiToken").getValueAttribute());
 
         // round-trip shouldn't change the API token
-        submit(form);
+        j.submit(form);
         assertSame(t, u.getProperty(ApiTokenProperty.class));
 
-        WebClient wc = createWebClient();
+        WebClient wc = j.createWebClient();
         wc.setCredentialsProvider(new CredentialsProvider() {
             public Credentials getCredentials(AuthScheme scheme, String host, int port, boolean proxy) throws CredentialsNotAvailableException {
                 return new UsernamePasswordCredentials("foo", token);
@@ -50,7 +63,7 @@ public class ApiTokenPropertyTest extends HudsonTestCase {
             protected HttpClient getHttpClient() {
                 HttpClient c = super.getHttpClient();
                 c.getParams().setAuthenticationPreemptive(true);
-                c.getState().setCredentials(new AuthScope("localhost", localPort, AuthScope.ANY_REALM), new UsernamePasswordCredentials("foo", token));
+                c.getState().setCredentials(new AuthScope("localhost", AuthScope.ANY_PORT, AuthScope.ANY_REALM), new UsernamePasswordCredentials("foo", token));
                 return c;
             }
         });
@@ -63,8 +76,9 @@ public class ApiTokenPropertyTest extends HudsonTestCase {
         }));
     }
 
-    public void testSecurity49Upgrade() throws Exception {
-        jenkins.setSecurityRealm(createDummySecurityRealm());
+    @Test
+    public void security49Upgrade() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.get("foo");
         String historicalInitialValue = Util.getDigestOf(Jenkins.getInstance().getSecretKey() + ":" + u.getId());
 
@@ -83,6 +97,5 @@ public class ApiTokenPropertyTest extends HudsonTestCase {
         t = new ApiTokenProperty(historicalInitialValue+"somethingElse");
         u.addProperty(t);
         assertTrue(t.getApiToken().equals(Util.getDigestOf(historicalInitialValue+"somethingElse")));
-
     }
 }

@@ -34,13 +34,13 @@ SU=/bin/su
 # Exit if the package is not installed
 if [ ! -x "$DAEMON" ]; then
     echo "daemon package not installed" >&2
-    exit 0
+    exit 1
 fi
 
 # Exit if not supposed to run standalone
 if [ "$RUN_STANDALONE" = "false" ]; then
     echo "Not configured to run standalone" >&2
-    exit 0
+    exit 1
 fi
 
 # load environments

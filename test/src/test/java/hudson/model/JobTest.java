@@ -39,7 +39,7 @@ import jenkins.model.ProjectNamingStrategy;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RunLoadCounter;
@@ -219,7 +219,7 @@ public class JobTest {
         wc.goTo("logout");
     }
 
-    @LocalData @Bug(6371)
+    @LocalData @Issue("JENKINS-6371")
     @Test public void getArtifactsUpTo() throws Exception {
         // There was a bug where intermediate directories were counted,
         // so too few artifacts were returned.
@@ -230,7 +230,7 @@ public class JobTest {
         assertEquals(1, r.getArtifactsUpTo(1).size());
     }
 
-    @Bug(10182)
+    @Issue("JENKINS-10182")
     @Test public void emptyDescriptionReturnsEmptyPage() throws Exception {
         // A NPE was thrown if a job had a null (empty) description.
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -257,7 +257,7 @@ public class JobTest {
         j.createFreeStyleProject("project");
     }
 
-    @Bug(16023)
+    @Issue("JENKINS-16023")
     @Test public void getLastFailedBuild() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject();
         RunLoadCounter.prepare(p);
@@ -277,7 +277,7 @@ public class JobTest {
         }).intValue());
     }
 
-    @Bug(19764)
+    @Issue("JENKINS-19764")
     @Test public void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
         j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
         final FreeStyleProject p = j.createFreeStyleProject();

@@ -56,6 +56,8 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -147,8 +149,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     @Override public PluginWrapper createPluginWrapper(File archive) throws IOException {
         final Manifest manifest;
-        URL baseResourceURL;
 
+        URL baseResourceURL = null;
         File expandDir = null;
         // if .hpi, this is the directory where war is expanded
 
@@ -197,7 +199,21 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (libs != null)
                 paths.addAll(Arrays.asList(libs));
 
-            baseResourceURL = expandDir.toURI().toURL();
+            try {
+                Class pathJDK7 = Class.forName("java.nio.file.Path");
+                Object toPath = File.class.getMethod("toPath").invoke(expandDir);
+                URI uri = (URI) pathJDK7.getMethod("toUri").invoke(toPath);
+
+                baseResourceURL = uri.toURL();
+            } catch (NoSuchMethodException e) {
+                throw new Error(e);
+            } catch (ClassNotFoundException e) {
+                baseResourceURL = expandDir.toURI().toURL();
+            } catch (InvocationTargetException e) {
+                throw new Error(e);
+            } catch (IllegalAccessException e) {
+                throw new Error(e);
+            }
         }
         File disableFile = new File(archive.getPath() + ".disabled");
         if (disableFile.exists()) {

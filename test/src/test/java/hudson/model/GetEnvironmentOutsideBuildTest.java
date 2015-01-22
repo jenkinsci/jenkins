@@ -1,5 +1,8 @@
 package hudson.model;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -10,9 +13,8 @@ import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.StreamTaskListener;
 
 import jenkins.model.Jenkins;
-import org.junit.Assert;
 
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -21,7 +23,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
  * 
  * @author kutzi
  */
-@Bug(11592)
+@Issue("JENKINS-11592")
 public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
 
     private int oldExecNum;
@@ -47,7 +49,7 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     private void restoreOldNumExecutors() throws IOException {
         Jenkins.getInstance().setNumExecutors(this.oldExecNum);
         Jenkins.getInstance().setNodes(Jenkins.getInstance().getNodes());
-        Assert.assertNotNull(Jenkins.getInstance().toComputer());
+        assertNotNull(Jenkins.getInstance().toComputer());
     }
     
     private MavenModuleSet createSimpleMavenProject() throws Exception {
@@ -64,7 +66,7 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
         Jenkins.getInstance().setNumExecutors(0);
         // force update of nodes:
         Jenkins.getInstance().setNodes(Jenkins.getInstance().getNodes());
-        Assert.assertNull(Jenkins.getInstance().toComputer());
+        assertNull(Jenkins.getInstance().toComputer());
     }
     
     public void testMaven() throws Exception {

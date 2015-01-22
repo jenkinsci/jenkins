@@ -14,7 +14,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 public class ZipArchiverTest {
 
@@ -39,7 +39,7 @@ public class ZipArchiverTest {
         deleteDir(tmpDir);
     }
 
-    @Bug(9942)
+    @Issue("JENKINS-9942")
     @Test
     public void backwardsSlashesOnWindows()  {
         // create foo/bar/baz/Test.txt

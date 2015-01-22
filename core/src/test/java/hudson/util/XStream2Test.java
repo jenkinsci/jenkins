@@ -39,7 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 
 /**
@@ -244,14 +244,14 @@ public class XStream2Test {
         assertEquals(l,a.l);
     }
 
-    @Bug(8006) // Previously a null entry in an array caused NPE
+    @Issue("JENKINS-8006") // Previously a null entry in an array caused NPE
     @Test
     public void emptyStack() {
         assertEquals("<object-array><null/><null/></object-array>",
                      Run.XSTREAM.toXML(new Object[2]).replaceAll("[ \n\r\t]+", ""));
     }
 
-    @Bug(9843)
+    @Issue("JENKINS-9843")
     @Test
     public void compatibilityAlias() {
         XStream2 xs = new XStream2();

@@ -29,13 +29,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 public class PeepholePermalinkTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
-    @Bug(17681)
+    @Issue("JENKINS-17681")
     @Test public void symlinks() throws Exception {
         File link = new File(tmp.getRoot(), "link");
         PeepholePermalink.writeSymlink(link, "stuff");

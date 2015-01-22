@@ -24,7 +24,7 @@
  */
 package hudson;
 
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -74,7 +74,7 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
      * Check transitive dependency exclude disabled plugins
      */
     @LocalData
-    @Bug(18654)
+    @Issue("JENKINS-18654")
     public void testDisabledDependencyClassLoader() throws Exception {
         PluginWrapper p = jenkins.getPluginManager().getPlugin("foo4");
 

@@ -37,7 +37,7 @@ import static jenkins.model.ModelObjectWithContextMenu.*;
 import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -48,7 +48,7 @@ public class ContextMenuTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(19173)
+    @Issue("JENKINS-19173")
     @Test public void contextMenuVisibility() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject("p");
         Callable<ContextMenu> doContextMenu = new Callable<ContextMenu>() {

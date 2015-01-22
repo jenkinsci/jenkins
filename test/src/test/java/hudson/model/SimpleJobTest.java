@@ -1,10 +1,12 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -36,8 +38,8 @@ public class SimpleJobTest {
 
         // without assuming to know too much about the internal calculation
         // we can only assume that the result is between the maximum and the minimum
-        Assert.assertTrue("Expected < 42, but was "+project.getEstimatedDuration(), project.getEstimatedDuration() < 42);
-        Assert.assertTrue("Expected > 15, but was "+project.getEstimatedDuration(), project.getEstimatedDuration() > 15);
+        assertTrue("Expected < 42, but was "+project.getEstimatedDuration(), project.getEstimatedDuration() < 42);
+        assertTrue("Expected > 15, but was "+project.getEstimatedDuration(), project.getEstimatedDuration() > 15);
     }
     
     @Test
@@ -50,7 +52,7 @@ public class SimpleJobTest {
         TestBuild lastBuild = new TestBuild(project, Result.SUCCESS, 42, null);
         runs.put(1, lastBuild);
 
-        Assert.assertEquals(42, project.getEstimatedDuration());
+        assertEquals(42, project.getEstimatedDuration());
     }
     
     public void testGetEstimatedDurationWithFailedRun() throws IOException {
@@ -62,7 +64,7 @@ public class SimpleJobTest {
         TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 42, null);
         runs.put(1, lastBuild);
 
-        Assert.assertEquals(-1, project.getEstimatedDuration());
+        assertEquals(-1, project.getEstimatedDuration());
     }
     
     @Test
@@ -72,7 +74,7 @@ public class SimpleJobTest {
         
         Job project = createMockProject(runs);
         
-        Assert.assertEquals(-1, project.getEstimatedDuration());
+        assertEquals(-1, project.getEstimatedDuration());
     }
     
     @Test
@@ -101,7 +103,7 @@ public class SimpleJobTest {
         runs.put(1, lastBuild);
 
         // failed builds must not be used, if there are succesfulBuilds available.
-        Assert.assertEquals(1, project.getEstimatedDuration());
+        assertEquals(1, project.getEstimatedDuration());
     }
     
     @Test
@@ -114,7 +116,7 @@ public class SimpleJobTest {
         TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 50, null);
         runs.put(1, lastBuild);
 
-        Assert.assertEquals(50, project.getEstimatedDuration());
+        assertEquals(50, project.getEstimatedDuration());
     }
 
     private Job createMockProject(final SortedMap<Integer, TestBuild> runs) {

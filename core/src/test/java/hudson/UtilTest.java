@@ -35,7 +35,7 @@ import java.io.IOException;
 import static org.junit.Assert.*;
 import org.junit.Assume;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 import hudson.util.StreamTaskListener;
 import java.io.FileOutputStream;
@@ -281,7 +281,7 @@ public class UtilTest {
      * Compute 'known-correct' digests and see if I still get them when computed concurrently
      * to another digest.
      */
-    @Bug(10346)
+    @Issue("JENKINS-10346")
     @Test
     public void testDigestThreadSafety() throws InterruptedException {
     	String a = "abcdefgh";

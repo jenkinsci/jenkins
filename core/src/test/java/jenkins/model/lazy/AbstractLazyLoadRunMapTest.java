@@ -23,8 +23,9 @@
  */
 package jenkins.model.lazy;
 
+import static org.junit.Assert.*;
+
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,13 +39,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import org.junit.BeforeClass;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class AbstractLazyLoadRunMapTest extends Assert {
+public class AbstractLazyLoadRunMapTest {
     // A=1, B=3, C=5
     @Rule
     public FakeMapBuilder aBuilder = new FakeMapBuilder();
@@ -150,7 +151,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertNull(a.search(-99, Direction.DESC));
     }
 
-    @Bug(19418)
+    @Issue("JENKINS-19418")
     @Test
     public void searchExactWhenIndexedButSoftReferenceExpired() throws IOException {
         final FakeMap m = localExpiredBuilder.add(1).add(2).make();
@@ -163,7 +164,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertNull(m.search(0, Direction.EXACT));
     }
 
-    @Bug(22681)
+    @Issue("JENKINS-22681")
     @Test public void exactSearchShouldNotReload() throws Exception {
         FakeMap m = localBuilder.add(1).add(2).make();
         assertNull(m.search(0, Direction.EXACT));
@@ -220,7 +221,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         b.hashCode();
     }
 
-    @Bug(15439)
+    @Issue("JENKINS-15439")
     @Test
     public void indexOutOfBounds() throws Exception {
         FakeMapBuilder f = localBuilder;
@@ -239,7 +240,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assert x.n==201;
     }
 
-    @Bug(18065)
+    @Issue("JENKINS-18065")
     @Test public void all() throws Exception {
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         Set<Map.Entry<Integer,Build>> entries = a.entrySet();
