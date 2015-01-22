@@ -163,7 +163,11 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
             this.launcher = launcher;
         }
         @Override public void buildEnvVars(Map<String,String> env) {
-            env.putAll(c.env);
+            if (env instanceof EnvVars) {
+                ((EnvVars) env).overrideAll(c.env);
+            } else { // ?
+                env.putAll(c.env);
+            }
         }
         @Override public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             if (c.disposer != null) {
