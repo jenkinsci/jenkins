@@ -1066,7 +1066,7 @@ table.parameters > tbody:hover {
 
 .build-row-cell .pane.build-name .display-name,
 .build-row-cell .indent-multiline {
-  padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
+  margin-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
 }
 
 .build-row .build-row-cell {
