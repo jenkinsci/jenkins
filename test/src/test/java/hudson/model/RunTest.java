@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -76,69 +77,63 @@ public class RunTest  {
     }
 
     @Test public void doNotOverrideCharacteristicBuildEnvVar() throws Exception {
-        DumbSlave slave = slaveContributing("BUILD_NUMBER", "FROM_SLAVE");
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedNode(slave);
+        FreeStyleProject p = setupJobOnSlaveWithEnv("BUILD_NUMBER", "FROM_SLAVE");
 
         ContributingExtension.values("BUILD_NUMBER", "FROM_CONTRIBUTOR");
         p.getBuildWrappersList().add(new ContributingWrapper("BUILD_NUMBER", "FROM_WRAPPER"));
         p.getBuildersList().add(new ContributingBuilder("BUILD_NUMBER", "FROM_CONTRIBUTOR"));
 
-        String buildLog = buildLog(p, "BUILD_NUMBER");
-        assertThat(buildLog, containsString("actual=1"));
+        assertEnvVar(p, "BUILD_NUMBER", "1");
     }
 
     @Test public void doNotOverrideCharacteristicJobEnvVar() throws Exception {
-        DumbSlave slave = slaveContributing("JOB_NAME", "FROM_SLAVE");
-        FreeStyleProject p = j.createFreeStyleProject("job_name");
-        p.setAssignedNode(slave);
+        FreeStyleProject p = setupJobOnSlaveWithEnv("JOB_NAME", "FROM_SLAVE");
 
         ContributingExtension.values("JOB_NAME", "FROM_CONTRIBUTOR");
         p.getBuildWrappersList().add(new ContributingWrapper("JOB_NAME", "FROM_WRAPPER"));
         p.getBuildersList().add(new ContributingBuilder("JOB_NAME", "FROM_CONTRIBUTOR"));
 
-        String buildLog = buildLog(p, "JOB_NAME");
-        assertThat(buildLog, containsString("actual=job_name"));
+        assertEnvVar(p, "JOB_NAME", "job_name");
     }
 
     @Test public void doNotOverrideBuildWrapperEnvVar() throws Exception {
-        DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedNode(slave);
+        FreeStyleProject p = setupJobOnSlaveWithEnv("DISPLAY", "SLAVE_VAL");
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
 
-        String buildLog = buildLog(p, "DISPLAY");
-        assertThat(buildLog, containsString("actual=BUILD_VAL"));
+        assertEnvVar(p, "DISPLAY", "BUILD_VAL");
     }
 
     @Test public void doNotOverrideBuilderEnvVar() throws Exception {
-        DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedNode(slave);
+        FreeStyleProject p = setupJobOnSlaveWithEnv("DISPLAY", "SLAVE_VAL");
 
         p.getBuildersList().add(new ContributingBuilder("DISPLAY", "BUILD_VAL"));
 
-        String buildLog = buildLog(p, "DISPLAY");
-        assertThat(buildLog, containsString("actual=BUILD_VAL"));
+        assertEnvVar(p, "DISPLAY", "BUILD_VAL");
     }
 
     @Test public void doNotOverrideContributorEnvVar() throws Exception {
-        DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedNode(slave);
+        FreeStyleProject p = setupJobOnSlaveWithEnv("DISPLAY", "SLAVE_VAL");
 
         ContributingExtension.values("DISPLAY", "BUILD_VAL");
 
-        String buildLog = buildLog(p, "DISPLAY");
-        assertThat(buildLog, containsString("actual=BUILD_VAL"));
+        assertEnvVar(p, "DISPLAY", "BUILD_VAL");
+    }
+
+    private FreeStyleProject setupJobOnSlaveWithEnv(String name, String value) throws Exception, IOException {
+        DumbSlave slave = slaveContributing(name, value);
+        FreeStyleProject p = j.createFreeStyleProject("job_name");
+        p.setAssignedNode(slave);
+        return p;
     }
 
     @SuppressWarnings("deprecation")
-    private String buildLog(FreeStyleProject p, final String key) throws IOException, InterruptedException, ExecutionException {
+    private void assertEnvVar(FreeStyleProject p, String key, String value) throws Exception {
         p.getBuildersList().add(new Shell("echo actual=$" + key));
-        final FreeStyleBuild build = p.scheduleBuild2(0).get();
-        return build.getLog();
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        assertThat(capture.getEnvVars().get(key), equalTo(value));
     }
 
     private DumbSlave slaveContributing(String key, String value) throws Exception {
