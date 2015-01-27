@@ -762,6 +762,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 out = new FileOutputStream(tmp);
 
                 LOGGER.info("Downloading "+job.getName());
+                Thread t = Thread.currentThread();
+                String oldName = t.getName();
+                t.setName(oldName + ": " + src);
                 try {
                     while((len=in.read(buf))>=0) {
                         out.write(buf,0,len);
@@ -769,6 +772,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     }
                 } catch (IOException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
+                } finally {
+                    t.setName(oldName);
                 }
 
                 if (total!=-1 && total!=tmp.length()) {
