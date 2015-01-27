@@ -27,6 +27,7 @@ package jenkins.model;
 import hudson.Util;
 import hudson.util.StreamTaskListener;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.TimeZone;
@@ -171,6 +172,19 @@ public class RunIdMigratorTest {
             m.put(kid.getName(), notation);
         }
         return m.toString();
+    }
+
+    @Test public void move() throws Exception {
+        File src = tmp.newFile();
+        File dest = new File(tmp.getRoot(), "dest");
+        RunIdMigrator.move(src, dest);
+        File dest2 = tmp.newFile();
+        try {
+            RunIdMigrator.move(dest, dest2);
+            fail();
+        } catch (IOException x) {
+            System.err.println("Got expected move exception: " + x);
+        }
     }
 
 }
