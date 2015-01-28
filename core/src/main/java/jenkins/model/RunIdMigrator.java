@@ -200,18 +200,30 @@ public final class RunIdMigrator {
         while (it.hasNext()) {
             File kid = it.next();
             String name = kid.getName();
+            boolean numeric = false;
+            try {
+                Integer.parseInt(name);
+                numeric = true;
+            } catch (NumberFormatException x) {}
             try {
                 String link = Util.resolveSymlink(kid);
-                if (link == null && name.matches("\\d+") && kid.isFile()) { // legacy Windows format
+                if (link == null && numeric && kid.isFile()) { // legacy Windows format
                     link = FileUtils.readFileToString(kid);
                 } else if (link == null) {
+                    if (numeric) {
+                        if (kid.isDirectory()) {
+                            LOGGER.log(FINE, "skipping deletion of directory {0}", name);
+                        } else {
+                            LOGGER.log(WARNING, "need to delete non-symlink numeric directory entry {0}", name);
+                            Util.deleteFile(kid);
+                        }
+                    }
                     continue;
                 }
-                try {
-                    Integer.parseInt(name);
+                if (numeric) {
                     LOGGER.log(FINE, "deleting build number symlink {0} → {1}", new Object[] {name, link});
                     Util.deleteFile(kid);
-                } catch (NumberFormatException x) {
+                } else {
                     LOGGER.log(FINE, "skipping other symlink {0} → {1}", new Object[] {name, link});
                 }
                 it.remove();
