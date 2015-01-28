@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Persisted list of {@link Describable}s with some operations specific
@@ -210,7 +212,11 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         for (Object o : this) {
             if (o instanceof DependencyDeclarer) {
                 DependencyDeclarer dd = (DependencyDeclarer) o;
-                dd.buildDependencyGraph(owner,graph);
+                try {
+                    dd.buildDependencyGraph(owner,graph);
+                } catch (RuntimeException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to build dependency graph for " + owner,e);
+                }
             }
         }
     }
@@ -277,4 +283,6 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
             }
         }
     }
+
+    private final static Logger LOGGER = Logger.getLogger(DescribableList.class.getName());
 }
