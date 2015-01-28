@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import org.apache.commons.io.FileUtils;
 
@@ -138,7 +140,7 @@ public class Items {
     /**
      * Does the opposite of {@link #toNameList(Collection)}.
      */
-    public static <T extends Item> List<T> fromNameList(ItemGroup context, String list, Class<T> type) {
+    public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
         Jenkins hudson = Jenkins.getInstance();
 
         List<T> r = new ArrayList<T>();
