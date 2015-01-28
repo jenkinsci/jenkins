@@ -23,19 +23,18 @@
  */
 package org.jvnet.hudson.test;
 
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.Launcher;
-import hudson.FilePath;
-
+import hudson.scm.SCMRevisionState;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -66,12 +65,11 @@ public class SingleFileSCM extends NullSCM {
     }
 
     @Override
-    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+    public void checkout(Run<?,?> build, Launcher launcher, FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState baseline) throws IOException, InterruptedException {
         listener.getLogger().println("Staging "+path);
         OutputStream os = workspace.child(path).write();
         IOUtils.write(contents, os);
         os.close();
-        return true;
     }
 
     /**
