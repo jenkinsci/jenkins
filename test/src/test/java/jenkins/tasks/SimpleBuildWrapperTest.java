@@ -98,7 +98,7 @@ public class SimpleBuildWrapperTest {
         p.getBuildersList().add(captureEnvironment);
         p.getBuildersList().add(new Shell("echo effective PATH=$PATH"));
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
-        String expected = "/home/jenkins/bin:/opt/jdk/bin:/usr/bin:/bin";
+        String expected = "/home/jenkins/extra/bin:/opt/jdk/bin:/usr/bin:/bin";
         assertEquals(expected, captureEnvironment.getEnvVars().get("PATH"));
         // TODO why is /opt/jdk/bin added twice? In CommandInterpreter.perform, envVars right before Launcher.launch is correct, but this somehow sneaks in.
         r.assertLogContains("effective PATH=/opt/jdk/bin:" + expected, b);
@@ -107,7 +107,8 @@ public class SimpleBuildWrapperTest {
         @Override public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
             assertEquals("/opt/jdk/bin:/usr/bin:/bin", initialEnvironment.get("PATH"));
             assertEquals("/home/jenkins", initialEnvironment.get("HOME"));
-            context.env("PATH+STUFF", "${HOME}/bin");
+            context.env("EXTRA", "${HOME}/extra");
+            context.env("PATH+EXTRA", "${EXTRA}/bin");
         }
         @TestExtension("envOverrideExpand") public static class DescriptorImpl extends BuildWrapperDescriptor {
             @Override public String getDisplayName() {
