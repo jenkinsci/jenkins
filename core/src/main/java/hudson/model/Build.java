@@ -189,8 +189,12 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         @Override
         public void cleanUp(@Nonnull BuildListener listener) throws Exception {
             // at this point it's too late to mark the build as a failure, so ignore return value.
-            performAllBuildSteps(listener, project.getPublishersList(), false);
-            performAllBuildSteps(listener, project.getProperties(), false);
+            try {
+                performAllBuildSteps(listener, project.getPublishersList(), false);
+                performAllBuildSteps(listener, project.getProperties(), false);
+            } catch (Exception x) {
+                x.printStackTrace(listener.error("Post-build steps failed"));
+            }
             super.cleanUp(listener);
         }
 
