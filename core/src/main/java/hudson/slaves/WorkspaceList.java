@@ -26,10 +26,12 @@ package hudson.slaves;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.Computer;
+import java.io.Closeable;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
@@ -104,7 +106,7 @@ public final class WorkspaceList {
     /**
      * Represents a leased workspace that needs to be returned later.
      */
-    public static abstract class Lease {
+    public static abstract class Lease implements /*Auto*/Closeable {
         public final @Nonnull FilePath path;
 
         protected Lease(@Nonnull FilePath path) {
@@ -116,6 +118,14 @@ public final class WorkspaceList {
          * Releases this lease.
          */
         public abstract void release();
+
+        /**
+         * By default, calls {@link #release}, but should be idempotent.
+         * @since TODO
+         */
+        @Override public void close() {
+            release();
+        }
 
         /**
          * Creates a dummy {@link Lease} object that does no-op in the release.
@@ -261,8 +271,14 @@ public final class WorkspaceList {
      */
     private Lease lease(@Nonnull FilePath p) {
         return new Lease(p) {
+            final AtomicBoolean released = new AtomicBoolean();
             public void release() {
                 _release(path);
+            }
+            @Override public void close() {
+                if (released.compareAndSet(false, true)) {
+                    release();
+                }
             }
         };
     }

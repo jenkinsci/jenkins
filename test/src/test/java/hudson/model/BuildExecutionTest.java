@@ -51,7 +51,7 @@ public class BuildExecutionTest {
         try {
             assertEquals(ws, lease.path);
         } finally {
-            lease.release();
+            lease.close();
         }
     }
 
