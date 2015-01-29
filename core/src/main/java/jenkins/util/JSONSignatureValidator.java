@@ -77,14 +77,14 @@ public class JSONSignatureValidator {
 
                 try {
                     CertificateUtil.validatePath(certs, loadTrustAnchors(cf));
-                } catch (GeneralSecurityException | IOException e) {
+                } catch (GeneralSecurityException e) {
                     Iterable<Object> certSubjectDNs = Iterables.transform(certs, new Function<X509Certificate, Object>() {
                         @Override
                         public Object apply(X509Certificate cert) {
                             return cert == null ? null : cert.getSubjectDN();
                         }
                     });
-                    return FormValidation.warning(e,String.format("Certificate validation failed with certs %s in %s", certSubjectDNs.toString(), name));
+                    return FormValidation.warning(e,String.format("Certificate validation failed with certs %s for %s: %s", certSubjectDNs.toString(), name, e.toString()));
                 }
             }
 
