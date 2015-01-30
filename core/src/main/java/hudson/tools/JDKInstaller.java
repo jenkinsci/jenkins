@@ -171,6 +171,7 @@ public class JDKInstaller extends ToolInstaller {
         PrintStream out = log.getLogger();
 
         out.println("Installing "+ jdkBundle);
+        FilePath parent = new FilePath(launcher.getChannel(), expectedLocation).getParent();
         switch (p) {
         case LINUX:
         case SOLARIS:
@@ -240,7 +241,7 @@ public class JDKInstaller extends ToolInstaller {
                 // Prevent a trailing slash from escaping quotes
                 expectedLocation = expectedLocation.substring(0, expectedLocation.length() - 1);
             }
-            String logFile = new FilePath(launcher.getChannel(), expectedLocation).getParent().createTempFile("install", "log").getRemote();
+            String logFile = parent.createTempFile("install", "log").getRemote();
 
 
             ArgumentListBuilder args = new ArgumentListBuilder();
@@ -280,6 +281,61 @@ public class JDKInstaller extends ToolInstaller {
 
             fs.delete(logFile);
 
+            break;
+
+        case OSX:
+            // Mount the DMG distribution bundle
+            FilePath dmg = parent.createTempDir("jdk", "dmg");
+            exit = launcher.launch()
+                    .cmds("hdiutil", "attach", "-puppetstrings", "-mountpoint", dmg.getRemote(), jdkBundle)
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            // expand the installation PKG
+            FilePath[] list = dmg.list("*.pkg");
+            if (list.length != 1) {
+                log.getLogger().println("JDK dmg bundle does not contain expected pkg installer");
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+            }
+            String installer = list[0].getRemote();
+
+            FilePath pkg = parent.createTempDir("jdk", "pkg");
+            pkg.deleteRecursive(); // pkgutil fails if target directory exists
+            exit = launcher.launch()
+                    .cmds("pkgutil", "--expand", installer, pkg.getRemote())
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            exit = launcher.launch()
+                    .cmds("umount", dmg.getRemote())
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            // We only want the actual JDK sub-package, which "Payload" is actually a tar.gz archive
+            list = pkg.list("jdk*.pkg/Payload");
+            if (list.length != 1) {
+                log.getLogger().println("JDK pkg installer does not contain expected JDK Payload archive");
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+            }
+            String payload = list[0].getRemote();
+            exit = launcher.launch()
+                    .pwd(parent).cmds("tar", "xzf", payload)
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            parent.child("Contents/Home").moveAllChildrenTo(new FilePath(launcher.getChannel(), expectedLocation));
+            parent.child("Contents").deleteRecursive();
+
+            pkg.deleteRecursive();
+            dmg.deleteRecursive();
             break;
         }
     }
@@ -502,7 +558,7 @@ public class JDKInstaller extends ToolInstaller {
      * Supported platform.
      */
     public enum Platform {
-        LINUX("jdk.sh"), SOLARIS("jdk.sh"), WINDOWS("jdk.exe");
+        LINUX("jdk.sh"), SOLARIS("jdk.sh"), WINDOWS("jdk.exe"), OSX("jdk.dmg");
 
         /**
          * Choose the file name suitable for the downloaded JDK bundle.
@@ -529,6 +585,7 @@ public class JDKInstaller extends ToolInstaller {
             if(arch.contains("linux"))  return LINUX;
             if(arch.contains("windows"))   return WINDOWS;
             if(arch.contains("sun") || arch.contains("solaris"))    return SOLARIS;
+            if(arch.contains("mac")) return OSX;
             throw new DetectionFailedException("Unknown CPU name: "+arch);
         }
 
