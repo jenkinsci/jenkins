@@ -1,0 +1,94 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2015 James Nord.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+package jenkins.xml;
+
+import jenkins.util.xml.XMLUtils;
+
+import org.apache.commons.io.output.NullOutputStream;
+import org.junit.Test;
+
+import java.io.StringReader;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
+public class XMLUtilsTest {
+
+    @Test()
+    // SECURITY-167
+    public void testSafeTransformDoesNotProcessForeignResources() throws Exception {
+        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<!DOCTYPE project[\n" +
+                "  <!ENTITY foo SYSTEM \"file:///\">\n" +
+                "]>\n" +
+                "<project>\n" +
+                "  <actions/>\n" +
+                "  <description>&foo;</description>\n" +
+                "  <keepDependencies>false</keepDependencies>\n" +
+                "  <properties/>\n" +
+                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
+                "  <canRoam>true</canRoam>\n" +
+                "  <triggers/>\n" +
+                "  <builders/>\n" +
+                "  <publishers/>\n" +
+                "  <buildWrappers/>\n" +
+                "</project>";
+
+
+        try {
+            XMLUtils.safeTransform(new StreamSource(new StringReader(xml)), new StreamResult(new NullOutputStream()));
+            fail("Exception should have been thrown");
+        } catch (TransformerException ex) {
+            assertThat(ex.getMessage(), containsString("Refusing to resolve entity"));
+        }
+
+    }
+
+
+    @Test()
+    // SECURITY-167
+    public void testUpdateByXmlIDoesNotFail() throws Exception {
+        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<project>\n" +
+                "  <actions/>\n" +
+                "  <description>&amp;</description>\n" +
+                "  <keepDependencies>false</keepDependencies>\n" +
+                "  <properties/>\n" +
+                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
+                "  <canRoam>true</canRoam>\n" +
+                "  <triggers/>\n" +
+                "  <builders/>\n" +
+                "  <publishers/>\n" +
+                "  <buildWrappers/>\n" +
+                "</project>";
+
+        XMLUtils.safeTransform(new StreamSource(new StringReader(xml)), new StreamResult(new NullOutputStream()));
+    }
+
+}
