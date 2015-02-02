@@ -18,6 +18,7 @@ import java.util.Map;
 public class ProcessTreeRemoting {
     public interface IProcessTree {
         void killAll(Map<String, String> modelEnvVars) throws InterruptedException;
+        void killAll(Map<String, String> modelEnvVars, List<String> whitelist) throws InterruptedException;
     }
 
     public interface IOSProcess {
