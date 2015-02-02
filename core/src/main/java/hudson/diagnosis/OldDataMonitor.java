@@ -355,10 +355,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     private static SaveableReference referTo(Saveable s) {
         if (s instanceof Run) {
-            return new RunSaveableReference((Run) s);
-        } else {
-            return new SimpleSaveableReference(s);
+            Job parent = ((Run) s).getParent();
+            if (Jenkins.getInstance().getItemByFullName(parent.getFullName()) == parent) {
+                return new RunSaveableReference((Run) s);
+            }
         }
+        return new SimpleSaveableReference(s);
     }
 
     private static final class SimpleSaveableReference implements SaveableReference {
