@@ -210,7 +210,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.10</version>
+      <version>1.23</version>
     </dependency>
     <dependency>
       <groupId>antlr</groupId>

@@ -441,7 +441,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.15</version>
+          <version>1.23</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
