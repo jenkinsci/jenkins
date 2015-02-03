@@ -168,7 +168,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #getEnvironment()
      */
     private volatile EnvVars cachedEnvironment;
-    private volatile boolean environmentCached;
 
 
     private final WorkspaceList workspaceList = new WorkspaceList();
@@ -346,7 +345,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
      */
     public final Future<?> connect(boolean forceReconnect) {
-        environmentCached = false;
+        this.cachedEnvironment = null;
     	connectTime = System.currentTimeMillis();
     	return _connect(forceReconnect);
     }
@@ -947,12 +946,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * If this is the master, it returns the system property of the master computer.
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
-        if (environmentCached) {
+        EnvVars cachedEnvironment = this.cachedEnvironment;
+        if (cachedEnvironment != null) {
             return cachedEnvironment;
         }
 
         cachedEnvironment = EnvVars.getRemote(getChannel());
-        environmentCached = true;
+        this.cachedEnvironment = cachedEnvironment;
         return cachedEnvironment;
     }
 
