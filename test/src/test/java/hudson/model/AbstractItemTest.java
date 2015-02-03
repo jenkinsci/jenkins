@@ -45,6 +45,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -74,10 +75,11 @@ public class AbstractItemTest {
                 "</project>";
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
-
+        project.setDescription("Wibble");
         try {
-            project.updateByXml((StreamSource) new StreamSource(new StringReader(xml)));
-            fail("Exception should have been thrown");
+            project.updateByXml(new StreamSource(new StringReader(xml)));
+            // if we didn't fail JAXP has thrown away the entity.
+            assertThat(project.getDescription(), isEmptyOrNullString());
         } catch (IOException ex) {
             assertThat(ex.getCause(), not(nullValue()));
             assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity"));
@@ -88,7 +90,7 @@ public class AbstractItemTest {
 
     @Test()
     // SECURITY-167
-    public void testUpdateByXmlIDoesNotFail() throws Exception {
+    public void testhamyXmlIDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +
                 "  <actions/>\n" +
