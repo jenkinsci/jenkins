@@ -30,6 +30,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Test;
 
 import java.io.StringReader;
+import java.io.StringWriter;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -61,9 +62,11 @@ public class XMLUtilsTest {
                 "</project>";
 
 
+        StringWriter stringWriter = new StringWriter();
         try {
-            XMLUtils.safeTransform(new StreamSource(new StringReader(xml)), new StreamResult(new NullOutputStream()));
-            fail("Exception should have been thrown");
+            XMLUtils.safeTransform(new StreamSource(new StringReader(xml)), new StreamResult(stringWriter));
+            // if no exception then JAXP is swallowing these - so there should be no entity in the description.
+            assertThat(stringWriter.toString(), containsString("<description/>"));
         } catch (TransformerException ex) {
             assertThat(ex.getMessage(), containsString("Refusing to resolve entity"));
         }
@@ -88,7 +91,11 @@ public class XMLUtilsTest {
                 "  <buildWrappers/>\n" +
                 "</project>";
 
-        XMLUtils.safeTransform(new StreamSource(new StringReader(xml)), new StreamResult(new NullOutputStream()));
+        StringWriter stringWriter = new StringWriter();
+
+        XMLUtils.safeTransform(new StreamSource(new StringReader(xml)), new StreamResult(stringWriter));
+        // make sure that normal entities are retained.
+        assertThat(stringWriter.toString(), containsString("<description>&amp;</description>"));
     }
 
 }

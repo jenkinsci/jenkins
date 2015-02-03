@@ -41,7 +41,18 @@ public final class XMLUtils {
             stFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
             XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+            try {
+                xmlReader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            }
+            catch (SAXException ignored) { /* ignored */ }
+            try {
+                xmlReader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            }
+            catch (SAXException ignored) { /* ignored */ }
             // defend against XXE
+            // the above features should strip out entities - however the feature may not be supported depending
+            // on the xml implementation used and this is out of our control.
+            // So add a fallback plan if all else fails.
             xmlReader.setEntityResolver(RestrictiveEntityResolver.INSTANCE);
             SAXSource saxSource = new SAXSource(xmlReader, src);
             _transform(saxSource, out);
