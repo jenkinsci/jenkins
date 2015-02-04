@@ -95,7 +95,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>1.0-beta-1</version>
+      <version>${matrix-project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
