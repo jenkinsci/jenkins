@@ -36,12 +36,11 @@ THE SOFTWARE.
   </st:documentation>
   <j:set var="clazz" value="${attrs.clazz ?: attrs.descriptor.clazz.name}" />
   <f:invisibleEntry>
-    <!-- Legacy: Remove once plugins have been staged onto $class -->
-    <input type="hidden" name="stapler-class" value="${clazz}" />
-    <!-- Legacy: Remove once plugins have been staged onto $class -->
     <j:if test="${attrs.descriptor != null}">
       <input type="hidden" name="kind" value="${attrs.descriptor.id}" />
     </j:if>
+    <!-- Legacy: Remove once plugins have been staged onto $class -->
+    <input type="hidden" name="stapler-class" value="${clazz}" />
     <input type="hidden" name="$class" value="${clazz}" />
   </f:invisibleEntry>
 </j:jelly>

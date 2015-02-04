@@ -909,14 +909,19 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if (formData!=null) {
             for (Object o : JSONArray.fromObject(formData)) {
                 JSONObject jo = (JSONObject)o;
-                String kind = jo.optString("$class", null);
-                if (kind == null) {
-                  // Legacy: Remove once plugins have been staged onto $class
-                  kind = jo.getString("kind");
+                Descriptor<T> d = null;
+                String kind = jo.optString("kind", null);
+                if (kind != null) {
+                    d = find(descriptors, kind);
                 }
-                Descriptor<T> d = find(descriptors, kind);
+                if (d == null) {
+                  kind = jo.getString("$class");
+                  d = find(descriptors, kind);
+                }
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
+                } else {
+                    LOGGER.warning("Received unexpected formData for descriptor " + kind);
                 }
             }
         }
