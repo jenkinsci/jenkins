@@ -110,7 +110,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * These usernames should not be used by real users logging into Jenkins. Therefore, we prevent
      * users with these names from being saved.
      */
-    public static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{"anonymous", "system", "unknown"};
+    private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{"anonymous", "system", "unknown"};
     private transient final String id;
 
     private volatile String fullName;
