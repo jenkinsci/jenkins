@@ -72,31 +72,49 @@ THE SOFTWARE.
               <j:otherwise>
                 <!-- not actually optional, but it helps with backward compatibility -->
                 <j:set var="executor" value="${e}" />
-                <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
-                  <td class="pane">
-                    <div style="white-space: normal">
-                      <j:set var="exe" value="${e.currentExecutable}" />
-                      <j:invokeStatic var="exeparent"
-                         className="hudson.model.queue.Executables" method="getParentOf">
-                        <j:arg type="hudson.model.Queue$Executable" value="${exe}" />
-                      </j:invokeStatic>
-                      <j:choose>
-                        <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
-                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
-                          <t:buildProgressBar build="${exe}" executor="${executor}"/>
-                        </j:when>
-                        <j:otherwise>
-                          <span>${%Unknown Task}</span>
-                        </j:otherwise>
-                      </j:choose>
-                    </div>
-                  </td>
-                <td class="pane">
-                  <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
-                      <a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
-                  </j:if>
-                </td>
-                </st:include>
+                <j:set var="exe" value="${e.currentExecutable}" />
+                <j:choose>
+                  <j:when test="${exe == null}">
+                    <j:set var="wu" value="${e.currentWorkUnit}" />
+                    <j:set var="wuparent" value="${wu.work}"/>
+                    <j:choose>
+                      <j:when test="${h.hasPermission(wuparent,wuparent.READ)}">
+                        <a href="${rootURL}/${wuparent.url}"><l:breakable value="${wuparent.fullDisplayName}"/></a>
+                        <t:progressBar tooltip="${%Starting...}" pos="-1" />
+                      </j:when>
+                      <j:otherwise>
+                        <span>${%Unknown Task}</span>
+                      </j:otherwise>
+                    </j:choose>
+                    <td class="pane"/>
+                  </j:when>
+                  <j:otherwise>
+                    <st:include it="${exe}" page="executorCell.jelly" optional="true">
+                      <td class="pane">
+                        <div style="white-space: normal">
+                          <j:invokeStatic var="exeparent"
+                             className="hudson.model.queue.Executables" method="getParentOf">
+                            <j:arg type="hudson.model.Queue$Executable" value="${exe}" />
+                          </j:invokeStatic>
+                          <j:choose>
+                            <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                              <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
+                              <t:buildProgressBar build="${exe}" executor="${executor}"/>
+                            </j:when>
+                            <j:otherwise>
+                              <span>${%Unknown Task}</span>
+                            </j:otherwise>
+                          </j:choose>
+                        </div>
+                      </td>
+                      <td class="pane">
+                        <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
+                            <a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
+                        </j:if>
+                      </td>
+                    </st:include>
+                  </j:otherwise>
+                </j:choose>
                 <td class="pane" align="center" valign="middle">
                   <j:if test="${e.hasStopPermission()}">
                     <l:stopButton href="${rootURL}/${c.url}${url}/stop" alt="${%terminate this build}"/>

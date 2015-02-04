@@ -28,6 +28,8 @@ import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import javax.annotation.CheckForNull;
+import javax.annotation.concurrent.GuardedBy;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -50,7 +52,9 @@ public final class WorkUnit {
      */
     public final WorkUnitContext context;
 
-    private volatile Executor executor;
+    @GuardedBy("this")
+    private Executor executor;
+    @GuardedBy("this")
     private Executable executable;
 
     WorkUnit(WorkUnitContext context, SubTask work) {
@@ -64,18 +68,18 @@ public final class WorkUnit {
      * {@link Executor#getCurrentWorkUnit()} and {@link WorkUnit#getExecutor()}
      * form a bi-directional reachability between them.
      */
-    public @CheckForNull Executor getExecutor() {
+    public synchronized @CheckForNull Executor getExecutor() {
         return executor;
     }
 
-    public void setExecutor(@CheckForNull Executor e) {
+    public synchronized void setExecutor(@CheckForNull Executor e) {
         executor = e;
     }
 
     /**
      * If the execution has already started, return the executable that was created.
      */
-    public Executable getExecutable() {
+    public synchronized Executable getExecutable() {
         return executable;
     }
 
@@ -83,7 +87,7 @@ public final class WorkUnit {
      * This method is only meant to be called internally by {@link Executor}.
      */
     @Restricted(NoExternalUse.class)
-    public void setExecutable(Executable executable) {
+    public synchronized void setExecutable(Executable executable) {
         this.executable = executable;
     }
 

@@ -46,6 +46,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -56,7 +57,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -73,6 +73,7 @@ import javax.annotation.Nonnull;
 public class Executor extends Thread implements ModelObject {
     protected final @Nonnull Computer owner;
     private final Queue queue;
+    private final Object stateLock = new Object();
 
     private long startTime;
     /**
@@ -84,22 +85,21 @@ public class Executor extends Thread implements ModelObject {
      * Executor number that identifies it among other executors for the same {@link Computer}.
      */
     private int number;
-    /**
-     * {@link hudson.model.Queue.Executable} being executed right now, or null if the executor is idle.
-     */
-    private volatile Queue.Executable executable;
 
     /**
      * When {@link Queue} allocates a work for this executor, this field is set
      * and the executor is {@linkplain Thread#start() started}.
      */
-    private volatile WorkUnit workUnit;
+    @CheckForNull
+    @GuardedBy("stateLock")
+    private WorkUnit workUnit;
 
     private Throwable causeOfDeath;
 
     private boolean induceDeath;
 
-    private volatile boolean started;
+    @GuardedBy("stateLock")
+    private boolean started;
 
     /**
      * When the executor is interrupted, we allow the code that interrupted the thread to override the
@@ -110,6 +110,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Cause of interruption. Access needs to be synchronized.
      */
+    @GuardedBy("self")
     private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
 
     public Executor(@Nonnull Computer owner, int n) {
@@ -148,7 +149,7 @@ public class Executor extends Thread implements ModelObject {
         if (LOGGER.isLoggable(FINE))
             LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
 
-        synchronized (this) {
+        synchronized (stateLock) {
             if (!started) {
                 // not yet started, so simply dispose this
                 owner.removeExecutor(this);
@@ -202,6 +203,11 @@ public class Executor extends Thread implements ModelObject {
             if (induceDeath)        throw new ThreadDeath();
 
             SubTask task;
+            WorkUnit workUnit = getCurrentWorkUnit(); // a write once field
+            if (workUnit == null) {
+                throw new Error("The executor has been started with a null WorkUnit. There is no task to execute");
+            }
+            Executable executable;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
             synchronized (queue) {
@@ -286,11 +292,14 @@ public class Executor extends Thread implements ModelObject {
      * Returns the current build this executor is running.
      *
      * @return
-     *      null if the executor is idle.
+     *      null if <b>either</b> the executor is idle <b>or</b> the executable has not been instantiated from the
+     *      current {@link WorkUnit}.
      */
     @Exported
     public @CheckForNull Queue.Executable getCurrentExecutable() {
-        return executable;
+        synchronized (stateLock) {
+            return workUnit == null ? null : workUnit.getExecutable();
+        }
     }
 
     /**
@@ -298,11 +307,13 @@ public class Executor extends Thread implements ModelObject {
      * that this executor is running.
      *
      * @return
-     *      null if the executor is idle.
+     *      null if and only if the executor is idle.
      */
     @Exported
     public WorkUnit getCurrentWorkUnit() {
-        return workUnit;
+        synchronized (stateLock) {
+            return workUnit;
+        }
     }
 
     /**
@@ -311,7 +322,7 @@ public class Executor extends Thread implements ModelObject {
      * to that point yet.
      */
     public FilePath getCurrentWorkspace() {
-        Executable e = executable;
+        Executable e = getCurrentExecutable();
         if(e==null) return null;
         if (e instanceof AbstractBuild) {
             AbstractBuild ab = (AbstractBuild) e;
@@ -344,14 +355,16 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public boolean isIdle() {
-        return executable==null;
+        synchronized (stateLock) {
+            return workUnit == null;
+        }
     }
 
     /**
      * The opposite of {@link #isIdle()} &mdash; the executor is doing some work.
      */
     public boolean isBusy() {
-        return executable!=null;
+        return !isIdle();
     }
 
     /**
@@ -364,14 +377,18 @@ public class Executor extends Thread implements ModelObject {
      * @since 1.536
      */
     public boolean isActive() {
-        return !started || isAlive();
+        synchronized (stateLock) {
+            return !started || isAlive();
+        }
     }
 
     /**
      * Returns true if this executor is waiting for a task to execute.
      */
     public boolean isParking() {
-        return !started;
+        synchronized (stateLock) {
+            return !started;
+        }
     }
 
     /**
@@ -392,7 +409,7 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public int getProgress() {
-        Queue.Executable e = executable;
+        Queue.Executable e = getCurrentExecutable();
         if(e==null)     return -1;
         long d = Executables.getEstimatedDurationFor(e);
         if(d<0)         return -1;
@@ -411,7 +428,7 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public boolean isLikelyStuck() {
-        Queue.Executable e = executable;
+        Queue.Executable e = getCurrentExecutable();
         if(e==null)     return false;
 
         long elapsed = getElapsedTime();
@@ -435,7 +452,9 @@ public class Executor extends Thread implements ModelObject {
      * @since 1.440
      */
     public long getTimeSpentInQueue() {
-        return startTime - workUnit.context.item.buildableStartMilliseconds;
+        synchronized (stateLock) {
+            return workUnit != null ? startTime - workUnit.context.item.buildableStartMilliseconds : 0;
+        }
     }
 
     /**
@@ -453,7 +472,7 @@ public class Executor extends Thread implements ModelObject {
      * until the build completes.
      */
     public String getEstimatedRemainingTime() {
-        Queue.Executable e = executable;
+        Queue.Executable e = getCurrentExecutable();
         if(e==null)     return Messages.Executor_NotAvailable();
 
         long d = Executables.getEstimatedDurationFor(e);
@@ -470,7 +489,7 @@ public class Executor extends Thread implements ModelObject {
      * it as a number of milli-seconds.
      */
     public long getEstimatedRemainingTimeMillis() {
-        Queue.Executable e = executable;
+        Queue.Executable e = getCurrentExecutable();
         if(e==null)     return -1;
 
         long d = Executables.getEstimatedDurationFor(e);
@@ -488,14 +507,18 @@ public class Executor extends Thread implements ModelObject {
      * @see #start(WorkUnit)
      */
     @Override
-    public synchronized void start() {
+    public void start() {
         throw new UnsupportedOperationException();
     }
 
-    /*protected*/ synchronized void start(WorkUnit task) {
-        this.workUnit = task;
-        super.start();
-        started = true;
+    /*protected*/ void start(WorkUnit task) {
+        assert task != null : "Should never start a null task";
+        synchronized (stateLock) {
+            assert this.workUnit == null : "Should never start a task on an executor that already has one";
+            this.workUnit = task;
+            super.start();
+            started = true;
+        }
     }
 
 
@@ -515,12 +538,13 @@ public class Executor extends Thread implements ModelObject {
      */
     @RequirePOST
     public HttpResponse doStop() {
-        Queue.Executable e = executable;
-        if(e!=null) {
-            Tasks.getOwnerTaskOf(getParentOf(e)).checkAbortPermission();
-            interrupt();
+        synchronized (stateLock) {
+            if (workUnit != null) {
+                Tasks.getOwnerTaskOf(workUnit.work).checkAbortPermission();
+                interrupt();
+            }
+            return HttpResponses.forwardToPreviousPage();
         }
-        return HttpResponses.forwardToPreviousPage();
     }
 
     /**
@@ -539,8 +563,9 @@ public class Executor extends Thread implements ModelObject {
      * Checks if the current user has a permission to stop this build.
      */
     public boolean hasStopPermission() {
-        Queue.Executable e = executable;
-        return e!=null && Tasks.getOwnerTaskOf(getParentOf(e)).hasAbortPermission();
+        synchronized (stateLock) {
+            return workUnit != null && Tasks.getOwnerTaskOf(workUnit.work).hasAbortPermission();
+        }
     }
 
     public @Nonnull Computer getOwner() {
@@ -554,7 +579,9 @@ public class Executor extends Thread implements ModelObject {
         if (isIdle())
             return Math.max(creationTime, owner.getConnectTime());
         else {
-            return Math.max(startTime + Math.max(0, Executables.getEstimatedDurationFor(executable)),
+            final Executable e = getCurrentExecutable();
+            final long estimatedDuration = e == null ? 0 : Executables.getEstimatedDurationFor(e);
+            return Math.max(startTime + Math.max(0, estimatedDuration),
                     System.currentTimeMillis() + 15000);
         }
     }

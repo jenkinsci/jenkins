@@ -354,7 +354,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         jenkins.getActions().add(this);
 
         JenkinsLocationConfiguration.get().setUrl(getURL().toString());
-        
+
         setUpTimeout();
     }
 
@@ -373,7 +373,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         sites.clear();
         sites.add(new UpdateSite("default", updateCenterUrl));
     }
-    
+
     protected void setUpTimeout() {
         if (timeout <= 0) {
             System.out.println("Test timeout disabled.");
@@ -872,7 +872,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     public DumbSlave createSlave(String nodeName, String labels, EnvVars env) throws Exception {
         synchronized (jenkins) {
             DumbSlave slave = new DumbSlave(nodeName, "dummy",
-    				createTmpDir().getPath(), "1", Node.Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);                        
+    				createTmpDir().getPath(), "1", Node.Mode.NORMAL, labels==null?"":labels, createComputerLauncher(env), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
     		jenkins.addNode(slave);
     		return slave;
     	}
@@ -1444,7 +1444,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         if (!jenkins.getQueue().isEmpty())
             return true;
         for (Computer n : jenkins.getComputers())
-            if (!n.isIdle())
+            if (n.isBusy())
                 return true;
         return false;
     }
@@ -1543,9 +1543,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
         final List<URL> all = Collections.list(jpls);
         all.addAll(Collections.list(hpls));
-        
+
         if(all.isEmpty())    return; // nope
-        
+
         recipes.add(new JenkinsRecipe.Runner() {
             private File home;
             private final List<Jpl> jpls = new ArrayList<Jpl>();
@@ -1703,13 +1703,13 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
                 throw new Exception("Failed to resolve plugin: "+artifactId+" version "+version,resolutionError);
             }
-            
+
             private @CheckForNull File resolvePluginFile(String artifactId, String version, String groupId, String type) throws Exception {
 				final Artifact jpi = getMavenEmbedder().createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
                 getMavenEmbedder().resolve(jpi,
                         Arrays.asList(getMavenEmbedder().createRepository("http://maven.glassfish.org/content/groups/public/", "repo")), embedder.getLocalRepository());
 				return jpi.getFile();
-				
+
 			}
         });
     }

@@ -85,6 +85,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -809,10 +810,36 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns true if all the executors of this computer are idle.
+     * Returns true if all the executors of this computer are atomically idle. Use {@link #isBusy()} if you
+     * don't need to pay the synchronization cost. Note that when you are calling this method you nearly always
+     * want to have the {@linkplain Queue}'s lock held already, otherwise you can probably use {@link #isBusy()}.
      */
     @Exported
     public final boolean isIdle() {
+        try {
+            return Queue.withLock(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    if (!oneOffExecutors.isEmpty())
+                        return false;
+                    for (Executor e : executors)
+                        if(!e.isIdle())
+                            return false;
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            throw new IllegalStateException("The Callable we used does not throw an exception", e);
+        }
+    }
+
+    /**
+     * Returns true if any of the executors of this computer are not idle. Note that the converse is not
+     * guaranteed to be true. The check in {@link Computer#isIdle()} needs to acquire a lock on the {@link Queue}
+     * to ensure that none of the executors start building while iterating the list of executors.
+     */
+    @Exported
+    public final boolean isBusy() {
         if (!oneOffExecutors.isEmpty())
             return false;
         for (Executor e : executors)

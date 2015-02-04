@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, 
+ *
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
  * Yahoo! Inc., Tom Huybrechts, Olivier Lamy
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -321,7 +321,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             throw e;
         }
         jenkins.setNoUsageStatistics(true); // collecting usage stats from tests are pointless.
-        
+
         jenkins.setCrumbIssuer(new TestCrumbIssuer());
 
         jenkins.servletContext.setAttribute("app", jenkins);
@@ -543,10 +543,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     protected MavenInstallation configureDefaultMaven() throws Exception {
         return configureDefaultMaven("apache-maven-2.2.1", MavenInstallation.MAVEN_20);
     }
-    
+
     protected MavenInstallation configureMaven3() throws Exception {
         MavenInstallation mvn = configureDefaultMaven("apache-maven-3.0.1", MavenInstallation.MAVEN_30);
-        
+
         MavenInstallation m3 = new MavenInstallation("apache-maven-3.0.1",mvn.getHome(), NO_PROPERTIES);
         jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(m3);
         return m3;
@@ -559,7 +559,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(m3);
         return m3;
     }
-    
+
     /**
      * Locates Maven and configures that as the only Maven in the system.
      */
@@ -573,7 +573,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(mavenInstallation);
             return mavenInstallation;
         }
-        
+
         // Does maven.home point to a Maven installation which satisfies mavenReqVersion?
         String home = System.getProperty("maven.home");
         if(home!=null) {
@@ -788,7 +788,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public DumbSlave createOnlineSlave() throws Exception {
         return createOnlineSlave(null);
     }
-    
+
     /**
      * Create a new slave on the local host and wait for it to come onilne
      * before returning.
@@ -818,7 +818,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         return s;
     }
-    
+
     /**
      * Blocks until the ENTER key is hit.
      * This is useful during debugging a test so that one can inspect the state of Jenkins through the web browser.
@@ -908,7 +908,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         submit(createWebClient().goTo(u.getUrl()+"/configure").getFormByName("config"));
         return u;
     }
-        
+
     @SuppressWarnings("unchecked")
     protected <N extends Node> N configRoundtrip(N node) throws Exception {
         submit(createWebClient().goTo("/computer/" + node.getNodeName() + "/configure").getFormByName("config"));
@@ -952,7 +952,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     }
 
     /** Assert that the specified page can be served with a "good" HTTP status,
-     * eg, the page is not missing and can be served without a server error 
+     * eg, the page is not missing and can be served without a server error
      * @param page
      */
     public void assertGoodStatus(Page page) {
@@ -1047,7 +1047,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         org.w3c.dom.Node n = (org.w3c.dom.Node) node;
         String textString = n.getTextContent();
-        assertTrue("needle found in haystack", textString.contains(needle)); 
+        assertTrue("needle found in haystack", textString.contains(needle));
     }
 
     public void assertXPathResultsContainText(DomNode page, String xpath, String needle) {
@@ -1064,7 +1064,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                 }
             }
         }
-        assertTrue("needle found in haystack", found); 
+        assertTrue("needle found in haystack", found);
     }
 
     /**
@@ -1251,7 +1251,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         if (lhs==null && rhs==null)     return;
         if (lhs==null)      fail("lhs is null while rhs="+rhs);
         if (rhs==null)      fail("rhs is null while lhs="+lhs);
-        
+
         Constructor<?> lc = findDataBoundConstructor(lhs.getClass());
         Constructor<?> rc = findDataBoundConstructor(rhs.getClass());
         assertEquals("Data bound constructor mismatch. Different type?",lc,rc);
@@ -1299,7 +1299,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     public void assertEqualDataBoundBeans(List<?> lhs, List<?> rhs) throws Exception {
         assertEquals(lhs.size(), rhs.size());
-        for (int i=0; i<lhs.size(); i++) 
+        for (int i=0; i<lhs.size(); i++)
             assertEqualDataBoundBeans(lhs.get(i),rhs.get(i));
     }
 
@@ -1326,7 +1326,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         if (!jenkins.getQueue().isEmpty())
             return true;
         for (Computer n : jenkins.getComputers())
-            if (!n.isIdle())
+            if (n.isBusy())
                 return true;
         return false;
     }
@@ -1422,15 +1422,15 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
         final List<URL> all = Collections.list(jpls);
         all.addAll(Collections.list(hpls));
-        
+
         if(all.isEmpty())    return; // nope
 
         recipes.add(new Runner() {
             @Override
             public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
-            	
+
             	for (URL hpl : all) {
-					
+
                     // make the plugin itself available
                     Manifest m = new Manifest(hpl.openStream());
                     String shortName = m.getMainAttributes().getValue("Short-Name");
@@ -1501,7 +1501,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                         // found it
                         return Which.jarFile(dependencyPomResource);
                     } else {
-                    	
+
                     	try {
                     		// currently the most of the plugins are still hpi
                             return resolvePluginFile(embedder, artifactId, version, groupId, "hpi");
@@ -1514,7 +1514,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
                                 resolutionError = x;
                     		}
                     	}
-                    	
+
                     }
                 }
 
@@ -1526,7 +1526,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 				final Artifact jpi = embedder.createArtifact(groupId, artifactId, version, "compile"/*doesn't matter*/, type);
 				embedder.resolve(jpi, Arrays.asList(embedder.createRepository("http://maven.glassfish.org/content/groups/public/","repo")),embedder.getLocalRepository());
 				return jpi.getFile();
-				
+
 			}
         });
     }
@@ -1585,7 +1585,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
     /**
      * Sometimes a part of a test case may ends up creeping into the serialization tree of {@link Saveable#save()},
-     * so detect that and flag that as an error. 
+     * so detect that and flag that as an error.
      */
     private Object writeReplace() {
         throw new AssertionError("HudsonTestCase "+getName()+" is not supposed to be serialized");
@@ -1597,7 +1597,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public WebClient createWebClient() {
         return new WebClient();
     }
-    
+
     /**
      * Extends {@link com.gargoylesoftware.htmlunit.WebClient} and provide convenience methods
      * for accessing Hudson.
@@ -1843,7 +1843,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             else
                 return null;
         }
-        
+
         /**
          * Verify that the server rejects an attempt to load the given page.
          * @param url a URL path (relative to Jenkins root)
@@ -1865,20 +1865,20 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         public String getContextPath() throws IOException {
             return getURL().toExternalForm();
         }
-        
+
         /**
          * Adds a security crumb to the quest
          */
         public WebRequestSettings addCrumb(WebRequestSettings req) {
             NameValuePair crumb[] = { new NameValuePair() };
-            
+
             crumb[0].setName(jenkins.getCrumbIssuer().getDescriptor().getCrumbRequestField());
             crumb[0].setValue(jenkins.getCrumbIssuer().getCrumb( null ));
-            
+
             req.setRequestParameters(Arrays.asList( crumb ));
             return req;
         }
-        
+
         /**
          * Creates a URL with crumb parameters relative to {{@link #getContextPath()}
          */
@@ -1886,7 +1886,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             CrumbIssuer issuer = jenkins.getCrumbIssuer();
             String crumbName = issuer.getDescriptor().getCrumbRequestField();
             String crumb = issuer.getCrumb(null);
-            
+
             return new URL(getContextPath()+relativePath+"?"+crumbName+"="+crumb);
         }
 
@@ -1932,7 +1932,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
     // needs to keep reference, or it gets GC-ed.
     private static final Logger XML_HTTP_REQUEST_LOGGER = Logger.getLogger(XMLHttpRequest.class.getName());
-    
+
     static {
         // screen scraping relies on locale being fixed.
         Locale.setDefault(Locale.ENGLISH);

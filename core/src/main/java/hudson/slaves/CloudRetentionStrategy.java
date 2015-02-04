@@ -52,7 +52,8 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
     @Override
     public synchronized long check(final AbstractCloudComputer c) {
         final AbstractCloudSlave computerNode = c.getNode();
-        if (c.isIdle() && !disabled && computerNode != null) {
+        // check not busy as we only want to use the lock when it is likely that we will disconnect.
+        if (!c.isBusy() && !disabled && computerNode != null) {
             final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
             if (idleMilliseconds > MINUTES.toMillis(idleMinutes)) {
                 Queue.withLock(new Runnable() {
