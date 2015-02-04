@@ -5,6 +5,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
@@ -23,6 +24,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 public final class XMLUtils {
 
     private final static Logger LOGGER = LogManager.getLogManager().getLogger(XMLUtils.class.getName());
+    private final static String DISABLED_PROPERTY_NAME = XMLUtils.class.getName() + ".disableXXEPrevention";
 
     /**
      * Transform the source to the output in a manner that is protected against XXE attacks.
@@ -61,8 +63,12 @@ public final class XMLUtils {
             // for some reason we could not convert source
             // this applies to DOMSource and StAXSource - and possibly 3rd party implementations...
             // a DOMSource can already be compromised as it is parsed by the time it gets to us.
-            if (Boolean.getBoolean("disableXXEPrevention")) {
-                LOGGER.warning("Parsing XML with XXEPrevention disabled!");
+            if (Boolean.getBoolean(DISABLED_PROPERTY_NAME)) {
+                LOGGER.log(Level.WARNING,  "XML external entity (XXE) prevention has been disabled by the system " +
+                        "property {0}=true Your system may be vulnerable to XXE attacks.", DISABLED_PROPERTY_NAME);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Caller stack trace: ", new Exception("XXE Prevention caller history"));
+                }
                 _transform(source, out);
             }
             else {
