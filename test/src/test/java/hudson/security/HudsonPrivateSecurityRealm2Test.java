@@ -1,0 +1,93 @@
+package hudson.security;
+
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.User;
+import hudson.security.pages.SignupPage;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
+import java.util.Collections;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.*;
+
+/**
+ * Tests the signup page of {@link hudson.security.HudsonPrivateSecurityRealm}
+ * TODO: Add to {@link hudson.security.HudsonPrivateSecurityRealmTest} going forward
+ */
+public class HudsonPrivateSecurityRealm2Test {
+
+
+    @Rule
+    public JenkinsRule rule = new JenkinsRule();
+
+    @Test
+    public void signup() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        rule.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = rule.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("alice");
+        signup.enterPassword("alice");
+        signup.enterFullName("Alice User");
+        signup.enterEmail("alice@nowhere.com");
+        HtmlPage success = signup.submit(rule);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+        assertThat(success.getElementById("login-field").getTextContent(), containsString("Alice User"));
+
+        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
+
+    }
+
+    // @Issue("SECURITY-166")
+    @Test
+    public void anonymousCantSignup() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        rule.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = rule.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("anonymous");
+        signup.enterFullName("Bob");
+        signup.enterPassword("nothing");
+        signup.enterEmail("noone@nowhere.com");
+        signup = new SignupPage(signup.submit(rule));
+        signup.assertErrorContains("prohibited as a username");
+        assertNull(User.get("anonymous", false, Collections.emptyMap()));
+    }
+
+    // @Issue("SECURITY-166")
+    @Test
+    public void systemCantSignup() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        rule.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = rule.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("system");
+        signup.enterFullName("Bob");
+        signup.enterPassword("nothing");
+        signup.enterEmail("noone@nowhere.com");
+        signup = new SignupPage(signup.submit(rule));
+        signup.assertErrorContains("prohibited as a username");
+        assertNull(User.get("system",false, Collections.emptyMap()));
+    }
+
+    /**
+     * We don't allow prohibited fullnames since this may encumber auditing.
+     */
+    // @Issue("SECURITY-166")
+    @Test
+    public void fullNameOfUnknownCantSignup() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        rule.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = rule.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("unknown2");
+        signup.enterPassword("unknown2");
+        signup.enterFullName("unknown");
+        signup.enterEmail("noone@nowhere.com");
+        signup = new SignupPage(signup.submit(rule));
+        signup.assertErrorContains("prohibited as a full name");
+        assertNull(User.get("unknown2",false, Collections.emptyMap()));
+    }
+}
