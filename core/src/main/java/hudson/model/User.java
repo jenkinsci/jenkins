@@ -112,10 +112,16 @@ import javax.annotation.Nullable;
 public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu {
 
     /**
+     * The username of the 'unknown' user used to avoid null user references.
+     */
+    private static final String UKNOWN_USERNAME = "unknown";
+
+    /**
      * These usernames should not be used by real users logging into Jenkins. Therefore, we prevent
      * users with these names from being saved.
      */
-    public static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{"anonymous", "system", "unknown"};
+    private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{ACL.ANONYMOUS_USERNAME,
+            ACL.SYSTEM_USERNAME, UKNOWN_USERNAME};
     private transient final String id;
 
     private volatile String fullName;
@@ -326,7 +332,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * This is used to avoid null {@link User} instance.
      */
     public static @Nonnull User getUnknown() {
-        return get("unknown");
+        return get(UKNOWN_USERNAME);
     }
 
     /**
