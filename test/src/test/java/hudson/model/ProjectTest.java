@@ -487,40 +487,42 @@ public class ProjectTest {
     
     @Test
     public void testGetRelationship() throws Exception{
-        final FreeStyleProject project = j.createFreeStyleProject("project");
-        FreeStyleProject project2 = j.createFreeStyleProject("project2");
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project2);
-        assertTrue("Project " + project.getDisplayName()  + " should not have any relationship with " + project2.getDisplayName(), project.getRelationship(project2).isEmpty());       
-        project.getPublishersList().add(new Fingerprinter("change.log", true));
-        project.getBuildersList().add(new WorkspaceWriter("change.log", "hello"));
-        project.getPublishersList().add(new ArtifactArchiver("change.log"));
-        project2.getPublishersList().add(new Fingerprinter("change.log", false));
-        project2.getBuildersList().add(new TestBuilder() {
+        final FreeStyleProject upstream = j.createFreeStyleProject("upstream");
+        FreeStyleProject downstream = j.createFreeStyleProject("downstream");
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+        assertTrue("Project upstream should not have any relationship with downstream", upstream.getRelationship(downstream).isEmpty());
+
+        upstream.getPublishersList().add(new Fingerprinter("change.log", true));
+        upstream.getBuildersList().add(new WorkspaceWriter("change.log", "hello"));
+        upstream.getPublishersList().add(new ArtifactArchiver("change.log"));
+        downstream.getPublishersList().add(new Fingerprinter("change.log", false));
+        downstream.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                for (Run<?, ?>.Artifact a: project.getLastBuild().getArtifacts()) {
+                for (Run<?, ?>.Artifact a: upstream.getLastBuild().getArtifacts()) {
                     Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
                 }
                 return true;
             }
         });
 
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project2);
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project2);
-        project.getBuildersList().add(new WorkspaceWriter("change.log", "helloWorld"));
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project2);
-        Map<Integer,Fingerprint.RangeSet> ralationship = project.getRelationship(project2);
-        assertFalse("Project " + project.getDisplayName() + " should have relationship with " + project2.getDisplayName(), ralationship.isEmpty());      
-        assertTrue("Relationship should contains build 3 of project " + project.getDisplayName(), ralationship.keySet().contains(3));
-        assertFalse("Relationship should not contains build 4 of project " + project.getDisplayName() + " because previous fingerprinted file was not change since build 3", ralationship.keySet().contains(4));
-        assertEquals("Build 2 of project " + project2.getDisplayName() + " should be the first build which depends on build 3 of project " + project.getDisplayName(), 2, ralationship.get(3).min());
-        assertEquals("Build 3 of project " + project2.getDisplayName() + " should be the last build which depends on build 3 of project " + project.getDisplayName(), 3, ralationship.get(3).max()-1);
-        assertEquals("Build 4 of project " + project2.getDisplayName() + " should depend only on build 5 of project " + project.getDisplayName(), 4, ralationship.get(5).min());
-        assertEquals("Build 4 of project " + project2.getDisplayName() + " should depend only on build 5 of project " + project.getDisplayName(), 4, ralationship.get(5).max()-1);
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+        upstream.getBuildersList().add(new WorkspaceWriter("change.log", "helloWorld"));
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+
+        Map<Integer,Fingerprint.RangeSet> relationship = upstream.getRelationship(downstream);
+        assertFalse("Project upstream should have relationship with downstream", relationship.isEmpty());
+        assertTrue("Relationship should contain upstream #3", relationship.keySet().contains(3));
+        assertFalse("Relationship should not contain upstream #4 because previous fingerprinted file was not changed since #3", relationship.keySet().contains(4));
+        assertEquals("downstream #2 should be the first build which depends on upstream #3", 2, relationship.get(3).min());
+        assertEquals("downstream #3 should be the last build which depends on upstream #3", 3, relationship.get(3).max()-1);
+        assertEquals("downstream #4 should depend only on upstream #5", 4, relationship.get(5).min());
+        assertEquals("downstream #4 should depend only on upstream #5", 4, relationship.get(5).max()-1);
     }
     
     @Test
