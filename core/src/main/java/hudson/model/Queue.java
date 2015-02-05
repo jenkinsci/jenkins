@@ -109,6 +109,7 @@ import jenkins.security.QueueItemAuthenticator;
 import jenkins.util.AtmostOneTaskExecutor;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.export.Exported;
@@ -191,11 +192,11 @@ public class Queue extends ResourceController implements Saveable {
     private final ItemList<BuildableItem> pendings = new ItemList<BuildableItem>();
 
     /**
-     * Items that left queue would stay here for a while to enable tracking via {@link Item#id}.
+     * Items that left queue would stay here for a while to enable tracking via {@link Item#getId()}.
      *
      * This map is forgetful, since we can't remember everything that executed in the past.
      */
-    private final Cache<Integer,LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5*60, TimeUnit.SECONDS).build();
+    private final Cache<Long,LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5*60, TimeUnit.SECONDS).build();
 
     private final CachedItemList itemsView = new CachedItemList();
 
@@ -343,6 +344,14 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
+     * Simple queue state persistence object.
+     */
+    static class State {
+        public long counter;
+        public List<Item> items = new ArrayList<Item>();
+    }
+
+    /**
      * Loads the queue contents that was {@link #save() saved}.
      */
     public synchronized void load() {
@@ -366,18 +375,36 @@ public class Queue extends ResourceController implements Saveable {
             } else {
                 queueFile = getXMLQueueFile();
                 if (queueFile.exists()) {
-                    List list = (List) new XmlFile(XSTREAM, queueFile).read();
-                    int maxId = 0;
-                    for (Object o : list) {
+                    Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
+                    List items;
+
+                    if (unmarshaledObj instanceof State) {
+                        State state = (State) unmarshaledObj;
+                        items = state.items;
+                        WaitingItem.COUNTER.set(state.counter);
+                    } else {
+                        // backward compatibility - it's an old List queue.xml
+                        items = (List) unmarshaledObj;
+                        long maxId = 0;
+                        for (Object o : items) {
+                            if (o instanceof Item) {
+                                maxId = Math.max(maxId, ((Item)o).id);
+                            }
+                        }
+                        WaitingItem.COUNTER.set(maxId);
+                    }
+
+                    for (Object o : items) {
                         if (o instanceof Task) {
                             // backward compatibility
                             schedule((Task)o, 0);
                         } else if (o instanceof Item) {
                             Item item = (Item)o;
-                            if(item.task==null)
-                                continue;   // botched persistence. throw this one away
 
-                            maxId = Math.max(maxId, item.id);
+                            if (item.task == null) {
+                                continue;   // botched persistence. throw this one away
+                            }
+
                             if (item instanceof WaitingItem) {
                                 item.enter(this);
                             } else if (item instanceof BlockedItem) {
@@ -387,9 +414,8 @@ public class Queue extends ResourceController implements Saveable {
                             } else {
                                 throw new IllegalStateException("Unknown item type! " + item);
                             }
-                        } // this conveniently ignores null
+                        }
                     }
-                    WaitingItem.COUNTER.set(maxId);
 
                     // I just had an incident where all the executors are dead at AbstractProject._getRuns()
                     // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
@@ -413,16 +439,19 @@ public class Queue extends ResourceController implements Saveable {
     public synchronized void save() {
         if(BulkChange.contains(this))  return;
 
+        // write out the queue state we want to save
+        State state = new State();
+        state.counter = WaitingItem.COUNTER.longValue();
+
         // write out the tasks on the queue
-    	ArrayList<Queue.Item> items = new ArrayList<Queue.Item>();
-    	for (Item item: getItems()) {
+        for (Item item: getItems()) {
             if(item.task instanceof TransientTask)  continue;
-    	    items.add(item);
+	    state.items.add(item);
     	}
 
         try {
             XmlFile queueFile = new XmlFile(XSTREAM, getXMLQueueFile());
-            queueFile.write(items);
+            queueFile.write(state);
             SaveableListener.fireOnChange(this, queueFile);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getXMLQueueFile(), e);
@@ -508,7 +537,7 @@ public class Queue extends ResourceController implements Saveable {
      *      is that such {@link Item} only captures the state of the item at a particular moment,
      *      and by the time you inspect the object, some of its information can be already stale.
      *
-     *      That said, one can still look at {@link Queue.Item#future}, {@link Queue.Item#id}, etc.
+     *      That said, one can still look at {@link Queue.Item#future}, {@link Queue.Item#getId()}, etc.
      */
     public synchronized @Nonnull ScheduleResult schedule2(Task p, int quietPeriod, List<Action> actions) {
         // remove nulls
@@ -536,7 +565,7 @@ public class Queue extends ResourceController implements Saveable {
      *      is that such {@link Item} only captures the state of the item at a particular moment,
      *      and by the time you inspect the object, some of its information can be already stale.
      *
-     *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#id}, etc.
+     *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#getId()}, etc.
      */
     private synchronized @Nonnull ScheduleResult scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
         Calendar due = new GregorianCalendar();
@@ -666,7 +695,7 @@ public class Queue extends ResourceController implements Saveable {
      * Called from {@code queue.jelly} and {@code entries.jelly}.
      */
     @RequirePOST
-    public HttpResponse doCancelItem(@QueryParameter int id) throws IOException, ServletException {
+    public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
         if (item != null) {
             cancel(item);
@@ -723,7 +752,7 @@ public class Queue extends ResourceController implements Saveable {
         return itemsView.get();
     }
 
-    public synchronized Item getItem(int id) {
+    public synchronized Item getItem(long id) {
     	for (Item item: waitingList) if (item.id == id) return item;
     	for (Item item: blockedProjects) if (item.id == id) return item;
     	for (Item item: buildables) if (item.id == id) return item;
@@ -1480,8 +1509,24 @@ public class Queue extends ResourceController implements Saveable {
          * VM-wide unique ID that tracks the {@link Task} as it moves through different stages
          * in the queue (each represented by different subtypes of {@link Item}.
          */
+	private final long id;
+
         @Exported
-    	public final int id;
+        public long getId() {
+            return id;
+        }
+
+        @AdaptField(was=int.class, name="id")
+        @Deprecated
+        public int getIdLegacy() {
+            if (id > Integer.MAX_VALUE) {
+                throw new IllegalStateException("Sorry, you need to update any Plugins attempting to " +
+                        "assign 'Queue.Item.id' to an int value. 'Queue.Item.id' is now a long value and " +
+                        "has incremented to a value greater than Integer.MAX_VALUE (2^31 - 1).");
+            }
+            return (int) id;
+        }
+
 
 		/**
          * Project to be built.
@@ -1536,7 +1581,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Can be used to wait for the completion (either normal, abnormal, or cancellation) of the {@link Task}.
          * <p>
-         * Just like {@link #id}, the same object tracks various stages of the queue.
+         * Just like {@link #getId()}, the same object tracks various stages of the queue.
          */
         @WithBridgeMethods(Future.class)
         public QueueTaskFuture<Executable> getFuture() { return future; }
@@ -1595,7 +1640,7 @@ public class Queue extends ResourceController implements Saveable {
             return s.toString();
         }
 
-        protected Item(Task task, List<Action> actions, int id, FutureImpl future) {
+        protected Item(Task task, List<Action> actions, long id, FutureImpl future) {
             this.task = task;
             this.id = id;
             this.future = future;
@@ -1603,7 +1648,7 @@ public class Queue extends ResourceController implements Saveable {
             for (Action action: actions) addAction(action);
         }
 
-        protected Item(Task task, List<Action> actions, int id, FutureImpl future, long inQueueSince) {
+        protected Item(Task task, List<Action> actions, long id, FutureImpl future, long inQueueSince) {
             this.task = task;
             this.id = id;
             this.future = future;
@@ -1796,7 +1841,7 @@ public class Queue extends ResourceController implements Saveable {
      * {@link Item} in the {@link Queue#waitingList} stage.
      */
     public static final class WaitingItem extends Item implements Comparable<WaitingItem> {
-    	private static final AtomicInteger COUNTER = new AtomicInteger(0);
+	private static final AtomicLong COUNTER = new AtomicLong(0);
 
         /**
          * This item can be run after this time.
@@ -1809,11 +1854,21 @@ public class Queue extends ResourceController implements Saveable {
             this.timestamp = timestamp;
         }
 
+        static int getCurrentCounterValue() {
+            return COUNTER.intValue();
+        }
+
         public int compareTo(WaitingItem that) {
             int r = this.timestamp.getTime().compareTo(that.timestamp.getTime());
             if (r != 0) return r;
 
-            return this.id - that.id;
+            if (this.getId() < that.getId()) {
+                return -1;
+            } else if (this.getId() == that.getId()) {
+                return 0;
+            } else {
+                return 1;
+            }
         }
 
         public CauseOfBlockage getCauseOfBlockage() {
@@ -2081,7 +2136,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @Override
         void enter(Queue q) {
-            q.leftItems.put(id,this);
+            q.leftItems.put(getId(),this);
             for (QueueListener ql : QueueListener.all()) {
                 try {
                     ql.onLeft(this);
