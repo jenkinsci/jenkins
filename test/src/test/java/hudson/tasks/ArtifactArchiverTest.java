@@ -44,6 +44,7 @@ import java.util.List;
 import jenkins.util.VirtualFile;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -201,6 +202,34 @@ public class ArtifactArchiverTest {
         assertEquals(1, kids.length);
         assertEquals("lodge", kids[0].getName());
         // do not check that it .exists() since its target has not been archived
+    }
+
+    @Ignore("TODO currently fails as expected")
+    //@Issue("SECURITY-162")
+    @Test public void outsideSymlinks() throws Exception {
+        final FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                if (ws == null) {
+                    return false;
+                }
+                ws.child("hack").symlinkTo(p.getConfigFile().getFile().getAbsolutePath(), listener);
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver("hack", "", false, true));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(1, artifacts.size());
+        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        assertEquals("hack", artifact.relativePath);
+        VirtualFile[] kids = b.getArtifactManager().root().list();
+        assertEquals(1, kids.length);
+        assertEquals("hack", kids[0].getName());
+        assertFalse(kids[0].isDirectory());
+        assertFalse(kids[0].isFile());
+        assertFalse(kids[0].exists());
     }
     
     private void runNewBuildAndStartUnitlIsCreated(AbstractProject project) throws InterruptedException{
