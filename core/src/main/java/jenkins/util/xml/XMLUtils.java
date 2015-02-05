@@ -1,5 +1,7 @@
 package jenkins.util.xml;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -20,7 +22,9 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 
 /**
  * Utilities useful when working with various XML types.
+ * @since TODO
  */
+@Restricted(NoExternalUse.class)
 public final class XMLUtils {
 
     private final static Logger LOGGER = LogManager.getLogManager().getLogger(XMLUtils.class.getName());
