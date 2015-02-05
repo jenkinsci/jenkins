@@ -22,7 +22,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 
 /**
  * Utilities useful when working with various XML types.
- * @since TODO
  */
 @Restricted(NoExternalUse.class)
 public final class XMLUtils {

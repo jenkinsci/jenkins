@@ -11,8 +11,6 @@ import java.io.IOException;
 /**
  * An EntityResolver that will fail to resolve any entities.
  * Useful in preventing External XML Entity injection attacks.
- *
- * @since TODO
  */
 @Restricted(NoExternalUse.class)
 public final class RestrictiveEntityResolver implements EntityResolver {
