@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * Tests the signup page of {@link hudson.security.HudsonPrivateSecurityRealm}
@@ -40,7 +41,7 @@ public class HudsonPrivateSecurityRealm2Test {
 
     }
 
-    // @Issue("SECURITY-166")
+    @Issue("SECURITY-166")
     @Test
     public void anonymousCantSignup() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
@@ -56,7 +57,7 @@ public class HudsonPrivateSecurityRealm2Test {
         assertNull(User.get("anonymous", false, Collections.emptyMap()));
     }
 
-    // @Issue("SECURITY-166")
+    @Issue("SECURITY-166")
     @Test
     public void systemCantSignup() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
@@ -75,7 +76,7 @@ public class HudsonPrivateSecurityRealm2Test {
     /**
      * We don't allow prohibited fullnames since this may encumber auditing.
      */
-    // @Issue("SECURITY-166")
+    @Issue("SECURITY-166")
     @Test
     public void fullNameOfUnknownCantSignup() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);

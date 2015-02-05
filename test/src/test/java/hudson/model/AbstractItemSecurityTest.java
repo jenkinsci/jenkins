@@ -24,20 +24,10 @@
 
 package hudson.model;
 
-import hudson.model.FreeStyleProject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -47,15 +37,15 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import org.jvnet.hudson.test.Issue;
 
 public class AbstractItemSecurityTest {
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
+    @Issue("SECURITY-167")
     @Test()
-    // SECURITY-167
     public void testUpdateByXmlIDoesNotProcessForeignResources() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
@@ -88,8 +78,8 @@ public class AbstractItemSecurityTest {
     }
 
 
+    @Issue("SECURITY-167")
     @Test()
-    // SECURITY-167
     public void testhamyXmlIDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +

@@ -51,8 +51,6 @@ import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.dao.DataAccessException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -659,9 +657,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * saving a User with one of these ids.
      *
      * @return true if the username or fullname is valid
+     * @since TODO
      */
-    //TODO: Remove Restricted and add @since when merging to stable-rc
-    @Restricted(NoExternalUse.class)
     public static boolean isIdOrFullnameAllowed(String id) {
         for (String invalidId : ILLEGAL_PERSISTED_USERNAMES) {
             if (id.equalsIgnoreCase(invalidId))

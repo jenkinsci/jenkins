@@ -26,7 +26,6 @@ package jenkins.xml;
 
 import jenkins.util.xml.XMLUtils;
 
-import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Test;
 
 import java.io.StringReader;
@@ -37,12 +36,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import org.jvnet.hudson.test.Issue;
 
 public class XMLUtilsTest {
 
+    @Issue("SECURITY-167")
     @Test()
-    // SECURITY-167
     public void testSafeTransformDoesNotProcessForeignResources() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
@@ -74,8 +73,8 @@ public class XMLUtilsTest {
     }
 
 
+    @Issue("SECURITY-167")
     @Test()
-    // SECURITY-167
     public void testUpdateByXmlIDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +

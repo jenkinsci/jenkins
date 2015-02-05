@@ -32,10 +32,11 @@ import net.sf.json.JSONObject;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
 
-//@Issue("SECURITY-163")
+@Issue("SECURITY-163")
 public class DownloadService2Test {
 
     @Rule public JenkinsRule r = new JenkinsRule();
