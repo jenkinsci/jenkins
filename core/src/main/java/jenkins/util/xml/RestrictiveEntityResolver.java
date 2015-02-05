@@ -1,5 +1,7 @@
 package jenkins.util.xml;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -9,9 +11,8 @@ import java.io.IOException;
 /**
  * An EntityResolver that will fail to resolve any entities.
  * Useful in preventing External XML Entity injection attacks.
- *
- * @since TODO
  */
+@Restricted(NoExternalUse.class)
 public final class RestrictiveEntityResolver implements EntityResolver {
 
     public final static RestrictiveEntityResolver INSTANCE = new RestrictiveEntityResolver();
