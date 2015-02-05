@@ -28,7 +28,6 @@ package hudson;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
-import hudson.matrix.MatrixProject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Describable;
@@ -190,11 +189,9 @@ public class Functions {
         return o instanceof ModelObjectWithChildren;
     }
     
-    /**
-     * @since 1.524
-     */
+    @Deprecated
     public static boolean isMatrixProject(Object o) {
-        return o instanceof MatrixProject;
+        return o != null && o.getClass().getName().equals("hudson.matrix.MatrixProject");
     }
 
     public static String xsDate(Calendar cal) {
