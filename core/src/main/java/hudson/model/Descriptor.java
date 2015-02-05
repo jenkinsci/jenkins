@@ -912,11 +912,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 Descriptor<T> d = null;
                 String kind = jo.optString("kind", null);
                 if (kind != null) {
-                    d = find(descriptors, kind);
+                    d = findById(descriptors, kind);
                 }
                 if (d == null) {
                   kind = jo.getString("$class");
-                  d = find(descriptors, kind);
+                  d = findByClassName(descriptors, kind);
                 }
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
@@ -930,20 +930,38 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Finds a descriptor from a collection by its class name.
+     * Finds a descriptor from a collection by its id.
      */
-    public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String className) {
+    public static @CheckForNull <T extends Descriptor> T findById(Collection<? extends T> list, String id) {
+        for (T d : list) {
+            if(d.getId().equals(id))
+                return d;
+        }
+        return null;
+    }
+
+    /**
+     * Finds a descriptor from a collection by its class name.
+     * @deprecated Since we introduced {@link Descriptor#getId()}, it is a preferred method of identifying descriptor by a string.
+     */
+    public static @CheckForNull <T extends Descriptor> T findByClassName(Collection<? extends T> list, String className) {
         for (T d : list) {
             if(d.getClass().getName().equals(className))
                 return d;
         }
-        // Since we introduced Descriptor.getId(), it is a preferred method of identifying descriptor by a string.
-        // To make that migration easier without breaking compatibility, let's also match up with the id.
-        for (T d : list) {
-            if(d.getId().equals(className))
+        return null;
+    }
+
+    /**
+     * Finds a descriptor from a collection by its class name or ID.
+     * @deprecated choose between {@link #findById(java.util.Collection, String)} or {@link #findByClassName(java.util.Collection, String)}
+     */
+    public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String string) {
+        T d = findByClassName(list, string);
+        if (d != null) {
                 return d;
         }
-        return null;
+        return findById(list, string);
     }
 
     public static @CheckForNull Descriptor find(String className) {
