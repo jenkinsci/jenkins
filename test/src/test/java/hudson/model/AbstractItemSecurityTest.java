@@ -49,7 +49,7 @@ import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-public class AbstractItemTest {
+public class AbstractItemSecurityTest {
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
