@@ -956,7 +956,6 @@ table.parameters > tbody:hover {
   margin-top: 5px;
   white-space: normal;
   opacity: 0.6;
-  font-style: italic;
 }
 
 #buildHistory .build-row-cell {
