@@ -37,6 +37,7 @@ import hudson.tasks.LogRotatorTest.TestsFail;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
@@ -230,6 +231,7 @@ public class ArtifactArchiverTest {
         assertFalse(kids[0].isDirectory());
         assertFalse(kids[0].isFile());
         assertFalse(kids[0].exists());
+        j.createWebClient().assertFails(b.getUrl() + "artifact/hack", HttpURLConnection.HTTP_NOT_FOUND);
     }
     
     private void runNewBuildAndStartUnitlIsCreated(AbstractProject project) throws InterruptedException{
