@@ -36,6 +36,7 @@ import hudson.scm.SCMRevisionState;
 import hudson.scm.PollingResult;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
+import hudson.Util;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.model.queue.SubTaskContributor;
@@ -45,6 +46,7 @@ import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
 import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
+import jenkins.model.WorkspaceWriter;
 import jenkins.model.Jenkins;
 import hudson.model.AbstractProject.BecauseOfBuildInProgress;
 import antlr.ANTLRException;
@@ -89,6 +91,7 @@ import java.util.logging.Logger;
 import org.junit.Ignore;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.TestBuilder;
 
 /**
  *
@@ -484,22 +487,30 @@ public class ProjectTest {
     
     @Test
     public void testGetRelationship() throws Exception{
-        FreeStyleProject project = j.createFreeStyleProject("project");
+        final FreeStyleProject project = j.createFreeStyleProject("project");
         FreeStyleProject project2 = j.createFreeStyleProject("project2");
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project2);
         assertTrue("Project " + project.getDisplayName()  + " should not have any relationship with " + project2.getDisplayName(), project.getRelationship(project2).isEmpty());       
         project.getPublishersList().add(new Fingerprinter("change.log", true));
-        project.getBuildersList().add(new Shell("echo hello > change.log"));
-        project.getPublishersList().add(new ArtifactArchiver("change.log","",true));
+        project.getBuildersList().add(new WorkspaceWriter("change.log", "hello"));
+        project.getPublishersList().add(new ArtifactArchiver("change.log"));
         project2.getPublishersList().add(new Fingerprinter("change.log", false));
-        project2.getBuildersList().add(new Shell("cp " + project.getRootDir().getAbsolutePath() + "/builds/lastSuccessfulBuild/archive/change.log ."));
+        project2.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                for (Run<?, ?>.Artifact a: project.getLastBuild().getArtifacts()) {
+                    Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
+                }
+                return true;
+            }
+        });
+
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project2);
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project2);
-        project.getBuildersList().add(new Shell("echo helloWorld > change.log"));
+        project.getBuildersList().add(new WorkspaceWriter("change.log", "helloWorld"));
         j.buildAndAssertSuccess(project);
         j.buildAndAssertSuccess(project2);
         Map<Integer,Fingerprint.RangeSet> ralationship = project.getRelationship(project2);
