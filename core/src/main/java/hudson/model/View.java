@@ -58,6 +58,8 @@ import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.util.ProgressiveRendering;
+import jenkins.util.xml.XMLUtils;
+
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -75,9 +77,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedInputStream;
@@ -106,6 +106,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.model.Jenkins.*;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.xml.sax.SAXException;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -1063,7 +1064,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * Updates Job by its XML definition.
+     * Updates the View with the new XML definition.
+     * @param source source of the Item's new definition.
+     *               The source should be either a <code>StreamSource</code> or <code>SAXSource</code>, other sources
+     *               may not be handled.
      */
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
@@ -1072,12 +1076,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // this allows us to use UTF-8 for storing data,
             // plus it checks any well-formedness issue in the submitted
             // data
-            Transformer t = TransformerFactory.newInstance()
-                    .newTransformer();
-            t.transform(source,
-                    new StreamResult(out));
+            XMLUtils.safeTransform(source, new StreamResult(out));
             out.close();
         } catch (TransformerException e) {
+            throw new IOException("Failed to persist configuration.xml", e);
+        } catch (SAXException e) {
             throw new IOException("Failed to persist configuration.xml", e);
         }
 

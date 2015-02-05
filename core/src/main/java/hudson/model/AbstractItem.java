@@ -45,6 +45,8 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import org.acegisecurity.Authentication;
+import jenkins.util.xml.XMLUtils;
+
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.WebMethod;
@@ -67,12 +69,11 @@ import org.kohsuke.stapler.HttpDeletable;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -627,24 +628,23 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Updates Job by its XML definition.
+     * Updates an Item by its XML definition.
+     * @param source source of the Item's new definition.
+     *               The source should be either a <code>StreamSource</code> or a <code>SAXSource</code>, other
+     *               sources may not be handled.
      * @since 1.473
      */
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
         XmlFile configXmlFile = getConfigFile();
-        AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
+        final AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
         try {
             try {
-                // this allows us to use UTF-8 for storing data,
-                // plus it checks any well-formedness issue in the submitted
-                // data
-                Transformer t = TransformerFactory.newInstance()
-                        .newTransformer();
-                t.transform(source,
-                        new StreamResult(out));
+                XMLUtils.safeTransform(source, new StreamResult(out));
                 out.close();
             } catch (TransformerException e) {
+                throw new IOException("Failed to persist config.xml", e);
+            } catch (SAXException e) {
                 throw new IOException("Failed to persist config.xml", e);
             }
 
@@ -667,6 +667,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // if everything went well, commit this new version
             out.commit();
             SaveableListener.fireOnChange(this, getConfigFile());
+
         } finally {
             out.abort(); // don't leave anything behind
         }
