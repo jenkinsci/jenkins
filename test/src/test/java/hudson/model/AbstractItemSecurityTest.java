@@ -56,22 +56,14 @@ public class AbstractItemSecurityTest {
 
     @Test()
     // SECURITY-167
-    public void testUpdateByXmlIDoesNotProcessForeignResources() throws Exception {
+    public void testUpdateByXmlDoesNotProcessForeignResources() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
                 "  <!ENTITY foo SYSTEM \"file:///\">\n" +
                 "]>\n" +
                 "<project>\n" +
-                "  <actions/>\n" +
                 "  <description>&foo;</description>\n" +
-                "  <keepDependencies>false</keepDependencies>\n" +
-                "  <properties/>\n" +
                 "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "  <canRoam>true</canRoam>\n" +
-                "  <triggers/>\n" +
-                "  <builders/>\n" +
-                "  <publishers/>\n" +
-                "  <buildWrappers/>\n" +
                 "</project>";
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
@@ -90,19 +82,11 @@ public class AbstractItemSecurityTest {
 
     @Test()
     // SECURITY-167
-    public void testhamyXmlIDoesNotFail() throws Exception {
+    public void testUpdateByXmlDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +
-                "  <actions/>\n" +
                 "  <description>&amp;</description>\n" +
-                "  <keepDependencies>false</keepDependencies>\n" +
-                "  <properties/>\n" +
                 "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
-                "  <canRoam>true</canRoam>\n" +
-                "  <triggers/>\n" +
-                "  <builders/>\n" +
-                "  <publishers/>\n" +
-                "  <buildWrappers/>\n" +
                 "</project>";
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
