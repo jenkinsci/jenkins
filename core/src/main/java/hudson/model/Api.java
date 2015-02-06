@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import jenkins.dom4j.FilteredFunctionContext;
+import jenkins.util.xml.FilteredFunctionContext;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
 

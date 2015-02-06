@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.dom4j;
+package jenkins.util.xml;
 
 import org.jaxen.Function;
 import org.jaxen.FunctionContext;
