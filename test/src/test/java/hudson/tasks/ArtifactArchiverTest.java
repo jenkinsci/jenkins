@@ -45,7 +45,6 @@ import java.util.List;
 import jenkins.util.VirtualFile;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -205,7 +204,6 @@ public class ArtifactArchiverTest {
         // do not check that it .exists() since its target has not been archived
     }
 
-    @Ignore("TODO currently fails as expected")
     //@Issue("SECURITY-162")
     @Test public void outsideSymlinks() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject();
