@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.ExtensionList;
+import jenkins.util.xml.FilteredFunctionContext;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
 
@@ -32,6 +33,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
+import org.dom4j.XPath;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.kohsuke.stapler.QueryParameter;
@@ -107,14 +109,16 @@ public class Api extends AbstractModelObject {
         p.writeTo(bean,pruner,Flavor.XML.createDataWriter(bean,sw));
 
         // apply XPath
+        FilteredFunctionContext functionContext = new FilteredFunctionContext();
         Object result;
         try {
             Document dom = new SAXReader().read(new StringReader(sw.toString()));
-
             // apply exclusions
             if (excludes!=null) {
                 for (String exclude : excludes) {
-                    List<org.dom4j.Node> list = (List<org.dom4j.Node>)dom.selectNodes(exclude);
+                    XPath xExclude = dom.createXPath(exclude);
+                    xExclude.setFunctionContext(functionContext);
+                    List<org.dom4j.Node> list = (List<org.dom4j.Node>)xExclude.selectNodes(dom);
                     for (org.dom4j.Node n : list) {
                         Element parent = n.getParent();
                         if(parent!=null)
@@ -126,7 +130,9 @@ public class Api extends AbstractModelObject {
             if(xpath==null) {
             	result = dom;
             } else {
-                List list = dom.selectNodes(xpath);
+                XPath comp = dom.createXPath(xpath);
+                comp.setFunctionContext(functionContext);
+                List list = comp.selectNodes(dom);
                 if (wrapper!=null) {
                     Element root = DocumentFactory.getInstance().createElement(wrapper);
                     for (Object o : list) {
