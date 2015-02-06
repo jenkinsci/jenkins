@@ -43,13 +43,12 @@ public class ApiTest extends HudsonTestCase {
     }
 
     /**
-     * Test that calling the xml API with the xpath document function fails.
+     * Test that calling the XML API with the XPath <code>document</code> function fails.
      *
-     * See SECURITY-165
-     * @throws IOException if so
-     * @throws SAXException if so
+     * @throws Exception if so
      */
-    public void testXPathDocumentFunction() throws IOException, SAXException {
+    //Issue("SECURITY-165")
+    public void testXPathDocumentFunction() throws Exception {
         File f = new File(jenkins.getRootDir(), "queue.xml");
         WebClient client = createWebClient();
 
