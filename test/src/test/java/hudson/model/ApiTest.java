@@ -24,9 +24,13 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.Page;
+
+import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Bug;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -36,6 +40,27 @@ public class ApiTest extends HudsonTestCase {
     @Bug(2828)
     public void testXPath() throws Exception {
         new WebClient().goTo("api/xml?xpath=/*[1]","application/xml");
+    }
+
+    /**
+     * Test that calling the XML API with the XPath <code>document</code> function fails.
+     *
+     * @throws Exception if so
+     */
+    //Issue("SECURITY-165")
+    public void testXPathDocumentFunction() throws Exception {
+        File f = new File(jenkins.getRootDir(), "queue.xml");
+        WebClient client = createWebClient();
+
+        try {
+            client.goTo("api/xml?xpath=document(\"" + f.getAbsolutePath() + "\")", "application/xml");
+            fail("Should become 500 error");
+        } catch (com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException e) {
+            String contentAsString = e.getResponse().getContentAsString();
+            assertStringContains(
+                    contentAsString,
+                    "Illegal function: document");
+        }
     }
 
     @Bug(3267)
