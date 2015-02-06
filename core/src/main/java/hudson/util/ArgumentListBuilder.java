@@ -46,7 +46,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 public class ArgumentListBuilder implements Serializable, Cloneable {
-    private final List<String> args = new ArrayList<String>();
+    protected final List<String> args = new ArrayList<String>();
     /**
      * Bit mask indicating arguments that shouldn't be echoed-back (e.g., password)
      */
@@ -57,6 +57,11 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
 
     public ArgumentListBuilder(String... args) {
         add(args);
+    }
+
+    protected ArgumentListBuilder(ArgumentListBuilder alb) {
+        add(alb.toCommandArray());
+        this.mask = (BitSet) alb.mask.clone();
     }
 
     public ArgumentListBuilder add(Object a) {
@@ -249,8 +254,9 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         };
     }
 
-    public String[] toCommandArray() {
-        return args.toArray(new String[args.size()]);
+    public final String[] toCommandArray() {
+        List<String> list = toList();
+        return list.toArray(new String[list.size()]);
     }
     
     @Override
@@ -279,7 +285,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     public String toStringWithQuote() {
         StringBuilder buf = new StringBuilder();
-        for (String arg : args) {
+        for (String arg : toList()) {
             if(buf.length()>0)  buf.append(' ');
 
             if(arg.indexOf(' ')>=0 || arg.length()==0)
@@ -292,72 +298,21 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
 
     /**
      * Wrap command in a CMD.EXE call so we can return the exit code (ERRORLEVEL).
-     * This method takes care of escaping special characters in the command, which
-     * is needed since the command is now passed as a string to the CMD.EXE shell.
-     * This is done as follows:
-     * Wrap arguments in double quotes if they contain any of:
-     *   space *?,;^&<>|"
-     *   and if escapeVars is true, % followed by a letter.
-     * <br/> When testing from command prompt, these characters also need to be
-     * prepended with a ^ character: ^&<>|  -- however, invoking cmd.exe from
-     * Jenkins does not seem to require this extra escaping so it is not added by
-     * this method.
-     * <br/> A " is prepended with another " character.  Note: Windows has issues
-     * escaping some combinations of quotes and spaces.  Quotes should be avoided.
-     * <br/> If escapeVars is true, a % followed by a letter has that letter wrapped
-     * in double quotes, to avoid possible variable expansion.
-     * ie, %foo% becomes "%"f"oo%".  The second % does not need special handling
-     * because it is not followed by a letter. <br/>
-     * Example: "-Dfoo=*abc?def;ghi^jkl&mno<pqr>stu|vwx""yz%"e"nd"
+     *
      * @param escapeVars True to escape %VAR% references; false to leave these alone
      *                   so they may be expanded when the command is run
      * @return new ArgumentListBuilder that runs given command through cmd.exe /C
      * @since 1.386
      */
     public ArgumentListBuilder toWindowsCommand(boolean escapeVars) {
-        StringBuilder quotedArgs = new StringBuilder();
-        boolean quoted, percent;
-        for (String arg : args) {
-            quoted = percent = false;
-            for (int i = 0; i < arg.length(); i++) {
-                char c = arg.charAt(i);
-                if (!quoted && (c == ' ' || c == '*' || c == '?' || c == ',' || c == ';')) {
-                    quoted = startQuoting(quotedArgs, arg, i);
-                }
-                else if (c == '^' || c == '&' || c == '<' || c == '>' || c == '|') {
-                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
-                    // quotedArgs.append('^'); See note in javadoc above
-                }
-                else if (c == '"') {
-                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
-                    quotedArgs.append('"');
-                }
-                else if (percent && escapeVars
-                         && ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
-                    if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
-                    quotedArgs.append('"').append(c);
-                    c = '"';
-                }
-                percent = (c == '%');
-                if (quoted) quotedArgs.append(c);
-            }
-            if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
-            quotedArgs.append(' ');
-        }
-        // (comment copied from old code in hudson.tasks.Ant)
-        // on Windows, executing batch file can't return the correct error code,
-        // so we need to wrap it into cmd.exe.
-        // double %% is needed because we want ERRORLEVEL to be expanded after
-        // batch file executed, not before. This alone shows how broken Windows is...
-        quotedArgs.append("&& exit %%ERRORLEVEL%%");
-        return new ArgumentListBuilder().add("cmd.exe", "/C").addQuoted(quotedArgs.toString());
+        return new Windows(this, escapeVars);
     }
 
     /**
      * Calls toWindowsCommand(false)
      * @see #toWindowsCommand(boolean)
      */
-    public ArgumentListBuilder toWindowsCommand() {
+    public final ArgumentListBuilder toWindowsCommand() {
         return toWindowsCommand(false);
     }
 
@@ -401,9 +356,10 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      * Debug/error message friendly output.
      */
     public String toString() {
+        List<String> list = toList();
         StringBuilder buf = new StringBuilder();
-        for (int i=0; i<args.size(); i++) {
-            String arg = args.get(i);
+        for (int i=0; i<list.size(); i++) {
+            String arg = list.get(i);
             if (mask.get(i))
                 arg = "******";
 
@@ -415,6 +371,88 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
                 buf.append(arg);
         }
         return buf.toString();
+    }
+
+    /**
+     * This subclass takes care of escaping special characters in the command, which
+     * is needed since the command is now passed as a string to the CMD.EXE shell.
+     * This is done as follows:
+     * Wrap arguments in double quotes if they contain any of:
+     *   space *?,;^&<>|"
+     *   and if escapeVars is true, % followed by a letter.
+     * <br/> When testing from command prompt, these characters also need to be
+     * prepended with a ^ character: ^&<>|  -- however, invoking cmd.exe from
+     * Jenkins does not seem to require this extra escaping so it is not added by
+     * this method.
+     * <br/> A " is prepended with another " character.  Note: Windows has issues
+     * escaping some combinations of quotes and spaces.  Quotes should be avoided.
+     * <br/> If escapeVars is true, a % followed by a letter has that letter wrapped
+     * in double quotes, to avoid possible variable expansion.
+     * ie, %foo% becomes "%"f"oo%".  The second % does not need special handling
+     * because it is not followed by a letter. <br/>
+     * Example: "-Dfoo=*abc?def;ghi^jkl&mno<pqr>stu|vwx""yz%"e"nd"
+     */
+    private static final class Windows extends ArgumentListBuilder {
+
+        private boolean escapeVars;
+
+        public Windows(ArgumentListBuilder alb, boolean escapeVars) {
+            super(alb);
+            this.escapeVars = escapeVars;
+        }
+
+        @Override
+        public ArgumentListBuilder clone() {
+            return new Windows(this, escapeVars);
+        }
+
+        @Override
+        public ArgumentListBuilder toWindowsCommand(boolean escapeVars) {
+            this.escapeVars = escapeVars;
+            return this;
+        }
+
+        @Override
+        public List<String> toList() {
+            StringBuilder quotedArgs = new StringBuilder();
+            boolean quoted, percent;
+            for (String arg : args) {
+                quoted = percent = false;
+                for (int i = 0; i < arg.length(); i++) {
+                    char c = arg.charAt(i);
+                    if (!quoted && (c == ' ' || c == '*' || c == '?' || c == ',' || c == ';')) {
+                        quoted = startQuoting(quotedArgs, arg, i);
+                    }
+                    else if (c == '^' || c == '&' || c == '<' || c == '>' || c == '|') {
+                        if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                        // quotedArgs.append('^'); See note in javadoc above
+                    }
+                    else if (c == '"') {
+                        if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                        quotedArgs.append('"');
+                    }
+                    else if (percent && escapeVars
+                             && ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+                        if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                        quotedArgs.append('"').append(c);
+                        c = '"';
+                    }
+                    percent = (c == '%');
+                    if (quoted) quotedArgs.append(c);
+                }
+                if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
+                quotedArgs.append(' ');
+            }
+            // (comment copied from old code in hudson.tasks.Ant)
+            // on Windows, executing batch file can't return the correct error code,
+            // so we need to wrap it into cmd.exe.
+            // double %% is needed because we want ERRORLEVEL to be expanded after
+            // batch file executed, not before. This alone shows how broken Windows is...
+            quotedArgs.append("&& exit %%ERRORLEVEL%%");
+            return new ArgumentListBuilder("cmd.exe", "/C").addQuoted(quotedArgs.toString()).toList();
+        }
+
+        private static final long serialVersionUID = 2L;
     }
 
     private static final long serialVersionUID = 1L;
