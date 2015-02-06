@@ -916,7 +916,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 }
                 if (d == null) {
                   kind = jo.getString("$class");
-                  d = findByClassName(descriptors, kind);
+                  d = findByDescribableClassName(descriptors, kind);
+                  if (d == null) d = findByClassName(descriptors, kind);
                 }
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
@@ -947,6 +948,17 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public static @CheckForNull <T extends Descriptor> T findByClassName(Collection<? extends T> list, String className) {
         for (T d : list) {
             if(d.getClass().getName().equals(className))
+                return d;
+        }
+        return null;
+    }
+
+    /**
+     * Finds a descriptor from a collection by the class name of the Describable it describes.
+     */
+    public static @CheckForNull <T extends Descriptor> T findByDescribableClassName(Collection<? extends T> list, String className) {
+        for (T d : list) {
+            if(d.clazz.getName().equals(className))
                 return d;
         }
         return null;

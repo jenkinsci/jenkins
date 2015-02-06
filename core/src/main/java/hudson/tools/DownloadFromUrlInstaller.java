@@ -122,7 +122,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         }
 
         protected Downloadable createDownloadable() {
-            return new Downloadable(getId());
+            return new Downloadable(getDownloadableId());
         }
 
         /**
@@ -130,7 +130,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * <p>
          * By default we use the fully-qualified class name of the {@link DownloadFromUrlInstaller} subtype.
          */
-        public String getId() {
+        public String getDownloadableId() {
             return clazz.getName().replace('$','.');
         }
 
@@ -144,7 +144,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * @return never null.
          */
         public List<? extends Installable> getInstallables() throws IOException {
-            JSONObject d = Downloadable.get(getId()).getData();
+            JSONObject d = Downloadable.get(getDownloadableId()).getData();
             if(d==null)     return Collections.emptyList();
             return Arrays.asList(((InstallableList)JSONObject.toBean(d,InstallableList.class)).list);
         }
