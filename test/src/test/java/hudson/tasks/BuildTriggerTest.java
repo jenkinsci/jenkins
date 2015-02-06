@@ -46,6 +46,7 @@ import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockBuilder;
+import org.jvnet.hudson.test.RandomlyFails;
 
 /**
  * Tests for hudson.tasks.BuildTrigger
@@ -144,6 +145,7 @@ public class BuildTriggerTest extends HudsonTestCase {
         doMavenTriggerTest(true);
     }
 
+    @RandomlyFails("ClassCastException: net.sf.json.JSONArray cannot be cast to java.lang.Boolean from AuthorizationMatrixProperty$DescriptorImpl.newInstance")
     public void testConfigureDownstreamProjectSecurity() throws Exception {
         jenkins.setSecurityRealm(new LegacySecurityRealm());
         ProjectMatrixAuthorizationStrategy auth = new ProjectMatrixAuthorizationStrategy();
