@@ -437,7 +437,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             assignedNode = null;
         } else {
             canRoam = false;
-            if(l== Jenkins.getInstance().getSelfLabel())  assignedNode = null;
+            if(l.equals(Jenkins.getInstance().getSelfLabel()))  assignedNode = null;
             else                                        assignedNode = l.getExpression();
         }
         save();

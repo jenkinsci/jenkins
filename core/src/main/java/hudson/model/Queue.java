@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.base.Objects;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
@@ -936,27 +937,37 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * How many {@link BuildableItem}s are assigned for the given label?
+     * Counts all the {@link SubTask}s assigned for the given label.
+     *
+     * This method is a misnomer
      */
     public int countBuildableItemsFor(Label l) {
         Snapshot snapshot = this.snapshot;
         int r = 0;
         for (BuildableItem bi : snapshot.buildables)
             for (SubTask st : bi.task.getSubTasks())
-                if (null == l || bi.getAssignedLabelFor(st) == l)
+                if (Objects.equal(l,bi.getAssignedLabelFor(st)))
                     r++;
         for (BuildableItem bi : snapshot.pendings)
             for (SubTask st : bi.task.getSubTasks())
-                if (null == l || bi.getAssignedLabelFor(st) == l)
+                if (Objects.equal(l,bi.getAssignedLabelFor(st)))
                     r++;
         return r;
     }
 
     /**
-     * Counts all the {@link BuildableItem}s currently in the queue.
+     * Counts all the {@link SubTask}s currently in the queue.
+     *
+     * This method is a misnomer
      */
     public int countBuildableItems() {
-        return countBuildableItemsFor(null);
+        int r = 0;
+        Snapshot snapshot = this.snapshot;
+        for (BuildableItem bi : snapshot.buildables)
+            r += bi.task.getSubTasks().size();
+        for (BuildableItem bi : snapshot.pendings)
+            r += bi.task.getSubTasks().size();
+        return r;
     }
 
     /**
