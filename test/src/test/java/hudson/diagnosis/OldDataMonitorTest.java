@@ -41,20 +41,27 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import hudson.model.ItemGroup;
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import jenkins.model.Jenkins;
 import jenkins.model.lazy.BuildReference;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.Stapler;
+
+import javax.annotation.Nonnull;
 
 public class OldDataMonitorTest {
 
@@ -66,7 +73,7 @@ public class OldDataMonitorTest {
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Ignore("constantly failing on CI builders, makes problems for memory()")
-    @Bug(19544)
+    @Issue("JENKINS-19544")
     @LocalData
     @Test public void robustness() throws Exception {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
@@ -86,7 +93,7 @@ public class OldDataMonitorTest {
         // did not manage to save p, but at least we are not holding onto a reference to it anymore
     }
 
-    @Bug(19544)
+    @Issue("JENKINS-19544")
     @Test public void memory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("p");
         FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
@@ -146,6 +153,21 @@ public class OldDataMonitorTest {
 
         preventExit.countDown();
         discardFuture.get();
+
+    }
+
+    @Issue("JENKINS-26718")
+    @Test public void unlocatableRun() throws Exception {
+        OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
+        FreeStyleProject p = mock(FreeStyleProject.class);
+        when(p.getParent()).thenReturn(Jenkins.getInstance());
+        when(p.getFullName()).thenReturn("notfound");
+        FreeStyleBuild build = new FreeStyleBuild(p);
+        odm.report(build, (String) null);
+
+        assertEquals(Collections.singleton(build), odm.getData().keySet());
+        odm.doDiscard(null, null);
+        assertEquals(Collections.emptySet(), odm.getData().keySet());
 
     }
 

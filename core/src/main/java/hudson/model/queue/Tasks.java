@@ -23,6 +23,7 @@
  */
 package hudson.model.queue;
 
+import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
@@ -66,15 +67,38 @@ public class Tasks {
     }
 
     /**
-     * @param t a task
-     * @return {@link Task#getDefaultAuthentication}, or {@link ACL#SYSTEM}
+     * Helper method to safely invoke {@link Task#getDefaultAuthentication()} on classes that may come
+     * from plugins compiled against an earlier version of Jenkins.
+     *
+     * @param t the task
+     * @return {@link Task#getDefaultAuthentication()}, or {@link ACL#SYSTEM}
      * @since 1.520
      */
+    @Nonnull
     public static Authentication getDefaultAuthenticationOf(Task t) {
         try {
             return t.getDefaultAuthentication();
         } catch (AbstractMethodError e) {
             return ACL.SYSTEM;
+        }
+    }
+
+    /**
+     * Helper method to safely invoke {@link Task#getDefaultAuthentication(Item)} on classes that may come
+     * from plugins compiled against an earlier version of Jenkins.
+     *
+     * @param t    the task
+     * @param item the item
+     * @return {@link Task#getDefaultAuthentication(hudson.model.Queue.Item)},
+     * or {@link Task#getDefaultAuthentication()}, or {@link ACL#SYSTEM}
+     * @since 1.592
+     */
+    @Nonnull
+    public static Authentication getDefaultAuthenticationOf(Task t, Item item) {
+        try {
+            return t.getDefaultAuthentication(item);
+        } catch (AbstractMethodError e) {
+            return getDefaultAuthenticationOf(t);
         }
     }
 

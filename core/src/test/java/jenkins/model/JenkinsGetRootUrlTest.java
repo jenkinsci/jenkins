@@ -34,7 +34,7 @@ import java.net.URL;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import static org.mockito.Matchers.anyString;
@@ -88,7 +88,7 @@ public class JenkinsGetRootUrlTest {
         rootUrlIs("http://configured.host/");
     }
 
-    @Bug(16368)
+    @Issue("JENKINS-16368")
     @Test
     public void doNotInheritProtocolWhenDispatchingRequest() {
 
@@ -98,7 +98,7 @@ public class JenkinsGetRootUrlTest {
         rootUrlIs("http://configured.host/");
     }
 
-    @Bug(16511)
+    @Issue("JENKINS-16511")
     @Test
     public void doNotInheritProtocolWhenDispatchingRequest2() {
         configured("https://ci/jenkins/");
@@ -106,7 +106,7 @@ public class JenkinsGetRootUrlTest {
         rootUrlIs("https://ci/jenkins/");
     }
     
-    @Bug(10675)
+    @Issue("JENKINS-10675")
     @Test
     public void useForwardedProtoWhenPresent() {
         configured("https://ci/jenkins/");

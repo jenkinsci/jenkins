@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -38,7 +38,7 @@ public class RunTest  {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(17935)
+    @Issue("JENKINS-17935")
     @Test public void getDynamicInvisibleTransientAction() throws Exception {
         TransientBuildActionFactory.all().add(0, new TransientBuildActionFactory() {
             @Override public Collection<? extends Action> createFor(Run target) {

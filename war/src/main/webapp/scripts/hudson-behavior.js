@@ -1131,6 +1131,24 @@ var jenkinsRules = {
         new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
     },
 
+    ".track-mouse" : function (element) {
+        var DOM = YAHOO.util.Dom;
+
+        $(element).observe("mouseenter",function () {
+            element.addClassName("mouseover");
+
+            var mousemoveTracker = function (event) {
+                var elementRegion = DOM.getRegion(element);
+                if (event.x < elementRegion.left || event.x > elementRegion.right ||
+                    event.y < elementRegion.top || event.y > elementRegion.bottom) {
+                    element.removeClassName("mouseover");
+                    Element.stopObserving(document, "mousemove", mousemoveTracker);
+                }
+            };
+            Element.observe(document, "mousemove", mousemoveTracker);
+        });
+    },
+
     /*
         Use on div tag to make it sticky visible on the bottom of the page.
         When page scrolls it remains in the bottom of the page
@@ -1460,7 +1478,10 @@ function refreshPart(id,url) {
             new Ajax.Request(url, {
                 onSuccess: function(rsp) {
                     var hist = $(id);
-                    if (hist==null) console.log("There's no element that has ID of "+id)
+                    if (hist == null) {
+                        console.log("There's no element that has ID of " + id);
+                        return;
+                    }
                     var p = hist.up();
 
                     var div = document.createElement('div');
@@ -1552,19 +1573,322 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
+function onBuildHistoryChange(handler) {
+    Event.observe(window, 'jenkins:buildHistoryChanged', handler);
+}
+function fireBuildHistoryChanged() {
+    Event.fire(window, 'jenkins:buildHistoryChanged');
+}
+
 function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
-    $('buildHistory').headers = ["n",nBuild];
+    var bh = $('buildHistory');
 
-    function updateBuilds() {
-        if(isPageVisible()){
-            var bh = $('buildHistory');
-            if (bh.headers == null) {
-                // Yahoo.log("Missing headers in buildHistory element");
+    bh.headers = ["n",nBuild];
+
+    function getDataTable(buildHistoryDiv) {
+        return $(buildHistoryDiv).getElementsBySelector('table.pane')[0];
+    }
+
+    var leftRightPadding = 4;
+    function checkRowCellOverflows(row) {
+        if (!row) {
+            return;
+        }
+
+        if (Element.hasClassName(row, "overflow-checked")) {
+            // already done.
+            return;
+        }
+
+        function markSingleline() {
+            Element.addClassName(row, "single-line");
+            Element.removeClassName(row, "multi-line");
+        }
+        function markMultiline() {
+            Element.removeClassName(row, "single-line");
+            Element.addClassName(row, "multi-line");
+        }
+        function indentMultiline(element) {
+            Element.addClassName(element, "indent-multiline");
+        }
+
+        function blockWrap(el1, el2) {
+            var div = document.createElement('div');
+
+            Element.addClassName(div, "block");
+            Element.addClassName(div, "wrap");
+            Element.addClassName(el1, "wrapped");
+            Element.addClassName(el2, "wrapped");
+
+            el1.parentNode.insertBefore(div, el1);
+            el1.parentNode.removeChild(el1);
+            el2.parentNode.removeChild(el2);
+            div.appendChild(el1);
+            div.appendChild(el2);
+
+            return div;
+        }
+        function blockUnwrap(element) {
+            var wrapped = $(element).getElementsBySelector('.wrapped');
+            for (var i = 0; i < wrapped.length; i++) {
+                var wrappedEl = wrapped[i];
+                wrappedEl.parentNode.removeChild(wrappedEl);
+                element.parentNode.insertBefore(wrappedEl, element);
+                Element.removeClassName(wrappedEl, "wrapped");
+            }
+            element.parentNode.removeChild(element);
+        }
+
+        var buildName = $(row).getElementsBySelector('.build-name')[0];
+        var buildDetails = $(row).getElementsBySelector('.build-details')[0];
+
+        if (!buildName || !buildDetails) {
+            return;
+        }
+
+        var displayName = $(buildName).getElementsBySelector('.display-name')[0];
+        var buildControls = $(row).getElementsBySelector('.build-controls')[0];
+        var desc;
+
+        var descElements = $(row).getElementsBySelector('.desc');
+        if (descElements.length > 0) {
+            desc = descElements[0];
+        }
+
+        function resetCellOverflows() {
+            markSingleline();
+
+            // undo block wraps
+            var blockWraps = $(row).getElementsBySelector('.block.wrap');
+            for (var i = 0; i < blockWraps.length; i++) {
+                blockUnwrap(blockWraps[i]);
             }
 
-            function getDataTable(buildHistoryDiv) {
-                return $(buildHistoryDiv).getElementsBySelector('table.pane')[0];
+            removeZeroWidthSpaces(displayName);
+            removeZeroWidthSpaces(desc);
+            Element.removeClassName(buildName, "block");
+            buildName.removeAttribute('style');
+            Element.removeClassName(buildDetails, "block");
+            buildDetails.removeAttribute('style');
+            if (buildControls) {
+                Element.removeClassName(buildControls, "block");
+                buildDetails.removeAttribute('style');
+            }
+        }
+
+        // Undo everything from the previous poll.
+        resetCellOverflows();
+
+        // Insert zero-width spaces so as to allow text to wrap, allowing us to get the true clientWidth.
+        insertZeroWidthSpacesInElementText(displayName, 2);
+        if (desc) {
+            insertZeroWidthSpacesInElementText(desc, 30);
+            markMultiline();
+        }
+
+        var rowWidth = bh.clientWidth;
+        var usableRowWidth = rowWidth - (leftRightPadding * 2);
+        var nameOverflowParams = getElementOverflowParams(buildName);
+        var detailsOverflowParams = getElementOverflowParams(buildDetails);
+
+        var controlsOverflowParams;
+        if (buildControls) {
+            controlsOverflowParams = getElementOverflowParams(buildControls);
+        }
+
+        if (nameOverflowParams.isOverflowed) {
+            // If the name is overflowed, lets remove the zero-width spaces we added above and
+            // re-add zero-width spaces with a bigger max word sizes.
+            removeZeroWidthSpaces(displayName);
+            insertZeroWidthSpacesInElementText(displayName, 20);
+        }
+
+        function fitToControlsHeight(element) {
+            if (buildControls) {
+                if (element.clientHeight < buildControls.clientHeight) {
+                    $(element).setStyle({height: buildControls.clientHeight.toString() + 'px'});
+                }
+            }
+        }
+
+        function setBuildControlWidths() {
+            if (buildControls) {
+                var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
+
+                if (buildBadge) {
+                    var buildControlsWidth = buildControls.clientWidth;
+                    var buildBadgeWidth;
+
+                    var buildStop = $(buildControls).getElementsBySelector('.build-stop')[0];
+                    if (buildStop) {
+                        $(buildStop).setStyle({width: '24px'});
+                        // Minus 24 for the buildStop width,
+                        // minus 4 for left+right padding in the controls container
+                        buildBadgeWidth = (buildControlsWidth - 24 - leftRightPadding);
+                        if (Element.hasClassName(buildControls, "indent-multiline")) {
+                            buildBadgeWidth = buildBadgeWidth - 20;
+                        }
+                        $(buildBadge).setStyle({width: (buildBadgeWidth) + 'px'});
+                    } else {
+                        $(buildBadge).setStyle({width: '100%'});
+                    }
+                }
+                controlsOverflowParams = getElementOverflowParams(buildControls);
+            }
+        }
+        setBuildControlWidths();
+
+        var controlsRepositioned = false;
+
+        if (nameOverflowParams.isOverflowed || detailsOverflowParams.isOverflowed) {
+            // At least one of the cells (name or details) needs to move to a row of its own.
+
+            markMultiline();
+
+            if (buildControls) {
+
+                // We have build controls. Lets see can we find a combination that allows the build controls
+                // to sit beside either the build name or the build details.
+
+                var badgesOverflowing = false;
+                var nameLessThanHalf = true;
+                var detailsLessThanHalf = true;
+                var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
+                if (buildBadge) {
+                    var badgeOverflowParams = getElementOverflowParams(buildBadge);
+
+                    if (badgeOverflowParams.isOverflowed) {
+                        // The badges are also overflowing. In this case, we will only attempt to
+                        // put the controls on the same line as the name or details (see below)
+                        // if the name or details is using less than half the width of the build history
+                        // widget.
+                        badgesOverflowing = true;
+                        nameLessThanHalf = (nameOverflowParams.scrollWidth < usableRowWidth/2);
+                        detailsLessThanHalf = (detailsOverflowParams.scrollWidth < usableRowWidth/2);
+                    }
+                }
+                function expandLeftWithRight(leftCellOverFlowParams, rightCellOverflowParams) {
+                    // Float them left and right...
+                    $(leftCellOverFlowParams.element).setStyle({float: 'left'});
+                    $(rightCellOverflowParams.element).setStyle({float: 'right'});
+
+                    if (!leftCellOverFlowParams.isOverflowed && !rightCellOverflowParams.isOverflowed) {
+                        // If neither left nor right are overflowed, just leave as is and let them float left and right.
+                        return;
+                    }
+                    if (leftCellOverFlowParams.isOverflowed && !rightCellOverflowParams.isOverflowed) {
+                        $(leftCellOverFlowParams.element).setStyle({width: leftCellOverFlowParams.scrollWidth + 'px'});
+                        return;
+                    }
+                    if (!leftCellOverFlowParams.isOverflowed && rightCellOverflowParams.isOverflowed) {
+                        $(rightCellOverflowParams.element).setStyle({width: rightCellOverflowParams.scrollWidth + 'px'});
+                        return;
+                    }
+                }
+
+                if ((!badgesOverflowing || nameLessThanHalf) &&
+                    (nameOverflowParams.scrollWidth + controlsOverflowParams.scrollWidth <= usableRowWidth)) {
+                    // Build name and controls can go on one row (first row). Need to move build details down
+                    // to a row of its own (second row) by making it a block element, forcing it to wrap. If there
+                    // are controls, we move them up to position them after the build name by inserting before the
+                    // build details.
+                    Element.addClassName(buildDetails, "block");
+                    buildControls.parentNode.removeChild(buildControls);
+                    buildDetails.parentNode.insertBefore(buildControls, buildDetails);
+                    var wrap = blockWrap(buildName, buildControls);
+                    Element.addClassName(wrap, "build-name-controls");
+                    indentMultiline(buildDetails);
+                    nameOverflowParams = getElementOverflowParams(buildName); // recalculate
+                    expandLeftWithRight(nameOverflowParams, controlsOverflowParams);
+                    setBuildControlWidths();
+                    fitToControlsHeight(buildName);
+                } else if ((!badgesOverflowing || detailsLessThanHalf) &&
+                    (detailsOverflowParams.scrollWidth + controlsOverflowParams.scrollWidth <= usableRowWidth)) {
+                    // Build details and controls can go on one row. Need to make the
+                    // build name (first field) a block element, forcing the details and controls to wrap
+                    // onto the next row (creating a second row).
+                    Element.addClassName(buildName, "block");
+                    var wrap = blockWrap(buildDetails, buildControls);
+                    indentMultiline(wrap);
+                    Element.addClassName(wrap, "build-details-controls");
+                    $(displayName).setStyle({width: '100%'});
+                    detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
+                    expandLeftWithRight(detailsOverflowParams, controlsOverflowParams);
+                    setBuildControlWidths();
+                    fitToControlsHeight(buildDetails);
+                } else {
+                    // No suitable combo fits on a row. All need to go on rows of their own.
+                    Element.addClassName(buildName, "block");
+                    Element.addClassName(buildDetails, "block");
+                    Element.addClassName(buildControls, "block");
+                    indentMultiline(buildDetails);
+                    indentMultiline(buildControls);
+                    nameOverflowParams = getElementOverflowParams(buildName); // recalculate
+                    detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
+                    setBuildControlWidths();
+                }
+                controlsRepositioned = true;
+            } else {
+                Element.addClassName(buildName, "block");
+                Element.addClassName(buildDetails, "block");
+                indentMultiline(buildDetails);
+            }
+        }
+
+        if (buildControls && !controlsRepositioned) {
+            var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
+            if (buildBadge) {
+                var badgeOverflowParams = getElementOverflowParams(buildBadge);
+
+                if (badgeOverflowParams.isOverflowed) {
+                    markMultiline();
+                    indentMultiline(buildControls);
+                    Element.addClassName(buildControls, "block");
+                    controlsRepositioned = true;
+                    setBuildControlWidths();
+                }
+            }
+        }
+
+        if (!nameOverflowParams.isOverflowed && !detailsOverflowParams.isOverflowed && !controlsRepositioned) {
+            fitToControlsHeight(buildName);
+            fitToControlsHeight(buildDetails);
+        }
+
+        Element.addClassName(row, "overflow-checked");
+    }
+
+    function checkAllRowCellOverflows() {
+        if(isRunAsTest) {
+            return;
+        }
+
+        var bh = $('buildHistory');
+        var dataTable = getDataTable(bh);
+        var rows = dataTable.rows;
+
+        // Insert zero-width spaces in text that may cause overflow distortions.
+        var displayNames = $(bh).getElementsBySelector('.display-name');
+        for (var i = 0; i < displayNames.length; i++) {
+            insertZeroWidthSpacesInElementText(displayNames[i], 2);
+        }
+        var descriptions = $(bh).getElementsBySelector('.desc');
+        for (var i = 0; i < descriptions.length; i++) {
+            insertZeroWidthSpacesInElementText(descriptions[i], 30);
+        }
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            checkRowCellOverflows(row);
+        }
+    }
+
+    var updateBuildsRefreshInterval = 5000;
+    function updateBuilds() {
+        if(isPageVisible()){
+            if (bh.headers == null) {
+                // Yahoo.log("Missing headers in buildHistory element");
             }
 
             new Ajax.Request(ajaxUrl, {
@@ -1598,16 +1922,193 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
                     // next update
                     bh.headers = ["n",rsp.getResponseHeader("n")];
-                    window.setTimeout(updateBuilds, 5000);
+                    window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
+
+                    checkAllRowCellOverflows();
                 }
             });
         } else {
             // Reschedule again
-            window.setTimeout(updateBuilds, 5000);
+            window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
         }
     }
-    window.setTimeout(updateBuilds, 5000);
+    window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
+
+    onBuildHistoryChange(function() {
+        checkAllRowCellOverflows();
+    });
 }
+
+function getElementOverflowParams(element) {
+    // First we force it to wrap so we can get those dimension.
+    // Then we force it to "nowrap", so we can get those dimension.
+    // We can then compare the two sets, which will indicate if
+    // wrapping is potentially happening, or not.
+
+    // Force it to wrap.
+    Element.addClassName(element, "force-wrap");
+    var wrappedClientWidth = element.clientWidth;
+    var wrappedClientHeight = element.clientHeight;
+    Element.removeClassName(element, "force-wrap");
+
+    // Force it to nowrap. Return the comparisons.
+    Element.addClassName(element, "force-nowrap");
+    var nowrapClientHeight = element.clientHeight;
+    try {
+        var overflowParams = {
+            element: element,
+            clientWidth: wrappedClientWidth,
+            scrollWidth: element.scrollWidth,
+            isOverflowed: wrappedClientHeight > nowrapClientHeight
+        };
+        return  overflowParams;
+    } finally {
+        Element.removeClassName(element, "force-nowrap");
+    }
+}
+
+var zeroWidthSpace = String.fromCharCode(8203);
+var ELEMENT_NODE = 1;
+var TEXT_NODE = 3;
+function insertZeroWidthSpacesInText(textNode, maxWordSize) {
+    if (textNode.textContent.length < maxWordSize) {
+        return;
+    }
+
+    // capture the original text
+    textNode.preZWSText = textNode.textContent;
+
+    var words = textNode.textContent.split(/\s+/);
+    var newTextContent = '';
+
+    var splitRegex = new RegExp('.{1,' + maxWordSize + '}', 'g');
+    for (var i = 0; i < words.length; i++) {
+        var word = words[i];
+        var wordTokens = word.match(splitRegex);
+        if (wordTokens) {
+            for (var ii = 0; ii < wordTokens.length; ii++) {
+                if (newTextContent.length === 0) {
+                    newTextContent += wordTokens[ii];
+                } else {
+                    newTextContent += zeroWidthSpace + wordTokens[ii];
+                }
+            }
+        } else {
+            newTextContent += word;
+        }
+        newTextContent += ' ';
+    }
+
+    textNode.textContent = newTextContent;
+}
+function insertZeroWidthSpacesInElementText(element, maxWordSize) {
+    if (Element.hasClassName(element, 'zws-inserted')) {
+        // already done.
+        return;
+    }
+    if (!element.hasChildNodes()) {
+        return;
+    }
+
+    var children = element.childNodes;
+    for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        if (child.nodeType === TEXT_NODE) {
+            insertZeroWidthSpacesInText(child, maxWordSize);
+        } else if (child.nodeType === ELEMENT_NODE) {
+            insertZeroWidthSpacesInElementText(child, maxWordSize);
+        }
+    }
+
+    Element.addClassName(element, 'zws-inserted');
+}
+function removeZeroWidthSpaces(element) {
+    if (element) {
+        if (!Element.hasClassName(element, 'zws-inserted')) {
+            // Doesn't have ZWSed text.
+            return;
+        }
+        if (!element.hasChildNodes()) {
+            return;
+        }
+
+        var children = element.childNodes;
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            if (child.nodeType === TEXT_NODE && child.preZWSText) {
+                child.textContent = child.preZWSText;
+            } else if (child.nodeType === ELEMENT_NODE) {
+                removeZeroWidthSpaces(child);
+            }
+        }
+
+        Element.removeClassName(element, 'zws-inserted');
+    }
+}
+
+Element.observe(document, 'dom:loaded', function(){
+    if(isRunAsTest) {
+        return;
+    }
+
+    var pageHead = $('page-head');
+    var pageBody = $('page-body');
+    var sidePanel = $(pageBody).getElementsBySelector('#side-panel')[0];
+    var sidePanelContent = $(sidePanel).getElementsBySelector('#side-panel-content')[0];
+    var mainPanel = $(pageBody).getElementsBySelector('#main-panel')[0];
+    var mainPanelContent = $(mainPanel).getElementsBySelector('#main-panel-content')[0];
+    var pageFooter = $('footer-container');
+
+    function applyFixedGridLayout() {
+        var pageBodyWidth = Element.getWidth(pageBody);
+        if (pageBodyWidth > 768) {
+            pageBody.addClassName("fixedGridLayout");
+            pageBody.removeClassName("container-fluid");
+            sidePanel.removeClassName("col-sm-9");
+            mainPanel.removeClassName("col-sm-15");
+            return true; // It's a fixedGridLayout
+        } else {
+            pageBody.removeClassName("fixedGridLayout");
+            pageBody.addClassName("container-fluid");
+            sidePanel.addClassName("col-sm-9");
+            mainPanel.addClassName("col-sm-15");
+            return false; // It's not a fixedGridLayout
+        }
+    }
+
+    function applyFixedGridHeights() {
+        var windowHeight = document.viewport.getDimensions().height;
+        var headHeight = Element.getHeight(pageHead);
+        var footerHeight = Element.getHeight(pageFooter);
+        var sidePanelHeight = Element.getHeight(sidePanel);
+        var mainPanelHeight = Element.getHeight(mainPanel);
+        var minPageBodyHeight = (windowHeight - headHeight - footerHeight);
+
+        minPageBodyHeight = Math.max(minPageBodyHeight, sidePanelHeight);
+        minPageBodyHeight = Math.max(minPageBodyHeight, mainPanelHeight);
+
+        $(pageBody).setStyle({minHeight: minPageBodyHeight + 'px'});
+        $(sidePanel).setStyle({minHeight: minPageBodyHeight + 'px'});
+        $(mainPanel).setStyle({minHeight: minPageBodyHeight + 'px'});
+    }
+
+    var doPanelLayouts = function() {
+        // remove all style
+        pageBody.removeAttribute('style');
+        sidePanel.removeAttribute('style');
+        mainPanel.removeAttribute('style');
+        if (applyFixedGridLayout()) {
+            applyFixedGridHeights();
+        }
+    }
+
+    Event.observe(window, 'resize', doPanelLayouts);
+    elementResizeTracker.onResize(sidePanelContent, doPanelLayouts);
+    elementResizeTracker.onResize(mainPanelContent, doPanelLayouts);
+
+    doPanelLayouts();
+    fireBuildHistoryChanged();
+});
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
 function getStyle(e,a){
@@ -1617,6 +2118,52 @@ function getStyle(e,a){
     return e.currentStyle[a];
   return null;
 }
+
+function ElementResizeTracker() {
+    this.trackedElements = [];
+
+    if(isRunAsTest) {
+        return;
+    }
+
+    var thisTracker = this;
+    function checkForResize() {
+        for (var i = 0; i < thisTracker.trackedElements.length; i++) {
+            var element = thisTracker.trackedElements[i];
+            var currDims = Element.getDimensions(element);
+            var lastDims = element.lastDimensions;
+            if (currDims.width !== lastDims.width || currDims.height !== lastDims.height) {
+                Event.fire(element, 'jenkins:resize');
+            }
+            element.lastDimensions = currDims;
+        }
+    }
+    Event.observe(window, 'jenkins:resizeCheck', checkForResize);
+
+    function checkForResizeLoop() {
+        checkForResize();
+        setTimeout(checkForResizeLoop, 200);
+    }
+    checkForResizeLoop();
+}
+ElementResizeTracker.prototype.addElement = function(element) {
+    for (var i = 0; i < this.trackedElements.length; i++) {
+        if (this.trackedElements[i] === element) {
+            // we're already tracking it so no need to add it.
+            return;
+        }
+    }
+    this.trackedElements.push(element);
+}
+ElementResizeTracker.prototype.onResize = function(element, handler) {
+    element.lastDimensions = Element.getDimensions(element);
+    Event.observe(element, 'jenkins:resize', handler);
+    this.addElement(element);
+}
+ElementResizeTracker.fireResizeCheck = function() {
+    Event.fire(window, 'jenkins:resizeCheck');
+}
+var elementResizeTracker = new ElementResizeTracker();
 
 /**
  * Makes sure the given element is within the viewport.

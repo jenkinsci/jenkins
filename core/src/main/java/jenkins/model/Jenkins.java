@@ -382,7 +382,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.534
      */
     private volatile boolean disableRememberMe;
-    
+
     /**
      * The project naming strategy defines/restricts the names which can be given to a project/job. e.g. does the name have to follow a naming convention?
      */
@@ -474,7 +474,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Active {@link Cloud}s.
      */
     public final Hudson.CloudList clouds = new Hudson.CloudList(this);
-    
+
     public static class CloudList extends DescribableList<Cloud,Descriptor<Cloud>> {
         public CloudList(Jenkins h) {
             super(h);
@@ -592,7 +592,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Load statistics of the free roaming jobs and slaves.
-     * 
+     *
      * This includes all executors on {@link hudson.model.Node.Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
      *
      * @since 1.467
@@ -674,18 +674,35 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Do not use in the production code as the signature may change.
      */
     public interface JenkinsHolder {
-        Jenkins getInstance();
+        @CheckForNull Jenkins getInstance();
     }
 
     static JenkinsHolder HOLDER = new JenkinsHolder() {
-        public Jenkins getInstance() {
+        public @CheckForNull Jenkins getInstance() {
             return theInstance;
         }
     };
 
     /**
-     * Gets the Jenkins singleton.
-     * @return the instance, or null if Jenkins has not been started, or was already shut down
+     * Gets the {@link Jenkins} singleton.
+     * {@link #getInstance()} provides the unchecked versions of the method.
+     * @return {@link Jenkins} instance
+     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
+     * @since 1.590
+     */
+    public static @Nonnull Jenkins getActiveInstance() throws IllegalStateException {
+        Jenkins instance = HOLDER.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+        }
+        return instance;
+    }
+
+    /**
+     * Gets the {@link Jenkins} singleton.
+     * {@link #getActiveInstance()} provides the checked versions of the method.
+     * @return The instance. Null if the {@link Jenkins} instance has not been started,
+     * or was already shut down
      */
     @CLIResolver
     @CheckForNull
@@ -731,7 +748,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     })
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         long start = System.currentTimeMillis();
-        
+
     	// As Jenkins is starting, grant this process full control
         ACL.impersonate(ACL.SYSTEM);
         try {
@@ -850,7 +867,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     LOGGER.info(String.format("Took %dms for item listener %s startup",
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
             }
-            
+
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
@@ -1352,7 +1369,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (item.hasPermission(Item.READ))
                 viewableItems.add(item);
         }
-		
+
         return viewableItems;
     }
 
@@ -1692,8 +1709,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         setNodes(nl);
     }
 
-    public void setNodes(List<? extends Node> nodes) throws IOException {
-        this.slaves = new NodeList(nodes);
+    public void setNodes(final List<? extends Node> nodes) throws IOException {
+        Jenkins.this.slaves = new NodeList(nodes);
         updateComputerList();
         trimLabels();
         save();
@@ -1985,7 +2002,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return workspace;
             }
         }
- 
+
         return new FilePath(expandVariablesForDirectory(workspaceDir, item));
     }
 
@@ -2006,7 +2023,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 "ITEM_FULL_NAME", itemFullName.replace(':','$'))); // safe, see JENKINS-12251
 
     }
-    
+
     public String getRawWorkspaceDir() {
         return workspaceDir;
     }
@@ -2020,7 +2037,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         this.buildsDir = buildsDir;
     }
 
-    public FilePath getRootPath() {
+    @Override public @Nonnull FilePath getRootPath() {
         return new FilePath(getRootDir());
     }
 
@@ -2059,7 +2076,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public boolean isUseSecurity() {
         return securityRealm!=SecurityRealm.NO_AUTHENTICATION || authorizationStrategy!=AuthorizationStrategy.UNSECURED;
     }
-    
+
     public boolean isUseProjectNamingStrategy(){
         return projectNamingStrategy != DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
     }
@@ -2152,7 +2169,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         projectNamingStrategy = ns;
     }
-    
+
     public Lifecycle getLifecycle() {
         return Lifecycle.get();
     }
@@ -2262,7 +2279,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public AuthorizationStrategy getAuthorizationStrategy() {
         return authorizationStrategy;
     }
-    
+
     /**
      * The strategy used to check the project names.
      * @return never <code>null</code>
@@ -2390,7 +2407,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return getItem(pathName,context!=null?context.getParent():null);
     }
 
-    public final <T extends Item> T getItem(String pathName, ItemGroup context, Class<T> type) {
+    public final <T extends Item> T getItem(String pathName, ItemGroup context, @Nonnull Class<T> type) {
         Item r = getItem(pathName, context);
         if (type.isInstance(r))
             return type.cast(r);
@@ -2603,7 +2620,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IOException(projectsDir+" is not a directory");
             throw new IOException("Unable to create "+projectsDir+"\nPermission issue? Please create this directory manually.");
         }
-        File[] subdirs = projectsDir.listFiles(); 
+        File[] subdirs = projectsDir.listFiles();
 
         final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<String>());
 
@@ -2613,7 +2630,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 // JENKINS-8043: some slaves (eg. swarm slaves) are not saved into the config file
                 // and will get overwritten when reloading. Make a backup copy now, and re-add them later
                 NodeList oldSlaves = slaves;
-                
+
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {
                     // reset some data that may not exist in the disk file
@@ -2973,9 +2990,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public HttpResponse doToggleCollapse() throws ServletException, IOException {
     	final StaplerRequest request = Stapler.getCurrentRequest();
     	final String paneId = request.getParameter("paneId");
-    	
+
     	PaneStatusProperties.forCurrentUser().toggleCollapsed(paneId);
-    	
+
         return HttpResponses.forwardToPreviousPage();
     }
 
@@ -3067,9 +3084,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(name==null || name.length()==0)
             throw new Failure(Messages.Hudson_NoName());
 
-        if(".".equals(name.trim())) 
+        if(".".equals(name.trim()))
             throw new Failure(Messages.Jenkins_NotAllowedName("."));
-        if("..".equals(name.trim())) 
+        if("..".equals(name.trim()))
             throw new Failure(Messages.Jenkins_NotAllowedName(".."));
         for( int i=0; i<name.length(); i++ ) {
             char ch = name.charAt(i);
@@ -3568,7 +3585,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Sign up for the user account.
      */
     public void doSignup( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        req.getView(getSecurityRealm(), "signup.jelly").forward(req, rsp);
+        if (getSecurityRealm().allowsSignup()) {
+            req.getView(getSecurityRealm(), "signup.jelly").forward(req, rsp);
+            return;
+        }
+        req.getView(SecurityRealm.class, "signup.jelly").forward(req, rsp);
     }
 
     /**
@@ -3638,20 +3659,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Checks if a top-level view with the given name exists and 
+     * Checks if a top-level view with the given name exists and
      * make sure that the name is good as a view name.
      */
     public FormValidation doCheckViewName(@QueryParameter String value) {
         checkPermission(View.CREATE);
-        
+
         String name = fixEmpty(value);
-        if (name == null) 
+        if (name == null)
             return FormValidation.ok();
-        
+
         // already exists?
-        if (getView(name) != null) 
+        if (getView(name) != null)
             return FormValidation.error(Messages.Hudson_ViewAlreadyExists(name));
-        
+
         // good view name?
         try {
             checkGoodName(name);
@@ -3661,7 +3682,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         return FormValidation.ok();
     }
-    
+
     /**
      * Checks if a top-level view with the given name exists.
      * @deprecated 1.512
@@ -3740,7 +3761,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void rebuildDependencyGraph() {
         DependencyGraph graph = new DependencyGraph();
         graph.build();
-        // volatile acts a as a memory barrier here and therefore guarantees 
+        // volatile acts a as a memory barrier here and therefore guarantees
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
         dependencyGraphDirty.set(false);
@@ -3855,22 +3876,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * This method checks all existing jobs to see if displayName is 
+     * This method checks all existing jobs to see if displayName is
      * unique. It does not check the displayName against the displayName of the
-     * job that the user is configuring though to prevent a validation warning 
+     * job that the user is configuring though to prevent a validation warning
      * if the user sets the displayName to what it currently is.
      * @param displayName
      * @param currentJobName
      */
     boolean isDisplayNameUnique(String displayName, String currentJobName) {
         Collection<TopLevelItem> itemCollection = items.values();
-        
-        // if there are a lot of projects, we'll have to store their 
+
+        // if there are a lot of projects, we'll have to store their
         // display names in a HashSet or something for a quick check
         for(TopLevelItem item : itemCollection) {
             if(item.getName().equals(currentJobName)) {
                 // we won't compare the candidate displayName against the current
-                // item. This is to prevent an validation warning if the user 
+                // item. This is to prevent an validation warning if the user
                 // sets the displayName to what the existing display name is
                 continue;
             }
@@ -3878,10 +3899,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return false;
             }
         }
-        
+
         return true;
     }
-    
+
     /**
      * True if there is no item in Jenkins that has this name
      * @param name The name to test
@@ -3889,7 +3910,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     boolean isNameUnique(String name, String currentJobName) {
         Item item = getItem(name);
-        
+
         if(null==item) {
             // the candidate name didn't return any items so the name is unique
             return true;
@@ -3898,27 +3919,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // the candidate name returned an item, but the item is the item
             // that the user is configuring so this is ok
             return true;
-        } 
+        }
         else {
             // the candidate name returned an item, so it is not unique
             return false;
         }
     }
-    
+
     /**
-     * Checks to see if the candidate displayName collides with any 
+     * Checks to see if the candidate displayName collides with any
      * existing display names or project names
      * @param displayName The display name to test
      * @param jobName The name of the job the user is configuring
      */
-    public FormValidation doCheckDisplayName(@QueryParameter String displayName, 
+    public FormValidation doCheckDisplayName(@QueryParameter String displayName,
             @QueryParameter String jobName) {
         displayName = displayName.trim();
-        
+
         if(LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Current job name is " + jobName);
         }
-        
+
         if(!isNameUnique(displayName, jobName)) {
             return FormValidation.warning(Messages.Jenkins_CheckDisplayName_NameNotUniqueWarning(displayName));
         }
@@ -3929,7 +3950,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return FormValidation.ok();
         }
     }
-    
+
     public static class MasterComputer extends Computer {
         protected MasterComputer() {
             super(Jenkins.getInstance());
@@ -4049,12 +4070,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Thread-safe reusable {@link XStream}.
      */
-    public static final XStream XSTREAM = new XStream2();
+    public static final XStream XSTREAM;
 
     /**
      * Alias to {@link #XSTREAM} so that one can access additional methods on {@link XStream2} more easily.
      */
-    public static final XStream2 XSTREAM2 = (XStream2)XSTREAM;
+    public static final XStream2 XSTREAM2;
 
     private static final int TWICE_CPU_NUM = Math.max(4, Runtime.getRuntime().availableProcessors() * 2);
 
@@ -4135,7 +4156,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Unique random token that identifies the current session.
      * Used to make {@link #RESOURCE_PATH} unique so that we can set long "Expires" header.
-     * 
+     *
      * We used to use {@link #VERSION_HASH}, but making this session local allows us to
      * reuse the same {@link #RESOURCE_PATH} for static resources in plugins.
      */
@@ -4162,9 +4183,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
     public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
     /**
-     * Enabled by default as of 1.337. Will keep it for a while just in case we have some serious problems.
+     * @deprecated No longer used.
      */
-    public static boolean FLYWEIGHT_SUPPORT = Configuration.getBooleanConfigParameter("flyweightSupport", true);
+    public static boolean FLYWEIGHT_SUPPORT = true;
 
     /**
      * Tentative switch to activate the concurrent build behavior.
@@ -4201,24 +4222,39 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 1.343
      */
-    public static final Authentication ANONYMOUS = new AnonymousAuthenticationToken(
-            "anonymous","anonymous",new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
+    public static final Authentication ANONYMOUS;
 
     static {
-        XSTREAM.alias("jenkins",Jenkins.class);
-        XSTREAM.alias("slave", DumbSlave.class);
-        XSTREAM.alias("jdk",JDK.class);
-        // for backward compatibility with <1.75, recognize the tag name "view" as well.
-        XSTREAM.alias("view", ListView.class);
-        XSTREAM.alias("listView", ListView.class);
-        XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
-        XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
-        // this seems to be necessary to force registration of converter early enough
-        Mode.class.getEnumConstants();
+        try {
+            ANONYMOUS = new AnonymousAuthenticationToken(
+                    "anonymous", "anonymous", new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
+            XSTREAM = XSTREAM2 = new XStream2();
 
-        // double check that initialization order didn't do any harm
-        assert PERMISSIONS!=null;
-        assert ADMINISTER!=null;
+            XSTREAM.alias("jenkins", Jenkins.class);
+            XSTREAM.alias("slave", DumbSlave.class);
+            XSTREAM.alias("jdk", JDK.class);
+            // for backward compatibility with <1.75, recognize the tag name "view" as well.
+            XSTREAM.alias("view", ListView.class);
+            XSTREAM.alias("listView", ListView.class);
+            XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
+            XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
+            // this seems to be necessary to force registration of converter early enough
+            Mode.class.getEnumConstants();
+
+            // double check that initialization order didn't do any harm
+            assert PERMISSIONS != null;
+            assert ADMINISTER != null;
+        } catch (RuntimeException e) {
+            // when loaded on a slave and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
+            // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8051847
+            // As we don't know where the first exception will go, let's also send this to logging so that
+            // we have a known place to look at.
+            LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
+            throw e;
+        } catch (Error e) {
+            LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
+            throw e;
+        }
     }
 
 }

@@ -69,6 +69,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * {@link TopLevelItemDescriptor}s that act like a wizard and produces different
      * object types than {@link #clazz} can override this method to augment
      * instance-descriptor relationship.
+     * @since 1.410
      */
     public boolean testInstance(TopLevelItem i) {
         return clazz.isInstance(i);

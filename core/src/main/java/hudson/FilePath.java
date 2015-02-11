@@ -734,32 +734,34 @@ public final class FilePath implements Serializable {
      * that supports upgrade and downgrade. Specifically,
      *
      * <ul>
-     * <li>If the target directory doesn't exist {@linkplain #mkdirs() it'll be created}.
-     * <li>The timestamp of the .tgz file is left in the installation directory upon extraction.
-     * <li>If the timestamp left in the directory doesn't match with the timestamp of the current archive file,
+     * <li>If the target directory doesn't exist {@linkplain #mkdirs() it will be created}.
+     * <li>The timestamp of the archive is left in the installation directory upon extraction.
+     * <li>If the timestamp left in the directory does not match the timestamp of the current archive file,
      *     the directory contents will be discarded and the archive file will be re-extracted.
      * <li>If the connection is refused but the target directory already exists, it is left alone.
      * </ul>
      *
      * @param archive
-     *      The resource that represents the tgz/zip file. This URL must support the "Last-Modified" header.
-     *      (Most common usage is to get this from {@link ClassLoader#getResource(String)})
+     *      The resource that represents the tgz/zip file. This URL must support the {@code Last-Modified} header.
+     *      (For example, you could use {@link ClassLoader#getResource}.)
      * @param listener
      *      If non-null, a message will be printed to this listener once this method decides to
-     *      extract an archive.
+     *      extract an archive, or if there is any issue.
+     * @param message a message to be printed in case extraction will proceed.
      * @return
      *      true if the archive was extracted. false if the extraction was skipped because the target directory
      *      was considered up to date.
      * @since 1.299
      */
-    public boolean installIfNecessaryFrom(URL archive, TaskListener listener, String message) throws IOException, InterruptedException {
+    public boolean installIfNecessaryFrom(@Nonnull URL archive, @CheckForNull TaskListener listener, @Nonnull String message) throws IOException, InterruptedException {
         try {
             FilePath timestamp = this.child(".timestamp");
+            long lastModified = timestamp.lastModified();
             URLConnection con;
             try {
                 con = ProxyConfiguration.open(archive);
-                if (timestamp.exists()) {
-                    con.setIfModifiedSince(timestamp.lastModified());
+                if (lastModified != 0) {
+                    con.setIfModifiedSince(lastModified);
                 }
                 con.connect();
             } catch (IOException x) {
@@ -774,15 +776,21 @@ public final class FilePath implements Serializable {
                 }
             }
 
-            if (con instanceof HttpURLConnection
-                    && ((HttpURLConnection)con).getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
-                return false;
+            if (lastModified != 0 && con instanceof HttpURLConnection) {
+                HttpURLConnection httpCon = (HttpURLConnection) con;
+                int responseCode = httpCon.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                    return false;
+                } else if (responseCode != HttpURLConnection.HTTP_OK) {
+                    listener.getLogger().println("Skipping installation of " + archive + " to " + remote + " due to server error: " + responseCode + " " + httpCon.getResponseMessage());
+                    return false;
+                }
             }
 
             long sourceTimestamp = con.getLastModified();
 
             if(this.exists()) {
-                if(timestamp.exists() && sourceTimestamp ==timestamp.lastModified())
+                if (lastModified != 0 && sourceTimestamp == lastModified)
                     return false;   // already up to date
                 this.deleteContents();
             } else {
@@ -1573,6 +1581,7 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
+                // TODO first check for Java 7+ and use PosixFileAttributeView
                 _chmod(writing(f), mask);
 
                 return null;
@@ -1584,7 +1593,9 @@ public final class FilePath implements Serializable {
      * Run chmod via jnr-posix
      */
     private static void _chmod(File f, int mask) throws IOException {
-        if (Functions.isWindows())  return; // noop
+        // TODO WindowsPosix actually does something here (WindowsLibC._wchmod); should we let it?
+        // Anyway the existing calls already skip this method if on Windows.
+        if (File.pathSeparatorChar==';')  return; // noop
 
         PosixAPI.jnr().chmod(f.getAbsolutePath(),mask);
     }
@@ -2324,10 +2335,17 @@ public final class FilePath implements Serializable {
      *      null if no error was found. Otherwise returns a human readable error message.
      * @since 1.90
      * @see #validateFileMask(FilePath, String)
+     * @deprecated use {@link #validateAntFileMask(String, int)} instead
      */
     public String validateAntFileMask(final String fileMasks) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, Integer.MAX_VALUE);
     }
+
+    /**
+     * Default bound for {@link #validateAntFileMask(String, int)}.
+     * @since 1.592
+     */
+    public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.
@@ -2338,7 +2356,7 @@ public final class FilePath implements Serializable {
      * A message is returned in case the file pattern can definitely be determined to not match anything in the directory within the alloted time.
      * If the time runs out without finding a match but without ruling out the possibility that there might be one, {@link InterruptedException} is thrown,
      * in which case the calling code should give the user the benefit of the doubt and use {@link hudson.util.FormValidation.Kind#OK} (with or without a message).
-     * @param bound a maximum number of negative operations (deliberately left vague) to perform before giving up on a precise answer; 10_000 is a reasonable pick
+     * @param bound a maximum number of negative operations (deliberately left vague) to perform before giving up on a precise answer; try {@link #VALIDATE_ANT_FILE_MASK_BOUND}
      * @throws InterruptedException not only in case of a channel failure, but also if too many operations were performed without finding any matches
      * @since 1.484
      */
@@ -2446,10 +2464,15 @@ public final class FilePath implements Serializable {
                 class Cancel extends RuntimeException {}
                 DirectoryScanner ds = bound == Integer.MAX_VALUE ? new DirectoryScanner() : new DirectoryScanner() {
                     int ticks;
+                    long start = System.currentTimeMillis();
                     @Override public synchronized boolean isCaseSensitive() {
-                        if (!filesIncluded.isEmpty() || !dirsIncluded.isEmpty() || ticks++ > bound) {
+                        if (!filesIncluded.isEmpty() || !dirsIncluded.isEmpty() || ticks++ > bound || System.currentTimeMillis() - start > 5000) {
                             throw new Cancel();
                         }
+                        filesNotIncluded.clear();
+                        dirsNotIncluded.clear();
+                        // notFollowedSymlinks might be large, but probably unusual
+                        // scannedDirs will typically be largish, but seems to be needed
                         return super.isCaseSensitive();
                     }
                 };
@@ -2512,7 +2535,7 @@ public final class FilePath implements Serializable {
             if(!exists()) // no workspace. can't check
                 return FormValidation.ok();
 
-            String msg = validateAntFileMask(value, 10000);
+            String msg = validateAntFileMask(value, VALIDATE_ANT_FILE_MASK_BOUND);
             if(errorIfNotExist)     return FormValidation.error(msg);
             else                    return FormValidation.warning(msg);
         } catch (InterruptedException e) {

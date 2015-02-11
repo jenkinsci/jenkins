@@ -1,5 +1,6 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.security.ACL;
@@ -12,6 +13,7 @@ import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Show the {@link QueueItemAuthenticator} configurations on the system config page.
@@ -54,5 +56,15 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
 
     public static QueueItemAuthenticatorConfiguration get() {
         return Jenkins.getInstance().getInjector().getInstance(QueueItemAuthenticatorConfiguration.class);
+    }
+
+    @Extension(ordinal = 100)
+    public static class ProviderImpl extends QueueItemAuthenticatorProvider {
+
+        @NonNull
+        @Override
+        public List<QueueItemAuthenticator> getAuthenticators() {
+            return get().getAuthenticators();
+        }
     }
 }

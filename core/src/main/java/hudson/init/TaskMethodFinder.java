@@ -1,5 +1,6 @@
 package hudson.init;
 
+import com.google.inject.Injector;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.annotation_indexer.Index;
@@ -116,6 +117,12 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     private Object lookUp(Class<?> type) {
         if (type==Jenkins.class || type==Hudson.class)
             return Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstance();
+        if (j!=null) {
+            Injector i = j.getInjector();
+            if (i!=null)
+                return i.getInstance(type);
+        }
         throw new IllegalArgumentException("Unable to inject "+type);
     }
 

@@ -135,7 +135,7 @@ import static javax.servlet.http.HttpServletResponse.*;
 public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
-    // TODO: 
+    // TODO:
     private final CopyOnWriteArrayList<OneOffExecutor> oneOffExecutors = new CopyOnWriteArrayList<OneOffExecutor>();
 
     private int numExecutors;
@@ -144,7 +144,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Contains info about reason behind computer being offline.
      */
     protected volatile OfflineCause offlineCause;
-    
+
     private long connectTime = 0;
 
     /**
@@ -164,6 +164,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private volatile String cachedHostName;
     private volatile boolean hostNameCached;
 
+    /**
+     * @see #getEnvironment()
+     */
+    private volatile EnvVars cachedEnvironment;
+
+
     private final WorkspaceList workspaceList = new WorkspaceList();
 
     protected transient List<Action> transientActions;
@@ -180,7 +186,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public List<ComputerPanelBox> getComputerPanelBoxs(){
         return ComputerPanelBox.all(this);
     }
-    
+
     /**
      * Returns the transient {@link Action}s associated with the computer.
      */
@@ -211,7 +217,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public File getLogFile() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
-        dir.mkdirs();
+        if (!dir.exists() && !dir.mkdirs()) {
+            LOGGER.severe("Failed to create slave log directory " + dir.getAbsolutePath());
+        }
         return new File(dir,"slave.log");
     }
 
@@ -337,10 +345,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
      */
     public final Future<?> connect(boolean forceReconnect) {
+        this.cachedEnvironment = null;
     	connectTime = System.currentTimeMillis();
     	return _connect(forceReconnect);
     }
-    
+
     /**
      * Allows implementing-classes to provide an implementation for the connect method.
      *
@@ -373,13 +382,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Gets the time (since epoch) when this computer connected.
-     *  
+     *
      * @return The time in ms since epoch when this computer last connected.
      */
     public final long getConnectTime() {
     	return connectTime;
     }
-    
+
     /**
      * Disconnect this computer.
      *
@@ -589,7 +598,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @param cause
      *      If the first argument is true, specify the reason why the node is being put
-     *      offline. 
+     *      offline.
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         offlineCause = temporarilyOffline ? cause : null;
@@ -711,14 +720,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private synchronized void setNumExecutors(int n) {
         this.numExecutors = n;
-        int diff = executors.size()-n;
+        final int diff = executors.size()-n;
 
         if (diff>0) {
             // we have too many executors
             // send signal to all idle executors to potentially kill them off
-            for( Executor e : executors )
-                if(e.isIdle())
-                    e.interrupt();
+            // need the Queue maintenance lock held to prevent concurrent job assignment on the idle executors
+            Queue.withLock(new Runnable() {
+                @Override
+                public void run() {
+                    for( Executor e : executors )
+                        if(e.isIdle())
+                            e.interrupt();
+                }
+            });
         }
 
         if (diff<0) {
@@ -931,7 +946,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * If this is the master, it returns the system property of the master computer.
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
-        return EnvVars.getRemote(getChannel());
+        EnvVars cachedEnvironment = this.cachedEnvironment;
+        if (cachedEnvironment != null) {
+            return cachedEnvironment;
+        }
+
+        cachedEnvironment = EnvVars.getRemote(getChannel());
+        this.cachedEnvironment = cachedEnvironment;
+        return cachedEnvironment;
     }
 
     /**
@@ -1000,7 +1022,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.300
      * @return
      *      null if the host name cannot be computed (for example because this computer is offline,
-     *      because the slave is behind the firewall, etc.) 
+     *      because the slave is behind the firewall, etc.)
      */
     public String getHostName() throws IOException, InterruptedException {
         if(hostNameCached)
@@ -1195,7 +1217,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
         Jenkins.checkGoodName(name);
-        
+
         Node node = getNode();
         if (node == null) {
             throw new ServletException("No such node " + nodeName);
@@ -1313,11 +1335,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by
      * {@link hudson.tasks.Publisher}, {@link hudson.tasks.BuildWrapper}, etc.
+     * @return the {@link Computer} associated with {@link Executor#currentExecutor}, or (consistently as of 1.591) null if not on an executor thread
      */
-    public static Computer currentComputer() {
+    public static @Nullable Computer currentComputer() {
         Executor e = Executor.currentExecutor();
-        // If no executor then must be on master node
-        return e != null ? e.getOwner() : Jenkins.getInstance().toComputer();
+        return e != null ? e.getOwner() : null;
     }
 
     /**
@@ -1380,7 +1402,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
                 newLocation.getParentFile().mkdirs();
                 boolean relocationSuccessfull=f.renameTo(newLocation);
-                if (relocationSuccessfull) { // The operation will fail if mkdir fails 
+                if (relocationSuccessfull) { // The operation will fail if mkdir fails
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
                 } else {
                     LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});

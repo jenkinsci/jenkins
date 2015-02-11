@@ -47,6 +47,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -71,10 +72,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,6 +107,7 @@ import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -146,7 +146,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * In earlier versions &lt; 1.24, this number is not unique nor continuous,
      * but going forward, it will, and this really replaces the build id.
      */
-    public /*final*/ int number;
+    public transient /*final*/ int number;
 
     /**
      * Previous build. Can be null.
@@ -172,10 +172,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     /* does not compile on JDK 7: private*/ volatile transient RunT previousBuildInProgress;
 
+    /** ID as used for historical build records; otherwise null. */
+    private @CheckForNull String id;
+    
     /**
      * When the build is scheduled.
      */
-    protected transient final long timestamp;
+    protected /*final*/ long timestamp;
 
     /**
      * When the build has started running.
@@ -266,23 +269,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private @CheckForNull ArtifactManager artifactManager;
 
-    private static final SimpleDateFormat CANONICAL_ID_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-    public static final ThreadLocal<SimpleDateFormat> ID_FORMATTER = new IDFormatterProvider();
-    private static final class IDFormatterProvider extends ThreadLocal<SimpleDateFormat> {
-                @Override
-                protected SimpleDateFormat initialValue() {
-                    synchronized (CANONICAL_ID_FORMATTER) {
-                        return (SimpleDateFormat) CANONICAL_ID_FORMATTER.clone();
-                    }
-                }
-            };
-
     /**
      * Creates a new {@link Run}.
      * @param job Owner job
      */
     protected Run(@Nonnull JobT job) throws IOException {
-        this(job, new GregorianCalendar());
+        this(job, System.currentTimeMillis());
         this.number = project.assignBuildNumber();
         LOGGER.log(FINER, "new {0} @{1}", new Object[] {this, hashCode()});
     }
@@ -290,24 +282,29 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Constructor for creating a {@link Run} object in
      * an arbitrary state.
+     * {@link #number} must be set manually.
+     * <p>May be used in a {@link SubTask#createExecutable} (instead of calling {@link LazyBuildMixIn#newBuild}).
+     * For example, {@code MatrixConfiguration.newBuild} does this
+     * so that the {@link #timestamp} as well as {@link #number} are shared with the parent build.
      */
     protected Run(@Nonnull JobT job, @Nonnull Calendar timestamp) {
         this(job,timestamp.getTimeInMillis());
     }
 
+    /** @see #Run(Job, Calendar) */
     protected Run(@Nonnull JobT job, long timestamp) {
         this.project = job;
         this.timestamp = timestamp;
         this.state = State.NOT_STARTED;
-		getRootDir().mkdirs();
     }
 
     /**
      * Loads a run from a log file.
      */
     protected Run(@Nonnull JobT project, @Nonnull File buildDir) throws IOException {
-        this(project, parseTimestampFromBuildDir(buildDir));
+        this.project = project;
         this.previousBuildInProgress = _this(); // loaded builds are always completed
+        number = Integer.parseInt(buildDir.getName());
         reload();
     }
 
@@ -387,33 +384,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             ((RunAction2) a).onAttached(this);
         } else if (a instanceof RunAction) {
             ((RunAction) a).onAttached(this);
-        }
-    }
-
-    static class InvalidDirectoryNameException extends IOException {
-        InvalidDirectoryNameException(File buildDir) {
-            super("Invalid directory name " + buildDir);
-        }
-    }
-
-    /*package*/ static long parseTimestampFromBuildDir(@Nonnull File buildDir) 
-            throws IOException, InvalidDirectoryNameException {
-        try {
-            if(Util.isSymlink(buildDir)) {
-                // "Util.resolveSymlink(file)" resolves NTFS symlinks. 
-                File target = Util.resolveSymlinkToFile(buildDir);
-                if(target != null)
-                    buildDir = target;
-            }
-            // canonicalization to ensure we are looking at the ID in the directory name
-            // as opposed to build numbers which are used in symlinks
-            // (just in case the symlink check above did not work)
-            buildDir = buildDir.getCanonicalFile();
-            return ID_FORMATTER.get().parse(buildDir.getName()).getTime();
-        } catch (ParseException e) {
-            throw new InvalidDirectoryNameException(buildDir);
-        } catch (InterruptedException e) {
-            throw new IOException("Interrupted while resolving symlink directory "+buildDir,e);
         }
     }
 
@@ -729,7 +699,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public @Nonnull String getDurationString() {
         if(isBuilding())
             return Messages.Run_InProgressDuration(
-                    Util.getTimeSpanString(System.currentTimeMillis()-timestamp));
+                    Util.getTimeSpanString(System.currentTimeMillis()-startTime));
         return Util.getTimeSpanString(duration);
     }
 
@@ -1000,21 +970,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Unique ID of this build.
+     * Usually the decimal form of {@link #number}, but may be a formatted timestamp for historical builds.
      */
     @Exported
     public @Nonnull String getId() {
-        return ID_FORMATTER.get().format(new Date(timestamp));
+        return id != null ? id : Integer.toString(number);
     }
     
-    /**
-     * Get the date formatter used to convert the directory name in to a timestamp.
-     * This is nasty exposure of private data, but needed all the time the directory
-     * containing the build is used as it's timestamp.
-     */
-    public static @Nonnull DateFormat getIDFormatter() {
-    	return ID_FORMATTER.get();
-    }
- 
     @Override
     public @CheckForNull Descriptor getDescriptorByName(String className) {
         return Jenkins.getInstance().getDescriptorByName(className);
@@ -1027,7 +989,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Override
     public @Nonnull File getRootDir() {
-        return new File(project.getBuildDir(),getId());
+        return new File(project.getBuildDir(), Integer.toString(number));
     }
 
     /**
@@ -1502,10 +1464,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         RunListener.fireDeleted(this);
 
         synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
-        // if we have a symlink, delete it, too
-        File link = new File(project.getBuildDir(), String.valueOf(getNumber()));
-        link.delete();
-
         File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
         if (tmp.exists()) {
@@ -1832,8 +1790,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Creates a symlink from build number to ID.
-     * Also makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
+     * Makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
      * Normally you do not need to call this explicitly, since {@link #execute} does so,
      * but this may be needed if you are creating synthetic {@link Run}s as part of a container project (such as Maven builds in a module set).
      * You should also ensure that {@link RunListener#fireStarted} and {@link RunListener#fireCompleted} are called.
@@ -1842,7 +1799,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.530
      */
     public final void updateSymlinks(@Nonnull TaskListener listener) throws InterruptedException {
-        Util.createSymlink(getParent().getBuildDir(), getId(), String.valueOf(getNumber()), listener);
         createSymlink(listener, "lastSuccessful", PermalinkProjectAction.Permalink.LAST_SUCCESSFUL_BUILD);
         createSymlink(listener, "lastStable", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD);
     }
@@ -1875,15 +1831,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if(e instanceof IOException)
                 Util.displayIOException((IOException)e,listener);
 
-            Writer w = listener.fatalError(e.getMessage());
-            if(w!=null) {
-                try {
-                    e.printStackTrace(new PrintWriter(w));
-                    w.close();
-                } catch (IOException e1) {
-                    // ignore
-                }
-            }
+            e.printStackTrace(listener.fatalError(e.getMessage()));
         } else {
             LOGGER.log(SEVERE, getDisplayName()+" failed to build and we don't even have a listener",e);
         }

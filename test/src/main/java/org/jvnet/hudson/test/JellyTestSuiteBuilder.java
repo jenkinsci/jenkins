@@ -95,7 +95,7 @@ public class JellyTestSuiteBuilder {
             if (requirePI) {
                 ProcessingInstruction pi = dom.processingInstruction("jelly");
                 if (pi==null || !pi.getText().contains("escape-by-default"))
-                    throw new AssertionError("<?jelly escape-by-default='true'?> is missing");
+                    throw new AssertionError("<?jelly escape-by-default='true'?> is missing in "+jelly);
 
             }
             // TODO: what else can we check statically? use of taglibs?
@@ -109,7 +109,7 @@ public class JellyTestSuiteBuilder {
                 if (!dom.selectNodes("//label[@for]").isEmpty())
                     throw new AssertionError("<label for=...> shouldn't be used because it doesn't work " +
                             "when the configuration item is repeated. Use <label class=\"attach-previous\"> " +
-                            "to have your label attach to the previous DOM node instead.");
+                            "to have your label attach to the previous DOM node instead.\nurl="+jelly);
             }
         }
 

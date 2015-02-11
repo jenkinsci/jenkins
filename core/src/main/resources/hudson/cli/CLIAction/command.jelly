@@ -33,11 +33,11 @@ THE SOFTWARE.
       </h1>
       <j:set var="commandArgs" value="${command.name}${command.singleLineSummary}"/>
       <st:include page="example.jelly"/>
-      <p>${command.longDescription}</p>
-      <j:set var="usage" value="${command.usage}"/>
-      <j:if test="${!empty usage}">
-        <pre>${command.usage}</pre>
-      </j:if>
+      <pre>
+        <j:out value="${h.escape(command.longDescription)}"/>
+        <j:set var="usage" value="${command.usage}"/>
+        <j:if test="${!empty usage}"><br/>${command.usage}</j:if>
+      </pre>
     </l:main-panel>
   </l:layout>
 </j:jelly>

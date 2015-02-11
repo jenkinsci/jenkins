@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -67,7 +67,7 @@ public class FunctionsTest {
     }
 
     @Test
-    @Bug(7725)
+    @Issue("JENKINS-7725")
     public void testGetActionUrl_absoluteUriWithoutAuthority(){
         String[] uris = {
             "mailto:nobody@example.com",
@@ -190,7 +190,7 @@ public class FunctionsTest {
         assertEquals("job/i/", result);
     }
 
-    @Bug(17713)
+    @Issue("JENKINS-17713")
     @PrepareForTest({Stapler.class, Jenkins.class})
     @Test public void getRelativeLinkTo_MavenModules() throws Exception {
         Jenkins j = createMockJenkins();
@@ -285,7 +285,7 @@ public class FunctionsTest {
     }
 
     @Test
-    @Bug(16630)
+    @Issue("JENKINS-16630")
     public void testHumanReadableFileSize(){
         Locale defaultLocale = Locale.getDefault();
         try{
@@ -303,7 +303,7 @@ public class FunctionsTest {
         }
     }
 
-    @Bug(17030)
+    @Issue("JENKINS-17030")
     @Test
     public void testBreakableString() {
 
@@ -332,7 +332,7 @@ public class FunctionsTest {
         );
     }
 
-    @Bug(20800)
+    @Issue("JENKINS-20800")
     @Test public void printLogRecordHtml() throws Exception {
         LogRecord lr = new LogRecord(Level.INFO, "Bad input <xml/>");
         lr.setLoggerName("test");

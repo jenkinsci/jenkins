@@ -51,7 +51,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
      * Value object that represents the disk space.
      */
     @ExportedBean
-    public static final class DiskSpace extends OfflineCause implements Serializable {
+    public static final class DiskSpace extends MonitorOfflineCause implements Serializable {
         private final String path;
         @Exported
         public final long size;
@@ -70,7 +70,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         @Override
         public String toString() {
-            return String.valueOf(size);
+            return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(getGbLeft(), path);
         }
         
         /**
@@ -119,6 +119,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             this.triggered = triggered;
         }
         
+        @Override
         public Class<? extends AbstractDiskSpaceMonitor> getTrigger() {
             return trigger;
         }

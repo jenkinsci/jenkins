@@ -69,7 +69,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
                     e.addListener(new EngineListenerAdapter() {
                         @Override
-                        public void onDisconnect() {
+                        public void onReconnect() {
                             try {
                                 for (SlaveRestarter r : restarters) {
                                     try {

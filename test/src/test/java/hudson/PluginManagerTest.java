@@ -47,7 +47,7 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
@@ -318,7 +318,7 @@ public class PluginManagerTest {
      * 
      * @throws Exception
      */
-    @Bug(19976)
+    @Issue("JENKINS-19976")
     @Test public void installDependedPluginWithoutRestart() throws Exception {
         // Load depender.
         {
@@ -357,7 +357,7 @@ public class PluginManagerTest {
         assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
 
-    @Bug(12753)
+    @Issue("JENKINS-12753")
     @WithPlugin("tasks.jpi")
     @Test public void dynamicLoadRestartRequiredException() throws Exception {
         File jpi = new File(r.jenkins.getRootDir(), "plugins/tasks.jpi");

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -21,25 +22,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.590-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>1.600-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
   <packaging>war</packaging>
 
   <name>Jenkins war</name>
-  <description>
-    Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and
-    some HTML files.
-  </description>
+  <description>Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and some HTML files.</description>
 
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
@@ -54,7 +50,6 @@ THE SOFTWARE.
       <version>1.29</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
@@ -167,7 +162,6 @@ THE SOFTWARE.
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
     </dependency>
-
 
     <!-- offline profiler API when we need it -->
 
@@ -322,7 +316,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>external-monitor-job</artifactId>
-                  <version>1.2</version>
+                  <version>1.4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

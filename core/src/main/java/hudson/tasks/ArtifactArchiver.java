@@ -227,7 +227,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
                     String msg = null;
                     try {
-                    	msg = ws.validateAntFileMask(artifacts);
+                    	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND);
                     } catch (Exception e) {
                     	listenerWarnOrError(listener, e.getMessage());
                     }

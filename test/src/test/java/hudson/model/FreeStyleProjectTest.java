@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,14 +23,22 @@
  */
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 import java.util.List;
 import java.io.File;
@@ -38,23 +46,28 @@ import java.io.File;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FreeStyleProjectTest extends HudsonTestCase {
+public class FreeStyleProjectTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * Tests a trivial configuration round-trip.
      *
      * The goal is to catch a P1-level issue that prevents all the form submissions to fail.
      */
-    public void testConfigSubmission() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+    @Test
+    public void configSubmission() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
         Shell shell = new Shell("echo hello");
         project.getBuildersList().add(shell);
 
         // emulate the user behavior
-        WebClient webClient = new WebClient();
+        WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(project,"configure");
 
         HtmlForm form = page.getFormByName("config");
-        submit(form);
+        j.submit(form);
 
         List<Builder> builders = project.getBuilders();
         assertEquals(1,builders.size());
@@ -66,23 +79,25 @@ public class FreeStyleProjectTest extends HudsonTestCase {
     /**
      * Custom workspace and concurrent build had a bad interaction.
      */
-    @Bug(4206)
-    public void testCustomWorkspaceAllocation() throws Exception {
-        FreeStyleProject f = createFreeStyleProject();
-        File d = createTmpDir();
+    @Test
+    @Issue("JENKINS-4206")
+    public void customWorkspaceAllocation() throws Exception {
+        FreeStyleProject f = j.createFreeStyleProject();
+        File d = j.createTmpDir();
         f.setCustomWorkspace(d.getPath());
-        buildAndAssertSuccess(f);
+        j.buildAndAssertSuccess(f);
     }
 
     /**
      * Custom workspace and variable expansion.
      */
-    @Bug(3997)
-    public void testCustomWorkspaceVariableExpansion() throws Exception {
-        FreeStyleProject f = createFreeStyleProject();
-        File d = new File(createTmpDir(),"${JOB_NAME}");
+    @Test
+    @Issue("JENKINS-3997")
+    public void customWorkspaceVariableExpansion() throws Exception {
+        FreeStyleProject f = j.createFreeStyleProject();
+        File d = new File(j.createTmpDir(),"${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
-        FreeStyleBuild b = buildAndAssertSuccess(f);
+        FreeStyleBuild b = j.buildAndAssertSuccess(f);
 
         String path = b.getWorkspace().getRemote();
         System.out.println(path);
@@ -90,19 +105,20 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         assertEquals(b.getWorkspace().getName(),f.getName());
     }
 
-    @Bug(15817)
+    @Test
+    @Issue("JENKINS-15817")
     @SuppressWarnings("DM_DEFAULT_ENCODING")
-    public void testMinimalConfigXml() throws Exception {
+    public void minimalConfigXml() throws Exception {
         // Make sure it can be created without exceptions:
-        FreeStyleProject project = (FreeStyleProject) jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
+        FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
         System.out.println(project.getConfigFile().asString());
         // and round-tripped:
         Shell shell = new Shell("echo hello");
         project.getBuildersList().add(shell);
-        WebClient webClient = new WebClient();
+        WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(project,"configure");
         HtmlForm form = page.getFormByName("config");
-        submit(form);
+        j.submit(form);
         List<Builder> builders = project.getBuilders();
         assertEquals(1,builders.size());
         assertEquals(Shell.class,builders.get(0).getClass());
@@ -110,5 +126,4 @@ public class FreeStyleProjectTest extends HudsonTestCase {
         assertTrue(builders.get(0)!=shell);
         System.out.println(project.getConfigFile().asString());
     }
-
 }

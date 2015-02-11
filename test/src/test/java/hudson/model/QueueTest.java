@@ -47,7 +47,7 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.DummyCloudImpl;
-import hudson.slaves.NodeProvisioner;
+import hudson.slaves.NodeProvisionerRule;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
@@ -62,10 +62,10 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -80,8 +80,11 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
@@ -93,22 +96,25 @@ import org.mortbay.jetty.servlet.ServletHolder;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class QueueTest extends HudsonTestCase {
+public class QueueTest {
+
+    @Rule public JenkinsRule r = new NodeProvisionerRule(-1, 0, 10);
+
     /**
      * Checks the persistence of queue.
      */
-    public void testPersistence() throws Exception {
-        Queue q = jenkins.getQueue();
+    @Test public void persistence() throws Exception {
+        Queue q = r.jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        jenkins.setNumExecutors(0);
-        jenkins.setNodes(jenkins.getNodes());
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.setNodes(r.jenkins.getNodes());
 
-        FreeStyleProject testProject = createFreeStyleProject("test");
+        FreeStyleProject testProject = r.createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(jenkins.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
 
         assertEquals(1,q.getItems().length);
         q.clear();
@@ -125,18 +131,18 @@ public class QueueTest extends HudsonTestCase {
     /**
      * Can {@link Queue} successfully recover removal?
      */
-    public void testPersistence2() throws Exception {
-        Queue q = jenkins.getQueue();
+     @Test public void persistence2() throws Exception {
+        Queue q = r.jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        jenkins.setNumExecutors(0);
-        jenkins.setNodes(jenkins.getNodes());
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.setNodes(r.jenkins.getNodes());
 
-        FreeStyleProject testProject = createFreeStyleProject("test");
+        FreeStyleProject testProject = r.createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(jenkins.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
 
         assertEquals(1,q.getItems().length);
         q.clear();
@@ -151,11 +157,11 @@ public class QueueTest extends HudsonTestCase {
     /**
      * {@link hudson.model.Queue.BlockedItem} is not static. Make sure its persistence doesn't end up re-persisting the whole Queue instance.
      */
-    public void testPersistenceBlockedItem() throws Exception {
-        Queue q = jenkins.getQueue();
+    @Test public void persistenceBlockedItem() throws Exception {
+        Queue q = r.jenkins.getQueue();
         final SequenceLock seq = new SequenceLock();
 
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -204,7 +210,7 @@ public class QueueTest extends HudsonTestCase {
         }
     }
 
-    public void testFileItemPersistence() throws Exception {
+    @Test public void fileItemPersistence() throws Exception {
         // TODO: write a synchronous connector?
         byte[] testData = new byte[1024];
         for( int i=0; i<testData.length; i++ )  testData[i] = (byte)i;
@@ -220,11 +226,10 @@ public class QueueTest extends HudsonTestCase {
 
         server.start();
 
-        localPort = connector.getLocalPort();
-
         try {
-            WebClient wc = new WebClient();
-            HtmlPage p = (HtmlPage) wc.getPage("http://localhost:" + localPort + '/');
+            JenkinsRule.WebClient wc = r.createWebClient();
+            @SuppressWarnings("deprecation")
+            HtmlPage p = (HtmlPage) wc.getPage("http://localhost:" + connector.getLocalPort() + '/');
             HtmlForm f = p.getFormByName("main");
             HtmlFileInput input = (HtmlFileInput) f.getInputByName("test");
             input.setData(testData);
@@ -234,12 +239,12 @@ public class QueueTest extends HudsonTestCase {
         }
     }
 
-    public void testFoldableCauseAction() throws Exception {
+    @Test public void foldableCauseAction() throws Exception {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
 
-        setQuietPeriod(0);
-        FreeStyleProject project = createFreeStyleProject();
+        r.setQuietPeriod(0);
+        FreeStyleProject project = r.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         project.getBuildersList().add(new TestBuilder() {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -288,7 +293,7 @@ public class QueueTest extends HudsonTestCase {
                 causes.toString());
 
         // View for build should group duplicates
-        WebClient wc = new WebClient();
+        JenkinsRule.WebClient wc = r.createWebClient();
         String nl = System.getProperty("line.separator");
         String buildPage = wc.getPage(build, "").asText().replace(nl," ");
         assertTrue("Build page should combine duplicates and show counts: " + buildPage,
@@ -300,71 +305,102 @@ public class QueueTest extends HudsonTestCase {
                         + "Started by remote host 1.2.3.4 with note: foo"));
     }
 
-    @Bug(8790)
-    public void testFlyweightTasks() throws Exception {
-        MatrixProject m = createMatrixProject();
+    @Issue("JENKINS-8790")
+    @Test public void flyweightTasks() throws Exception {
+        MatrixProject m = r.createMatrixProject();
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
         m.getBuildersList().add(new Shell("sleep 3"));
         m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
 
-        List<Future<MatrixBuild>> r = new ArrayList<Future<MatrixBuild>>();
+        List<Future<MatrixBuild>> futures = new ArrayList<Future<MatrixBuild>>();
 
-        for (int i=0; i<3; i++)
-            r.add(m.scheduleBuild2(0,new UserIdCause(),new ParametersAction(new StringParameterValue("FOO","value"+i))));
+        for (int i = 0; i < 3; i++) {
+            futures.add(m.scheduleBuild2(0, new UserIdCause(), new ParametersAction(new StringParameterValue("FOO", "value" + i))));
+        }
 
-        for (Future<MatrixBuild> f : r)
-            assertBuildStatusSuccess(f);
+        for (Future<MatrixBuild> f : futures) {
+            r.assertBuildStatusSuccess(f);
+        }
     }
 
-    private int INITIALDELAY;
-    private int RECURRENCEPERIOD;
-    @Override protected void setUp() throws Exception {
-        INITIALDELAY = NodeProvisioner.NodeProvisionerInvoker.INITIALDELAY;
-        NodeProvisioner.NodeProvisionerInvoker.INITIALDELAY = 0;
-        RECURRENCEPERIOD = NodeProvisioner.NodeProvisionerInvoker.RECURRENCEPERIOD;
-        NodeProvisioner.NodeProvisionerInvoker.RECURRENCEPERIOD = 10;
-        super.setUp();
-    }
-    @Override protected void tearDown() throws Exception {
-        super.tearDown();
-        NodeProvisioner.NodeProvisionerInvoker.INITIALDELAY = INITIALDELAY;
-        NodeProvisioner.NodeProvisionerInvoker.RECURRENCEPERIOD = RECURRENCEPERIOD;
-    }
-    @Bug(7291)
-    public void testFlyweightTasksWithoutMasterExecutors() throws Exception {
-        DummyCloudImpl cloud = new DummyCloudImpl(this, 0);
-        cloud.label = jenkins.getLabel("remote");
-        jenkins.clouds.add(cloud);
-        jenkins.setNumExecutors(0);
-        jenkins.setNodes(Collections.<Node>emptyList());
-        MatrixProject m = createMatrixProject();
+    @Issue("JENKINS-7291")
+    @Test public void flyweightTasksWithoutMasterExecutors() throws Exception {
+        DummyCloudImpl cloud = new DummyCloudImpl(r, 0);
+        cloud.label = r.jenkins.getLabel("remote");
+        r.jenkins.clouds.add(cloud);
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.setNodes(Collections.<Node>emptyList());
+        MatrixProject m = r.createMatrixProject();
         m.setAxes(new AxisList(new LabelAxis("label", Arrays.asList("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw (AssertionError) new AssertionError(jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
+            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
         }
-        assertBuildStatusSuccess(build);
+        r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
         List<MatrixRun> runs = build.getRuns();
         assertEquals(1, runs.size());
         assertEquals("slave0", runs.get(0).getBuiltOnStr());
     }
-
-    public void testTaskEquality() throws Exception {
+    
+    @Issue("JENKINS-10944")
+    @Test public void flyweightTasksBlockedByShutdown() throws Exception {
+        r.jenkins.doQuietDown(true, 0);
         AtomicInteger cnt = new AtomicInteger();
-        ScheduleResult result = jenkins.getQueue().schedule2(new TestTask(cnt), 0);
+        TestFlyweightTask task = new TestFlyweightTask(cnt, null);
+        assertTrue(Queue.isBlockedByShutdown(task));
+        r.jenkins.getQueue().schedule2(task, 0);
+        r.jenkins.getQueue().maintain();
+        r.jenkins.doCancelQuietDown();
+        assertFalse(Queue.isBlockedByShutdown(task));
+        r.waitUntilNoActivity();
+        assertEquals(1, cnt.get());
+        assert task.exec instanceof OneOffExecutor : task.exec;
+    }
+
+    @Issue("JENKINS-24519")
+    @Test public void flyweightTasksBlockedBySlave() throws Exception {
+        Label label = Label.get("myslave");
+        AtomicInteger cnt = new AtomicInteger();
+        TestFlyweightTask task = new TestFlyweightTask(cnt, label);
+        r.jenkins.getQueue().schedule2(task, 0);
+        r.jenkins.getQueue().maintain();
+        r.createSlave(label);
+        r.waitUntilNoActivity();
+        assertEquals(1, cnt.get());
+        assert task.exec instanceof OneOffExecutor : task.exec;
+    }
+
+    private static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
+        Executor exec;
+        private final Label assignedLabel;
+        TestFlyweightTask(AtomicInteger cnt, Label assignedLabel) {
+            super(cnt);
+            this.assignedLabel = assignedLabel;
+        }
+        @Override protected void doRun() {
+            exec = Executor.currentExecutor();
+        }
+        @Override public Label getAssignedLabel() {
+            return assignedLabel;
+        }
+    }
+
+    @Test public void taskEquality() throws Exception {
+        AtomicInteger cnt = new AtomicInteger();
+        ScheduleResult result = r.jenkins.getQueue().schedule2(new TestTask(cnt), 0);
         assertTrue(result.isCreated());
         WaitingItem item = result.getCreateItem();
-        assertFalse(jenkins.getQueue().schedule2(new TestTask(cnt), 0).isCreated());
+        assertFalse(r.jenkins.getQueue().schedule2(new TestTask(cnt), 0).isCreated());
         item.getFuture().get();
-        waitUntilNoActivity();
+        r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
-    private static final class TestTask extends AbstractQueueTask {
+    private static class TestTask extends AbstractQueueTask {
         private final AtomicInteger cnt;
         TestTask(AtomicInteger cnt) {
             this.cnt = cnt;
@@ -387,20 +423,22 @@ public class QueueTest extends HudsonTestCase {
         @Override public Node getLastBuiltOn() {return null;}
         @Override public long getEstimatedDuration() {return -1;}
         @Override public ResourceList getResourceList() {return new ResourceList();}
+        protected void doRun() {}
         @Override public Executable createExecutable() throws IOException {
             return new Executable() {
                 @Override public SubTask getParent() {return TestTask.this;}
                 @Override public long getEstimatedDuration() {return -1;}
                 @Override public void run() {
+                    doRun();
                     cnt.incrementAndGet();
                 }
             };
         }
     }
 
-    public void testWaitForStart() throws Exception {
+    @Test public void waitForStart() throws Exception {
         final OneShotEvent ev = new OneShotEvent();
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -416,20 +454,17 @@ public class QueueTest extends HudsonTestCase {
         assertSame(p,b.getProject());
 
         ev.signal();    // let the build complete
-        FreeStyleBuild b2 = assertBuildStatusSuccess(v);
+        FreeStyleBuild b2 = r.assertBuildStatusSuccess(v);
         assertSame(b,b2);
     }
-
-    @Inject
-    QueueItemAuthenticatorConfiguration qac;
 
     /**
      * Make sure that the running build actually carries an credential.
      */
-    public void testAccessControl() throws Exception {
-        configureUserRealm();
-        FreeStyleProject p = createFreeStyleProject();
-        qac.getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
+    @Test public void accessControl() throws Exception {
+        r.configureUserRealm();
+        FreeStyleProject p = r.createFreeStyleProject();
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -437,7 +472,7 @@ public class QueueTest extends HudsonTestCase {
                 return true;
             }
         });
-        assertBuildStatusSuccess(p.scheduleBuild2(0));
+        r.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 
     private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice",new GrantedAuthority[0]);
@@ -449,14 +484,14 @@ public class QueueTest extends HudsonTestCase {
      * We do this test by letting a build run twice to determine its natural home,
      * and then introduce a security restriction to prohibit that.
      */
-    public void testPermissionSensitiveSlaveAllocations() throws Exception {
-        jenkins.setNumExecutors(0); // restrict builds to those slaves
-        DumbSlave s1 = createSlave();
-        DumbSlave s2 = createSlave();
+    @Test public void permissionSensitiveSlaveAllocations() throws Exception {
+        r.jenkins.setNumExecutors(0); // restrict builds to those slaves
+        DumbSlave s1 = r.createSlave();
+        DumbSlave s2 = r.createSlave();
 
-        configureUserRealm();
-        FreeStyleProject p = createFreeStyleProject();
-        qac.getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
+        r.configureUserRealm();
+        FreeStyleProject p = r.createFreeStyleProject();
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -465,8 +500,8 @@ public class QueueTest extends HudsonTestCase {
             }
         });
 
-        final FreeStyleBuild b1 = assertBuildStatusSuccess(p.scheduleBuild2(0));
-        final FreeStyleBuild b2 = assertBuildStatusSuccess(p.scheduleBuild2(0));
+        final FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        final FreeStyleBuild b2 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
         // scheduling algorithm would prefer running the same job on the same node
         // kutzi: 'prefer' != 'enforce', therefore disabled this assertion: assertSame(b1.getBuiltOn(),b2.getBuiltOn());
@@ -485,18 +520,18 @@ public class QueueTest extends HudsonTestCase {
             }
         };
         auth.add(Jenkins.ADMINISTER,"anonymous");
-        jenkins.setAuthorizationStrategy(auth);
+        r.jenkins.setAuthorizationStrategy(auth);
 
         // now that we prohibit alice to do a build on the same node, the build should run elsewhere
         for (int i=0; i<3; i++) {
-            FreeStyleBuild b3 = assertBuildStatusSuccess(p.scheduleBuild2(0));
+            FreeStyleBuild b3 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
         }
     }
 
-    public void testPendingsConsistenceAfterErrorDuringMaintain() throws IOException, ExecutionException, InterruptedException{
-        FreeStyleProject project1 = createFreeStyleProject();
-        FreeStyleProject project2 = createFreeStyleProject();
+    @Test public void pendingsConsistenceAfterErrorDuringMaintain() throws IOException, ExecutionException, InterruptedException{
+        FreeStyleProject project1 = r.createFreeStyleProject();
+        FreeStyleProject project2 = r.createFreeStyleProject();
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
@@ -518,14 +553,14 @@ public class QueueTest extends HudsonTestCase {
                 return "simulate-error";
             }
         };
-        FreeStyleProject projectError = (FreeStyleProject) jenkins.createProject(descriptor, "throw-error");
-        project1.setAssignedLabel(jenkins.getSelfLabel());
-        project2.setAssignedLabel(jenkins.getSelfLabel());
+        FreeStyleProject projectError = (FreeStyleProject) r.jenkins.createProject(descriptor, "throw-error");
+        project1.setAssignedLabel(r.jenkins.getSelfLabel());
+        project2.setAssignedLabel(r.jenkins.getSelfLabel());
         project1.getBuildersList().add(new Shell("sleep 2"));
         project1.scheduleBuild2(0);
         QueueTaskFuture<FreeStyleBuild> v = project2.scheduleBuild2(0);
         projectError.scheduleBuild2(0);
-        Executor e = jenkins.toComputer().getExecutors().get(0);
+        Executor e = r.jenkins.toComputer().getExecutors().get(0);
         Thread.sleep(2000);
         while(project2.getLastBuild()==null){
              if(!e.isAlive()){
@@ -550,15 +585,14 @@ public class QueueTest extends HudsonTestCase {
         }
     }
     
-    public void testCancelInQueue() throws Exception
-    {
+    @Test public void cancelInQueue() throws Exception {
         // parepare an offline slave.
-        DumbSlave slave = createOnlineSlave();
+        DumbSlave slave = r.createOnlineSlave();
         assertFalse(slave.toComputer().isOffline());
         slave.toComputer().disconnect(null).get();
         assertTrue(slave.toComputer().isOffline());
         
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(slave);
         
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
@@ -579,4 +613,33 @@ public class QueueTest extends HudsonTestCase {
         } catch (CancellationException e) {
         }
     }
+
+    @Test public void waitForStartAndCancelBeforeStart() throws Exception {
+        final OneShotEvent ev = new OneShotEvent();
+        FreeStyleProject p = r.createFreeStyleProject();
+
+        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(10);
+        final Queue.Item item = Queue.getInstance().getItem(p);
+        assertNotNull(item);
+
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+        executor.schedule(new Runnable() {
+            @Override
+            public void run() {
+                   try {
+                       Queue.getInstance().doCancelItem(item.id);
+                   } catch (IOException e) {
+                       e.printStackTrace();
+                   } catch (ServletException e) {
+                       e.printStackTrace();
+                   }
+                }
+            }, 2, TimeUnit.SECONDS);
+
+        try {
+            f.waitForStart();
+            fail("Expected an CancellationException to be thrown");
+        } catch (CancellationException e) {}
+    }
+
 }

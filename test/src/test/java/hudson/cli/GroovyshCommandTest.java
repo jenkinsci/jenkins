@@ -31,14 +31,14 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class GroovyshCommandTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Bug(17929)
+    @Issue("JENKINS-17929")
     @Test public void authentication() throws Exception {
         CLICommandInvoker.Result result = new CLICommandInvoker(r, new GroovyshCommand())
             .authorizedTo(Jenkins.READ, Jenkins.RUN_SCRIPTS)

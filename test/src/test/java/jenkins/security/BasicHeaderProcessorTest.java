@@ -1,5 +1,8 @@
 package jenkins.security;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
@@ -7,7 +10,6 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.util.HttpResponses;
 import hudson.util.Scrambler;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -22,7 +24,7 @@ import java.net.URL;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class BasicHeaderProcessorTest extends Assert {
+public class BasicHeaderProcessorTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -56,9 +58,14 @@ public class BasicHeaderProcessorTest extends Assert {
         // call with incorrect password
         makeRequestAndFail("foo:bar");
 
-        // if the session cookie is valid, then basic header won't be needed
+
         wc.login("bar");
+
+        // if the session cookie is valid, then basic header won't be needed
         makeRequestWithAuthAndVerify(null, "bar");
+
+        // if the session cookie is valid, and basic header is set anyway login should not fail either
+        makeRequestWithAuthAndVerify("bar:bar", "bar");
 
         // but if the password is incorrect, it should fail, instead of silently logging in as the user indicated by session
         makeRequestAndFail("foo:bar");

@@ -96,7 +96,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 				logger.debug("Did not send remember-me cookie because 'Remember Me' is disabled in " +
 						"security configuration (principal did set parameter '" + getParameter() + "')");
 			}
-			// XXX log warning when receiving remember-me request despite the feature being disabled?
+			// TODO log warning when receiving remember-me request despite the feature being disabled?
 			return;
 		}
 

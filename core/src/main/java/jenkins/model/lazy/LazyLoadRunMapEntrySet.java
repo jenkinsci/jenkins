@@ -32,6 +32,10 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Entry<Integer,R>> {
         return all;
     }
 
+    synchronized void clearCache() {
+        all = null;
+    }
+
     @Override
     public int size() {
         return all().size();

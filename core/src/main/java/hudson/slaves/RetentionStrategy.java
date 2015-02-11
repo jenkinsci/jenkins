@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -208,11 +208,11 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         }
 
         @Override
-        public synchronized long check(SlaveComputer c) {
+        public synchronized long check(final SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
                 final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
                 for (Computer o : Jenkins.getInstance().getComputers()) {
-                    if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle()) {
+                    if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
                         final int idleExecutors = o.countIdle();
                         if (idleExecutors>0)
                             availableComputers.put(o, idleExecutors);
@@ -257,10 +257,21 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
-                    // we've been idle for long enough
-                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
-                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
-                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
+                    Queue.withLock(new Runnable() {
+                        @Override
+                        public void run() {
+                            // re-check idle now that we are within the Queue lock
+                            if (c.isIdle()) {
+                                final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
+                                if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
+                                    // we've been idle for long enough
+                                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
+                                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
+                                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
+                                }
+                            }
+                        }
+                    });
                 }
             }
             return 1;
