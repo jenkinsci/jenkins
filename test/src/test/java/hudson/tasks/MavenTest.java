@@ -268,4 +268,41 @@ public class MavenTest {
         assertEquals("{}", env.toString());
     }
 
+    @Issue("JENKINS-26684")
+    @Test public void specialCharsInBuildVariablesPassedAsProperties() throws Exception {
+        j.configureDefaultMaven();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new Maven("--help", null));
+        p.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("tilde", "~"),
+                new StringParameterDefinition("exclamation_mark", "!"),
+                new StringParameterDefinition("at_sign", "@"),
+                new StringParameterDefinition("sharp", "#"),
+                new StringParameterDefinition("dolar", "$"),
+                new StringParameterDefinition("percent", "%"),
+                new StringParameterDefinition("circumflex", "^"),
+                new StringParameterDefinition("ampersand", "&"),
+                new StringParameterDefinition("asterix", "*"),
+                new StringParameterDefinition("parentheses", "()"),
+                new StringParameterDefinition("underscore", "_"),
+                new StringParameterDefinition("plus", "+"),
+                new StringParameterDefinition("braces", "{}"),
+                new StringParameterDefinition("brackets", "[]"),
+                new StringParameterDefinition("colon", ":"),
+                new StringParameterDefinition("semicolon", ";"),
+                new StringParameterDefinition("quote", "\""),
+                new StringParameterDefinition("apostrophe", "'"),
+                new StringParameterDefinition("backslash", "\\"),
+                new StringParameterDefinition("pipe", "|"),
+                new StringParameterDefinition("angle_brackets", "<>"),
+                new StringParameterDefinition("comma", ","),
+                new StringParameterDefinition("period", "."),
+                new StringParameterDefinition("slash", "/"),
+                new StringParameterDefinition("question_mark", "?"),
+                new StringParameterDefinition("space", " ")
+        ));
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+    }
 }

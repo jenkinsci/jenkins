@@ -322,6 +322,10 @@ public class Maven extends Builder {
             wrapUpArguments(args,normalizedTarget,build,launcher,listener);
 
             buildEnvVars(env, mi);
+            
+            if (!launcher.isUnix()) {
+                args = args.toWindowsCommand();
+            }
 
             try {
                 MavenConsoleAnnotator mca = new MavenConsoleAnnotator(listener.getLogger(),build.getCharset());
