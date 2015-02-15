@@ -597,6 +597,7 @@ table.bigtable.pane > tbody > tr > td:last-child {
   border: none;
   background-color: #f0f0f0;
   padding: 6px 4px;
+  white-space: nowrap;
 }
 
 .bigtable td {
