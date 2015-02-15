@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.FilePath;
+import hudson.maven.*;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelAtom;
@@ -45,6 +46,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.concurrent.*;
+
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -52,29 +55,27 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.MockQueueItemAuthenticator;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.*;
 
 /**
  *
  * @author Lucie Votypkova
  */
 public class NodeTest {
-    
+
     @Rule public JenkinsRule j = new JenkinsRule();
     public static boolean addDynamicLabel = false;
     public static boolean notTake = false;
-    
+
     @Before
     public void before(){
        addDynamicLabel = false;
        notTake = false;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
     }
-    
+
     @Test
-    public void testSetTemporaryOfflineCause() throws Exception { 
+    public void testSetTemporaryOfflineCause() throws Exception {
         Node node = j.createOnlineSlave();
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel(node.getDisplayName()));
@@ -131,11 +132,11 @@ public class NodeTest {
                 assertEquals("Label " + e.item + " should not have any tied project.", 0, e.weight, 0);
             }
         }
-        
+
     }
-        
+
     @Test
-    public void testGetAssignedLabels() throws Exception { 
+    public void testGetAssignedLabels() throws Exception {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         LabelAtom notContained = j.jenkins.getLabelAtom("notContained");
@@ -143,10 +144,10 @@ public class NodeTest {
         assertTrue("Node should have label1.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label1")));
         assertTrue("Node should have label2.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label2")));
         assertTrue("Node should have dynamicly added dynamicLabel.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("dynamicLabel")));
-        assertFalse("Node should not have label notContained.", node.getAssignedLabels().contains(notContained)); 
+        assertFalse("Node should not have label notContained.", node.getAssignedLabels().contains(notContained));
         assertTrue("Node should have self label.", node.getAssignedLabels().contains(node.getSelfLabel()));
     }
-    
+
     @Test
     public void testCanTake() throws Exception {
         Node node = j.createOnlineSlave();
@@ -173,7 +174,7 @@ public class NodeTest {
         assertNotNull("Node should not take project because node property not alow it.", node.canTake(item));
         assertTrue("Cause of blockage should be bussy label.", node.canTake(item) instanceof CauseOfBlockage.BecauseLabelIsBusy);
         User user = User.get("John");
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
@@ -185,7 +186,7 @@ public class NodeTest {
         message = Messages._Node_LackingBuildPermission(item.authenticate().getName(),node.getNodeName()).toString();
         assertEquals("Cause of blockage should be bussy label.", message, node.canTake(item).getShortDescription());
     }
-     
+
     @Test
     public void testCreatePath() throws Exception {
         Node node = j.createOnlineSlave();
@@ -194,7 +195,7 @@ public class NodeTest {
         FilePath path = node.createPath(absolutPath);
         assertNotNull("Path should be created.", path);
         assertNotNull("Channel should be set.", path.getChannel());
-        assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());       
+        assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());
         path = node2.createPath(absolutPath);
         assertNull("Path should be null if slave have channel null.", path);
     }
@@ -202,7 +203,7 @@ public class NodeTest {
     @Test
     public void testHasPermission() throws Exception {
         Node node = j.createOnlineSlave();
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
@@ -215,13 +216,13 @@ public class NodeTest {
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
         SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
-        
+
         user = User.get("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));
     }
-    
+
     @Test
-    public void testGetChannel() throws Exception {      
+    public void testGetChannel() throws Exception {
         Slave slave = j.createOnlineSlave();
         Node nodeOffline = j.createSlave();
         Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
@@ -229,7 +230,7 @@ public class NodeTest {
         assertNull("Channel of node should be null because assigned computer is offline.", nodeOffline.getChannel());
         assertNotNull("Channel of node should not be null.", slave.getChannel());
     }
-     
+
     @Test
     public void testToComputer() throws Exception {
         Slave slave = j.createOnlineSlave();
@@ -237,7 +238,7 @@ public class NodeTest {
         assertNull("Slave which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
         assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
     }
-    
+
     @TestExtension
     public static class LabelFinderImpl extends LabelFinder{
 
@@ -248,14 +249,14 @@ public class NodeTest {
                 atoms.add(Jenkins.getInstance().getLabelAtom("dynamicLabel"));
             }
             return atoms;
-            
+
         }
-        
+
     }
-    
+
     @TestExtension
     public static class NodePropertyImpl extends NodeProperty{
-        
+
         @Override
         public CauseOfBlockage canTake(Queue.BuildableItem item){
             if(notTake)
@@ -263,5 +264,24 @@ public class NodeTest {
             return null;
         }
     }
-    
+
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelsWithJobs() throws Exception {
+        final Node node = j.createOnlineSlave();
+        node.setLabelString("label1 label2");
+        MavenModuleSet project = j.createMavenProject();
+        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        RunLoadCounter.prepare(project);
+        project.scheduleBuild2(0);
+        assertEquals("Should not lazy load when obtaining assigned label information.",
+                0,
+                RunLoadCounter.assertMaxLoads(project, 0, new Callable<Integer>() {
+                    @Override
+                    public Integer call() throws Exception {
+                        return j.jenkins.getLabel("label1").getTiedJobCount();
+                    }
+                }).intValue());
+    }
+
 }
