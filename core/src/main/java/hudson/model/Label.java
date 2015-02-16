@@ -374,7 +374,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             for (TopLevelItem topLevelItem : Jenkins.getInstance().getItemMap().values()) {
                 if (topLevelItem instanceof AbstractProject) {
                     final AbstractProject project = (AbstractProject) topLevelItem;
-                    if (this.equals(project.getAssignedLabel())) {
+                    if (this.name.equals(project.getAssignedLabelString())) {
                         result++;
                     }
                 }
@@ -389,7 +389,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
                         for (Item i : parent.getItems()) {
                             if (i instanceof AbstractProject) {
                                 final AbstractProject project = (AbstractProject) i;
-                                if (this.equals(project.getAssignedLabel())) {
+                                if (this.name.equals(project.getAssignedLabelString())) {
                                     result++;
                                 }
                             }

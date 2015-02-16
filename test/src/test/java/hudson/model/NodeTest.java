@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.FilePath;
+import hudson.maven.MavenModuleSet;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelAtom;
@@ -45,6 +46,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.concurrent.Callable;
+
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -52,6 +55,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
@@ -236,6 +241,26 @@ public class NodeTest {
         Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
         assertNull("Slave which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
         assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
+    }
+
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithJobs() throws Exception {
+        final Node node = j.createOnlineSlave();
+        node.setLabelString("label1 label2");
+        MavenModuleSet mavenProject = j.createMavenProject();
+        mavenProject.setAssignedLabel(j.jenkins.getLabel("label1"));
+        RunLoadCounter.prepare(mavenProject);
+        j.assertBuildStatus(Result.FAILURE, mavenProject.scheduleBuild2(0).get());
+        Integer labelCount = RunLoadCounter.assertMaxLoads(mavenProject, 0, new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return j.jenkins.getLabel("label1").getTiedJobCount();
+            }
+        });
+
+        assertEquals("Should have only one job tied to label.",
+                1, labelCount.intValue());
     }
     
     @TestExtension
