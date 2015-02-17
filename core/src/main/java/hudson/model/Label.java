@@ -497,7 +497,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
 
     @Override
-    public boolean equals(Object that) {
+    public final boolean equals(Object that) {
         if (this == that) return true;
         if (that == null || getClass() != that.getClass()) return false;
 
