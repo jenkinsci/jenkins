@@ -27,7 +27,7 @@ import hudson.FilePath;
 import hudson.maven.MavenModuleSet;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.LabelAtom;
+import hudson.model.labels.*;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -243,6 +243,9 @@ public class NodeTest {
         assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
     }
 
+    /**
+     * Verify that the Label#getTiedJobCount does not perform a lazy loading operation.
+     */
     @Issue("JENKINS-26391")
     @Test
     public void testGetAssignedLabelWithJobs() throws Exception {
@@ -263,6 +266,71 @@ public class NodeTest {
                 1, labelCount.intValue());
     }
     
+    /**
+     * Create two projects which have the same label and verify that both are accounted for when getting a count
+     * of the jobs tied to the current label.
+     *
+     */
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelMultipleSlaves() throws Exception {
+        final Node node1 = j.createOnlineSlave();
+        node1.setLabelString("label1");
+        final Node node2 = j.createOnlineSlave();
+        node1.setLabelString("label1");
+
+        MavenModuleSet project = j.createMavenProject();
+        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
+
+        MavenModuleSet project2 = j.createMavenProject();
+        project2.setAssignedLabel(j.jenkins.getLabel("label1"));
+        j.assertBuildStatus(Result.FAILURE, project2.scheduleBuild2(0).get());
+
+        assertEquals("Two jobs should be tied to this label.",
+                2, j.jenkins.getLabel("label1").getTiedJobCount());
+    }
+
+    /**
+     * Verify that when a label is removed from a job that the tied job count does not include the removed job.
+     */
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWhenLabelRemoveFromProject() throws Exception {
+        final Node node = j.createOnlineSlave();
+        node.setLabelString("label1");
+
+        MavenModuleSet project = j.createMavenProject();
+        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
+
+        project.setAssignedLabel(null);
+        assertEquals("Label1 should have no tied jobs after the job label was removed.",
+                0, j.jenkins.getLabel("label1").getTiedJobCount());
+    }
+
+    /**
+     * Create a project with the OR label expression.
+     */
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithLabelExpression() throws Exception {
+        Node node = j.createOnlineSlave();
+        node.setLabelString("label1 label2");
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setAssignedLabel(new LabelExpression.Or(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
+
+        TagCloud<LabelAtom> cloud = node.getLabelCloud();
+        TagCloud.Entry entry = cloud.get(0);
+        assertEquals("label1", ((LabelAtom)entry.item).getName());
+        assertEquals(0, (int)entry.weight);
+
+        entry = cloud.get(1);
+        assertEquals("label2", ((LabelAtom)entry.item).getName());
+        assertEquals(0, (int)entry.weight);
+    }
+
     @TestExtension
     public static class LabelFinderImpl extends LabelFinder{
 
