@@ -25,10 +25,6 @@ THE SOFTWARE.
 <!--
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:ajax>
-    <table class="pane">
-      <st:include page="entries.jelly" />
-    </table>
-  </l:ajax>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:include page="ajaxBuildHistory.jelly" it="${it.page}" />
 </j:jelly>

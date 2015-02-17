@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +23,19 @@ THE SOFTWARE.
 -->
 
 <!--
-  Render build histories.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:include page="entries.jelly" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:ajax>
+    <j:choose>
+      <j:when test="${it.size() > 0}">
+	<table class="pane hasPageData" page-entry-newest="${it.newestOnPage}" page-entry-oldest="${it.oldestOnPage}" page-has-up="${it.hasUpPage}" page-has-down="${it.hasDownPage}">
+	  <st:include page="entries.jelly" />
+	</table>
+      </j:when>
+      <j:otherwise>
+	<table class="pane"></table>
+      </j:otherwise>
+    </j:choose>
+  </l:ajax>
 </j:jelly>

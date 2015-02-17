@@ -51,10 +51,33 @@ THE SOFTWARE.
     </span>
   </j:parse>
 
-  <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="stripped">
+  <j:set var="page" value="${it.page}" />
+  <div id="buildHistoryPage" page-entry-newest="${page.newestOnPage}" page-entry-oldest="${page.oldestOnPage}" page-has-up="${page.hasUpPage}" page-has-down="${page.hasDownPage}">
+    <div id="buildHistoryPageNav">
+      <div class="nav pageOne" title="Page 1 (Newest/Latest Builds)"></div>
+      <div class="nav pageUp" title="Newer Builds"></div>
+      <div class="nav pageDown" title="Older Builds "></div>
+    </div>
+    <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="stripped">
 
-    <!-- build history -->
-    <st:include page="entries.jelly" />
+    <tr class="build-search-row">
+        <td>
+            <table>
+                <tr>
+                    <td>
+                        <span class="clear" title="${%Clear}">x</span>
+                        <input placeholder="${%find}"></input>
+                    </td>
+                    <td class="build-search-help">
+                        <a href="https://github.com/tfennelly/jenkins/blob/JENKINS-26445-pagination-search/core/src/main/java/hudson/widgets/buildsearch/README.md" target="_blank"><l:icon class="icon-help icon-sm"/></a>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+        <!-- build history -->
+    <st:include page="entries.jelly" it="${page}" />
 
     <!--
       If we are trimming the build history because it's too long,
@@ -93,15 +116,13 @@ THE SOFTWARE.
             });
             }
           </script>
-          <div id="loadAllBuildHistory">
-            <!-- once clicked, this div will be replaced by the load icon -->
-            <a href="javascript:loadAllBuildHistory()">${%More ...}</a>
-          </div>
         </td>
       </tr>
     </j:if>
   </l:pane>
+  </div>
+
   <script defer="true">
-    updateBuildHistory("${it.baseUrl}/buildHistory/ajax",${it.nextBuildNumberToFetch});
+    updateBuildHistory("${it.baseUrl}/buildHistory/ajax",${it.owner.nextBuildNumber});
   </script>
 </j:jelly>
