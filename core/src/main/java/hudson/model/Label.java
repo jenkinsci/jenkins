@@ -506,11 +506,11 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return name.hashCode();
     }
 
-    public int compareTo(Label that) {
+    public final int compareTo(Label that) {
         return this.name.compareTo(that.name);
     }
 
