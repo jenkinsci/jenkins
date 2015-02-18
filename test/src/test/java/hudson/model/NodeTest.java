@@ -40,18 +40,15 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
-import hudson.util.TagCloud.Entry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.List;
+
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.context.SecurityContextHolder;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -128,7 +125,7 @@ public class NodeTest {
         project.setAssignedLabel(j.jenkins.getLabel("label1"));
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
         for(int i =0; i< cloud.size(); i ++){
-            Entry e = cloud.get(i);
+            TagCloud.Entry e = cloud.get(i);
             if(e.item.equals(j.jenkins.getLabel("label1"))){
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
             }
@@ -314,7 +311,7 @@ public class NodeTest {
      */
     @Issue("JENKINS-26391")
     @Test
-    public void testGetAssignedLabelWithLabelExpression() throws Exception {
+    public void testGetAssignedLabelWithLabelOrExpression() throws Exception {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
 
@@ -322,16 +319,82 @@ public class NodeTest {
         project.setAssignedLabel(new LabelExpression.Or(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
 
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
-        TagCloud.Entry entry = cloud.get(0);
-        assertEquals("label1", ((LabelAtom)entry.item).getName());
-        assertEquals(0, (int)entry.weight);
-
-        entry = cloud.get(1);
-        assertEquals("label2", ((LabelAtom)entry.item).getName());
-        assertEquals(0, (int)entry.weight);
+        assertCloudLabelContains(cloud, "label1", 0);
+        assertCloudLabelContains(cloud, "label2", 0);
     }
 
-    @TestExtension
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithLabelAndExpression() throws Exception {
+        Node node = j.createOnlineSlave();
+        node.setLabelString("label1 label2");
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setAssignedLabel(new LabelExpression.And(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
+
+        TagCloud<LabelAtom> cloud = node.getLabelCloud();
+        assertCloudLabelContains(cloud, "label1", 0);
+        assertCloudLabelContains(cloud, "label2", 0);
+    }
+
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithBothAndOrExpression() throws Exception {
+        Node n1 = j.createOnlineSlave();
+        Node n2 = j.createOnlineSlave();
+        Node n3 = j.createOnlineSlave();
+        Node n4 = j.createOnlineSlave();
+
+        n1.setLabelString("label1 label2 label3");
+        n2.setLabelString("label1");
+        n3.setLabelString("label1 label2");
+        n4.setLabelString("label1 label");
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedLabel(LabelExpression.parseExpression("label1 && (label2 || label3)"));
+
+        // Node 1 should not be tied to any labels
+        TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();
+        assertCloudLabelContains(n1LabelCloud, "label1", 0);
+        assertCloudLabelContains(n1LabelCloud, "label2", 0);
+        assertCloudLabelContains(n1LabelCloud, "label3", 0);
+
+        // Node 2 should not be tied to any labels
+        TagCloud<LabelAtom> n2LabelCloud = n1.getLabelCloud();
+        assertCloudLabelContains(n2LabelCloud, "label1", 0);
+
+        // Node 3 should not be tied to any labels
+        TagCloud<LabelAtom> n3LabelCloud = n1.getLabelCloud();
+        assertCloudLabelContains(n3LabelCloud, "label1", 0);
+        assertCloudLabelContains(n3LabelCloud, "label2", 0);
+
+        // Node 4 should not be tied to any labels
+        TagCloud<LabelAtom> n4LabelCloud = n1.getLabelCloud();
+        assertCloudLabelContains(n4LabelCloud, "label1", 0);
+    }
+
+    /**
+     * Assert that a tag cloud contains label name and weight.
+     */
+    public void assertCloudLabelContains(TagCloud<LabelAtom> tagCloud, String expectedLabel, int expectedWeight) {
+        StringBuilder failureMessage = new StringBuilder();
+        for (TagCloud.Entry entry : tagCloud) {
+            if (expectedLabel.equals(((LabelAtom) entry.item).getName())) {
+                if (expectedWeight == entry.weight) {
+                    return;
+                }
+            }
+
+            // Gather information for failure message just in case.
+            failureMessage.append("{").append(entry.item.toString()).append(", ").append(entry.weight).append("}");
+        }
+
+        fail("Unable to find label cloud. Expected: [" + expectedLabel + ", " + expectedWeight + "]" +
+                " Actual: [" + failureMessage.toString() + "]");
+    }
+
+
+        @TestExtension
     public static class LabelFinderImpl extends LabelFinder{
 
         @Override
