@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Launcher;
+import hudson.XmlFile;
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixBuild;
@@ -81,6 +82,8 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.*;
+
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -88,6 +91,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.recipes.LocalData;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -116,16 +120,34 @@ public class QueueTest {
 
         System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
 
-        assertEquals(1,q.getItems().length);
+        assertEquals(1, q.getItems().length);
         q.clear();
         assertEquals(0,q.getItems().length);
 
         // load the contents back
         q.load();
-        assertEquals(1,q.getItems().length);
+        assertEquals(1, q.getItems().length);
 
         // did it bind back to the same object?
         assertSame(q.getItems()[0].task,testProject);        
+    }
+
+    /**
+     * Make sure the queue can be reconstructed from a List queue.xml.
+     * Prior to the Queue.State class, the Queue items were just persisted as a List.
+     */
+    @LocalData
+    @Test
+    public void recover_from_legacy_list() throws Exception {
+        Queue q = r.jenkins.getQueue();
+
+        // loaded the legacy queue.xml from test LocalData located in
+        // resources/hudson/model/QueueTest/recover_from_legacy_list.zip
+        assertEquals(1, q.getItems().length);
+
+        // The current counter should be the id from the item brought back
+        // from the persisted queue.xml.
+        assertEquals(3, Queue.WaitingItem.getCurrentCounterValue());
     }
 
     /**
@@ -133,6 +155,9 @@ public class QueueTest {
      */
      @Test public void persistence2() throws Exception {
         Queue q = r.jenkins.getQueue();
+
+        resetQueueState();
+        assertEquals(0, Queue.WaitingItem.getCurrentCounterValue());
 
         // prevent execution to push stuff into the queue
         r.jenkins.setNumExecutors(0);
@@ -144,7 +169,7 @@ public class QueueTest {
 
         System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
 
-        assertEquals(1,q.getItems().length);
+        assertEquals(1, q.getItems().length);
         q.clear();
         assertEquals(0,q.getItems().length);
 
@@ -152,6 +177,27 @@ public class QueueTest {
         testProject.delete();
         q.load();
         assertEquals(0,q.getItems().length);
+
+        // The counter state should be maintained.
+        assertEquals(1, Queue.WaitingItem.getCurrentCounterValue());
+    }
+
+    /**
+     * Forces a reset of the private queue COUNTER.
+     * Could make changes to Queue to make that easier, but decided against that.
+     */
+    private void resetQueueState() throws IOException {
+        File queueFile = r.jenkins.getQueue().getXMLQueueFile();
+        XmlFile xmlFile = new XmlFile(Queue.XSTREAM, queueFile);
+        xmlFile.write(new Queue.State());
+        r.jenkins.getQueue().load();
+    }
+
+    @Test
+    public void queue_id_to_run_mapping() throws Exception {
+        FreeStyleProject testProject = r.createFreeStyleProject("test");
+        FreeStyleBuild build = r.assertBuildStatusSuccess(testProject.scheduleBuild2(0));
+        Assert.assertNotEquals(Run.QUEUE_ID_UNKNOWN, build.getQueueId());
     }
 
     /**
@@ -604,7 +650,7 @@ public class QueueTest {
         
         Queue.Item item = Queue.getInstance().getItem(p);
         assertNotNull(item);
-        Queue.getInstance().doCancelItem(item.id);
+        Queue.getInstance().doCancelItem(item.getId());
         assertNull(Queue.getInstance().getItem(p));
         
         try {
@@ -627,7 +673,7 @@ public class QueueTest {
             @Override
             public void run() {
                    try {
-                       Queue.getInstance().doCancelItem(item.id);
+                       Queue.getInstance().doCancelItem(item.getId());
                    } catch (IOException e) {
                        e.printStackTrace();
                    } catch (ServletException e) {
