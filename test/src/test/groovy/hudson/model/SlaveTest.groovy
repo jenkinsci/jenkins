@@ -119,11 +119,23 @@ class SlaveTest {
                     j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST){};
     }
 
+    @Test(expected = Descriptor.FormException.class)
+    void emptyFsRoot() {
+        new Slave("dummy", "dummy",
+                "", "1", Node.Mode.NORMAL, "",
+                j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST){};
+    }
+
     @Test void absoluteFsRoot() {
         new Slave("dummy", "dummy",
                 tmp.newFolder("relative").absolutePath, "1", Node.Mode.NORMAL, "",
                 j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST){};
     }
 
+    @Test void windowsFsRoot() {
+        new Slave("dummy", "dummy",
+                "C:\\Slave", "1", Node.Mode.NORMAL, "",
+                j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST){};
+    }
 
 }
