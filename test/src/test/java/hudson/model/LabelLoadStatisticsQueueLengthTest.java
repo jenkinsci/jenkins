@@ -20,6 +20,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -48,6 +49,9 @@ public class LabelLoadStatisticsQueueLengthTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
+
     /**
      * Setup
      */
@@ -57,7 +61,7 @@ public class LabelLoadStatisticsQueueLengthTest {
         // be considered valid.
         DumbSlave node = new DumbSlave(
                 LabelLoadStatisticsQueueLengthTest.class.getSimpleName(), "",
-                "", "1", Mode.NORMAL, LABEL_STRING + " " + ALT_LABEL_STRING,
+                tmp.getRoot().getAbsolutePath(), "1", Mode.NORMAL, LABEL_STRING + " " + ALT_LABEL_STRING,
                 null, RetentionStrategy.NOOP,
                 Collections.<NodeProperty<?>> emptyList());
         j.getInstance().addNode(node);
