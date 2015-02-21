@@ -170,6 +170,9 @@ public abstract class Slave extends Node implements Serializable {
             User user = User.current();
             userId = user!=null ? user.getId() : "anonymous";     
         }
+        if (! new File(remoteFS).isAbsolute()) {
+            throw new FormException(Messages.Slave_the_remote_root_must_be_an_absolute_path(), null);
+        }
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
