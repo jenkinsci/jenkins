@@ -139,6 +139,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.
+     * @since TODO
      */
     public static final long QUEUE_ID_UNKNOWN = -1;
 
@@ -156,7 +157,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * The original Queue task ID from where this Run instance originated.
      */
-    private long queueId;
+    private Long queueId;
 
     /**
      * Previous build. Can be null.
@@ -420,6 +421,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Exported
     public long getQueueId() {
+        if (queueId == null) {
+            // This Run has existed since before Queue.Item.id to Run.queueId mapping was introduced.
+            // We can use the Run's build number because the starting Queue.Item.id will have
+            // been initialized using the max nextBuildNumber found across all Jobs.
+            // See Queue.getMaxNextBuildNumber() and how it's used. Yes, we will be returning
+            // a number that is not the actual "queue id" and could be the same number as returned for other
+            // Runs (where they too existed before Queue.Item.id to Run.queueId mapping was introduced) but
+            // should be fine so long as the queueId sequence is "good" within that Run and is only used
+            // for sequencing within that Run. Not perfect.
+            queueId = (long) number;
+        }
         return queueId;
     }
 
@@ -428,7 +440,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p/>
      * Mapped from the {@link Queue.Item#getId()}.
      * @param queueId The queue item ID.
-     * @since TODO
      */
     @Restricted(NoExternalUse.class)
     public void setQueueId(long queueId) {

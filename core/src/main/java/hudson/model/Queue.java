@@ -386,9 +386,15 @@ public class Queue extends ResourceController implements Saveable {
                         // backward compatibility - it's an old List queue.xml
                         items = (List) unmarshaledObj;
                         long maxId = 0;
-                        for (Object o : items) {
-                            if (o instanceof Item) {
-                                maxId = Math.max(maxId, ((Item)o).id);
+                        if (items.isEmpty()) {
+                            // Lets find the biggest "next build number" across all jobs and use that as the
+                            // next maxId/queueId
+                            maxId = getMaxNextBuildNumber();
+                        } else {
+                            for (Object o : items) {
+                                if (o instanceof Item) {
+                                    maxId = Math.max(maxId, ((Item)o).id);
+                                }
                             }
                         }
                         WaitingItem.COUNTER.set(maxId);
@@ -426,11 +432,29 @@ public class Queue extends ResourceController implements Saveable {
                     bk.delete();
                     queueFile.renameTo(bk);
                     queueFile.delete();
+                } else {
+                    WaitingItem.COUNTER.set(getMaxNextBuildNumber());
                 }
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
         }
+    }
+
+    private long getMaxNextBuildNumber() {
+        long maxNextBuildNumber = 0;
+        Jenkins jenkins = Jenkins.getInstance();
+
+        if (jenkins != null) {
+            for (String jobName : jenkins.getJobNames()) {
+                TopLevelItem item = jenkins.getItem(jobName);
+                if (item instanceof Job) {
+                    maxNextBuildNumber = Math.max(maxNextBuildNumber, ((Job) item).getNextBuildNumber());
+                }
+            }
+        }
+
+        return maxNextBuildNumber;
     }
 
     /**
@@ -1509,8 +1533,20 @@ public class Queue extends ResourceController implements Saveable {
          * VM-wide unique ID that tracks the {@link Task} as it moves through different stages
          * in the queue (each represented by different subtypes of {@link Item}.
          */
-	private final long id;
+	    private final long id;
 
+        /**
+         * Get the Queue item ID.
+         * <p>
+         * VM-wide unique ID that tracks the {@link Task} as it moves through different stages
+         * in the queue (each represented by different subtypes of {@link Item}. This ID is
+         * mapped onto any subsequent {@link Run} instance created from the build queue item
+         * and can be retrieved by calling {@link Run#getQueueId()}, allowing correlation between
+         * build queue items and their corresponding {@link Run} instance.
+         * </p>
+         * @return The Queue item ID.
+         * @since TODO
+         */
         @Exported
         public long getId() {
             return id;
