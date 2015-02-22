@@ -100,6 +100,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
+        allowEmptyArchive = false;
     }
 
     @Deprecated
