@@ -87,6 +87,7 @@ public class ArtifactArchiverTest {
     public void testAllowEmptyArchive() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ArtifactArchiver aa = new ArtifactArchiver("f");
+        assertFalse(aa.getAllowEmptyArchive());
         aa.setAllowEmptyArchive(true);
         project.getPublishersList().replaceBy(Collections.singleton(aa));
         assertEquals("(no artifacts)", Result.SUCCESS, build(project));
