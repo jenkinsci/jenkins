@@ -131,7 +131,7 @@ class SortedIntList extends AbstractList<Integer> {
     }
 
     public boolean isInRange(int idx) {
-        return 0<=idx && idx<size;
+        return find(idx)>-1;
     }
 
     public void sort() {
