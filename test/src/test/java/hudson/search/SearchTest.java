@@ -105,6 +105,40 @@ public class SearchTest {
         assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
     }
 
+    @Issue("JENKINS-24433")
+    @Test
+    public void testSearchByProjectNameBehindAFolder() throws Exception {
+        final String projectName = "testSearchByProjectName";
+        j.createFreeStyleProject(projectName);
+        j.createFolder("my-folder-1").createProject(FreeStyleProject.class, "my-job-1");
+
+        Page result = j.createWebClient().goTo("job/my-folder-1/search?q="+ projectName);
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        // make sure we've fetched the testSearchByDisplayName project page
+        String contents = result.getWebResponse().getContentAsString();
+        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+    }
+
+    @Issue("JENKINS-24433")
+    @Test
+    public void testSearchByProjectNameInAFolder() throws Exception {
+        final String projectName = "testSearchByProjectName";
+        j.createFreeStyleProject(projectName);
+        j.createFolder("my-folder-1").createProject(FreeStyleProject.class, "my-job-1");
+
+        Page result = j.createWebClient().goTo("job/my-folder-1/search?q="+ "my-folder-1/my-job-1");
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        // make sure we've fetched the testSearchByDisplayName project page
+        String contents = result.getWebResponse().getContentAsString();
+        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", "my-job-1 [my-folder-1]")));
+    }
+
     @Test
     public void testSearchByDisplayName() throws Exception {
         final String displayName = "displayName9999999";
@@ -223,6 +257,95 @@ public class SearchTest {
         
         assertTrue(foundProjectName);
         assertTrue(foundDispayName);
+    }
+
+    @Issue("JENKINS-24433")
+    @Test
+    public void testProjectNameBehindAFolderDisplayName() throws Exception {
+        final String projectName1 = "job-1";
+        final String displayName1 = "job-1";
+
+        final String projectName2 = "job-2";
+        final String displayName2 = "job-2";
+
+        FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
+        project1.setDisplayName(displayName1);
+
+        FreeStyleProject project2 = j.createFolder("my-folder-1").createProject(FreeStyleProject.class, projectName2);
+        project2.setDisplayName(displayName2);
+
+        WebClient wc = j.createWebClient();
+        Page result = wc.goTo("job/my-folder-1/search/suggest?query=" + projectName1, "application/json");
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        String content = result.getWebResponse().getContentAsString();
+        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+
+        assertEquals(1, jsonArray.size());
+
+        boolean foundProjectName = false;
+        boolean foundDisplayName = false;
+        for(Object suggestion : jsonArray) {
+            JSONObject jsonSuggestion = (JSONObject)suggestion;
+
+            String name = (String)jsonSuggestion.get("name");
+            if(projectName1.equals(name)) {
+                foundProjectName = true;
+            }
+            if(displayName1.equals(name)) {
+                foundDisplayName = true;
+            }
+        }
+
+        assertTrue(foundProjectName);
+        assertTrue(foundDisplayName);
+    }
+
+    @Issue("JENKINS-24433")
+    @Test
+    public void testProjectNameInAFolderDisplayName() throws Exception {
+        final String projectName1 = "job-1";
+        final String displayName1 = "job-1";
+
+        final String projectName2 = "job-2";
+        final String displayName2 = "my-folder-1 job-2";
+
+        FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
+        project1.setDisplayName(displayName1);
+
+        FreeStyleProject project2 = j.createFolder("my-folder-1").createProject(FreeStyleProject.class, projectName2);
+        project2.setDisplayName(displayName2);
+
+
+        WebClient wc = j.createWebClient();
+        Page result = wc.goTo("job/my-folder-1/search/suggest?query=" + projectName2, "application/json");
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        String content = result.getWebResponse().getContentAsString();
+        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+
+        assertEquals(1, jsonArray.size());
+
+        boolean foundDisplayName = false;
+        for(Object suggestion : jsonArray) {
+            JSONObject jsonSuggestion = (JSONObject)suggestion;
+
+            String name = (String)jsonSuggestion.get("name");
+
+            if(displayName2.equals(name)) {
+                foundDisplayName = true;
+            }
+        }
+
+        assertTrue(foundDisplayName);
     }
 
     /**
