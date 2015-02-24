@@ -139,6 +139,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.
+     * @since TODO
      */
     public static final long QUEUE_ID_UNKNOWN = -1;
 
@@ -156,7 +157,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * The original Queue task ID from where this Run instance originated.
      */
-    private long queueId;
+    private long queueId = Run.QUEUE_ID_UNKNOWN;
 
     /**
      * Previous build. Can be null.
@@ -428,7 +429,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * <p/>
      * Mapped from the {@link Queue.Item#getId()}.
      * @param queueId The queue item ID.
-     * @since TODO
      */
     @Restricted(NoExternalUse.class)
     public void setQueueId(long queueId) {

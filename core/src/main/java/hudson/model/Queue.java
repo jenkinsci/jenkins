@@ -1505,12 +1505,16 @@ public class Queue extends ResourceController implements Saveable {
      */
     @ExportedBean(defaultVisibility = 999)
     public static abstract class Item extends Actionable {
-        /**
-         * VM-wide unique ID that tracks the {@link Task} as it moves through different stages
-         * in the queue (each represented by different subtypes of {@link Item}.
-         */
-	private final long id;
 
+        private final long id;
+
+        /**
+         * Unique ID (per master) that tracks the {@link Task} as it moves through different stages
+         * in the queue (each represented by different subtypes of {@link Item} and into any subsequent
+         * {@link Run} instance (see {@link Run#getQueueId()}).
+         * @return
+         * @since TODO
+         */
         @Exported
         public long getId() {
             return id;
