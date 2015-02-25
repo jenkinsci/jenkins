@@ -319,8 +319,8 @@ public class NodeTest {
         project.setAssignedLabel(new LabelExpression.Or(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
 
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
-        assertCloudLabelContains(cloud, "label1", 0);
-        assertCloudLabelContains(cloud, "label2", 0);
+        assertThatCloudLabelContains(cloud, "label1", 0);
+        assertThatCloudLabelContains(cloud, "label2", 0);
     }
 
     @Issue("JENKINS-26391")
@@ -333,8 +333,8 @@ public class NodeTest {
         project.setAssignedLabel(new LabelExpression.And(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
 
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
-        assertCloudLabelContains(cloud, "label1", 0);
-        assertCloudLabelContains(cloud, "label2", 0);
+        assertThatCloudLabelContains(cloud, "label1", 0);
+        assertThatCloudLabelContains(cloud, "label2", 0);
     }
 
     @Issue("JENKINS-26391")
@@ -355,44 +355,78 @@ public class NodeTest {
 
         // Node 1 should not be tied to any labels
         TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();
-        assertCloudLabelContains(n1LabelCloud, "label1", 0);
-        assertCloudLabelContains(n1LabelCloud, "label2", 0);
-        assertCloudLabelContains(n1LabelCloud, "label3", 0);
+        assertThatCloudLabelContains(n1LabelCloud, "label1", 0);
+        assertThatCloudLabelContains(n1LabelCloud, "label2", 0);
+        assertThatCloudLabelContains(n1LabelCloud, "label3", 0);
 
         // Node 2 should not be tied to any labels
         TagCloud<LabelAtom> n2LabelCloud = n1.getLabelCloud();
-        assertCloudLabelContains(n2LabelCloud, "label1", 0);
+        assertThatCloudLabelContains(n2LabelCloud, "label1", 0);
 
         // Node 3 should not be tied to any labels
         TagCloud<LabelAtom> n3LabelCloud = n1.getLabelCloud();
-        assertCloudLabelContains(n3LabelCloud, "label1", 0);
-        assertCloudLabelContains(n3LabelCloud, "label2", 0);
+        assertThatCloudLabelContains(n3LabelCloud, "label1", 0);
+        assertThatCloudLabelContains(n3LabelCloud, "label2", 0);
 
         // Node 4 should not be tied to any labels
         TagCloud<LabelAtom> n4LabelCloud = n1.getLabelCloud();
-        assertCloudLabelContains(n4LabelCloud, "label1", 0);
+        assertThatCloudLabelContains(n4LabelCloud, "label1", 0);
+    }
+
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithSpaceOnly() throws Exception {
+        Node n = j.createOnlineSlave();
+        n.setLabelString("label1 label2");
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedLabel(j.jenkins.getLabel("label1 label2"));
+
+        TagCloud<LabelAtom> cloud = n.getLabelCloud();
+        assertThatCloudLabelDoesNotContain(cloud, "label1 label2", 0);
     }
 
     /**
      * Assert that a tag cloud contains label name and weight.
      */
-    public void assertCloudLabelContains(TagCloud<LabelAtom> tagCloud, String expectedLabel, int expectedWeight) {
-        StringBuilder failureMessage = new StringBuilder();
+    public void assertThatCloudLabel(boolean contains, TagCloud<LabelAtom> tagCloud, String expectedLabel, int expectedWeight) {
+        StringBuilder containsFailureMessage = new StringBuilder().append("Unable to find label cloud. Expected: [")
+                .append(expectedLabel).append(", ").append(expectedWeight).append("]").append(" Actual: [");
+
         for (TagCloud.Entry entry : tagCloud) {
             if (expectedLabel.equals(((LabelAtom) entry.item).getName())) {
                 if (expectedWeight == entry.weight) {
-                    return;
+                    if (!contains) {
+                        fail("Cloud label should not contain [" + expectedLabel + ", " + expectedWeight + "]");
+                    } else {
+                        return;
+                    }
                 }
             }
 
             // Gather information for failure message just in case.
-            failureMessage.append("{").append(entry.item.toString()).append(", ").append(entry.weight).append("}");
+            containsFailureMessage.append("{").append(entry.item.toString()).append(", ").append(entry.weight).append("}");
         }
 
-        fail("Unable to find label cloud. Expected: [" + expectedLabel + ", " + expectedWeight + "]" +
-                " Actual: [" + failureMessage.toString() + "]");
+        // If a label should be part of the cloud label then fail.
+        if (contains) {
+            fail(containsFailureMessage.toString() + "]");
+        }
     }
 
+    /**
+     * Assert that a tag cloud does not contain the label name and weight.
+     */
+    public void assertThatCloudLabelDoesNotContain(TagCloud<LabelAtom> tagCloud, String expectedLabel, int expectedWeight) {
+        assertThatCloudLabel(false, tagCloud, expectedLabel, expectedWeight);
+    }
+
+    /**
+     * Assert that a tag cloud contains label name and weight.
+     */
+    public void assertThatCloudLabelContains(TagCloud<LabelAtom> tagCloud, String expectedLabel, int expectedWeight) {
+        assertThatCloudLabel(true, tagCloud, expectedLabel, expectedWeight);
+    }
 
         @TestExtension
     public static class LabelFinderImpl extends LabelFinder{
