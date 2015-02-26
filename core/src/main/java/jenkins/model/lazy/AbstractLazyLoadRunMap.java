@@ -550,7 +550,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     private static final Comparator<Integer> COMPARATOR = new Comparator<Integer>() {
         @Override public int compare(Integer o1, Integer o2) {
-            return o2 - o1;
+            return -o1.compareTo(o2);
         }
     };
     
