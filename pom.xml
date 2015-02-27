@@ -95,7 +95,7 @@ THE SOFTWARE.
 
     <slf4jVersion>1.7.4</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <maven-plugin.version>2.1</maven-plugin.version>
-    <matrix-project.version>1.2.1-20150204.194845-1</matrix-project.version>
+    <matrix-project.version>1.2.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
     <java.level>6</java.level>
