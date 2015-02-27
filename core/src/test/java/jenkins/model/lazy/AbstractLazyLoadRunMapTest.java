@@ -40,7 +40,6 @@ import java.util.SortedMap;
 import java.util.logging.Level;
 import org.junit.BeforeClass;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -131,6 +130,21 @@ public class AbstractLazyLoadRunMapTest {
         } catch (NoSuchElementException e) {
             // as expected
         }
+    }
+
+    @Issue("JENKINS-26690")
+    @Test public void headMap() {
+        assertEquals("[]", a.headMap(Integer.MAX_VALUE).keySet().toString());
+        assertEquals("[]", a.headMap(6).keySet().toString());
+        assertEquals("[]", a.headMap(5).keySet().toString());
+        assertEquals("[5]", a.headMap(4).keySet().toString());
+        assertEquals("[5]", a.headMap(3).keySet().toString());
+        assertEquals("[5, 3]", a.headMap(2).keySet().toString());
+        assertEquals("[5, 3]", a.headMap(1).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(0).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(-1).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(-2).keySet().toString()); // this failed
+        assertEquals("[5, 3, 1]", a.headMap(Integer.MIN_VALUE).keySet().toString());
     }
 
     @Test
