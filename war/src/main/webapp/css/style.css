@@ -427,10 +427,10 @@ pre.console {
 }
 .tabBar [type=radio]:checked ~ a {
   border: solid 1px #f0f0f0;
+  border-bottom: none;
   background: #eee;
   color: #000;
   font-weight: bold;
-  border-bottom: 1px solid #eee;
   z-index: 2;
 }
 .tabBarBaseline {
@@ -597,6 +597,7 @@ table.bigtable.pane > tbody > tr > td:last-child {
   border: none;
   background-color: #f0f0f0;
   padding: 6px 4px;
+  white-space: nowrap;
 }
 
 .bigtable td {
@@ -956,7 +957,6 @@ table.parameters > tbody:hover {
   margin-top: 5px;
   white-space: normal;
   opacity: 0.6;
-  font-style: italic;
 }
 
 #buildHistory .build-row-cell {
