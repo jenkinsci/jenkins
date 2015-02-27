@@ -663,7 +663,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * saving a User with one of these ids.
      *
      * @return true if the username or fullname is valid
-     * @since TODO
+     * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(String id) {
         for (String invalidId : ILLEGAL_PERSISTED_USERNAMES) {
