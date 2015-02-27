@@ -26,16 +26,43 @@ package hudson;
 
 import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
-import java.io.File;
+import java.io.IOException;
 
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.*;
 
 public class PluginManagerTest {
+
 
     @Test public void parseRequestedPlugins() throws Exception {
         assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(Util.createTempDir())
                 .parseRequestedPlugins(new StringInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>")).toString());
     }
 
+    @Test
+    public void parseInvalidRequestedPlugins() throws Exception {
+        String evilXML = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<!DOCTYPE project[<!ENTITY foo SYSTEM \"file:///\">]>\n" +
+                "<root>\n" +
+                "  <stuff plugin='stuff@1.0'>\n" +
+                "&foo;" +
+                "    <more plugin='other@2.0'>\n" +
+                "      <things plugin='stuff@1.2'/>\n" +
+                "    </more>\n" +
+                "  </stuff>\n" +
+                "</root>\n";
+
+        PluginManager pluginManager = new LocalPluginManager(Util.createTempDir());
+        try {
+            pluginManager.parseRequestedPlugins(new StringInputStream(evilXML));
+            fail("XML contains an external entity, but no exception was thrown.");
+        }
+        catch (IOException ex) {
+            assertThat(ex.getCause(), instanceOf(SAXException.class));
+            assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity with publicId(null) and systemId (file:///)"));
+        }
+    }
 }
