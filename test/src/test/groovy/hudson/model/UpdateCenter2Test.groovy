@@ -46,7 +46,7 @@ public class UpdateCenter2Test {
     @RandomlyFails("SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…")
     @Test void install() {
         UpdateSite.neverUpdate = false;
-        j.createWebClient().goTo("") // load the metadata
+        j.jenkins.pluginManager.doCheckUpdatesServer(); // load the metadata
         def job = j.jenkins.updateCenter.getPlugin("changelog-history").deploy().get(); // this seems like one of the smallest plugin
         println job.status;
         assertTrue(job.status instanceof Success)
