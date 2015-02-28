@@ -118,7 +118,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         private final TreeMap<Integer,BuildReference<R>> byNumber;
 
         private Index() {
-            byNumber = new TreeMap<Integer,BuildReference<R>>(COMPARATOR);
+            byNumber = new TreeMap<Integer,BuildReference<R>>(Collections.reverseOrder());
         }
 
         private Index(Index rhs) {
@@ -203,7 +203,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public Comparator<? super Integer> comparator() {
-        return COMPARATOR;
+        return Collections.reverseOrder();
     }
 
     @Override
@@ -548,12 +548,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return o==this;
     }
 
-    private static final Comparator<Integer> COMPARATOR = new Comparator<Integer>() {
-        @Override public int compare(Integer o1, Integer o2) {
-            return -o1.compareTo(o2);
-        }
-    };
-    
     public enum Direction {
         ASC, DESC, EXACT
     }
