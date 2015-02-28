@@ -35,6 +35,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.
@@ -96,14 +98,25 @@ public abstract class ACL {
     };
 
     /**
+     * The username for the anonymous user
+     */
+    @Restricted(NoExternalUse.class)
+    public static final String ANONYMOUS_USERNAME = "anonymous";
+    /**
      * {@link Sid} that represents the anonymous unauthenticated users.
      * <p>
      * {@link HudsonFilter} sets this up, so this sid remains the same
      * regardless of the current {@link SecurityRealm} in use.
      */
-    public static final Sid ANONYMOUS = new PrincipalSid("anonymous");
+    public static final Sid ANONYMOUS = new PrincipalSid(ANONYMOUS_USERNAME);
 
     protected static final Sid[] AUTOMATIC_SIDS = new Sid[]{EVERYONE,ANONYMOUS};
+
+    /**
+     * The username for the system user
+     */
+    @Restricted(NoExternalUse.class)
+    public static final String SYSTEM_USERNAME = "SYSTEM";
 
     /**
      * {@link Sid} that represents the Hudson itself.
@@ -111,7 +124,7 @@ public abstract class ACL {
      * This is used when Hudson is performing computation for itself, instead
      * of acting on behalf of an user, such as doing builds.
      */
-    public static final Authentication SYSTEM = new UsernamePasswordAuthenticationToken("SYSTEM","SYSTEM");
+    public static final Authentication SYSTEM = new UsernamePasswordAuthenticationToken(SYSTEM_USERNAME,"SYSTEM");
 
     /**
      * Changes the {@link Authentication} associated with the current thread

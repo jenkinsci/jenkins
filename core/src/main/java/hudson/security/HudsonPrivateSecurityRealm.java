@@ -337,6 +337,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if(si.email==null || !si.email.contains("@"))
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
 
+        if (! User.isIdOrFullnameAllowed(si.username)) {
+            si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
+        }
+
+        if (! User.isIdOrFullnameAllowed(si.fullname)) {
+            si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
+        }
+
         if(si.errorMessage!=null) {
             // failed. ask the user to try again.
             req.setAttribute("data",si);

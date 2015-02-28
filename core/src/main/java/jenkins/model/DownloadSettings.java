@@ -25,6 +25,8 @@
 package jenkins.model;
 
 import hudson.Extension;
+import hudson.Main;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
 import hudson.model.TaskListener;
@@ -32,6 +34,7 @@ import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import net.sf.json.JSONObject;
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -49,7 +52,7 @@ import org.kohsuke.stapler.StaplerRequest;
         return Jenkins.getInstance().getInjector().getInstance(DownloadSettings.class);
     }
 
-    private boolean useBrowser = true; // historical default, not necessarily recommended
+    private boolean useBrowser = false;
     
     public DownloadSettings() {
         load();
@@ -69,6 +72,21 @@ import org.kohsuke.stapler.StaplerRequest;
         save();
     }
 
+    @Override public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
+    }
+
+    public static boolean usePostBack() {
+        return get().isUseBrowser() && Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
+    }
+
+    public static void checkPostBackAccess() throws AccessDeniedException {
+        if (!get().isUseBrowser()) {
+            throw new AccessDeniedException("browser-based download disabled");
+        }
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+    }
+
     @Extension public static final class DailyCheck extends AsyncPeriodicWork {
 
         public DailyCheck() {
@@ -79,14 +97,36 @@ import org.kohsuke.stapler.StaplerRequest;
             return DAY;
         }
 
+        @Override public long getInitialDelay() {
+            return Main.isUnitTest ? DAY : 0;
+        }
+
         @Override protected void execute(TaskListener listener) throws IOException, InterruptedException {
             if (get().isUseBrowser()) {
+                return;
+            }
+            boolean due = false;
+            for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+                if (site.isDue()) {
+                    due = true;
+                    break;
+                }
+            }
+            if (!due) {
                 return;
             }
             HttpResponse rsp = Jenkins.getInstance().getPluginManager().doCheckUpdatesServer();
             if (rsp instanceof FormValidation) {
                 listener.error(((FormValidation) rsp).renderHtml());
             }
+        }
+
+    }
+
+    @Extension public static final class Warning extends AdministrativeMonitor {
+
+        @Override public boolean isActivated() {
+            return DownloadSettings.get().isUseBrowser();
         }
 
     }

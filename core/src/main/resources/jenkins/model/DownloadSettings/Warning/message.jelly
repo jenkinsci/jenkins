@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc. 
+Copyright 2015 Jesse Glick.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  If necessary, ask the client to fetch update-center data file for us.
-  This allows us to avoid proxy related configuration on the server,
-  and instead piggy-back on user connection.
-
-  This file is pulled into the layout.jelly
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:invokeStatic var="enabled" className="jenkins.model.DownloadSettings" method="usePostBack"/>
-  <j:if test="${enabled}">
-  <j:forEach var="site" items="${app.updateCenter.sites}">
-    <j:if test="${site.due or forcedUpdateCheck}">
-      <script>
-        Behaviour.addLoadEvent(function() {
-            downloadService.download(
-                "${site.id}",
-                "${site.downloadUrl}",
-                {version:"${h.version}"},
-                "${rootURL}/updateCenter/byId/${site.id}/postBack",
-                null);
-        });
-      </script>
-    </j:if>
-  </j:forEach>
-  </j:if>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <div class="warning">
+        <form method="post" action="${rootURL}/${it.url}/disable">
+            <j:out value="${%blurb(rootURL)}"/>
+            <f:submit value="${%Dismiss}"/>
+        </form>
+    </div>
 </j:jelly>

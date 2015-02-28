@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 import java.util.TreeSet;
+import jenkins.model.DownloadSettings;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -30,6 +31,7 @@ public class DownloadServiceTest extends HudsonTestCase {
         // to bypass the URL restriction, we'll trigger downloadService.download ourselves
         job = new Downloadable("test", "UNUSED");
         Downloadable.all().add(job);
+        DownloadSettings.get().setUseBrowser(true);
     }
 
     @Issue("JENKINS-5536")

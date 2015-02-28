@@ -51,6 +51,8 @@ import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import jenkins.util.xml.RestrictiveEntityResolver;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.fileupload.FileItem;
@@ -109,6 +111,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -1045,6 +1048,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         requestedPlugins.put(shortName, requested);
                     }
                 }
+
+                @Override public InputSource resolveEntity(String publicId, String systemId) throws IOException,
+                        SAXException {
+                    return RestrictiveEntityResolver.INSTANCE.resolveEntity(publicId, systemId);
+                }
+
             });
         } catch (SAXException x) {
             throw new IOException("Failed to parse XML",x);
