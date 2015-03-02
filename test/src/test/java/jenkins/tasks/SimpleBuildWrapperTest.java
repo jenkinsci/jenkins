@@ -46,12 +46,14 @@ import hudson.tasks.Shell;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -82,6 +84,20 @@ public class SimpleBuildWrapperTest {
                 return true;
             }
         }
+    }
+
+    @Issue("JENKINS-27188")
+    @Test public void envPropertiesImmutable() throws Exception {
+        SpecialEnvSlave slave = new SpecialEnvSlave(tmp.getRoot(), r.createComputerLauncher(null));
+        r.jenkins.addNode(slave);
+
+        String propertyKey = "JENKINS-27188";
+        EnvVars envVars = slave.getComputer().getEnvironment();
+        envVars.put(propertyKey, "huuhaa");
+        assertTrue(envVars.containsKey(propertyKey));
+        assertFalse(slave.getComputer().getEnvironment().containsKey(propertyKey));
+
+        assertNotSame(slave.getComputer().getEnvironment(), slave.getComputer().getEnvironment());
     }
 
     @Test public void envOverrideExpand() throws Exception {
