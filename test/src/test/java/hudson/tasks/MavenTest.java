@@ -270,10 +270,10 @@ public class MavenTest {
 
     @Issue("JENKINS-26684")
     @Test public void specialCharsInBuildVariablesPassedAsProperties() throws Exception {
-        j.configureDefaultMaven();
+        MavenInstallation maven = j.configureMaven3();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new Maven("--help", null));
+        p.getBuildersList().add(new Maven("--help", maven.getName()));
         p.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("tilde", "~"),
                 new StringParameterDefinition("exclamation_mark", "!"),
