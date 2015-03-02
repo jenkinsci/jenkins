@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
@@ -52,6 +53,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
@@ -238,6 +240,19 @@ public class NodeTest {
         assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
     }
     
+    @Issue("JENKINS-27188")
+    @Test public void envPropertiesImmutable() throws Exception {
+        Slave slave = j.createSlave();
+
+        String propertyKey = "JENKINS-27188";
+        EnvVars envVars = slave.getComputer().getEnvironment();
+        envVars.put(propertyKey, "huuhaa");
+        assertTrue(envVars.containsKey(propertyKey));
+        assertFalse(slave.getComputer().getEnvironment().containsKey(propertyKey));
+
+        assertNotSame(slave.getComputer().getEnvironment(), slave.getComputer().getEnvironment());
+    }
+
     @TestExtension
     public static class LabelFinderImpl extends LabelFinder{
 

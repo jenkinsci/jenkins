@@ -942,18 +942,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Gets the environment variables of the JVM on this computer.
+     * Returns cached environment variables (copy to prevent modification) for the JVM on this computer.
      * If this is the master, it returns the system property of the master computer.
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
         EnvVars cachedEnvironment = this.cachedEnvironment;
         if (cachedEnvironment != null) {
-            return cachedEnvironment;
+            return new EnvVars(cachedEnvironment);
         }
 
         cachedEnvironment = EnvVars.getRemote(getChannel());
         this.cachedEnvironment = cachedEnvironment;
-        return cachedEnvironment;
+        return new EnvVars(cachedEnvironment);
     }
 
     /**
