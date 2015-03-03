@@ -147,6 +147,7 @@ THE SOFTWARE.
                 <span style="margin-left:2em;"></span>
               </j:if>
               <f:submit value="${%Download now and install after restart}" />
+              <st:include page="check.jelly"/>
             </div>
           </div>
         </j:if>
