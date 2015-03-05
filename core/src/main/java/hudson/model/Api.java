@@ -208,7 +208,7 @@ public class Api extends AbstractModelObject {
     public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if (req.getParameter("jsonp") == null || permit(req)) {
             setHeaders(rsp);
-            rsp.serveExposedBean(req,bean, Flavor.JSON);
+            rsp.serveExposedBean(req,bean, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP);
         } else {
             rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "jsonp forbidden; implement jenkins.security.SecureRequester");
         }
