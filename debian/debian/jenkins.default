@@ -30,7 +30,7 @@ RUN_STANDALONE=true
 
 # log location.  this may be a syslog facility.priority
 JENKINS_LOG=/var/log/jenkins/$NAME.log
-#HUDSON_LOG=daemon.info
+#JENKINS_LOG=daemon.info
 
 # OS LIMITS SETUP
 #   comment this out to observe /etc/security/limits.conf
