@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,7 +42,9 @@ public class MaskingClassLoader extends ClassLoader {
     /**
      * Prefix of the packages that should be hidden.
      */
-    private List<String> masks;
+    private List<String> masksClasses;
+
+    private List<String> masksResources;
 
     public MaskingClassLoader(ClassLoader parent, String... masks) {
         this(parent, Arrays.asList(masks));
@@ -49,12 +52,20 @@ public class MaskingClassLoader extends ClassLoader {
 
     public MaskingClassLoader(ClassLoader parent, Collection<String> masks) {
         super(parent);
-        this.masks = new ArrayList<String>(masks);
+        this.masksClasses = new ArrayList<String>(masks);
+        this.masksResources = new ArrayList<String>();
+
+        /**
+         * The name of a resource is a '/'-separated path name
+         */
+        for (String mask : masks) {
+            masksResources.add(mask.replace(".","/"));
+        }
     }
 
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        for (String mask : masks) {
+        for (String mask : masksClasses) {
             if(name.startsWith(mask))
                 throw new ClassNotFoundException();
         }
@@ -62,7 +73,20 @@ public class MaskingClassLoader extends ClassLoader {
         return super.loadClass(name, resolve);
     }
 
+    @Override
+    public synchronized URL getResource(String name) {
+        for (String mask : masksResources) {
+            if(name.startsWith(mask))
+                return null;
+        }
+
+        return super.getResource(name);
+    }
+
     public synchronized void add(String prefix) {
-        masks.add(prefix);
+        masksClasses.add(prefix);
+        if(prefix !=null){
+            masksResources.add(prefix.replace(".","/"));
+        }
     }
 }
