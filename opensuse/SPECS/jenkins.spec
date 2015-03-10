@@ -30,6 +30,7 @@ BuildRoot:	%{_tmppath}/build-%{name}-%{version}
 #
 # java-1_6_0-sun provides this at least
 Requires:	java >= 1.6
+Requires:	xorg-x11-fonts xorg-x11-fonts-core libXfont1
 Obsoletes:  hudson
 PreReq:		/usr/sbin/groupadd /usr/sbin/useradd
 #PreReq:		%{fillup_prereq}
