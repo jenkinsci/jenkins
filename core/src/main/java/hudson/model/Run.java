@@ -781,6 +781,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getFullDisplayName()+' '+getDisplayName();
     }
 
+    @Exported
     public String getDisplayName() {
         return displayName!=null ? displayName : "#"+number;
     }
