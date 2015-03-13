@@ -83,8 +83,8 @@ public class ListPluginsCommand extends CLICommand {
     private void printPlugin(PluginWrapper plugin, int colWidthShortName, int colWidthDisplayName) {
         final String version;
 
-        if (plugin.hasUpdate()) {
-            UpdateSite.Plugin updateInfo = plugin.getUpdateInfo();
+        final UpdateSite.Plugin updateInfo = plugin.getUpdateInfo();
+        if (updateInfo != null) {        
             version = String.format("%s (%s)", plugin.getVersion(), updateInfo.version);
         }
         else {
