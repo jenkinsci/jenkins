@@ -33,6 +33,7 @@ import org.acegisecurity.Authentication;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
+import java.util.Date;
 
 /**
  * Represents a cause that puts a {@linkplain Computer#isOffline() computer offline}.
@@ -113,7 +114,7 @@ public abstract class OfflineCause {
         public UserCause(User user, String message) {
             super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
                     user!=null ? user.getId() : Jenkins.ANONYMOUS.getName(),
-                    message != null ? " : " + message : ""
+                    " [ " + new Date()  + " ] "  + (message != null ? " : " + message : "")
             ));
             this.user = user;
         }
