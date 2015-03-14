@@ -102,7 +102,7 @@ public class NodeTest {
 
         computer.doToggleOffline("original message");
         cause = (UserCause) computer.getOfflineCause();
-        assertEquals("Disconnected by someone@somewhere.com : original message", cause.toString());
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
         assertEquals(someone, cause.getUser());
 
         final User root = User.get("root@localhost");

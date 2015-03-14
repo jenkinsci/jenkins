@@ -55,17 +55,19 @@ public abstract class OfflineCause {
      */
     public static class SimpleOfflineCause extends OfflineCause {
         public final Localizable description;
+        public final Date timestamp;
 
         /**
          * @since 1.571
          */
         protected SimpleOfflineCause(Localizable description) {
             this.description = description;
+            this.timestamp = new Date();
         }
 
         @Exported(name="description") @Override
         public String toString() {
-            return description.toString();
+            return "[" + timestamp.toString() + "] " + description.toString();
         }
     }
 
@@ -114,7 +116,7 @@ public abstract class OfflineCause {
         public UserCause(User user, String message) {
             super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
                     user!=null ? user.getId() : Jenkins.ANONYMOUS.getName(),
-                    " [ " + new Date()  + " ] "  + (message != null ? " : " + message : "")
+                    message != null ? " : " + message : ""
             ));
             this.user = user;
         }
