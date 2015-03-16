@@ -110,7 +110,7 @@ public class NodeTest {
 
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
-        assertEquals("Disconnected by root@localhost : new message", cause.toString());
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
         computer.doToggleOffline(null);
