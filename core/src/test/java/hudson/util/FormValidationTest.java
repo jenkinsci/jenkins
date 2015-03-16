@@ -23,6 +23,10 @@
  */
 package hudson.util;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import junit.framework.TestCase;
 
 /**
@@ -50,5 +54,10 @@ public class FormValidationTest extends TestCase {
     // @Bug(7438)
     public void testMessage() {
         assertEquals("test msg", FormValidation.errorWithMarkup("test msg").getMessage());
+    }
+
+    public void testFormValidationException() {
+        FormValidation fv = FormValidation.error(new Exception("<html"), "Message<html");
+        assertThat(fv.renderHtml(), not(containsString("<html")));
     }
 }

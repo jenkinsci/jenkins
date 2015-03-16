@@ -196,7 +196,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
             " <a href='#' class='showDetails'>"
             + Messages.FormValidation_Error_Details()
             + "</a><pre style='display:none'>"
-            + Functions.printThrowable(e) +
+            + Util.escape(Functions.printThrowable(e)) +
             "</pre>",kind
         );
     }
