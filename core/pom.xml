@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.234</stapler.version>
+    <stapler.version>1.235</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>1.8.9</groovy.version>
   </properties>
@@ -114,12 +114,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
       <version>build217-jenkins-8</version>
-    </dependency>
-    <!-- Remove once released (and update stapler.version prop to 1.235) -->
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler</artifactId>
-      <version>1.235-20150312.230034-2</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
