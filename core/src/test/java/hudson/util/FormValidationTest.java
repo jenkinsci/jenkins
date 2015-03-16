@@ -28,6 +28,9 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 
 import org.junit.Test;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author sogabe
@@ -104,5 +107,11 @@ public class FormValidationTest {
 
     private FormValidation aggregate(FormValidation... fvs) {
         return FormValidation.aggregate(Arrays.asList(fvs));
+    }
+
+    @Test
+    public void formValidationException() {
+        FormValidation fv = FormValidation.error(new Exception("<html"), "Message<html");
+        assertThat(fv.renderHtml(), not(containsString("<html")));
     }
 }
