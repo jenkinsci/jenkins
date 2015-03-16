@@ -28,6 +28,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import hudson.security.AccessDeniedException2;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
@@ -41,9 +42,13 @@ import java.util.Collections;
 
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import jenkins.security.ApiTokenProperty;
+
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import org.junit.Rule;
@@ -496,6 +501,42 @@ public class UserTest {
         assertFalse("Storage-less temporary user cannot be deleted", user3.canDelete());
         user3.save();
         assertTrue("But once storage is allocated, he can be deleted", user3.canDelete());
+    }
+
+    @Test
+    // @Issue("SECURITY-180")
+    public void security180() throws Exception {
+        final GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        j.jenkins.setAuthorizationStrategy(auth);
+        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false));
+
+        User alice = User.get("alice");
+        User bob = User.get("bob");
+        User anonymous = User.get("anonymous");
+        User admin = User.get("admin");
+
+        auth.add(Jenkins.READ, alice.getId());
+        auth.add(Jenkins.READ, bob.getId());
+        auth.add(Jenkins.ADMINISTER, admin.getId());
+
+        SecurityContextHolder.getContext().setAuthentication(admin.impersonate());
+        // Change token by admin
+        admin.getProperty(ApiTokenProperty.class).changeApiToken();
+        alice.getProperty(ApiTokenProperty.class).changeApiToken();
+
+        SecurityContextHolder.getContext().setAuthentication(bob.impersonate());
+        // Change own token
+        bob.getProperty(ApiTokenProperty.class).changeApiToken();
+
+        try {
+            alice.getProperty(ApiTokenProperty.class).changeApiToken();
+            fail("Bob should not be authorized to change alice's token");
+        } catch (AccessDeniedException expected) { }
+
+        try {
+            anonymous.getProperty(ApiTokenProperty.class).changeApiToken();
+            fail("Anonymous should not be authorized to change alice's token");
+        } catch (AccessDeniedException expected) { }
     }
 
      public static class SomeUserProperty extends UserProperty {
