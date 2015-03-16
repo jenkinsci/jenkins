@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -102,7 +102,7 @@ public class SlaveComputer extends Computer {
      *
      * <p>
      * This is normally the same as {@link Slave#getLauncher()} but
-     * can be different. See {@link #grabLauncher(Node)}. 
+     * can be different. See {@link #grabLauncher(Node)}.
      */
     private ComputerLauncher launcher;
 
@@ -131,6 +131,8 @@ public class SlaveComputer extends Computer {
     private volatile Future<?> lastConnectActivity = null;
 
     private Object constructed = new Object();
+
+    private transient volatile String absoluteRemoteFs;
 
     public SlaveComputer(Slave slave) {
         super(slave);
@@ -274,7 +276,7 @@ public class SlaveComputer extends Computer {
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener)launcher).taskAccepted(executor, task);
         }
-        
+
         //getNode() can return null at indeterminate times when nodes go offline
         Slave node = getNode();
         if (node != null && node.getRetentionStrategy() instanceof ExecutorListener) {
@@ -410,6 +412,11 @@ public class SlaveComputer extends Computer {
         return channel.call(new LoadingTime(true));
     }
 
+    @CheckForNull
+    public String getAbsoluteRemoteFs() {
+        return channel == null ? null : absoluteRemoteFs;
+    }
+
     static class LoadingCount extends MasterToSlaveCallable<Integer,RuntimeException> {
         private final boolean resource;
         LoadingCount(boolean resource) {
@@ -481,11 +488,16 @@ public class SlaveComputer extends Computer {
         if (node == null) { // Node has been disabled/removed during the connection
             throw new IOException("Node "+nodeName+" has been deleted during the channel setup");
         }
-        
-        String remoteFs = node.getRemoteFS();
-        if(_isUnix && !remoteFs.contains("/") && remoteFs.contains("\\"))
-            log.println("WARNING: "+remoteFs+" looks suspiciously like Windows path. Maybe you meant "+remoteFs.replace('\\','/')+"?");
-        FilePath root = new FilePath(channel,remoteFs);
+
+        String absoluteRemoteFs = node.getRemoteFS();
+        if (!absoluteRemoteFs.startsWith("\\") && !absoluteRemoteFs.startsWith("/")) {
+            absoluteRemoteFs = channel.call(new AbsolutePath(absoluteRemoteFs));
+            log.println("NOTE: Relative remote path resolved to: "+absoluteRemoteFs);
+        }
+        if(_isUnix && !absoluteRemoteFs.contains("/") && absoluteRemoteFs.contains("\\"))
+            log.println("WARNING: "+absoluteRemoteFs
+                    +" looks suspiciously like Windows path. Maybe you meant "+absoluteRemoteFs.replace('\\','/')+"?");
+        FilePath root = new FilePath(channel,absoluteRemoteFs);
 
         // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
         // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
@@ -519,6 +531,7 @@ public class SlaveComputer extends Computer {
             isUnix = _isUnix;
             numRetryAttempt = 0;
             this.channel = channel;
+            this.absoluteRemoteFs = absoluteRemoteFs;
             defaultCharset = Charset.forName(defaultCharsetName);
 
             synchronized (statusChangeLock) {
@@ -634,9 +647,13 @@ public class SlaveComputer extends Computer {
      */
     private void closeChannel() {
         // TODO: race condition between this and the setChannel method.
-        Channel c = channel;
-        channel = null;
-        isUnix = null;
+        Channel c;
+        synchronized (channelLock) {
+            c = channel;
+            channel = null;
+            absoluteRemoteFs = null;
+            isUnix = null;
+        }
         if (c != null) {
             try {
                 c.close();
@@ -708,6 +725,18 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    private static final class AbsolutePath extends MasterToSlaveCallable<String,IOException> {
+        private final String relativePath;
+
+        private AbsolutePath(String relativePath) {
+            this.relativePath = relativePath;
+        }
+
+        public String call() throws IOException {
+            return new File(relativePath).getAbsolutePath();
+        }
+    }
+
     private static final class DetectDefaultCharset extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             return Charset.defaultCharset().name();
@@ -744,7 +773,7 @@ public class SlaveComputer extends Computer {
             }
 
             Channel.current().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
-            
+
             return null;
         }
         private static final long serialVersionUID = 1L;
