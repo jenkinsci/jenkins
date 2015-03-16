@@ -25,6 +25,9 @@
 package hudson.model;
 
 import java.io.IOException;
+import hudson.model.Run.Artifact;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
@@ -32,10 +35,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.junit.Assert.*;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.mockito.Mockito;
+
 
 public class RunTest {
+
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Issue("JENKINS-15816")
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -128,4 +137,21 @@ public class RunTest {
         msg = r.getDurationString();
         assertFalse(msg, msg.endsWith(" and counting"));
     }
+
+    @Issue("JENKINS-27441")
+    @Test
+    public void getLogReturnsAnEmptyListWhenCalledWith0() throws Exception {
+        Job j = Mockito.mock(Job.class);
+        File tempBuildDir = tmp.newFolder();
+        Mockito.when(j.getBuildDir()).thenReturn(tempBuildDir);
+        Run r = new Run(j, 0) {};
+        File f = r.getLogFile();
+        f.getParentFile().mkdirs();
+        PrintWriter w = new PrintWriter(f, "utf-8");
+        w.println("dummy");
+        w.close();
+        List<String> logLines = r.getLog(0);
+        assertTrue(logLines.isEmpty());
+    }
+
 }
