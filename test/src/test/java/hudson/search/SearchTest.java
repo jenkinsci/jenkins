@@ -32,6 +32,8 @@ import static org.junit.Assert.fail;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 
+import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,35 +110,32 @@ public class SearchTest {
     @Issue("JENKINS-24433")
     @Test
     public void testSearchByProjectNameBehindAFolder() throws Exception {
-        final String projectName = "testSearchByProjectName";
-        j.createFreeStyleProject(projectName);
-        j.createFolder("my-folder-1").createProject(FreeStyleProject.class, "my-job-1");
+        FreeStyleProject myFreeStyleProject = j.createFreeStyleProject("testSearchByProjectName");
+        MockFolder myMockFolder = j.createFolder("my-folder-1");
 
-        Page result = j.createWebClient().goTo("job/my-folder-1/search?q="+ projectName);
+        Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q="+ myFreeStyleProject.getName());
 
         assertNotNull(result);
         j.assertGoodStatus(result);
 
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+        URL resultUrl = result.getWebResponse().getUrl();
+        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl()));
     }
 
     @Issue("JENKINS-24433")
     @Test
     public void testSearchByProjectNameInAFolder() throws Exception {
-        final String projectName = "testSearchByProjectName";
-        j.createFreeStyleProject(projectName);
-        j.createFolder("my-folder-1").createProject(FreeStyleProject.class, "my-job-1");
 
-        Page result = j.createWebClient().goTo("job/my-folder-1/search?q="+ "my-folder-1/my-job-1");
+        MockFolder myMockFolder = j.createFolder("my-folder-1");
+        FreeStyleProject myFreeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job-1");
+
+        Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q=" + myFreeStyleProject.getFullName());
 
         assertNotNull(result);
         j.assertGoodStatus(result);
 
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", "my-job-1 [my-folder-1]")));
+        URL resultUrl = result.getWebResponse().getUrl();
+        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl()));
     }
 
     @Test
@@ -293,15 +292,11 @@ public class SearchTest {
             JSONObject jsonSuggestion = (JSONObject)suggestion;
 
             String name = (String)jsonSuggestion.get("name");
-            if(projectName1.equals(name)) {
-                foundProjectName = true;
-            }
             if(displayName1.equals(name)) {
                 foundDisplayName = true;
             }
         }
 
-        assertTrue(foundProjectName);
         assertTrue(foundDisplayName);
     }
 
