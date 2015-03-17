@@ -1,5 +1,6 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -40,6 +41,63 @@ public class JobQueueTest {
             }
         };
         RunListener.all().add(listener);
+    }
+
+    /**
+    * Verify that queue items are counted correctly for labels even when they are not == comparable
+    */
+    @Test
+    public void projectLabelUsesEquals() throws Exception {
+        Queue queue = j.getInstance().getQueue();
+
+        final String LABELA = "LABELA";
+        final String LABELB = "LABELB";
+
+        final Label labelExpression = Label.get(LABELA + "&&" + LABELB);
+        final Label sameLabelExpression = Label.get(LABELA).and(Label.get(LABELB));
+
+        //These two conditions are not what is being tested, but are an assumption made during
+        //the rest of the test. If the two labels are == then the test is moot.
+        assertTrue("Expressions are equal", labelExpression.equals(sameLabelExpression));
+        assertTrue("Expressions are !=", labelExpression != sameLabelExpression);
+
+        //Use a special Project to test with specific label instance
+        LabelTestProject project = j.getInstance().createProject(LabelTestProject.class,"labelproject");
+
+        project.setAssignedLabel( sameLabelExpression );
+
+        //Kick the first Build
+        project.scheduleBuild2(1);
+
+        //The project should be in Queue when Run is in BUILDING stage
+        assertTrue(project.isInQueue());
+
+        // ensure the queued items are in the right state, i.e. buildable rather
+        // than waiting
+        {
+            int count = 0;
+            while (queue.getItem(project) instanceof WaitingItem && ++count < 100) {
+                queue.maintain();
+                Thread.sleep(10);
+            }
+
+            assertTrue(
+                    "No waiting items",
+                    !(queue.getItem(project) instanceof WaitingItem));
+            assertTrue(
+                    "After waiting there are buildable items in the build queue.",
+                    queue.getBuildableItems().size() > 0);
+        }
+
+        assertEquals("Total Items", 1, queue.countBuildableItems() );
+        assertEquals("Null Label",  0, queue.countBuildableItemsFor(null) );
+        assertEquals("Label Items", 1, queue.countBuildableItemsFor(labelExpression) );
+
+        //Cancel the project from queue
+        j.jenkins.getQueue().cancel(project.getQueueItem());
+
+        //Verify the project is removed from Queue
+        assertTrue(j.jenkins.getQueue().isEmpty());
     }
 
     @Test
