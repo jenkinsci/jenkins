@@ -432,33 +432,33 @@ public class UserTest {
     public void security180() throws Exception {
         final GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
-        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false));
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User alice = User.get("alice");
         User bob = User.get("bob");
-        User anonymous = User.get("anonymous");
         User admin = User.get("admin");
 
         auth.add(Jenkins.READ, alice.getId());
         auth.add(Jenkins.READ, bob.getId());
         auth.add(Jenkins.ADMINISTER, admin.getId());
 
+        // Admin can change everyone's token
         SecurityContextHolder.getContext().setAuthentication(admin.impersonate());
-        // Change token by admin
         admin.getProperty(ApiTokenProperty.class).changeApiToken();
         alice.getProperty(ApiTokenProperty.class).changeApiToken();
 
+        // User can change only own token
         SecurityContextHolder.getContext().setAuthentication(bob.impersonate());
-        // Change own token
         bob.getProperty(ApiTokenProperty.class).changeApiToken();
-
         try {
             alice.getProperty(ApiTokenProperty.class).changeApiToken();
             fail("Bob should not be authorized to change alice's token");
         } catch (AccessDeniedException expected) { }
 
+        // ANONYMOUS can not change any token
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
         try {
-            anonymous.getProperty(ApiTokenProperty.class).changeApiToken();
+            alice.getProperty(ApiTokenProperty.class).changeApiToken();
             fail("Anonymous should not be authorized to change alice's token");
         } catch (AccessDeniedException expected) { }
     }
