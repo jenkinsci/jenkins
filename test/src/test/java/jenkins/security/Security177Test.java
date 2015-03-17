@@ -1,19 +1,18 @@
 package jenkins.security;
 
 import com.gargoylesoftware.htmlunit.Page;
+import java.net.URL;
+import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-// @Issue("SECURITY-177")
+@Issue("SECURITY-177")
 public class Security177Test {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
