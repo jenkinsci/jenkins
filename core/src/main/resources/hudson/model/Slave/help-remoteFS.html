@@ -1,14 +1,35 @@
 <div>
   <p>
   A slave needs to have a directory dedicated to Jenkins. Specify
-  the absolute path of this work directory on the slave, such as
-  '/var/jenkins' or 'c:\jenkins'. This should be a path local to the slave
-  machine. There's no need for this path to be visible from the master,
-  under normal circumstances.
+  the  path of this work directory on the slave. It is best to use
+  an absolute path, such as '/var/jenkins' or 'c:\jenkins'. This
+  should be a path local to the slave machine. There's no need for
+  this path to be visible from the master, under normal circumstances.
 
   <p>
   Slaves do not maintain important data (other than active workspaces
   of projects last built on it), so you can possibly set the slave
   workspace to a temporary directory. The only downside of doing this
   is that you may lose the up-to-date workspace if the slave is turned off.
+
+  <p>
+  If you use a relative path, such as './jenkins-slave', the path will
+  be relative to the current working directory that the launcher provides.
+  <ul>
+  <li>For launchers where Jenkins controls starting the slave process, such
+  as SSH, the current working directory will typically be consistent,
+  i.e. the user's home directory. This means that Jenkins will be able to
+  rely on the caching of tool installations and workspaces from previous
+  builds.
+  </li>
+  <li>For launchers where Jenkins has no control over starting the slave
+  process, such as JNLP, the current working directory may change between
+  launches of the slave and use of a relative path may prove problematic.
+  The principle issue encountered when using relative paths with launchers
+  like JNLP is the proliferation of stale workspaces and tool installation
+  on the slave machine. This can cause disk space issues.
+  <i>Note: there are some cloud providers that specifically use relative
+  paths with the JNLP launcher to allow for dynamically provisioned pools
+  of semi-heterogeneous slaves.</i></li>
+  </ul>
 </div>
