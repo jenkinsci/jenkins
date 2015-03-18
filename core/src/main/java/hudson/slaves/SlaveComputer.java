@@ -751,6 +751,9 @@ public class SlaveComputer extends Computer {
     }
 
     private static final class AbsolutePath extends MasterToSlaveCallable<String,IOException> {
+
+        private static final long serialVersionUID = 1L;
+
         private final String relativePath;
 
         private AbsolutePath(String relativePath) {
