@@ -23,6 +23,13 @@
  */
 package hudson.model
 
+import hudson.slaves.ComputerLauncher
+import hudson.slaves.NodeProperty
+import hudson.slaves.RetentionStrategy
+import org.junit.rules.TemporaryFolder
+import org.jvnet.hudson.test.Issue
+import org.jvnet.hudson.test.TemporaryDirectoryAllocator
+
 import static hudson.util.FormValidation.Kind.ERROR
 import static hudson.util.FormValidation.Kind.WARNING
 import static org.junit.Assert.assertNotNull
@@ -43,6 +50,9 @@ class SlaveTest {
 
     @Rule
     public GroovyJenkinsRule j = new GroovyJenkinsRule()
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     /**
      * Makes sure that a form validation method gets inherited.
@@ -100,4 +110,32 @@ class SlaveTest {
         assert d.doCheckRemoteFS("/net/foo/bar/zot").kind==WARNING;
         assert d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind==WARNING;
     }
+
+    @Issue("JENKINS-27058")
+    @Test(expected = Descriptor.FormException.class)
+    void relativeFsRoot() {
+            new Slave("dummy", "dummy",
+                    "relative", "1", Node.Mode.NORMAL, "",
+                    j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST){};
+    }
+
+    @Test(expected = Descriptor.FormException.class)
+    void emptyFsRoot() {
+        new Slave("dummy", "dummy",
+                "", "1", Node.Mode.NORMAL, "",
+                j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST){};
+    }
+
+    @Test void absoluteFsRoot() {
+        new Slave("dummy", "dummy",
+                tmp.newFolder("relative").absolutePath, "1", Node.Mode.NORMAL, "",
+                j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST){};
+    }
+
+    @Test void windowsFsRoot() {
+        new Slave("dummy", "dummy",
+                "C:\\Slave", "1", Node.Mode.NORMAL, "",
+                j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST){};
+    }
+
 }

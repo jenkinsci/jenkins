@@ -170,6 +170,7 @@ public abstract class Slave extends Node implements Serializable {
             User user = User.current();
             userId = user!=null ? user.getId() : "anonymous";     
         }
+        checkRemoteFSInvariants(remoteFS);
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
@@ -416,19 +417,27 @@ public abstract class Slave extends Node implements Serializable {
          * Performs syntactical check on the remote FS for slaves.
          */
         public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
-            if(Util.fixEmptyAndTrim(value)==null)
-                return FormValidation.error(Messages.Slave_Remote_Director_Mandatory());
+            try {
+                checkRemoteFSInvariants(value);
+            } catch (FormException error) {
+                return FormValidation.error(error.getMessage());
+            }
 
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
                 return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
 
-            if (!value.contains("\\") && !value.startsWith("/")) {
-                // Unix-looking path that doesn't start with '/'
-                // TODO: detect Windows-looking relative path
-                return FormValidation.error(Messages.Slave_the_remote_root_must_be_an_absolute_path());
-            }
-
             return FormValidation.ok();
+        }
+    }
+
+    private static void checkRemoteFSInvariants(String remoteFS) throws FormException {
+        if(Util.fixEmptyAndTrim(remoteFS)==null)
+            throw new FormException(Messages.Slave_Remote_Director_Mandatory(), "remoteFS");
+
+        if (!remoteFS.contains("\\") && !remoteFS.startsWith("/")) {
+            // Unix-looking path that doesn't start with '/'
+            // TODO: detect Windows-looking relative path
+            throw new FormException(Messages.Slave_the_remote_root_must_be_an_absolute_path(), "remoteFS");
         }
     }
 
