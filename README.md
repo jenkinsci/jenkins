@@ -4,15 +4,12 @@
 In a nutshell, Jenkins CI is the leading open-source continuous integration server. Built with Java, it provides over 1000 plugins to support building and testing virtually any project.
 
 # Downloads
----------
 Non-source downloads such as WAR files and several Linux packages can be found on our [Mirrors].
 
 # Source
-------
 Our latest and greatest source of Jenkins CI can be found on [GitHub]. Fork us!
 
 # News and Website
-----------------
 All information about Jenkins CI can be found on our [website]. Follow us on Twitter [@jenkinsci].
 
 # License
