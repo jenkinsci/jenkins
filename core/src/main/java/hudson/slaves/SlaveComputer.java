@@ -53,6 +53,7 @@ import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -412,6 +413,14 @@ public class SlaveComputer extends Computer {
         return channel.call(new LoadingTime(true));
     }
 
+    /**
+     * Returns the remote FS root absolute path or {@code null} if the slave is off-line. The absolute path may change
+     * between connections if the connection method does not provide a consistent working directory and the node's
+     * remote FS is specified as a relative path.
+     *
+     * @return the remote FS root absolute path or {@code null} if the slave is off-line.
+     * @since 1.FIXME
+     */
     @CheckForNull
     public String getAbsoluteRemoteFs() {
         return channel == null ? null : absoluteRemoteFs;
@@ -490,7 +499,7 @@ public class SlaveComputer extends Computer {
         }
 
         String absoluteRemoteFs = node.getRemoteFS();
-        if (!absoluteRemoteFs.startsWith("\\") && !absoluteRemoteFs.startsWith("/")) {
+        if (isRelativePath(absoluteRemoteFs)) {
             absoluteRemoteFs = channel.call(new AbsolutePath(absoluteRemoteFs));
             log.println("NOTE: Relative remote path resolved to: "+absoluteRemoteFs);
         }
@@ -548,6 +557,22 @@ public class SlaveComputer extends Computer {
         }
         log.println("Slave successfully connected and online");
         Jenkins.getInstance().getQueue().scheduleMaintenance();
+    }
+
+    /*package*/ static boolean isRelativePath(String path) {
+        if (path.startsWith("/"))
+            return false;
+        if (path.startsWith("\\\\") && path.length() > 3 && path.indexOf('\\', 3) != -1)
+            return false; // a UNC path which is the most absolute you can get on windows
+        if (path.length() >= 3 && ':' == path.charAt(1)) {
+            // never mind that the drive mappings can be changed between sessions, we just want to
+            // know if the 3rd character is a `\` (or a '/' is acceptable too)
+            char p = path.charAt(0);
+            if (('A' <= p && p <= 'Z') || ('a' <= p && p <= 'z')) {
+                return path.charAt(2) != '\\' && path.charAt(2) != '/';
+            }
+        }
+        return true;
     }
 
     @Override
