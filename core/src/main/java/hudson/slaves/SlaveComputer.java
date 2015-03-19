@@ -499,7 +499,7 @@ public class SlaveComputer extends Computer {
         }
 
         String absoluteRemoteFs = node.getRemoteFS();
-        if (isRelativePath(absoluteRemoteFs)) {
+        if (Util.isRelativePath(absoluteRemoteFs)) {
             absoluteRemoteFs = channel.call(new AbsolutePath(absoluteRemoteFs));
             log.println("NOTE: Relative remote path resolved to: "+absoluteRemoteFs);
         }
@@ -557,22 +557,6 @@ public class SlaveComputer extends Computer {
         }
         log.println("Slave successfully connected and online");
         Jenkins.getInstance().getQueue().scheduleMaintenance();
-    }
-
-    /*package*/ static boolean isRelativePath(String path) {
-        if (path.startsWith("/"))
-            return false;
-        if (path.startsWith("\\\\") && path.length() > 3 && path.indexOf('\\', 3) != -1)
-            return false; // a UNC path which is the most absolute you can get on windows
-        if (path.length() >= 3 && ':' == path.charAt(1)) {
-            // never mind that the drive mappings can be changed between sessions, we just want to
-            // know if the 3rd character is a `\` (or a '/' is acceptable too)
-            char p = path.charAt(0);
-            if (('A' <= p && p <= 'Z') || ('a' <= p && p <= 'z')) {
-                return path.charAt(2) != '\\' && path.charAt(2) != '/';
-            }
-        }
-        return true;
     }
 
     @Override
