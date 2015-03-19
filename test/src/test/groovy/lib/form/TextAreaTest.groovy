@@ -14,6 +14,8 @@ import org.kohsuke.stapler.QueryParameter
 
 import javax.inject.Inject
 
+import static org.junit.Assert.*
+
 /**
  *
  *
@@ -61,6 +63,52 @@ class TextAreaTest {
             FormValidation doCheckText2(@QueryParameter String text1) {
                 this.text2 = "Received "+text1;
                 return FormValidation.ok();
+            }
+
+            @Override
+            String getDisplayName() {
+                return this.class.name;
+            }
+        }
+
+    }
+    
+    @Test
+    public void testText() {
+        def TEXT_TO_TEST = "some\nvalue\n";
+        def p = j.createFreeStyleProject();
+        p.buildersList.add(new TextareaTestBuilder(TEXT_TO_TEST));
+        assertEquals(TEXT_TO_TEST, p.getBuildersList().get(TextareaTestBuilder.class).getText());
+        j.configRoundtrip(p);
+        assertEquals(TEXT_TO_TEST, p.getBuildersList().get(TextareaTestBuilder.class).getText());
+    }
+
+    @Issue("JENKINS-27505")
+    @Test
+    public void testTextBeginningWithEmptyLine() {
+        def TEXT_TO_TEST = "\nbegin\n\nwith\nempty\nline\n\n";
+        def p = j.createFreeStyleProject();
+        p.buildersList.add(new TextareaTestBuilder(TEXT_TO_TEST));
+        assertEquals(TEXT_TO_TEST, p.getBuildersList().get(TextareaTestBuilder.class).getText());
+        j.configRoundtrip(p);
+        assertEquals(TEXT_TO_TEST, p.getBuildersList().get(TextareaTestBuilder.class).getText());
+    }
+
+    public static class TextareaTestBuilder extends Builder {
+        private text;
+        
+        @DataBoundConstructor
+        TextareaTestBuilder(String text) {
+            this.text = text;
+        }
+
+        public String getText() { return text; }
+
+        @TestExtension
+        public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @Override
+            boolean isApplicable(Class<? extends AbstractProject> jobType) {
+                return true;
             }
 
             @Override
