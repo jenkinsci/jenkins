@@ -422,7 +422,7 @@ public class SlaveComputer extends Computer {
      * remote FS is specified as a relative path.
      *
      * @return the remote FS root absolute path or {@code null} if the slave is off-line.
-     * @since 1.FIXME
+     * @since 1.606
      */
     @CheckForNull
     public String getAbsoluteRemoteFs() {

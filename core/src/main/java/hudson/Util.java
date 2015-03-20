@@ -376,7 +376,7 @@ public class Util {
      *
      * @param path the path.
      * @return {@code true} if the path looks relative.
-     * @since 1.FIXME
+     * @since 1.606
      */
     public static boolean isRelativePath(String path) {
         if (path.startsWith("/"))
