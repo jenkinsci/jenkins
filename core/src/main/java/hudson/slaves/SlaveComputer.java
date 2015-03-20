@@ -498,15 +498,15 @@ public class SlaveComputer extends Computer {
             throw new IOException("Node "+nodeName+" has been deleted during the channel setup");
         }
 
-        String absoluteRemoteFs = node.getRemoteFS();
-        if (Util.isRelativePath(absoluteRemoteFs)) {
-            absoluteRemoteFs = channel.call(new AbsolutePath(absoluteRemoteFs));
-            log.println("NOTE: Relative remote path resolved to: "+absoluteRemoteFs);
+        String remoteFS = node.getRemoteFS();
+        if (Util.isRelativePath(remoteFS)) {
+            remoteFS = channel.call(new AbsolutePath(remoteFS));
+            log.println("NOTE: Relative remote path resolved to: "+remoteFS);
         }
-        if(_isUnix && !absoluteRemoteFs.contains("/") && absoluteRemoteFs.contains("\\"))
-            log.println("WARNING: "+absoluteRemoteFs
-                    +" looks suspiciously like Windows path. Maybe you meant "+absoluteRemoteFs.replace('\\','/')+"?");
-        FilePath root = new FilePath(channel,absoluteRemoteFs);
+        if(_isUnix && !remoteFS.contains("/") && remoteFS.contains("\\"))
+            log.println("WARNING: "+remoteFS
+                    +" looks suspiciously like Windows path. Maybe you meant "+remoteFS.replace('\\','/')+"?");
+        FilePath root = new FilePath(channel,remoteFS);
 
         // reference counting problem is known to happen, such as JENKINS-9017, and so as a preventive measure
         // we pin the base classloader so that it'll never get GCed. When this classloader gets released,
@@ -540,7 +540,7 @@ public class SlaveComputer extends Computer {
             isUnix = _isUnix;
             numRetryAttempt = 0;
             this.channel = channel;
-            this.absoluteRemoteFs = absoluteRemoteFs;
+            this.absoluteRemoteFs = remoteFS;
             defaultCharset = Charset.forName(defaultCharsetName);
 
             synchronized (statusChangeLock) {
