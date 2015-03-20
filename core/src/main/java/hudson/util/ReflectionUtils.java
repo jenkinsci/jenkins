@@ -28,6 +28,7 @@ import org.kohsuke.stapler.ClassDescriptor;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -122,7 +123,7 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
         }
     }
 
-    public static final class Parameter {
+    public static final class Parameter implements AnnotatedElement {
         private final MethodInfo parent;
         private final int index;
 
@@ -179,6 +180,26 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
             if (index<names.length)
                 return names[index];
             return null;
+        }
+
+        @Override
+        public boolean isAnnotationPresent(Class<? extends Annotation> type) {
+            return annotation(type)!=null;
+        }
+
+        @Override
+        public <T extends Annotation> T getAnnotation(Class<T> type) {
+            return annotation(type);
+        }
+
+        @Override
+        public Annotation[] getAnnotations() {
+            return annotations();
+        }
+
+        @Override
+        public Annotation[] getDeclaredAnnotations() {
+            return annotations();
         }
     }
 
