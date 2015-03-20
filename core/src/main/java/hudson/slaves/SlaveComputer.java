@@ -249,6 +249,9 @@ public class SlaveComputer extends Computer {
                     } catch (InterruptedException e) {
                         e.printStackTrace(taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                         throw e;
+                    } catch (Exception e) {
+                        e.printStackTrace(taskListener.error(Messages.ComputerLauncher_unexpectedError()));
+                        throw e;
                     }
                 } finally {
                     if (channel==null) {
