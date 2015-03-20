@@ -131,7 +131,7 @@ public class Util {
     public static String replaceMacro( @CheckForNull String s, @Nonnull Map<String,String> properties) {
         return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
     }
-    
+
     /**
      * Replaces the occurrence of '$key' by <tt>resolver.get('key')</tt>.
      *
@@ -143,7 +143,7 @@ public class Util {
     	if (s == null) {
     		return null;
     	}
-    	
+
         int idx=0;
         while(true) {
             Matcher m = VARIABLE.matcher(s);
@@ -368,6 +368,30 @@ public class Util {
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
+    }
+
+    /**
+     * A mostly accurate check of whether a path is a relative path or not. This is designed to take a path against
+     * an unknown operating system so may give invalid results.
+     *
+     * @param path the path.
+     * @return {@code true} if the path looks relative.
+     * @since 1.FIXME
+     */
+    public static boolean isRelativePath(String path) {
+        if (path.startsWith("/"))
+            return false;
+        if (path.startsWith("\\\\") && path.length() > 3 && path.indexOf('\\', 3) != -1)
+            return false; // a UNC path which is the most absolute you can get on windows
+        if (path.length() >= 3 && ':' == path.charAt(1)) {
+            // never mind that the drive mappings can be changed between sessions, we just want to
+            // know if the 3rd character is a `\` (or a '/' is acceptable too)
+            char p = path.charAt(0);
+            if (('A' <= p && p <= 'Z') || ('a' <= p && p <= 'z')) {
+                return path.charAt(2) != '\\' && path.charAt(2) != '/';
+            }
+        }
+        return true;
     }
 
     /**
@@ -624,7 +648,7 @@ public class Util {
      * Converts a string into 128-bit AES key.
      * @since 1.308
      */
-    @Nonnull 
+    @Nonnull
     public static SecretKey toAes128Key(@Nonnull String s) {
         try {
             // turn secretKey into 256 bit hash
@@ -743,9 +767,9 @@ public class Util {
 
     /**
      * Combines number and unit, with a plural suffix if needed.
-     * 
-     * @deprecated 
-     *   Use individual localization methods instead. 
+     *
+     * @deprecated
+     *   Use individual localization methods instead.
      *   See {@link Messages#Util_year(Object)} for an example.
      *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
@@ -780,7 +804,7 @@ public class Util {
      * {@link #rawEncode(String)} should generally be used instead, though be careful to pass only
      * a single path component to that method (it will encode /, but this method does not).
      */
-    @Nonnull 
+    @Nonnull
     public static String encode(@Nonnull String s) {
         try {
             boolean escaped = false;
@@ -888,7 +912,7 @@ public class Util {
     /**
      * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
-    @Nonnull 
+    @Nonnull
     public static String escape(@Nonnull String text) {
         if (text==null)     return null;
         StringBuilder buf = new StringBuilder(text.length()+64);
@@ -1112,7 +1136,7 @@ public class Util {
      * @param symlinkPath
      *      Where to create a symlink in (relative to {@code baseDir})
      */
-    public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath, 
+    public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
             if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
@@ -1346,7 +1370,7 @@ public class Util {
      * @deprecated since 2008-05-13. This method is broken (see ISSUE#1666). It should probably
      * be removed but I'm not sure if it is considered part of the public API
      * that needs to be maintained for backwards compatibility.
-     * Use {@link #encode(String)} instead. 
+     * Use {@link #encode(String)} instead.
      */
     @Deprecated
     public static String encodeRFC2396(String url) {
@@ -1367,7 +1391,7 @@ public class Util {
         s = "<span class=error style='display:inline-block'>"+s+"</span>";
         return s;
     }
-    
+
     /**
      * Returns the parsed string if parsed successful; otherwise returns the default number.
      * If the string is null, empty or a ParseException is thrown then the defaultNumber
