@@ -95,7 +95,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -121,6 +120,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import javax.annotation.CheckForNull;
+import jenkins.model.queue.Executable2;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -1465,6 +1465,7 @@ public class Queue extends ResourceController implements Saveable {
      * <p>
      * Implementation must have <tt>executorCell.jelly</tt>, which is
      * used to render the HTML that indicates this executable is executing.
+     * @see Executable2
      */
     public interface Executable extends Runnable {
         /**
@@ -1480,7 +1481,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Called by {@link Executor} to perform the task
          */
-        void run();
+        @Override void run();
 
         /**
          * Estimate of how long will it take to execute this executable.

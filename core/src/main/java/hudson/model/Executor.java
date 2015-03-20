@@ -60,13 +60,15 @@ import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.queue.Executable2.AsynchronousExecution;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 
 /**
  * Thread that executes builds.
  * Since 1.536, {@link Executor}s start threads on-demand.
- * The entire logic should use {@link #isActive()} instead of {@link #isAlive()}
- * in order to check if the {@link Executor} it ready to take tasks.
+ * <p>Callers should use {@link #isActive()} instead of {@link #isAlive()}.
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
@@ -88,6 +90,7 @@ public class Executor extends Thread implements ModelObject {
      * {@link hudson.model.Queue.Executable} being executed right now, or null if the executor is idle.
      */
     private volatile Queue.Executable executable;
+    private AsynchronousExecution asynchronousExecution;
 
     /**
      * When {@link Queue} allocates a work for this executor, this field is set
@@ -163,7 +166,11 @@ public class Executor extends Thread implements ModelObject {
                     this.causes.add(c);
             }
         }
-        super.interrupt();
+        if (asynchronousExecution != null) {
+            asynchronousExecution.interrupt();
+        } else {
+            super.interrupt();
+        }
     }
 
     public Result abortResult() {
@@ -238,23 +245,14 @@ public class Executor extends Thread implements ModelObject {
                 if (LOGGER.isLoggable(FINE))
                     LOGGER.log(FINE, getName()+" is now executing "+executable);
                 queue.execute(executable, task);
+            } catch (AsynchronousExecution x) {
+                x.setExecutor(this);
+                this.asynchronousExecution = x;
             } catch (Throwable e) {
-                // for some reason the executor died. this is really
-                // a bug in the code, but we don't want the executor to die,
-                // so just leave some info and go on to build other things
-                LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
-                workUnit.context.abort(e);
                 problems = e;
             } finally {
-                long time = System.currentTimeMillis()-startTime;
-                if (LOGGER.isLoggable(FINE))
-                    LOGGER.log(FINE, getName()+" completed "+executable+" in "+time+"ms");
-                try {
-                    workUnit.context.synchronizeEnd(executable,problems,time);
-                } catch (InterruptedException e) {
-                    workUnit.context.abort(e);
-                } finally {
-                    workUnit.setExecutor(null);
+                if (asynchronousExecution == null) {
+                    finish1(problems);
                 }
             }
         } catch (InterruptedException e) {
@@ -267,12 +265,49 @@ public class Executor extends Thread implements ModelObject {
             causeOfDeath = e;
             LOGGER.log(SEVERE, "Unexpected executor death", e);
         } finally {
-            if (causeOfDeath==null)
-                // let this thread die and be replaced by a fresh unstarted instance
-                owner.removeExecutor(this);
-
-            queue.scheduleMaintenance();
+            if (asynchronousExecution == null) {
+                finish2();
+            }
         }
+    }
+    
+    private void finish1(@CheckForNull Throwable problems) {
+        if (problems != null) {
+            // for some reason the executor died. this is really
+            // a bug in the code, but we don't want the executor to die,
+            // so just leave some info and go on to build other things
+            LOGGER.log(Level.SEVERE, "Executor threw an exception", problems);
+            workUnit.context.abort(problems);
+        }
+       long time = System.currentTimeMillis() - startTime;
+        LOGGER.log(FINE, "{0} completed {1} in {2}ms", new Object[] {getName(), executable, time});
+        try {
+            workUnit.context.synchronizeEnd(this, executable, problems, time);
+        } catch (InterruptedException e) {
+            workUnit.context.abort(e);
+        } finally {
+            workUnit.setExecutor(null);
+        }
+    }
+
+    private void finish2() {
+        if (causeOfDeath == null) {// let this thread die and be replaced by a fresh unstarted instance
+            owner.removeExecutor(this);
+        }
+        if (this instanceof OneOffExecutor) {
+            owner.remove((OneOffExecutor) this);
+        }
+        queue.scheduleMaintenance();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void completedAsynchronous(@CheckForNull Throwable error) {
+        try {
+            finish1(error);
+        } finally {
+            finish2();
+        }
+        asynchronousExecution = null;
     }
 
     /**
@@ -357,14 +392,14 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Check if executor is ready to accept tasks.
      * This method becomes the critical one since 1.536, which introduces the
-     * on-demand creation of executor threads. The entire logic should use
-     * this method instead of {@link #isAlive()}, because it provides wrong
-     * information for non-started threads.
+     * on-demand creation of executor threads. Callers should use
+     * this method instead of {@link #isAlive()}, which would be incorrect for
+     * non-started threads or running {@link AsynchronousExecution}.
      * @return True if the executor is available for tasks
      * @since 1.536
      */
     public boolean isActive() {
-        return !started || isAlive();
+        return !started || asynchronousExecution != null || isAlive();
     }
 
     /**
@@ -377,7 +412,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * If this thread dies unexpectedly, obtain the cause of the failure.
      *
-     * @return null if the death is expected death or the thread is {@link #isAlive() still alive}.
+     * @return null if the death is expected death or the thread {@link #isActive}.
      * @since 1.142
      */
     public Throwable getCauseOfDeath() {
@@ -529,7 +564,7 @@ public class Executor extends Thread implements ModelObject {
     @RequirePOST
     public HttpResponse doYank() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        if (isAlive())
+        if (isActive())
             throw new Failure("Can't yank a live executor");
         owner.removeExecutor(this);
         return HttpResponses.redirectViaContextPath("/");
