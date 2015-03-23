@@ -241,6 +241,10 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // FIXME allow to set a global crontab spec
                 previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
                     public void run(AbstractProject p) {
+                        if (!p.isBuildable()) {
+                            return; //skip disabled/copied project
+                        }
+
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {
                                 LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
@@ -256,6 +260,12 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
         for (ParameterizedJobMixIn.ParameterizedJob p : inst.getAllItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
+            if (p instanceof AbstractProject<?, ?>) {
+               if (!((AbstractProject) p).isBuildable()) {
+                   continue; // skip disabled/copied project
+               }
+            }
+
             for (Trigger t : p.getTriggers().values()) {
                 if (! (t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[] {p, t.spec.trim()});
