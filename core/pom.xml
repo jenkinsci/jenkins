@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.606-SNAPSHOT</version>
+    <version>1.607-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -190,7 +190,7 @@ THE SOFTWARE.
     <dependency><!-- JENKINS-21160: remoting also depends on args4j, please update accordingly -->
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
-      <version>2.0.23</version>
+      <version>2.0.31</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>

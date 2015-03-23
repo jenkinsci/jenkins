@@ -96,7 +96,7 @@ class SlaveTest {
         def d = j.jenkins.getDescriptorByType(DumbSlave.DescriptorImpl.class)
         assert d.doCheckRemoteFS("c:\\")==FormValidation.ok();
         assert d.doCheckRemoteFS("/tmp")==FormValidation.ok();
-        assert d.doCheckRemoteFS("relative/path").kind==ERROR;
+        assert d.doCheckRemoteFS("relative/path").kind==WARNING;
         assert d.doCheckRemoteFS("/net/foo/bar/zot").kind==WARNING;
         assert d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind==WARNING;
     }
