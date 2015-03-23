@@ -33,8 +33,10 @@ import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
 import jenkins.model.Jenkins;
+import net.jcip.annotations.GuardedBy;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +56,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
      *         rechecked earlier or later that this!
      */
+    @GuardedBy("hudson.model.Queue#lock")
     public abstract long check(T c);
 
     /**
@@ -91,8 +94,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *
      * @since 1.275
      */
-    public void start(T c) {
-        check(c);
+    public void start(final T c) {
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                check(c);
+            }
+        });
     }
 
     /**
@@ -257,21 +265,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
-                    Queue.withLock(new Runnable() {
-                        @Override
-                        public void run() {
-                            // re-check idle now that we are within the Queue lock
-                            if (c.isIdle()) {
-                                final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                                if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
-                                    // we've been idle for long enough
-                                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
-                                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
-                                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
-                                }
-                            }
-                        }
-                    });
+                    // we've been idle for long enough
+                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
+                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
+                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
+                } else {
+                    // no point revisiting until we can be confident we will be idle
+                    return TimeUnit.MILLISECONDS.toMinutes(TimeUnit.MINUTES.toMillis(idleDelay) - idleMilliseconds);
                 }
             }
             return 1;

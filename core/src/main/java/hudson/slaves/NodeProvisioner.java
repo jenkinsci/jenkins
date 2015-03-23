@@ -35,6 +35,7 @@ import net.jcip.annotations.GuardedBy;
 import javax.annotation.Nonnull;
 import java.awt.Color;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -42,6 +43,10 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
@@ -120,8 +125,13 @@ public class NodeProvisioner {
      */
     private final Label label;
 
-    @GuardedBy("self")
+    @GuardedBy("#provisioningLock")
     private final List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
+
+    private final Lock provisioningLock = new ReentrantLock();
+
+    @GuardedBy("#provisioningLock")
+    private StrategyState provisioningState = null;
 
     private transient volatile long lastSuggestedReview;
 
@@ -148,8 +158,11 @@ public class NodeProvisioner {
      * @since 1.401
      */
     public List<PlannedNode> getPendingLaunches() {
-        synchronized (pendingLaunches) {
+        provisioningLock.lock();
+        try {
             return new ArrayList<PlannedNode>(pendingLaunches);
+        } finally {
+            provisioningLock.unlock();
         }
     }
 
@@ -174,80 +187,96 @@ public class NodeProvisioner {
      * Periodically invoked to keep track of the load.
      * Launches additional nodes if necessary.
      */
-    private synchronized void update() {
-        Jenkins jenkins = Jenkins.getInstance();
-        lastSuggestedReview = System.currentTimeMillis();
+    private void update() {
+        provisioningLock.lock();
+        try {
+            lastSuggestedReview = System.currentTimeMillis();
+            Queue.withLock(new Runnable() {
+                @Override
+                public void run() {
+                    Jenkins jenkins = Jenkins.getInstance();
+                    // clean up the cancelled launch activity, then count the # of executors that we are about to
+                    // bring up.
 
-        // clean up the cancelled launch activity, then count the # of executors that we are about to bring up.
-        int plannedCapacitySnapshot = 0;
-        List<PlannedNode> completedLaunches = new ArrayList<PlannedNode>();
+                    int plannedCapacitySnapshot = 0;
+                    List<PlannedNode> completedLaunches = new ArrayList<PlannedNode>();
 
-        synchronized (pendingLaunches) {
-            for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext(); ) {
-                PlannedNode f = itr.next();
-                if (f.future.isDone()) {
-                    completedLaunches.add(f);
-                    itr.remove();
-                } else {
-                    plannedCapacitySnapshot += f.numExecutors;
+                    for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext(); ) {
+                        PlannedNode f = itr.next();
+                        if (f.future.isDone()) {
+                            completedLaunches.add(f);
+                            itr.remove();
+                        } else {
+                            plannedCapacitySnapshot += f.numExecutors;
+                        }
+                    }
+
+                    for (PlannedNode f : completedLaunches) {
+                        try {
+                            Node node = f.future.get();
+                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                cl.onComplete(f, node);
+                            }
+
+                            jenkins.addNode(node);
+                            LOGGER.log(Level.INFO,
+                                    "{0} provisioning successfully completed. We have now {1,number,integer} computer"
+                                            + "(s)",
+                                    new Object[]{f.displayName, jenkins.getComputers().length});
+                        } catch (InterruptedException e) {
+                            throw new AssertionError(e); // since we confirmed that the future is already done
+                        } catch (ExecutionException e) {
+                            LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch",
+                                    e.getCause());
+                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                cl.onFailure(f, e.getCause());
+                            }
+                        } catch (IOException e) {
+                            LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch", e);
+                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                cl.onFailure(f, e);
+                            }
+                        }
+
+                        f.spent();
+                    }
+
+                    float plannedCapacity = plannedCapacitySnapshot;
+                    plannedCapacitiesEMA.update(plannedCapacity);
+
+                    int idleSnapshot = stat.computeIdleExecutors();
+                    int queueLengthSnapshot = stat.computeQueueLength();
+
+                    if (queueLengthSnapshot <= idleSnapshot) {
+                        LOGGER.log(Level.FINE,
+                                "Queue length {0} is less than the idle capacity {1}. No provisioning strategy "
+                                        + "required",
+                                new Object[]{queueLengthSnapshot, idleSnapshot});
+                        provisioningState = null;
+                    } else {
+                        provisioningState = new StrategyState(queueLengthSnapshot, label, idleSnapshot,
+                                stat.computeTotalExecutors(),
+                                plannedCapacitySnapshot);
+                    }
+                }
+            });
+
+            if (provisioningState != null) {
+                List<Strategy> strategies = Jenkins.getInstance().getExtensionList(Strategy.class);
+                for (Strategy strategy : strategies.isEmpty()
+                        ? Arrays.<Strategy>asList(new StandardStrategyImpl())
+                        : strategies) {
+                    LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
+                            new Object[]{strategy, provisioningState});
+                    if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(provisioningState)) {
+                        LOGGER.log(Level.FINER, "Provisioning strategy {0} declared provisioning complete",
+                                strategy);
+                        break;
+                    }
                 }
             }
-        }
-
-        for (PlannedNode f : completedLaunches) {
-            try {
-                Node node = f.future.get();
-                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                    cl.onComplete(f, node);
-                }
-
-                jenkins.addNode(node);
-                LOGGER.log(Level.INFO,
-                        "{0} provisioning successfully completed. We have now {1,number,integer} computer(s)",
-                        new Object[]{f.displayName, jenkins.getComputers().length});
-            } catch (InterruptedException e) {
-                throw new AssertionError(e); // since we confirmed that the future is already done
-            } catch (ExecutionException e) {
-                LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch", e.getCause());
-                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                    cl.onFailure(f, e.getCause());
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch", e);
-                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                    cl.onFailure(f, e);
-                }
-            }
-
-            f.spent();
-        }
-
-        float plannedCapacity = plannedCapacitySnapshot;
-        plannedCapacitiesEMA.update(plannedCapacity);
-
-        int idleSnapshot = stat.computeIdleExecutors();
-        int queueLengthSnapshot = stat.computeQueueLength();
-
-        if (queueLengthSnapshot <= idleSnapshot) {
-            LOGGER.log(Level.FINE,
-                    "Queue length {0} is less than the idle capacity {1}. No provisioning strategy required",
-                    new Object[]{queueLengthSnapshot, idleSnapshot});
-        } else {
-            StrategyState state =
-                    new StrategyState(queueLengthSnapshot, label, idleSnapshot, stat.computeTotalExecutors(),
-                            plannedCapacitySnapshot);
-            List<Strategy> strategies = Jenkins.getInstance().getExtensionList(Strategy.class);
-            for (Strategy strategy : strategies.isEmpty()
-                    ? Arrays.<Strategy>asList(new StandardStrategyImpl())
-                    : strategies) {
-                LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
-                        new Object[]{strategy, state});
-                if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(state)) {
-                    LOGGER.log(Level.FINER, "Provisioning strategy {0} declared provisioning complete",
-                            strategy);
-                    break;
-                }
-            }
+        } finally {
+            provisioningLock.unlock();
         }
     }
 
@@ -384,8 +413,13 @@ public class NodeProvisioner {
          * The additional planned capacity for this {@link #getLabel()} and provisioned by previous strategies during
          * the current updating of the {@link NodeProvisioner}.
          */
-        public synchronized int getAdditionalPlannedCapacity() {
-            return additionalPlannedCapacity;
+        public int getAdditionalPlannedCapacity() {
+            provisioningLock.lock();
+            try {
+                return additionalPlannedCapacity;
+            } finally {
+                provisioningLock.unlock();
+            }
         }
 
         /**
@@ -451,13 +485,14 @@ public class NodeProvisioner {
                     additionalPlannedCapacity += f.numExecutors;
                 }
             }
-            synchronized (pendingLaunches) {
+            provisioningLock.lock();
+            try {
                 pendingLaunches.addAll(plannedNodes);
-            }
-            if (additionalPlannedCapacity > 0) {
-                synchronized (this) {
-                    this.additionalPlannedCapacity += additionalPlannedCapacity;
+                if (additionalPlannedCapacity > 0) {
+                        this.additionalPlannedCapacity += additionalPlannedCapacity;
                 }
+            } finally {
+                provisioningLock.unlock();
             }
         }
 

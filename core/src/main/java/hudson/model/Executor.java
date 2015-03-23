@@ -37,6 +37,7 @@ import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
+import net.jcip.annotations.GuardedBy;
 import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -48,11 +49,15 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,7 +78,9 @@ import javax.annotation.Nonnull;
 public class Executor extends Thread implements ModelObject {
     protected final @Nonnull Computer owner;
     private final Queue queue;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    @GuardedBy("#lock")
     private long startTime;
     /**
      * Used to track when a job was last executed.
@@ -87,29 +94,34 @@ public class Executor extends Thread implements ModelObject {
     /**
      * {@link hudson.model.Queue.Executable} being executed right now, or null if the executor is idle.
      */
-    private volatile Queue.Executable executable;
+    @GuardedBy("#lock")
+    private Queue.Executable executable;
 
     /**
      * When {@link Queue} allocates a work for this executor, this field is set
      * and the executor is {@linkplain Thread#start() started}.
      */
-    private volatile WorkUnit workUnit;
+    @GuardedBy("#lock")
+    private WorkUnit workUnit;
 
     private Throwable causeOfDeath;
 
     private boolean induceDeath;
 
-    private volatile boolean started;
+    @GuardedBy("#lock")
+    private boolean started;
 
     /**
      * When the executor is interrupted, we allow the code that interrupted the thread to override the
      * result code it prefers.
      */
+    @GuardedBy("#lock")
     private Result interruptStatus;
 
     /**
      * Cause of interruption. Access needs to be synchronized.
      */
+    @GuardedBy("#lock")
     private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
 
     public Executor(@Nonnull Computer owner, int n) {
@@ -148,28 +160,37 @@ public class Executor extends Thread implements ModelObject {
         if (LOGGER.isLoggable(FINE))
             LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
 
-        synchronized (this) {
+        lock.writeLock().lock();
+        try {
             if (!started) {
                 // not yet started, so simply dispose this
                 owner.removeExecutor(this);
                 return;
             }
-        }
 
-        interruptStatus = result;
-        synchronized (this.causes) {
+            interruptStatus = result;
+
             for (CauseOfInterruption c : causes) {
                 if (!this.causes.contains(c))
                     this.causes.add(c);
             }
+        } finally {
+            lock.writeLock().unlock();
         }
         super.interrupt();
     }
 
     public Result abortResult() {
-        Result r = interruptStatus;
-        if (r==null)    r = Result.ABORTED; // this is when we programmatically throw InterruptedException instead of calling the interrupt method.
-        return r;
+        lock.readLock().lock();
+        try {
+            Result r = interruptStatus;
+            if (r == null) r =
+                    Result.ABORTED; // this is when we programmatically throw InterruptedException instead of calling the interrupt method.
+
+            return r;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -180,11 +201,14 @@ public class Executor extends Thread implements ModelObject {
     public void recordCauseOfInterruption(Run<?,?> build, TaskListener listener) {
         List<CauseOfInterruption> r;
 
-        // atomically get&clear causes, and minimize the lock.
-        synchronized (causes) {
+        // atomically get&clear causes.
+        lock.writeLock().lock();
+        try {
             if (causes.isEmpty())   return;
             r = new ArrayList<CauseOfInterruption>(causes);
             causes.clear();
+        } finally {
+            lock.writeLock().unlock();
         }
 
         build.addAction(new InterruptedBuildAction(r));
@@ -192,9 +216,64 @@ public class Executor extends Thread implements ModelObject {
             c.print(listener);
     }
 
+    /**
+     * There are some cases where an executor is started but the node is removed or goes off-line before we are ready
+     * to start executing the assigned work unit. This method is called to clear the assigned work unit so that
+     * the {@link Queue#maintain()} method can return the item to the buildable state.
+     *
+     * Note: once we create the {@link Executable} we cannot unwind the state and the build will have to end up being
+     * marked as a failure.
+     */
+    private void resetWorkUnit(String reason) {
+        StringWriter writer = new StringWriter();
+        PrintWriter pw = new PrintWriter(writer);
+        try {
+            pw.printf("%s grabbed %s from queue but %s %s. ", getName(), workUnit, owner.getDisplayName(), reason);
+            if (owner.getTerminatedBy().isEmpty()) {
+                pw.print("No termination trace available.");
+            } else {
+                pw.println("Termination trace follows:");
+                for (RuntimeException terminator: owner.getTerminatedBy()) {
+                    terminator.printStackTrace(pw);
+                }
+            }
+        } finally {
+            pw.close();
+        }
+        LOGGER.log(WARNING, writer.toString());
+        lock.writeLock().lock();
+        try {
+            if (executable != null) {
+                throw new IllegalStateException("Cannot reset the work unit after the executable has been created");
+            }
+            workUnit = null;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
     @Override
     public void run() {
-        startTime = System.currentTimeMillis();
+        if (!owner.isOnline()) {
+            resetWorkUnit("went off-line before the task's worker thread started");
+            owner.removeExecutor(this);
+            queue.scheduleMaintenance();
+            return;
+        }
+        if (owner.getNode() == null) {
+            resetWorkUnit("was removed before the task's worker thread started");
+            owner.removeExecutor(this);
+            queue.scheduleMaintenance();
+            return;
+        }
+        final WorkUnit workUnit;
+        lock.writeLock().lock();
+        try {
+            startTime = System.currentTimeMillis();
+            workUnit = this.workUnit;
+        } finally {
+            lock.writeLock().unlock();
+        }
 
         ACL.impersonate(ACL.SYSTEM);
 
@@ -204,14 +283,45 @@ public class Executor extends Thread implements ModelObject {
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
-            synchronized (queue) {
-                workUnit.setExecutor(this);
-                queue.onStartExecuting(this);
-                if (LOGGER.isLoggable(FINE))
-                    LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
-                task = workUnit.work;
-                executable = task.createExecutable();
-                workUnit.setExecutable(executable);
+            task = Queue.withLock(new java.util.concurrent.Callable<SubTask>() {
+                @Override
+                public SubTask call() throws Exception {
+                    if (!owner.isOnline()) {
+                        resetWorkUnit("went off-line before the task's worker thread was ready to execute");
+                        return null;
+                    }
+                    if (owner.getNode() == null) {
+                        resetWorkUnit("was removed before the task's worker thread was ready to execute");
+                        return null;
+                    }
+                    // after this point we cannot unwind the assignment of the work unit, if the owner
+                    // is removed or goes off-line then the build will just have to fail.
+                    workUnit.setExecutor(Executor.this);
+                    queue.onStartExecuting(Executor.this);
+                    if (LOGGER.isLoggable(FINE))
+                        LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
+                    SubTask task = workUnit.work;
+                    Executable executable = task.createExecutable();
+                    lock.writeLock().lock();
+                    try {
+                        Executor.this.executable = executable;
+                    } finally {
+                        lock.writeLock().unlock();
+                    }
+                    workUnit.setExecutable(executable);
+                    return task;
+                }
+            });
+            Executable executable;
+            lock.readLock().lock();
+            try {
+                if (this.workUnit == null) {
+                    // we called resetWorkUnit, so bail. Outer finally will remove this and schedule queue maintenance
+                    return;
+                }
+                executable = this.executable;
+            } finally {
+                lock.readLock().unlock();
             }
             if (LOGGER.isLoggable(FINE))
                 LOGGER.log(FINE, getName()+" is going to execute "+executable);
@@ -267,6 +377,7 @@ public class Executor extends Thread implements ModelObject {
             causeOfDeath = e;
             LOGGER.log(SEVERE, "Unexpected executor death", e);
         } finally {
+            for (RuntimeException e1: owner.getTerminatedBy()) LOGGER.log(Level.WARNING, String.format("%s termination trace", getName()), e1);
             if (causeOfDeath==null)
                 // let this thread die and be replaced by a fresh unstarted instance
                 owner.removeExecutor(this);
@@ -290,7 +401,12 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public @CheckForNull Queue.Executable getCurrentExecutable() {
-        return executable;
+        lock.readLock().lock();
+        try {
+            return executable;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -302,7 +418,12 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public WorkUnit getCurrentWorkUnit() {
-        return workUnit;
+        lock.readLock().lock();
+        try {
+            return workUnit;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -311,13 +432,19 @@ public class Executor extends Thread implements ModelObject {
      * to that point yet.
      */
     public FilePath getCurrentWorkspace() {
-        Executable e = executable;
-        if(e==null) return null;
-        if (e instanceof AbstractBuild) {
-            AbstractBuild ab = (AbstractBuild) e;
-            return ab.getWorkspace();
+        lock.readLock().lock();
+        try {
+            if (executable == null) {
+                return null;
+            }
+            if (executable instanceof AbstractBuild) {
+                AbstractBuild ab = (AbstractBuild) executable;
+                return ab.getWorkspace();
+            }
+            return null;
+        } finally {
+            lock.readLock().unlock();
         }
-        return null;
     }
 
     /**
@@ -344,14 +471,24 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public boolean isIdle() {
-        return executable==null;
+        lock.readLock().lock();
+        try {
+            return workUnit == null && executable == null;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
      * The opposite of {@link #isIdle()} &mdash; the executor is doing some work.
      */
     public boolean isBusy() {
-        return executable!=null;
+        lock.readLock().lock();
+        try {
+            return workUnit != null || executable != null;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -364,14 +501,24 @@ public class Executor extends Thread implements ModelObject {
      * @since 1.536
      */
     public boolean isActive() {
-        return !started || isAlive();
+        lock.readLock().lock();
+        try {
+            return !started || isAlive();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
      * Returns true if this executor is waiting for a task to execute.
      */
     public boolean isParking() {
-        return !started;
+        lock.readLock().lock();
+        try {
+            return !started;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -392,13 +539,24 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public int getProgress() {
-        Queue.Executable e = executable;
-        if(e==null)     return -1;
-        long d = Executables.getEstimatedDurationFor(e);
-        if(d<0)         return -1;
+        long d;
+        lock.readLock().lock();
+        try {
+            if (executable == null) {
+                return -1;
+            }
+            d = Executables.getEstimatedDurationFor(executable);
+        } finally {
+            lock.readLock().unlock();
+        }
+        if (d < 0) {
+            return -1;
+        }
 
-        int num = (int)(getElapsedTime()*100/d);
-        if(num>=100)    num=99;
+        int num = (int) (getElapsedTime() * 100 / d);
+        if (num >= 100) {
+            num = 99;
+        }
         return num;
     }
 
@@ -411,22 +569,35 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public boolean isLikelyStuck() {
-        Queue.Executable e = executable;
-        if(e==null)     return false;
+        long d;
+        long elapsed;
+        lock.readLock().lock();
+        try {
+            if (executable == null) {
+                return false;
+            }
 
-        long elapsed = getElapsedTime();
-        long d = Executables.getEstimatedDurationFor(e);
-        if(d>=0) {
+            elapsed = getElapsedTime();
+            d = Executables.getEstimatedDurationFor(executable);
+        } finally {
+            lock.readLock().unlock();
+        }
+        if (d >= 0) {
             // if it's taking 10 times longer than ETA, consider it stuck
-            return d*10 < elapsed;
+            return d * 10 < elapsed;
         } else {
             // if no ETA is available, a build taking longer than a day is considered stuck
-            return TimeUnit2.MILLISECONDS.toHours(elapsed)>24;
+            return TimeUnit2.MILLISECONDS.toHours(elapsed) > 24;
         }
     }
 
     public long getElapsedTime() {
-        return System.currentTimeMillis() - startTime;
+        lock.readLock().lock();
+        try {
+            return System.currentTimeMillis() - startTime;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -435,7 +606,12 @@ public class Executor extends Thread implements ModelObject {
      * @since 1.440
      */
     public long getTimeSpentInQueue() {
-        return startTime - workUnit.context.item.buildableStartMilliseconds;
+        lock.readLock().lock();
+        try {
+            return startTime - workUnit.context.item.buildableStartMilliseconds;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -453,14 +629,25 @@ public class Executor extends Thread implements ModelObject {
      * until the build completes.
      */
     public String getEstimatedRemainingTime() {
-        Queue.Executable e = executable;
-        if(e==null)     return Messages.Executor_NotAvailable();
+        long d;
+        lock.readLock().lock();
+        try {
+            if (executable == null) {
+                return Messages.Executor_NotAvailable();
+            }
 
-        long d = Executables.getEstimatedDurationFor(e);
-        if(d<0)         return Messages.Executor_NotAvailable();
+            d = Executables.getEstimatedDurationFor(executable);
+        } finally {
+            lock.readLock().unlock();
+        }
+        if (d < 0) {
+            return Messages.Executor_NotAvailable();
+        }
 
-        long eta = d-getElapsedTime();
-        if(eta<=0)      return Messages.Executor_NotAvailable();
+        long eta = d - getElapsedTime();
+        if (eta <= 0) {
+            return Messages.Executor_NotAvailable();
+        }
 
         return Util.getTimeSpanString(eta);
     }
@@ -470,14 +657,25 @@ public class Executor extends Thread implements ModelObject {
      * it as a number of milli-seconds.
      */
     public long getEstimatedRemainingTimeMillis() {
-        Queue.Executable e = executable;
-        if(e==null)     return -1;
+        long d;
+        lock.readLock().lock();
+        try {
+            if (executable == null) {
+                return -1;
+            }
 
-        long d = Executables.getEstimatedDurationFor(e);
-        if(d<0)         return -1;
+            d = Executables.getEstimatedDurationFor(executable);
+        } finally {
+            lock.readLock().unlock();
+        }
+        if (d < 0) {
+            return -1;
+        }
 
-        long eta = d-getElapsedTime();
-        if(eta<=0)      return -1;
+        long eta = d - getElapsedTime();
+        if (eta <= 0) {
+            return -1;
+        }
 
         return eta;
     }
@@ -488,14 +686,19 @@ public class Executor extends Thread implements ModelObject {
      * @see #start(WorkUnit)
      */
     @Override
-    public synchronized void start() {
+    public void start() {
         throw new UnsupportedOperationException();
     }
 
-    /*protected*/ synchronized void start(WorkUnit task) {
-        this.workUnit = task;
-        super.start();
-        started = true;
+    /*protected*/ void start(WorkUnit task) {
+        lock.writeLock().lock();
+        try {
+            this.workUnit = task;
+            super.start();
+            started = true;
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
 
@@ -515,10 +718,14 @@ public class Executor extends Thread implements ModelObject {
      */
     @RequirePOST
     public HttpResponse doStop() {
-        Queue.Executable e = executable;
-        if(e!=null) {
-            Tasks.getOwnerTaskOf(getParentOf(e)).checkAbortPermission();
-            interrupt();
+        lock.writeLock().lock(); // need write lock as interrupt will change the field
+        try {
+            if (executable != null) {
+                Tasks.getOwnerTaskOf(getParentOf(executable)).checkAbortPermission();
+                interrupt();
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
         return HttpResponses.forwardToPreviousPage();
     }
@@ -539,8 +746,12 @@ public class Executor extends Thread implements ModelObject {
      * Checks if the current user has a permission to stop this build.
      */
     public boolean hasStopPermission() {
-        Queue.Executable e = executable;
-        return e!=null && Tasks.getOwnerTaskOf(getParentOf(e)).hasAbortPermission();
+        lock.readLock().lock();
+        try {
+            return executable != null && Tasks.getOwnerTaskOf(getParentOf(executable)).hasAbortPermission();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public @Nonnull Computer getOwner() {
@@ -551,11 +762,16 @@ public class Executor extends Thread implements ModelObject {
      * Returns when this executor started or should start being idle.
      */
     public long getIdleStartMilliseconds() {
-        if (isIdle())
-            return Math.max(creationTime, owner.getConnectTime());
-        else {
-            return Math.max(startTime + Math.max(0, Executables.getEstimatedDurationFor(executable)),
-                    System.currentTimeMillis() + 15000);
+        lock.readLock().lock();
+        try {
+            if (isIdle())
+                return Math.max(creationTime, owner.getConnectTime());
+            else {
+                return Math.max(startTime + Math.max(0, Executables.getEstimatedDurationFor(executable)),
+                        System.currentTimeMillis() + 15000);
+            }
+        } finally {
+            lock.readLock().unlock();
         }
     }
 

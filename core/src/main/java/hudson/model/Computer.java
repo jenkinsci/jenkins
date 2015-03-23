@@ -176,6 +176,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     protected final Object statusChangeLock = new Object();
 
+    private transient final List<RuntimeException> terminatedBy = Collections.synchronizedList(new ArrayList
+            <RuntimeException>());
+
+    public void recordTermination() {
+        try {
+            throw new RuntimeException(String.format("Termination requested by %s", Thread.currentThread()));
+        } catch (RuntimeException e) {
+            terminatedBy.add(e);
+        }
+    }
+
+    public List<RuntimeException> getTerminatedBy() {
+        return new ArrayList<RuntimeException>(terminatedBy);
+    }
+
     public Computer(Node node) {
         setNode(node);
     }
@@ -404,6 +419,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.320
      */
     public Future<?> disconnect(OfflineCause cause) {
+        recordTermination();
         offlineCause = cause;
         if (Util.isOverridden(Computer.class,getClass(),"disconnect"))
             return disconnect();    // legacy subtypes that extend disconnect().
@@ -419,6 +435,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      Use {@link #disconnect(OfflineCause)} and specify the cause.
      */
     public Future<?> disconnect() {
+        recordTermination();
         if (Util.isOverridden(Computer.class,getClass(),"disconnect",OfflineCause.class))
             // if the subtype already derives disconnect(OfflineCause), delegate to it
             return disconnect(null);
@@ -808,6 +825,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new ArrayList<OneOffExecutor>(oneOffExecutors);
     }
 
+    public List<DisplayExecutor> getDisplayExecutors() {
+        List<DisplayExecutor> result = new ArrayList<DisplayExecutor>(executors.size()+oneOffExecutors.size());
+        int index = 0;
+        for (Executor e: executors) {
+            result.add(new DisplayExecutor(Integer.toString(index+1), String.format("executors/%d", index), e));
+            index++;
+        }
+        index = 0;
+        for (OneOffExecutor e: oneOffExecutors) {
+            result.add(new DisplayExecutor("", String.format("oneOffExecutors/%d", index), e));
+            index++;
+        }
+        return result;
+    }
+
     /**
      * Returns true if all the executors of this computer are idle.
      */
@@ -867,14 +899,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
-    /*package*/ synchronized void removeExecutor(Executor e) {
-        executors.remove(e);
-        addNewExecutorIfNecessary();
-        if(!isAlive())
-        {
-            AbstractCIBase ciBase = Jenkins.getInstance();
-            ciBase.removeComputer(this);
-        }
+    /*package*/ void removeExecutor(final Executor e) {
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (Computer.this) {
+                    executors.remove(e);
+                    addNewExecutorIfNecessary();
+                    if(!isAlive())
+                    {
+                        AbstractCIBase ciBase = Jenkins.getInstance();
+                        ciBase.removeComputer(Computer.this);
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -1410,6 +1449,71 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             } else {
                 assert false;
             }
+        }
+    }
+
+    public static class DisplayExecutor implements ModelObject {
+
+        @Nonnull
+        private final String displayName;
+        @Nonnull
+        private final String url;
+        @Nonnull
+        private final Executor executor;
+
+        public DisplayExecutor(@Nonnull String displayName, @Nonnull String url, @Nonnull Executor executor) {
+            this.displayName = displayName;
+            this.url = url;
+            this.executor = executor;
+        }
+
+        @Override
+        @Nonnull
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Nonnull
+        public String getUrl() {
+            return url;
+        }
+
+        @Nonnull
+        public Executor getExecutor() {
+            return executor;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("DisplayExecutor{");
+            sb.append("displayName='").append(displayName).append('\'');
+            sb.append(", url='").append(url).append('\'');
+            sb.append(", executor=").append(executor);
+            sb.append('}');
+            return sb.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            DisplayExecutor that = (DisplayExecutor) o;
+
+            if (!executor.equals(that.executor)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return executor.hashCode();
         }
     }
 

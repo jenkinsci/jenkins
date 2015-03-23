@@ -28,6 +28,7 @@ package hudson;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
+import hudson.init.InitMilestone;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Describable;
@@ -201,7 +202,12 @@ public class Functions {
     public static String rfc822Date(Calendar cal) {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
     }
-    
+
+    public static boolean isExtensionsAvailable() {
+        final Jenkins jenkins = Jenkins.getInstance();
+        return jenkins == null ? false : jenkins.getInitLevel().compareTo(InitMilestone.EXTENSIONS_AUGMENTED) >= 0;
+    }
+
     public static void initPageVariables(JellyContext context) {
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
         String rootURL = currentRequest.getContextPath();

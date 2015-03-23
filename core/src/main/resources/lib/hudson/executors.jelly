@@ -39,102 +39,121 @@ THE SOFTWARE.
       <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
     </d:tag>
     <d:tag name="executor">
-      <j:choose>
-        <j:when test="${!c.offline or (c.offline and !e.idle)}">
-          <tr>
-            <td class="pane" align="right" style="vertical-align: top">
-              ${name}
-            </td>
-            <j:choose>
-              <j:when test="${!e.active}">
+      <j:if test="${!c.offline or (c.offline and !e.idle)}">
+        <tr>
+          <td class="pane" align="right" style="vertical-align: top">
+            ${name}
+          </td>
+          <j:choose>
+            <j:when test="${!e.active}">
+              <td class="pane">
+                <a href="${rootURL}/${c.url}${url}/causeOfDeath">
+                  <div class="error">${%Dead} (!)</div>
+                </a>
+              </td>
+              <td class="pane"/>
+              <td class="pane"/>
+            </j:when>
+            <j:when test="${e.idle}">
+              <td class="pane">
+                <j:choose>
+                  <j:when test="${c.offline}">
+                    <a href="${rootURL}/${c.url}" class="model-link inside">${%Offline}</a>
+                  </j:when>
+                  <j:otherwise>
+                    ${%Idle}
+                  </j:otherwise>
+                </j:choose>
+              </td>
+              <td class="pane"/>
+              <td class="pane"/>
+            </j:when>
+            <j:otherwise>
+              <!-- not actually optional, but it helps with backward compatibility -->
+              <j:set var="executor" value="${e}" />
+              <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
                 <td class="pane">
-                  <a href="${rootURL}/${c.url}${url}/causeOfDeath">
-                    <div class="error">${%Dead} (!)</div>
-                  </a>
+                  <div style="white-space: normal">
+                    <j:set var="exe" value="${e.currentExecutable}" />
+                    <j:set var="wu" value="${e.currentWorkUnit}" />
+                    <j:choose>
+                      <j:when test="${exe == null and wu != null}">
+                        <j:set var="exeparent" value="${wu.work}"/>
+                        <j:choose>
+                          <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                            <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
+                            <t:progressBar tooltip="${%Pending}" pos="-1" href="${rootURL}/${exeparent.url}"/>
+                          </j:when>
+                          <j:otherwise>
+                            <span>${%Unknown Task}</span>
+                          </j:otherwise>
+                        </j:choose>
+                      </j:when>
+                      <j:when test="${exe == null and wu == null}">
+                        <!-- went idle concurrent with testing for idle -->
+                        ${%Idle}
+                      </j:when>
+                      <j:otherwise>
+                        <j:invokeStatic var="exeparent"
+                           className="hudson.model.queue.Executables" method="getParentOf">
+                          <j:arg type="hudson.model.Queue$Executable" value="${exe}" />
+                        </j:invokeStatic>
+                        <j:choose>
+                          <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                            <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
+                            <t:buildProgressBar build="${exe}" executor="${executor}"/>
+                          </j:when>
+                          <j:otherwise>
+                            <span>${%Unknown Task}</span>
+                          </j:otherwise>
+                        </j:choose>
+                      </j:otherwise>
+                    </j:choose>
+                  </div>
                 </td>
-                <td class="pane"/>
-                <td class="pane"/>
-              </j:when>
-              <j:when test="${e.idle}">
-                <td class="pane">
-                  <j:choose>
-                    <j:when test="${c.offline}">
-                      <a href="${rootURL}/${c.url}" class="model-link inside">${%Offline}</a>
-                    </j:when>
-                    <j:otherwise>
-                      ${%Idle}
-                    </j:otherwise>
-                  </j:choose>
-                </td>
-                <td class="pane"/>
-                <td class="pane"/>
-              </j:when>
-              <j:otherwise>
-                <!-- not actually optional, but it helps with backward compatibility -->
-                <j:set var="executor" value="${e}" />
-                <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
-                  <td class="pane">
-                    <div style="white-space: normal">
-                      <j:set var="exe" value="${e.currentExecutable}" />
-                      <j:invokeStatic var="exeparent"
-                         className="hudson.model.queue.Executables" method="getParentOf">
-                        <j:arg type="hudson.model.Queue$Executable" value="${exe}" />
-                      </j:invokeStatic>
-                      <j:choose>
-                        <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
-                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
-                          <t:buildProgressBar build="${exe}" executor="${executor}"/>
-                        </j:when>
-                        <j:otherwise>
-                          <span>${%Unknown Task}</span>
-                        </j:otherwise>
-                      </j:choose>
-                    </div>
-                  </td>
-                <td class="pane">
-                  <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
-                      <a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
-                  </j:if>
-                </td>
-                </st:include>
-                <td class="pane" align="center" valign="middle">
-                  <j:if test="${e.hasStopPermission()}">
-                    <l:stopButton href="${rootURL}/${c.url}${url}/stop" alt="${%terminate this build}"/>
-                  </j:if>
-                </td>
-              </j:otherwise>
-            </j:choose>
-          </tr>
-        </j:when>
-      </j:choose>
+              <td class="pane">
+                <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
+                    <a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
+                </j:if>
+              </td>
+              </st:include>
+              <td class="pane" align="center" valign="middle">
+                <j:if test="${e.hasStopPermission()}">
+                  <l:stopButton href="${rootURL}/${c.url}${url}/stop" alt="${%terminate this build}"/>
+                </j:if>
+              </td>
+            </j:otherwise>
+          </j:choose>
+        </tr>
+      </j:if>
     </d:tag>
   </d:taglib>
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
-    <l:pane width="3" id="executors"
-        title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>"
-        collapsedText="${%Computers(computers.size() - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
-      <colgroup><col width="30"/><col width="200*"/><col width="24"/></colgroup>
+  <j:set var="computersSize" value="${computers.size()}"/>
+  <l:pane width="3" id="executors"
+      title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>"
+      collapsedText="${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
+    <colgroup><col width="30"/><col width="200*"/><col width="24"/></colgroup>
 
-      <j:forEach var="c" items="${computers}">
-        <tr>
-          <j:if test="${computers.size() gt 1 and (c.executors.size()!=0 or c.oneOffExecutors.size()!=0)}">
-            <th class="pane" colspan="3">
-              <local:computerCaption title="${c.displayName}" />
-            </th>
-          </j:if>
-        </tr>
-        <j:forEach var="e" items="${c.executors}" varStatus="eloop">
-          <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
-        </j:forEach>
-        <j:forEach var="e" items="${c.oneOffExecutors}" varStatus="eloop">
-          <local:executor name="" url="oneOffExecutors/${eloop.index}" />
-        </j:forEach>
+    <j:forEach var="c" items="${computers}">
+      <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
+      <tr>
+        <j:if test="${computersSize gt 1 and !cDisplayExecutors.isEmpty()}">
+          <th class="pane" colspan="3">
+            <local:computerCaption title="${c.displayName}" />
+          </th>
+        </j:if>
+      </tr>
+      <j:forEach var="de" items="${cDisplayExecutors}" varStatus="eloop">
+        <j:set var="e" value="${de.executor}"/>
+        <local:executor name="${de.displayName}" url="${de.url}" />
       </j:forEach>
-    </l:pane>
-    <!-- schedule updates only for the full page reload -->
-    <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
-      <script defer="defer">
-        refreshPart('executors',"${rootURL}/${h.hasView(it,'ajaxExecutors')?it.url:''}ajaxExecutors");
-      </script>
-    </j:if>
+    </j:forEach>
+  </l:pane>
+  <!-- schedule updates only for the full page reload -->
+  <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
+    <script defer="defer">
+      refreshPart('executors',"${rootURL}/${h.hasView(it,'ajaxExecutors')?it.url:''}ajaxExecutors");
+    </script>
+  </j:if>
 </j:jelly>
