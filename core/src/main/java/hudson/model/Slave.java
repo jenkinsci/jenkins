@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -63,6 +63,7 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -92,8 +93,12 @@ public abstract class Slave extends Node implements Serializable {
     private final String description;
 
     /**
-     * Absolute path to the root of the workspace
-     * from the view point of this node, such as "/hudson"
+     * Path to the root of the workspace from the view point of this node, such as "/hudson", this need not
+     * be absolute provided that the launcher establishes a consistent working directory, such as "./.jenkins-slave"
+     * when used with an SSH launcher.
+     *
+     * NOTE: if the administrator is using a relative path they are responsible for ensuring that the launcher used
+     * provides a consistent working directory
      */
     protected final String remoteFS;
 
@@ -121,14 +126,14 @@ public abstract class Slave extends Node implements Serializable {
      * Whitespace-separated labels.
      */
     private String label="";
-    
+
     private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance());
 
     /**
      * Lazily computed set of labels from {@link #label}.
      */
     private transient volatile Set<Label> labels;
-    
+
     /**
      * Id of user which creates this slave {@link User}.
      */
@@ -147,7 +152,7 @@ public abstract class Slave extends Node implements Serializable {
             Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
-    
+
     public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
@@ -159,7 +164,7 @@ public abstract class Slave extends Node implements Serializable {
         this.launcher = launcher;
         this.retentionStrategy = retentionStrategy;
         getAssignedLabels();    // compute labels now
-        
+
         this.nodeProperties.replaceBy(nodeProperties);
          Slave node = (Slave) Jenkins.getInstance().getNode(name);
 
@@ -168,7 +173,7 @@ public abstract class Slave extends Node implements Serializable {
         }
        else{
             User user = User.current();
-            userId = user!=null ? user.getId() : "anonymous";     
+            userId = user!=null ? user.getId() : "anonymous";
         }
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
@@ -179,10 +184,10 @@ public abstract class Slave extends Node implements Serializable {
         if (this.numExecutors<=0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
-    
+
     /**
      * Return id of user which created this slave
-     * 
+     *
      * @return id of user
      */
     public String getUserId() {
@@ -192,7 +197,7 @@ public abstract class Slave extends Node implements Serializable {
     public void setUserId(String userId){
         this.userId = userId;
     }
-    
+
     public ComputerLauncher getLauncher() {
         return launcher == null ? new JNLPLauncher() : launcher;
     }
@@ -214,7 +219,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public void setNodeName(String name) {
-        this.name = name; 
+        this.name = name;
     }
 
     public String getNodeDescription() {
@@ -237,7 +242,7 @@ public abstract class Slave extends Node implements Serializable {
         assert nodeProperties != null;
     	return nodeProperties;
     }
-    
+
     public RetentionStrategy getRetentionStrategy() {
         return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }
@@ -273,14 +278,21 @@ public abstract class Slave extends Node implements Serializable {
                 return workspace;
             }
         }
-        
+
         FilePath r = getWorkspaceRoot();
         if(r==null)     return null;    // offline
         return r.child(item.getFullName());
     }
 
+    @CheckForNull
     public FilePath getRootPath() {
-        return createPath(remoteFS);
+        final SlaveComputer computer = getComputer();
+        if (computer == null) {
+            // if computer is null then channel is null and thus we were going to return null anyway
+            return null;
+        } else {
+            return createPath(StringUtils.defaultString(computer.getAbsoluteRemoteFs(), remoteFS));
+        }
     }
 
     /**
@@ -422,10 +434,8 @@ public abstract class Slave extends Node implements Serializable {
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
                 return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
 
-            if (!value.contains("\\") && !value.startsWith("/")) {
-                // Unix-looking path that doesn't start with '/'
-                // TODO: detect Windows-looking relative path
-                return FormValidation.error(Messages.Slave_the_remote_root_must_be_an_absolute_path());
+            if (Util.isRelativePath(value)) {
+                return FormValidation.warning(Messages.Slave_Remote_Relative_Path_Warning());
             }
 
             return FormValidation.ok();
