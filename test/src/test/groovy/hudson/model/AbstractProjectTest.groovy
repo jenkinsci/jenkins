@@ -48,6 +48,7 @@ import hudson.Util;
 import hudson.tasks.ArtifactArchiver
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger
+import hudson.triggers.Trigger
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent
@@ -58,6 +59,7 @@ import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.MemoryAssert
 import org.jvnet.hudson.test.SequenceLock;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet
 import org.apache.commons.io.FileUtils;
@@ -593,5 +595,37 @@ public class AbstractProjectTest extends HudsonTestCase {
             s.write(xml.bytes)
         }
         return con
+    }
+
+    @Issue("JENKINS-27549")
+    public void testLoadingWithNPEOnTriggerStart() {
+        AbstractProject project = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"))
+
+        assert project.triggers().size() == 1
+    }
+
+    static class MockBuildTriggerThrowsNPEOnStart<Item> extends Trigger {
+        @Override
+        public void start(hudson.model.Item project, boolean newInstance) { throw new NullPointerException(); }
+
+        @Override
+        public TriggerDescriptor getDescriptor() {
+            return DESCRIPTOR;
+        }
+
+        public static final TriggerDescriptor DESCRIPTOR = new DescriptorImpl()
+
+        @TestExtension("testLoadingWithNPEOnTriggerStart")
+        static class DescriptorImpl extends TriggerDescriptor {
+
+            public boolean isApplicable(hudson.model.Item item) {
+                return false;
+            }
+
+            @Override
+            String getDisplayName() {
+                return "test";
+            }
+        }
     }
 }
