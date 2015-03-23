@@ -27,13 +27,13 @@ THE SOFTWARE.
     Progress bar for a build in progress.
 
     <st:attribute name="build" use="required" type="hudson.model.Queue.Executable">
-      Build in progress.
+      Build in progress. Must have a url property.
     </st:attribute>
     <st:attribute name="executor">
       Executor that's carrying out the build. If null, defaults to "build.executor"
     </st:attribute>
   </st:documentation>
-  <j:set var="executor" value="${executor?:build.executor}" />
+  <j:set var="executor" value="${executor?:build.executor}" /> <!-- TODO use Executables.getExecutor -->
   <t:progressBar tooltip="${%text(executor.timestampString,executor.estimatedRemainingTime)}"
                  red="${executor.isLikelyStuck()}"
                  pos="${executor.progress}" href="${rootURL}/${build.url}console"/>
