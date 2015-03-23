@@ -127,6 +127,9 @@ public class Executor extends Thread implements ModelObject {
         interrupt(Result.ABORTED);
     }
 
+    void interruptForShutdown() {
+        interrupt(Result.ABORTED, true);
+    }
     /**
      * Interrupt the execution,
      * but instead of marking the build as aborted, mark it as specified result.
@@ -134,13 +137,17 @@ public class Executor extends Thread implements ModelObject {
      * @since 1.417
      */
     public void interrupt(Result result) {
+        interrupt(result, false);
+    }
+
+    private void interrupt(Result result, boolean forShutdown) {
         Authentication a = Jenkins.getAuthentication();
         if (a == ACL.SYSTEM)
-            interrupt(result, new CauseOfInterruption[0]);
+            interrupt(result, forShutdown, new CauseOfInterruption[0]);
         else {
             // worth recording who did it
             // avoid using User.get() to avoid deadlock.
-            interrupt(result, new UserInterruption(a.getName()));
+            interrupt(result, forShutdown, new UserInterruption(a.getName()));
         }
     }
 
@@ -148,6 +155,10 @@ public class Executor extends Thread implements ModelObject {
      * Interrupt the execution. Mark the cause and the status accordingly.
      */
     public void interrupt(Result result, CauseOfInterruption... causes) {
+        interrupt(result, false, causes);
+    }
+
+    private void interrupt(Result result, boolean forShutdown, CauseOfInterruption... causes) {
         if (LOGGER.isLoggable(FINE))
             LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
 
@@ -167,7 +178,7 @@ public class Executor extends Thread implements ModelObject {
             }
         }
         if (asynchronousExecution != null) {
-            asynchronousExecution.interrupt();
+            asynchronousExecution.interrupt(forShutdown);
         } else {
             super.interrupt();
         }

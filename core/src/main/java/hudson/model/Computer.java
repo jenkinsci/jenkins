@@ -894,10 +894,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Interrupt all {@link Executor}s.
+     * Called from {@link Jenkins#cleanUp}.
      */
     public void interrupt() {
         for (Executor e : executors) {
-            e.interrupt();
+            e.interruptForShutdown();
         }
     }
 

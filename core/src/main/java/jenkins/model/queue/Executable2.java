@@ -24,6 +24,7 @@
 
 package jenkins.model.queue;
 
+import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.ExecutorListener;
 import hudson.model.OneOffExecutor;
@@ -33,6 +34,7 @@ import hudson.model.ResourceActivity;
 import hudson.model.ResourceController;
 import hudson.model.ResourceList;
 import javax.annotation.CheckForNull;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -71,8 +73,9 @@ public interface Executable2 extends Queue.Executable {
          * Called in lieu of {@link Thread#interrupt} by {@link Executor#interrupt()} and its overloads.
          * As with the standard Java method, you are requested to cease work as soon as possible, but there is no enforcement of this.
          * You might also want to call {@link Executor#recordCauseOfInterruption} on {@link #getExecutor}.
+         * @param forShutdown if true, this interruption is because Jenkins is shutting down (and thus {@link Computer#interrupt} was called from {@link Jenkins#cleanUp}); otherwise, a normal interrupt such as by {@link Executor#doStop()}
          */
-        public abstract void interrupt();
+        public abstract void interrupt(boolean forShutdown);
 
         /**
          * Obtains the associated executor.
