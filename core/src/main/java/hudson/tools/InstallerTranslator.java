@@ -69,6 +69,11 @@ public class InstallerTranslator extends ToolLocationTranslator {
                 } finally {
                     semaphore.release();
                 }
+            } else {
+                log.getLogger().println(Messages.CannotBeInstalled(
+                        installer.getDescriptor().getDisplayName(),
+                        tool.getName(),
+                        node.getDisplayName()));
             }
         }
         return null;
