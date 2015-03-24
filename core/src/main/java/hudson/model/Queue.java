@@ -747,7 +747,13 @@ public class Queue extends ResourceController implements Saveable {
 
     public boolean cancel(Item item) {
         LOGGER.log(Level.FINE, "Cancelling {0} item#{1}", new Object[] {item.task, item.id});
-        return item.cancel(this);
+        lock.lock();
+        try {
+            return item.cancel(this);
+        } finally {
+            updateSnapshot();
+            lock.unlock();
+        }
     }
 
     /**
