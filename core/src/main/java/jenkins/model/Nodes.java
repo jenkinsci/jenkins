@@ -75,11 +75,21 @@ public class Nodes implements Saveable {
      * @param nodes the new list of nodes.
      * @throws IOException if the new list of nodes could not be persisted.
      */
-    public void setNodes(@Nonnull Collection<? extends Node> nodes) throws IOException {
-        this.nodes.clear();
-        for (Node n : nodes) {
-            this.nodes.put(n.getNodeName(), n);
-        }
+    public void setNodes(final @Nonnull Collection<? extends Node> nodes) throws IOException {
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                Set<String> toRemove = new HashSet<String>(Nodes.this.nodes.keySet());
+                for (Node n : nodes) {
+                    final String name = n.getNodeName();
+                    toRemove.remove(name);
+                    Nodes.this.nodes.put(name, n);
+                }
+                Nodes.this.nodes.keySet().removeAll(toRemove);
+                jenkins.updateComputerList();
+                jenkins.trimLabels();
+            }
+        });
         save();
     }
 
