@@ -24,13 +24,12 @@
 
 package hudson.model;
 
-import hudson.model.Run.Artifact;
+import java.io.IOException;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -115,4 +114,18 @@ public class RunTest {
         assertEquals(a.get(1).getDisplayPath(), "a/a.xml");
     }
 
+    @Issue("JENKINS-26777")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    public void getDurationString() throws IOException {
+        Run r = new Run(new StubJob(), 0) {};
+        assertEquals("Not started yet", r.getDurationString());
+        r.onStartBuilding();
+        String msg;
+        msg = r.getDurationString();
+        assertTrue(msg, msg.endsWith(" and counting"));
+        r.onEndBuilding();
+        msg = r.getDurationString();
+        assertFalse(msg, msg.endsWith(" and counting"));
+    }
 }
