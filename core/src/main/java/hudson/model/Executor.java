@@ -60,7 +60,7 @@ import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import jenkins.model.queue.Executable2.AsynchronousExecution;
+import jenkins.model.queue.AsynchronousExecution;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
