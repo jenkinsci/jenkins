@@ -1465,7 +1465,6 @@ public class Queue extends ResourceController implements Saveable {
      * <p>
      * Implementation must have <tt>executorCell.jelly</tt>, which is
      * used to render the HTML that indicates this executable is executing.
-     * @see Executable2
      */
     public interface Executable extends Runnable {
         /**
