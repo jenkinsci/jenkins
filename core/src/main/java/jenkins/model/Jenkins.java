@@ -252,7 +252,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -3492,16 +3491,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     LOGGER.severe(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.
-                    while (isQuietingDown
-                           && (overallLoad.computeTotalExecutors() > overallLoad.computeIdleExecutors())) {
-                        Thread.sleep(5000);
-                    }
+                    doQuietDown(true, 0);
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown) {
                         cleanUp();
                         System.exit(0);
                     }
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to shutdown Hudson",e);
                 }
             }

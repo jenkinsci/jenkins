@@ -66,6 +66,15 @@ public abstract class AsynchronousExecution extends RuntimeException {
     public abstract void interrupt(boolean forShutdown);
 
     /**
+     * Allows an executable to indicate whether it is currently doing something which should prevent Jenkins from being shut down safely.
+     * You may return false if it is fine for an administrator to exit/restart Jenkins despite this executable still being running.
+     * (If so, {@link #interrupt} will be passed {@code forShutdown=true}.)
+     * @return traditionally always true
+     * @see hudson.model.RestartListener.Default#isReadyToRestart
+     */
+    public abstract boolean blocksRestart();
+
+    /**
      * Obtains the associated executor.
      */
     public final Executor getExecutor() {

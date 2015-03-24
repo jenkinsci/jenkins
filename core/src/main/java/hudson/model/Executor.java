@@ -414,6 +414,14 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
+     * If currently running in asynchronous mode, returns that handle.
+     * @since TODO
+     */
+    public @CheckForNull AsynchronousExecution getAsynchronousExecution() {
+        return asynchronousExecution;
+    }
+
+    /**
      * Returns true if this executor is waiting for a task to execute.
      */
     public boolean isParking() {
