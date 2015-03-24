@@ -75,6 +75,12 @@ public abstract class AsynchronousExecution extends RuntimeException {
     public abstract boolean blocksRestart();
 
     /**
+     * Allows an executable to control whether or not to display {@code executorCell.jelly}.
+     * @return traditionally always true
+     */
+    public abstract boolean displayCell();
+
+    /**
      * Obtains the associated executor.
      */
     public final Executor getExecutor() {
