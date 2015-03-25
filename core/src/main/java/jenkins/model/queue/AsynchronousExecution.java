@@ -28,6 +28,8 @@ import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.ExecutorListener;
 import hudson.model.OneOffExecutor;
+import hudson.model.Queue.Executable;
+import hudson.model.Queue.FlyweightTask;
 import hudson.model.Resource;
 import hudson.model.ResourceActivity;
 import hudson.model.ResourceController;
@@ -39,12 +41,12 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Special means of indicating that an executable will proceed in the background without consuming a native thread ({@link Executor}).
- * May be thrown from {@link hudson.model.Queue.Executable#run} after doing any preparatory work synchronously.
+ * May be thrown from {@link Executable#run} after doing any preparatory work synchronously.
  * <p>{@link Executor#isActive} will remain true (even though {@link Executor#isAlive} is not) until {@link #completed} is called.
  * The thrower will need to hold on to a reference to this instance as a handle to call {@link #completed}.
  * <p>The execution may not extend into another Jenkins session; if you wish to model a long-running execution, you must schedule a new task after restart.
  * This class is not serializable anyway.
- * <p>Mainly intended for use with {@link OneOffExecutor} (from a {@link hudson.model.Queue.FlyweightTask}), of which there could be many,
+ * <p>Mainly intended for use with {@link OneOffExecutor} (from a {@link FlyweightTask}), of which there could be many,
  * but could also be used with a heavyweight executor even though the number of executors is bounded by node configuration.
  * <p>{@link ResourceController}/{@link ResourceActivity}/{@link ResourceList}/{@link Resource} are not currently supported.
  * Nor are {@link hudson.model.Queue.Task#getSubTasks} other than the primary task.
@@ -94,7 +96,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
 
     /**
      * To be called when the task is actually complete.
-     * @param error normally null (preferable to handle errors yourself), but may be specified to simulate an exception from {@link hudson.model.Queue.Executable#run}, as per {@link ExecutorListener#taskCompletedWithProblems}
+     * @param error normally null (preferable to handle errors yourself), but may be specified to simulate an exception from {@link Executable#run}, as per {@link ExecutorListener#taskCompletedWithProblems}
      */
     public final void completed(@CheckForNull Throwable error) {
         executor.completedAsynchronous(error);
