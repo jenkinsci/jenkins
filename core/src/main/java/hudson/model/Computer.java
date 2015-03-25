@@ -201,7 +201,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         StaplerRequest request = Stapler.getCurrentRequest();
         if (request != null) {
             terminatedBy.add(new TerminationRequest(
-                    String.format("Termination requested by %s [id=%d] from HTTP request for %s",
+                    String.format("Termination requested at %s by %s [id=%d] from HTTP request for %s",
+                            new Date(),
                             Thread.currentThread(),
                             Thread.currentThread().getId(),
                             request.getRequestURL()
@@ -209,7 +210,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             ));
         } else {
             terminatedBy.add(new TerminationRequest(
-                    String.format("Termination requested by %s [id=%d]",
+                    String.format("Termination requested at %s by %s [id=%d]",
+                            new Date(),
                             Thread.currentThread(),
                             Thread.currentThread().getId()
                     )
@@ -1210,8 +1212,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         rss(req, rsp, " failed builds", getBuilds().failureOnly());
     }
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
-            runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
+        RSS.forwardToRss(getDisplayName() + suffix, getUrl(),
+                runs.newBuilds(), Run.FEED_ADAPTER, req, rsp);
     }
 
     @RequirePOST
@@ -1413,7 +1415,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Handles incremental log.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        getLogText().doProgressText(req,rsp);
+        getLogText().doProgressText(req, rsp);
     }
 
     /**
@@ -1570,12 +1572,26 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
+    /**
+     * Used to trace requests to terminate a computer.
+     *
+     * @since 1.FIXME
+     */
     public static class TerminationRequest extends RuntimeException {
-        public TerminationRequest() {
-        }
-
+        private final long when;
         public TerminationRequest(String message) {
             super(message);
+            this.when = System.currentTimeMillis();
+        }
+
+        /**
+         * Returns the when the termination request was created.
+         *
+         * @return the difference, measured in milliseconds, between
+         * the time of the termination request and midnight, January 1, 1970 UTC.
+         */
+        public long getWhen() {
+            return when;
         }
     }
 
