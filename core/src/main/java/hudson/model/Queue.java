@@ -1044,15 +1044,6 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Left for backward compatibility.
-     *
-     * @see #getItem(Task)
-    public Item getItem(AbstractProject p) {
-        return getItem((Task) p);
-    }
-     */
-
-    /**
      * Returns true if this queue contains the said project.
      */
     public boolean contains(Task t) {
