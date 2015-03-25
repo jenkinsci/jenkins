@@ -96,7 +96,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
@@ -125,6 +124,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import javax.annotation.CheckForNull;
+import jenkins.model.queue.AsynchronousExecution;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -1656,9 +1656,10 @@ public class Queue extends ResourceController implements Saveable {
         @Nonnull SubTask getParent();
 
         /**
-         * Called by {@link Executor} to perform the task
+         * Called by {@link Executor} to perform the task.
+         * @throws AsynchronousExecution if you would like to continue without consuming a thread
          */
-        void run();
+        @Override void run() throws AsynchronousExecution;
 
         /**
          * Estimate of how long will it take to execute this executable.

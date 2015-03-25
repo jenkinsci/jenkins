@@ -36,13 +36,4 @@ public class OneOffExecutor extends Executor {
     public OneOffExecutor(Computer owner) {
         super(owner,-1);
     }
-
-    @Override
-    public void run() {
-        try {
-            super.run();
-        } finally {
-            owner.remove(this);
-        }
-    }
 }

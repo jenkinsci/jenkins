@@ -65,13 +65,15 @@ import static hudson.model.queue.Executables.*;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.queue.AsynchronousExecution;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 
 /**
  * Thread that executes builds.
  * Since 1.536, {@link Executor}s start threads on-demand.
- * The entire logic should use {@link #isActive()} instead of {@link #isAlive()}
- * in order to check if the {@link Executor} it ready to take tasks.
+ * <p>Callers should use {@link #isActive()} instead of {@link #isAlive()}.
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
@@ -96,6 +98,13 @@ public class Executor extends Thread implements ModelObject {
      */
     @GuardedBy("lock")
     private Queue.Executable executable;
+
+    /**
+     * Used to mark that the execution is continuing asynchronously even though {@link Executor} as {@link Thread}
+     * has finished.
+     */
+    @GuardedBy("lock")
+    private AsynchronousExecution asynchronousExecution;
 
     /**
      * When {@link Queue} allocates a work for this executor, this field is set
@@ -136,6 +145,9 @@ public class Executor extends Thread implements ModelObject {
         interrupt(Result.ABORTED);
     }
 
+    void interruptForShutdown() {
+        interrupt(Result.ABORTED, true);
+    }
     /**
      * Interrupt the execution,
      * but instead of marking the build as aborted, mark it as specified result.
@@ -143,13 +155,17 @@ public class Executor extends Thread implements ModelObject {
      * @since 1.417
      */
     public void interrupt(Result result) {
+        interrupt(result, false);
+    }
+
+    private void interrupt(Result result, boolean forShutdown) {
         Authentication a = Jenkins.getAuthentication();
         if (a == ACL.SYSTEM)
-            interrupt(result, new CauseOfInterruption[0]);
+            interrupt(result, forShutdown, new CauseOfInterruption[0]);
         else {
             // worth recording who did it
             // avoid using User.get() to avoid deadlock.
-            interrupt(result, new UserInterruption(a.getName()));
+            interrupt(result, forShutdown, new UserInterruption(a.getName()));
         }
     }
 
@@ -157,6 +173,10 @@ public class Executor extends Thread implements ModelObject {
      * Interrupt the execution. Mark the cause and the status accordingly.
      */
     public void interrupt(Result result, CauseOfInterruption... causes) {
+        interrupt(result, false, causes);
+    }
+
+    private void interrupt(Result result, boolean forShutdown, CauseOfInterruption... causes) {
         if (LOGGER.isLoggable(FINE))
             LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
 
@@ -174,10 +194,14 @@ public class Executor extends Thread implements ModelObject {
                 if (!this.causes.contains(c))
                     this.causes.add(c);
             }
+            if (asynchronousExecution != null) {
+                asynchronousExecution.interrupt(forShutdown);
+            } else {
+                super.interrupt();
+            }
         } finally {
             lock.writeLock().unlock();
         }
-        super.interrupt();
     }
 
     public Result abortResult() {
@@ -348,23 +372,26 @@ public class Executor extends Thread implements ModelObject {
                 if (LOGGER.isLoggable(FINE))
                     LOGGER.log(FINE, getName()+" is now executing "+executable);
                 queue.execute(executable, task);
+            } catch (AsynchronousExecution x) {
+                lock.writeLock().lock();
+                try {
+                    x.setExecutor(this);
+                    this.asynchronousExecution = x;
+                } finally {
+                    lock.writeLock().unlock();
+                }
             } catch (Throwable e) {
-                // for some reason the executor died. this is really
-                // a bug in the code, but we don't want the executor to die,
-                // so just leave some info and go on to build other things
-                LOGGER.log(Level.SEVERE, "Executor threw an exception", e);
-                workUnit.context.abort(e);
                 problems = e;
             } finally {
-                long time = System.currentTimeMillis()-startTime;
-                if (LOGGER.isLoggable(FINE))
-                    LOGGER.log(FINE, getName()+" completed "+executable+" in "+time+"ms");
+                boolean needFinish1;
+                lock.readLock().lock();
                 try {
-                    workUnit.context.synchronizeEnd(executable,problems,time);
-                } catch (InterruptedException e) {
-                    workUnit.context.abort(e);
+                    needFinish1 = asynchronousExecution == null;
                 } finally {
-                    workUnit.setExecutor(null);
+                    lock.readLock().unlock();
+                }
+                if (needFinish1) {
+                    finish1(problems);
                 }
             }
         } catch (InterruptedException e) {
@@ -377,13 +404,50 @@ public class Executor extends Thread implements ModelObject {
             causeOfDeath = e;
             LOGGER.log(SEVERE, "Unexpected executor death", e);
         } finally {
-            for (RuntimeException e1: owner.getTerminatedBy()) LOGGER.log(Level.WARNING, String.format("%s termination trace", getName()), e1);
-            if (causeOfDeath==null)
-                // let this thread die and be replaced by a fresh unstarted instance
-                owner.removeExecutor(this);
-
-            queue.scheduleMaintenance();
+            if (asynchronousExecution == null) {
+                finish2();
+            }
         }
+    }
+
+    private void finish1(@CheckForNull Throwable problems) {
+        if (problems != null) {
+            // for some reason the executor died. this is really
+            // a bug in the code, but we don't want the executor to die,
+            // so just leave some info and go on to build other things
+            LOGGER.log(Level.SEVERE, "Executor threw an exception", problems);
+            workUnit.context.abort(problems);
+        }
+       long time = System.currentTimeMillis() - startTime;
+        LOGGER.log(FINE, "{0} completed {1} in {2}ms", new Object[]{getName(), executable, time});
+        try {
+            workUnit.context.synchronizeEnd(this, executable, problems, time);
+        } catch (InterruptedException e) {
+            workUnit.context.abort(e);
+        } finally {
+            workUnit.setExecutor(null);
+        }
+    }
+
+    private void finish2() {
+        for (RuntimeException e1: owner.getTerminatedBy()) LOGGER.log(Level.WARNING, String.format("%s termination trace", getName()), e1);
+        if (causeOfDeath == null) {// let this thread die and be replaced by a fresh unstarted instance
+            owner.removeExecutor(this);
+        }
+        if (this instanceof OneOffExecutor) {
+            owner.remove((OneOffExecutor) this);
+        }
+        queue.scheduleMaintenance();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void completedAsynchronous(@CheckForNull Throwable error) {
+        try {
+            finish1(error);
+        } finally {
+            finish2();
+        }
+        asynchronousExecution = null;
     }
 
     /**
@@ -494,16 +558,29 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Check if executor is ready to accept tasks.
      * This method becomes the critical one since 1.536, which introduces the
-     * on-demand creation of executor threads. The entire logic should use
-     * this method instead of {@link #isAlive()}, because it provides wrong
-     * information for non-started threads.
+     * on-demand creation of executor threads. Callers should use
+     * this method instead of {@link #isAlive()}, which would be incorrect for
+     * non-started threads or running {@link AsynchronousExecution}.
      * @return True if the executor is available for tasks
      * @since 1.536
      */
     public boolean isActive() {
         lock.readLock().lock();
         try {
-            return !started || isAlive();
+            return !started || asynchronousExecution != null || isAlive();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * If currently running in asynchronous mode, returns that handle.
+     * @since TODO
+     */
+    public @CheckForNull AsynchronousExecution getAsynchronousExecution() {
+        lock.readLock().lock();
+        try {
+            return asynchronousExecution;
         } finally {
             lock.readLock().unlock();
         }
@@ -524,7 +601,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * If this thread dies unexpectedly, obtain the cause of the failure.
      *
-     * @return null if the death is expected death or the thread is {@link #isAlive() still alive}.
+     * @return null if the death is expected death or the thread {@link #isActive}.
      * @since 1.142
      */
     public Throwable getCauseOfDeath() {
@@ -736,7 +813,7 @@ public class Executor extends Thread implements ModelObject {
     @RequirePOST
     public HttpResponse doYank() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        if (isAlive())
+        if (isActive())
             throw new Failure("Can't yank a live executor");
         owner.removeExecutor(this);
         return HttpResponses.redirectViaContextPath("/");
@@ -807,6 +884,33 @@ public class Executor extends Thread implements ModelObject {
         Thread t = Thread.currentThread();
         if (t instanceof Executor) return (Executor) t;
         return IMPERSONATION.get();
+    }
+
+    /**
+     * Finds the executor currently running a given process.
+     * @param executable a possibly running executable
+     * @return the executor (possibly a {@link OneOffExecutor}) whose {@link Executor#getCurrentExecutable} matches that,
+     *          or null if it could not be found (for example because the execution has already completed)
+     * @since TODO
+     */
+    public static @CheckForNull Executor of(Executable executable) {
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null) {
+            return null;
+        }
+        for (Computer computer : jenkins.getComputers()) {
+            for (Executor executor : computer.getExecutors()) {
+                if (executor.getCurrentExecutable() == executable) {
+                    return executor;
+                }
+            }
+            for (Executor executor : computer.getOneOffExecutors()) {
+                if (executor.getCurrentExecutable() == executable) {
+                    return executor;
+                }
+            }
+        }
+        return null;
     }
 
     /**
