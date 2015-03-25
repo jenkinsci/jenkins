@@ -503,7 +503,6 @@ public class Queue extends ResourceController implements Saveable {
             buildables.cancelAll();
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
-            lock.unlock();
         }
         scheduleMaintenance();
     }
@@ -733,7 +732,6 @@ public class Queue extends ResourceController implements Saveable {
             // use bitwise-OR to make sure that both branches get evaluated all the time
             return blockedProjects.cancel(p) != null | buildables.cancel(p) != null;
         } finally { updateSnapshot(); } } finally {
-            lock.unlock();
             lock.unlock();
         }
     }
