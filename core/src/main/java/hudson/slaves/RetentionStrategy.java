@@ -121,6 +121,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * Dummy instance that doesn't do any attempt to retention.
      */
     public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
+        @GuardedBy("hudson.model.Queue.lock")
         public long check(Computer c) {
             return 60;
         }
@@ -160,6 +161,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public Always() {
         }
 
+        @GuardedBy("hudson.model.Queue.lock")
         public long check(SlaveComputer c) {
             if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())
                 c.tryReconnect();
@@ -216,7 +218,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         }
 
         @Override
-        public synchronized long check(final SlaveComputer c) {
+        @GuardedBy("hudson.model.Queue.lock")
+        public long check(final SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
                 final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
                 for (Computer o : Jenkins.getInstance().getComputers()) {

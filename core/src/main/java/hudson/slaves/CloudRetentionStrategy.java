@@ -28,6 +28,7 @@ import hudson.model.Node;
 import hudson.model.Queue;
 import jenkins.model.Jenkins;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -50,30 +51,20 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
     }
 
     @Override
-    public synchronized long check(final AbstractCloudComputer c) {
+    @GuardedBy("hudson.model.Queue.lock")
+    public long check(final AbstractCloudComputer c) {
         final AbstractCloudSlave computerNode = c.getNode();
         if (c.isIdle() && !disabled && computerNode != null) {
             final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
             if (idleMilliseconds > MINUTES.toMillis(idleMinutes)) {
-                Queue.withLock(new Runnable() {
-                    @Override
-                    public void run() {
-                        // re-check idle now that we are within the Queue lock
-                        if (c.isIdle()) {
-                            final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                            if (idleMilliseconds > MINUTES.toMillis(idleMinutes)) {
-                                LOGGER.log(Level.INFO, "Disconnecting {0}", c.getName());
-                                try {
-                                    computerNode.terminate();
-                                } catch (InterruptedException e) {
-                                    LOGGER.log(WARNING, "Failed to terminate " + c.getName(), e);
-                                } catch (IOException e) {
-                                    LOGGER.log(WARNING, "Failed to terminate " + c.getName(), e);
-                                }
-                            }
-                        }
-                    }
-                });
+                LOGGER.log(Level.INFO, "Disconnecting {0}", c.getName());
+                try {
+                    computerNode.terminate();
+                } catch (InterruptedException e) {
+                    LOGGER.log(WARNING, "Failed to terminate " + c.getName(), e);
+                } catch (IOException e) {
+                    LOGGER.log(WARNING, "Failed to terminate " + c.getName(), e);
+                }
             }
         }
         return 1;
