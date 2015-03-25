@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -112,7 +112,6 @@ public class QueueTest {
 
         // prevent execution to push stuff into the queue
         r.jenkins.setNumExecutors(0);
-        r.jenkins.setNodes(r.jenkins.getNodes());
 
         FreeStyleProject testProject = r.createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
@@ -129,7 +128,7 @@ public class QueueTest {
         assertEquals(1, q.getItems().length);
 
         // did it bind back to the same object?
-        assertSame(q.getItems()[0].task,testProject);        
+        assertSame(q.getItems()[0].task,testProject);
     }
 
     /**
@@ -161,7 +160,6 @@ public class QueueTest {
 
         // prevent execution to push stuff into the queue
         r.jenkins.setNumExecutors(0);
-        r.jenkins.setNodes(r.jenkins.getNodes());
 
         FreeStyleProject testProject = r.createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
@@ -392,7 +390,7 @@ public class QueueTest {
         assertEquals(1, runs.size());
         assertEquals("slave0", runs.get(0).getBuiltOnStr());
     }
-    
+
     @Issue("JENKINS-10944")
     @Test public void flyweightTasksBlockedByShutdown() throws Exception {
         r.jenkins.doQuietDown(true, 0);
@@ -585,8 +583,8 @@ public class QueueTest {
                      @Override
                     public Label getAssignedLabel(){
                         throw new IllegalArgumentException("Test exception"); //cause dead of executor
-                    }   
-                     
+                    }
+
                     @Override
                      public void save(){
                          //do not need save
@@ -613,7 +611,7 @@ public class QueueTest {
                     break; // executor is dead due to exception
              }
              if(e.isIdle()){
-                 assertTrue("Node went to idle before project had" + project2.getDisplayName() + " been started", v.isDone());   
+                 assertTrue("Node went to idle before project had" + project2.getDisplayName() + " been started", v.isDone());
              }
                 Thread.sleep(1000);
         }
@@ -622,37 +620,37 @@ public class QueueTest {
         Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
         e.doYank(); //restart executor
         while(!e.isIdle()){ //executor should take project2 from queue
-            Thread.sleep(1000); 
+            Thread.sleep(1000);
         }
         //project2 should not be in pendings
         List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
         for(Queue.BuildableItem item : items){
-            assertFalse("Project " + project2.getDisplayName() + " stuck in pendings",item.task.getName().equals(project2.getName())); 
+            assertFalse("Project " + project2.getDisplayName() + " stuck in pendings",item.task.getName().equals(project2.getName()));
         }
     }
-    
+
     @Test public void cancelInQueue() throws Exception {
         // parepare an offline slave.
         DumbSlave slave = r.createOnlineSlave();
         assertFalse(slave.toComputer().isOffline());
         slave.toComputer().disconnect(null).get();
         assertTrue(slave.toComputer().isOffline());
-        
+
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(slave);
-        
+
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
         try {
             f.get(3, TimeUnit.SECONDS);
             fail("Should time out (as the slave is offline).");
         } catch (TimeoutException e) {
         }
-        
+
         Queue.Item item = Queue.getInstance().getItem(p);
         assertNotNull(item);
         Queue.getInstance().doCancelItem(item.getId());
         assertNull(Queue.getInstance().getItem(p));
-        
+
         try {
             f.get(10, TimeUnit.SECONDS);
             fail("Should not get (as it is cancelled).");
