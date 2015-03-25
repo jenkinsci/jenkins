@@ -121,6 +121,26 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
+     * Determine if the SCM instance is of specified type.
+     * Prefer this method to type check using <code>instanceof</code>
+     */
+    public <T extends SCM> boolean is(Class<T> type) {
+        return type.isInstance(this);
+    }
+
+    /**
+     * Return current SCM as an instance of specified SCM type.
+     * Prefer this method to a class cast
+     * <p>
+     * The returned object may contain only partial job SCM configuration to match requested type
+     */
+    public <T extends SCM> T as(Class<T> type) {
+        if (is(type)) return (T) this;
+        else return null;
+    }
+
+
+    /**
      * Returns the applicable {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
      * @see #guessBrowser
