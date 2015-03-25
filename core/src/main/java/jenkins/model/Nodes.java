@@ -34,6 +34,8 @@ import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -58,6 +60,7 @@ import java.util.logging.Logger;
  *
  * @since 1.FIXME
  */
+@Restricted(NoExternalUse.class) // for now, we may make it public later
 public class Nodes implements Saveable {
 
     /**
