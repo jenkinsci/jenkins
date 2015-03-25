@@ -37,7 +37,6 @@ import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
-import net.jcip.annotations.GuardedBy;
 import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -47,6 +46,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
