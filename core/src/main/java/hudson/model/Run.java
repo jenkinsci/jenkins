@@ -47,6 +47,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -512,25 +513,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
      * an executor holds on to {@link Run} some more time even after the build is finished (for example to
      * perform {@linkplain Run.State#POST_PRODUCTION post-production processing}.)
+     * @see Executables#getExecutor
      */
     @Exported 
     public @CheckForNull Executor getExecutor() {
-        Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return null;
-        }
-        for (Computer c : j.getComputers()) {
-            for (Executor e : c.getExecutors()) {
-                if(e.getCurrentExecutable()==this)
-                    return e;
-            }
-            for (Executor e : c.getOneOffExecutors()) {
-                if(e.getCurrentExecutable()==this) {
-                    return e;
-                }
-            }
-        }
-        return null;
+        return this instanceof Queue.Executable ? Executor.of((Queue.Executable) this) : null;
     }
 
     /**

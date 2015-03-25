@@ -870,7 +870,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /*package*/ synchronized void removeExecutor(Executor e) {
         executors.remove(e);
         addNewExecutorIfNecessary();
-        if(!isAlive())
+        if(!isAlive()) // TODO except from interrupt/doYank this is called while the executor still isActive(), so how could !this.isAlive()?
         {
             AbstractCIBase ciBase = Jenkins.getInstance();
             ciBase.removeComputer(this);
@@ -878,7 +878,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns true if any of the executors are functioning.
+     * Returns true if any of the executors are {@linkplain Executor#isActive active}.
      *
      * Note that if an executor dies, we'll leave it in {@link #executors} until
      * the administrator yanks it out, so that we can see why it died.
@@ -894,10 +894,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Interrupt all {@link Executor}s.
+     * Called from {@link Jenkins#cleanUp}.
      */
     public void interrupt() {
         for (Executor e : executors) {
-            e.interrupt();
+            e.interruptForShutdown();
         }
     }
 

@@ -88,6 +88,7 @@ public class ResourceController {
         try {
             task.run();
         } finally {
+            // TODO if AsynchronousExecution, do that later
             synchronized(this) {
                 inProgress.remove(activity);
                 inUse = ResourceList.union(resourceView);
