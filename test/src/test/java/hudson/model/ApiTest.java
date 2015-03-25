@@ -29,6 +29,7 @@ import com.gargoylesoftware.htmlunit.Page;
 
 import java.io.File;
 import java.net.HttpURLConnection;
+import org.junit.Ignore;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +48,15 @@ public class ApiTest {
     @Issue("JENKINS-2828")
     public void xpath() throws Exception {
         j.createWebClient().goTo("api/xml?xpath=/*[1]", "application/xml");
+    }
+
+    @Ignore("TODO currently serves application/json")
+    @Issue("JENKINS-27607")
+    @Test public void json() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertEquals("{\"name\":\"p\"}", wc.goTo(p.getUrl() + "api/json?tree=name", "application/json").getWebResponse().getContentAsString());
+        assertEquals("wrap({\"name\":\"p\"})", wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "application/javascript").getWebResponse().getContentAsString());
     }
 
     @Test
