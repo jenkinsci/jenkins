@@ -648,6 +648,32 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
+     * Finds the executor running a given process.
+     * @param executable a possibly running executable
+     * @return the executor (possibly a {@link OneOffExecutor}) whose {@link Executor#getCurrentExecutable} matches that, or null
+     * @since TODO
+     */
+    public static Executor of(Executable executable) {
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null) {
+            return null;
+        }
+        for (Computer computer : jenkins.getComputers()) {
+            for (Executor executor : computer.getExecutors()) {
+                if (executor.getCurrentExecutable() == executable) {
+                    return executor;
+                }
+            }
+            for (Executor executor : computer.getOneOffExecutors()) {
+                if (executor.getCurrentExecutable() == executable) {
+                    return executor;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the estimated duration for the executable.
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
      * was compiled against Hudson < 1.383

@@ -23,18 +23,16 @@
  */
 package hudson.model.queue;
 
-import hudson.model.Computer;
-import hudson.model.Executor;
 import hudson.model.Queue.Executable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import jenkins.model.Jenkins;
 
 /**
  * Convenience methods around {@link Executable}.
+ *
+ * @author Kohsuke Kawaguchi
  */
 public class Executables {
     /**
@@ -73,33 +71,5 @@ public class Executables {
             return e.getParent().getEstimatedDuration();
         }
     }
-    
-    /**
-     * Finds the executor running a given process.
-     * @param executable a possibly running executable
-     * @return the executor (possibly a {@link OneOffExecutor}) whose {@link Executor#getCurrentExecutable} matches that, or null
-     * @since TODO
-     */
-    public static @CheckForNull Executor getExecutor(Executable executable) {
-        Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null) {
-            return null;
-        }
-        for (Computer computer : jenkins.getComputers()) {
-            for (Executor executor : computer.getExecutors()) {
-                if (executor.getCurrentExecutable() == executable) {
-                    return executor;
-                }
-            }
-            for (Executor executor : computer.getOneOffExecutors()) {
-                if (executor.getCurrentExecutable() == executable) {
-                    return executor;
-                }
-            }
-        }
-        return null;
-    }
-
-    private Executables() {}
 
 }

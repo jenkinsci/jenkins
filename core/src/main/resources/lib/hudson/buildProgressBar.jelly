@@ -33,7 +33,7 @@ THE SOFTWARE.
       Executor that's carrying out the build. If null, defaults to "build.executor"
     </st:attribute>
   </st:documentation>
-  <j:set var="executor" value="${executor?:build.executor}" /> <!-- TODO use Executables.getExecutor -->
+  <j:set var="executor" value="${executor?:build.executor}" /> <!-- TODO use Executor.of -->
   <t:progressBar tooltip="${%text(executor.timestampString,executor.estimatedRemainingTime)}"
                  red="${executor.isLikelyStuck()}"
                  pos="${executor.progress}" href="${rootURL}/${build.url}console"/>

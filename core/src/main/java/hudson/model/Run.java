@@ -517,7 +517,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Exported 
     public @CheckForNull Executor getExecutor() {
-        return this instanceof Queue.Executable ? Executables.getExecutor((Queue.Executable) this) : null;
+        return this instanceof Queue.Executable ? Executor.of((Queue.Executable) this) : null;
     }
 
     /**
