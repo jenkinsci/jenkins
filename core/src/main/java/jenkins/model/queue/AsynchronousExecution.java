@@ -78,6 +78,10 @@ public abstract class AsynchronousExecution extends RuntimeException {
 
     /**
      * Allows an executable to control whether or not to display {@code executorCell.jelly}.
+     *
+     * <p>
+     * If this method returns false, the asynchronous execution becomes invisible from UI.
+     *
      * @return traditionally always true
      */
     public abstract boolean displayCell();
