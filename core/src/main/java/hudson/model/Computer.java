@@ -45,6 +45,7 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
+import hudson.slaves.AbstractCloudSlave;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
@@ -65,6 +66,7 @@ import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -176,19 +178,54 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     protected final Object statusChangeLock = new Object();
 
-    private transient final List<RuntimeException> terminatedBy = Collections.synchronizedList(new ArrayList
-            <RuntimeException>());
+    /**
+     * Keeps track of stack traces to track the tremination requests for this computer.
+     *
+     * @since 1.FIXME
+     * @see Executor#resetWorkUnit(String)
+     */
+    private transient final List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList
+            <TerminationRequest>());
 
+    /**
+     * This method captures the information of a request to terminate a computer instance. Method is public as
+     * it needs to be called from {@link AbstractCloudSlave} and {@link jenkins.model.Nodes}. In general you should
+     * not need to call this method directly, however if implementing a custom node type or a different path
+     * for removing nodes, it may make sense to call this method in order to capture the originating request.
+     *
+     * @since 1.FIXME
+     */
     public void recordTermination() {
-        try {
-            throw new RuntimeException(String.format("Termination requested by %s", Thread.currentThread()));
-        } catch (RuntimeException e) {
-            terminatedBy.add(e);
+        StaplerRequest request = Stapler.getCurrentRequest();
+        if (request != null) {
+            terminatedBy.add(new TerminationRequest(
+                    String.format("Termination requested by %s [id=%d] from HTTP request for %s",
+                            Thread.currentThread(),
+                            Thread.currentThread().getId(),
+                            request.getRequestURL()
+                    )
+            ));
+        } else {
+            terminatedBy.add(new TerminationRequest(
+                    String.format("Termination requested by %s [id=%d]",
+                            Thread.currentThread(),
+                            Thread.currentThread().getId()
+                    )
+            ));
         }
     }
 
-    public List<RuntimeException> getTerminatedBy() {
-        return new ArrayList<RuntimeException>(terminatedBy);
+    /**
+     * Returns the list of captured termination requests for this Computer. This method is used by {@link Executor}
+     * to provide details on why a Computer was removed in-between work being scheduled against the {@link Executor}
+     * and the {@link Executor} starting to execute the task.
+     *
+     * @return the (possibly empty) list of termination requests.
+     * @see Executor#resetWorkUnit(String)
+     * @since 1.FIXME
+     */
+    public List<TerminationRequest> getTerminatedBy() {
+        return new ArrayList<TerminationRequest>(terminatedBy);
     }
 
     public Computer(Node node) {
@@ -1514,6 +1551,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         @Override
         public int hashCode() {
             return executor.hashCode();
+        }
+    }
+
+    public static class TerminationRequest extends RuntimeException {
+        public TerminationRequest() {
+        }
+
+        public TerminationRequest(String message) {
+            super(message);
         }
     }
 

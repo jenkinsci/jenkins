@@ -233,8 +233,8 @@ public class Executor extends Thread implements ModelObject {
                 pw.print("No termination trace available.");
             } else {
                 pw.println("Termination trace follows:");
-                for (RuntimeException terminator: owner.getTerminatedBy()) {
-                    terminator.printStackTrace(pw);
+                for (Computer.TerminationRequest request: owner.getTerminatedBy()) {
+                    request.printStackTrace(pw);
                 }
             }
         } finally {
