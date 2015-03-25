@@ -64,6 +64,8 @@ import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.Stapler;
@@ -862,7 +864,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new ArrayList<OneOffExecutor>(oneOffExecutors);
     }
 
+    /**
+     * Used to render the list of executors.
+     * @return a snapshot of the executor display information
+     * @since 1.FIXME
+     */
+    @Restricted(NoExternalUse.class)
     public List<DisplayExecutor> getDisplayExecutors() {
+        // The size may change while we are populating, but let's start with a reasonable guess to minimize resizing
         List<DisplayExecutor> result = new ArrayList<DisplayExecutor>(executors.size()+oneOffExecutors.size());
         int index = 0;
         for (Executor e: executors) {
@@ -1489,6 +1498,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
+    /**
+     * A value class to provide a consistent snapshot view of the state of an executor to avoid race conditions
+     * during rendering of the executors list.
+     *
+     * @since 1.FIXME
+     */
+    @Restricted(NoExternalUse.class)
     public static class DisplayExecutor implements ModelObject {
 
         @Nonnull
