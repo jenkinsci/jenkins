@@ -29,7 +29,6 @@ import com.gargoylesoftware.htmlunit.Page;
 
 import java.io.File;
 import java.net.HttpURLConnection;
-import org.junit.Ignore;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,7 +49,6 @@ public class ApiTest {
         j.createWebClient().goTo("api/xml?xpath=/*[1]", "application/xml");
     }
 
-    @Ignore("TODO currently serves application/json")
     @Issue("JENKINS-27607")
     @Test public void json() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
