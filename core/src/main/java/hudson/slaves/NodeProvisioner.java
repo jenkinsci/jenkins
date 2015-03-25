@@ -186,11 +186,28 @@ public class NodeProvisioner {
     /**
      * Periodically invoked to keep track of the load.
      * Launches additional nodes if necessary.
+     *
+     * Note: This method will obtain a lock on {@link #provisioningLock} first (to ensure that one and only one
+     * instance of this provisioner is running at a time) and then a lock on {@link Queue#lock}
      */
     private void update() {
         provisioningLock.lock();
         try {
             lastSuggestedReview = System.currentTimeMillis();
+
+            // We need to get the lock on Queue for two reasons:
+            // 1. We will potentially adding a lot of nodes and we don't want to fight with Queue#maintain to acquire
+            //    the Queue#lock in order to add each node. Much better is to hold the Queue#lock until all nodes
+            //    that were provisioned since last we checked have been added.
+            // 2. We want to know the idle executors count, which can only be measured if you hold the Queue#lock
+            //    Strictly speaking we don't need an accurate measure for this, but as we had to get the Queue#lock
+            //    anyway, we might as well get an accurate measure.
+            //
+            // We do not need the Queue#lock to get the count of items in the queue as that is a lock-free call
+            // Since adding a node should not (in principle) confuse Queue#maintain (it is only removal of nodes
+            // that causes issues in Queue#maintain) we should be able to remove the need for Queue#lock
+            //
+            // TODO once Nodes#addNode is made lock free, we should be able to remove the requirement for Queue#lock
             Queue.withLock(new Runnable() {
                 @Override
                 public void run() {
@@ -312,7 +329,7 @@ public class NodeProvisioner {
          * Called by {@link NodeProvisioner#update()} to apply this strategy against the specified state.
          * Any provisioning activities should be recorded by calling
          * {@link hudson.slaves.NodeProvisioner.StrategyState#recordPendingLaunches(java.util.Collection)}
-         * This method will be called by a thread that is holding a lock on {@link hudson.slaves.NodeProvisioner}
+         * This method will be called by a thread that is holding {@link hudson.slaves.NodeProvisioner#provisioningLock}
          * @param state the current state.
          * @return the decision.
          */
