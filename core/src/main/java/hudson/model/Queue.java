@@ -1272,7 +1272,7 @@ public class Queue extends ResourceController implements Saveable {
             // The executors that are currently waiting for a job to run.
             Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
 
-            {// update parked (and identify any pending items who's executor has disappeared)
+            {// update parked (and identify any pending items whose executor has disappeared)
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
                 for (Computer c : Jenkins.getInstance().getComputers()) {
                     for (Executor e : c.getExecutors()) {
