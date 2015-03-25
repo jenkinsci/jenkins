@@ -49,6 +49,8 @@ import org.kohsuke.stapler.export.Exported;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 /**
@@ -148,8 +150,35 @@ public abstract class LoadStatistics {
         this.queueLength = new MultiStageTimeSeries(
                 Messages._LoadStatistics_Legends_QueueLength(),ColorPalette.GREY, 0, DECAY);
         this.totalExecutors = onlineExecutors;
-        modern = Util.isOverridden(LoadStatistics.class, getClass(), "getNodes")
-                && Util.isOverridden(LoadStatistics.class, getClass(), "matches", SubTask.class);
+        modern = isModern(getClass());
+    }
+
+    /*package*/ static boolean isModern(Class<? extends LoadStatistics> clazz) {
+        // cannot use Util.isOverridden as these are protected methods.
+        boolean hasGetNodes = false;
+        boolean hasMatches = false;
+        while (clazz != LoadStatistics.class && clazz != null && !(hasGetNodes && hasMatches)) {
+            if (!hasGetNodes) {
+                try {
+                    final Method getNodes = clazz.getDeclaredMethod("getNodes");
+                    hasGetNodes = !Modifier.isAbstract(getNodes.getModifiers());
+                } catch (NoSuchMethodException e) {
+                    // ignore
+                }
+            }
+            if (!hasMatches) {
+                try {
+                    final Method getNodes = clazz.getDeclaredMethod("matches", SubTask.class);
+                    hasMatches = !Modifier.isAbstract(getNodes.getModifiers());
+                } catch (NoSuchMethodException e) {
+                    // ignore
+                }
+            }
+            if (!(hasGetNodes && hasMatches) && LoadStatistics.class.isAssignableFrom(clazz.getSuperclass())) {
+                clazz = (Class<? extends LoadStatistics>) clazz.getSuperclass();
+            }
+        }
+        return hasGetNodes && hasMatches;
     }
 
     /**
