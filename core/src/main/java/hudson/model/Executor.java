@@ -90,6 +90,11 @@ public class Executor extends Thread implements ModelObject {
      * {@link hudson.model.Queue.Executable} being executed right now, or null if the executor is idle.
      */
     private volatile Queue.Executable executable;
+
+    /**
+     * Used to mark that the execution is continuing asynchronously even though {@link Executor} as {@link Thread}
+     * has finished.
+     */
     private AsynchronousExecution asynchronousExecution;
 
     /**
