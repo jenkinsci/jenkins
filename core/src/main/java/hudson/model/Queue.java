@@ -463,6 +463,7 @@ public class Queue extends ResourceController implements Saveable {
     public void save() {
         if(BulkChange.contains(this))  return;
 
+        XmlFile queueFile = new XmlFile(XSTREAM, getXMLQueueFile());
         lock.lock();
         try {
             // write out the queue state we want to save
@@ -472,19 +473,18 @@ public class Queue extends ResourceController implements Saveable {
             // write out the tasks on the queue
             for (Item item: getItems()) {
                 if(item.task instanceof TransientTask)  continue;
-            state.items.add(item);
+                state.items.add(item);
             }
 
             try {
-                XmlFile queueFile = new XmlFile(XSTREAM, getXMLQueueFile());
                 queueFile.write(state);
-                SaveableListener.fireOnChange(this, queueFile);
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getXMLQueueFile(), e);
             }
         } finally {
             lock.unlock();
         }
+        SaveableListener.fireOnChange(this, queueFile);
     }
 
     /**
