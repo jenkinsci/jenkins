@@ -55,6 +55,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public abstract class AsynchronousExecution extends RuntimeException {
 
     private Executor executor;
+    private Throwable result;
 
     /** Constructor for subclasses. */
     protected AsynchronousExecution() {}
@@ -89,21 +90,33 @@ public abstract class AsynchronousExecution extends RuntimeException {
     /**
      * Obtains the associated executor.
      */
-    public final Executor getExecutor() {
+    public synchronized final Executor getExecutor() {
         return executor;
     }
 
     @Restricted(NoExternalUse.class)
-    public final void setExecutor(Executor executor) {
+    public synchronized final void setExecutor(Executor executor) {
+        assert this.executor==null;
+
         this.executor = executor;
+        if (result!=null) {
+            executor.completedAsynchronous( result!=NULL ? result : null );
+            result = null;
+        }
     }
 
     /**
      * To be called when the task is actually complete.
      * @param error normally null (preferable to handle errors yourself), but may be specified to simulate an exception from {@link Executable#run}, as per {@link ExecutorListener#taskCompletedWithProblems}
      */
-    public final void completed(@CheckForNull Throwable error) {
-        executor.completedAsynchronous(error);
+    public synchronized final void completed(@CheckForNull Throwable error) {
+        if (executor!=null) {
+            executor.completedAsynchronous(error);
+        } else {
+            result = error == null ? NULL : error;
+        }
     }
+
+    private static final Throwable NULL = new Throwable("NULL");
 
 }
