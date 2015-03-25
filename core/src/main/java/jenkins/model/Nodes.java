@@ -111,7 +111,7 @@ public class Nodes implements Saveable {
                     toRemove.remove(name);
                     Nodes.this.nodes.put(name, n);
                 }
-                Nodes.this.nodes.keySet().removeAll(toRemove);
+                Nodes.this.nodes.keySet().removeAll(toRemove); // directory clean up will be handled by save
                 jenkins.updateComputerList();
                 jenkins.trimLabels();
             }
@@ -137,6 +137,7 @@ public class Nodes implements Saveable {
                     jenkins.trimLabels();
                 }
             });
+            // no need for a full save() so we just do the minimum
             if (node instanceof EphemeralNode) {
                 Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
             } else {
@@ -170,6 +171,7 @@ public class Nodes implements Saveable {
                     }
                 }
             });
+            // no need for a full save() so we just do the minimum
             Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
         }
     }
