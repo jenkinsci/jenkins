@@ -80,7 +80,7 @@ public class Executor extends Thread implements ModelObject {
     private final Queue queue;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    @GuardedBy("#lock")
+    @GuardedBy("lock")
     private long startTime;
     /**
      * Used to track when a job was last executed.
@@ -94,34 +94,34 @@ public class Executor extends Thread implements ModelObject {
     /**
      * {@link hudson.model.Queue.Executable} being executed right now, or null if the executor is idle.
      */
-    @GuardedBy("#lock")
+    @GuardedBy("lock")
     private Queue.Executable executable;
 
     /**
      * When {@link Queue} allocates a work for this executor, this field is set
      * and the executor is {@linkplain Thread#start() started}.
      */
-    @GuardedBy("#lock")
+    @GuardedBy("lock")
     private WorkUnit workUnit;
 
     private Throwable causeOfDeath;
 
     private boolean induceDeath;
 
-    @GuardedBy("#lock")
+    @GuardedBy("lock")
     private boolean started;
 
     /**
      * When the executor is interrupted, we allow the code that interrupted the thread to override the
      * result code it prefers.
      */
-    @GuardedBy("#lock")
+    @GuardedBy("lock")
     private Result interruptStatus;
 
     /**
      * Cause of interruption. Access needs to be synchronized.
      */
-    @GuardedBy("#lock")
+    @GuardedBy("lock")
     private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
 
     public Executor(@Nonnull Computer owner, int n) {
