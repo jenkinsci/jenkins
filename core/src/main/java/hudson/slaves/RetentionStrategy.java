@@ -33,9 +33,9 @@ import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
 import jenkins.model.Jenkins;
-import net.jcip.annotations.GuardedBy;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +56,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
      *         rechecked earlier or later that this!
      */
-    @GuardedBy("hudson.model.Queue#lock")
+    @GuardedBy("hudson.model.Queue.lock")
     public abstract long check(T c);
 
     /**
