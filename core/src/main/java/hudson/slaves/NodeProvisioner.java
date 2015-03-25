@@ -30,12 +30,11 @@ import jenkins.model.Jenkins;
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
-import net.jcip.annotations.GuardedBy;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 import java.awt.Color;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -44,9 +43,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
@@ -125,12 +122,12 @@ public class NodeProvisioner {
      */
     private final Label label;
 
-    @GuardedBy("#provisioningLock")
+    @GuardedBy("provisioningLock")
     private final List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
 
     private final Lock provisioningLock = new ReentrantLock();
 
-    @GuardedBy("#provisioningLock")
+    @GuardedBy("provisioningLock")
     private StrategyState provisioningState = null;
 
     private transient volatile long lastSuggestedReview;
