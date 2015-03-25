@@ -25,9 +25,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
   <j:invokeStatic var="ds" className="jenkins.model.DownloadSettings" method="get"/>
-  <form method="post" action="${ds.useBrowser ? 'checkUpdates' : 'checkUpdatesServer'}">
-    ${%lastUpdated(app.updateCenter.lastUpdatedString)}
-    <f:submit value="${%Check now}" />
-  </form>
+  ${%lastUpdated(app.updateCenter.lastUpdatedString)}
+  <f:link href="${ds.useBrowser ? 'checkUpdates' : 'checkUpdatesServer'}" post="true" clazz="yui-button yui-submit-button submit-button primary">
+    <button>${%Check now}</button>
+  </f:link>
 
 </j:jelly>

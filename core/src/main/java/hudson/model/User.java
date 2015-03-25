@@ -304,7 +304,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             // backend can't load information about other users. so use the stored information if available
         } catch (UsernameNotFoundException e) {
             // if the user no longer exists in the backend, we need to refuse impersonating this user
-            throw e;
+            if (!ALLOW_NON_EXISTENT_USER_TO_LOGIN)
+                throw e;
         } catch (DataAccessException e) {
             // seems like it's in the same boat as UserMayOrMayNotExistException
         }
@@ -976,5 +977,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
     }
 
+    /**
+     * Jenkins now refuses to let the user login if he/she doesn't exist in {@link SecurityRealm},
+     * which was necessary to make sure users removed from the backend will get removed from the frontend.
+     * <p>
+     * Unfortunately this infringed some legitimate use cases of creating Jenkins-local users for
+     * automation purposes. This escape hatch switch can be enabled to resurrect that behaviour.
+     *
+     * JENKINS-22346.
+     */
+    public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = Boolean.getBoolean(User.class.getName()+".allowNonExistentUserToLogin");
 }
 

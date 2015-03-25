@@ -35,7 +35,8 @@ public class JobColumn extends ListViewColumn {
     public JobColumn() {
     }
 
-    @Extension
+    // put this in the middle of icons and properties
+    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_ICON_END+1)
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {

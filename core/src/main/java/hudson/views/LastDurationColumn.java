@@ -31,7 +31,7 @@ public class LastDurationColumn extends ListViewColumn {
     public LastDurationColumn() {
     }
 
-    @Extension
+    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_PROPERTIES_START-4)
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {

@@ -26,6 +26,7 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.Launcher;
 import hudson.XmlFile;
 import hudson.matrix.AxisList;
@@ -417,6 +418,27 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
         assert task.exec instanceof OneOffExecutor : task.exec;
+    }
+
+    @Issue("JENKINS-27256")
+    @Test public void inQueueTaskLookupByAPI() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        Label label = Label.get("unknown-slave");
+
+        // Give the project an "unknown-slave" label, forcing it to
+        // stay in the queue after we schedule it, allowing us to query it.
+        p.setAssignedLabel(label);
+        p.scheduleBuild2(0);
+
+        JenkinsRule.WebClient webclient = r.createWebClient();
+
+        XmlPage queueItems = webclient.goToXml("queue/api/xml");
+        String queueTaskId = queueItems.getXmlDocument().getElementsByTagName("id").item(0).getTextContent();
+        assertNotNull(queueTaskId);
+        XmlPage queueItem = webclient.goToXml("queue/item/" + queueTaskId + "/api/xml");
+        assertNotNull(queueItem);
+        String tagName = queueItem.getDocumentElement().getTagName();
+        assertTrue(tagName.equals("blockedItem") || tagName.equals("buildableItem"));
     }
 
     private static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {

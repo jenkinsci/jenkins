@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.604-SNAPSHOT</version>
+  <version>1.607-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -176,7 +176,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.49</version>
+        <version>2.50</version>
       </dependency>
 
       <dependency>
@@ -441,7 +441,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.15</version>
+          <version>1.23</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>

@@ -48,7 +48,7 @@ Legend: <br>
 View ratings below, and click one of the icons next to your version to provide your input.
 </div>
 
-<a href="" onClick="document.getElementById('trunk').style.display=document.getElementById('rc').style.display='block';return false">
+<a href="" onClick="document.getElementById('trunk').style.display='block';return false">
 Upcoming changes</a>
 <a href="" style="padding-left:3em" onClick="return loaddata(this)">Community ratings</a>
 
@@ -58,27 +58,47 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.603>What's new in 1.603</a> <!--=DATE=--></h3>
+<h3><a name=v1.606>What's new in 1.606</a> (2015/03/23)</h3>
 <ul class=image>
+  <li class=bug>
+    Jenkins CLI doesn't handle arguments with equal signs
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21160">issue 21160</a>)
+  <li class=bug>
+    master/slave communication ping reacts badly if a clock jumps.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21251">issue 21251</a>)
+  <li class=rfe>
+    JNLP slaves can now connect to master through HTTP proxy.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6167">issue 21251</a>)
+  <li class='major bug'>
+    Fixes to several security vulnerabilities.
+    (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2015-03-23">advisory</a>)
+</ul>
+<h3><a name=v1.605>What's new in 1.605</a> (2015/03/16)</h3>
+<ul class=image>
+  <li class=bug>
+    Integrate Stapler fix for queue item API always returning 404 Not Found since 1.601.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27256">issue 27256</a>)
+</ul>
+<h3><a name=v1.604>What's new in 1.604</a> (2015/03/15)</h3>
+<ul class=image>
+  <li class=rfe>
+    Added a switch (<tt>-Dhudson.model.User.allowNonExistentUserToLogin=true</tt>) to let users login even when the record is not found in the backend security realm.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22346">issue 22346</a>)
+  <li class=bug>
+    Avoid deadlock when using build-monitor-plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27183">issue 27183</a>)
   <li class=rfe>
     As security hardening, mark "remember me" cookie as HTTP only
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27277">issue 27277</a>)
-</ul>
-</div><!--=END=-->
-<h3><a name=v1.602>What's new in 1.602</a> (2015/03/08)</h3>
-<ul class=image>
-  <li class="major bug">
-    Regression with environment variables in 1.600.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27188">issue 27188</a>)
-  <li class="major bug">
-    Errors with concurrent matrix builds since 1.597.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26739">issue 26739</a>)
   <li class="rfe">
     Show displayName in build remote API.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26723">issue 26723</a>)
+</ul>
+<h3><a name=v1.602>What's new in 1.602</a> (2015/03/08)</h3>
+<ul class=image>
+  <li class="rfe">
+    Show Check Now button also on Available and Updates tabs of plugin manager.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1593">PR 1593</a>)
 </ul>
 <h3><a name=v1.601>What's new in 1.601</a> (2015/03/03)</h3>
 <ul class=image>
@@ -91,6 +111,9 @@ Upcoming changes</a>
   <li class=bug>
     Errors in Dashboard View plugin since 1.597.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26690">issue 26690</a>)
+  <li class=bug>
+    Robustness improvement when setting up Archive Artifacts programmatically.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25779">issue 25779</a>)
   <li class="rfe">
     Map Queue.Item.id onto Run
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27096">issue 27096</a>)

@@ -38,7 +38,6 @@ import hudson.util.DescriptorList;
 import org.kohsuke.stapler.export.Exported;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,21 +123,8 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
         // OK, set up default list of columns:
         // create all instances
         ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
-        DescriptorExtensionList<ListViewColumn, Descriptor<ListViewColumn>> all = ListViewColumn.all();
-        ArrayList<Descriptor<ListViewColumn>> left = new ArrayList<Descriptor<ListViewColumn>>(all);
 
-        for (Class<? extends ListViewColumn> d: DEFAULT_COLUMNS) {
-            Descriptor<ListViewColumn> des = all.find(d);
-            if (des  != null) {
-                try {
-                    r.add(des.newInstance(null, null));
-                    left.remove(des);
-                } catch (FormException e) {
-                    LOGGER.log(Level.WARNING, "Failed to instantiate "+des.clazz,e);
-                }
-            }
-        }
-        for (Descriptor<ListViewColumn> d : left)
+        for (Descriptor<ListViewColumn> d : ListViewColumn.all())
             try {
                 if (d instanceof ListViewColumnDescriptor) {
                     ListViewColumnDescriptor ld = (ListViewColumnDescriptor) d;
@@ -155,18 +141,22 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
         return r;
     }
 
-    /**
-     * Traditional column layout before the {@link ListViewColumn} becomes extensible.
-     */
-    private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS =  Arrays.asList(
-        StatusColumn.class,
-        WeatherColumn.class,
-        JobColumn.class,
-        LastSuccessColumn.class,
-        LastFailureColumn.class,
-        LastDurationColumn.class,
-        BuildButtonColumn.class
-    );
-
     private static final Logger LOGGER = Logger.getLogger(ListViewColumn.class.getName());
+
+    /*
+        Standard ordinal positions for built-in ListViewColumns.
+
+        There are icons at the very left that are generally used to show status,
+        then item name that comes in at the very end of that icon set.
+
+        Then the section of "properties" that show various properties of the item in text.
+
+        Finally, the section of action icons at the end.
+     */
+    public static final double DEFAULT_COLUMNS_ORDINAL_ICON_START = 60;
+    public static final double DEFAULT_COLUMNS_ORDINAL_ICON_END = 50;
+    public static final double DEFAULT_COLUMNS_ORDINAL_PROPERTIES_START = 40;
+    public static final double DEFAULT_COLUMNS_ORDINAL_PROPERTIES_END = 30;
+    public static final double DEFAULT_COLUMNS_ORDINAL_ACTIONS_START = 20;
+    public static final double DEFAULT_COLUMNS_ORDINAL_ACTIONS_END = 10;
 }

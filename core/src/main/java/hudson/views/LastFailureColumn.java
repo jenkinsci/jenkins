@@ -31,7 +31,7 @@ public class LastFailureColumn extends ListViewColumn {
     public LastFailureColumn() {
     }
 
-    @Extension
+    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_PROPERTIES_START-2)
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {
