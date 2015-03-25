@@ -658,7 +658,7 @@ public class Executor extends Thread implements ModelObject {
      * @return the executor (possibly a {@link OneOffExecutor}) whose {@link Executor#getCurrentExecutable} matches that, or null
      * @since TODO
      */
-    public static Executor of(Executable executable) {
+    public static @CheckForNull Executor of(Executable executable) {
         Jenkins jenkins = Jenkins.getInstance();
         if (jenkins == null) {
             return null;
