@@ -35,6 +35,7 @@ import hudson.model.ResourceActivity;
 import hudson.model.ResourceController;
 import hudson.model.ResourceList;
 import javax.annotation.CheckForNull;
+import javax.annotation.concurrent.GuardedBy;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -54,8 +55,15 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 public abstract class AsynchronousExecution extends RuntimeException {
 
+    @GuardedBy("this")
     private Executor executor;
-    private Throwable result;
+
+    /**
+     * Initially null, and usually stays null.
+     * If {@link #completed} is called before {@link #setExecutor}, then either {@link #NULL} for success, or the error.
+     */
+    @GuardedBy("this")
+    private @CheckForNull Throwable result;
 
     /** Constructor for subclasses. */
     protected AsynchronousExecution() {}
@@ -117,6 +125,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
         }
     }
 
+    /** @see #result */
     private static final Throwable NULL = new Throwable("NULL");
 
 }
