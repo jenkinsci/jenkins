@@ -653,9 +653,10 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Finds the executor running a given process.
+     * Finds the executor currently running a given process.
      * @param executable a possibly running executable
-     * @return the executor (possibly a {@link OneOffExecutor}) whose {@link Executor#getCurrentExecutable} matches that, or null
+     * @return the executor (possibly a {@link OneOffExecutor}) whose {@link Executor#getCurrentExecutable} matches that,
+     *          or null if it could not be found (for example because the execution has already completed)
      * @since TODO
      */
     public static @CheckForNull Executor of(Executable executable) {

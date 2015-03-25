@@ -3498,7 +3498,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         System.exit(0);
                     }
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Failed to shutdown Hudson",e);
+                    LOGGER.log(Level.WARNING, "Failed to shut down Jenkins", e);
                 }
             }
         }.start();
