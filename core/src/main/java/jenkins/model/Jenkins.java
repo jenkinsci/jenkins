@@ -2308,8 +2308,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public void setNumExecutors(int n) throws IOException {
-        this.numExecutors = n;
-        save();
+        if (this.numExecutors != n) {
+            this.numExecutors = n;
+            updateComputerList();
+            save();
+        }
     }
 
 
