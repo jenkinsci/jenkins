@@ -377,7 +377,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public void load() {
         lock.lock();
-        try {
+        try { try {
             // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
@@ -452,8 +452,7 @@ public class Queue extends ResourceController implements Saveable {
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
-        } finally {
-            updateSnapshot();
+        } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
     }
@@ -495,15 +494,15 @@ public class Queue extends ResourceController implements Saveable {
     public void clear() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         lock.lock();
-        try {
+        try { try {
             for (WaitingItem i : new ArrayList<WaitingItem>(
                     waitingList))   // copy the list as we'll modify it in the loop
                 i.cancel(this);
             blockedProjects.cancelAll();
             pendings.cancelAll();
             buildables.cancelAll();
-        } finally {
-            updateSnapshot();
+        } finally { updateSnapshot(); } } finally {
+            lock.unlock();
             lock.unlock();
         }
         scheduleMaintenance();
@@ -585,14 +584,13 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         lock.lock();
-        try {
+        try { try {
             for (QueueDecisionHandler h : QueueDecisionHandler.all())
                 if (!h.shouldSchedule(p, actions))
                     return ScheduleResult.refused();    // veto
 
             return scheduleInternal(p, quietPeriod, actions);
-        } finally {
-            updateSnapshot();
+        } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
     }
@@ -612,7 +610,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     private @Nonnull ScheduleResult scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
         lock.lock();
-        try {
+        try { try {
             Calendar due = new GregorianCalendar();
             due.add(Calendar.SECOND, quietPeriod);
 
@@ -677,8 +675,7 @@ public class Queue extends ResourceController implements Saveable {
             // thought this would only affect one, so the code was bit of surprise, but I'm keeping the current
             // behaviour.
             return ScheduleResult.existing(duplicatesInQueue.get(0));
-        } finally {
-            updateSnapshot();
+        } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
     }
@@ -726,7 +723,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public boolean cancel(Task p) {
         lock.lock();
-        try {
+        try { try {
             LOGGER.log(Level.FINE, "Cancelling {0}", p);
             for (WaitingItem item : waitingList) {
                 if (item.task.equals(p)) {
@@ -735,8 +732,8 @@ public class Queue extends ResourceController implements Saveable {
             }
             // use bitwise-OR to make sure that both branches get evaluated all the time
             return blockedProjects.cancel(p) != null | buildables.cancel(p) != null;
-        } finally {
-            updateSnapshot();
+        } finally { updateSnapshot(); } } finally {
+            lock.unlock();
             lock.unlock();
         }
     }
@@ -748,10 +745,9 @@ public class Queue extends ResourceController implements Saveable {
     public boolean cancel(Item item) {
         LOGGER.log(Level.FINE, "Cancelling {0} item#{1}", new Object[] {item.task, item.id});
         lock.lock();
-        try {
+        try { try {
             return item.cancel(this);
-        } finally {
-            updateSnapshot();
+        } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
     }
@@ -1088,14 +1084,13 @@ public class Queue extends ResourceController implements Saveable {
      */
     /*package*/ void onStartExecuting(Executor exec) throws InterruptedException {
         lock.lock();
-        try {
+        try { try {
             final WorkUnit wu = exec.getCurrentWorkUnit();
             pendings.remove(wu.context.item);
 
             LeftItem li = new LeftItem(wu.context);
             li.enter(this);
-        } finally {
-            updateSnapshot();
+        } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
     }
@@ -1279,7 +1274,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public void maintain() {
         lock.lock();
-        try {
+        try { try {
 
             LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
 
@@ -1389,8 +1384,7 @@ public class Queue extends ResourceController implements Saveable {
                 else
                     LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
             }
-        } finally {
-            updateSnapshot();
+        } finally { updateSnapshot(); } } finally {
             lock.unlock();
         }
     }
