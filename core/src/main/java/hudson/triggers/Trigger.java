@@ -99,6 +99,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      *
      * This method is invoked when {@link #Trigger(String)} is used
      * to create an instance, and the crontab matches the current time.
+     * <p>
+     * Maybe run even before {@link #start(hudson.model.Item, boolean)}, prepare for it.
      */
     public void run() {}
 
