@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,7 +103,7 @@ public class Nodes implements Saveable {
      * @throws IOException if the new list of nodes could not be persisted.
      */
     public void setNodes(final @Nonnull Collection<? extends Node> nodes) throws IOException {
-        Queue.withLock(new Runnable() {
+        withLock(new Runnable() {
             @Override
             public void run() {
                 Set<String> toRemove = new HashSet<String>(Nodes.this.nodes.keySet());
@@ -129,7 +130,7 @@ public class Nodes implements Saveable {
         if (node != nodes.get(node.getNodeName())) {
             // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
             // computer list for just the new node
-            Queue.withLock(new Runnable() {
+            withLock(new Runnable() {
                 @Override
                 public void run() {
                     nodes.put(node.getNodeName(), node);
@@ -157,7 +158,7 @@ public class Nodes implements Saveable {
      */
     public void removeNode(final @Nonnull Node node) throws IOException {
         if (node == nodes.get(node.getNodeName())) {
-            Queue.withLock(new Runnable() {
+            withLock(new Runnable() {
                 @Override
                 public void run() {
                     Computer c = node.toComputer();
@@ -173,6 +174,19 @@ public class Nodes implements Saveable {
             });
             // no need for a full save() so we just do the minimum
             Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
+        }
+    }
+
+    /**
+     * Run stuff synchronously with Queue.lock
+     */
+    private void withLock(Runnable r) throws IOException {
+        try {
+            Queue.withLock(r).get();
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        } catch (ExecutionException e) {
+            throw new IOException(e);
         }
     }
 
@@ -242,7 +256,7 @@ public class Nodes implements Saveable {
                 }
             }
         }
-        Queue.withLock(new Runnable() {
+        withLock(new Runnable() {
             @Override
             public void run() {
                 for (Iterator<Map.Entry<String, Node>> i = nodes.entrySet().iterator(); i.hasNext(); ) {
