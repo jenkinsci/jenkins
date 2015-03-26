@@ -587,6 +587,17 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
+     * Returns {@code true} if the {@code executorCell.jelly} for this {@link Executor} should be visible.
+     *
+     * @return {@code true} if the {@code executorCell.jelly} for this {@link Executor} should be visible.
+     * @since 1.607
+     */
+    public boolean isDisplayCell() {
+        AsynchronousExecution asynchronousExecution = getAsynchronousExecution();
+        return asynchronousExecution == null || asynchronousExecution.displayCell();
+    }
+
+    /**
      * Returns true if this executor is waiting for a task to execute.
      */
     public boolean isParking() {

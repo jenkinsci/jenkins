@@ -899,16 +899,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         List<DisplayExecutor> result = new ArrayList<DisplayExecutor>(executors.size()+oneOffExecutors.size());
         int index = 0;
         for (Executor e: executors) {
-            final AsynchronousExecution ae = e.getAsynchronousExecution();
-            if (ae == null || ae.displayCell()) {
+            if (e.isDisplayCell()) {
                 result.add(new DisplayExecutor(Integer.toString(index + 1), String.format("executors/%d", index), e));
             }
             index++;
         }
         index = 0;
         for (OneOffExecutor e: oneOffExecutors) {
-            final AsynchronousExecution ae = e.getAsynchronousExecution();
-            if (ae == null || ae.displayCell()) {
+            if (e.isDisplayCell()) {
                 result.add(new DisplayExecutor("", String.format("oneOffExecutors/%d", index), e));
             }
             index++;
