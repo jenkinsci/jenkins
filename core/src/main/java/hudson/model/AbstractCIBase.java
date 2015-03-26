@@ -170,14 +170,14 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             public void run() {
                 Map<String,Computer> byName = new HashMap<String,Computer>();
                 for (Computer c : computers.values()) {
+                    old.add(c);
                     Node node = c.getNode();
                     if (node == null)
                         continue;   // this computer is gone
                     byName.put(node.getNodeName(),c);
-                    old.add(c);
                 }
 
-                Set<Computer> used = new HashSet<Computer>();
+                Set<Computer> used = new HashSet<Computer>(old.size());
 
                 updateComputer(AbstractCIBase.this, byName, used, automaticSlaveLaunch);
                 for (Node s : getNodes()) {
