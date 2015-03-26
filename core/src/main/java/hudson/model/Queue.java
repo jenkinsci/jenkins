@@ -27,7 +27,8 @@ package hudson.model;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListenableFutureTask;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
@@ -1137,7 +1138,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param runnable the operation to perform.
      * @since 1.592
      */
-    public static Future<?> withLock(Runnable runnable) {
+    public static ListenableFuture<?> withLock(Runnable runnable) {
         final Jenkins jenkins = Jenkins.getInstance();
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
@@ -1158,7 +1159,7 @@ public class Queue extends ResourceController implements Saveable {
      * @throws T the exception of the callable
      * @since 1.592
      */
-    public static <V, T extends Throwable> Future<V> withLock(hudson.remoting.Callable<V, T> callable) {
+    public static <V, T extends Throwable> ListenableFuture<V> withLock(hudson.remoting.Callable<V, T> callable) {
         final Jenkins jenkins = Jenkins.getInstance();
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
@@ -1178,7 +1179,7 @@ public class Queue extends ResourceController implements Saveable {
      * @throws Exception if the callable throws an exception.
      * @since 1.592
      */
-    public static <V> Future<V> withLock(java.util.concurrent.Callable<V> callable) {
+    public static <V> ListenableFuture<V> withLock(java.util.concurrent.Callable<V> callable) {
         final Jenkins jenkins = Jenkins.getInstance();
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
@@ -1194,8 +1195,10 @@ public class Queue extends ResourceController implements Saveable {
      * @param runnable the operation to perform.
      * @since 1.592
      */
-    protected Future<?> _withLock(Runnable runnable) {
-        return mutator.submit(runnable);
+    protected ListenableFuture<?> _withLock(Runnable runnable) {
+        ListenableFutureTask<?> t = ListenableFutureTask.create(runnable,null);
+        mutator.submit(t);
+        return t;
     }
 
     /**
@@ -1209,8 +1212,8 @@ public class Queue extends ResourceController implements Saveable {
      * @throws T the exception of the callable
      * @since 1.592
      */
-    protected <V, T extends Throwable> Future<V> _withLock(final hudson.remoting.Callable<V, T> callable) {
-        return mutator.submit(new Callable<V>() {
+    protected <V, T extends Throwable> ListenableFuture<V> _withLock(final hudson.remoting.Callable<V, T> callable) {
+        ListenableFutureTask<V> t = ListenableFutureTask.create(new Callable<V>() {
             @Override
             public V call() throws Exception {
                 try {
@@ -1224,6 +1227,8 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
         });
+        mutator.submit(t);
+        return t;
     }
 
     /**
@@ -1236,8 +1241,10 @@ public class Queue extends ResourceController implements Saveable {
      * @throws Exception if the callable throws an exception.
      * @since 1.592
      */
-    protected <V> Future<V> _withLock(java.util.concurrent.Callable<V> callable) {
-        return mutator.submit(callable);
+    protected <V> ListenableFuture<V> _withLock(java.util.concurrent.Callable<V> callable) {
+        ListenableFutureTask<V> task = ListenableFutureTask.create(callable);
+        mutator.submit(task);
+        return task;
     }
 
     /**
