@@ -172,11 +172,7 @@ public class NodeProvisioner {
     public void suggestReviewNow() {
         if (System.currentTimeMillis() > lastSuggestedReview + TimeUnit.SECONDS.toMillis(1)) {
             lastSuggestedReview = System.currentTimeMillis();
-            Computer.threadPoolForRemoting.submit(new Runnable() {
-                public void run() {
-                    update();
-                }
-            });
+            update();
         }
     }
 
@@ -188,26 +184,26 @@ public class NodeProvisioner {
      * instance of this provisioner is running at a time) and then a lock on {@link Queue#lock}
      */
     private void update() {
-        provisioningLock.lock();
-        try {
-            lastSuggestedReview = System.currentTimeMillis();
+        lastSuggestedReview = System.currentTimeMillis();
 
-            // We need to get the lock on Queue for two reasons:
-            // 1. We will potentially adding a lot of nodes and we don't want to fight with Queue#maintain to acquire
-            //    the Queue#lock in order to add each node. Much better is to hold the Queue#lock until all nodes
-            //    that were provisioned since last we checked have been added.
-            // 2. We want to know the idle executors count, which can only be measured if you hold the Queue#lock
-            //    Strictly speaking we don't need an accurate measure for this, but as we had to get the Queue#lock
-            //    anyway, we might as well get an accurate measure.
-            //
-            // We do not need the Queue#lock to get the count of items in the queue as that is a lock-free call
-            // Since adding a node should not (in principle) confuse Queue#maintain (it is only removal of nodes
-            // that causes issues in Queue#maintain) we should be able to remove the need for Queue#lock
-            //
-            // TODO once Nodes#addNode is made lock free, we should be able to remove the requirement for Queue#lock
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
+        // We need to get the lock on Queue for two reasons:
+        // 1. We will potentially adding a lot of nodes and we don't want to fight with Queue#maintain to acquire
+        //    the Queue#lock in order to add each node. Much better is to hold the Queue#lock until all nodes
+        //    that were provisioned since last we checked have been added.
+        // 2. We want to know the idle executors count, which can only be measured if you hold the Queue#lock
+        //    Strictly speaking we don't need an accurate measure for this, but as we had to get the Queue#lock
+        //    anyway, we might as well get an accurate measure.
+        //
+        // We do not need the Queue#lock to get the count of items in the queue as that is a lock-free call
+        // Since adding a node should not (in principle) confuse Queue#maintain (it is only removal of nodes
+        // that causes issues in Queue#maintain) we should be able to remove the need for Queue#lock
+        //
+        // TODO once Nodes#addNode is made lock free, we should be able to remove the requirement for Queue#lock
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                provisioningLock.lock();
+                try {
                     Jenkins jenkins = Jenkins.getInstance();
                     // clean up the cancelled launch activity, then count the # of executors that we are about to
                     // bring up.
@@ -272,25 +268,25 @@ public class NodeProvisioner {
                                 stat.computeTotalExecutors(),
                                 plannedCapacitySnapshot);
                     }
-                }
-            });
-
-            if (provisioningState != null) {
-                List<Strategy> strategies = Jenkins.getInstance().getExtensionList(Strategy.class);
-                for (Strategy strategy : strategies.isEmpty()
-                        ? Arrays.<Strategy>asList(new StandardStrategyImpl())
-                        : strategies) {
-                    LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
-                            new Object[]{strategy, provisioningState});
-                    if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(provisioningState)) {
-                        LOGGER.log(Level.FINER, "Provisioning strategy {0} declared provisioning complete",
-                                strategy);
-                        break;
-                    }
+                } finally {
+                    provisioningLock.unlock();
                 }
             }
-        } finally {
-            provisioningLock.unlock();
+        });
+
+        if (provisioningState != null) {
+            List<Strategy> strategies = Jenkins.getInstance().getExtensionList(Strategy.class);
+            for (Strategy strategy : strategies.isEmpty()
+                    ? Arrays.<Strategy>asList(new StandardStrategyImpl())
+                    : strategies) {
+                LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
+                        new Object[]{strategy, provisioningState});
+                if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(provisioningState)) {
+                    LOGGER.log(Level.FINER, "Provisioning strategy {0} declared provisioning complete",
+                            strategy);
+                    break;
+                }
+            }
         }
     }
 
