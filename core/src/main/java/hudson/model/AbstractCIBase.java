@@ -27,6 +27,7 @@
 package hudson.model;
 
 
+import com.google.common.util.concurrent.MoreExecutors;
 import hudson.security.AccessControlled;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
@@ -163,11 +164,12 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * so that we won't upset {@link Executor}s running in it.
      */
     protected void updateComputerList(final boolean automaticSlaveLaunch) {
-        final Map<Node,Computer> computers = getComputerMap();
-        final Set<Computer> old = new HashSet<Computer>(computers.size());
+        final Set<Computer> old = new HashSet<Computer>();
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
+                Map<Node,Computer> computers = getComputerMap();
+
                 Map<String,Computer> byName = new HashMap<String,Computer>();
                 for (Computer c : computers.values()) {
                     Node node = c.getNode();
@@ -197,15 +199,20 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 for (Computer c : old) {
                     c.inflictMortalWound();
                 }
+
+                getQueue().scheduleMaintenance();
             }
-        });
-        for (Computer c : old) {
-            // when we get to here, the number of executors should be zero so this call should not need the Queue.lock
-            killComputer(c);
-        }
-        getQueue().scheduleMaintenance();
-        for (ComputerListener cl : ComputerListener.all())
-            cl.onConfigurationChange();
+        }).addListener(new Runnable() {
+            @Override
+            public void run() {
+            for (Computer c : old) {
+                // when we get to here, the number of executors should be zero so this call should not need the Queue.lock
+                killComputer(c);
+            }
+                for (ComputerListener cl : ComputerListener.all())
+                    cl.onConfigurationChange();
+            }
+        }, MoreExecutors.sameThreadExecutor());
     }
 
 }
