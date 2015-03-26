@@ -990,7 +990,7 @@ public class Queue extends ResourceController implements Saveable {
      * Gets the information about the queue item for the given project.
      *
      * @return null if the project is not in the queue.
-     * @since 1.FIXME
+     * @since 1.607
      */
     private List<Item> liveGetItems(Task t) {
         lock.lock();

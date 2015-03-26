@@ -214,7 +214,7 @@ public class Functions {
      * so that the generic layouts can avoid iterating extension lists while Jenkins is starting up.
      *
      * @return {@code true} if the extensions lists have been populated.
-     * @since 1.FIXME
+     * @since 1.607
      */
     public static boolean isExtensionsAvailable() {
         final Jenkins jenkins = Jenkins.getInstance();

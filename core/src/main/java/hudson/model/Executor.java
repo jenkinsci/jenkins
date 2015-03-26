@@ -575,7 +575,7 @@ public class Executor extends Thread implements ModelObject {
 
     /**
      * If currently running in asynchronous mode, returns that handle.
-     * @since TODO
+     * @since 1.607
      */
     public @CheckForNull AsynchronousExecution getAsynchronousExecution() {
         lock.readLock().lock();
@@ -891,7 +891,7 @@ public class Executor extends Thread implements ModelObject {
      * @param executable a possibly running executable
      * @return the executor (possibly a {@link OneOffExecutor}) whose {@link Executor#getCurrentExecutable} matches that,
      *          or null if it could not be found (for example because the execution has already completed)
-     * @since TODO
+     * @since 1.607
      */
     public static @CheckForNull Executor of(Executable executable) {
         Jenkins jenkins = Jenkins.getInstance();

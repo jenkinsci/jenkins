@@ -117,7 +117,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * Define if the rendered link will use the default GET method or POST.
      * @return true if POST must be used
      * @see RequirePOST
-     * @since TODO
+     * @since 1.584
      */
     public boolean getRequiresPOST() {
         return false;

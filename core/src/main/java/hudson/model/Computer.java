@@ -184,7 +184,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Keeps track of stack traces to track the tremination requests for this computer.
      *
-     * @since 1.FIXME
+     * @since 1.607
      * @see Executor#resetWorkUnit(String)
      */
     private transient final List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList
@@ -196,7 +196,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * not need to call this method directly, however if implementing a custom node type or a different path
      * for removing nodes, it may make sense to call this method in order to capture the originating request.
      *
-     * @since 1.FIXME
+     * @since 1.607
      */
     public void recordTermination() {
         StaplerRequest request = Stapler.getCurrentRequest();
@@ -227,7 +227,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @return the (possibly empty) list of termination requests.
      * @see Executor#resetWorkUnit(String)
-     * @since 1.FIXME
+     * @since 1.607
      */
     public List<TerminationRequest> getTerminatedBy() {
         return new ArrayList<TerminationRequest>(terminatedBy);
@@ -890,7 +890,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Used to render the list of executors.
      * @return a snapshot of the executor display information
-     * @since 1.FIXME
+     * @since 1.607
      */
     @Restricted(NoExternalUse.class)
     public List<DisplayExecutor> getDisplayExecutors() {
@@ -1527,7 +1527,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * A value class to provide a consistent snapshot view of the state of an executor to avoid race conditions
      * during rendering of the executors list.
      *
-     * @since 1.FIXME
+     * @since 1.607
      */
     @Restricted(NoExternalUse.class)
     public static class DisplayExecutor implements ModelObject {
@@ -1598,7 +1598,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Used to trace requests to terminate a computer.
      *
-     * @since 1.FIXME
+     * @since 1.607
      */
     public static class TerminationRequest extends RuntimeException {
         private final long when;

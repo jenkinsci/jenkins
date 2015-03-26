@@ -51,7 +51,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * but could also be used with a heavyweight executor even though the number of executors is bounded by node configuration.
  * <p>{@link ResourceController}/{@link ResourceActivity}/{@link ResourceList}/{@link Resource} are not currently supported.
  * Nor are {@link hudson.model.Queue.Task#getSubTasks} other than the primary task.
- * @since TODO
+ * @since 1.607
  */
 public abstract class AsynchronousExecution extends RuntimeException {
 

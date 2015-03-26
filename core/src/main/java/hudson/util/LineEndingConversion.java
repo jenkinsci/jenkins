@@ -3,7 +3,7 @@ package hudson.util;
 /**
  * Converts line endings of a string.
  *
- * @since TODO
+ * @since 1.582
  * @author David Ruhmann
  */
 public class LineEndingConversion {
