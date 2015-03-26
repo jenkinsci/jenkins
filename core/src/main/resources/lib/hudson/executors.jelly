@@ -39,8 +39,7 @@ THE SOFTWARE.
       <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
     </d:tag>
     <d:tag name="executor">
-      <j:set var="ae" value="${e.asynchronousExecution}"/>
-      <j:if test="${(!c.offline or (c.offline and !e.idle)) and (ae == null || ae.displayCell())}">
+      <j:if test="${!c.offline or (c.offline and !e.idle)}">
           <tr>
             <td class="pane" align="right" style="vertical-align: top">
               ${name}

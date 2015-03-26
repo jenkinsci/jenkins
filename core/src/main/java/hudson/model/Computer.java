@@ -62,6 +62,7 @@ import hudson.util.RunList;
 import hudson.util.Futures;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.AsynchronousExecution;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.accmod.Restricted;
@@ -898,12 +899,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         List<DisplayExecutor> result = new ArrayList<DisplayExecutor>(executors.size()+oneOffExecutors.size());
         int index = 0;
         for (Executor e: executors) {
-            result.add(new DisplayExecutor(Integer.toString(index+1), String.format("executors/%d", index), e));
+            if (e.isDisplayCell()) {
+                result.add(new DisplayExecutor(Integer.toString(index + 1), String.format("executors/%d", index), e));
+            }
             index++;
         }
         index = 0;
         for (OneOffExecutor e: oneOffExecutors) {
-            result.add(new DisplayExecutor("", String.format("oneOffExecutors/%d", index), e));
+            if (e.isDisplayCell()) {
+                result.add(new DisplayExecutor("", String.format("oneOffExecutors/%d", index), e));
+            }
             index++;
         }
         return result;
