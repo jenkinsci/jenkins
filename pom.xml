@@ -633,7 +633,7 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>1.6.0-18</version>
+                  <version>1.7.0</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.0</version>
