@@ -58,6 +58,7 @@ public class ExecutorTest {
     @Issue("JENKINS-4756")
     public void whenAnExecutorIsYankedANewExecutorTakesItsPlace() throws Exception {
         j.jenkins.setNumExecutors(1);
+        j.jenkins.getQueue().settle();
 
         Computer c = j.jenkins.toComputer();
         Executor e = getExecutorByNumber(c, 0);

@@ -99,6 +99,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1373,6 +1374,17 @@ public class Queue extends ResourceController implements Saveable {
             }
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
+        }
+    }
+
+    /**
+     * Block until all the dust (asynchronous activities) settls
+     */
+    public void settle() {
+        try {
+            _withLock(new Runnable() { public void run() {} }).get();
+        } catch (InterruptedException e) {
+        } catch (ExecutionException e) {
         }
     }
 

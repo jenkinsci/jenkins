@@ -183,6 +183,7 @@ public class Nodes implements Saveable {
     private void withLock(Runnable r) throws IOException {
         try {
             Queue.withLock(r).get();
+            jenkins.getQueue().settle();
         } catch (InterruptedException e) {
             throw new IOException(e);
         } catch (ExecutionException e) {
