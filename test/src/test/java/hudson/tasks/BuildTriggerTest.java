@@ -28,15 +28,19 @@ import static org.junit.Assert.*;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import hudson.Launcher;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Result;
+import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.Run;
 import hudson.model.User;
 import hudson.security.ACL;
@@ -47,6 +51,7 @@ import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.util.FormValidation;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,8 +73,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestNotifier;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
+import org.xml.sax.SAXException;
 
 /**
  * Tests for hudson.tasks.BuildTrigger
@@ -289,5 +298,46 @@ public class BuildTriggerTest {
             assertEquals(result.renderHtml(), FormValidation.Kind.ERROR, result.kind);
             assertEquals(result.renderHtml(), expectedError);
         }
+    }
+
+    @Test
+    public void downstreamProjectShouldObserveCompletedParent() throws Exception {
+        final WebClient wc = j.createWebClient();
+
+        final FreeStyleProject us = j.createFreeStyleProject();
+        us.getPublishersList().add(new BuildTrigger("downstream", true));
+        us.getPublishersList().add(new TestNotifier() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                Thread.sleep(5000); // Build does not complete just after the BuildTrigger
+                return true;
+            }
+        });
+
+        FreeStyleProject ds = createDownstreamProject();
+        ds.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                // Parent should be completed by now
+                FreeStyleBuild upstream = us.getLastBuild();
+                assertNotNull(upstream);
+                assertEquals(1, upstream.getNumber());
+
+                try {
+                    wc.getPage(us, "lastBuild");
+                } catch (SAXException ex) {
+                    throw new AssertionError(ex);
+                }
+                return true;
+            }
+        });
+
+        j.jenkins.rebuildDependencyGraph();
+
+        j.buildAndAssertSuccess(us);
+
+        final FreeStyleBuild dsb = ds.getBuildByNumber(1);
+        j.waitForCompletion(dsb);
+        j.assertBuildStatusSuccess(dsb);
     }
 }
