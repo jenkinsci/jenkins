@@ -81,6 +81,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -756,6 +757,26 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #onRemoved()
      */
     protected void kill() {
+        // On most code paths, this should already be zero, and thus this next call becomes a no-op... and more
+        // importantly it will not acquire a lock on the Queue... not that the lock is bad, more that the lock
+        // may delay unnecessarily
+        setNumExecutors(0);
+    }
+
+    /**
+     * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     *
+     * <p>
+     * Note that at this point {@link #getNode()} returns null.
+     *
+     * <p>
+     * Note that the Queue lock is already held when this method is called.
+     *
+     * @see #onRemoved()
+     */
+    @Restricted(NoExternalUse.class)
+    @GuardedBy("hudson.model.Queue.lock")
+    /*package*/ void inflictMortalWound() {
         setNumExecutors(0);
     }
 

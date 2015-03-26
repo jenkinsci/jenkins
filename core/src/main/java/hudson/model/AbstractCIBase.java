@@ -34,7 +34,6 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
@@ -165,6 +164,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      */
     protected void updateComputerList(final boolean automaticSlaveLaunch) {
         final Map<Node,Computer> computers = getComputerMap();
+        final Set<Computer> old = new HashSet<Computer>(computers.size());
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
@@ -174,9 +174,9 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                     if (node == null)
                         continue;   // this computer is gone
                     byName.put(node.getNodeName(),c);
+                    old.add(c);
                 }
 
-                final Set<Computer> old = new HashSet<Computer>(computers.values());
                 Set<Computer> used = new HashSet<Computer>();
 
                 updateComputer(AbstractCIBase.this, byName, used, automaticSlaveLaunch);
@@ -192,11 +192,17 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 // when all executors exit, it will be removed from the computers map.
                 // so don't remove too quickly
                 old.removeAll(used);
+                // we need to start the process of reducing the executors on all computers as distinct
+                // from the killing action which should not excessively use the Queue lock.
                 for (Computer c : old) {
-                    killComputer(c);
+                    c.inflictMortalWound();
                 }
             }
         });
+        for (Computer c : old) {
+            // when we get to here, the number of executors should be zero so this call should not need the Queue.lock
+            killComputer(c);
+        }
         getQueue().scheduleMaintenance();
         for (ComputerListener cl : ComputerListener.all())
             cl.onConfigurationChange();
