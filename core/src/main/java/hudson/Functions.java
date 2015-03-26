@@ -28,6 +28,7 @@ package hudson;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
+import hudson.init.InitMilestone;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Describable;
@@ -201,7 +202,25 @@ public class Functions {
     public static String rfc822Date(Calendar cal) {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
     }
-    
+
+    /**
+     * During Jenkins start-up, before {@link InitMilestone#PLUGINS_STARTED} the extensions lists will be empty
+     * and they are not guaranteed to be fully populated until after {@link InitMilestone#EXTENSIONS_AUGMENTED}.
+     * If you attempt to access the extensions list from a UI thread while the extensions are being loaded you will
+     * hit a big honking great monitor lock that will block until the effective extension list has been determined
+     * (as if a plugin fails to start, all of the failed plugin's extensions and any dependent plugins' extensions
+     * will have to be evicted from the list of extensions. In practical terms this only affects the
+     * "Jenkins is loading" screen, but as that screen uses the generic layouts we provide this utility method
+     * so that the generic layouts can avoid iterating extension lists while Jenkins is starting up.
+     *
+     * @return {@code true} if the extensions lists have been populated.
+     * @since 1.FIXME
+     */
+    public static boolean isExtensionsAvailable() {
+        final Jenkins jenkins = Jenkins.getInstance();
+        return jenkins != null && jenkins.getInitLevel().compareTo(InitMilestone.EXTENSIONS_AUGMENTED) >= 0;
+    }
+
     public static void initPageVariables(JellyContext context) {
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
         String rootURL = currentRequest.getContextPath();

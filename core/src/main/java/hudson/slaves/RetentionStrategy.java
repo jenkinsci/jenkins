@@ -35,6 +35,8 @@ import java.util.HashMap;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.concurrent.GuardedBy;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +56,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
      *         rechecked earlier or later that this!
      */
+    @GuardedBy("hudson.model.Queue.lock")
     public abstract long check(T c);
 
     /**
@@ -91,8 +94,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *
      * @since 1.275
      */
-    public void start(T c) {
-        check(c);
+    public void start(final T c) {
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                check(c);
+            }
+        });
     }
 
     /**
@@ -113,6 +121,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * Dummy instance that doesn't do any attempt to retention.
      */
     public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
+        @GuardedBy("hudson.model.Queue.lock")
         public long check(Computer c) {
             return 60;
         }
@@ -152,6 +161,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public Always() {
         }
 
+        @GuardedBy("hudson.model.Queue.lock")
         public long check(SlaveComputer c) {
             if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())
                 c.tryReconnect();
@@ -208,7 +218,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         }
 
         @Override
-        public synchronized long check(final SlaveComputer c) {
+        @GuardedBy("hudson.model.Queue.lock")
+        public long check(final SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
                 final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
                 for (Computer o : Jenkins.getInstance().getComputers()) {
@@ -257,21 +268,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
-                    Queue.withLock(new Runnable() {
-                        @Override
-                        public void run() {
-                            // re-check idle now that we are within the Queue lock
-                            if (c.isIdle()) {
-                                final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                                if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
-                                    // we've been idle for long enough
-                                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
-                                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
-                                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
-                                }
-                            }
-                        }
-                    });
+                    // we've been idle for long enough
+                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
+                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
+                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
+                } else {
+                    // no point revisiting until we can be confident we will be idle
+                    return TimeUnit.MILLISECONDS.toMinutes(TimeUnit.MINUTES.toMillis(idleDelay) - idleMilliseconds);
                 }
             }
             return 1;

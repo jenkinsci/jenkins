@@ -20,27 +20,27 @@ import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
  * Tests that getEnvironment() calls outside of builds are safe.
- * 
+ *
  * @author kutzi
  */
 @Issue("JENKINS-11592")
 public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
 
     private int oldExecNum;
-    
+
     @Override
     protected void runTest() throws Throwable {
         // Disable tests
-        
+
         // It's unfortunately not working, yet, as whenJenkinsMasterHasNoExecutors is not working as expected
     }
 
     public void setUp() throws Exception {
         super.setUp();
-        
+
         this.oldExecNum = Jenkins.getInstance().getNumExecutors();
     }
-    
+
     public void tearDown() throws Exception {
         restoreOldNumExecutors();
         super.tearDown();
@@ -48,10 +48,9 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
 
     private void restoreOldNumExecutors() throws IOException {
         Jenkins.getInstance().setNumExecutors(this.oldExecNum);
-        Jenkins.getInstance().setNodes(Jenkins.getInstance().getNodes());
         assertNotNull(Jenkins.getInstance().toComputer());
     }
-    
+
     private MavenModuleSet createSimpleMavenProject() throws Exception {
         MavenModuleSet project = createMavenProject();
         MavenInstallation mi = configureMaven3();
@@ -61,36 +60,34 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
         project.setGoals("validate");
         return project;
     }
-    
+
     private void whenJenkinsMasterHasNoExecutors() throws IOException {
         Jenkins.getInstance().setNumExecutors(0);
-        // force update of nodes:
-        Jenkins.getInstance().setNodes(Jenkins.getInstance().getNodes());
         assertNull(Jenkins.getInstance().toComputer());
     }
-    
+
     public void testMaven() throws Exception {
         MavenModuleSet m = createSimpleMavenProject();
-        
+
         assertGetEnvironmentCallOutsideBuildWorks(m);
     }
-    
+
     public void testFreestyle() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
-        
+
         assertGetEnvironmentCallOutsideBuildWorks(project);
     }
-    
+
     public void testMatrix() throws Exception {
         MatrixProject createMatrixProject = createMatrixProject();
-        
+
         assertGetEnvironmentCallOutsideBuildWorks(createMatrixProject);
     }
-    
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void assertGetEnvironmentCallOutsideBuildWorks(AbstractProject job) throws Exception {
         AbstractBuild build = buildAndAssertSuccess(job);
-        
+
         assertGetEnvironmentWorks(build);
     }
 

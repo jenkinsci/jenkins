@@ -2,6 +2,8 @@ package jenkins.util;
 
 import com.google.common.util.concurrent.SettableFuture;
 import hudson.remoting.AtmostOneThreadExecutor;
+import hudson.util.DaemonThreadFactory;
+import hudson.util.NamingThreadFactory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -63,7 +65,12 @@ public class AtmostOneTaskExecutor<V> {
     }
 
     public AtmostOneTaskExecutor(Callable<V> task) {
-        this(new AtmostOneThreadExecutor(),task);
+        this(new AtmostOneThreadExecutor(new NamingThreadFactory(
+                        new DaemonThreadFactory(),
+                        String.format("AtmostOneTaskExecutor[%s]", task)
+                )),
+                task
+        );
     }
 
     public synchronized Future<V> submit() {

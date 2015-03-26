@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.AbstractCollection;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.annotation.Nonnull;
 
@@ -61,7 +62,7 @@ public class ResourceController {
 
     /**
      * Union of all {@link Resource}s that are currently in use.
-     * Updated as a task starts/completes executing. 
+     * Updated as a task starts/completes executing.
      */
     private ResourceList inUse = ResourceList.EMPTY;
 
@@ -74,26 +75,37 @@ public class ResourceController {
      * @throws InterruptedException
      *      the thread can be interrupted while waiting for the available resources.
      */
-    public void execute(@Nonnull Runnable task, ResourceActivity activity ) throws InterruptedException {
-        ResourceList resources = activity.getResourceList();
-        synchronized(this) {
-            while(inUse.isCollidingWith(resources))
-                wait();
+    public void execute(@Nonnull Runnable task, final ResourceActivity activity ) throws InterruptedException {
+        final ResourceList resources = activity.getResourceList();
+        _withLock(new Runnable() {
+            @Override
+            public void run() {
+                while(inUse.isCollidingWith(resources))
+                    try {
+                        // TODO revalidate the resource list after re-acquiring lock, for now we just let the build fail
+                        _await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
 
-            // we have a go
-            inProgress.add(activity);
-            inUse = ResourceList.union(inUse,resources);
-        }
+                // we have a go
+                inProgress.add(activity);
+                inUse = ResourceList.union(inUse,resources);
+            }
+        });
 
         try {
             task.run();
         } finally {
-            // TODO if AsynchronousExecution, do that later
-            synchronized(this) {
-                inProgress.remove(activity);
-                inUse = ResourceList.union(resourceView);
-                notifyAll();
-            }
+           // TODO if AsynchronousExecution, do that later
+            _withLock(new Runnable() {
+                @Override
+                public void run() {
+                    inProgress.remove(activity);
+                    inUse = ResourceList.union(resourceView);
+                    _signalAll();
+                }
+            });
         }
     }
 
@@ -106,8 +118,17 @@ public class ResourceController {
      * another activity might acquire resources before the caller
      * gets to call {@link #execute(Runnable, ResourceActivity)}.
      */
-    public synchronized boolean canRun(ResourceList resources) {
-        return !inUse.isCollidingWith(resources);
+    public boolean canRun(final ResourceList resources) {
+        try {
+            return _withLock(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return !inUse.isCollidingWith(resources);
+                }
+            });
+        } catch (Exception e) {
+            throw new IllegalStateException("Inner callable does not throw exception");
+        }
     }
 
     /**
@@ -118,8 +139,17 @@ public class ResourceController {
      * If more than one such resource exists, one is chosen and returned.
      * This method is used for reporting what's causing the blockage.
      */
-    public synchronized Resource getMissingResource(ResourceList resources) {
-        return resources.getConflict(inUse);
+    public Resource getMissingResource(final ResourceList resources) {
+        try {
+            return _withLock(new Callable<Resource>() {
+                @Override
+                public Resource call() {
+                    return resources.getConflict(inUse);
+                }
+            });
+        } catch (Exception e) {
+            throw new IllegalStateException("Inner callable does not throw exception");
+        }
     }
 
     /**
@@ -133,6 +163,26 @@ public class ResourceController {
             if(res.isCollidingWith(a.getResourceList()))
                 return a;
         return null;
+    }
+
+    protected void _await() throws InterruptedException {
+        wait();
+    }
+
+    protected void _signalAll() {
+        notifyAll();
+    }
+
+    protected void _withLock(Runnable runnable) {
+        synchronized (this) {
+            runnable.run();
+        }
+    }
+
+    protected <V> V _withLock(java.util.concurrent.Callable<V> callable) throws Exception {
+        synchronized (this) {
+            return callable.call();
+        }
     }
 }
 

@@ -678,7 +678,7 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
-    protected void setNode(Node node) {
+    protected void setNode(final Node node) {
         super.setNode(node);
         launcher = grabLauncher(node);
 
@@ -686,10 +686,16 @@ public class SlaveComputer extends Computer {
         // "constructed==null" test is an ugly hack to avoid launching before the object is fully
         // constructed.
         if(constructed!=null) {
-            if (node instanceof Slave)
-                ((Slave)node).getRetentionStrategy().check(this);
-            else
+            if (node instanceof Slave) {
+                Queue.withLock(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((Slave)node).getRetentionStrategy().check(SlaveComputer.this);
+                    }
+                });
+            } else {
                 connect(false);
+            }
         }
     }
 

@@ -288,6 +288,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -497,17 +498,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Set of installed cluster nodes.
-     * <p>
-     * We use this field with copy-on-write semantics.
-     * This field has mutable list (to keep the serialization look clean),
-     * but it shall never be modified. Only new completely populated slave
-     * list can be set here.
-     * <p>
-     * The field name should be really {@code nodes}, but again the backward compatibility
-     * prevents us from renaming.
+     * Legacy store of the set of installed cluster nodes.
+     * @deprecated in favour of {@link Nodes}
      */
-    protected volatile NodeList slaves;
+    @Deprecated
+    protected transient volatile NodeList slaves;
+
+    /**
+     * The holder of the set of installed cluster nodes.
+     *
+     * @since 1.FIXME
+     */
+    private transient final Nodes nodes = new Nodes(this);
 
     /**
      * Quiet period.
@@ -1213,7 +1215,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return null;
     }
 
-    protected void updateComputerList() throws IOException {
+    protected void updateComputerList() {
         updateComputerList(AUTOMATIC_SLAVE_LAUNCH);
     }
 
@@ -1662,7 +1664,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the slave node of the give name, hooked under this Hudson.
      */
     public @CheckForNull Node getNode(String name) {
-        return slaves.getNode(name);
+        return nodes.getNode(name);
     }
 
     /**
@@ -1681,38 +1683,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * represents the master.
      */
     public List<Node> getNodes() {
-        return slaves;
+        return nodes.getNodes();
     }
 
     /**
      * Adds one more {@link Node} to Hudson.
      */
-    public synchronized void addNode(Node n) throws IOException {
-        if(n==null)     throw new IllegalArgumentException();
-        ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
-        if(!nl.contains(n)) // defensive check
-            nl.add(n);
-        setNodes(nl);
+    public void addNode(Node n) throws IOException {
+        nodes.addNode(n);
     }
 
     /**
      * Removes a {@link Node} from Hudson.
      */
-    public synchronized void removeNode(@Nonnull Node n) throws IOException {
-        Computer c = n.toComputer();
-        if (c!=null)
-            c.disconnect(OfflineCause.create(Messages._Hudson_NodeBeingRemoved()));
-
-        ArrayList<Node> nl = new ArrayList<Node>(this.slaves);
-        nl.remove(n);
-        setNodes(nl);
+    public void removeNode(@Nonnull Node n) throws IOException {
+        nodes.removeNode(n);
     }
 
-    public void setNodes(final List<? extends Node> nodes) throws IOException {
-        Jenkins.this.slaves = new NodeList(nodes);
-        updateComputerList();
-        trimLabels();
-        save();
+    public void setNodes(final List<? extends Node> n) throws IOException {
+        nodes.setNodes(n);
     }
 
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
@@ -1729,7 +1718,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This should be called when the assumptions behind label cache computation changes,
      * but we also call this periodically to self-heal any data out-of-sync issue.
      */
-    private void trimLabels() {
+    /*package*/ void trimLabels() {
         for (Iterator<Label> itr = labels.values().iterator(); itr.hasNext();) {
             Label l = itr.next();
             resetLabel(l);
@@ -2318,8 +2307,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public void setNumExecutors(int n) throws IOException {
-        this.numExecutors = n;
-        save();
+        if (this.numExecutors != n) {
+            this.numExecutors = n;
+            updateComputerList();
+            save();
+        }
     }
 
 
@@ -2626,10 +2618,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadHudson = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
-                // JENKINS-8043: some slaves (eg. swarm slaves) are not saved into the config file
-                // and will get overwritten when reloading. Make a backup copy now, and re-add them later
-                NodeList oldSlaves = slaves;
-
                 XmlFile cfg = getConfigFile();
                 if (cfg.exists()) {
                     // reset some data that may not exist in the disk file
@@ -2642,23 +2630,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 }
 
                 // if we are loading old data that doesn't have this field
-                if (slaves == null) slaves = new NodeList();
+                if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
+                    nodes.setNodes(slaves);
+                    slaves = null;
+                } else {
+                    nodes.load();
+                }
 
                 clouds.setOwner(Jenkins.this);
-
-                // JENKINS-8043: re-add the slaves which were not saved into the config file
-                // and are now missing, but still connected.
-                if (oldSlaves != null) {
-                    ArrayList<Node> newSlaves = new ArrayList<Node>(slaves);
-                    for (Node n: oldSlaves) {
-                        if (n instanceof EphemeralNode) {
-                            if(!newSlaves.contains(n)) {
-                                newSlaves.add(n);
-                            }
-                        }
-                    }
-                    setNodes(newSlaves);
-                }
             }
         });
 
@@ -2696,7 +2675,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 rebuildDependencyGraph();
 
                 {// recompute label objects - populates the labels mapping.
-                    for (Node slave : slaves)
+                    for (Node slave : nodes.getNodes())
                         // Note that not all labels are visible until the slaves have connected.
                         slave.getAssignedLabels();
                     getAssignedLabels();
