@@ -101,7 +101,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
-    <java.level>6</java.level>
+    <java.level>8</java.level>
   </properties>
 
   <repositories>
