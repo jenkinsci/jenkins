@@ -304,38 +304,7 @@ public class Executor extends Thread implements ModelObject {
         try {
             if (induceDeath)        throw new ThreadDeath();
 
-            SubTask task;
-            // transition from idle to building.
-            // perform this state change as an atomic operation wrt other queue operations
-            task = Queue.withLock(new java.util.concurrent.Callable<SubTask>() {
-                @Override
-                public SubTask call() throws Exception {
-                    if (!owner.isOnline()) {
-                        resetWorkUnit("went off-line before the task's worker thread was ready to execute");
-                        return null;
-                    }
-                    if (owner.getNode() == null) {
-                        resetWorkUnit("was removed before the task's worker thread was ready to execute");
-                        return null;
-                    }
-                    // after this point we cannot unwind the assignment of the work unit, if the owner
-                    // is removed or goes off-line then the build will just have to fail.
-                    workUnit.setExecutor(Executor.this);
-                    queue.onStartExecuting(Executor.this);
-                    if (LOGGER.isLoggable(FINE))
-                        LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
-                    SubTask task = workUnit.work;
-                    Executable executable = task.createExecutable();
-                    lock.writeLock().lock();
-                    try {
-                        Executor.this.executable = executable;
-                    } finally {
-                        lock.writeLock().unlock();
-                    }
-                    workUnit.setExecutable(executable);
-                    return task;
-                }
-            });
+            SubTask task = transitionFromIdleToBuilding();
             Executable executable;
             lock.readLock().lock();
             try {
@@ -448,6 +417,42 @@ public class Executor extends Thread implements ModelObject {
             finish2();
         }
         asynchronousExecution = null;
+    }
+
+    /**
+     * Transition from idle to building.
+     * perform this state change as an atomic operation wrt other queue operations
+     */
+    private SubTask transitionFromIdleToBuilding() throws InterruptedException, IOException {
+        queue.lock.lock();
+        try {
+            if (!owner.isOnline()) {
+                resetWorkUnit("went off-line before the task's worker thread was ready to execute");
+                return null;
+            }
+            if (owner.getNode() == null) {
+                resetWorkUnit("was removed before the task's worker thread was ready to execute");
+                return null;
+            }
+            // after this point we cannot unwind the assignment of the work unit, if the owner
+            // is removed or goes off-line then the build will just have to fail.
+            workUnit.setExecutor(Executor.this);
+            queue.onStartExecuting(Executor.this);
+            if (LOGGER.isLoggable(FINE))
+                LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
+            SubTask task = workUnit.work;
+            Executable executable = task.createExecutable();
+            lock.writeLock().lock();
+            try {
+                Executor.this.executable = executable;
+            } finally {
+                lock.writeLock().unlock();
+            }
+            workUnit.setExecutable(executable);
+            return task;
+        } finally {
+            queue.lock.unlock();
+        }
     }
 
     /**
