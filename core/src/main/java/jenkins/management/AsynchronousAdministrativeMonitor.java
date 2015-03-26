@@ -115,10 +115,10 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
                 }
             }
          }
-        
+
         /**
-         * Runs the monitor and encapsulates all errors within. 
-         * @since TODO: define a version
+         * Runs the monitor and encapsulates all errors within.
+         * @since 1.590
          */
         private void doRun(@Nonnull TaskListener listener) {
             try {

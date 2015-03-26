@@ -58,7 +58,7 @@ import java.util.logging.Logger;
 /**
  * Manages all the nodes for Jenkins.
  *
- * @since 1.FIXME
+ * @since 1.607
  */
 @Restricted(NoExternalUse.class) // for now, we may make it public later
 public class Nodes implements Saveable {

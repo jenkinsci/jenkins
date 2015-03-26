@@ -507,7 +507,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The holder of the set of installed cluster nodes.
      *
-     * @since 1.FIXME
+     * @since 1.607
      */
     private transient final Nodes nodes = new Nodes(this);
 
