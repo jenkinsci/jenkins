@@ -61,6 +61,39 @@ Upcoming changes</a>
   <li class=bug>
     Security file pattern whitelist was broken for some plugins since 1.597.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27055">issue 27055</a>)
+  <li class=rfe>
+    Lock an Executor without creating a Thread
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25938">issue 25938</a>)
+  <li class=rfe>
+    Hide flyweight master executor when ≥1 heavyweight executors running as subtasks
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26900">issue 26900</a>)
+  <li class=rfe>
+    Way to mark an Executable that should not block isReadyToRestart
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22941">issue 22941</a>)
+  <li class=rfe>
+    Refactor the Queue and Nodes to use a consistent locking strategy
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27565">issue 27565</a>)
+  <li class=bug>
+    Makes the Jenkins is loading screen not block on the extensions loading lock
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27563">issue 27563</a>)
+  <li class=bug>
+    AdjunctManager: exception upon startup
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15355">issue 15355</a>) 
+  <li class=bug>
+    Removes race condition rendering the list of executors
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27564">issue 27564</a>)
+  <li class=bug>
+    Tidy up the locks that were causing deadlocks with the once retention strategy in durable tasks
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27476">issue 27476</a>)
+  <li class=bug>
+    Remove any requirement from Jenkins Core to lock on the Queue when rendering the Jenkins UI
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27566">issue 27566</a>)
+  <li class=bug>
+    Prevent lazy loading operation when obtaining label information.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26391">issue 26391</a>)
+  <li class=bug>
+    Ensure that the LoadStatistics return a self-consistent result.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21618">issue 21618</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v1.606>What's new in 1.606</a> (2015/03/23)</h3>
@@ -73,7 +106,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21251">issue 21251</a>)
   <li class=rfe>
     JNLP slaves can now connect to master through HTTP proxy.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6167">issue 21251</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6167">issue 6167</a>)
   <li class='major bug'>
     Fixes to several security vulnerabilities.
     (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2015-03-23">advisory</a>)
