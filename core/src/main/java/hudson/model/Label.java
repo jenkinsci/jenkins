@@ -374,7 +374,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             for (TopLevelItem topLevelItem : Jenkins.getInstance().getItemMap().values()) {
                 if (topLevelItem instanceof AbstractProject) {
                     final AbstractProject project = (AbstractProject) topLevelItem;
-                    if (this.equals(project.getAssignedLabel())) {
+                    if (matches(project.getAssignedLabelString())) {
                         result++;
                     }
                 }
@@ -389,7 +389,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
                         for (Item i : parent.getItems()) {
                             if (i instanceof AbstractProject) {
                                 final AbstractProject project = (AbstractProject) i;
-                                if (this.equals(project.getAssignedLabel())) {
+                                if (matches(project.getAssignedLabelString())) {
                                     result++;
                                 }
                             }
@@ -497,21 +497,30 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
 
     @Override
-    public boolean equals(Object that) {
+    public final boolean equals(Object that) {
         if (this == that) return true;
         if (that == null || getClass() != that.getClass()) return false;
 
-        return name.equals(((Label)that).name);
+        return matches(((Label)that).name);
 
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return name.hashCode();
     }
 
-    public int compareTo(Label that) {
+    public final int compareTo(Label that) {
         return this.name.compareTo(that.name);
+    }
+
+
+    /**
+     * Evaluates whether the current label name is equal to the name parameter.
+     *
+     */
+    private final boolean matches(String name) {
+        return this.name.equals(name);
     }
 
     @Override
