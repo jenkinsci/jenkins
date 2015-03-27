@@ -587,10 +587,15 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Returns {@code true} if the {@code executorCell.jelly} for this {@link Executor} should be visible.
+     * If this executor is running an {@link AsynchronousExecution} and that execution wants to hide the display
+     * cell for the executor (because there is another executor displaying the job progress and we don't want to
+     * confuse the user) then this method will return {@code false} to indicate to {@code executors.jelly} that
+     * the executor cell should be hidden.
      *
-     * @return {@code true} if the {@code executorCell.jelly} for this {@link Executor} should be visible.
+     * @return {@code true} iff the {@code executorCell.jelly} for this {@link Executor} should be displayed in
+     *         {@code executors.jelly}.
      * @since 1.607
+     * @see AsynchronousExecution#displayCell()
      */
     public boolean isDisplayCell() {
         AsynchronousExecution asynchronousExecution = getAsynchronousExecution();
