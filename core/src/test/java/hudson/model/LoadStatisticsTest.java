@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
+import hudson.model.queue.SubTask;
 
 import org.apache.commons.io.IOUtils;
 import org.jfree.chart.JFreeChart;
@@ -34,6 +35,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -54,17 +58,28 @@ public class LoadStatisticsTest {
             public int computeQueueLength() {
                 throw new UnsupportedOperationException();
             }
+            @Override
+            protected Iterable<Node> getNodes() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected boolean matches(SubTask item) {
+                throw new UnsupportedOperationException();
+            }
         };
 
         for (int i = 0; i < 50; i++) {
-            ls.totalExecutors.update(4);
+            ls.onlineExecutors.update(4);
             ls.busyExecutors.update(3);
+            ls.availableExecutors.update(1);
             ls.queueLength.update(3);
         }
 
         for (int i = 0; i < 50; i++) {
-            ls.totalExecutors.update(0);
+            ls.onlineExecutors.update(0);
             ls.busyExecutors.update(0);
+            ls.availableExecutors.update(0);
             ls.queueLength.update(1);
         }
 
@@ -78,6 +93,44 @@ public class LoadStatisticsTest {
         } finally {
             IOUtils.closeQuietly(os);
             tempFile.delete();
+        }
+    }
+
+    @Test
+    public void isModernWorks() throws Exception {
+        assertThat(LoadStatistics.isModern(Modern.class), is(true));
+        assertThat(LoadStatistics.isModern(LoadStatistics.class), is(false));
+    }
+
+    private class Modern extends LoadStatistics {
+
+        protected Modern(int initialOnlineExecutors, int initialBusyExecutors) {
+            super(initialOnlineExecutors, initialBusyExecutors);
+        }
+
+        @Override
+        public int computeIdleExecutors() {
+            return 0;
+        }
+
+        @Override
+        public int computeTotalExecutors() {
+            return 0;
+        }
+
+        @Override
+        public int computeQueueLength() {
+            return 0;
+        }
+
+        @Override
+        protected Iterable<Node> getNodes() {
+            return null;
+        }
+
+        @Override
+        protected boolean matches(SubTask item) {
+            return false;
         }
     }
 }
