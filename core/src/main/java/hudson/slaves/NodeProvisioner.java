@@ -346,10 +346,6 @@ public class NodeProvisioner {
          */
         private final Label label;
         /**
-         * The number of items in the queue requiring this {@link #label}.
-         */
-        private final int queueLengthSnapshot;
-        /**
          * The planned capacity for this {@link #label}.
          */
         private final int plannedCapacitySnapshot;
