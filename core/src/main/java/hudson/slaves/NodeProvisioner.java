@@ -382,7 +382,7 @@ public class NodeProvisioner {
 
         /**
          * The current snapshot of the load statistics for this {@link #getLabel()}.
-         * @since 1.FIXME
+         * @since 1.607
          */
         public LoadStatistics.LoadStatisticsSnapshot getSnapshot() {
             return snapshot;
@@ -464,7 +464,7 @@ public class NodeProvisioner {
 
         /**
          * The time series average number of defined executors for this {@link #getLabel()}
-         * @since 1.FIXME
+         * @since 1.607
          */
         public float getDefinedExecutorsLatest() {
             return stat.definedExecutors.getLatest(TIME_SCALE);
@@ -472,7 +472,7 @@ public class NodeProvisioner {
 
         /**
          * The time series average number of online executors for this {@link #getLabel()}
-         * @since 1.FIXME
+         * @since 1.607
          */
         public float getOnlineExecutorsLatest() {
             return stat.onlineExecutors.getLatest(TIME_SCALE);
@@ -480,7 +480,7 @@ public class NodeProvisioner {
 
         /**
          * The time series average number of connecting executors for this {@link #getLabel()}
-         * @since 1.FIXME
+         * @since 1.607
          */
         public float getConnectingExecutorsLatest() {
             return stat.connectingExecutors.getLatest(TIME_SCALE);
@@ -488,7 +488,7 @@ public class NodeProvisioner {
 
         /**
          * The time series average number of busy executors for this {@link #getLabel()}
-         * @since 1.FIXME
+         * @since 1.607
          */
         public float getBusyExecutorsLatest() {
             return stat.busyExecutors.getLatest(TIME_SCALE);
@@ -496,7 +496,7 @@ public class NodeProvisioner {
 
         /**
          * The time series average number of idle executors for this {@link #getLabel()}
-         * @since 1.FIXME
+         * @since 1.607
          */
         public float getIdleExecutorsLatest() {
             return stat.idleExecutors.getLatest(TIME_SCALE);
@@ -504,7 +504,7 @@ public class NodeProvisioner {
 
         /**
          * The time series average number of available executors for this {@link #getLabel()}
-         * @since 1.FIXME
+         * @since 1.607
          */
         public float getAvailableExecutorsLatest() {
             return stat.availableExecutors.getLatest(TIME_SCALE);

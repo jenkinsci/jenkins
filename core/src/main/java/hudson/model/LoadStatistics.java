@@ -72,27 +72,27 @@ import java.util.List;
 public abstract class LoadStatistics {
     /**
      * {@code true} if and only if the new way of building statistics has been implemented by this class.
-     * @since 1.FIXME
+     * @since 1.607
      */
     private final boolean modern;
 
     /**
      * Number of executors defined for Jenkins and how it changes over time.
-     * @since 1.FIXME
+     * @since 1.607
      */
     @Exported
     public final MultiStageTimeSeries definedExecutors;
 
     /**
      * Number of executors on-line and how it changes over time. Replaces {@link #totalExecutors}
-     * @since 1.FIXME
+     * @since 1.607
      */
     @Exported
     public final MultiStageTimeSeries onlineExecutors;
 
     /**
      * Number of executors in the process of coming on-line and how it changes over time.
-     * @since 1.FIXME
+     * @since 1.607
      */
     @Exported
     public final MultiStageTimeSeries connectingExecutors;
@@ -106,14 +106,14 @@ public abstract class LoadStatistics {
     /**
      * Number of executors not executing and how it changes over time. Note the these executors may not be able to
      * take work, see {@link #availableExecutors}.
-     * @since 1.FIXME
+     * @since 1.607
      */
     @Exported
     public final MultiStageTimeSeries idleExecutors;
 
     /**
      * Number of executors not executing and available to take work and how it changes over time.
-     * @since 1.FIXME
+     * @since 1.607
      */
     @Exported
     public final MultiStageTimeSeries availableExecutors;
@@ -289,7 +289,7 @@ public abstract class LoadStatistics {
     /**
      * Updates all the series from the current snapshot.
      * @param current the current snapshot.
-     * @since 1.FIXME
+     * @since 1.607
      */
     protected void updateCounts(LoadStatisticsSnapshot current) {
         definedExecutors.update(current.getDefinedExecutors());
@@ -304,7 +304,7 @@ public abstract class LoadStatistics {
     /**
      * Returns the {@link Node} instances that this statistic counts.
      * @return the {@link Node}
-     * @since 1.FIXME
+     * @since 1.607
      */
     protected abstract Iterable<Node> getNodes();
 
@@ -312,7 +312,7 @@ public abstract class LoadStatistics {
      * Returns {@code true} is the specified {@link SubTask} from the {@link Queue} should be counted.
      * @param item the {@link SubTask}
      * @return {@code true} IFF the specified {@link SubTask} from the {@link Queue} should be counted.
-     * @since 1.FIXME
+     * @since 1.607
      */
     protected abstract boolean matches(SubTask item);
 
@@ -325,7 +325,7 @@ public abstract class LoadStatistics {
      * for at least one point in time during the execution of this method.
      *
      * @return a self-consistent snapshot of the load statistics.
-     * @since 1.FIXME
+     * @since 1.607
      */
     public LoadStatisticsSnapshot computeSnapshot() {
         if (modern) {
@@ -342,7 +342,7 @@ public abstract class LoadStatistics {
 
      * @param queue the queue items.
      * @return a self-consistent snapshot of the load statistics.
-     * @since 1.FIXME
+     * @since 1.607
      */
     protected LoadStatisticsSnapshot computeSnapshot(Iterable<Queue.BuildableItem> queue) {
         final LoadStatisticsSnapshot.Builder builder = LoadStatisticsSnapshot.builder();
@@ -410,7 +410,7 @@ public abstract class LoadStatistics {
 
     /**
      * Holds a snapshot of the current statistics.
-     * @since 1.FIXME
+     * @since 1.607
      */
     @ExportedBean
     public static class LoadStatisticsSnapshot implements Serializable {
@@ -587,7 +587,7 @@ public abstract class LoadStatistics {
         /**
          * Use a builder so we can add more stats if needed.
          * Not thread safe
-         * @since 1.FIXME
+         * @since 1.607
          */
         public static class Builder {
             private int definedExecutors;
