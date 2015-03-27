@@ -169,12 +169,18 @@ public class CLI {
 
     private Channel connectViaCliPort(URL jenkins, CliPort clip) throws IOException {
         LOGGER.log(FINE, "Trying to connect directly via TCP/IP to {0}", clip.endpoint);
-        final Socket s;
+        final Socket s = new Socket();
+        // this prevents a connection from silently terminated by the router in between or the other peer
+        // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
+        // by default in Linux) that this alone is enough to prevent that.
+        s.setKeepAlive(true);
+        // we take care of buffering on our own
+        s.setTcpNoDelay(true);
         OutputStream out;
 
         if (httpsProxyTunnel!=null) {
             String[] tokens = httpsProxyTunnel.split(":");
-            s = new Socket(tokens[0], Integer.parseInt(tokens[1]));
+            s.connect(new InetSocketAddress(tokens[0], Integer.parseInt(tokens[1])));
             PrintStream o = new PrintStream(s.getOutputStream());
             o.print("CONNECT " + clip.endpoint.getHostName() + ":" + clip.endpoint.getPort() + " HTTP/1.0\r\n\r\n");
 
@@ -199,7 +205,6 @@ public class CLI {
                 }
             };
         } else {
-            s = new Socket();
             s.connect(clip.endpoint,3000);
             out = SocketChannelStream.out(s);
         }
