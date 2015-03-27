@@ -25,6 +25,7 @@ package hudson.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -184,7 +185,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         // Defense against JENKINS-23152 and its ilk.
         File rootDir = r.getRootDir();
         if (rootDir.isDirectory()) {
-            throw new IllegalStateException(rootDir + " already existed; will not overwite with " + r);
+            LOGGER.log(Level.WARNING, rootDir + " already existed, yet overwriting with " + r + "; current contents: " + Arrays.toString(rootDir.list()), new IllegalStateException("JENKINS-26582"));
         }
         if (!r.getClass().getName().equals("hudson.matrix.MatrixRun")) { // JENKINS-26739: grandfathered in
             proposeNewNumber(r.getNumber());
