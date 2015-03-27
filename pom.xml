@@ -153,18 +153,18 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>1.9.5</version>
+        <version>1.10.19</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.5.6</version>
+        <version>1.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
-        <version>1.5.6</version>
+        <version>1.6.2</version>
       </dependency>
 
       <dependency>
@@ -364,6 +364,7 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
+            <argLine>-noverify</argLine> <!-- see https://code.google.com/p/powermock/issues/detail?id=504 -->
           </configuration>
         </plugin>
         <plugin>
@@ -615,7 +616,7 @@ THE SOFTWARE.
         <configuration>
           <source>1.${java.level}</source>
           <target>1.${java.level}</target>
-          <!-- default reuseCreated is more performant 
+          <!-- default reuseCreated is more performant
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
           -->
