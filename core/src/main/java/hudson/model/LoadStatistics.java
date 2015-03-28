@@ -167,7 +167,7 @@ public abstract class LoadStatistics {
             }
             if (!hasMatches) {
                 try {
-                    final Method getNodes = clazz.getDeclaredMethod("matches", SubTask.class);
+                    final Method getNodes = clazz.getDeclaredMethod("matches", Queue.Item.class, SubTask.class);
                     hasMatches = !Modifier.isAbstract(getNodes.getModifiers());
                 } catch (NoSuchMethodException e) {
                     // ignore
