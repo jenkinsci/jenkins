@@ -75,7 +75,7 @@ public class OverallLoadStatistics extends LoadStatistics {
     }
 
     @Override
-    protected boolean matches(SubTask item) {
+    protected boolean matches(Queue.Item item, SubTask subTask) {
         return true;
     }
 

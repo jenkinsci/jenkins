@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
@@ -310,11 +309,12 @@ public abstract class LoadStatistics {
 
     /**
      * Returns {@code true} is the specified {@link SubTask} from the {@link Queue} should be counted.
-     * @param item the {@link SubTask}
+     * @param item the {@link Queue.Item} that the {@link SubTask belongs to}
+     * @param subTask the {@link SubTask}
      * @return {@code true} IFF the specified {@link SubTask} from the {@link Queue} should be counted.
      * @since 1.607
      */
-    protected abstract boolean matches(SubTask item);
+    protected abstract boolean matches(Queue.Item item, SubTask subTask);
 
     /**
      * Computes a self-consistent snapshot of the load statistics.
@@ -355,8 +355,9 @@ public abstract class LoadStatistics {
         int q = 0;
         if (queue != null) {
             for (Queue.BuildableItem item : queue) {
+                
                 for (SubTask st : item.task.getSubTasks()) {
-                    if (matches(st))
+                    if (matches(item, st))
                         q++;
                 }
             }

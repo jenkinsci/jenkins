@@ -64,7 +64,7 @@ public class LoadStatisticsTest {
             }
 
             @Override
-            protected boolean matches(SubTask item) {
+            protected boolean matches(Queue.Item item, SubTask subTask) {
                 throw new UnsupportedOperationException();
             }
         };
@@ -129,7 +129,7 @@ public class LoadStatisticsTest {
         }
 
         @Override
-        protected boolean matches(SubTask item) {
+        protected boolean matches(Queue.Item item, SubTask subTask) {
             return false;
         }
     }
