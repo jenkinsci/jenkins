@@ -24,6 +24,8 @@
 package hudson.security;
 
 import javax.annotation.Nonnull;
+
+import hudson.model.Item;
 import hudson.remoting.Callable;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItemDescriptor;
@@ -96,7 +98,7 @@ public abstract class ACL {
         Authentication a = Jenkins.getAuthentication();
         if (!hasCreatePermission(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
-                    Item.CREATE.getDisplayName() + "/" + d.getDisplayName()));
+                    Item.CREATE.group.title+"/"+Item.CREATE.name + Item.CREATE + "/" + d.getDisplayName()));
         }
     }
     /**
