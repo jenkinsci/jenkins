@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -59,6 +60,29 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      */
     public boolean isApplicable(Descriptor descriptor) {
         return true;
+    }
+
+    /**
+     * {@link TopLevelItemDescriptor}s often may want to limit the scope within which they can be created.
+     * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
+     *
+     * @since TODO
+     */
+    public boolean isApplicableIn(ItemGroup parent) {
+        return true;
+    }
+
+    /**
+     * Checks if this top level item is applicable within the specified item group.
+     * <p>
+     * This is just a convenience function.
+     * @since TODO
+     */
+    public final void checkApplicableIn(ItemGroup parent) {
+        if (!isApplicableIn(parent)) {
+            throw new AccessDeniedException(
+                    Messages.TopLevelItemDescriptor_NotApplicableIn(getDisplayName(), parent.getFullDisplayName()));
+        }
     }
 
     /**
