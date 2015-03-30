@@ -77,10 +77,10 @@ class TextAreaTest {
     public void testText() {
         def TEXT_TO_TEST = "some\nvalue\n";
         def p = j.createFreeStyleProject();
-        p.buildersList.add(new TextareaTestBuilder(TEXT_TO_TEST));
-        assertEquals(TEXT_TO_TEST, p.getBuildersList().get(TextareaTestBuilder.class).getText());
+        def target = new TextareaTestBuilder(TEXT_TO_TEST);
+        p.buildersList.add(target);
         j.configRoundtrip(p);
-        assertEquals(TEXT_TO_TEST, p.getBuildersList().get(TextareaTestBuilder.class).getText());
+        j.assertEqualDataBoundBeans(target, p.getBuildersList().get(TextareaTestBuilder.class));
     }
 
     @Issue("JENKINS-27505")
@@ -88,10 +88,21 @@ class TextAreaTest {
     public void testTextBeginningWithEmptyLine() {
         def TEXT_TO_TEST = "\nbegin\n\nwith\nempty\nline\n\n";
         def p = j.createFreeStyleProject();
-        p.buildersList.add(new TextareaTestBuilder(TEXT_TO_TEST));
-        assertEquals(TEXT_TO_TEST, p.getBuildersList().get(TextareaTestBuilder.class).getText());
+        def target = new TextareaTestBuilder(TEXT_TO_TEST);
+        p.buildersList.add(target);
         j.configRoundtrip(p);
-        assertEquals(TEXT_TO_TEST, p.getBuildersList().get(TextareaTestBuilder.class).getText());
+        j.assertEqualDataBoundBeans(target, p.getBuildersList().get(TextareaTestBuilder.class));
+    }
+
+    @Issue("JENKINS-27505")
+    @Test
+    public void testTextBeginningWithTwoEmptyLines() {
+        def TEXT_TO_TEST = "\n\nbegin\n\nwith\ntwo\nempty\nline\n\n";
+        def p = j.createFreeStyleProject();
+        def target = new TextareaTestBuilder(TEXT_TO_TEST);
+        p.buildersList.add(target);
+        j.configRoundtrip(p);
+        j.assertEqualDataBoundBeans(target, p.getBuildersList().get(TextareaTestBuilder.class));
     }
 
     public static class TextareaTestBuilder extends Builder {
