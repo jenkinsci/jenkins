@@ -67,12 +67,7 @@ import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -330,6 +325,35 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 }
                             });
 
+
+                            g.followedBy().attains(PLUGINS_LISTED).add("Checking plugin dependencies", new Executable() {
+                                @Override
+                                public void run(Reactor reactor) throws Exception {
+                                    for (PluginWrapper plugin: getPlugins()) {
+                                        String core = plugin.getManifest().getMainAttributes().getValue("Jenkins-Version");
+                                        if (core != null && Jenkins.getVersion().compareTo(new VersionNumber(core)) < 0) {
+                                            String s = "Plugin " + plugin.getShortName() + " required jenkins " + core + " or later.";
+                                            LOGGER.severe(s);
+                                            NOTICE.add(s);
+                                        }
+
+                                        for (Dependency dep : plugin.getDependencies()) {
+                                            if (dep.optional) continue;
+                                            PluginWrapper p = getPlugin(dep.shortName);
+                                            if (p == null) {
+                                                String s = "Plugin " + plugin.getShortName() + " is missing required dependency " + p.getShortName();
+                                                LOGGER.severe(s);
+                                                NOTICE.add(s);
+                                            } else if (p.getVersionNumber().compareTo(new VersionNumber(dep.version)) < 0) {
+                                                String s = "Plugin " + plugin.getShortName() + " require " + p.getShortName() + " " + dep.version + " or later";
+                                                LOGGER.severe(s);
+                                                NOTICE.add(s);
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+
                             // Let's see for a while until we open this functionality up to plugins
 //                            g.followedBy().attains(PLUGINS_LISTED).add("Load compatibility rules", new Executable() {
 //                                public void run(Reactor reactor) throws Exception {
@@ -410,6 +434,29 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             });
         }});
     }
+
+    /**
+     * Used to indicate a missing dependency within installed plugins.
+     */
+    @Extension
+    public final static PluginsRequirementsNotice NOTICE = new PluginsRequirementsNotice();
+
+
+    public static final class PluginsRequirementsNotice extends AdministrativeMonitor {
+
+        public final List<String> errors = new ArrayList<String>();
+
+        void add(String error) {
+            errors.add(error);
+        }
+
+        public boolean isActivated() {
+            return !errors.isEmpty();
+        }
+
+    }
+
+
 
     /*
      * contains operation that considers xxx.hpi and xxx.jpi as equal
