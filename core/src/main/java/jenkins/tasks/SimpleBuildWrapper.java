@@ -28,6 +28,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.console.ConsoleLogFilter;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -177,12 +178,19 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
     }
 
+    /**
+     * Allows this wrapper to decorate log output.
+     * @param build as is passed to {@link #setUp(Context, Run, FilePath, Launcher, TaskListener, EnvVars)}
+     * @return a filter which ignores its {@code build} parameter and is {@link Serializable}; or null (the default)
+     * @since 1.608
+     */
+    public @CheckForNull ConsoleLogFilter createLoggerDecorator(@Nonnull Run<?,?> build) {
+        return null;
+    }
+
     @Override public final OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, Run.RunnerAbortedException {
-        // Doubtful this can be supported.
-        // Decorating a TaskListener would be more reasonable.
-        // But for an AbstractBuild this is called early in Run.execute, before setUp.
-        // And for other kinds of builds, it is unclear what this would even mean.
-        return logger;
+        ConsoleLogFilter filter = createLoggerDecorator(build);
+        return filter != null ? filter.decorateLogger(build, logger) : logger;
     }
 
     @Override public final Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, Run.RunnerAbortedException {
