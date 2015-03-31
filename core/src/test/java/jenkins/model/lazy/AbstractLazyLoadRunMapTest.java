@@ -358,4 +358,16 @@ public class AbstractLazyLoadRunMapTest {
             assertTrue(a.entrySet().contains(e));
         }
     }
+    
+    @Issue("JENKINS-27081")
+    @Test
+    public void proposeNewNumberInRange() {
+    	assertFalse(a.proposeNewNumberTest(1));
+    }
+    
+    @Issue("JENKINS-27081")
+    @Test
+    public void proposeNewNumberNotInRange() {
+    	assertTrue(a.proposeNewNumberTest(500));
+    }
 }

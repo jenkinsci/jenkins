@@ -47,6 +47,19 @@ public class FakeMap extends AbstractLazyLoadRunMap<Build> {
         //new Exception("loading #" + n).printStackTrace();
         return new Build(Integer.parseInt(n));
     }
+    
+    /**
+     * Created to be possible to call proposeNewNumber in test case.
+     * @return if proposed number is ok.
+     */
+    public boolean proposeNewNumberTest(int number){
+    	try{
+    		proposeNewNumber(number);
+    		return true;
+    	} catch(IllegalStateException ise){
+    		return false;
+    	}
+    }
 }
 
 class Build {
