@@ -45,7 +45,7 @@ public class BuildExecutionTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getPublishersList().add(new BrokenPublisher());
         FreeStyleBuild b = r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        r.assertLogContains("Post-build steps failed", b);
+        r.assertLogContains(Messages.Build_post_build_steps_failed(), b);
         FilePath ws = r.jenkins.getWorkspaceFor(p);
         WorkspaceList.Lease lease = r.jenkins.toComputer().getWorkspaceList().allocate(ws);
         try {
