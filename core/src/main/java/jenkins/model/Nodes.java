@@ -213,7 +213,7 @@ public class Nodes implements Saveable {
      */
     @CheckForNull
     public Node getNode(String name) {
-        return nodes.get(name);
+        return name == null ? null : nodes.get(name);
     }
 
     /**
