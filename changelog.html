@@ -78,6 +78,8 @@ Upcoming changes</a>
   <li class=rfe>
     Refactor the Queue and Nodes to use a consistent locking strategy
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27565">issue 27565</a>)
+    <strong>Note</strong> that this change involved moving slave definitions outside the main <code>config.xml</code> file.
+    If you downgrade after this, your slave settings will be lost.
   <li class=bug>
     Makes the Jenkins is loading screen not block on the extensions loading lock
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27563">issue 27563</a>)
