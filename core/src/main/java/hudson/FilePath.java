@@ -27,10 +27,12 @@ package hudson;
 
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.org.apache.tools.tar.TarInputStream;
@@ -62,9 +64,12 @@ import jenkins.FilePathFilter;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.SlaveToMasterFileCallable;
 import jenkins.SoloFilePathFilter;
+import jenkins.model.AsyncResourceDisposer;
+import jenkins.model.AsyncResourceDisposer.Disposable;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.VirtualFile;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.tools.ant.DirectoryScanner;
@@ -76,6 +81,7 @@ import org.apache.tools.zip.ZipFile;
 import org.kohsuke.stapler.Stapler;
 
 import javax.annotation.CheckForNull;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -117,9 +123,12 @@ import java.util.regex.Pattern;
 
 import static hudson.FilePath.TarCompression.*;
 import static hudson.Util.*;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import jenkins.security.MasterToSlaveCallable;
+
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
         
@@ -1166,13 +1175,60 @@ public final class FilePath implements Serializable {
      * Deletes this directory, including all its contents recursively.
      */
     public void deleteRecursive() throws IOException, InterruptedException {
-        act(new SecureFileCallable<Void>() {
-            private static final long serialVersionUID = 1L;
-            public Void invoke(File f, VirtualChannel channel) throws IOException {
-                deleteRecursive(deleting(f));
-                return null;
+        new DisposeDirectory(this).perform();
+    }
+
+    private static final class DisposeDirectory extends MasterToSlaveCallable<Boolean, IOException> implements Disposable {
+        private static final long serialVersionUID = 1L;
+
+        private final FilePath file;
+
+        private DisposeDirectory(FilePath file) {
+            this.file = file;
+        }
+
+        public boolean dispose() throws Exception {
+            Boolean exists = file.act(this);
+            assert exists != null;
+            return !exists;
+        }
+
+        public String getDisplayName() {
+            return "Directory " + file + " over " + file.channel;
+        }
+
+        private void perform() throws IOException, InterruptedException {
+            FilePath tempFile = file.getParent().child(file.getBaseName() + "_async_cleanup_" + System.currentTimeMillis());
+            boolean renamed = false;
+            try {
+                file.renameTo(tempFile);
+                renamed = true;
+
+                Register register = new Register(this);
+                if (Jenkins.getInstance() != null) {
+                    register.call(); // Register locally
+                    return;
+                }
+
+                // Master on the other end confirmed registration
+                if (file.channel != null && file.channel.call(register)) return;
+            } catch (IOException ex) {
+                // Failed to rename or schedule remotely
             }
-        });
+
+            // Fallback to synchronous delete when not on master or not talking to master
+            if (renamed) {
+                tempFile.renameTo(file);
+            }
+
+            file.act(this);
+        }
+
+        public Boolean call() throws IOException {
+            File nativeFile = new File(file.getRemote());
+            file.deleteRecursive(file.deleting(nativeFile));
+            return nativeFile.exists();
+        }
     }
 
     /**
