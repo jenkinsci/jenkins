@@ -367,6 +367,8 @@ public abstract class LoadStatistics {
 
     /**
      * With 0.90 decay ratio for every 10sec, half reduction is about 1 min.
+     * 
+     * Put differently, the half reduction time is {@code CLOCK*log(0.5)/log(DECAY)}
      */
     public static final float DECAY = Float.parseFloat(System.getProperty(LoadStatistics.class.getName()+".decay","0.9"));
     /**
