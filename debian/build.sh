@@ -30,4 +30,4 @@ d=$(dirname $0)
 cp "$1" $d/jenkins.war
 
 cd $d
-exec debuild -us -uc -A
+exec debuild -us -uc -Zgzip -A
