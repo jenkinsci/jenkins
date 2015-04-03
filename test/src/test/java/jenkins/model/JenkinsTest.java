@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -52,10 +53,12 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
@@ -68,16 +71,18 @@ import java.net.URL;
  * @author kingfai
  *
  */
-public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction {
+public class JenkinsTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testIsDisplayNameUniqueTrue() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName("displayName");
         
         Jenkins jenkins = Jenkins.getInstance();
@@ -91,10 +96,10 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         final String jobName = "jobName";
         final String displayName = "displayName";
         
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
@@ -106,21 +111,20 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         final String curJobName = "curJobName";
         final String displayName = "currentProjectDisplayName";
         
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
         // should be true as we don't test against the current job
         assertTrue(jenkins.isDisplayNameUnique(displayName, curJobName));
-        
     }
     
     @Test
     public void testIsNameUniqueTrue() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        createFreeStyleProject(curJobName);        
-        createFreeStyleProject(jobName);
+        j.createFreeStyleProject(curJobName);
+        j.createFreeStyleProject(jobName);
         
         Jenkins jenkins = Jenkins.getInstance();
         assertTrue(jenkins.isNameUnique("jobName1", curJobName));
@@ -130,8 +134,8 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
     public void testIsNameUniqueFalse() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        createFreeStyleProject(curJobName);        
-        createFreeStyleProject(jobName);
+        j.createFreeStyleProject(curJobName);
+        j.createFreeStyleProject(jobName);
         
         Jenkins jenkins = Jenkins.getInstance();
         assertFalse(jenkins.isNameUnique(jobName, curJobName));
@@ -141,8 +145,8 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
     public void testIsNameUniqueSameAsCurrentJob() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        createFreeStyleProject(curJobName);        
-        createFreeStyleProject(jobName);
+        j.createFreeStyleProject(curJobName);
+        j.createFreeStyleProject(jobName);
         
         Jenkins jenkins = Jenkins.getInstance();
         // true because we don't test against the current job
@@ -153,10 +157,10 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
     public void testDoCheckDisplayNameUnique() throws Exception {
         final String curJobName = "curJobName";
         final String jobName = "jobName";
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName("displayName");
         
         Jenkins jenkins = Jenkins.getInstance();
@@ -169,10 +173,10 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
@@ -185,10 +189,10 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         final String curJobName = "curJobName";
         final String jobName = "jobName";
         final String displayName = "displayName";
-        FreeStyleProject curProject = createFreeStyleProject(curJobName);
+        FreeStyleProject curProject = j.createFreeStyleProject(curJobName);
         curProject.setDisplayName("currentProjectDisplayName");
         
-        FreeStyleProject p = createFreeStyleProject(jobName);
+        FreeStyleProject p = j.createFreeStyleProject(jobName);
         p.setDisplayName(displayName);
         
         Jenkins jenkins = Jenkins.getInstance();
@@ -224,15 +228,15 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         }
     }
     
-    @Issue("JENKINS-12251")
+    @Test @Issue("JENKINS-12251")
     public void testItemFullNameExpansion() throws Exception {
-        HtmlForm f = createWebClient().goTo("/configure").getFormByName("config");
+        HtmlForm f = j.createWebClient().goTo("configure").getFormByName("config");
         f.getInputByName("_.rawBuildsDir").setValueAttribute("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
         f.getInputByName("_.rawWorkspaceDir").setValueAttribute("${JENKINS_HOME}/test12251_ws/${ITEM_FULL_NAME}");
-        submit(f);
+        j.submit(f);
 
         // build a dummy project
-        MavenModuleSet m = createMavenProject();
+        MavenModuleSet m = j.createMavenProject();
         m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
         MavenModuleSetBuild b = m.scheduleBuild2(0).get();
 
@@ -244,23 +248,24 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
     /**
      * Makes sure access to "/foobar" for UnprotectedRootAction gets through.
      */
-    @Issue("JENKINS-14113")
+    @Test @Issue("JENKINS-14113")
     public void testUnprotectedRootAction() throws Exception {
-        jenkins.setSecurityRealm(createDummySecurityRealm());
-        jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
-        WebClient wc = createWebClient();
-        wc.goTo("/foobar");
-        wc.goTo("/foobar/");
-        wc.goTo("/foobar/zot");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
+        WebClient wc = j.createWebClient();
+        wc.goTo("foobar");
+        wc.goTo("foobar/");
+        wc.goTo("foobar/zot");
 
         // and make sure this fails
-        wc.assertFails("/foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
+        wc.assertFails("foobar-zot/", HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-        assertEquals(3,jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
+        assertEquals(3,j.jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
     }
 
+    @Test
     public void testDoScript() throws Exception {
-        jenkins.setSecurityRealm(new LegacySecurityRealm());
+        j.jenkins.setSecurityRealm(new LegacySecurityRealm());
         GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
             @Override public boolean hasPermission(String sid, Permission p) {
                 return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
@@ -270,8 +275,8 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         gmas.add(Jenkins.RUN_SCRIPTS, "alice");
         gmas.add(Jenkins.READ, "bob");
         gmas.add(Jenkins.ADMINISTER, "charlie");
-        jenkins.setAuthorizationStrategy(gmas);
-        WebClient wc = createWebClient();
+        j.jenkins.setAuthorizationStrategy(gmas);
+        WebClient wc = j.createWebClient();
         wc.login("alice");
         wc.goTo("script");
         wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
@@ -289,8 +294,9 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
+    @Test
     public void testDoEval() throws Exception {
-        jenkins.setSecurityRealm(new LegacySecurityRealm());
+        j.jenkins.setSecurityRealm(new LegacySecurityRealm());
         GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
             @Override public boolean hasPermission(String sid, Permission p) {
                 return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
@@ -300,8 +306,8 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         gmas.add(Jenkins.RUN_SCRIPTS, "alice");
         gmas.add(Jenkins.READ, "bob");
         gmas.add(Jenkins.ADMINISTER, "charlie");
-        jenkins.setAuthorizationStrategy(gmas);
-        WebClient wc = createWebClient();
+        j.jenkins.setAuthorizationStrategy(gmas);
+        WebClient wc = j.createWebClient();
         wc.login("alice");
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
         assertEquals("3", eval(wc));
@@ -368,38 +374,54 @@ public class JenkinsTest extends HudsonTestCase implements UnprotectedRootAction
         }
     }
 
-    @Issue("JENKINS-20866")
+    @Test @Issue("JENKINS-20866")
     public void testErrorPageShouldBeAnonymousAccessible() throws Exception {
         HudsonPrivateSecurityRealm s = new HudsonPrivateSecurityRealm(false, false, null);
         User alice = s.createAccount("alice", "alice");
-        jenkins.setSecurityRealm(s);
+        j.jenkins.setSecurityRealm(s);
 
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
-        jenkins.setAuthorizationStrategy(auth);
+        j.jenkins.setAuthorizationStrategy(auth);
 
         // no anonymous read access
         assertTrue(!Jenkins.getInstance().getACL().hasPermission(Jenkins.ANONYMOUS,Jenkins.READ));
 
-        WebClient wc = createWebClient();
+        WebClient wc = j.createWebClient();
         wc.setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage p = wc.goTo("/self/reportError");
+        HtmlPage p = wc.goTo("error/reportError");
 
-        assertEquals(400, p.getWebResponse().getStatusCode());  // not 403 forbidden
+        assertEquals(p.asText(), 400, p.getWebResponse().getStatusCode());  // not 403 forbidden
         assertTrue(p.getWebResponse().getContentAsString().contains("My car is black"));
     }
 
-    public HttpResponse doReportError() {
-        return new Failure("My car is black");
+    @TestExtension("testErrorPageShouldBeAnonymousAccessible")
+    public static class ReportError implements UnprotectedRootAction {
+
+        public String getIconFileName() {
+            return null;
+        }
+
+        public String getDisplayName() {
+            return null;
+        }
+
+        public String getUrlName() {
+            return "error";
+        }
+
+        public HttpResponse doReportError() {
+            return new Failure("My car is black");
+        }
     }
 
-    @Issue("JENKINS-23551")
+    @Test @Issue("JENKINS-23551")
     public void testComputerListenerNotifiedOnRestart() {
         // Simulate restart calling listeners
         for (RestartListener listener : RestartListener.all())
             listener.onRestart();
 
         ArgumentCaptor<OfflineCause> captor = ArgumentCaptor.forClass(OfflineCause.class);
-        Mockito.verify(listenerMock).onOffline(Mockito.eq(jenkins.toComputer()), captor.capture());
+        Mockito.verify(listenerMock).onOffline(Mockito.eq(j.jenkins.toComputer()), captor.capture());
         assertTrue(captor.getValue().toString().contains("restart"));
     }
 
