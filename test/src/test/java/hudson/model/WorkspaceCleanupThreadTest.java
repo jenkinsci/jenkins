@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
+import hudson.scm.NullSCM;
 import hudson.slaves.DumbSlave;
 import hudson.util.StreamTaskListener;
 
@@ -46,11 +47,9 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.WithoutJenkins;
 
 public class WorkspaceCleanupThreadTest {
-
-    // TODO test that new workspaces are skipped
-    // TODO test that SCM.processWorkspaceBeforeDeletion can reject
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
@@ -67,18 +66,18 @@ public class WorkspaceCleanupThreadTest {
 
         FilePath ws1 = createOldWorkspaceOn(r.createOnlineSlave(), p);
 
-        FilePath ws2 = createOldWorkspaceOn(r.createOnlineSlave(), p);
-
         p.setAssignedNode(r.jenkins);
-        FreeStyleBuild b3 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertEquals(r.jenkins, b3.getBuiltOn());
-        assertEquals(r.jenkins, p.getLastBuiltOn());
+        FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(r.jenkins, b.getBuiltOn());
+        FilePath ws2 = b.getWorkspace();
+
+        FilePath ws3 = createOldWorkspaceOn(r.createOnlineSlave(), p);
 
         performCleanup();
 
-        assertFalse(ws1.exists());
-        assertFalse(ws2.exists());
-        assertTrue(b3.getWorkspace().exists());
+        assertFalse(ws1.exists()); // Old one - deleted
+        assertTrue(ws2.exists()); // Not old enough - kept
+        assertTrue(ws3.exists()); // Latest - kept
     }
 
     @Issue("JENKINS-21023")
@@ -112,7 +111,7 @@ public class WorkspaceCleanupThreadTest {
         FreeStyleProject p2 = d.createProject(FreeStyleProject.class, "p2");
         FilePath ws4 = createOldWorkspaceOn(s1, p2);
         assertEquals(s1, p2.getLastBuiltOn());
-        ws2.getParent().act(new Detouch()); // ${s1.rootPath}/workspace/d/
+        ws2.getParent().act(new Touch(0)); // ${s1.rootPath}/workspace/d/
 
         performCleanup();
 
@@ -122,13 +121,72 @@ public class WorkspaceCleanupThreadTest {
         assertTrue(ws4.exists());
     }
 
+    @Test public void doNothingIfDisabled() throws Exception {
+        WorkspaceCleanupThread.disabled = true;
+        FreeStyleProject p = r.createFreeStyleProject();
+
+        FilePath ws = createOldWorkspaceOn(r.jenkins, p);
+        createOldWorkspaceOn(r.createOnlineSlave(), p);
+
+        performCleanup();
+
+        assertTrue(ws.exists());
+
+        WorkspaceCleanupThread.disabled = false;
+        performCleanup();
+
+        assertFalse(ws.exists());
+    }
+
+    @Test public void removeOnlyWhatIsOldEnough() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FilePath ws = createOldWorkspaceOn(r.jenkins, p);
+        createOldWorkspaceOn(r.createOnlineSlave(), p);
+
+        long twoDaysOld = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000;
+        ws.act(new Touch(twoDaysOld));
+
+        WorkspaceCleanupThread.retainForDays = 3;
+        performCleanup();
+
+        assertTrue(ws.exists());
+
+        WorkspaceCleanupThread.retainForDays = 1;
+        performCleanup();
+
+        assertFalse(ws.exists());
+    }
+
+    @Test @WithoutJenkins public void reocurencePeriodIsInhours() {
+        assertEquals(
+                WorkspaceCleanupThread.recurrencePeriodHours * 60 * 60 * 1000 ,
+                new WorkspaceCleanupThread().getRecurrencePeriod()
+        );
+    }
+
+    @Test public void vetoByScm() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FilePath ws = createOldWorkspaceOn(r.jenkins, p);
+        createOldWorkspaceOn(r.createOnlineSlave(), p);
+
+        p.setScm(new VetoSCM(false));
+        performCleanup();
+
+        assertTrue(ws.exists());
+
+        p.setScm(new VetoSCM(true));
+        performCleanup();
+
+        assertFalse(ws.exists());
+    }
+
     private FilePath createOldWorkspaceOn(Node slave, FreeStyleProject p) throws Exception {
         p.setAssignedNode(slave);
         FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(slave, b1.getBuiltOn());
         FilePath ws = b1.getWorkspace();
         assertNotNull(ws);
-        ws.act(new Detouch());
+        ws.act(new Touch(0));
         return ws;
     }
 
@@ -136,9 +194,30 @@ public class WorkspaceCleanupThreadTest {
         new WorkspaceCleanupThread().execute(StreamTaskListener.fromStdout());
     }
 
-    private static final class Detouch extends MasterToSlaveFileCallable<Void> {
+    private static final class VetoSCM extends NullSCM {
+        private final boolean answer;
+        public VetoSCM(boolean answer) {
+            this.answer = answer;
+        }
+
+        @Override
+        public boolean processWorkspaceBeforeDeletion(
+                Job<?, ?> project, FilePath workspace, Node node
+        ) throws IOException, InterruptedException {
+            return answer;
+        }
+    }
+
+    private static final class Touch extends MasterToSlaveFileCallable<Void> {
+        private static final long serialVersionUID = 1L;
+        private final long time;
+
+        public Touch(long time) {
+            this.time = time;
+        }
+
         @Override public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            Assume.assumeTrue("failed to reset lastModified on " + f, f.setLastModified(0));
+            Assume.assumeTrue("failed to reset lastModified on " + f, f.setLastModified(time));
             return null;
         }
     }
