@@ -3527,6 +3527,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (!"POST".equals(req.getMethod())) {
                 throw HttpResponses.error(HttpURLConnection.HTTP_BAD_METHOD, "requires POST");
             }
+
+            if (channel == null) {
+                throw HttpResponses.error(HttpURLConnection.HTTP_NOT_FOUND, "Node is offline");
+            }
+
             try {
                 req.setAttribute("output",
                         RemotingDiagnostics.executeGroovy(text, channel));
