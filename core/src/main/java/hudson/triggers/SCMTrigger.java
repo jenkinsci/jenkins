@@ -128,11 +128,6 @@ public class SCMTrigger extends Trigger<Item> {
      * @since 1.375
      */
     public void run(Action[] additionalActions) {
-        if (Jenkins.getInstance().isQuietingDown()) {
-            LOGGER.log(INFO, "Skipping polling for {0} since Jenkins is in quiet mode", job.getFullName());
-            return;
-        }
-
         DescriptorImpl d = getDescriptor();
 
         LOGGER.fine("Scheduling a polling for "+job);
