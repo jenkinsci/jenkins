@@ -36,7 +36,9 @@ THE SOFTWARE.
       <l:task href="${rootURL}/${it.url}configure" icon="icon-setting icon-md" permission="${it.CONFIGURE}" title="${%Configure}"/>
       <l:task href="${rootURL}/${it.url}builds" icon="icon-notepad icon-md" title="${%Build History}"/>
       <l:task href="${rootURL}/${it.url}load-statistics" icon="icon-monitor icon-md" title="${%Load Statistics}"/>
-      <l:task href="${rootURL}/${it.url}script" icon="icon-terminal icon-md" permission="${app.RUN_SCRIPTS}" title="${%Script Console}"/>
+      <j:if test="${it.channel!=null}">
+        <l:task href="${rootURL}/${it.url}script" icon="icon-terminal icon-md" permission="${app.RUN_SCRIPTS}" title="${%Script Console}"/>
+      </j:if>
       <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
       <t:actions />
     </l:tasks>

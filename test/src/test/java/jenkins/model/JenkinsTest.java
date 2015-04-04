@@ -23,6 +23,9 @@
  */
 package jenkins.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
@@ -31,7 +34,9 @@ import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
@@ -50,6 +55,7 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 
@@ -427,4 +433,20 @@ public class JenkinsTest {
 
     @TestExtension(value = "testComputerListenerNotifiedOnRestart")
     public static final ComputerListener listenerMock = Mockito.mock(ComputerListener.class);
+
+    @Test
+    public void runScriptOnOfflineComputer() throws Exception {
+        DumbSlave slave = j.createSlave();
+        URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
+
+        WebClient wc = j.createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+
+        WebRequestSettings req = new WebRequestSettings(url, HttpMethod.POST);
+        Page page = wc.getPage(wc.addCrumb(req));
+        WebResponse rsp = page.getWebResponse();
+
+        assertThat(rsp.getContentAsString(), containsString("Node is offline"));
+        assertThat(rsp.getStatusCode(), equalTo(404));
+    }
 }
