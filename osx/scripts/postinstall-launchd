@@ -16,7 +16,7 @@ chown daemon:daemon /var/log/jenkins
 cat <<_EOT_ > /etc/newsyslog.d/jenkins.conf
 # logfilename          [owner:group]    mode count size when  flags [/pid_file] [sig_num]
 # Rotate jenkins log at midnight, and preserve old logs in 3 days
-/var/log/jenkins/jenkins.log            644  3     *    \$D0   J
+/var/log/jenkins/jenkins.log      daemon:daemon      644  3     *    \$D0   J
 _EOT_
 
 # Load and start the launch daemon

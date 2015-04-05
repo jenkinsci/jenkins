@@ -44,7 +44,13 @@ else
     dscl . -append /Groups/jenkins GroupMembership jenkins
 fi
 
-find "$JENKINS_HOMEDIR" \( -not -user jenkins -or -not -group jenkins \) -print0 | xargs -0 chown jenkins:jenkins
+# identify the real default group name for user jenkins
+groupid=`dscl . read /Users/jenkins PrimaryGroupID | awk '{print $2}'`
+gname=`id -n -g $groupid`
+
+echo "Using jenkins:${gname} as file owner and group for jenkins daemon files"
+
+find "$JENKINS_HOMEDIR" \( -not -user jenkins -or -not -group ${gname} \) -print0 | xargs -0 chown jenkins:${gname}
 
 # Add defaults for heap sizing
 arch=$(uname -m)
@@ -65,17 +71,17 @@ fi
 JENKINS_TMPDIR="$JENKINS_HOMEDIR/tmp"
 defaults write $DEFAULTS_PLIST tmpdir $JENKINS_TMPDIR
 mkdir -p $JENKINS_TMPDIR
-chown jenkins:jenkins $JENKINS_TMPDIR
+chown jenkins:${gname} $JENKINS_TMPDIR
 
 # Create log directory, which can be written by Jenkins daemon
 mkdir -p /var/log/jenkins
-chown jenkins:jenkins /var/log/jenkins
+chown jenkins:${gname} /var/log/jenkins
 
 # Enable log rotation by newsyslog
 cat <<_EOT_ > /etc/newsyslog.d/jenkins.conf
 # logfilename          [owner:group]    mode count size when  flags [/pid_file] [sig_num]
 # Rotate jenkins log at midnight, and preserve old logs in 3 days
-/var/log/jenkins/jenkins.log            644  3     *    \$D0   J
+/var/log/jenkins/jenkins.log     jenkins:${gname}       644  3     *    \$D0   J
 _EOT_
 
 # Load and start the launch daemon
