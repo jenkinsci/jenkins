@@ -1,4 +1,0 @@
-[jenkins]
-name=Jenkins
-baseurl=@URL@
-gpgcheck=1
