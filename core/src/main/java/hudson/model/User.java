@@ -477,8 +477,18 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.172
      */
     public static @CheckForNull User current() {
-        Authentication a = Jenkins.getAuthentication();
-        if(a instanceof AnonymousAuthenticationToken)
+        return get(Jenkins.getAuthentication());
+    }
+
+    /**
+     * Gets the {@link User} object representing the supplied {@link Authentication} or
+     * {@code null} if the supplied {@link Authentication} is either anonymous or {@code null}
+     * @param a the supplied {@link Authentication} .
+     * @return a {@link User} object for the supplied {@link Authentication} or {@code null}
+     * @since 1.609
+     */
+    public static @CheckForNull User get(@CheckForNull Authentication a) {
+        if(a == null || a instanceof AnonymousAuthenticationToken)
             return null;
 
         // Since we already know this is a name, we can just call getOrCreate with the name directly.
