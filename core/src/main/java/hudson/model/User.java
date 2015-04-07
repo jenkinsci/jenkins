@@ -243,6 +243,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return description;
     }
 
+
+    /**
+     * Sets the description of the user.
+     * @since 1.609
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     /**
      * Gets the user properties configured for this user.
      */
