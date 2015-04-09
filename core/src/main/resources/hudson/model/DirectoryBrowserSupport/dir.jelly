@@ -70,11 +70,11 @@ THE SOFTWARE.
                     </j:forEach>
                   </td>
                   <j:if test="${!x.folder}">
-                    <td class="fileSize">
-                      ${h.humanReadableByteSize(x.getSize())}
+                    <td class="fileTimestamp">
+                        ${x.getDate()}
                     </td>
                     <td class="fileSize">
-                        ${x.getDate()}
+                      ${h.humanReadableByteSize(x.getSize())}
                     </td>
                     <td>
                       <j:if test="${x.readable}">

@@ -394,6 +394,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
          */
         private final boolean isReadable;
 
+        public Path(String href, String title, boolean isFolder, long size, boolean isReadable){
+            this(href, title, isFolder, size, null, isReadable);
+        }
+        
         public Path(String href, String title, boolean isFolder, long size, String date, boolean isReadable) {
             this.href = href;
             this.title = title;
