@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -324,7 +325,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         int current=1;
         while(tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            r.add(new Path(createBackRef(total-current+restSize),token,true,0, null, true));
+            r.add(new Path(createBackRef(total-current+restSize),token,true,0, System.currentTimeMillis(), true));
             current++;
         }
         return r;
@@ -387,7 +388,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         /**
          * File modified date, or null if not a file
          */
-        private final String date;
+        private final Date date;
         
         /**
          * If the current user can read the file.
@@ -395,10 +396,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         private final boolean isReadable;
 
         public Path(String href, String title, boolean isFolder, long size, boolean isReadable){
-            this(href, title, isFolder, size, null, isReadable);
+            this(href, title, isFolder, size, System.currentTimeMillis(), isReadable);
         }
         
-        public Path(String href, String title, boolean isFolder, long size, String date, boolean isReadable) {
+        public Path(String href, String title, boolean isFolder, long size, long date, boolean isReadable){
+            this(href, title, isFolder, size, new Date(date), isReadable);
+        }
+        
+        public Path(String href, String title, boolean isFolder, long size, Date date, boolean isReadable) {
             this.href = href;
             this.title = title;
             this.isFolder = isFolder;
@@ -441,7 +446,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             return size;
         }
         
-        public String getDate() {
+        public Date getDate() {
             return date;
         }
 
@@ -498,7 +503,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 Arrays.sort(files,new FileComparator(locale));
     
                 for( VirtualFile f : files ) {
-                    Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.date(), f.canRead());
+                    Path p = new Path(Util.rawEncode(f.getName()), f.getName(), f.isDirectory(), f.length(), f.lastModified(), f.canRead());
                     if(!f.isDirectory()) {
                         r.add(Collections.singletonList(p));
                     } else {
@@ -519,7 +524,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                                 break;
                             f = sub.get(0);
                             relPath += '/'+Util.rawEncode(f.getName());
-                            l.add(new Path(relPath,f.getName(),true,0, f.date(), f.canRead()));
+                            l.add(new Path(relPath,f.getName(),true,0, f.lastModified(), f.canRead()));
                         }
                         r.add(l);
                     }
@@ -573,7 +578,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 href.append("/");
             }
 
-            Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length(), filePath.date(), filePath.canRead());
+            Path path = new Path(href.toString(), filePath.getName(), filePath.isDirectory(), filePath.length(), filePath.lastModified(), filePath.canRead());
             pathList.add(path);
         }
 

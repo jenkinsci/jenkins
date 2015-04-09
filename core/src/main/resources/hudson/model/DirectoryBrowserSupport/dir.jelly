@@ -71,7 +71,7 @@ THE SOFTWARE.
                   </td>
                   <j:if test="${!x.folder}">
                     <td class="fileTimestamp">
-                        ${x.getDate()}
+                        <i:formatDate value="${x.getDate()}" type="both" dateStyle="medium" timeStyle="medium"/>
                     </td>
                     <td class="fileSize">
                       ${h.humanReadableByteSize(x.getSize())}
