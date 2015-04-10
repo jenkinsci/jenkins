@@ -2208,6 +2208,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return descriptorLists.get(type);
     }
 
+    public DescriptorExtensionList getDescriptorList(String descriptorType) throws ClassNotFoundException {
+        return getDescriptorList((Class)pluginManager.uberClassLoader.loadClass(descriptorType));
+    }
+    
     /**
      * Refresh {@link ExtensionList}s by adding all the newly discovered extensions.
      *

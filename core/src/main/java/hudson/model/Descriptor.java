@@ -40,6 +40,8 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.kohsuke.stapler.lang.Klass;
 import org.springframework.util.StringUtils;
@@ -122,6 +124,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
+@ExportedBean
 public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * The class being described by this descriptor.
@@ -294,6 +297,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Human readable name of this kind of configurable object.
      */
+    @Exported
     public abstract String getDisplayName();
 
     /**
@@ -312,6 +316,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * 
      * @since 1.391
      */
+    @Exported
     public String getId() {
         return clazz.getName();
     }
@@ -336,6 +341,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * Gets the URL that this Descriptor is bound to, relative to the nearest {@link DescriptorByNameOwner}.
      * Since {@link Jenkins} is a {@link DescriptorByNameOwner}, there's always one such ancestor to any request.
      */
+    @Exported
     public String getDescriptorUrl() {
         return "descriptorByName/"+getId();
     }

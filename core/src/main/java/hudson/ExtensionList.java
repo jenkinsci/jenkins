@@ -25,6 +25,7 @@ package hudson;
 
 import com.google.common.collect.Lists;
 import hudson.init.InitMilestone;
+import hudson.model.Api;
 import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
 import jenkins.model.Jenkins;
@@ -33,6 +34,8 @@ import hudson.util.DescriptorList;
 import hudson.util.Memoizer;
 import hudson.util.Iterators;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -68,6 +71,7 @@ import javax.annotation.Nonnull;
  * @see jenkins.model.Jenkins#getExtensionList(Class)
  * @see jenkins.model.Jenkins#getDescriptorList(Class)
  */
+@ExportedBean
 public class ExtensionList<T> extends AbstractList<T> {
     /**
      * @deprecated as of 1.417
@@ -320,13 +324,22 @@ public class ExtensionList<T> extends AbstractList<T> {
         Collections.sort(r);
         return r;
     }
+    
+    public Api getApi() {
+        return new Api(this);
+    }
+    
+    @Exported(inline=true) // exposing for API traversal
+    public List<T> getItems() {
+        return this;
+    }
 
     /**
      * @deprecated as of 1.416
      *      Use {@link #create(Jenkins, Class)}
      */
     public static <T> ExtensionList<T> create(Hudson hudson, Class<T> type) {
-        return create((Jenkins)hudson,type);
+        return create((Jenkins) hudson, type);
     }
 
     public static <T> ExtensionList<T> create(Jenkins jenkins, Class<T> type) {

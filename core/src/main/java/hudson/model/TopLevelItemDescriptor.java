@@ -25,8 +25,20 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import jenkins.model.TopLevelItemDescriptorCategory;
 import org.acegisecurity.AccessDeniedException;
+import org.apache.commons.jelly.JellyException;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
+
+import java.io.IOException;
+import java.io.StringWriter;
 
 /**
  * {@link Descriptor} for {@link TopLevelItem}s.
@@ -48,6 +60,11 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     protected TopLevelItemDescriptor() {
     }
 
+    @Exported
+    public TopLevelItemDescriptorCategory getCategory() {
+        return TopLevelItemDescriptorCategory.JOBS_AND_WORKFLOWS;
+    }
+    
     /**
      * {@link TopLevelItemDescriptor}s often uses other descriptors to decorate itself.
      * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
@@ -110,6 +127,28 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      */
     public abstract String getDisplayName();
 
+    /**
+     * For REST API, expose the detailed description HTML.
+     */
+    @Exported
+    public String getNewInstanceDetailHtml() throws JellyException, IOException {
+        // TODO: there should be a method like "include" to do this better
+        // Stapler.getCurrentRequest().getView(this,"newInstanceDetails").include(req,rsp);
+
+        Script s = WebApp.getCurrent().getMetaClass(this).getTearOff(JellyClassTearOff.class).findScript("newInstanceDetail.jelly");
+        if (s==null)        return null;
+        
+        StringWriter sw = new StringWriter();
+        new DefaultScriptInvoker().invokeScript(
+                Stapler.getCurrentRequest(),
+                Stapler.getCurrentResponse(),
+                s,
+                this,
+                XMLOutput.createXMLOutput(sw)
+        );
+        return sw.toString();
+    }
+    
     /**
      * @deprecated since 2007-01-19.
      *      This is not a valid operation for {@link Job}s.
