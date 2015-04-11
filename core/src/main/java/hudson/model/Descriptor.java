@@ -944,11 +944,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Finds a descriptor from a collection by its class name.
-     * @deprecated Since we introduced {@link Descriptor#getId()}, it is a preferred method of identifying descriptor by a string.
-     * @since TODO
+     * Finds a descriptor from a collection by the class name of the {@link Descriptor}.
+     * This is useless as of the introduction of {@link #getId} and so only very old compatibility code needs it.
      */
-    public static @CheckForNull <T extends Descriptor> T findByClassName(Collection<? extends T> list, String className) {
+    private static @CheckForNull <T extends Descriptor> T findByClassName(Collection<? extends T> list, String className) {
         for (T d : list) {
             if(d.getClass().getName().equals(className))
                 return d;
