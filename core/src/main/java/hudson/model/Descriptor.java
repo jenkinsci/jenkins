@@ -931,7 +931,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Finds a descriptor from a collection by its id.
+     * Finds a descriptor from a collection by its ID.
+     * @param id should match {@link #getId}
      * @since TODO
      */
     public static @CheckForNull <T extends Descriptor> T findById(Collection<? extends T> list, String id) {
@@ -956,7 +957,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Finds a descriptor from a collection by the class name of the Describable it describes.
+     * Finds a descriptor from a collection by the class name of the {@link Describable} it describes.
+     * @param className should match {@link Class#getName} of a {@link #clazz}
      * @since TODO
      */
     public static @CheckForNull <T extends Descriptor> T findByDescribableClassName(Collection<? extends T> list, String className) {
@@ -969,7 +971,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     /**
      * Finds a descriptor from a collection by its class name or ID.
-     * @deprecated choose between {@link #findById(java.util.Collection, String)} or {@link #findByClassName(java.util.Collection, String)}
+     * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
      */
     public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String string) {
         T d = findByClassName(list, string);
@@ -979,6 +981,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         return findById(list, string);
     }
 
+    /**
+     * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
+     */
     public static @CheckForNull Descriptor find(String className) {
         return find(ExtensionList.lookup(Descriptor.class),className);
     }
