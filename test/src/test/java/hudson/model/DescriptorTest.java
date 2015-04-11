@@ -34,7 +34,6 @@ import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -62,7 +61,6 @@ public class DescriptorTest {
         }
     }
 
-    @Ignore("TODO currently fails: after first configRoundtrip, builders list is empty because in newInstancesFromHeteroList $class is BuilderImpl (like stapler-class), kind=builder-a is ignored, and so d is null")
     @Issue("JENKINS-26781")
     @Test public void overriddenId() throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject();
