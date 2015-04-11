@@ -41,8 +41,7 @@ THE SOFTWARE.
         <input type="hidden" name="kind" value="${attrs.descriptor.id}" />
       </j:when>
       <j:otherwise>
-        <!-- Legacy: Remove once plugins have been staged onto $class -->
-        <input type="hidden" name="stapler-class" value="${clazz}" />
+        <input type="hidden" name="stapler-class" value="${clazz}" />  <!-- Legacy: Remove once plugins have been staged onto $class -->
         <input type="hidden" name="$class" value="${clazz}" />
       </j:otherwise>
     </j:choose>
