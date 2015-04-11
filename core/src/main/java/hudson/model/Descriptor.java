@@ -910,6 +910,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             for (Object o : JSONArray.fromObject(formData)) {
                 JSONObject jo = (JSONObject)o;
                 Descriptor<T> d = null;
+                // 'kind' and '$class' are mutually exclusive (see class-entry.jelly), but to be more lenient on the reader side,
+                // we check them both anyway. 'kind' (which maps to ID) is more unique than '$class', which can have multiple matching
+                // Descriptors, so we prefer 'kind' if it's present.
                 String kind = jo.optString("kind", null);
                 if (kind != null) {
                     d = findById(descriptors, kind);
