@@ -2478,32 +2478,6 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
 
-    /**
-     * Mock queue Item used for unit testing.
-     * <p/>
-     * No other clean way to effectively mock Item.
-     */
-    @SuppressWarnings("unchecked")
-    public static final class MockItem extends Item {
-        public MockItem(long id) {
-            super(null, Collections.EMPTY_LIST, id, null);
-        }
-
-        @Override
-        public CauseOfBlockage getCauseOfBlockage() {
-            return null;
-        }
-
-        @Override
-        void enter(Queue q) {
-        }
-
-        @Override
-        boolean leave(Queue q) {
-            return true;
-        }
-    }
-
     private static final Logger LOGGER = Logger.getLogger(Queue.class.getName());
 
     /**

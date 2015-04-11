@@ -24,8 +24,8 @@
 package hudson.widgets;
 
 import hudson.model.Job;
+import hudson.model.MockItem;
 import hudson.model.ModelObject;
-import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import org.junit.Assert;
@@ -265,7 +265,7 @@ public class HistoryPageFilterTest {
     private List<ModelObject> newQueueItems(long startId, long endId) {
         List<ModelObject> items = new ArrayList<ModelObject>();
         for (long queueId = startId; queueId <= endId; queueId++) {
-            items.add(new Queue.MockItem(queueId));
+            items.add(new MockItem(queueId));
         }
         return items;
     }
