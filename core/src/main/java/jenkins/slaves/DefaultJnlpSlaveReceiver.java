@@ -32,6 +32,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             return false;
         }
 
+        // Validate the slave secret matches.
+        if (!computer.getJnlpMac().equals(handshake.getRequestProperty("Secret-Key"))) {
+            return false;
+        }
+
         Channel ch = computer.getChannel();
         if(ch !=null) {
             String c = handshake.getRequestProperty("Cookie");
