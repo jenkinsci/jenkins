@@ -157,7 +157,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-bootstrap3</artifactId>
-      <version>3.3.4-1-SNAPSHOT</version>
+      <version>3.3.4-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
