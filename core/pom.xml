@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.236</stapler.version>
+    <stapler.version>1.237-SNAPSHOT</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>1.8.9</groovy.version>
   </properties>
@@ -141,6 +141,11 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-less</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jrebel</artifactId>
       <version>${stapler.version}</version>
     </dependency>
@@ -148,6 +153,11 @@ THE SOFTWARE.
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-adjunct-bootstrap3</artifactId>
+      <version>3.3.4-1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>

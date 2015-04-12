@@ -244,6 +244,9 @@ public class Functions {
         context.setVariable("resURL",rootURL+getResourcePath());
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
 
+        // assets are static resource files inside jar files
+        context.setVariable("assetsURL",rootURL+'/'+Jenkins.getInstance().getAdjuncts(null).rootURL);
+
         context.setVariable("userAgent", currentRequest.getHeader("User-Agent"));
         IconSet.initPageVariables(context);
     }

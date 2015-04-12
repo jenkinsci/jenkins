@@ -234,12 +234,14 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.assets.AssetsManager;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.framework.adjunct.AdjunctManager;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
+import org.kohsuke.stapler.less.LessLoader;
 import org.xml.sax.InputSource;
 
 import javax.annotation.CheckForNull;
@@ -648,10 +650,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private transient final List<Widget> widgets = getExtensionList(Widget.class);
 
-    /**
-     * {@link AdjunctManager}
-     */
     private transient final AdjunctManager adjuncts;
+
+    private transient final AssetsManager assets;
 
     /**
      * Code that handles {@link ItemGroup} work.
@@ -808,10 +809,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
+            assets = new AssetsManager("adjuncts/" + SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader, assets);
+            assets.getLoaders().add(new LessLoader(Util.createTempDir(),pluginManager.uberClassLoader));
+            assets.getLoaders().add(adjuncts.asAssetLoader());
 
             // initialization consists of ...
-            executeReactor( is,
+            executeReactor(is,
                     pluginManager.initTasks(is),    // loading and preparing plugins
                     loadTasks(),                    // load jobs
                     InitMilestone.ordering()        // forced ordering among key milestones
