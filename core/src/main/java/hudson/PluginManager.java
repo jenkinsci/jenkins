@@ -137,7 +137,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * All active plugins, topologically sorted so that when X depends on Y, Y appears in the list before X does.
      */
-    protected final List<PluginWrapper> activePlugins = new CopyOnWriteArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> activePlugins = new CopyOnWriteArrayList<PluginWrapper>() {
+        @Override
+        public boolean add(PluginWrapper pluginWrapper) {
+            try {
+                return super.add(pluginWrapper);
+            } finally {
+                onActivate(pluginWrapper);
+            }
+        }
+
+        @Override
+        public boolean remove(Object pluginWrapper) {
+            try {
+                return super.remove(pluginWrapper);
+            } finally {
+                onDeactivate((PluginWrapper) pluginWrapper);
+            }
+        }
+    };
 
     protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
 
@@ -509,6 +527,26 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
+    }
+
+    private void onActivate(PluginWrapper pluginWrapper) {
+        for (PluginLifecycleListener listener : PluginLifecycleListener.all()) {
+            try {
+                listener.onActivate(pluginWrapper);
+            } catch (Throwable t) {
+                LOGGER.log(WARNING, "Error firing plugin onActivate event.", t);
+            }
+        }
+    }
+
+    private void onDeactivate(PluginWrapper pluginWrapper) {
+        for (PluginLifecycleListener listener : PluginLifecycleListener.all()) {
+            try {
+                listener.onDeactivate((PluginWrapper) pluginWrapper);
+            } catch (Throwable t) {
+                LOGGER.log(WARNING, "Error firing plugin onDeactivate event.", t);
+            }
+        }
     }
 
     /**

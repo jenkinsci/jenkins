@@ -34,16 +34,21 @@ import hudson.scm.SubversionSCM;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 import jenkins.RestartRequiredException;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.junit.Assert.*;
+
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -279,11 +284,7 @@ public class PluginManagerTest {
     @Test public void installDependingPluginWithoutRestart() throws Exception {
         // Load dependee.
         {
-            String target = "dependee.hpi";
-            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
-            FileUtils.copyURLToFile(src, dest);
-            r.jenkins.pluginManager.dynamicLoad(dest);
+            dynamicLoad("dependee.hpi");
         }
         
         // before load depender, of course failed to call Depender.getValue()
@@ -298,11 +299,7 @@ public class PluginManagerTest {
         
         // Load depender.
         {
-            String target = "depender.hpi";
-            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
-            FileUtils.copyURLToFile(src, dest);
-            r.jenkins.pluginManager.dynamicLoad(dest);
+            dynamicLoad("depender.hpi");
         }
         
         // depender successfully accesses to dependee.
@@ -322,11 +319,7 @@ public class PluginManagerTest {
     @Test public void installDependedPluginWithoutRestart() throws Exception {
         // Load depender.
         {
-            String target = "depender.hpi";
-            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
-            FileUtils.copyURLToFile(src, dest);
-            r.jenkins.pluginManager.dynamicLoad(dest);
+            dynamicLoad("depender.hpi");
         }
         
         // before load dependee, depender does not access to dependee.
@@ -342,10 +335,7 @@ public class PluginManagerTest {
         // Load dependee.
         {
             String target = "dependee.hpi";
-            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
-            FileUtils.copyURLToFile(src, dest);
-            r.jenkins.pluginManager.dynamicLoad(dest);
+            dynamicLoad(target);
         }
         
         // (MUST) Not throws an exception
@@ -375,4 +365,25 @@ public class PluginManagerTest {
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
+    @Test public void pluginLifecycleListener() throws Exception {
+        MyPluginLifecycleListener.activatedPlugins.clear();
+        dynamicLoad("depender.hpi");
+        Assert.assertFalse(MyPluginLifecycleListener.activatedPlugins.isEmpty());
+    }
+        
+    @Extension
+    public static class MyPluginLifecycleListener extends PluginLifecycleListener {
+        private static Set<String> activatedPlugins = new HashSet<String>();        
+        @Override
+        public void onActivate(PluginWrapper plugin) {
+            activatedPlugins.add(plugin.getShortName());
+        }
+    }    
+
+    private void dynamicLoad(String target) throws IOException, InterruptedException, RestartRequiredException {
+        URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
+        File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
+        FileUtils.copyURLToFile(src, dest);
+        r.jenkins.pluginManager.dynamicLoad(dest);
+    }
 }
