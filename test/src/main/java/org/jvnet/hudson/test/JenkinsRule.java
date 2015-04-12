@@ -166,6 +166,8 @@ import jenkins.model.JenkinsLocationConfiguration;
 import net.sf.json.JSONObject;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory;
+import net.sourceforge.htmlunit.corejs.javascript.tools.debugger.Dim;
+import net.sourceforge.htmlunit.corejs.javascript.tools.shell.Global;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
@@ -208,8 +210,6 @@ import org.mortbay.jetty.security.UserRealm;
 import org.mortbay.jetty.webapp.Configuration;
 import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
-import org.mozilla.javascript.tools.debugger.Dim;
-import org.mozilla.javascript.tools.shell.Global;
 import org.springframework.dao.DataAccessException;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
@@ -2174,14 +2174,14 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * if you step over from one script block, the debugger fails to kick in on the beginning of the next script
          * block.
          * This makes it difficult to set a break point on arbitrary script block in the HTML page. We need to fix this
-         * by tweaking {@link org.mozilla.javascript.tools.debugger.Dim.StackFrame#onLineChange(Context, int)}.
+         * by tweaking {@link Dim.StackFrame#onLineChange(Context, int)}.
          */
         public Dim interactiveJavaScriptDebugger() {
             Global global = new Global();
             HtmlUnitContextFactory cf = getJavaScriptEngine().getContextFactory();
             global.init(cf);
 
-            Dim dim = org.mozilla.javascript.tools.debugger.Main.mainEmbedded(cf, global, "Rhino debugger: " + testDescription.getDisplayName());
+            Dim dim = net.sourceforge.htmlunit.corejs.javascript.tools.debugger.Main.mainEmbedded(cf, global, "Rhino debugger: " + testDescription.getDisplayName());
 
             // break on exceptions. this catch most of the errors
             dim.setBreakOnExceptions(true);

@@ -130,6 +130,8 @@ import net.sf.json.JSONObject;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import net.sourceforge.htmlunit.corejs.javascript.ContextFactory.Listener;
 
+import net.sourceforge.htmlunit.corejs.javascript.tools.debugger.Dim;
+import net.sourceforge.htmlunit.corejs.javascript.tools.shell.Global;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
@@ -162,8 +164,6 @@ import org.mortbay.jetty.security.UserRealm;
 import org.mortbay.jetty.webapp.Configuration;
 import org.mortbay.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.webapp.WebXmlConfiguration;
-import org.mozilla.javascript.tools.debugger.Dim;
-import org.mozilla.javascript.tools.shell.Global;
 import org.springframework.dao.DataAccessException;
 import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
@@ -1947,7 +1947,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             HtmlUnitContextFactory cf = getJavaScriptEngine().getContextFactory();
             global.init(cf);
 
-            Dim dim = org.mozilla.javascript.tools.debugger.Main.mainEmbedded(cf, global, "Rhino debugger: " + getName());
+            Dim dim = net.sourceforge.htmlunit.corejs.javascript.tools.debugger.Main.mainEmbedded(cf, global, "Rhino debugger: " + getName());
 
             // break on exceptions. this catch most of the errors
             dim.setBreakOnExceptions(true);
