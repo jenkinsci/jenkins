@@ -342,7 +342,7 @@ public class SearchTest {
             }
         }
 
-        assertTrue(foundDisplayName);
+		assertTrue(foundDisplayName);
     }
 
     /**
