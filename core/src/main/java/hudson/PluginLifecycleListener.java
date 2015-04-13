@@ -33,13 +33,19 @@ import javax.annotation.Nonnull;
 public abstract class PluginLifecycleListener implements ExtensionPoint {
 
     /**
-     * Plugin activated.
-     * @param plugin The plugin that's just been been deactivated.
+     * Plugin activate.
+     * @param plugin The plugin that's just been been activated.
      */
     public void onActivate(@Nonnull PluginWrapper plugin) {}
 
     /**
-     * Plugin deactivated.
+     * Plugin failure.
+     * @param failedPlugin The failed plugin.               
+     */
+    public void onFail(@Nonnull PluginManager.FailedPlugin failedPlugin) {}
+
+    /**
+     * Plugin deactivate.
      * @param plugin The plugin that's just been been deactivated.
      */
     public void onDeactivate(@Nonnull PluginWrapper plugin) {}

@@ -58,6 +58,8 @@ import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Kohsuke Kawaguchi
  */
@@ -365,21 +367,34 @@ public class PluginManagerTest {
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
-    @Test public void pluginLifecycleListener() throws Exception {
+    @Test public void pluginLifecycleListener_onActivate() throws Exception {
         MyPluginLifecycleListener.activatedPlugins.clear();
         dynamicLoad("depender.hpi");
-        Assert.assertFalse(MyPluginLifecycleListener.activatedPlugins.isEmpty());
+        Assert.assertFalse(MyPluginLifecycleListener.activatedPlugins.contains("depender"));
+    }
+
+    @Test public void pluginLifecycleListener_onFail() throws Exception {
+        MyPluginLifecycleListener.failedPlugins.clear();
+        try {
+            dynamicLoad("broken.hpi");
+        } catch (IOException e) {}
+        Assert.assertFalse(MyPluginLifecycleListener.failedPlugins.contains("broken"));
     }
         
     @Extension
     public static class MyPluginLifecycleListener extends PluginLifecycleListener {
         private static Set<String> activatedPlugins = new HashSet<String>();        
+        private static Set<String> failedPlugins = new HashSet<String>();        
         @Override
-        public void onActivate(PluginWrapper plugin) {
+        public void onActivate(@Nonnull PluginWrapper plugin) {
             activatedPlugins.add(plugin.getShortName());
         }
-    }    
-
+        @Override
+        public void onFail(@Nonnull PluginManager.FailedPlugin failedPlugin) {
+            failedPlugins.add(failedPlugin.name);
+        }
+    }  
+    
     private void dynamicLoad(String target) throws IOException, InterruptedException, RestartRequiredException {
         URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
         File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));

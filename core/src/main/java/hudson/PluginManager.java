@@ -157,7 +157,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     };
 
-    protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
+    protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>() {
+        @Override
+        public boolean add(FailedPlugin failedPlugin) {
+            try {
+                return super.add(failedPlugin);
+            } finally {
+                onFail(failedPlugin);
+            }
+        }
+    };
 
     /**
      * Plug-in root directory.
@@ -535,6 +544,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 listener.onActivate(pluginWrapper);
             } catch (Throwable t) {
                 LOGGER.log(WARNING, "Error firing plugin onActivate event.", t);
+            }
+        }
+    }
+
+    private void onFail(FailedPlugin failedPlugin) {
+        for (PluginLifecycleListener listener : PluginLifecycleListener.all()) {
+            try {
+                listener.onFail(failedPlugin);
+            } catch (Throwable t) {
+                LOGGER.log(WARNING, "Error firing plugin fail event.", t);
             }
         }
     }
