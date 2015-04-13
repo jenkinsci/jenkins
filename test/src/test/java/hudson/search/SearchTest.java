@@ -298,7 +298,7 @@ public class SearchTest {
             }
         }
 
-		assertTrue(foundDisplayName);
+        assertTrue(foundDisplayName);
     }
 
     @Issue("JENKINS-24433")
@@ -342,7 +342,7 @@ public class SearchTest {
             }
         }
 
-		assertTrue(foundDisplayName);
+        assertTrue(foundDisplayName);
     }
 
     /**
