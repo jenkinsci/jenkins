@@ -253,7 +253,7 @@ public class SearchTest {
                 foundDispayName = true;
             }
         }
-        
+
         assertTrue(foundProjectName);
         assertTrue(foundDispayName);
     }
@@ -270,10 +270,10 @@ public class SearchTest {
         FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
         project1.setDisplayName(displayName1);
 
-		MockFolder myMockFolder = j.createFolder("my-folder-1");
+        MockFolder myMockFolder = j.createFolder("my-folder-1");
 
-		FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
-		project2.setDisplayName(displayName2);
+        FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
+        project2.setDisplayName(displayName2);
 
         WebClient wc = j.createWebClient();
         Page result = wc.goTo(myMockFolder.getUrl() + "search/suggest?query=" + projectName1, "application/json");
@@ -313,7 +313,7 @@ public class SearchTest {
         FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
         project1.setDisplayName(displayName1);
 
-		MockFolder myMockFolder = j.createFolder("my-folder-1");
+        MockFolder myMockFolder = j.createFolder("my-folder-1");
 
         FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
         project2.setDisplayName(displayName2);
