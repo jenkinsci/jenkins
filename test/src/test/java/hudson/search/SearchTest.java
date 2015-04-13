@@ -262,19 +262,21 @@ public class SearchTest {
     @Test
     public void testProjectNameBehindAFolderDisplayName() throws Exception {
         final String projectName1 = "job-1";
-        final String displayName1 = "job-1";
+        final String displayName1 = "job-1 display";
 
         final String projectName2 = "job-2";
-        final String displayName2 = "job-2";
+        final String displayName2 = "job-2 display";
 
         FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
         project1.setDisplayName(displayName1);
 
-        FreeStyleProject project2 = j.createFolder("my-folder-1").createProject(FreeStyleProject.class, projectName2);
-        project2.setDisplayName(displayName2);
+		MockFolder myMockFolder = j.createFolder("my-folder-1");
+
+		FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
+		project2.setDisplayName(displayName2);
 
         WebClient wc = j.createWebClient();
-        Page result = wc.goTo("job/my-folder-1/search/suggest?query=" + projectName1, "application/json");
+        Page result = wc.goTo(myMockFolder.getUrl() + "search/suggest?query=" + projectName1, "application/json");
         assertNotNull(result);
         j.assertGoodStatus(result);
 
@@ -284,27 +286,26 @@ public class SearchTest {
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
         assertNotNull(jsonArray);
 
-        assertEquals(1, jsonArray.size());
+        assertEquals(2, jsonArray.size());
 
-        boolean foundProjectName = false;
         boolean foundDisplayName = false;
         for(Object suggestion : jsonArray) {
             JSONObject jsonSuggestion = (JSONObject)suggestion;
 
             String name = (String)jsonSuggestion.get("name");
-            if(displayName1.equals(name)) {
+            if(projectName1.equals(name)) {
                 foundDisplayName = true;
             }
         }
 
-        assertTrue(foundDisplayName);
+		assertTrue(foundDisplayName);
     }
 
     @Issue("JENKINS-24433")
     @Test
     public void testProjectNameInAFolderDisplayName() throws Exception {
         final String projectName1 = "job-1";
-        final String displayName1 = "job-1";
+        final String displayName1 = "job-1 display";
 
         final String projectName2 = "job-2";
         final String displayName2 = "my-folder-1 job-2";
@@ -312,12 +313,13 @@ public class SearchTest {
         FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
         project1.setDisplayName(displayName1);
 
-        FreeStyleProject project2 = j.createFolder("my-folder-1").createProject(FreeStyleProject.class, projectName2);
+		MockFolder myMockFolder = j.createFolder("my-folder-1");
+
+        FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
         project2.setDisplayName(displayName2);
 
-
         WebClient wc = j.createWebClient();
-        Page result = wc.goTo("job/my-folder-1/search/suggest?query=" + projectName2, "application/json");
+        Page result = wc.goTo(myMockFolder.getUrl() + "search/suggest?query=" + projectName2, "application/json");
         assertNotNull(result);
         j.assertGoodStatus(result);
 
