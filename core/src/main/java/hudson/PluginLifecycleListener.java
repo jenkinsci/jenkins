@@ -25,12 +25,18 @@ package hudson;
 
 import javax.annotation.Nonnull;
 
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
+
 /**
  * Extension point providing plugin lifecycle events.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public abstract class PluginLifecycleListener implements ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(PluginLifecycleListener.class.getName());
 
     /**
      * Plugin activate.
@@ -58,4 +64,34 @@ public abstract class PluginLifecycleListener implements ExtensionPoint {
         return ExtensionList.lookup(PluginLifecycleListener.class);
     }
     
+    
+    public static void fireOnActivate(PluginWrapper pluginWrapper) {
+        for (PluginLifecycleListener listener : all()) {
+            try {
+                listener.onActivate(pluginWrapper);
+            } catch (Throwable t) {
+                LOGGER.log(WARNING, "Error firing plugin onActivate event.", t);
+            }
+        }
+    }
+
+    public static void fireOnFail(PluginManager.FailedPlugin failedPlugin) {
+        for (PluginLifecycleListener listener : all()) {
+            try {
+                listener.onFail(failedPlugin);
+            } catch (Throwable t) {
+                LOGGER.log(WARNING, "Error firing plugin fail event.", t);
+            }
+        }
+    }
+
+    public static void fireOnDeactivate(PluginWrapper pluginWrapper) {
+        for (PluginLifecycleListener listener : all()) {
+            try {
+                listener.onDeactivate(pluginWrapper);
+            } catch (Throwable t) {
+                LOGGER.log(WARNING, "Error firing plugin onDeactivate event.", t);
+            }
+        }
+    }
 }

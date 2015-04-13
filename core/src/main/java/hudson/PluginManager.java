@@ -143,7 +143,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             try {
                 return super.add(pluginWrapper);
             } finally {
-                onActivate(pluginWrapper);
+                PluginLifecycleListener.fireOnActivate(pluginWrapper);
             }
         }
 
@@ -152,7 +152,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             try {
                 return super.remove(pluginWrapper);
             } finally {
-                onDeactivate((PluginWrapper) pluginWrapper);
+                PluginLifecycleListener.fireOnDeactivate((PluginWrapper) pluginWrapper);
             }
         }
     };
@@ -163,7 +163,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             try {
                 return super.add(failedPlugin);
             } finally {
-                onFail(failedPlugin);
+                PluginLifecycleListener.fireOnFail(failedPlugin);
             }
         }
     };
@@ -536,36 +536,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
-    }
-
-    private void onActivate(PluginWrapper pluginWrapper) {
-        for (PluginLifecycleListener listener : PluginLifecycleListener.all()) {
-            try {
-                listener.onActivate(pluginWrapper);
-            } catch (Throwable t) {
-                LOGGER.log(WARNING, "Error firing plugin onActivate event.", t);
-            }
-        }
-    }
-
-    private void onFail(FailedPlugin failedPlugin) {
-        for (PluginLifecycleListener listener : PluginLifecycleListener.all()) {
-            try {
-                listener.onFail(failedPlugin);
-            } catch (Throwable t) {
-                LOGGER.log(WARNING, "Error firing plugin fail event.", t);
-            }
-        }
-    }
-
-    private void onDeactivate(PluginWrapper pluginWrapper) {
-        for (PluginLifecycleListener listener : PluginLifecycleListener.all()) {
-            try {
-                listener.onDeactivate((PluginWrapper) pluginWrapper);
-            } catch (Throwable t) {
-                LOGGER.log(WARNING, "Error firing plugin onDeactivate event.", t);
-            }
-        }
     }
 
     /**
