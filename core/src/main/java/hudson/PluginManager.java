@@ -1054,6 +1054,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     return RestrictiveEntityResolver.INSTANCE.resolveEntity(publicId, systemId);
                 }
 
+                @Override public void skippedEntity(String name) throws SAXException {
+                    // The underlying JAXP may have skipped resolving the entity avoiding the
+                    // exception thrown in resolveEntity. But for the sake of testing/logging
+                    // malicious behavior, go ahead and throw an exception when an entity
+                    // is skipped.
+                    throw new SAXException("Refusing to resolve entity: " + name);
+                }
             });
         } catch (SAXException x) {
             throw new IOException("Failed to parse XML",x);

@@ -40,8 +40,16 @@ public class PluginManagerTest {
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Test public void parseRequestedPlugins() throws Exception {
+      String XML =
+              "<root>\n" +
+              "  <stuff plugin='stuff@1.0'>\n" +
+              "    <more plugin='other@2.0'>\n" +
+              "      <things plugin='stuff@1.2'/>\n" +
+              "    </more>\n" +
+              "  </stuff>\n" +
+              "</root>\n";
         assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(tmp.getRoot())
-                .parseRequestedPlugins(new StringInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>")).toString());
+                .parseRequestedPlugins(new StringInputStream(XML)).toString());
     }
 
     @Issue("SECURITY-167")
@@ -58,14 +66,13 @@ public class PluginManagerTest {
                 "  </stuff>\n" +
                 "</root>\n";
 
-        PluginManager pluginManager = new LocalPluginManager(Util.createTempDir());
+        PluginManager pluginManager = new LocalPluginManager(tmp.getRoot());
         try {
             pluginManager.parseRequestedPlugins(new StringInputStream(evilXML));
             fail("XML contains an external entity, but no exception was thrown.");
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             assertThat(ex.getCause(), instanceOf(SAXException.class));
-            assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity with publicId(null) and systemId (file:///)"));
+            assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity"));
         }
     }
 }
