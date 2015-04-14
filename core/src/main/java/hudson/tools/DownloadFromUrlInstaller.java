@@ -129,6 +129,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * This ID needs to be unique, and needs to match the ID token in the JSON update file.
          * <p>
          * By default we use the fully-qualified class name of the {@link DownloadFromUrlInstaller} subtype.
+         * @since 1.610
          */
         public String getDownloadableId() {
             return clazz.getName().replace('$','.');

@@ -37,6 +37,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
 import static org.apache.tools.tar.TarConstants.LF_SYMLINK;
 
@@ -47,10 +49,10 @@ import static org.apache.tools.tar.TarConstants.LF_SYMLINK;
  */
 final class TarArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
-    private final TarOutputStream tar;
+    private final TarArchiveOutputStream tar;
 
     TarArchiver(OutputStream out) {
-        tar = new TarOutputStream(new BufferedOutputStream(out) {
+        tar = new TarArchiveOutputStream(new BufferedOutputStream(out) {
             // TarOutputStream uses TarBuffer internally,
             // which flushes the stream for each block. this creates unnecessary
             // data stream fragmentation, and flush request to a remote, which slows things down.
@@ -58,13 +60,14 @@ final class TarArchiver extends Archiver {
             public void flush() throws IOException {
                 // so don't do anything in flush
             }
-        });
-        tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
+        });    
+        tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR);
+        tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
     }
 
     @Override
     public void visitSymlink(File link, String target, String relativePath) throws IOException {
-        TarEntry e = new TarEntry(relativePath, LF_SYMLINK);
+        TarArchiveEntry e = new TarArchiveEntry(relativePath, LF_SYMLINK);
         try {
             int mode = IOUtils.mode(link);
             if (mode != -1) {
@@ -73,16 +76,11 @@ final class TarArchiver extends Archiver {
         } catch (PosixException x) {
             // ignore
         }
+        
+        e.setLinkName(target);
 
-        try {
-            StringBuffer linkName = (StringBuffer) LINKNAME_FIELD.get(e);
-            linkName.setLength(0);
-            linkName.append(target);
-        } catch (IllegalAccessException x) {
-            throw new IOException("Failed to set linkName", x);
-        }
-
-        tar.putNextEntry(e);
+        tar.putArchiveEntry(e);
+        tar.closeArchiveEntry();
         entriesWritten++;
     }
 
@@ -97,14 +95,14 @@ final class TarArchiver extends Archiver {
 
         if(file.isDirectory())
             relativePath+='/';
-        TarEntry te = new TarEntry(relativePath);
+        TarArchiveEntry te = new TarArchiveEntry(relativePath);
         int mode = IOUtils.mode(file);
         if (mode!=-1)   te.setMode(mode);
         te.setModTime(file.lastModified());
         if(!file.isDirectory())
             te.setSize(file.length());
 
-        tar.putNextEntry(te);
+        tar.putArchiveEntry(te);
 
         if (!file.isDirectory()) {
             FileInputStream in = new FileInputStream(file);
@@ -117,25 +115,11 @@ final class TarArchiver extends Archiver {
             }
         }
 
-        tar.closeEntry();
+        tar.closeArchiveEntry();
         entriesWritten++;
     }
 
     public void close() throws IOException {
         tar.close();
-    }
-
-    private static final Field LINKNAME_FIELD = getTarEntryLinkNameField();
-
-    private static Field getTarEntryLinkNameField() {
-        try {
-            Field f = TarEntry.class.getDeclaredField("linkName");
-            f.setAccessible(true);
-            return f;
-        } catch (SecurityException e) {
-            throw new AssertionError(e);
-        } catch (NoSuchFieldException e) {
-            throw new AssertionError(e);
-        }
     }
 }

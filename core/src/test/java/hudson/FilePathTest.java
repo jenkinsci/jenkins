@@ -35,6 +35,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -56,6 +57,8 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -324,6 +327,53 @@ public class FilePathTest {
         }
         FileUtils.touch(building);
         return new FilePath(building);
+    }
+    
+    /**
+     * Performs round-trip archiving for Tar handling methods.
+     * @throws Exception test failure
+     */
+    @Test public void compressTarUntarRoundTrip() throws Exception {
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);   
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100); 
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000); 
+    }
+            
+    /**
+     * Checks that big files (>8GB) can be archived and then unpacked.
+     * This test is disabled by default due the impact on RAM.
+     * The actual file size limit is 8589934591 bytes.
+     * @throws Exception test failure
+     */
+    @Issue("JENKINS-10629")
+    @Ignore
+    @Test public void archiveBigFile() throws Exception {
+        final long largeFileSize = 9000000000L; // >8589934591 bytes
+        final String filePrefix = "JENKINS-10629";
+        checkTarUntarRoundTrip(filePrefix, largeFileSize);
+    }
+     
+    private void checkTarUntarRoundTrip(String filePrefix, long fileSize) throws Exception {
+        final File tmpDir = temp.newFolder(filePrefix);
+        final File tempFile =  new File(tmpDir, filePrefix + ".log");
+        RandomAccessFile file = new RandomAccessFile(tempFile, "rw");
+        final File tarFile = new File(tmpDir, filePrefix + ".tar");
+
+        file.setLength(fileSize);
+        assumeTrue(fileSize == file.length());
+        file.close();
+
+        // Compress archive
+        final FilePath tmpDirPath = new FilePath(tmpDir);
+        int tar = tmpDirPath.tar(new FileOutputStream(tarFile), tempFile.getName());
+        assertEquals("One file should have been compressed", 1, tar);
+
+        // Decompress
+        FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
+        final FilePath outFile = outDir.child(tempFile.getName());
+        tmpDirPath.child( filePrefix + ".tar").untar(outDir, TarCompression.NONE);
+        assertEquals("Result file after the roundtrip differs from the initial file",
+                new FilePath(tempFile).digest(), outFile.digest());
     }
 
     @Test public void list() throws Exception {
