@@ -289,7 +289,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
         JSONObject formData = req.getSubmittedForm();
         formData.put("name", fixedName);
-
+        
         // TODO type is probably NodeDescriptor.id but confirm
         Node result = NodeDescriptor.all().find(type).newInstance(req, formData);
         app.addNode(result);
