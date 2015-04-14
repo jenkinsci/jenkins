@@ -48,7 +48,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                 }
             } else {
                 handshake.error(nodeName + " is already connected to this master. Rejecting this connection.");
-                return false;
+                return true;
             }
         }
 
