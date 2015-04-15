@@ -57,6 +57,17 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     /**
+     * Defines whether JobProperty in job configuration UI need to be wrapped in optionalProperty.
+     * Recommended to do your project properties optional to exclude unnecessary data be attached to jobs/builds.
+     * For backward compatibility false by default.
+     *
+     * @since TODO
+     */
+    public boolean isOptional() {
+        return false;
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return

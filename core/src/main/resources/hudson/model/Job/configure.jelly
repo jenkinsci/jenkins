@@ -54,8 +54,33 @@ THE SOFTWARE.
           </f:optionalBlock>
         </j:if>
 
-        <!-- job property configurations. This should have been <f:descriptorList> -->
-        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it.getClass())}" forceRowSet="true" />
+        <!-- JobProperty -->
+        <j:set var="instances" value="${it.properties}" />
+        <j:set var="descriptor" value="${d}"/>
+
+        <f:section title="${null}" name="properties">
+
+          <j:if test="${instances!=null}">
+            <tr>
+              <td>
+                <input type="hidden" name="stapler-class-bag" value="true" />
+              </td>
+            </tr>
+          </j:if>
+
+          <j:forEach var="d" items="${h.getJobPropertyDescriptors(it.getClass())}" varStatus="loop">
+            <j:scope>
+              <j:set var="instance" value="${instances[d]}" />
+
+              <f:optionalBlock title="${d.optional==true?d.displayName:null}" checked="${instance!=null}"
+                               name="${d.jsonSafeClassName}" help="${d.helpFile}">
+                <st:include from="${d}" page="${d.configPage}" optional="true"/>
+              </f:optionalBlock>
+            </j:scope>
+          </j:forEach>
+        </f:section>
+
+        <!--<f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it.getClass())}" forceRowSet="true" />-->
 
         <!-- additional entries from derived classes -->
         <st:include page="configure-entries.jelly" />
