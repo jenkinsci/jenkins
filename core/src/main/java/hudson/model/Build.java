@@ -150,15 +150,23 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 if (parameters != null)
                     parameters.createBuildWrappers(Build.this,wrappers);
 
+                boolean skipProjectBuilders=false;
                 for( BuildWrapper w : wrappers ) {
                     Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
                     if(e==null)
                         return (r = FAILURE);
                     buildEnvironments.add(e);
+                    if((e.skipProjectBuilders())) {
+                        skipProjectBuilders=true;
+                    }                    
+                }
+                
+                if(!skipProjectBuilders) {
+                    if(!build(listener,project.getBuilders())) {
+                        r = FAILURE;
+                    }
                 }
 
-                if(!build(listener,project.getBuilders()))
-                    r = FAILURE;
             } catch (InterruptedException e) {
                 r = Executor.currentExecutor().abortResult();
                 // not calling Executor.recordCauseOfInterruption here. We do that where this exception is consumed.

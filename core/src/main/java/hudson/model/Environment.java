@@ -96,6 +96,17 @@ public abstract class Environment {
 			throws IOException, InterruptedException {
 		return true;
 	}
+	
+	/**
+     * Notify Jenkins core to skip project builders from downstream build step
+     * such as release-plugin
+     *
+     *@return false by default. If true the default builders will not be performed.
+     */
+    public boolean skipProjectBuilders() {
+
+        return false;
+    }
 
     /**
      * Creates {@link Environment} implementation that just sets the variables as given in the parameter.
