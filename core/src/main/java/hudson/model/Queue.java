@@ -1263,13 +1263,13 @@ public class Queue extends ResourceController implements Saveable {
      */
     public void maintain() {
         lock.lock();
-        try { try {
+        try { 
 
             LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
 
             // The executors that are currently waiting for a job to run.
             Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
-
+            try {
             {// update parked (and identify any pending items whose executor has disappeared)
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
                 for (Computer c : Jenkins.getInstance().getComputers()) {
@@ -1337,7 +1337,7 @@ public class Queue extends ResourceController implements Saveable {
                 s.sortBuildableItems(buildables);
             
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
-            updateSnapshot();
+            } finally { updateSnapshot(); }
             
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<BuildableItem>(
@@ -1388,7 +1388,7 @@ public class Queue extends ResourceController implements Saveable {
                 // for alternative fixes of this issue.
                 updateSnapshot();
             }
-        } finally { updateSnapshot(); } } finally {
+        } finally {
             lock.unlock();
         }
     }
