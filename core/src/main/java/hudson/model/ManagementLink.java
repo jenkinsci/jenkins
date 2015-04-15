@@ -97,6 +97,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access and put {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<ManagementLink> LIST = ExtensionListView.createList(ManagementLink.class);
 
     /**

@@ -79,6 +79,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     /**
      * @deprecated as of 1.390
      */
+    @Deprecated
     protected ViewJob(Jenkins parent, String name) {
         super(parent,name);
     }

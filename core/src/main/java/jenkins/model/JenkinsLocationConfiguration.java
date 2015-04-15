@@ -32,6 +32,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     /**
      * @deprecated
      */
+    @Deprecated
     private transient String hudsonUrl;
     private String adminAddress;
     private String jenkinsUrl;

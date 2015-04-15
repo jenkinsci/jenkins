@@ -600,6 +600,7 @@ public class SCMTrigger extends Trigger<Item> {
          * @deprecated
          *      Use {@link #SCMTrigger.SCMTriggerCause(String)}.
          */
+        @Deprecated
         public SCMTriggerCause() {
             this("");
         }

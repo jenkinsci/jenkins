@@ -378,6 +378,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * @deprecated since 2009-01-06.  Use {@link #connect(boolean)}
      */
+    @Deprecated
     public final void launch() {
         connect(true);
     }
@@ -477,6 +478,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @deprecated as of 1.320.
      *      Use {@link #disconnect(OfflineCause)} and specify the cause.
      */
+    @Deprecated
     public Future<?> disconnect() {
         recordTermination();
         if (Util.isOverridden(Computer.class,getClass(),"disconnect",OfflineCause.class))
@@ -640,6 +642,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      accidentally call this method.
      */
     @Exported
+    @Deprecated
     public boolean isTemporarilyOffline() {
         return temporarilyOffline;
     }
@@ -648,6 +651,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @deprecated as of 1.320.
      *      Use {@link #setTemporarilyOffline(boolean, OfflineCause)}
      */
+    @Deprecated
     public void setTemporarilyOffline(boolean temporarilyOffline) {
         setTemporarilyOffline(temporarilyOffline,null);
     }
@@ -1051,6 +1055,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @deprecated as of 1.292
      *      Use {@link #getEnvironment()} instead.
      */
+    @Deprecated
     public Map<String,String> getEnvVars() throws IOException, InterruptedException {
         return getEnvironment();
     }

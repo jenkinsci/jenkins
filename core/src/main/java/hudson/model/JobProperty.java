@@ -104,6 +104,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * @deprecated
      *      as of 1.341. Override {@link #getJobActions(Job)} instead.
      */
+    @Deprecated
     public Action getJobAction(J job) {
         return null;
     }

@@ -115,6 +115,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>((Class)RetentionStrategy.class);
 
     /**

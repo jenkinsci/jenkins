@@ -92,5 +92,6 @@ public abstract class UserNameResolver implements ExtensionPoint {
      * @deprecated since 2009-02-24.
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<UserNameResolver> LIST = ExtensionListView.createList(UserNameResolver.class);
 }

@@ -173,6 +173,7 @@ public final class Permission {
      * @deprecated as of 1.421
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, boolean, PermissionScope[])}
      */
+    @Deprecated
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable) {
         this(group,name,description,impliedBy,enable,new PermissionScope[]{PermissionScope.JENKINS});
     }
@@ -181,6 +182,7 @@ public final class Permission {
      * @deprecated as of 1.421
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission, PermissionScope)}
      */
+    @Deprecated
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Localizable description, @CheckForNull Permission impliedBy) {
         this(group, name, description, impliedBy, PermissionScope.JENKINS);
     }
@@ -189,6 +191,7 @@ public final class Permission {
      * @deprecated since 1.257.
      *      Use {@link #Permission(PermissionGroup, String, Localizable, Permission)}
      */
+    @Deprecated
     public Permission(@Nonnull PermissionGroup group, @Nonnull String name, @CheckForNull Permission impliedBy) {
         this(group,name,null,impliedBy);
     }
@@ -293,6 +296,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Access {@link jenkins.model.Jenkins#PERMISSIONS} instead.
      */
+    @Deprecated
     public static final PermissionGroup HUDSON_PERMISSIONS = new PermissionGroup(Hudson.class, hudson.model.Messages._Hudson_Permissions_Title());
     /**
      * {@link Permission} that represents the God-like access. Equivalent of Unix root.
@@ -303,6 +307,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Access {@link jenkins.model.Jenkins#ADMINISTER} instead.
      */
+    @Deprecated
     public static final Permission HUDSON_ADMINISTER = new Permission(HUDSON_PERMISSIONS,"Administer", hudson.model.Messages._Hudson_AdministerPermission_Description(),null);
 
 //
@@ -322,6 +327,7 @@ public final class Permission {
      * @deprecated since 2009-01-23.
      *      Use {@link jenkins.model.Jenkins#ADMINISTER}.
      */
+    @Deprecated
     public static final Permission FULL_CONTROL = new Permission(GROUP, "FullControl",null, HUDSON_ADMINISTER);
 
     /**

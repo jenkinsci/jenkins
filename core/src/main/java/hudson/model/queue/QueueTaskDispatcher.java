@@ -68,6 +68,7 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * @deprecated since 1.413
      *      Use {@link #canTake(Node, Queue.BuildableItem)}
      */
+    @Deprecated
     public @CheckForNull CauseOfBlockage canTake(Node node, Task task) {
         return null;
     }

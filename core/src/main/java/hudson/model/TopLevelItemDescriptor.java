@@ -125,6 +125,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * @deprecated as of 1.390
      *      Use {@link #newInstance(ItemGroup, String)}
      */
+    @Deprecated
     public TopLevelItem newInstance(String name) {
         return newInstance(Jenkins.getInstance(), name);
     }

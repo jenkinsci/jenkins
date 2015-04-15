@@ -519,6 +519,7 @@ public class Queue extends ResourceController implements Saveable {
      * @deprecated as of 1.311
      *      Use {@link #schedule(AbstractProject)}
      */
+    @Deprecated
     public boolean add(AbstractProject p) {
         return schedule(p)!=null;
     }
@@ -541,6 +542,7 @@ public class Queue extends ResourceController implements Saveable {
      * @deprecated as of 1.311
      *      Use {@link #schedule(Task, int)}
      */
+    @Deprecated
     public boolean add(AbstractProject p, int quietPeriod) {
         return schedule(p, quietPeriod)!=null;
     }
@@ -549,6 +551,7 @@ public class Queue extends ResourceController implements Saveable {
      * @deprecated as of 1.521
      *  Use {@link #schedule2(Task, int, List)}
      */
+    @Deprecated
     public WaitingItem schedule(Task p, int quietPeriod, List<Action> actions) {
         return schedule2(p, quietPeriod, actions).getCreateItem();
     }
@@ -684,6 +687,7 @@ public class Queue extends ResourceController implements Saveable {
      * @deprecated as of 1.311
      *      Use {@link #schedule(Task, int)}
      */
+    @Deprecated
     public boolean add(Task p, int quietPeriod) {
     	return schedule(p, quietPeriod)!=null;
     }
@@ -696,6 +700,7 @@ public class Queue extends ResourceController implements Saveable {
      * @deprecated as of 1.311
      *      Use {@link #schedule(Task, int, Action...)}
      */
+    @Deprecated
     public boolean add(Task p, int quietPeriod, Action... actions) {
     	return schedule(p, quietPeriod, actions)!=null;
     }
@@ -1453,6 +1458,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /** @deprecated Use {@link #isBlockedByShutdown} instead. */
+    @Deprecated
     public static boolean ifBlockedByHudsonShutdown(Task task) {
         return isBlockedByShutdown(task);
     }
@@ -1530,6 +1536,7 @@ public class Queue extends ResourceController implements Saveable {
          * @deprecated as of 1.330
          *      Use {@link CauseOfBlockage#getShortDescription()} instead.
          */
+        @Deprecated
         String getWhyBlocked();
 
         /**

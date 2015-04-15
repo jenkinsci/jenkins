@@ -367,6 +367,7 @@ public final class FilePath implements Serializable {
      *
      * @deprecated as of 1.315. Use {@link #zip(OutputStream)} that has more consistent name.
      */
+    @Deprecated
     public void createZipArchive(OutputStream os) throws IOException, InterruptedException {
         zip(os);
     }
@@ -411,6 +412,7 @@ public final class FilePath implements Serializable {
      * @deprecated as of 1.315
      *      Use {@link #zip(OutputStream,String)} that has more consistent name.
      */
+    @Deprecated
     public void createZipArchive(OutputStream os, final String glob) throws IOException, InterruptedException {
         archive(ArchiverFactory.ZIP,os,glob);
     }
@@ -2337,6 +2339,7 @@ public final class FilePath implements Serializable {
      * @see #validateFileMask(FilePath, String)
      * @deprecated use {@link #validateAntFileMask(String, int)} instead
      */
+    @Deprecated
     public String validateAntFileMask(final String fileMasks) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, Integer.MAX_VALUE);
     }

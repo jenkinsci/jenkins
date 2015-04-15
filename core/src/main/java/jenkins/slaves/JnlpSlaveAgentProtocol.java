@@ -72,6 +72,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
          * @deprecated as of 1.559
          *      Use {@link #Handler(NioChannelHub, Socket)}
          */
+        @Deprecated
         public Handler(Socket socket) throws IOException {
             this(null,socket);
         }

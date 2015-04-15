@@ -95,6 +95,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * @deprecated as of 1.301
      *      Use {@link #getMonitors()}.
      */
+    @Deprecated
     public static List<NodeMonitor> get_monitors() {
         return monitors.toList();
     }

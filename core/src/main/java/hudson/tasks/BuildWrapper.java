@@ -252,6 +252,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * @deprecated
      *      Use {@link #getProjectActions(AbstractProject)} instead.
      */
+    @Deprecated
     public Action getProjectAction(AbstractProject job) {
         return null;
     }

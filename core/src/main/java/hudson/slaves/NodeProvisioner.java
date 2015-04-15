@@ -392,6 +392,7 @@ public class NodeProvisioner {
          * The number of items in the queue requiring this {@link #getLabel()}.
          * @deprecated use {@link #getSnapshot()}, {@link LoadStatistics.LoadStatisticsSnapshot#getQueueLength()}
          */
+        @Deprecated
         public int getQueueLengthSnapshot() {
             return snapshot.getQueueLength();
         }
@@ -407,6 +408,7 @@ public class NodeProvisioner {
          * The number of idle executors for this {@link #getLabel()}
          * @deprecated use {@link #getSnapshot()}, {@link LoadStatistics.LoadStatisticsSnapshot#getAvailableExecutors()}
          */
+        @Deprecated
         public int getIdleSnapshot() {
             return snapshot.getAvailableExecutors();
         }
@@ -415,6 +417,7 @@ public class NodeProvisioner {
          * The total number of executors for this {@link #getLabel()}
          * @deprecated use {@link #getSnapshot()}, {@link LoadStatistics.LoadStatisticsSnapshot#getOnlineExecutors()}
          */
+        @Deprecated
         public int getTotalSnapshot() {
             return snapshot.getOnlineExecutors();
         }
@@ -450,6 +453,7 @@ public class NodeProvisioner {
          * The time series average number of idle executors for this {@link #getLabel()}
          * @deprecated use {@link #getAvailableExecutorsLatest()}
          */
+        @Deprecated
         public float getIdleLatest() {
             return getAvailableExecutorsLatest();
         }
@@ -458,6 +462,7 @@ public class NodeProvisioner {
          * The time series average total number of executors for this {@link #getLabel()}
          * @deprecated use {@link #getOnlineExecutorsLatest()}
          */
+        @Deprecated
         public float getTotalLatest() {
             return getOnlineExecutorsLatest();
         }

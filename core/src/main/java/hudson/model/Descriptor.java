@@ -366,6 +366,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * @deprecated since 1.528
      *      Use {@link #getCheckMethod(String)}
      */
+    @Deprecated
     public String getCheckUrl(String fieldName) {
         return getCheckMethod(fieldName).toCheckUrl();
     }
@@ -512,6 +513,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      Implement {@link #newInstance(StaplerRequest, JSONObject)} method instead.
      *      Deprecated as of 1.145. 
      */
+    @Deprecated
     public T newInstance(StaplerRequest req) throws FormException {
         throw new UnsupportedOperationException(getClass()+" should implement newInstance(StaplerRequest,JSONObject)");
     }
@@ -684,6 +686,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      * @deprecated
      *      As of 1.239, use {@link #configure(StaplerRequest, JSONObject)}.
      */
+    @Deprecated
     public boolean configure( StaplerRequest req ) throws FormException {
         return true;
     }

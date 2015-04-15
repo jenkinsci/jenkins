@@ -133,6 +133,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *
      * @deprecated to indicate that this method isn't really meant to be called by random code.
      */
+    @Deprecated
     public abstract void setNodeName(String name);
 
     /**
@@ -330,6 +331,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @deprecated as of 1.413
      *      Use {@link #canTake(Queue.BuildableItem)}
      */
+    @Deprecated
     public CauseOfBlockage canTake(Task task) {
         return null;
     }

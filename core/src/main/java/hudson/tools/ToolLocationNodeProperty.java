@@ -90,6 +90,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      * @deprecated since 2009-04-09.
      *      Use {@link ToolInstallation#translateFor(Node,TaskListener)} 
      */
+    @Deprecated
     public static String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException {
         String result = null;
 

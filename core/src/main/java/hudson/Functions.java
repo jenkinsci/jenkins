@@ -438,6 +438,7 @@ public class Functions {
      *      JEXL now supports the real ternary operator "x?y:z", so this work around
      *      is no longer necessary.
      */
+    @Deprecated
     public static Object ifThenElse(boolean cond, Object thenValue, Object elseValue) {
         return cond ? thenValue : elseValue;
     }
@@ -1573,6 +1574,7 @@ public class Functions {
      * @deprecated
      *      Use {@link #calcCheckUrl}
      */
+    @Deprecated
     public String getCheckUrl(String userDefined, Object descriptor, String field) {
         if(userDefined!=null || field==null)   return userDefined;
         if (descriptor instanceof Descriptor) {
@@ -1823,6 +1825,7 @@ public class Functions {
      * @deprecated as of 1.451
      *      Use {@link #getAvatar}
      */
+    @Deprecated
     public String getUserAvatar(User user, String avatarSize) {
         return getAvatar(user,avatarSize);
     }

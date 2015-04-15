@@ -94,6 +94,7 @@ public class LogRotator extends BuildDiscarder {
      * @deprecated since 1.350.
      *      Use {@link #LogRotator(int, int, int, int)}
      */
+    @Deprecated
     public LogRotator(int daysToKeep, int numToKeep) {
         this(daysToKeep, numToKeep, -1, -1);
     }

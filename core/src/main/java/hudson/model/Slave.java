@@ -451,6 +451,7 @@ public abstract class Slave extends Node implements Serializable {
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
      * @deprecated in 1.216
      */
+    @Deprecated
     private transient String agentCommand;
 
     /**
