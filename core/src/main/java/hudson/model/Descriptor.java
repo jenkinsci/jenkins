@@ -909,14 +909,23 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if (formData!=null) {
             for (Object o : JSONArray.fromObject(formData)) {
                 JSONObject jo = (JSONObject)o;
-                String kind = jo.optString("$class", null);
-                if (kind == null) {
-                  // Legacy: Remove once plugins have been staged onto $class
-                  kind = jo.getString("kind");
+                Descriptor<T> d = null;
+                // 'kind' and '$class' are mutually exclusive (see class-entry.jelly), but to be more lenient on the reader side,
+                // we check them both anyway. 'kind' (which maps to ID) is more unique than '$class', which can have multiple matching
+                // Descriptors, so we prefer 'kind' if it's present.
+                String kind = jo.optString("kind", null);
+                if (kind != null) {
+                    d = findById(descriptors, kind);
                 }
-                Descriptor<T> d = find(descriptors, kind);
+                if (d == null) {
+                  kind = jo.getString("$class");
+                  d = findByDescribableClassName(descriptors, kind);
+                  if (d == null) d = findByClassName(descriptors, kind);
+                }
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
+                } else {
+                    LOGGER.warning("Received unexpected formData for descriptor " + kind);
                 }
             }
         }
@@ -925,22 +934,58 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Finds a descriptor from a collection by its class name.
+     * Finds a descriptor from a collection by its ID.
+     * @param id should match {@link #getId}
+     * @since 1.610
      */
-    public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String className) {
+    public static @CheckForNull <T extends Descriptor> T findById(Collection<? extends T> list, String id) {
         for (T d : list) {
-            if(d.getClass().getName().equals(className))
-                return d;
-        }
-        // Since we introduced Descriptor.getId(), it is a preferred method of identifying descriptor by a string.
-        // To make that migration easier without breaking compatibility, let's also match up with the id.
-        for (T d : list) {
-            if(d.getId().equals(className))
+            if(d.getId().equals(id))
                 return d;
         }
         return null;
     }
 
+    /**
+     * Finds a descriptor from a collection by the class name of the {@link Descriptor}.
+     * This is useless as of the introduction of {@link #getId} and so only very old compatibility code needs it.
+     */
+    private static @CheckForNull <T extends Descriptor> T findByClassName(Collection<? extends T> list, String className) {
+        for (T d : list) {
+            if(d.getClass().getName().equals(className))
+                return d;
+        }
+        return null;
+    }
+
+    /**
+     * Finds a descriptor from a collection by the class name of the {@link Describable} it describes.
+     * @param className should match {@link Class#getName} of a {@link #clazz}
+     * @since 1.610
+     */
+    public static @CheckForNull <T extends Descriptor> T findByDescribableClassName(Collection<? extends T> list, String className) {
+        for (T d : list) {
+            if(d.clazz.getName().equals(className))
+                return d;
+        }
+        return null;
+    }
+
+    /**
+     * Finds a descriptor from a collection by its class name or ID.
+     * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
+     */
+    public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String string) {
+        T d = findByClassName(list, string);
+        if (d != null) {
+                return d;
+        }
+        return findById(list, string);
+    }
+
+    /**
+     * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
+     */
     public static @CheckForNull Descriptor find(String className) {
         return find(ExtensionList.lookup(Descriptor.class),className);
     }

@@ -26,6 +26,16 @@ THE SOFTWARE.
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Invisible &lt;f:entry> type for embedding a descriptor's $class field.
+
+    Most of the time a Descriptor has an unique class name that we can use to instantiate the right Describable
+    class, so we use the '$class' to represent that to clarify the intent.
+    
+    In some other times, such as templates, there are multiple Descriptors with the same Descriptor.clazz
+    but different IDs, and in that case we put 'kind' to indicate that. In this case, to avoid confusing
+    readers we do not put non-unique '$class'.
+
+    See Descriptor.newInstancesFromHeteroList for how the reader side is handled.
+
     <st:attribute name="clazz">
       The describable class that we are instantiating via structured form submission.
     </st:attribute>
@@ -36,12 +46,14 @@ THE SOFTWARE.
   </st:documentation>
   <j:set var="clazz" value="${attrs.clazz ?: attrs.descriptor.clazz.name}" />
   <f:invisibleEntry>
-    <!-- Legacy: Remove once plugins have been staged onto $class -->
-    <input type="hidden" name="stapler-class" value="${clazz}" />
-    <!-- Legacy: Remove once plugins have been staged onto $class -->
-    <j:if test="${attrs.descriptor != null}">
-      <input type="hidden" name="kind" value="${attrs.descriptor.id}" />
-    </j:if>
-    <input type="hidden" name="$class" value="${clazz}" />
+    <j:choose>
+      <j:when test="${descriptor != null and descriptor.id != clazz}">
+        <input type="hidden" name="kind" value="${attrs.descriptor.id}" />
+      </j:when>
+      <j:otherwise>
+        <input type="hidden" name="stapler-class" value="${clazz}" />  <!-- Legacy: Remove once plugins have been staged onto $class -->
+        <input type="hidden" name="$class" value="${clazz}" />
+      </j:otherwise>
+    </j:choose>
   </f:invisibleEntry>
 </j:jelly>
