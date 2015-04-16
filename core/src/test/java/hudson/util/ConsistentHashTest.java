@@ -122,9 +122,22 @@ public class ConsistentHashTest {
     @Test
     public void emptyBehavior() {
         ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertEquals(0, hash.countAllPoints());
         assertFalse(hash.list(0).iterator().hasNext());
         assertNull(hash.lookup(0));
         assertNull(hash.lookup(999));
+    }
+
+    @Test
+    public void countAllPoints() {
+        ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertEquals(0, hash.countAllPoints());
+        hash.add("foo", 10);
+        assertEquals(10, hash.countAllPoints());
+        hash.add("bar", 5);
+        assertEquals(15, hash.countAllPoints());
+        hash.remove("foo");
+        assertEquals(5, hash.countAllPoints());
     }
 
     /**
