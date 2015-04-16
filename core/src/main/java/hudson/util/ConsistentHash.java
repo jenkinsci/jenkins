@@ -192,18 +192,18 @@ public class ConsistentHash<T> {
         String hash(T t);
     }
 
-    static final Hash DEFAULT_HASH = new Hash() {
+    static final Hash<?> DEFAULT_HASH = new Hash<Object>() {
         public String hash(Object o) {
             return o.toString();
         }
     };
 
     public ConsistentHash() {
-        this(DEFAULT_HASH);
+        this((Hash<T>) DEFAULT_HASH);
     }
 
     public ConsistentHash(int defaultReplication) {
-        this(DEFAULT_HASH,defaultReplication);
+        this((Hash<T>) DEFAULT_HASH,defaultReplication);
     }
 
     public ConsistentHash(Hash<T> hash) {
