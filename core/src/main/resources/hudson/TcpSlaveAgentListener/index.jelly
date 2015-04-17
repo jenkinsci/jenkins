@@ -30,6 +30,10 @@ THE SOFTWARE.
   -->
   <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
   <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
+  <j:getStatic var="host" className="hudson.TcpSlaveAgentListener" field="CLI_HOST_NAME"/>
+  <j:if test="${host != null}">
+    <st:header name="X-Jenkins-JNLP-Host" value="${host}" />
+  </j:if>
 
   Jenkins
 </j:jelly>
