@@ -114,5 +114,5 @@ public class JnlpSlaveHandshake {
     }
 
 
-    private static final Logger LOGGER = Logger.getLogger(JnlpSlaveHandshake.class.getName());
+    static final Logger LOGGER = Logger.getLogger(JnlpSlaveHandshake.class.getName());
 }
