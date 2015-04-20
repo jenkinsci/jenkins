@@ -47,7 +47,7 @@ THE SOFTWARE.
   <j:set var="clazz" value="${attrs.clazz ?: attrs.descriptor.clazz.name}" />
   <f:invisibleEntry>
     <j:choose>
-      <j:when test="${descriptor != null and descriptor.id != clazz}">
+      <j:when test="${attrs.descriptor != null and attrs.descriptor.id != clazz}">
         <input type="hidden" name="kind" value="${attrs.descriptor.id}" />
       </j:when>
       <j:otherwise>
