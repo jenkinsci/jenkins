@@ -9,6 +9,9 @@ Non-source downloads such as WAR files and several Linux packages can be found o
 # Source
 Our latest and greatest source of Jenkins CI can be found on [GitHub]. Fork us!
 
+# Contributing to Jenkins
+For information on contributing to Jenkins, check out the [Contributing] and [Extend Jenkins] wiki pages over at the official [wiki].
+
 # News and Website
 All information about Jenkins CI can be found on our [website]. Follow us on Twitter [@jenkinsci].
 
@@ -43,3 +46,6 @@ Jenkins is **licensed** under the **[MIT License]**. The terms of the license ar
 [GitHub]: https://github.com/jenkinsci/jenkins
 [website]: http://jenkins-ci.org
 [@jenkinsci]: http://twitter.com/jenkinsci
+[Contributing]: https://wiki.jenkins-ci.org/display/JENKINS/contributing
+[Extend Jenkins]: https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenkins
+[wiki]: https://wiki.jenkins-ci.org
