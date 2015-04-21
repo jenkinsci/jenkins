@@ -648,17 +648,9 @@ public class Queue extends ResourceController implements Saveable {
 
             boolean queueUpdated = false;
             for (WaitingItem wi : Util.filter(duplicatesInQueue, WaitingItem.class)) {
-                if (quietPeriod <= 0) {
-                    // the user really wants to build now, and they mean NOW.
-                    // so let's pull in the timestamp if we can.
-                    if (wi.timestamp.before(due))
-                        continue;
-                } else {
-                    // otherwise we do the normal quiet period implementation
-                    if (wi.timestamp.after(due))
-                        continue;
-                    // quiet period timer reset. start the period over again
-                }
+                // make sure to always use the shorter of the available due times
+                if (wi.timestamp.before(due))
+                    continue;
 
                 // waitingList is sorted, so when we change a timestamp we need to maintain order
                 wi.leave(this);
