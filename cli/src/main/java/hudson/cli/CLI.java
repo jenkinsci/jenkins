@@ -384,7 +384,13 @@ public class CLI {
 //        h.setLevel(ALL);
 //        l.addHandler(h);
 //
-        System.exit(_main(_args));
+        try {
+            System.exit(_main(_args));
+        } catch (Throwable t) {
+            // if the CLI main thread die, make sure to kill the JVM.
+            t.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     public static int _main(String[] _args) throws Exception {
