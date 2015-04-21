@@ -1887,9 +1887,10 @@ public class Functions {
 
             TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
             if (tal !=null) {
-                rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
-                rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
-                rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
+                int p = TcpSlaveAgentListener.CLI_PORT !=null ? TcpSlaveAgentListener.CLI_PORT : tal.getPort();
+                rsp.setIntHeader("X-Hudson-CLI-Port", p);
+                rsp.setIntHeader("X-Jenkins-CLI-Port", p);
+                rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
                 rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
             }
         }
