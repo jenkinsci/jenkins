@@ -800,6 +800,7 @@ public class Executor extends Thread implements ModelObject {
      *      Use {@link #doStop()}.
      */
     @RequirePOST
+    @Deprecated
     public void doStop( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         doStop().generateResponse(req,rsp,this);
     }
@@ -937,6 +938,7 @@ public class Executor extends Thread implements ModelObject {
      * @deprecated as of 1.388
      *      Use {@link Executables#getEstimatedDurationFor(Queue.Executable)}
      */
+    @Deprecated
     public static long getEstimatedDurationFor(Executable e) {
         return Executables.getEstimatedDurationFor(e);
     }

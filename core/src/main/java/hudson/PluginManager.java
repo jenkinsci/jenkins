@@ -151,6 +151,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      *      {@link PluginManager} can now live longer than {@link jenkins.model.Jenkins} instance, so
      *      use {@code Hudson.getInstance().servletContext} instead.
      */
+    @Deprecated
     public final ServletContext context;
 
     /**

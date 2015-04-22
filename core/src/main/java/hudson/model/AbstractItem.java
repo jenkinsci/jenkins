@@ -621,6 +621,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @deprecated as of 1.473
      *      Use {@link #updateByXml(Source)}
      */
+    @Deprecated
     public void updateByXml(StreamSource source) throws IOException {
         updateByXml((Source)source);
     }

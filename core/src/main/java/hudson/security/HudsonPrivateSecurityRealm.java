@@ -467,6 +467,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * Field kept here to load old (pre 1.283) user records,
          * but now marked transient so field is no longer saved.
          */
+        @Deprecated
         private transient String password;
 
         private Details(String passwordHash) {

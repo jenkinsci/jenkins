@@ -357,6 +357,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      {@code create} is false.
      * @deprecated use {@link User#get(String, boolean, java.util.Map)}
      */
+    @Deprecated
     public static @Nullable User get(String idOrFullName, boolean create) {
         return get(idOrFullName, create, Collections.emptyMap());
     }

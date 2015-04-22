@@ -615,6 +615,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      slaves and free-roaming jobs in the queue.
      */
     @Restricted(NoExternalUse.class)
+    @Deprecated
     public transient final NodeProvisioner overallNodeProvisioner = unlabeledNodeProvisioner;
 
 
@@ -1005,6 +1006,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Does this {@link View} has any associated user information recorded?
      * @deprecated Potentially very expensive call; do not use from Jelly views.
      */
+    @Deprecated
     public boolean hasPeople() {
         return View.People.isApplicable(items.values());
     }
@@ -1022,6 +1024,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Due to the past security advisory, this value should not be used any more to protect sensitive information.
      *      See {@link ConfidentialStore} and {@link ConfidentialKey} for how to store secrets.
      */
+    @Deprecated
     public String getSecretKey() {
         return secretKey;
     }
@@ -1032,6 +1035,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated
      *       See {@link #getSecretKey()}.
      */
+    @Deprecated
     public SecretKey getSecretKeyAsAES128() {
         return Util.toAes128Key(secretKey);
     }
@@ -1114,6 +1118,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated
      *      UI method. Not meant to be used programatically.
      */
+    @Deprecated
     public ComputerSet getComputer() {
         return new ComputerSet();
     }
@@ -3666,6 +3671,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Checks if a top-level view with the given name exists.
      * @deprecated 1.512
      */
+    @Deprecated
     public FormValidation doViewExistsCheck(@QueryParameter String value) {
         checkPermission(View.CREATE);
 
@@ -4030,6 +4036,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
          * @deprecated as of 1.558
          *      Use {@link FilePath#localChannel}
          */
+        @Deprecated
         public static final LocalChannel localChannel = FilePath.localChannel;
     }
 
@@ -4164,6 +4171,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * @deprecated No longer used.
      */
+    @Deprecated
     public static boolean FLYWEIGHT_SUPPORT = true;
 
     /**
@@ -4175,6 +4183,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      This flag will have no effect.
      */
     @Restricted(NoExternalUse.class)
+    @Deprecated
     public static boolean CONCURRENT_BUILD = true;
 
     /**

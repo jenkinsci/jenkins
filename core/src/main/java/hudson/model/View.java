@@ -655,6 +655,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Does this {@link View} has any associated user information recorded?
      * @deprecated Potentially very expensive call; do not use from Jelly views.
      */
+    @Deprecated
     public boolean hasPeople() {
         return People.isApplicable(getItems());
     }
@@ -738,6 +739,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         /**
          * @deprecated Potentially very expensive call; do not use from Jelly views.
          */
+        @Deprecated
         public static boolean isApplicable(Collection<? extends Item> items) {
             for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
@@ -1116,6 +1118,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<View> LIST = new DescriptorList<View>(View.class);
 
     /**

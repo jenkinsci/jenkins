@@ -124,6 +124,7 @@ public abstract class Cause {
      * Fall back implementation when no other type is available.
      * @deprecated since 2009-02-08
      */
+    @Deprecated
     public static class LegacyCodeCause extends Cause {
         private StackTraceElement [] stackTrace;
         public LegacyCodeCause() {
@@ -162,6 +163,7 @@ public abstract class Cause {
          * @deprecated since 2009-02-28
          */
         // for backward bytecode compatibility
+        @Deprecated
         public UpstreamCause(AbstractBuild<?,?> up) {
             this((Run<?,?>)up);
         }
@@ -361,6 +363,7 @@ public abstract class Cause {
      * @deprecated 1.428
      *   use {@link UserIdCause}
      */
+    @Deprecated
     public static class UserCause extends Cause {
         private String authenticationName;
         public UserCause() {

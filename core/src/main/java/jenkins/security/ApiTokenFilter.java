@@ -16,6 +16,7 @@ import java.util.List;
  * @deprecated as of 1.576
  *      Use {@link BasicHeaderProcessor}
  */
+@Deprecated
 public class ApiTokenFilter extends BasicHeaderProcessor {
     @Override
     protected List<? extends BasicHeaderAuthenticator> all() {

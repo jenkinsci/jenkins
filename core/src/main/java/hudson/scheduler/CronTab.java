@@ -70,6 +70,7 @@ public final class CronTab {
      * @deprecated as of 1.448
      *      Use {@link #CronTab(String, int, Hash)}
      */
+    @Deprecated
     public CronTab(String format, int line) throws ANTLRException {
         set(format, line, null);
     }

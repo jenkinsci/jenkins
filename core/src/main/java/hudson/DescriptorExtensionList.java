@@ -81,6 +81,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      * @deprecated as of 1.416
      *      Use {@link #create(Jenkins, Class)}
      */
+    @Deprecated
     public static <T extends Describable<T>,D extends Descriptor<T>>
     DescriptorExtensionList<T,D> createDescriptorList(Hudson hudson, Class<T> describableType) {
         return (DescriptorExtensionList)createDescriptorList((Jenkins)hudson,describableType);
@@ -95,6 +96,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      * @deprecated as of 1.416
      *      Use {@link #DescriptorExtensionList(Jenkins, Class)}
      */
+    @Deprecated
     protected DescriptorExtensionList(Hudson hudson, Class<T> describableType) {
         this((Jenkins)hudson,describableType);
     }

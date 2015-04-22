@@ -80,6 +80,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @deprecated as of 1.304
      *      Use {@link #getHome()}
      */
+    @Deprecated
     public String getJavaHome() {
         return getHome();
     }
@@ -108,6 +109,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     /**
      * @deprecated as of 1.460. Use {@link #buildEnvVars(EnvVars)}
      */
+    @Deprecated
     public void buildEnvVars(Map<String,String> env) {
         String home = getHome();
         if (home == null) {

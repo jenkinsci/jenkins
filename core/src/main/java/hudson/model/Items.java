@@ -66,6 +66,7 @@ public class Items {
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<TopLevelItemDescriptor> LIST = (List)new DescriptorList<TopLevelItem>(TopLevelItem.class);
 
     /**
@@ -172,6 +173,7 @@ public class Items {
      * @deprecated as of 1.406
      *      Use {@link #fromNameList(ItemGroup, String, Class)}
      */
+    @Deprecated
     public static <T extends Item> List<T> fromNameList(String list, Class<T> type) {
         return fromNameList(null,list,type);
     }

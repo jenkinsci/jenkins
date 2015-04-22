@@ -61,8 +61,9 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
    /**
      * @deprecated
      *      Why are you calling a method that always returns ""?
-    *       You probably want o call {@link Jenkins#getRootUrl()}
+    *       You probably want to call {@link Jenkins#getRootUrl()}
      */
+    @Deprecated
     public String getUrl() {
         return "";
     }

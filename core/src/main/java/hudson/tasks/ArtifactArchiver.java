@@ -282,6 +282,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      *      Some plugin depends on this, so this field is left here and points to the last created instance.
      *      Use {@link jenkins.model.Jenkins#getDescriptorByType(Class)} instead.
      */
+    @Deprecated
     public static volatile DescriptorImpl DESCRIPTOR;
 
     @Extension

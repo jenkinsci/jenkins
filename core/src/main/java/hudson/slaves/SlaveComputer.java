@@ -633,6 +633,7 @@ public class SlaveComputer extends Computer {
      *      This URL binding is no longer used and moved up directly under to {@link jenkins.model.Jenkins},
      *      but it's left here for now just in case some old JNLP slave agents request it.
      */
+    @Deprecated
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
     }
