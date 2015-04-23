@@ -13,8 +13,8 @@ import jenkins.model.Jenkins;
 import org.jenkinsci.remoting.engine.JnlpProtocol;
 import org.jenkinsci.remoting.engine.JnlpProtocol3;
 import org.jenkinsci.remoting.engine.jnlp3.ChannelCiphers;
-import org.jenkinsci.remoting.engine.jnlp3.CipherUtils;
 import org.jenkinsci.remoting.engine.jnlp3.HandshakeCiphers;
+import org.jenkinsci.remoting.engine.jnlp3.Jnlp3Util;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import javax.crypto.CipherInputStream;
@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +39,8 @@ import java.util.logging.Level;
  * Master-side implementation for JNLP3-connect protocol.
  *
  * <p>@see {@link JnlpProtocol3} for more details.
+ *
+ * @author Akshay Dayal
  */
 @Extension
 public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
@@ -59,45 +62,41 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
         public Handler(NioChannelHub hub, Socket socket) throws IOException {
             super(hub,socket,
                     new DataInputStream(socket.getInputStream()),
-                    new PrintWriter(new BufferedWriter(
-                            new OutputStreamWriter(socket.getOutputStream(), "UTF-8")), true));
+                    new PrintWriter(new BufferedWriter(new OutputStreamWriter(
+                            socket.getOutputStream(), Charset.forName("UTF-8"))), true));
         }
 
         protected void run() throws IOException, InterruptedException {
-            request.load(new ByteArrayInputStream(in.readUTF().getBytes("UTF-8")));
+            // Get initiation information from slave.
+            request.load(new ByteArrayInputStream(in.readUTF().getBytes(Charset.forName("UTF-8"))));
             String nodeName = request.getProperty(JnlpProtocol3.SLAVE_NAME_KEY);
-            String encryptedChallenge = request.getProperty(JnlpProtocol3.CHALLENGE_KEY);
-            byte[] handshakeSpecKey = CipherUtils.keyFromString(
-                    request.getProperty(JnlpProtocol3.HANDSHAKE_SPEC_KEY));
-            String cookie = request.getProperty(JnlpProtocol3.COOKIE_KEY);
 
+            // Create handshake ciphers.
             SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer == null) {
                 error("Slave trying to register for invalid node: " + nodeName);
                 return;
             }
             String slaveSecret = computer.getJnlpMac();
+            HandshakeCiphers handshakeCiphers = HandshakeCiphers.create(nodeName, slaveSecret);
 
-            HandshakeCiphers handshakeCiphers = null;
-            try {
-                handshakeCiphers = HandshakeCiphers.create(nodeName, slaveSecret, handshakeSpecKey);
-            } catch (Exception e) {
-                error("Failed to create handshake ciphers for node: " + nodeName);
+            // Authenticate to the slave.
+            if (!authenticateToSlave(handshakeCiphers)) {
                 return;
             }
 
-            String challenge = null;
-            try {
-                challenge = handshakeCiphers.decrypt(encryptedChallenge);
-            } catch (Exception e) {
-                throw new IOException("Unable to decrypt challenge", e);
+            // If there is a cookie decrypt it.
+            String cookie = null;
+            if (request.getProperty(JnlpProtocol3.COOKIE_KEY) != null) {
+                cookie = handshakeCiphers.decrypt(request.getProperty(JnlpProtocol3.COOKIE_KEY));
             }
-            if (!challenge.startsWith(JnlpProtocol3.CHALLENGE_PREFIX)) {
-                error("Received invalid challenge");
+
+            // Validate the slave.
+            if (!validateSlave(handshakeCiphers)) {
                 return;
             }
 
-            // At this point the slave looks legit, check if we think they are already connected.
+            // The slave is authenticated, see if its already connected.
             Channel oldChannel = computer.getChannel();
             if(oldChannel != null) {
                 if (cookie != null && cookie.equals(oldChannel.getProperty(COOKIE_NAME))) {
@@ -121,50 +120,60 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
                 }
             }
 
-            // Send challenge response.
-            String challengeReverse = new StringBuilder(
-                    challenge.substring(JnlpProtocol3.CHALLENGE_PREFIX.length()))
-                    .reverse().toString();
-            String challengeResponse = JnlpProtocol3.CHALLENGE_PREFIX + challengeReverse;
-            String encryptedChallengeResponse = null;
-            try {
-                encryptedChallengeResponse = handshakeCiphers.encrypt(challengeResponse);
-            } catch (Exception e) {
-                throw new IOException("Error encrypting challenge response", e);
-            }
-            out.println(encryptedChallengeResponse.getBytes("UTF-8").length);
-            out.print(encryptedChallengeResponse);
-            out.flush();
-
-            // If the slave accepted our challenge response it will send channel cipher keys.
-            String challengeVerificationMessage = in.readUTF();
-            if (!challengeVerificationMessage.equals(JnlpProtocol.GREETING_SUCCESS)) {
-                error("Slave did not accept our challenge response");
-                return;
-            }
-            String encryptedAesKeyString = in.readUTF();
-            String encryptedSpecKeyString = in.readUTF();
-            ChannelCiphers channelCiphers = null;
-            try {
-                String aesKeyString = handshakeCiphers.decrypt(encryptedAesKeyString);
-                String specKeyString = handshakeCiphers.decrypt(encryptedSpecKeyString);
-                channelCiphers = ChannelCiphers.create(
-                        CipherUtils.keyFromString(aesKeyString),
-                        CipherUtils.keyFromString(specKeyString));
-            } catch (Exception e) {
-                error("Failed to decrypt channel cipher keys");
-                return;
-            }
-
+            // Send greeting and new cookie.
+            out.println(JnlpProtocol.GREETING_SUCCESS);
             String newCookie = generateCookie();
-            try {
-                out.println(handshakeCiphers.encrypt(newCookie));
-            } catch (Exception e) {
-                throw new IOException("Error encrypting cookie", e);
-            }
+            out.println(handshakeCiphers.encrypt(newCookie));
+
+            // Now get the channel cipher information.
+            String aesKeyString = handshakeCiphers.decrypt(in.readUTF());
+            String specKeyString = handshakeCiphers.decrypt(in.readUTF());
+            ChannelCiphers channelCiphers = ChannelCiphers.create(
+                    Jnlp3Util.keyFromString(aesKeyString),
+                    Jnlp3Util.keyFromString(specKeyString));
 
             Channel establishedChannel = jnlpConnect(computer, channelCiphers);
             establishedChannel.setProperty(COOKIE_NAME, newCookie);
+        }
+
+        private boolean authenticateToSlave(HandshakeCiphers handshakeCiphers) throws IOException {
+            String challenge = handshakeCiphers.decrypt(
+                    request.getProperty(JnlpProtocol3.CHALLENGE_KEY));
+
+            // Send slave challenge response.
+            String challengeResponse = Jnlp3Util.createChallengeResponse(challenge);
+            String encryptedChallengeResponse = handshakeCiphers.encrypt(challengeResponse);
+            out.println(encryptedChallengeResponse.getBytes(Charset.forName("UTF-8")).length);
+            out.print(encryptedChallengeResponse);
+            out.flush();
+
+            // If the slave accepted our challenge response send our challenge.
+            String challengeVerificationMessage = in.readUTF();
+            if (!challengeVerificationMessage.equals(JnlpProtocol.GREETING_SUCCESS)) {
+                error("Slave did not accept our challenge response");
+                return false;
+            }
+
+            return true;
+        }
+
+        private boolean validateSlave(HandshakeCiphers handshakeCiphers) throws IOException {
+            String masterChallenge = Jnlp3Util.generateChallenge();
+            String encryptedMasterChallenge = handshakeCiphers.encrypt(masterChallenge);
+            out.println(encryptedMasterChallenge.getBytes(Charset.forName("UTF-8")).length);
+            out.print(encryptedMasterChallenge);
+            out.flush();
+
+            // Verify the challenge response from the slave.
+            String encryptedMasterChallengeResponse = in.readUTF();
+            String masterChallengeResponse = handshakeCiphers.decrypt(
+                    encryptedMasterChallengeResponse);
+            if (!Jnlp3Util.validateChallengeResponse(masterChallenge, masterChallengeResponse)) {
+                error("Incorrect master challenge response from slave");
+                return false;
+            }
+
+            return true;
         }
 
         protected Channel jnlpConnect(
