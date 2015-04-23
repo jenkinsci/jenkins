@@ -35,11 +35,8 @@ import java.io.IOException;
  * The TarOutputStream writes a UNIX tar archive as an OutputStream.
  * Methods are provided to put entries, and then write their contents
  * by writing to this stream using write().
- * 
- * @deprecated Use {@link org.apache.commons.compress.archivers.tar.TarArchiveOutputStream} instead
  *
  */
-@Deprecated
 public class TarOutputStream extends FilterOutputStream {
     /** Fail if a long file name is required in the archive. */
     public static final int LONGFILE_ERROR = 0;
