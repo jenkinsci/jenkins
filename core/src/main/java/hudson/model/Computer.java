@@ -1194,6 +1194,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private static class ListPossibleNames extends MasterToSlaveCallable<List<String>,IOException> {
+        /**
+         * In the normal case we would use {@link Computer} as the logger's name, however to
+         * do that we would have to send the {@link Computer} class over to the remote classloader
+         * and then it would need to be loaded, which pulls in {@link Jenkins} and loads that
+         * and then that fails to load as you are not supposed to do that. Another option
+         * would be to export the logger over remoting, with increased complexity as a result.
+         * Instead we just use a loger based on this class name and prevent any references to
+         * other classes from being transferred over remoting.
+         */
         private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());
         
         public List<String> call() throws IOException {
