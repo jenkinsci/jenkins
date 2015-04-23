@@ -37,9 +37,8 @@ import java.io.ByteArrayOutputStream;
  * methods are provided to position at each successive entry in
  * the archive, and the read each entry as a normal input stream
  * using read().
- * @deprecated Use {@link org.apache.commons.compress.archivers.tar.TarArchiveInputStream} instead
+ *
  */
-@Deprecated
 public class TarInputStream extends FilterInputStream {
 
     // CheckStyle:VisibilityModifier OFF - bc
