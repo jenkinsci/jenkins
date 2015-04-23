@@ -61,7 +61,6 @@ final class TarArchiver extends Archiver {
                 // so don't do anything in flush
             }
         });    
-        tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR);
         tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
     }
 
