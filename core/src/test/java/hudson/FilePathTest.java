@@ -659,4 +659,35 @@ public class FilePathTest {
             // test conflict subdir
             src.moveAllChildrenTo(dst);
     }
+
+    @Issue("JENKINS-10629")
+    @Test
+    public void testEOFbrokenFlush() throws IOException, InterruptedException {
+        final File srcFolder = temp.newFolder("src");
+        // simulate magic structure with magic sizes:
+        // |- dir/pom.xml   (2049)
+        // |- pom.xml       (2049)
+        // \- small.tar     (1537)
+        final File smallTar = new File(srcFolder, "small.tar");
+        givenSomeContentInFile(smallTar, 1537);
+        final File dir = new File(srcFolder, "dir");
+        dir.mkdirs();
+        final File pomFile = new File(dir, "pom.xml");
+        givenSomeContentInFile(pomFile, 2049);
+        FileUtils.copyFileToDirectory(pomFile, srcFolder);
+
+        final File archive = temp.newFile("archive.tar");
+
+        // Compress archive
+        final FilePath tmpDirPath = new FilePath(srcFolder);
+        int tarred = tmpDirPath.tar(new FileOutputStream(archive), "**");
+        assertEquals("One file should have been compressed", 3, tarred);
+
+        // Decompress
+        final File dstFolder = temp.newFolder("dst");
+        dstFolder.mkdirs();
+        FilePath outDir = new FilePath(dstFolder);
+        // and now fail when flush is bad!
+        tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
+    }
 }
