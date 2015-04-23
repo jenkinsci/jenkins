@@ -61,6 +61,9 @@ Upcoming changes</a>
   <li class=bug>
     Search box did not work well inside folders.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24433">issue 24433</a>)
+  <li class="major bug">
+    Revert changes in 1.610 made to resolve <a href="https://issues.jenkins-ci.org/browse/JENKINS-10629">issue 10629</a>. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28012">issue 28012</a>, <a href="https://issues.jenkins-ci.org/browse/JENKINS-28013">issue 28013</a>)
   <li class=rfe>
     Advertise JNLP slave agents to the correct host name, even in the presence of a reverse proxy.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27218">issue 27218</a>)
@@ -74,7 +77,7 @@ Upcoming changes</a>
     Since 1.598 overrides of <code>Descriptor.getId</code> were not correctly handled by form binding, breaking at least the CloudBees Templates plugin.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26781">issue 26781</a>)
   <li class=bug>
-    Archiving of large artifacts. Tar implementation cannot handle files having a size >8GB.
+    <b>Reverted in 1.611</b>. Archiving of large artifacts. Tar implementation cannot handle files having a size >8GB.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10629">issue 10629</a>)
   <li class=bug>
     The queue state was not updated between scheduling builds.
