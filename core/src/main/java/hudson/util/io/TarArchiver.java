@@ -52,15 +52,7 @@ final class TarArchiver extends Archiver {
     private final TarArchiveOutputStream tar;
 
     TarArchiver(OutputStream out) {
-        tar = new TarArchiveOutputStream(new BufferedOutputStream(out) {
-            // TarOutputStream uses TarBuffer internally,
-            // which flushes the stream for each block. this creates unnecessary
-            // data stream fragmentation, and flush request to a remote, which slows things down.
-            @Override
-            public void flush() throws IOException {
-                // so don't do anything in flush
-            }
-        });    
+        tar = new TarArchiveOutputStream(out);
         tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR);
         tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
     }
