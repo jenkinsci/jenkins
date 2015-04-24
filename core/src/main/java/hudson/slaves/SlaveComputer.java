@@ -487,7 +487,7 @@ public class SlaveComputer extends Computer {
                     LogRecord lr = new LogRecord(Level.SEVERE,
                             "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
                     lr.setThrown(t);
-                    lr.setParameters(new Object[]{launcher, SlaveComputer.this, t.getMessage()});
+                    lr.setParameters(new Object[]{launcher, SlaveComputer.this.getName(), t.getMessage()});
                     logger.log(lr);
                 }
             }
