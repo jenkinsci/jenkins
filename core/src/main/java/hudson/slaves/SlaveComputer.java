@@ -26,8 +26,6 @@ package hudson.slaves;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.AbortException;
-import hudson.remoting.ChannelBuilder;
-import hudson.util.IOUtils;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Computer;
@@ -39,24 +37,35 @@ import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
+import hudson.util.IOUtils;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
 import hudson.util.io.ReopenableFileOutputStream;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
+import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
+import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.apache.commons.io.FilenameUtils;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -74,17 +83,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
-import jenkins.model.Jenkins;
-import static hudson.slaves.SlaveComputer.LogHolder.*;
-import jenkins.security.ChannelConfigurator;
-import jenkins.security.MasterToSlaveCallable;
-import jenkins.slaves.JnlpSlaveAgentProtocol;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
+import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 
 
 /**
@@ -482,7 +481,15 @@ public class SlaveComputer extends Computer {
                     taskListener.getLogger().println("Connection terminated");
                 }
                 closeChannel();
-                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                try {
+                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                } catch (Throwable t) {
+                    LogRecord lr = new LogRecord(Level.SEVERE,
+                            "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
+                    lr.setThrown(t);
+                    lr.setParameters(new Object[]{launcher, SlaveComputer.this.getName(), t.getMessage()});
+                    logger.log(lr);
+                }
             }
         });
         if(listener!=null)
