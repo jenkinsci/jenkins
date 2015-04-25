@@ -84,6 +84,8 @@ public class ExtensionList<T> extends AbstractList<T> {
     @CopyOnWrite
     private volatile List<ExtensionComponent<T>> extensions;
 
+    private List<ExtensionListListener> listeners = new ArrayList<ExtensionListListener>();
+
     /**
      * Place to store manually registered instances with the per-Hudson scope.
      * {@link CopyOnWriteArrayList} is used here to support concurrent iterations and mutation.
@@ -127,6 +129,14 @@ public class ExtensionList<T> extends AbstractList<T> {
         if (jenkins == null) {
             extensions = Collections.emptyList();
         }
+    }
+
+    /**
+     * Add a listener to the extension list.
+     * @param listener The listener.
+     */
+    public void addListener(@Nonnull ExtensionListListener listener) {
+        listeners.add(listener);
     }
 
     /**
@@ -283,6 +293,13 @@ public class ExtensionList<T> extends AbstractList<T> {
                 List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
                 l.addAll(found);
                 extensions = sort(l);
+                for (ExtensionListListener listener : listeners) {
+                    try {
+                        listener.onRefresh();
+                    } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Error firing ExtensionListListener.onRefresh().", e);
+                    }
+                }
             }
         }
     }
