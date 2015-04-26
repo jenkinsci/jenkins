@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.widgets.buildsearch.processors;
+package jenkins.widgets.buildsearch.processors;
 
 import hudson.model.Queue;
 import hudson.model.Run;
-import hudson.widgets.buildsearch.BuildSearchParamProcessor;
-import hudson.widgets.buildsearch.BuildSearchParamProcessorFactory;
-import hudson.widgets.buildsearch.BuildSearchParams;
+import jenkins.widgets.buildsearch.BuildSearchParamProcessor;
+import jenkins.widgets.buildsearch.BuildSearchParamProcessorFactory;
+import jenkins.widgets.buildsearch.BuildSearchParams;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

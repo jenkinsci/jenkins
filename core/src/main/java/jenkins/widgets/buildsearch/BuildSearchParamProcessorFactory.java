@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.widgets.buildsearch;
+package jenkins.widgets.buildsearch;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.widgets.buildsearch.processors.DateProcessorFactory;
-import hudson.widgets.buildsearch.processors.DescriptionProcessorFactory;
-import hudson.widgets.buildsearch.processors.NameProcessorFactory;
-import hudson.widgets.buildsearch.processors.ResultProcessorFactory;
+import jenkins.widgets.buildsearch.processors.DateProcessorFactory;
+import jenkins.widgets.buildsearch.processors.DescriptionProcessorFactory;
+import jenkins.widgets.buildsearch.processors.NameProcessorFactory;
+import jenkins.widgets.buildsearch.processors.ResultProcessorFactory;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Implementations of this class create {@link BuildSearchParamProcessor} instances from a set
  * of {@link BuildSearchParams}. The set of {@link BuildSearchParamProcessor} instances are then used
- * by the {@link hudson.widgets.HistoryPageFilter} class to filter the build history (via an instance of
+ * by the {@link jenkins.widgets.HistoryPageFilter} class to filter the build history (via an instance of
  * {@link BuildSearchParamProcessorList}).
  *
  * <p>

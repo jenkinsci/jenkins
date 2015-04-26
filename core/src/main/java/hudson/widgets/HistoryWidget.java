@@ -27,6 +27,8 @@ import hudson.Functions;
 import hudson.model.ModelObject;
 import hudson.model.Run;
 
+import jenkins.widgets.HistoryPageEntry;
+import jenkins.widgets.HistoryPageFilter;
 import org.apache.commons.collections.IteratorUtils;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.Stapler;
@@ -157,7 +159,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
     }
 
     /**
-     * Get a {@link HistoryPageFilter} for rendering a page of queue items.
+     * Get a {@link jenkins.widgets.HistoryPageFilter} for rendering a page of queue items.
      */
     public HistoryPageFilter getHistoryPageFilter() {
         HistoryPageFilter<T> historyPageFilter = newPageFilter();

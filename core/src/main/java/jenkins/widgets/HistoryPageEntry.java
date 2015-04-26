@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.widgets;
+package jenkins.widgets;
 
 import hudson.model.Queue;
 import hudson.model.Run;

@@ -23,10 +23,10 @@
  */
 package hudson.widgets;
 
-import hudson.model.ModelObject;
 import jenkins.model.Jenkins;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
+import jenkins.widgets.HistoryPageFilter;
 import org.apache.commons.collections.IteratorUtils;
 
 import java.util.Collection;

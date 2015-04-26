@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.widgets;
+package jenkins.widgets;
 
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Run;
-import hudson.widgets.buildsearch.BuildSearchParamProcessor;
-import hudson.widgets.buildsearch.BuildSearchParamProcessorList;
-import hudson.widgets.buildsearch.BuildSearchParams;
+import hudson.widgets.HistoryWidget;
+import jenkins.widgets.buildsearch.BuildSearchParamProcessorList;
+import jenkins.widgets.buildsearch.BuildSearchParams;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;

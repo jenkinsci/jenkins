@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.widgets.buildsearch;
+package jenkins.widgets.buildsearch;
 
 import hudson.model.Queue;
 import hudson.model.Run;
@@ -30,8 +30,8 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 
 /**
- * Wrapper class for the list of {@link hudson.widgets.buildsearch.BuildSearchParamProcessor} needed to process/apply
- * a set of {@link hudson.widgets.buildsearch.BuildSearchParams}.
+ * Wrapper class for the list of {@link jenkins.widgets.buildsearch.BuildSearchParamProcessor} needed to process/apply
+ * a set of {@link jenkins.widgets.buildsearch.BuildSearchParams}.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
@@ -40,7 +40,7 @@ public class BuildSearchParamProcessorList {
     private final ArrayList<BuildSearchParamProcessor> processors;
 
     /**
-     * Create a {@link BuildSearchParamProcessorList} instance from a set of {@link hudson.widgets.buildsearch.BuildSearchParams}.
+     * Create a {@link BuildSearchParamProcessorList} instance from a set of {@link jenkins.widgets.buildsearch.BuildSearchParams}.
      * @param searchParams The search parameters to use for creating the {@link BuildSearchParamProcessorList}.
      */
     public BuildSearchParamProcessorList(@Nonnull BuildSearchParams searchParams) {

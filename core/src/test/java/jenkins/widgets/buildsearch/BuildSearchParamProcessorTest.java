@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.widgets.buildsearch;
+package jenkins.widgets.buildsearch;
 
 import hudson.model.Result;
-import hudson.widgets.buildsearch.processors.DateProcessorFactory;
+import jenkins.widgets.buildsearch.processors.DateProcessorFactory;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -21,13 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.widgets;
+package jenkins.widgets;
 
 import hudson.model.Job;
 import hudson.model.MockItem;
 import hudson.model.ModelObject;
 import hudson.model.Result;
 import hudson.model.Run;
+import jenkins.widgets.HistoryPageEntry;
+import jenkins.widgets.HistoryPageFilter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
