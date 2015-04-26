@@ -37,23 +37,23 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
 
     private RSAPrivateKey getKey() {
         try {
-            if (priv ==null) {
+            if (priv == null) {
                 synchronized (this) {
-                    if (priv ==null) {
+                    if (priv == null) {
                         byte[] payload = load();
-                        if (payload==null) {
+                        if (payload == null) {
                             KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-                            gen.initialize(2048,new SecureRandom()); // going beyond 2048 requires crypto extension
+                            gen.initialize(2048, new SecureRandom()); // going beyond 2048 requires crypto extension
                             KeyPair keys = gen.generateKeyPair();
-                            priv = (RSAPrivateKey)keys.getPrivate();
-                            pub  = (RSAPublicKey)keys.getPublic();
+                            priv = (RSAPrivateKey) keys.getPrivate();
+                            pub = (RSAPublicKey) keys.getPublic();
                             store(priv.getEncoded());
                         } else {
                             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                            priv = (RSAPrivateKey)keyFactory.generatePrivate(new PKCS8EncodedKeySpec(payload));
+                            priv = (RSAPrivateKey) keyFactory.generatePrivate(new PKCS8EncodedKeySpec(payload));
 
                             RSAPrivateCrtKey pks = (RSAPrivateCrtKey) priv;
-                            pub = (RSAPublicKey)keyFactory.generatePublic(
+                            pub = (RSAPublicKey) keyFactory.generatePublic(
                                     new RSAPublicKeySpec(pks.getModulus(), pks.getPublicExponent()));
                         }
                     }
@@ -61,9 +61,9 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
             }
             return priv;
         } catch (IOException e) {
-            throw new Error("Failed to load the key: "+getId(),e);
+            throw new Error("Failed to load the key: " + getId(), e);
         } catch (GeneralSecurityException e) {
-            throw new Error("Failed to load the key: "+getId(),e);
+            throw new Error("Failed to load the key: " + getId(), e);
         }
     }
 
