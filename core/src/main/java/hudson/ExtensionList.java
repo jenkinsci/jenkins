@@ -193,13 +193,22 @@ public class ExtensionList<T> extends AbstractList<T> {
     }
 
     @Override
-    public synchronized boolean remove(Object o) {
+    public boolean remove(Object o) {
+        try {
+            return removeSync(o);
+        } finally {
+            if(extensions!=null) {
+                fireOnChangeListeners();
+            }
+        }
+    }
+
+    private synchronized boolean removeSync(Object o) {
         boolean removed = removeComponent(legacyInstances, o);
         if(extensions!=null) {
             List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
             removed |= removeComponent(r,o);
             extensions = sort(r);
-            fireOnChangeListeners();
         }
         return removed;
     }
@@ -229,14 +238,23 @@ public class ExtensionList<T> extends AbstractList<T> {
      */
     @Override
     @Deprecated
-    public synchronized boolean add(T t) {
+    public boolean add(T t) {
+        try {
+            return addSync(t);
+        } finally {
+            if(extensions!=null) {
+                fireOnChangeListeners();
+            }
+        }
+    }
+
+    private synchronized boolean addSync(T t) {
         legacyInstances.add(new ExtensionComponent<T>(t));
         // if we've already filled extensions, add it
         if(extensions!=null) {
             List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
             r.add(new ExtensionComponent<T>(t));
             extensions = sort(r);
-            fireOnChangeListeners();
         }
         return true;
     }
@@ -286,6 +304,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      * Do not call from anywhere else.
      */
     public void refresh(ExtensionComponentSet delta) {
+        boolean fireOnChangeListeners = false;
         synchronized (getLoadLock()) {
             if (extensions==null)
                 return;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
@@ -295,8 +314,11 @@ public class ExtensionList<T> extends AbstractList<T> {
                 List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
                 l.addAll(found);
                 extensions = sort(l);
-                fireOnChangeListeners();
+                fireOnChangeListeners = true;
             }
+        }
+        if (fireOnChangeListeners) {
+            fireOnChangeListeners();
         }
     }
 
