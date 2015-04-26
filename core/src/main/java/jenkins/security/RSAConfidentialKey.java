@@ -25,8 +25,8 @@ import java.security.spec.RSAPublicKeySpec;
  * @author Kohsuke Kawaguchi
  */
 public abstract class RSAConfidentialKey extends ConfidentialKey {
-    private volatile RSAPrivateKey priv;
-    private volatile RSAPublicKey pub;
+    private RSAPrivateKey priv;
+    private RSAPublicKey pub;
     public RSAConfidentialKey(String id) {
         super(id);
     }
@@ -35,28 +35,24 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
         this(owner.getName() + '.' + shortName);
     }
 
-    private RSAPrivateKey getKey() {
+    private synchronized RSAPrivateKey getKey() {
         try {
             if (priv == null) {
-                synchronized (this) {
-                    if (priv == null) {
-                        byte[] payload = load();
-                        if (payload == null) {
-                            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-                            gen.initialize(2048, new SecureRandom()); // going beyond 2048 requires crypto extension
-                            KeyPair keys = gen.generateKeyPair();
-                            priv = (RSAPrivateKey) keys.getPrivate();
-                            pub = (RSAPublicKey) keys.getPublic();
-                            store(priv.getEncoded());
-                        } else {
-                            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                            priv = (RSAPrivateKey) keyFactory.generatePrivate(new PKCS8EncodedKeySpec(payload));
+                byte[] payload = load();
+                if (payload == null) {
+                    KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+                    gen.initialize(2048, new SecureRandom()); // going beyond 2048 requires crypto extension
+                    KeyPair keys = gen.generateKeyPair();
+                    priv = (RSAPrivateKey) keys.getPrivate();
+                    pub = (RSAPublicKey) keys.getPublic();
+                    store(priv.getEncoded());
+                } else {
+                    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                    priv = (RSAPrivateKey) keyFactory.generatePrivate(new PKCS8EncodedKeySpec(payload));
 
-                            RSAPrivateCrtKey pks = (RSAPrivateCrtKey) priv;
-                            pub = (RSAPublicKey) keyFactory.generatePublic(
-                                    new RSAPublicKeySpec(pks.getModulus(), pks.getPublicExponent()));
-                        }
-                    }
+                    RSAPrivateCrtKey pks = (RSAPrivateCrtKey) priv;
+                    pub = (RSAPublicKey) keyFactory.generatePublic(
+                            new RSAPublicKeySpec(pks.getModulus(), pks.getPublicExponent()));
                 }
             }
             return priv;
