@@ -31,11 +31,11 @@ package hudson;
 public abstract class ExtensionListListener {
 
     /**
-     * {@link ExtensionList} has been refreshed.
+     * {@link ExtensionList} contents has changed.
      * <p>
-     * This would be called when a dynamically loaded plugin introduces a new
-     * {@link ExtensionPoint} implementation that adds an entry to the {@link ExtensionList}
-     * being listened to.
+     * This would be called when an entry gets added to or removed from the list for any reason e.g.
+     * when a dynamically loaded plugin introduces a new {@link ExtensionPoint} implementation 
+     * that adds an entry to the {@link ExtensionList} being listened to.
      */
-    public abstract void onRefresh();
+    public abstract void onChange();
 }

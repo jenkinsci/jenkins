@@ -29,8 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.io.IOException;
-
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
@@ -40,7 +38,7 @@ public class ExtensionListListenerTest {
     public JenkinsRule r = PluginManagerUtil.newJenkinsRule();
 
     @Test
-    public void test_onRefresh() throws Exception {
+    public void test_onChange() throws Exception {
         ExtensionList<TransientActionFactory> extensionList = ExtensionList.lookup(TransientActionFactory.class);
 
         // force ExtensionList.ensureLoaded, otherwise the refresh will be ignored because
@@ -52,17 +50,17 @@ public class ExtensionListListenerTest {
         extensionList.addListener(listListener);
 
         // magiext.hpi has a TransientActionFactory @Extension impl in it. The loading of that
-        // plugin should trigger onRefresh in the MyExtensionListListener instance.
+        // plugin should trigger onChange in the MyExtensionListListener instance.
         PluginManagerUtil.dynamicLoad("magicext.hpi", r.jenkins);
 
-        Assert.assertTrue(listListener.refreshed);
+        Assert.assertEquals(1, listListener.onChangeCallCount);
     }
 
     private class MyExtensionListListener extends ExtensionListListener {
-        private boolean refreshed = false;
+        private int onChangeCallCount = 0;
         @Override
-        public void onRefresh() {
-            refreshed = true;
+        public void onChange() {
+            onChangeCallCount++;
         }
     }
 }

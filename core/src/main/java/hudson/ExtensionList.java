@@ -199,6 +199,7 @@ public class ExtensionList<T> extends AbstractList<T> {
             List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
             removed |= removeComponent(r,o);
             extensions = sort(r);
+            fireOnChangeListeners();
         }
         return removed;
     }
@@ -235,6 +236,7 @@ public class ExtensionList<T> extends AbstractList<T> {
             List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
             r.add(new ExtensionComponent<T>(t));
             extensions = sort(r);
+            fireOnChangeListeners();
         }
         return true;
     }
@@ -293,13 +295,17 @@ public class ExtensionList<T> extends AbstractList<T> {
                 List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
                 l.addAll(found);
                 extensions = sort(l);
-                for (ExtensionListListener listener : listeners) {
-                    try {
-                        listener.onRefresh();
-                    } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Error firing ExtensionListListener.onRefresh().", e);
-                    }
-                }
+                fireOnChangeListeners();
+            }
+        }
+    }
+
+    private void fireOnChangeListeners() {
+        for (ExtensionListListener listener : listeners) {
+            try {
+                listener.onChange();
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error firing ExtensionListListener.onChange().", e);
             }
         }
     }
