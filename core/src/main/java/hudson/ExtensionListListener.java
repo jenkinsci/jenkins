@@ -37,5 +37,5 @@ public abstract class ExtensionListListener {
      * {@link ExtensionPoint} implementation that adds an entry to the {@link ExtensionList}
      * being listened to.
      */
-    public void onRefresh() {}
+    public abstract void onRefresh();
 }
