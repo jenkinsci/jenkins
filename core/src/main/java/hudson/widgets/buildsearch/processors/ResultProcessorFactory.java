@@ -40,7 +40,12 @@ import java.util.List;
  */
 public class ResultProcessorFactory extends BuildSearchParamProcessorFactory {
 
-    private static final String[] SEARCH_TERMS = new String[] {"result"}; // Build result. TODO: Could do "status" too or maybe that's different
+    /**
+     * "result" search term.
+     */
+    public static final String RESULT_ST = "result";
+
+    private static final String[] SEARCH_TERMS = new String[] {RESULT_ST}; // TODO: Could do "status" too or maybe that's different
 
     /**
      * {@inheritDoc}
@@ -55,7 +60,7 @@ public class ResultProcessorFactory extends BuildSearchParamProcessorFactory {
      */
     @Override
     public BuildSearchParamProcessor createProcessor(BuildSearchParams searchParams) {
-        List<BuildSearchParams.BuildSearchParam> resultParams = searchParams.getParams(SEARCH_TERMS[0]);
+        List<BuildSearchParams.BuildSearchParam> resultParams = searchParams.getParams(RESULT_ST);
 
         if (resultParams.isEmpty()) {
             // "result" search term not specified in search

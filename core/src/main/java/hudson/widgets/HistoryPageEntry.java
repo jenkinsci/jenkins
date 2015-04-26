@@ -29,6 +29,13 @@ import hudson.model.Run;
 import javax.annotation.Nonnull;
 
 /**
+ * Represents an entry used by the {@link HistoryPageFilter}.
+ *
+ * <p>
+ * Wraps {@link Queue.Item} and {@link Run} instances from the build queue, normalizing
+ * access to the info required for pagination.
+ *
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class HistoryPageEntry<T> {

@@ -51,7 +51,16 @@ public class DateProcessorFactory extends BuildSearchParamProcessorFactory {
     public static final long WEEK = DAY * 7;
     public static final long MONTH = WEEK * 4;
 
-    private static final String[] SEARCH_TERMS = new String[] {"date-from", "date-to"};
+    /**
+     * "date-from" search term.
+     */
+    public static final String DATE_FROM_ST = "date-from";
+    /**
+     * "date-to" search term.
+     */
+    public static final String DATE_TO_ST = "date-to";
+
+    private static final String[] SEARCH_TERMS = new String[] {DATE_FROM_ST, DATE_TO_ST};
 
     /**
      * {@inheritDoc}
@@ -102,8 +111,8 @@ public class DateProcessorFactory extends BuildSearchParamProcessorFactory {
         private Long dateTo;
 
         private DateFromTo(BuildSearchParams searchParams) {
-            final List<BuildSearchParams.BuildSearchParam> dateFromParams = searchParams.getParams(SEARCH_TERMS[0]);
-            final List<BuildSearchParams.BuildSearchParam> dateToParams = searchParams.getParams(SEARCH_TERMS[1]);
+            final List<BuildSearchParams.BuildSearchParam> dateFromParams = searchParams.getParams(DATE_FROM_ST);
+            final List<BuildSearchParams.BuildSearchParam> dateToParams = searchParams.getParams(DATE_TO_ST);
 
             if (dateFromParams.isEmpty() && dateToParams.isEmpty()) {
                 // none of the date search terms are specified

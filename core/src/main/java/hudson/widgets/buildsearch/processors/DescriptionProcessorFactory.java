@@ -38,7 +38,12 @@ import java.util.List;
  */
 public class DescriptionProcessorFactory extends BuildSearchParamProcessorFactory {
 
-    private static final String[] SEARCH_TERMS = new String[] {"desc"}; // Build description
+    /**
+     * "desc" (description) search term.
+     */
+    public static final String DESC_ST = "desc";
+
+    private static final String[] SEARCH_TERMS = new String[] {DESC_ST}; // Build description
 
     /**
      * {@inheritDoc}
@@ -53,7 +58,7 @@ public class DescriptionProcessorFactory extends BuildSearchParamProcessorFactor
      */
     @Override
     public BuildSearchParamProcessor createProcessor(BuildSearchParams searchParams) {
-        final List<BuildSearchParams.BuildSearchParam> descParams = searchParams.getParams(SEARCH_TERMS[0]);
+        final List<BuildSearchParams.BuildSearchParam> descParams = searchParams.getParams(DESC_ST);
 
         if (descParams.isEmpty()) {
             // "desc" search term not specified in search

@@ -72,7 +72,7 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
     }
 
     @Override
-    public HistoryPageFilter getPage() {
+    public HistoryPageFilter getHistoryPageFilter() {
         final HistoryPageFilter<T> historyPageFilter = newPageFilter();
 
         List<T> items = new LinkedList<T>();

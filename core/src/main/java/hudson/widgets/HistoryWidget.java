@@ -26,23 +26,20 @@ package hudson.widgets;
 import hudson.Functions;
 import hudson.model.ModelObject;
 import hudson.model.Run;
-import hudson.util.Iterators;
 
 import org.apache.commons.collections.IteratorUtils;
 import org.kohsuke.stapler.Header;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 /**
  * Displays the history of records (normally {@link Run}s) on the side panel.
@@ -160,9 +157,9 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
     }
 
     /**
-     * Render a "page" of records.
+     * Get a {@link HistoryPageFilter} for rendering a page of queue items.
      */
-    public HistoryPageFilter getPage() {
+    public HistoryPageFilter getHistoryPageFilter() {
         HistoryPageFilter<T> historyPageFilter = newPageFilter();
 
         historyPageFilter.add(IteratorUtils.toList(baseList.iterator()));
@@ -238,7 +235,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
             firstTransientBuildKey = nn; // all builds >= nn should be marked transient
         }
 
-        HistoryPageFilter page = getPage();
+        HistoryPageFilter page = getHistoryPageFilter();
         updateFirstTransientBuildKey(page.runs);
         req.getView(page,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
@@ -263,7 +260,11 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         String getNextKey(String key);
     }
 
-    private Long getPagingParam(StaplerRequest currentRequest, String name) {
+    private Long getPagingParam(@CheckForNull StaplerRequest currentRequest, @CheckForNull String name) {
+        if (currentRequest == null || name == null) {
+            return null;
+        }
+
         String paramVal = currentRequest.getParameter(name);
         if (paramVal == null) {
             return null;
