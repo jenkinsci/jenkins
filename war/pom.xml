@@ -516,31 +516,6 @@ THE SOFTWARE.
 
   <profiles>
     <profile>
-      <!-- profile for creating Jenkins IPS package -->
-      <id>ips</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jvnet.updatecenter2</groupId>
-            <artifactId>maven-makepkgs-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>package</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <python>python2.5</python>
-              <proto>../ips/proto.py</proto>
-              <attach>false</attach>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <!-- sign war -->
       <id>sign</id>
       <build>
