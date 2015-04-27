@@ -101,7 +101,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
-    <java.level>6</java.level>
+    <java.level>7</java.level>
   </properties>
 
   <repositories>
@@ -604,7 +604,7 @@ THE SOFTWARE.
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java1${java.level}</artifactId>
+            <artifactId>java16</artifactId>
             <version>1.0</version>
           </signature>
         </configuration>
