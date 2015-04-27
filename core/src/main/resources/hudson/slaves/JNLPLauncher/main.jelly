@@ -57,7 +57,7 @@ THE SOFTWARE.
                 <p>
                   ${%Or if the slave is headless:}
                 </p>
-                <pre>java -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
+                <pre>java ${it.launcher.vmargs}${it.launcher.vmargs==null?'':' '}-jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
               </li>
             </j:when>
             <j:otherwise>
@@ -66,7 +66,7 @@ THE SOFTWARE.
                   ${%Run from slave command line:}
                 </p>
                 <!-- TODO conceal secret w/ JS if possible -->
-                <pre>java -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac}</pre>
+                <pre>java ${it.launcher.vmargs}${it.launcher.vmargs==null?'':' '}-jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac}</pre>
               </li>
             </j:otherwise>
           </j:choose>
