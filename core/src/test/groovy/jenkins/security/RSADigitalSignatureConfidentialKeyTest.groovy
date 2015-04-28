@@ -42,12 +42,13 @@ class RSADigitalSignatureConfidentialKeyTest {
 
     @Test
     void dsigSignAndVerify() {
-        def msg = key.sign("Hello world");
+        def plainText = "Hello world"
+        def msg = key.sign(plainText);
         println msg;
 
         def sig = Signature.getInstance("SHA256withRSA");
         sig.initVerify(key.publicKey);
-        sig.update(msg.getBytes("UTF-8"));
+        sig.update(plainText.getBytes("UTF-8"));
 
         assert sig.verify(Base64.decode(msg))
     }
