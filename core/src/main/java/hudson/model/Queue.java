@@ -1268,13 +1268,13 @@ public class Queue extends ResourceController implements Saveable {
      */
     public void maintain() {
         lock.lock();
-        try { try {
+        try { 
 
             LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
 
             // The executors that are currently waiting for a job to run.
             Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
-
+            try {
             {// update parked (and identify any pending items whose executor has disappeared)
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
                 for (Computer c : Jenkins.getInstance().getComputers()) {
@@ -1342,7 +1342,7 @@ public class Queue extends ResourceController implements Saveable {
                 s.sortBuildableItems(buildables);
             
             // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
-            updateSnapshot();
+            } finally { updateSnapshot(); }
             
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<BuildableItem>(
@@ -1372,6 +1372,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
 
                 // found a matching executor. use it.
+                try {
                 WorkUnitContext wuc = new WorkUnitContext(p);
                 m.execute(wuc);
 
@@ -1380,20 +1381,21 @@ public class Queue extends ResourceController implements Saveable {
                     makePending(p);
                 else
                     LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
-                                
-                // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
-                // The creation of a snapshot itself should be relatively cheap given the expected rate of
-                // job execution. You probably would need 100's of jobs starting execution every iteration
-                // of maintain() before this could even start to become an issue and likely the calculation
-                // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
-                // since the snapshot itself only ever has at most one reference originating outside of the stack
-                // it should remain in the eden space and thus be cheap to GC.
-                // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
-                // for alternative fixes of this issue.
-                updateSnapshot();
+                } finally {                
+                    // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
+                    // The creation of a snapshot itself should be relatively cheap given the expected rate of
+                    // job execution. You probably would need 100's of jobs starting execution every iteration
+                    // of maintain() before this could even start to become an issue and likely the calculation
+                    // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
+                    // since the snapshot itself only ever has at most one reference originating outside of the stack
+                    // it should remain in the eden space and thus be cheap to GC.
+                    // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                    // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                    // for alternative fixes of this issue.
+                    updateSnapshot();
+                }
             }
-        } finally { updateSnapshot(); } } finally {
+        } finally {
             lock.unlock();
         }
     }
