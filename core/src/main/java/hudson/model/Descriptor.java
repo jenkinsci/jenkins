@@ -918,14 +918,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                     d = findById(descriptors, kind);
                 }
                 if (d == null) {
-                  kind = jo.getString("$class");
-                  d = findByDescribableClassName(descriptors, kind);
-                  if (d == null) d = findByClassName(descriptors, kind);
+                  kind = jo.optString("$class");
+                  if (kind != null) {
+                      d = findByDescribableClassName(descriptors, kind);
+                      if (d == null) {
+                          d = findByClassName(descriptors, kind);
+                      }
+                  }
                 }
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
                 } else {
-                    LOGGER.warning("Received unexpected formData for descriptor " + kind);
+                    LOGGER.log(Level.WARNING, "Received unexpected formData: {0}", jo);
                 }
             }
         }
