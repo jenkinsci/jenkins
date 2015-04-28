@@ -56,6 +56,17 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Under rare conditions Executor.getProgress() can throw a Division by zero exception.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28115">issue 28115</a>)
+  <li class=bug>
+    The Run from the command line option for launching a JNLP slave should display the
+    configured JVM options.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28111">issue 28111</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v1.611>What's new in 1.611</a> (2015/04/26)</h3>
+<ul class=image>
+  <li class=bug>
     <code>Descriptor.getId</code> fix in 1.610 introduced a regression affecting at least the Copy Artifacts plugin.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28011">issue 28011</a>)
   <li class=bug>
@@ -73,7 +84,6 @@ Upcoming changes</a>
     Correctly identify Channel listener onClose propagated exceptions
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28062">issue 28062</a>
 </ul>
-</div><!--=TRUNK-END=-->
 <h3><a name=v1.610>What's new in 1.610</a> (2015/04/19)</h3>
 <ul class=image>
   <li class=bug>
