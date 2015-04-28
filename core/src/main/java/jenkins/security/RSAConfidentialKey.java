@@ -27,6 +27,7 @@ import java.security.spec.RSAPublicKeySpec;
 public abstract class RSAConfidentialKey extends ConfidentialKey {
     private RSAPrivateKey priv;
     private RSAPublicKey pub;
+
     public RSAConfidentialKey(String id) {
         super(id);
     }
@@ -35,7 +36,17 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
         this(owner.getName() + '.' + shortName);
     }
 
-    private synchronized RSAPrivateKey getKey() {
+    /**
+     * Obtains the private key (lazily.)
+     * <p>
+     * This method is not publicly exposed as per the design principle of {@link ConfidentialKey}.
+     * Instead of exposing private key, define methods that use them in specific way, such as
+     * {@link RSADigitalSignatureConfidentialKey}.
+     *
+     * @throws Error
+     *      If key cannot be loaded for some reasons, we fail.
+     */
+    protected synchronized RSAPrivateKey getPrivateKey() {
         try {
             if (priv == null) {
                 byte[] payload = load();
@@ -63,15 +74,8 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
         }
     }
 
-    /**
-     * Caller is responsible for using the private key appropriately to avoid compromise.
-     */
-    protected RSAPrivateKey getPrivateKey() {
-        return getKey();
-    }
-
     public RSAPublicKey getPublicKey() {
-        getKey();
+        getPrivateKey();
         return pub;
     }
 
