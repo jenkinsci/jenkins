@@ -915,13 +915,21 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 // Descriptors, so we prefer 'kind' if it's present.
                 String kind = jo.optString("kind", null);
                 if (kind != null) {
+                    // Only applies when Descriptor.getId is overridden.
+                    // Note that kind is only supported here,
+                    // *not* inside the StaplerRequest.bindJSON which is normally called by newInstance
+                    // (since Descriptor.newInstance is not itself available to Stapler).
+                    // If you merely override getId for some reason, but use @DataBoundConstructor on your Describable,
+                    // there is no problem; but you can only rely on newInstance being called at top level.
                     d = findById(descriptors, kind);
                 }
                 if (d == null) {
                   kind = jo.optString("$class");
-                  if (kind != null) {
+                  if (kind != null) { // else we will fall through to the warning
+                      // This is the normal case.
                       d = findByDescribableClassName(descriptors, kind);
                       if (d == null) {
+                          // Deprecated system where stapler-class was the Descriptor class name (rather than Describable class name).
                           d = findByClassName(descriptors, kind);
                       }
                   }
@@ -929,7 +937,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
                 } else {
-                    LOGGER.log(Level.WARNING, "Received unexpected formData: {0}", jo);
+                    LOGGER.log(Level.WARNING, "Received unexpected form data element: {0}", jo);
                 }
             }
         }
