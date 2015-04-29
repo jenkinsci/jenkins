@@ -605,7 +605,7 @@ THE SOFTWARE.
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java16</artifactId>
+            <artifactId>java1${java.level}</artifactId>
             <version>1.0</version>
           </signature>
         </configuration>
