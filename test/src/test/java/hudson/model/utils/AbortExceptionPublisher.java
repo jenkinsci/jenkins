@@ -19,7 +19,7 @@ import java.io.IOException;
 public class AbortExceptionPublisher extends Recorder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        throw new AbortException("Throwed AbortException from publisher!");
+        throw new AbortException("Threw AbortException from publisher!");
     }
 
     @Override
