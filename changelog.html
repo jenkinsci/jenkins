@@ -56,6 +56,9 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    <code>Descriptor.getId</code> fix in 1.610 introduced regressions affecting at least the Performance and NodeJS plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28093">issue 28093</a> and <a href="https://issues.jenkins-ci.org/browse/JENKINS-28110">issue 28110</a>)
+  <li class=bug>
     Under rare conditions Executor.getProgress() can throw a Division by zero exception.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28115">issue 28115</a>)
   <li class=bug>
