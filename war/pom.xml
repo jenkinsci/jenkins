@@ -47,7 +47,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.29</version>
+      <version>1.30</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
