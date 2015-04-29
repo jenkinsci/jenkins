@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -123,6 +123,10 @@ body {
 }
 
 #footer-container {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  z-index: 99999;
   width: 100%;
   padding: 10px 0px;
   border-top: 1px solid #d3d7cf;
@@ -341,7 +345,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-word;	
+    word-wrap: break-word;
 }
 
 pre.console {
@@ -1318,7 +1322,7 @@ DIV.yahooTree td {
   height: 24px;
   padding-left: 20px;
   width: 15em;
-  position: static; 
+  position: static;
   border: 1px solid #DDD;
   border-radius: 4px;
   box-shadow: 0 0 5px #DDD inset;
