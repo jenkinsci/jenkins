@@ -29,10 +29,12 @@ import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.User;
 
-import org.acegisecurity.Authentication;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
+
+import javax.annotation.Nonnull;
+import java.util.Date;
 
 /**
  * Represents a cause that puts a {@linkplain Computer#isOffline() computer offline}.
@@ -41,13 +43,34 @@ import org.kohsuke.stapler.export.Exported;
  * <p>
  * {@link OfflineCause} must have <tt>cause.jelly</tt> that renders a cause
  * into HTML. This is used to tell users why the node is put offline.
- * This view should render a block element like DIV. 
+ * This view should render a block element like DIV.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.320
  */
 @ExportedBean
 public abstract class OfflineCause {
+    protected final long timestamp = System.currentTimeMillis();
+
+    /**
+     * Timestamp in which the event happened.
+     *
+     * @since 1.612
+     */
+    @Exported
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    /**
+     * Same as {@link #getTimestamp()} but in a different type.
+     *
+     * @since 1.612
+     */
+    public final @Nonnull Date getTime() {
+        return new Date(timestamp);
+    }
+
     /**
      * {@link OfflineCause} that renders a static text,
      * but without any further UI.
