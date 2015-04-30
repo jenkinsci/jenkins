@@ -725,8 +725,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     try {
                         if (!perform(bs,listener)) {
                             LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
-                            setResult(Result.FAILURE);
                             r = false;
+                            if (phase) {
+                                setResult(Result.FAILURE);
+                            }
                         }
                     } catch (Exception e) {
                         reportError(bs, e, listener, phase);
@@ -744,8 +746,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             if (e instanceof AbortException) {
                 LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, publisher});
-                listener.error("Publisher '" + publisher + "' failed: ");
-                listener.error(e.getMessage());
+                listener.error("Publisher '" + publisher + "' failed: " + e.getMessage());
             } else {
                 String msg = "Publisher '" + publisher + "' aborted due to exception: ";
                 e.printStackTrace(listener.error(msg));
