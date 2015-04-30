@@ -19,7 +19,7 @@ import java.io.IOException;
 public class IOExceptionPublisher extends Recorder {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        throw new IOException("Throwed IOException from publisher!");
+        throw new IOException("Threw IOException from publisher!");
     }
 
     @Override
