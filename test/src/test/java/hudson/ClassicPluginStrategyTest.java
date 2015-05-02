@@ -100,7 +100,7 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
         Class<?> clazz = pw.classLoader.loadClass("org.apache.http.impl.io.SocketInputBuffer");
         ClassLoader cl = clazz.getClassLoader();
         URL url = cl.getResource("org/apache/http/impl/io/SocketInputBuffer.class");
-        assert url != null;
+        assertNotNull(url);
         assertTrue("expected to find the class from foo1 plugin", url.toString().contains("plugins/foo1"));
     }
 }
