@@ -30,6 +30,10 @@ THE SOFTWARE.
   -->
   <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
   <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
+  <!--
+    if the host name is overriden, advertise that as well
+  -->
+  <st:header name="X-Jenkins-JNLP-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}" />
 
   Jenkins
 </j:jelly>

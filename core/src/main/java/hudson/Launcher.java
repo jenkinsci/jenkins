@@ -133,6 +133,7 @@ public abstract class Launcher {
      *      figure out the current {@link Computer} from within a build, use
      *      {@link Computer#currentComputer()}  
      */
+    @Deprecated
     public Computer getComputer() {
         for( Computer c : Jenkins.getInstance().getComputers() )
             if(c.getChannel()==channel)
@@ -412,6 +413,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String cmd, Map<String,String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd,Util.mapToEnv(env),out,workDir);
     }
@@ -420,6 +422,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, Map<String, String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd, Util.mapToEnv(env), out, workDir);
     }
@@ -428,6 +431,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, Map<String, String> env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd, Util.mapToEnv(env), in, out);
     }
@@ -449,6 +453,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, boolean[] mask, Map<String, String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd, mask, Util.mapToEnv(env), out, workDir);
     }
@@ -470,6 +475,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, boolean[] mask, Map<String, String> env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd, mask, Util.mapToEnv(env), in, out);
     }
@@ -478,6 +484,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String cmd,String[] env,OutputStream out, FilePath workDir) throws IOException {
         return launch(Util.tokenize(cmd),env,out,workDir);
     }
@@ -486,6 +493,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, String[] env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd, env, null, out, workDir);
     }
@@ -494,6 +502,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd, env, in, out, null);
     }
@@ -515,6 +524,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, boolean[] mask, String[] env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd, mask, env, null, out, workDir);
     }
@@ -536,6 +546,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd, mask, env, in, out, null);
     }
@@ -554,6 +565,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
         return launch(launch().cmds(cmd).envs(env).stdin(in).stdout(out).pwd(workDir));
     }
@@ -576,6 +588,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
         return launch(launch().cmds(cmd).masks(mask).envs(env).stdin(in).stdout(out).pwd(workDir));
     }

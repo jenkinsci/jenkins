@@ -38,6 +38,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     /**
      * @deprecated as of 1.390
      */
+    @Deprecated
     public FreeStyleProject(Jenkins parent, String name) {
         super(parent, name);
     }

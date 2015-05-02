@@ -176,6 +176,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *      This method is only intended for the remote API clients who cannot resolve relative references
      *      (even this won't work for the same reason, which should be fixed.)
      */
+    @Deprecated
     String getAbsoluteUrl();
 
     /**

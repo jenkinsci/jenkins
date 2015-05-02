@@ -74,6 +74,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     /**
      * @deprecated as of 1.517
      */ 
+    @Deprecated
     public RunParameterDefinition(String name, String projectName, String description) {
     	// delegate to updated constructor with additional RunParameterFilter parameter defaulted to ALL.
     	this(name, projectName, description, RunParameterFilter.ALL);

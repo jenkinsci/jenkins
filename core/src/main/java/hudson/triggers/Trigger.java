@@ -120,6 +120,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * @deprecated as of 1.341
      *      Use {@link #getProjectActions()} instead.
      */
+    @Deprecated
     public Action getProjectAction() {
         return null;
     }

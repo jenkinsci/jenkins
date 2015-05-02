@@ -28,7 +28,7 @@ THE SOFTWARE.
     Generates an anchor element with the ability to send POST requests and/or
     asynchronous requests. It depends the combination of post and async attributes.
 
-    @since TODO
+    @since 1.584
     <st:attribute name="clazz">
       Additional CSS classes.
     </st:attribute>

@@ -51,6 +51,6 @@ public abstract class AbstractSubTask implements SubTask {
     }
 
     public ResourceList getResourceList() {
-        return new ResourceList();
+        return ResourceList.EMPTY;
     }
 }

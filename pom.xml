@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.604-SNAPSHOT</version>
+  <version>1.612-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -176,7 +176,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.49</version>
+        <version>2.51</version>
       </dependency>
 
       <dependency>
@@ -359,6 +359,7 @@ THE SOFTWARE.
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.16</version> <!-- ignoring ${maven-surefire-plugin.version} -->
           <configuration>
+            <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
@@ -441,7 +442,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.15</version>
+          <version>1.23</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
@@ -614,7 +615,7 @@ THE SOFTWARE.
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.${java.level}</source>
-          <target>1.${java.level}</target>
+          <target>1.7</target> <!-- TODO JENKINS-28120 restore to 1.${java.level} -->
           <!-- default reuseCreated is more performant 
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -633,13 +634,13 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>1.6.0-18</version>
+                  <version>1.7.0</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.0</version>
                 </requireMavenVersion>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>1.${java.level}</maxJdkVersion>
+                  <maxJdkVersion>1.7</maxJdkVersion> <!-- TODO JENKINS-28120 restore to 1.${java.level} -->
                   <ignoreClasses>
                     <ignoreClass>org.eclipse.jetty.spdy.*</ignoreClass>
                   </ignoreClasses>

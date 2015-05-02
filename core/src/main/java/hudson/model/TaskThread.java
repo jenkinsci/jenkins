@@ -51,6 +51,7 @@ public abstract class TaskThread extends Thread {
      * @deprecated as of Hudson 1.350
      *      Use {@link #log}. It's the same object, in a better type.
      */
+    @Deprecated
     private final LargeText text;
 
     /**
@@ -163,6 +164,7 @@ public abstract class TaskThread extends Thread {
          * @deprecated as of Hudson 1.350
          *      Use {@link #forMemory(TaskAction)} and pass in the calling {@link TaskAction}
          */
+        @Deprecated
         public static ListenerAndText forMemory() {
             return forMemory(null);
         }
@@ -171,6 +173,7 @@ public abstract class TaskThread extends Thread {
          * @deprecated as of Hudson 1.350
          *      Use {@link #forFile(File, TaskAction)} and pass in the calling {@link TaskAction}
          */
+        @Deprecated
         public static ListenerAndText forFile(File f) throws IOException {
             return forFile(f,null);
         }

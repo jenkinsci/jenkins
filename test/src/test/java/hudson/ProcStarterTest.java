@@ -40,13 +40,13 @@ import org.jvnet.hudson.test.JenkinsRule;
 /**
  * Contains tests for {@link ProcStarter} class.
  * @author Oleg Nenashev <nenashev@synopsys.com>, Synopsys Inc.
- * @since TODO: define a version
+ * @since 1.568
  */
 public class ProcStarterTest {
 
     @Rule
     public JenkinsRule rule = new JenkinsRule();
-    
+
     @Test
     @Issue("JENKINS-20559")
     public void testNonInitializedEnvsNPE() throws Exception {
@@ -92,7 +92,7 @@ public class ProcStarterTest {
             return new Environment() {
             };
         }
-        
+
         @Extension
         public static class DescriptorImpl extends TestWrapperDescriptor {
         }
@@ -121,7 +121,7 @@ public class ProcStarterTest {
             return new Environment() {
             };
         }
-        
+
         @Extension
         public static class DescriptorImpl extends TestWrapperDescriptor {
         }

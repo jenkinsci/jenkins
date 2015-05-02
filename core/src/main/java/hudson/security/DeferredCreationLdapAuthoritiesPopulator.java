@@ -44,6 +44,7 @@ import hudson.security.SecurityRealm.SecurityComponents;
  *      {@link SecurityComponents} are now created after {@link SecurityRealm} is created, so
  *      the initialization order issue that this code was trying to address no longer exists.
  */
+@Deprecated
 public class DeferredCreationLdapAuthoritiesPopulator implements LdapAuthoritiesPopulator {
 
     /**

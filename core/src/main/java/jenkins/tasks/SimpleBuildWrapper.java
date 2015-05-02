@@ -28,6 +28,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.console.ConsoleLogFilter;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -177,34 +178,51 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
     }
 
-    @Override public final OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, Run.RunnerAbortedException {
-        // Doubtful this can be supported.
-        // Decorating a TaskListener would be more reasonable.
-        // But for an AbstractBuild this is called early in Run.execute, before setUp.
-        // And for other kinds of builds, it is unclear what this would even mean.
-        return logger;
+    /**
+     * Allows this wrapper to decorate log output.
+     * @param build as is passed to {@link #setUp(Context, Run, FilePath, Launcher, TaskListener, EnvVars)}
+     * @return a filter which ignores its {@code build} parameter and is {@link Serializable}; or null (the default)
+     * @since 1.608
+     */
+    public @CheckForNull ConsoleLogFilter createLoggerDecorator(@Nonnull Run<?,?> build) {
+        return null;
     }
 
-    @Override public final Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, Run.RunnerAbortedException {
+    @Override public final OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, Run.RunnerAbortedException {
+        ConsoleLogFilter filter = createLoggerDecorator(build);
+        return filter != null ? filter.decorateLogger(build, logger) : logger;
+    }
+
+    /**
+     * May be overridden but this will only take effect when used as a {@link BuildWrapper} on an {@link AbstractProject}.
+     * <p>{@inheritDoc}
+     * @since 1.608
+     */
+    @Override public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, Run.RunnerAbortedException {
+        return super.decorateLauncher(build, launcher, listener);
         // TODO reasonable to decorate Launcher within a dynamic scope, but this signature does not mix well with Context pattern.
         // Called from AbstractBuildExecution.createLauncher; how do we track what is decorating what?
         // Would have to keep something like a LaunchedDecorator, not an actual Launcher, in Context.
         // And createLauncher is called before even preCheckout, so much too early for the Context to have been prepared.
         // Could perhaps create a proxy Launcher whose launch method checks some field in the Context remembered for the build.
-        return launcher;
     }
 
     /**
-     * May not do anything.
-     * {@inheritDoc}
+     * May be overridden but this will only take effect when used as a {@link BuildWrapper} on an {@link AbstractProject}.
+     * <p>{@inheritDoc}
+     * @since 1.608
      */
-    @Override public final void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {}
+    @Override public void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {
+        super.makeBuildVariables(build, variables);
+    }
 
     /**
-     * May not do anything.
-     * {@inheritDoc}
+     * May be overridden but this will only take effect when used as a {@link BuildWrapper} on an {@link AbstractProject}.
+     * <p>{@inheritDoc}
+     * @since 1.608
      */
-    @Override public final void makeSensitiveBuildVariables(AbstractBuild build, Set<String> sensitiveVariables) {
+    @Override public void makeSensitiveBuildVariables(AbstractBuild build, Set<String> sensitiveVariables) {
+        super.makeSensitiveBuildVariables(build, sensitiveVariables);
         // TODO determine if there is a meaningful way to generalize this; perhaps as a new [Run]Action recording sensitiveVariables?
         // Complicated by the fact that in principle someone could call getSensitiveBuildVariables *before* the wrapper starts and actually sets those variables,
         // though in practice the likely use cases would come later, and perhaps it is acceptable to omit the names of variables which are yet to be set.

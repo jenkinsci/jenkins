@@ -29,11 +29,14 @@ import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.Callable;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
@@ -63,6 +66,7 @@ public class Items {
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<TopLevelItemDescriptor> LIST = (List)new DescriptorList<TopLevelItem>(TopLevelItem.class);
 
     /**
@@ -112,6 +116,42 @@ public class Items {
         return Jenkins.getInstance().<TopLevelItem,TopLevelItemDescriptor>getDescriptorList(TopLevelItem.class);
     }
 
+    /**
+     * Returns all the registered {@link TopLevelItemDescriptor}s that the current security principal is allowed to
+     * create within the specified item group.
+     *
+     * @since TODO
+     */
+    public static List<TopLevelItemDescriptor> all(ItemGroup c) {
+        return all(Jenkins.getAuthentication(), c);
+    }
+
+    /**
+     * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principal is allowed to
+     * create within the specified item group.
+     *
+     * @since TODO
+     */
+    public static List<TopLevelItemDescriptor> all(Authentication a, ItemGroup c) {
+        List<TopLevelItemDescriptor> result = new ArrayList<TopLevelItemDescriptor>();
+        ACL acl;
+        if (c instanceof AccessControlled) {
+            acl = ((AccessControlled) c).getACL();
+        } else {
+            // fall back to root
+            acl = Jenkins.getInstance().getACL();
+        }
+        for (TopLevelItemDescriptor d: all()) {
+            if (acl.hasCreatePermission(a, c, d) && d.isApplicableIn(c)) {
+                result.add(d);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
+     */
     public static TopLevelItemDescriptor getDescriptor(String fqcn) {
         return Descriptor.find(all(), fqcn);
     }
@@ -133,6 +173,7 @@ public class Items {
      * @deprecated as of 1.406
      *      Use {@link #fromNameList(ItemGroup, String, Class)}
      */
+    @Deprecated
     public static <T extends Item> List<T> fromNameList(String list, Class<T> type) {
         return fromNameList(null,list,type);
     }

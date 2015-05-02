@@ -385,6 +385,7 @@ public class Maven extends Builder {
      *      For compatibility, this field retains the last created {@link DescriptorImpl}.
      *      TODO: fix sonar plugin that depends on this. That's the only plugin that depends on this field.
      */
+    @Deprecated
     public static DescriptorImpl DESCRIPTOR;
 
     @Extension
@@ -466,6 +467,7 @@ public class Maven extends Builder {
          * @deprecated as of 1.308.
          *      Use {@link #Maven.MavenInstallation(String, String, List)}
          */
+        @Deprecated
         public MavenInstallation(String name, String home) {
             super(name, home);
         }
@@ -480,6 +482,7 @@ public class Maven extends Builder {
          *
          * @deprecated as of 1.308. Use {@link #getHome()}.
          */
+        @Deprecated
         public String getMavenHome() {
             return getHome();
         }

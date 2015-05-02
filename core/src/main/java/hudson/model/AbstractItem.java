@@ -216,6 +216,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected void renameTo(final String newName) throws IOException {
         // always synchronize from bigger objects first
         final ItemGroup parent = getParent();
+        String oldName = this.name;
+        String oldFullName = getFullName();
         synchronized (parent) {
             synchronized (this) {
                 // sanity check
@@ -248,9 +250,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     }
                 });
 
-
-                String oldName = this.name;
-                String oldFullName = getFullName();
                 File oldRoot = this.getRootDir();
 
                 doSetName(newName);
@@ -324,10 +323,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 } catch (AbstractMethodError _) {
                     // ignore
                 }
-
-                ItemListener.fireLocationChange(this, oldFullName);
             }
         }
+        ItemListener.fireLocationChange(this, oldFullName);
     }
 
 
@@ -623,6 +621,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @deprecated as of 1.473
      *      Use {@link #updateByXml(Source)}
      */
+    @Deprecated
     public void updateByXml(StreamSource source) throws IOException {
         updateByXml((Source)source);
     }

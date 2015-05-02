@@ -1,7 +1,5 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import hudson.model.Descriptor.FormException;
 import hudson.model.LoadStatistics.LoadStatisticsUpdater;
 import hudson.model.MultiStageTimeSeries.TimeScale;
@@ -12,16 +10,21 @@ import hudson.model.queue.SubTask;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
-
-import java.io.IOException;
-import java.util.Collections;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SleepBuilder;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test that a {@link Label}'s {@link LoadStatistics#queueLength} correctly
@@ -103,11 +106,14 @@ public class LabelLoadStatisticsQueueLengthTest {
 
         maintainQueueAndForceRunOfLoadStatisticsUpdater(project);
 
+        assertEquals("The job is still queued as often as it was scheduled.", 3, j
+                .getInstance().getQueue().getItems(project).size());
+
+
         float labelQueueLength = label.loadStatistics.queueLength
                 .getLatest(TimeScale.SEC10);
-        assertTrue(
-                "After LoadStatisticsUpdater runs, the queue length load statistic for the label is greater than 0.",
-                labelQueueLength > 0f);
+        assertThat("After LoadStatisticsUpdater runs, the queue length load statistic for the label is greater than 0.",
+                labelQueueLength, greaterThan(0f));
 
         // Assign an alternate label to the project and update the load stats.
         project.setAssignedLabel(altLabel);
@@ -116,9 +122,9 @@ public class LabelLoadStatisticsQueueLengthTest {
         // Verify that the queue length load stat continues to reflect the labels assigned to the items in the queue.
         float labelQueueLengthNew = label.loadStatistics.queueLength
                 .getLatest(TimeScale.SEC10);
-        assertTrue(
-                "After assigning an alternate label to the job, the queue length load statistic for the queued builds should not decrease.",
-                labelQueueLengthNew >= labelQueueLength);
+        assertThat("After assigning an alternate label to the job, the queue length load statistic for the "
+                        + "queued builds should not decrease.",
+                labelQueueLengthNew, greaterThan(labelQueueLength));
     }
 
     /**

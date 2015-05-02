@@ -320,6 +320,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *      TODO: revisit tool update mechanism, as that should be de-centralized, too. In the mean time,
      *      please try not to use this method, and instead ping us to get this part completed.
      */
+    @Deprecated
     public String getDefaultBaseUrl() {
         return config.getUpdateCenterUrl();
     }
@@ -842,6 +843,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *      is now a part of the <tt>update-center.json</tt> file. See
          *      <tt>http://jenkins-ci.org/update-center.json</tt> as an example.
          */
+        @Deprecated
         public String getConnectionCheckUrl() {
             return "http://www.google.com";
         }
@@ -856,6 +858,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @return
          *      Absolute URL that ends with '/'.
          */
+        @Deprecated
         public String getUpdateCenterUrl() {
             return UPDATE_CENTER_URL;
         }
@@ -867,6 +870,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *      <tt>update-center.json</tt> is now signed, so we don't have to further make sure that
          *      we aren't downloading from anywhere unsecure.
          */
+        @Deprecated
         public String getPluginRepositoryBaseUrl() {
             return "http://jenkins-ci.org/";
         }
@@ -920,6 +924,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @deprecated as of 1.326
          *      Use {@link #submit()} instead.
          */
+        @Deprecated
         public void schedule() {
             submit();
         }
@@ -1270,6 +1275,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * @deprecated as of 1.442
          */
+        @Deprecated
         public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth) {
             this(plugin,site,auth,false);
         }
@@ -1565,6 +1571,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @deprecated as of 1.333
      *      Use {@link UpdateSite#neverUpdate}
      */
+    @Deprecated
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
     public static final XStream2 XSTREAM = new XStream2();

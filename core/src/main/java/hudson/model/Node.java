@@ -133,6 +133,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *
      * @deprecated to indicate that this method isn't really meant to be called by random code.
      */
+    @Deprecated
     public abstract void setNodeName(String name);
 
     /**
@@ -330,6 +331,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @deprecated as of 1.413
      *      Use {@link #canTake(Queue.BuildableItem)}
      */
+    @Deprecated
     public CauseOfBlockage canTake(Task task) {
         return null;
     }
@@ -371,6 +373,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         for (NodeProperty prop: getNodeProperties()) {
             CauseOfBlockage c = prop.canTake(item);
             if (c!=null)    return c;
+        }
+
+        if (!isAcceptingTasks()) {
+            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsNotAcceptingTasks(getNodeName()));
         }
 
         // Looks like we can take the task

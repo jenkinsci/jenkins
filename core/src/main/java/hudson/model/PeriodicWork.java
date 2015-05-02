@@ -60,6 +60,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
 
     /** @deprecated Use your own logger, or send messages to the logger in {@link AsyncPeriodicWork#execute}. */
     @SuppressWarnings("NonConstantLogger")
+    @Deprecated
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
     /**

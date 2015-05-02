@@ -81,9 +81,9 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public void changeApiToken() throws IOException {
+        user.checkPermission(Jenkins.ADMINISTER);
         _changeApiToken();
-        if (user!=null)
-            user.save();
+        user.save();
     }
 
     private void _changeApiToken() {

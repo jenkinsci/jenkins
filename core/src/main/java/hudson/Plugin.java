@@ -164,6 +164,7 @@ public abstract class Plugin implements Saveable {
      * @since 1.233
      * @deprecated as of 1.305 override {@link #configure(StaplerRequest,JSONObject)} instead
      */
+    @Deprecated
     public void configure(JSONObject formData) throws IOException, ServletException, FormException {
     }
 

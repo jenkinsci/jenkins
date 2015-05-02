@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Erik Ramfelt, Richard Bair, id:cactusman
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +32,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
+
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.junit.Assume;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -74,7 +78,7 @@ public class UtilTest {
         assertEquals("asd$${AA}dd", Util.replaceMacro("asd$$$${AA}dd",m));
         assertEquals("$", Util.replaceMacro("$$",m));
         assertEquals("$$", Util.replaceMacro("$$$$",m));
-        
+
         // dots
         assertEquals("a.B", Util.replaceMacro("$A.B", m));
         assertEquals("a-b", Util.replaceMacro("${A.B}", m));
@@ -136,7 +140,7 @@ public class UtilTest {
         String encoded = Util.encode(urlWithSpaces);
         assertEquals(encoded, "http://hudson/job/Hudson%20Job");
     }
-        
+
     /**
      * Test the rawEncode() method.
      */
@@ -190,16 +194,16 @@ public class UtilTest {
                 System.err.println("log output: " + log);
 
             assertEquals(buf.toString(),Util.resolveSymlink(new File(d,"x")));
-            
-            
+
+
             // test linking from another directory
             File anotherDir = new File(d,"anotherDir");
             assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
-            
+
             Util.createSymlink(d,"a","anotherDir/link",l);
             assertEquals("a",Util.resolveSymlink(new File(d,"anotherDir/link")));
-            
-            // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work: 
+
+            // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
             //assertTrue(Util.isSymlink(new File(d,"anotherDir/link")));
 
             File external = File.createTempFile("something", "");
@@ -213,11 +217,11 @@ public class UtilTest {
             Util.deleteRecursive(d);
         }
     }
-    
+
     @Test
     public void testIsSymlink() throws IOException, InterruptedException {
         Assume.assumeTrue(!Functions.isWindows());
-        
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener l = new StreamTaskListener(baos);
         File d = tmp.getRoot();
@@ -225,17 +229,17 @@ public class UtilTest {
             new FilePath(new File(d, "original")).touch(0);
             assertFalse(Util.isSymlink(new File(d, "original")));
             Util.createSymlink(d,"original","link", l);
-            
+
             assertTrue(Util.isSymlink(new File(d, "link")));
-            
+
             // test linking to another directory
             File dir = new File(d,"dir");
             assertTrue("Couldn't create "+dir,dir.mkdir());
             assertFalse(Util.isSymlink(new File(d,"dir")));
-            
+
             File anotherDir = new File(d,"anotherDir");
             assertTrue("Couldn't create "+anotherDir,anotherDir.mkdir());
-            
+
             Util.createSymlink(d,"dir","anotherDir/symlinkDir",l);
             // JENKINS-12331: either a bug in createSymlink or this isn't supposed to work:
             // assertTrue(Util.isSymlink(new File(d,"anotherDir/symlinkDir")));
@@ -276,7 +280,7 @@ public class UtilTest {
         assertEquals("&#039;&quot;", Util.escape("'\""));
         assertEquals("&nbsp; ", Util.escape("  "));
     }
-    
+
     /**
      * Compute 'known-correct' digests and see if I still get them when computed concurrently
      * to another digest.
@@ -286,19 +290,19 @@ public class UtilTest {
     public void testDigestThreadSafety() throws InterruptedException {
     	String a = "abcdefgh";
     	String b = "123456789";
-    	
+
     	String digestA = Util.getDigestOf(a);
     	String digestB = Util.getDigestOf(b);
-    	
+
     	DigesterThread t1 = new DigesterThread(a, digestA);
     	DigesterThread t2 = new DigesterThread(b, digestB);
-    	
+
     	t1.start();
     	t2.start();
-    	
+
     	t1.join();
     	t2.join();
-    	
+
     	if (t1.error != null) {
     		fail(t1.error);
     	}
@@ -306,18 +310,18 @@ public class UtilTest {
     		fail(t2.error);
     	}
     }
-    
+
     private static class DigesterThread extends Thread {
     	private String string;
 		private String expectedDigest;
-		
+
 		private String error;
 
 		public DigesterThread(String string, String expectedDigest) {
     		this.string = string;
     		this.expectedDigest = expectedDigest;
     	}
-		
+
 		public void run() {
 			for (int i=0; i < 1000; i++) {
 				String digest = Util.getDigestOf(this.string);
@@ -349,4 +353,56 @@ public class UtilTest {
         assertEquals(p.toString(), "va.l.ue", p.get("k.e.y"));
         assertEquals(p.toString(), 1, p.size());
     }
+
+    @Test
+    public void isRelativePathUnix() {
+        assertThat("/", not(aRelativePath()));
+        assertThat("/foo/bar", not(aRelativePath()));
+        assertThat("/foo/../bar", not(aRelativePath()));
+        assertThat("", aRelativePath());
+        assertThat(".", aRelativePath());
+        assertThat("..", aRelativePath());
+        assertThat("./foo", aRelativePath());
+        assertThat("./foo/bar", aRelativePath());
+        assertThat("./foo/bar/", aRelativePath());
+    }
+
+    @Test
+    public void isRelativePathWindows() {
+        assertThat("\\", aRelativePath());
+        assertThat("\\foo\\bar", aRelativePath());
+        assertThat("\\foo\\..\\bar", aRelativePath());
+        assertThat("", aRelativePath());
+        assertThat(".", aRelativePath());
+        assertThat(".\\foo", aRelativePath());
+        assertThat(".\\foo\\bar", aRelativePath());
+        assertThat(".\\foo\\bar\\", aRelativePath());
+        assertThat("\\\\foo", aRelativePath());
+        assertThat("\\\\foo\\", not(aRelativePath()));
+        assertThat("\\\\foo\\c", not(aRelativePath()));
+        assertThat("C:", aRelativePath());
+        assertThat("z:", aRelativePath());
+        assertThat("0:", aRelativePath());
+        assertThat("c:.", aRelativePath());
+        assertThat("c:\\", not(aRelativePath()));
+        assertThat("c:/", not(aRelativePath()));
+    }
+
+    private static RelativePathMatcher aRelativePath() {
+        return new RelativePathMatcher();
+    }
+
+    private static class RelativePathMatcher extends BaseMatcher<String> {
+
+        @Override
+        public boolean matches(Object item) {
+            return Util.isRelativePath((String) item);
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("a relative path");
+        }
+    }
+
 }

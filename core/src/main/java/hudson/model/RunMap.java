@@ -74,6 +74,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}.
      */
+    @Deprecated
     public RunMap() {
         super(null); // will be set later
     }
@@ -152,6 +153,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated  as of 1.485
      *      Use {@link ReverseComparator}
      */
+    @Deprecated
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
         public int compare(Comparable o1, Comparable o2) {
             return -o1.compareTo(o2);
@@ -247,6 +249,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}
      */
+    @Deprecated
     public void load(Job job, Constructor<R> cons) {
         this.cons = cons;
         initBaseDir(job.getBuildDir());

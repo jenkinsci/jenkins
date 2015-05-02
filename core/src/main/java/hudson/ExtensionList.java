@@ -73,6 +73,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      * @deprecated as of 1.417
      *      Use {@link #jenkins}
      */
+    @Deprecated
     public final Hudson hudson;
     public final @CheckForNull Jenkins jenkins;
     public final Class<T> extensionType;
@@ -93,6 +94,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      * @deprecated as of 1.416
      *      Use {@link #ExtensionList(Jenkins, Class)}
      */
+    @Deprecated
     protected ExtensionList(Hudson hudson, Class<T> extensionType) {
         this((Jenkins)hudson,extensionType);
     }
@@ -105,6 +107,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      * @deprecated as of 1.416
      *      Use {@link #ExtensionList(Jenkins, Class, CopyOnWriteArrayList)}
      */
+    @Deprecated
     protected ExtensionList(Hudson hudson, Class<T> extensionType, CopyOnWriteArrayList<ExtensionComponent<T>> legacyStore) {
         this((Jenkins)hudson,extensionType,legacyStore);
     }
@@ -214,6 +217,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      *      Prefer automatic registration.
      */
     @Override
+    @Deprecated
     public synchronized boolean add(T t) {
         legacyInstances.add(new ExtensionComponent<T>(t));
         // if we've already filled extensions, add it
@@ -325,6 +329,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      * @deprecated as of 1.416
      *      Use {@link #create(Jenkins, Class)}
      */
+    @Deprecated
     public static <T> ExtensionList<T> create(Hudson hudson, Class<T> type) {
         return create((Jenkins)hudson,type);
     }

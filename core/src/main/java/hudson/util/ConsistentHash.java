@@ -64,6 +64,7 @@ public class ConsistentHash<T> {
      * All the items in the hash, to their replication factors.
      */
     private final Map<T,Point[]> items = new HashMap<T,Point[]>();
+    private int numPoints;
 
     private final int defaultReplication;
     private final Hash<T> hash;
@@ -100,8 +101,13 @@ public class ConsistentHash<T> {
         private final Object[] owner; // really T[]
 
         private Table() {
+            int r=0;
+            for (Point[] v : items.values())
+                r+=v.length;
+            numPoints = r;
+
             // merge all points from all nodes and sort them into a single array
-            Point[] allPoints = new Point[countAllPoints()];
+            Point[] allPoints = new Point[numPoints];
             int p=0;
             for (Point[] v : items.values()) {
                 System.arraycopy(v,0,allPoints,p,v.length);
@@ -186,18 +192,18 @@ public class ConsistentHash<T> {
         String hash(T t);
     }
 
-    static final Hash DEFAULT_HASH = new Hash() {
+    static final Hash<?> DEFAULT_HASH = new Hash<Object>() {
         public String hash(Object o) {
             return o.toString();
         }
     };
 
     public ConsistentHash() {
-        this(DEFAULT_HASH);
+        this((Hash<T>) DEFAULT_HASH);
     }
 
     public ConsistentHash(int defaultReplication) {
-        this(DEFAULT_HASH,defaultReplication);
+        this((Hash<T>) DEFAULT_HASH,defaultReplication);
     }
 
     public ConsistentHash(Hash<T> hash) {
@@ -211,23 +217,20 @@ public class ConsistentHash<T> {
     }
 
     public int countAllPoints() {
-        int r=0;
-        for (Point[] v : items.values())
-            r+=v.length;
-        return r;
+        return numPoints;
     }
 
     /**
      * Adds a new node with the default number of replica.
      */
-    public void add(T node) {
+    public synchronized void add(T node) {
         add(node,defaultReplication);
     }
 
     /**
      * Calls {@link #add(Object)} with all the arguments.
      */
-    public void addAll(T... nodes) {
+    public synchronized void addAll(T... nodes) {
         for (T node : nodes)
             addInternal(node,defaultReplication);
         refreshTable();
@@ -236,7 +239,7 @@ public class ConsistentHash<T> {
     /**
      * Calls {@link #add(Object)} with all the arguments.
      */
-    public void addAll(Collection<? extends T> nodes) {
+    public synchronized void addAll(Collection<? extends T> nodes) {
         for (T node : nodes)
             addInternal(node,defaultReplication);
         refreshTable();
@@ -245,7 +248,7 @@ public class ConsistentHash<T> {
     /**
      * Calls {@link #add(Object,int)} with all the arguments.
      */
-    public void addAll(Map<? extends T,Integer> nodes) {
+    public synchronized void addAll(Map<? extends T,Integer> nodes) {
         for (Map.Entry<? extends T,Integer> node : nodes.entrySet())
             addInternal(node.getKey(),node.getValue());
         refreshTable();
@@ -254,23 +257,20 @@ public class ConsistentHash<T> {
     /**
      * Removes the node entirely. This is the same as {@code add(node,0)}
      */
-    public void remove(T node) {
+    public synchronized void remove(T node) {
         add(node, 0);
     }
 
     /**
      * Adds a new node with the given number of replica.
-     *
-     * <p>
-     * This is the only function that manipulates {@link #items}.
      */
     public synchronized void add(T node, int replica) {
         addInternal(node, replica);
         refreshTable();
     }
 
-    private void addInternal(T node, int replica) {
-        if(replica==0) {
+    private synchronized void addInternal(T node, int replica) {
+        if (replica==0) {
             items.remove(node);
         } else {
             Point[] points = new Point[replica];
@@ -281,10 +281,9 @@ public class ConsistentHash<T> {
         }
     }
 
-    private void refreshTable() {
+    private synchronized void refreshTable() {
         table = new Table();
     }
-
 
     /**
      * Compresses a string into an integer with MD5.
