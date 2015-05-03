@@ -540,7 +540,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 // kill run-away processes that are left
                 // use multiple environment variables so that people can escape this massacre by overriding an environment
                 // variable for some processes
-                launcher.kill(getCharacteristicEnvVars());
+                // Takes the killing whitelist into account
+                launcher.kill(getCharacteristicEnvVars(), Jenkins.getInstance().getProcessCleanupWhitelistList());
             }
 
             // this is ugly, but for historical reason, if non-null value is returned

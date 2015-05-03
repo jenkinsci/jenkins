@@ -1,0 +1,14 @@
+<div>
+  A comma separated list of process names to exclude from the killing after a build has finished. Only the binary name needs to be specified, file extensions will be ignored to allow for portability.
+  E.g. set to "mspdbsrv" to make mspdbsrv.exe survive process cleanup. 
+  <p/>
+  Jenkins checks for processes that have been started during a build and are still running when the build is complete.
+  It kills all leftover processes to make sure the build leaves a clean environment behind. These processes are identified 
+  by a characteristic set of environment variables.
+  <p/>
+  In some cases, you don't want all processes to be killed. E.g. Microsoft's compiler and linker use a central mspdbsrv process to access .pdb files. Once started, the service shall remain running and will be used by subsequent builds. If Jenkins kills mspdbsrv, this leads to other builds that are running at the same time to fail.
+  <p/>
+  If you want a process being started during a build to survive, list its name here.
+  <p/>
+  Note: For this to work, the daemon process and all its parents need to be whitelisted since Jenkins kills processes including all children.
+</div>

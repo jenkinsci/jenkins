@@ -51,6 +51,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -626,8 +627,20 @@ public abstract class Launcher {
 
     /**
      * Calls {@link ProcessTree#killAll(Map)} to kill processes.
+     * @param modelEnvVars A list of environment variables. Only processes having these will be killed
      */
-    public abstract void kill(Map<String,String> modelEnvVars) throws IOException, InterruptedException;
+    public final void kill(Map<String,String> modelEnvVars) throws IOException, InterruptedException {
+        List<String> empty = Collections.emptyList();
+        kill(modelEnvVars,empty);
+    }
+    
+    /**
+     * Calls {@link ProcessTree#killAll(Map)} to kill processes.
+     * 
+     * @param modelEnvVars A list of environment variables. Only processes having these will be killed
+     * @param whitelist Processes to be excluded from the killing, even if they have modelEnvVars
+     */
+    public abstract void kill(Map<String,String> modelEnvVars, List<String> whitelist) throws IOException, InterruptedException;
 
     /**
      * Prints out the command line to the listener so that users know what we are doing.
@@ -725,8 +738,10 @@ public abstract class Launcher {
             }
 
             @Override
-            public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
-                outer.kill(modelEnvVars);
+            public void kill(Map<String, String> modelEnvVars,
+                    List<String> whitelist) throws IOException,
+                    InterruptedException {
+                outer.kill(modelEnvVars, whitelist);
             }
 
             private String[] prefix(String[] args) {
@@ -782,8 +797,10 @@ public abstract class Launcher {
             }
 
             @Override
-            public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
-                outer.kill(modelEnvVars);
+            public void kill(Map<String, String> modelEnvVars,
+                    List<String> whitelist) throws IOException,
+                    InterruptedException {
+                outer.kill(modelEnvVars, whitelist);
             }
         };
     }
@@ -833,10 +850,11 @@ public abstract class Launcher {
 
             return launchChannel(out, pb);
         }
-
+        
         @Override
-        public void kill(Map<String, String> modelEnvVars) throws InterruptedException {
-            ProcessTree.get().killAll(modelEnvVars);
+        public void kill(Map<String, String> modelEnvVars,
+                List<String> whitelist) throws InterruptedException {
+            ProcessTree.get().killAll(modelEnvVars, whitelist);
         }
 
         /**
@@ -902,7 +920,9 @@ public abstract class Launcher {
         }
 
         @Override
-        public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
+        public void kill(Map<String, String> modelEnvVars,
+                List<String> whitelist) throws IOException,
+                InterruptedException {
             // Kill method should do nothing.
         }
     }
@@ -950,20 +970,24 @@ public abstract class Launcher {
         }
 
         @Override
-        public void kill(final Map<String,String> modelEnvVars) throws IOException, InterruptedException {
-            getChannel().call(new KillTask(modelEnvVars));
+        public void kill(Map<String, String> modelEnvVars,
+                List<String> whitelist) throws IOException,
+                InterruptedException {
+            getChannel().call(new KillTask(modelEnvVars, whitelist));
         }
 
         private static final class KillTask extends MasterToSlaveCallable<Void,RuntimeException> {
             private final Map<String, String> modelEnvVars;
+            private final List<String> whitelist;
 
-            public KillTask(Map<String, String> modelEnvVars) {
+            public KillTask(Map<String, String> modelEnvVars, List<String> whitelist) {
                 this.modelEnvVars = modelEnvVars;
+                this.whitelist = whitelist;
             }
 
             public Void call() throws RuntimeException {
                 try {
-                    ProcessTree.get().killAll(modelEnvVars);
+                    ProcessTree.get().killAll(modelEnvVars, whitelist);
                 } catch (InterruptedException e) {
                     // we are asked to terminate early by the caller, so no need to do anything
                 }
@@ -1047,9 +1071,10 @@ public abstract class Launcher {
         }
 
         @Override
-        public void kill(Map<String, String> modelEnvVars) throws IOException,
+        public void kill(Map<String, String> modelEnvVars,
+                List<String> whitelist) throws IOException,
                 InterruptedException {
-            inner.kill(modelEnvVars);
+            inner.kill(modelEnvVars,whitelist);
         }
 
         @Override

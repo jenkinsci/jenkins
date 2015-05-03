@@ -27,6 +27,7 @@
 package jenkins.model;
 
 import antlr.ANTLRException;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
@@ -522,6 +523,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Global default for {@link AbstractProject#getScmCheckoutRetryCount()}
      */
     /*package*/ int scmCheckoutRetryCount;
+    
+    /**
+     * A list of process names to be excluded from the process killing after a job has finished.
+     */
+    private String processCleanupWhitelist;
 
     /**
      * {@link View}s.
@@ -4245,4 +4251,26 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    public String getProcessCleanupWhitelist() {
+        return processCleanupWhitelist;
+    }
+
+    public void setProcessCleanupWhitelist(String processCleanupWhitelist) throws IOException {
+        this.processCleanupWhitelist = processCleanupWhitelist;
+        save();
+    }
+
+    /**
+     * @return A list of process whitelist entries. May be empty but never null 
+     */
+    public List<String> getProcessCleanupWhitelistList() {
+        if (Strings.isNullOrEmpty(processCleanupWhitelist))
+            return Collections.emptyList();
+        
+        List<String> whitelist = Lists.newArrayList();
+        for (String entry : processCleanupWhitelist.split(",")) {
+            whitelist.add(entry.trim());
+        }
+        return whitelist;
+    }
 }
