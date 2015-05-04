@@ -42,9 +42,9 @@ public class MaskingClassLoader extends ClassLoader {
     /**
      * Prefix of the packages that should be hidden.
      */
-    private List<String> masksClasses;
+    private final List<String> masksClasses = new ArrayList<String>();
 
-    private List<String> masksResources;
+    private final List<String> masksResources = new ArrayList<String>();
 
     public MaskingClassLoader(ClassLoader parent, String... masks) {
         this(parent, Arrays.asList(masks));
@@ -52,8 +52,7 @@ public class MaskingClassLoader extends ClassLoader {
 
     public MaskingClassLoader(ClassLoader parent, Collection<String> masks) {
         super(parent);
-        this.masksClasses = new ArrayList<String>(masks);
-        this.masksResources = new ArrayList<String>();
+        this.masksClasses.addAll(masks);
 
         /**
          * The name of a resource is a '/'-separated path name
