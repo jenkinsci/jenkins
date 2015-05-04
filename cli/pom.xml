@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.612</version>
+    <version>1.613-SNAPSHOT</version>
   </parent>
 
   <artifactId>cli</artifactId>
