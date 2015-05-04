@@ -1,6 +1,8 @@
 package hudson.util;
 
 import com.trilead.ssh2.crypto.Base64;
+
+import hudson.Util;
 import hudson.model.TaskListener;
 import org.apache.commons.io.FileUtils;
 
@@ -145,7 +147,7 @@ public class SecretRewriter {
     private int rewriteRecursive(File dir, String relative, TaskListener listener) throws InvalidKeyException {
         String canonical;
         try {
-            canonical = dir.getCanonicalPath();
+            canonical = Util.getRealPath(dir);
         } catch (IOException e) {
             canonical = dir.getAbsolutePath(); //
         }
