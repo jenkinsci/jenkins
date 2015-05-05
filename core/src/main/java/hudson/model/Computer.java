@@ -271,14 +271,25 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * This is where the log from the remote agent goes.
      * The method also creates a log directory if required.
-     * @see #relocateOldLogs()
+     * @see #getLogDir(), #relocateOldLogs()
      */
-    public File getLogFile() {
+    public @Nonnull File getLogFile() {
+        return new File(getLogDir(),"slave.log");
+    }
+
+    /**
+     * Directory where rotated slave logs are stored.
+     *
+     * The method also creates a log directory if required.
+     *
+     * @since TODO
+     */
+    protected @Nonnull File getLogDir() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
         if (!dir.exists() && !dir.mkdirs()) {
             LOGGER.severe("Failed to create slave log directory " + dir.getAbsolutePath());
         }
-        return new File(dir,"slave.log");
+        return dir;
     }
 
     /**
