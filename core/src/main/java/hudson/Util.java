@@ -48,6 +48,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -1360,6 +1361,34 @@ public class Util {
             // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
             return PosixAPI.jnr().readlink(filename);
         }
+    }
+
+    /**
+     * @param file
+     * @return the real path of file
+     * @throws IOException
+     * @see java.nio.file.Path#toRealPath
+     */
+    public static String getRealPath(File file) throws IOException {
+        try { // Java 7
+            Object path = File.class.getMethod("toPath").invoke(file);
+            
+            Object emptyLinkOptionArray = Array.newInstance(Class.forName("java.nio.file.LinkOption"), 0);
+            Method m = Class.forName("java.nio.file.Path").getMethod("toRealPath", emptyLinkOptionArray.getClass());
+            return m.invoke(path, emptyLinkOptionArray).toString();
+        } catch (NoSuchMethodException x) {
+            // fine, Java 6; fall through
+        } catch (InvocationTargetException x) {
+            Throwable x2 = x.getCause();
+            if (x2 instanceof IOException) {
+                throw (IOException) x2;
+            }
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+        
+        return file.getCanonicalPath();
     }
 
     /**
