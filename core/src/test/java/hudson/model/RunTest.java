@@ -29,6 +29,7 @@ import hudson.model.Run.Artifact;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -39,6 +40,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.localizer.LocaleProvider;
 import org.mockito.Mockito;
 
 
@@ -127,6 +129,16 @@ public class RunTest {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     public void getDurationString() throws IOException {
+      LocaleProvider providerToRestore = LocaleProvider.getProvider();
+      try {
+        // This test expects English texts.
+        LocaleProvider.setProvider(new LocaleProvider() {
+            @Override
+            public Locale get() {
+                return Locale.ENGLISH;
+            }
+        });
+        
         Run r = new Run(new StubJob(), 0) {};
         assertEquals("Not started yet", r.getDurationString());
         r.onStartBuilding();
@@ -136,6 +148,9 @@ public class RunTest {
         r.onEndBuilding();
         msg = r.getDurationString();
         assertFalse(msg, msg.endsWith(" and counting"));
+      } finally {
+        LocaleProvider.setProvider(providerToRestore);
+      }
     }
 
     @Issue("JENKINS-27441")
