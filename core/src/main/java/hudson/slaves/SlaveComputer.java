@@ -655,6 +655,12 @@ public class SlaveComputer extends Computer {
         super.kill();
         closeChannel();
         IOUtils.closeQuietly(log);
+
+        try {
+            Util.deleteRecursive(getLogDir());
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Unable to delete slave logs", ex);
+        }
     }
 
     public RetentionStrategy getRetentionStrategy() {
