@@ -538,7 +538,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * since it predates {@code <l:confirmationLink>}. {@code /delete} goes to a Jelly page
      * which should now be unused by core but is left in case plugins are still using it.
      */
-    @CLIMethod(name="delete-job")
+//    @CLIMethod(name="delete-job")
     @RequirePOST
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         delete();
