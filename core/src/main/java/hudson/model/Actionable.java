@@ -73,13 +73,20 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @Deprecated
 	public List<Action> getActions() {
-		if(actions == null) {
-			synchronized (this) {
-				if(actions == null) {
-					actions = new CopyOnWriteArrayList<Action>();
-				}
-			}
-		}
+        if(actions == null) {
+            synchronized (this) {
+                if (actions == null) {
+                    actions = new CopyOnWriteArrayList<Action>();
+                } else {
+                    for (Action action : actions) {
+                        if (action == null) {
+                            LOGGER.log(Level.WARNING, "Actionable#getActions: Found a null action: " + action.getClass().toString());
+                            actions.remove(action);
+                        }
+                    }
+                }
+            }
+        }
 		return actions;
 	}
 
@@ -95,7 +102,15 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
             if (taf.type().isInstance(this)) {
                 try {
-                    _actions.addAll(createFor(taf));
+                    Collection<? extends Action> newActions = createFor(taf);
+                    for (Action action : newActions) {
+                        if (action instanceof Action) {
+                            _actions.add(action);
+                        } else {
+                            LOGGER.log(Level.WARNING, "Actionable#getAllActions: Found a not action: " + action.getClass().toString());
+                            newActions.remove(action);
+                        }
+                    }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
                 }
