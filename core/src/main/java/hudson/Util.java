@@ -26,6 +26,7 @@ package hudson;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
+
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
@@ -33,6 +34,7 @@ import hudson.os.PosixAPI;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -40,11 +42,13 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+
 import jnr.posix.FileStat;
 import jnr.posix.POSIX;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -57,6 +61,10 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -70,12 +78,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import hudson.util.jna.Kernel32Utils;
-
 import static hudson.util.jna.GNUCLibrary.LIBC;
+
 import java.security.DigestInputStream;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -1212,48 +1222,27 @@ public class Util {
 
     private static boolean createSymlinkJava7(@Nonnull File baseDir, @Nonnull String targetPath, @Nonnull String symlinkPath) throws IOException {
         try {
-            Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
-            Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
-            Class<?> filesC = Class.forName("java.nio.file.Files");
-            Class<?> pathC = Class.forName("java.nio.file.Path");
-            Class<?> fileAlreadyExistsExceptionC = Class.forName("java.nio.file.FileAlreadyExistsException");
+            Path path = (new File(baseDir, symlinkPath)).toPath();
+            Path target = (new File(targetPath)).toPath();
 
-            Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
+            FileAttribute<?>[] noAttrs = new FileAttribute[0];
             final int maxNumberOfTries = 4;
             final int timeInMillis = 100;
             for (int tryNumber = 1; tryNumber <= maxNumberOfTries; tryNumber++) {
-                filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+                Files.deleteIfExists(path);
                 try {
-                    filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+                	Files.createSymbolicLink(path, target, noAttrs);
                     break;
                 }
-                catch (Exception x) {
-                    if (fileAlreadyExistsExceptionC.isInstance(x)) {
+                catch (FileAlreadyExistsException x) {
                         if(tryNumber < maxNumberOfTries) {
                             TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
                             continue;
                         }
                         LOGGER.warning("symlink FileAlreadyExistsException thrown "+maxNumberOfTries+" times => cannot createSymbolicLink");
-                    }
-                    throw x;
                 }
             }
             return true;
-        } catch (NoSuchMethodException x) {
-            return false; // fine, Java 6
-        } catch (InvocationTargetException x) {
-            Throwable x2 = x.getCause();
-            if (x2 instanceof UnsupportedOperationException) {
-                return true; // no symlinks on this platform
-            }
-            if (Functions.isWindows() && String.valueOf(x2).contains("java.nio.file.FileSystemException")) {
-                warnWindowsSymlink();
-                return true;
-            }
-            if (x2 instanceof IOException) {
-                throw (IOException) x2;
-            }
-            throw (IOException) new IOException(x.toString()).initCause(x);
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
