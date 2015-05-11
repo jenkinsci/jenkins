@@ -262,7 +262,7 @@ public class MavenTest {
     }
 
     @Issue("JENKINS-18898")
-    public void testNullHome() throws Exception {
+    @Test public void testNullHome() {
         EnvVars env = new EnvVars();
         new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);
         assertEquals("{}", env.toString());
