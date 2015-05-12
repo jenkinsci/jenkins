@@ -117,7 +117,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             @Override
             protected boolean matches(Queue.Item item, SubTask subTask) {
                 final Label l = item.getAssignedLabelFor(subTask);
-                return l != null && Label.this.matches(l.name);
+                return Label.this.equals(l);
             }
         };
         this.nodeProvisioner = new NodeProvisioner(this, loadStatistics);
@@ -511,7 +511,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Override
     public final boolean equals(Object that) {
         if (this == that) return true;
-        if (that == null || getClass() != that.getClass()) return false;
+        if (that == null || !(that instanceof Label)) return false;
 
         return matches(((Label)that).name);
 
