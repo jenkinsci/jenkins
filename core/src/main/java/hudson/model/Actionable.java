@@ -79,12 +79,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 if (actions == null) {
                     actions = new CopyOnWriteArrayList<Action>();
                 } else {
-                    Iterator actionIterator = actions.iterator();
+                    Iterator<Action> actionIterator = actions.iterator();
                     Action action;
                     while (actionIterator.hasNext()) {
-                        action = (Action) actionIterator.next();
-                        if (action == null) {
-                            LOGGER.log(Level.WARNING, "Null action found in " + this.getClass().getName());
+                        action = actionIterator.next();
+                        if (!(action instanceof Action)) {
+                            LOGGER.log(Level.WARNING, "Not action found in " + this.getClass().getName());
                             actionIterator.remove();
                         }
                     }
