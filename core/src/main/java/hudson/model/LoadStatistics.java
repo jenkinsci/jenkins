@@ -51,6 +51,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
+import javax.annotation.CheckForNull;
 
 /**
  * Utilization statistics for a node or a set of nodes.
@@ -614,13 +615,17 @@ public abstract class LoadStatistics {
                 return this;
             }
 
-            public Builder with(Node node) {
-                if (node != null)
-                return with(node.toComputer());
+            public Builder with(@CheckForNull Node node) {
+                if (node != null) {
+                    return with(node.toComputer());
+                }
                 return this;
             }
 
-            public Builder with(Computer computer) {
+            public Builder with(@CheckForNull Computer computer) {
+                if (computer == null) {
+                    return this;
+                }
                 if (computer.isOnline()) {
                     final List<Executor> executors = computer.getExecutors();
                     final boolean acceptingTasks = computer.isAcceptingTasks();
