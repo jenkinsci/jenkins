@@ -25,8 +25,10 @@ package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
@@ -72,18 +74,25 @@ public class ArgumentListBuilder2Test {
     }
 
     @Test
-    public void ensureArgumentsArePassedToCommandUnmodified() throws Exception {
+    public void ensureArgumentsArePassedViaCmdExeUnmodified() throws Exception {
+        assumeTrue(!Functions.isWindows());
+
         String[] specials = new String[] {
                 "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")",
                 "_", "+", "{", "}", "[", "]", ":", ";", "\"", "'", "\\", "|",
                 "<", ">", ",", ".", "/", "?", " "
         };
 
+        String out = echoArgs(specials);
+
+        String expected = String.format("%n%s", Joiner.on(" ").join(specials));
+        assertThat(out, containsString(expected));
+    }
+
+    public String echoArgs(String... arguments) throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder(JavaEnvUtils.getJreExecutable("java"), "-cp", "target/test-classes/", "hudson.util.EchoCommand");
-        args.add(specials);
-        if (Functions.isWindows()) {
-            args = args.toWindowsCommand();
-        }
+        args.add(arguments);
+        args = args.toWindowsCommand();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         final StreamTaskListener listener = new StreamTaskListener(out);
@@ -95,8 +104,9 @@ public class ArgumentListBuilder2Test {
                 .start()
         ;
         int code = p.join();
+        listener.close();
 
-        String expected = String.format("%n%s", Joiner.on(" ").join(specials));
-        assertThat("Error code " + code, out.toString(), containsString(expected));
+        assertThat(code, equalTo(0));
+        return out.toString();
     }
 }
