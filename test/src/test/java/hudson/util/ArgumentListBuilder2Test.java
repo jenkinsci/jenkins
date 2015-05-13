@@ -75,7 +75,7 @@ public class ArgumentListBuilder2Test {
 
     @Test
     public void ensureArgumentsArePassedViaCmdExeUnmodified() throws Exception {
-        assumeTrue(!Functions.isWindows());
+        assumeTrue(Functions.isWindows());
 
         String[] specials = new String[] {
                 "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")",
