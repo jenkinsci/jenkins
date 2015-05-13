@@ -28,6 +28,7 @@ import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -78,10 +79,13 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 if (actions == null) {
                     actions = new CopyOnWriteArrayList<Action>();
                 } else {
-                    for (Action action : actions) {
+                    Iterator actionIterator = actions.iterator();
+                    Action action;
+                    while (actionIterator.hasNext()) {
+                        action = (Action) actionIterator.next();
                         if (action == null) {
-                            LOGGER.log(Level.WARNING, "Actionable#getActions: Found a null action: " + action.getClass().toString());
-                            actions.remove(action);
+                            LOGGER.log(Level.WARNING, "Null action found in " + this.getClass().getName());
+                            actionIterator.remove();
                         }
                     }
                 }
@@ -107,8 +111,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                         if (action instanceof Action) {
                             _actions.add(action);
                         } else {
-                            LOGGER.log(Level.WARNING, "Actionable#getAllActions: Found a not action: " + action.getClass().toString());
-                            newActions.remove(action);
+                            LOGGER.log(Level.WARNING, "Not action found in " + this.getClass().getName() + "in TransientActionFactory " + taf.getClass().getName());
                         }
                     }
                 } catch (Exception e) {
