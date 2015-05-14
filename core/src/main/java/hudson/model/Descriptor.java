@@ -74,6 +74,8 @@ import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Metadata about a configurable instance.
@@ -948,8 +950,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Finds a descriptor from a collection by its ID.
      * @param id should match {@link #getId}
-     * @since TODO
      */
+    @Restricted(NoExternalUse.class) // backported from 1.610
     public static @CheckForNull <T extends Descriptor> T findById(Collection<? extends T> list, String id) {
         for (T d : list) {
             if(d.getId().equals(id))
@@ -973,8 +975,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     /**
      * Finds a descriptor from a collection by the class name of the {@link Describable} it describes.
      * @param className should match {@link Class#getName} of a {@link #clazz}
-     * @since TODO
      */
+    @Restricted(NoExternalUse.class) // backported from 1.610
     public static @CheckForNull <T extends Descriptor> T findByDescribableClassName(Collection<? extends T> list, String className) {
         for (T d : list) {
             if(d.clazz.getName().equals(className))
