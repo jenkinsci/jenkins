@@ -22,27 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+  No longer used to enable/disable project. Just to shows the status information.
+-->
+
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-  <j:choose>
-    <j:when test="${it.disabled}">
-      <div class="warning">
-        <form method="post" id='enable-project' action="enable">
-          ${%This project is currently disabled}
-          <l:hasPermission permission="${it.CONFIGURE}">
-            <f:submit value="${%Enable}" />
-          </l:hasPermission>
-        </form>
-      </div>
-    </j:when>
-    <j:otherwise>
-      <div align="right">
-        <form method="post" id="disable-project" action="disable">
-          <l:hasPermission permission="${it.CONFIGURE}">
-            <f:submit value="${%Disable Project}" />
-          </l:hasPermission>
-        </form>
-      </div>
-    </j:otherwise>
-  </j:choose>
+    <j:if test="${it.disabled}">
+        <span><l:icon class="icon-secure icon-sm"/><st:nbsp/><strong>${%This project is currently disabled}</strong></span>
+    </j:if>
 </j:jelly>
