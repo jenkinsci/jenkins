@@ -74,6 +74,8 @@ import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Metadata about a configurable instance.
@@ -909,14 +911,35 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         if (formData!=null) {
             for (Object o : JSONArray.fromObject(formData)) {
                 JSONObject jo = (JSONObject)o;
-                String kind = jo.optString("$class", null);
-                if (kind == null) {
-                  // Legacy: Remove once plugins have been staged onto $class
-                  kind = jo.getString("kind");
+                Descriptor<T> d = null;
+                // 'kind' and '$class' are mutually exclusive (see class-entry.jelly), but to be more lenient on the reader side,
+                // we check them both anyway. 'kind' (which maps to ID) is more unique than '$class', which can have multiple matching
+                // Descriptors, so we prefer 'kind' if it's present.
+                String kind = jo.optString("kind", null);
+                if (kind != null) {
+                    // Only applies when Descriptor.getId is overridden.
+                    // Note that kind is only supported here,
+                    // *not* inside the StaplerRequest.bindJSON which is normally called by newInstance
+                    // (since Descriptor.newInstance is not itself available to Stapler).
+                    // If you merely override getId for some reason, but use @DataBoundConstructor on your Describable,
+                    // there is no problem; but you can only rely on newInstance being called at top level.
+                    d = findById(descriptors, kind);
                 }
-                Descriptor<T> d = find(descriptors, kind);
+                if (d == null) {
+                  kind = jo.optString("$class");
+                  if (kind != null) { // else we will fall through to the warning
+                      // This is the normal case.
+                      d = findByDescribableClassName(descriptors, kind);
+                      if (d == null) {
+                          // Deprecated system where stapler-class was the Descriptor class name (rather than Describable class name).
+                          d = findByClassName(descriptors, kind);
+                      }
+                  }
+                }
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
+                } else {
+                    LOGGER.log(Level.WARNING, "Received unexpected form data element: {0}", jo);
                 }
             }
         }
@@ -925,22 +948,58 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     }
 
     /**
-     * Finds a descriptor from a collection by its class name.
+     * Finds a descriptor from a collection by its ID.
+     * @param id should match {@link #getId}
      */
-    public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String className) {
+    @Restricted(NoExternalUse.class) // backported from 1.610
+    public static @CheckForNull <T extends Descriptor> T findById(Collection<? extends T> list, String id) {
         for (T d : list) {
-            if(d.getClass().getName().equals(className))
-                return d;
-        }
-        // Since we introduced Descriptor.getId(), it is a preferred method of identifying descriptor by a string.
-        // To make that migration easier without breaking compatibility, let's also match up with the id.
-        for (T d : list) {
-            if(d.getId().equals(className))
+            if(d.getId().equals(id))
                 return d;
         }
         return null;
     }
 
+    /**
+     * Finds a descriptor from a collection by the class name of the {@link Descriptor}.
+     * This is useless as of the introduction of {@link #getId} and so only very old compatibility code needs it.
+     */
+    private static @CheckForNull <T extends Descriptor> T findByClassName(Collection<? extends T> list, String className) {
+        for (T d : list) {
+            if(d.getClass().getName().equals(className))
+                return d;
+        }
+        return null;
+    }
+
+    /**
+     * Finds a descriptor from a collection by the class name of the {@link Describable} it describes.
+     * @param className should match {@link Class#getName} of a {@link #clazz}
+     */
+    @Restricted(NoExternalUse.class) // backported from 1.610
+    public static @CheckForNull <T extends Descriptor> T findByDescribableClassName(Collection<? extends T> list, String className) {
+        for (T d : list) {
+            if(d.clazz.getName().equals(className))
+                return d;
+        }
+        return null;
+    }
+
+    /**
+     * Finds a descriptor from a collection by its class name or ID.
+     * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
+     */
+    public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String string) {
+        T d = findByClassName(list, string);
+        if (d != null) {
+                return d;
+        }
+        return findById(list, string);
+    }
+
+    /**
+     * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
+     */
     public static @CheckForNull Descriptor find(String className) {
         return find(ExtensionList.lookup(Descriptor.class),className);
     }

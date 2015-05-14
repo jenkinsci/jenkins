@@ -196,6 +196,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
 
     /**
      * Finds the descriptor that has the matching fully-qualified class name.
+     * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
      */
     public Descriptor<T> find(String fqcn) {
         return Descriptor.find(this,fqcn);

@@ -109,6 +109,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      *
      * @param fqcn
      *      Fully qualified name of the descriptor, not the describable.
+     * @deprecated {@link Descriptor#getId} is supposed to be used for new code, not the descriptor class name.
      */
     public D find(String fqcn) {
         return Descriptor.find(this,fqcn);

@@ -167,6 +167,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
             return home;
         }
 
+        @SuppressWarnings("deprecation") // TODO this was mistakenly made to be the ToolDescriptor class name, rather than .id as you would expect; now baked into serial form
         public ToolDescriptor getType() {
             if (descriptor == null) {
                 descriptor = (ToolDescriptor) Descriptor.find(type);
