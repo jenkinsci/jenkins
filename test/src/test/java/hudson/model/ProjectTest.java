@@ -632,13 +632,9 @@ public class ProjectTest {
         auth.add(Job.READ, user.getId());
         auth.add(Job.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
-        List<HtmlForm> forms = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl()).getForms();
-        for(HtmlForm form:forms){
-            if("disable".equals(form.getAttribute("action"))){
-                j.submit(form);
-            }
-        }
-       assertTrue("Project should be disabled.", project.isDisabled());
+        final HtmlPage page = j.createWebClient().login(user.getId(), "password").getPage(project);
+        page.getAnchorByText("Disable Project").click();
+        assertTrue("Project should be disabled.", project.isDisabled());
     }
     
     @Test
@@ -664,13 +660,9 @@ public class ProjectTest {
         auth.add(Job.READ, user.getId());
         auth.add(Job.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
-        List<HtmlForm> forms = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl()).getForms();
-        for(HtmlForm form:forms){
-            if("enable".equals(form.getAttribute("action"))){
-                j.submit(form);
-            }
-        }
-       assertFalse("Project should be enabled.", project.isDisabled());
+        final HtmlPage page = j.createWebClient().login(user.getId(), "password").getPage(project);
+        page.getAnchorByText("Enable Project").click();
+        assertFalse("Project should be enabled.", project.isDisabled());
     }
     
     /**
