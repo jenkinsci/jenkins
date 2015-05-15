@@ -39,11 +39,11 @@ Some tips:
 Help other Jenkins users by letting the community know which releases you've used,
 and whether they had any significant issues. <br>
 Legend: <br>
- <img src="http://ci.jenkins-ci.org/images/16x16/health-80plus.gif" width="16" height="16"
+ <img src="//ci.jenkins-ci.org/images/16x16/health-80plus.gif" width="16" height="16"
   alt="Sunny"> = I use it on my production site without major issues. <br>
- <img src="http://ci.jenkins-ci.org/images/16x16/health-40to59.gif" width="16" height="16"
+ <img src="//ci.jenkins-ci.org/images/16x16/health-40to59.gif" width="16" height="16"
   alt="Cloudy"> = I don't recommend it. <br>
- <img src="http://ci.jenkins-ci.org/images/16x16/health-00to19.gif" width="16" height="16"
+ <img src="//ci.jenkins-ci.org/images/16x16/health-00to19.gif" width="16" height="16"
   alt="Lightning"> = I tried it but rolled back to a previous version. <br>
 View ratings below, and click one of the icons next to your version to provide your input.
 </div>
@@ -56,6 +56,44 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    <code>NullPointerException</code> computing load statistics under some conditions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28384">issue 28384</a>)
+  <li class=bug>
+    Plugins using class loader masking did not work properly over the slave channel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27289">issue 27289</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v1.613>What's new in 1.613</a> (2015/05/10)</h3>
+<ul class=image>
+  <li class=bug>
+    Update bundled LDAP plugin in order to restore missing help files
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28233">issue 28233</a>)
+  <li class=bug>
+    hudson.model.Run.getLog() throws IndexOutOfBoundsException when called with maxLines=0
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27441">issue 27441</a>)
+</ul>
+<h3><a name=v1.612>What's new in 1.612</a> (2015/05/03)</h3>
+<ul class=image>
+  <li class=rfe>
+    <strong>Jenkins now requires Java 7</strong>.
+    (<a href="http://jenkins-ci.org/content/good-bye-java6">announcement</a>,
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-28120">issue 28120</a>)
+  <li class=bug>
+    Handle AbortException publisher status in the same way as deprecated false boolean status
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26964">issue 26964</a>)
+  <li class=bug>
+    Ensures GlobalSettingsProvider does not swallow fatal exceptions
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26604">issue 26604</a>)
+  <li class=rfe>
+     add datestamp to node-offline message
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23917">issue 23917</a>)
+  <li class=rfe>
+    Larger minimum popup menu height.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27067">issue 27067</a>)
+  <li class=bug>
+    <code>Descriptor.getId</code> fix in 1.610 introduced regressions affecting at least the Performance and NodeJS plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28093">issue 28093</a> and <a href="https://issues.jenkins-ci.org/browse/JENKINS-28110">issue 28110</a>)
+  <li class=bug>
     Under rare conditions Executor.getProgress() can throw a Division by zero exception.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28115">issue 28115</a>)
   <li class=bug>
@@ -63,7 +101,6 @@ Upcoming changes</a>
     configured JVM options.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28111">issue 28111</a>)
 </ul>
-</div><!--=TRUNK-END=-->
 <h3><a name=v1.611>What's new in 1.611</a> (2015/04/26)</h3>
 <ul class=image>
   <li class=bug>

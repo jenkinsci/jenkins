@@ -1933,6 +1933,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
         int lineCount = 0;
         List<String> logLines = new LinkedList<String>();
+        if (maxLines == 0) {
+            return logLines;
+        }
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()),getCharset()));
         try {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {

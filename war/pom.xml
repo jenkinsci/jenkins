@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.612-SNAPSHOT</version>
+    <version>1.614-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -47,7 +47,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.29</version>
+      <version>1.30</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -322,7 +322,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ldap</artifactId>
-                  <version>1.6</version>
+                  <version>1.11</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

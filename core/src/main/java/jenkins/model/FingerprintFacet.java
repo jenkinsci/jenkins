@@ -30,6 +30,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * Plugin-specific additions to fingerprint information.
@@ -65,9 +66,9 @@ public abstract class FingerprintFacet implements ExtensionPoint {
      * @param fingerprint
      *      {@link Fingerprint} object to which this facet is going to be added to.
      * @param timestamp
-     *      Timestamp when the use happened.
+     *      Timestamp when the use happened (when the facet has been created).
      */
-    protected FingerprintFacet(Fingerprint fingerprint, long timestamp) {
+    protected FingerprintFacet(@Nonnull Fingerprint fingerprint, long timestamp) {
         assert fingerprint!=null;
         this.fingerprint = fingerprint;
         this.timestamp = timestamp;
@@ -79,18 +80,20 @@ public abstract class FingerprintFacet implements ExtensionPoint {
      * @return
      *      always non-null.
      */
-    public Fingerprint getFingerprint() {
+    public @Nonnull Fingerprint getFingerprint() {
         return fingerprint;
     }
 
     /**
      * Create action objects to be contributed to the owner {@link Fingerprint}.
-     *
+     * By default, creates no actions.
      * <p>
      * {@link Fingerprint} calls this method for every {@link FingerprintFacet} that
      * it owns when the rendering is requested.
+     * @param result Output list
      */
     public void createActions(List<Action> result) {
+        // Create no actions by default
     }
 
     /**

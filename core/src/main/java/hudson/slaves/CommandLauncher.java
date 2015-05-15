@@ -130,14 +130,7 @@ public class CommandLauncher extends ComputerLauncher {
             computer.setChannel(proc.getInputStream(), proc.getOutputStream(), listener.getLogger(), new Channel.Listener() {
                 @Override
                 public void onClosed(Channel channel, IOException cause) {
-                    try {
-                        int exitCode = proc.exitValue();
-                        if (exitCode!=0) {
-                            listener.error("Process terminated with exit code "+exitCode);
-                        }
-                    } catch (IllegalThreadStateException e) {
-                        // hasn't terminated yet
-                    }
+                    reportProcessTerminated(proc, listener);
 
                     try {
                         ProcessTree.get().killAll(proc, cookie);
@@ -167,12 +160,23 @@ public class CommandLauncher extends ComputerLauncher {
             LOGGER.log(Level.SEVERE, msg, e);
             e.printStackTrace(listener.error(msg));
 
-            if(_proc!=null)
+            if(_proc!=null) {
+                reportProcessTerminated(_proc, listener);
                 try {
                     ProcessTree.get().killAll(_proc, _cookie);
                 } catch (InterruptedException x) {
                     x.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
                 }
+            }
+        }
+    }
+
+    private static void reportProcessTerminated(Process proc, TaskListener listener) {
+        try {
+            int exitCode = proc.exitValue();
+            listener.error("Process terminated with exit code " + exitCode);
+        } catch (IllegalThreadStateException e) {
+            // hasn't terminated yet
         }
     }
 

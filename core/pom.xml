@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.612-SNAPSHOT</version>
+    <version>1.614-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -749,7 +749,7 @@ THE SOFTWARE.
         <configuration>
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>-XX:MaxPermSize=128m</argLine>
+          <argLine>-XX:MaxPermSize=128m -noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->

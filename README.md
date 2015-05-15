@@ -10,7 +10,7 @@ Non-source downloads such as WAR files and several Linux packages can be found o
 Our latest and greatest source of Jenkins CI can be found on [GitHub]. Fork us!
 
 # Contributing to Jenkins
-For information on contributing to Jenkins, check out the [Contributing] and [Extend Jenkins] wiki pages over at the official [wiki]. They will help you get started with contributing to Jenkins.
+Follow [contributing](CONTRIBUTING.md) file.
 
 # News and Website
 All information about Jenkins CI can be found on our [website]. Follow us on Twitter [@jenkinsci].
