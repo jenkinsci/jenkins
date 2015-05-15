@@ -133,7 +133,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      * Looks for the extension instance of the given type (subclasses excluded),
      * or return null.
      */
-    public <U extends T> U get(Class<U> type) {
+    public @CheckForNull <U extends T> U get(Class<U> type) {
         for (T ext : this)
             if(ext.getClass()==type)
                 return type.cast(ext);

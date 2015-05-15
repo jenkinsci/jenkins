@@ -20,6 +20,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.Util.fixNull;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Stores the location of Jenkins (e-mail address and the HTTP URL.)
@@ -30,7 +32,7 @@ import static hudson.Util.fixNull;
 @Extension
 public class JenkinsLocationConfiguration extends GlobalConfiguration {
     /**
-     * @deprecated
+     * @deprecated replaced by {@link #jenkinsUrl}
      */
     @Deprecated
     private transient String hudsonUrl;
@@ -40,7 +42,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     // just to suppress warnings
     private transient String charset,useSsl;
 
-    public static JenkinsLocationConfiguration get() {
+    public static @CheckForNull JenkinsLocationConfiguration get() {
         return GlobalConfiguration.all().get(JenkinsLocationConfiguration.class);
     }
 
@@ -73,13 +75,17 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         updateSecureSessionFlag();
     }
 
-    public String getAdminAddress() {
+    /**
+     * Gets the service administrator e-mail address.
+     * @return Admin adress or &quot;address not configured&quot; stub
+     */
+    public @Nonnull String getAdminAddress() {
         String v = adminAddress;
         if(v==null)     v = Messages.Mailer_Address_Not_Configured();
         return v;
     }
 
-    public void setAdminAddress(String adminAddress) {
+    public void setAdminAddress(@Nonnull String adminAddress) {
         if(adminAddress.startsWith("\"") && adminAddress.endsWith("\"")) {
             // some users apparently quote the whole thing. Don't konw why
             // anyone does this, but it's a machine's job to forgive human mistake
@@ -89,12 +95,12 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         save();
     }
 
-    public String getUrl() {
+    public @CheckForNull String getUrl() {
         return jenkinsUrl;
     }
 
-    public void setUrl(String hudsonUrl) {
-        String url = Util.nullify(hudsonUrl);
+    public void setUrl(@CheckForNull String jenkinsUrl) {
+        String url = Util.nullify(jenkinsUrl);
         if(url!=null && !url.endsWith("/"))
             url += '/';
         this.jenkinsUrl = url;
