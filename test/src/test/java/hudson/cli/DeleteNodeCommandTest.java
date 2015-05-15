@@ -24,28 +24,21 @@
 
 /**
  * @author pjanouse
- * @since TODO
  */
 
 package hudson.cli;
 
 import hudson.model.Computer;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeProperty;
 import jenkins.model.Jenkins;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.ArrayList;
 
 import static hudson.cli.CLICommandInvoker.Matcher.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.notNullValue;
 
 public class DeleteNodeCommandTest {
 

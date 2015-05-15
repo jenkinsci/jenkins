@@ -57,31 +57,33 @@ public class DeleteNodeCommand extends CLICommand {
         hs.addAll(nodes);
 
         for (String node_s : hs) {
-
-            Node node = Jenkins.getInstance().getNode(node_s);
-
-            if(node == null) {
-                stderr.format("No such node '%s'\n", node_s);
-                errorOccurred = true;
-                continue;
-            }
+            Node node = null;
 
             try {
-                node.checkPermission(Computer.DELETE);
-            } catch (Exception e) {
-                stderr.println(e.getMessage());
-                errorOccurred = true;
-                continue;
-            }
+                node = Jenkins.getInstance().getNode(node_s);
 
-            try {
+                if(node == null) {
+                    stderr.format("No such node '%s'\n", node_s);
+                    errorOccurred = true;
+                    continue;
+                }
+
+                try {
+                    node.checkPermission(Computer.DELETE);
+                } catch (Exception e) {
+                    stderr.println(e.getMessage());
+                    errorOccurred = true;
+                    continue;
+                }
+
                 Jenkins.getInstance().removeNode(node);
             } catch (Exception e) {
                 stderr.format("Unexpected exception occurred during deletion of node '%s': %s\n",
-                        node.getDisplayName(),
+                        node == null ? "(null)" : node.toComputer().getName(),
                         e.getMessage()
                 );
                 errorOccurred = true;
+                //noinspection UnnecessaryContinue
                 continue;
             }
         }

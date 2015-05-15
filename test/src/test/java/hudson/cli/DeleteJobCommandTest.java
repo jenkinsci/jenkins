@@ -40,7 +40,6 @@ import static org.hamcrest.Matchers.nullValue;
 
 /**
  * @author pjanouse
- * @since TODO
  */
 public class DeleteJobCommandTest {
 

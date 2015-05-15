@@ -25,9 +25,6 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
-import hudson.model.View;
-import hudson.model.ViewGroup;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
@@ -59,31 +56,33 @@ public class DeleteJobCommand extends CLICommand {
         hs.addAll(jobs);
 
         for (String job_s: hs) {
-            AbstractItem job = (AbstractItem) Jenkins.getInstance().getItemByFullName(job_s);
-
-            if(job == null) {
-                stderr.format("No such job '%s'\n", job_s);
-                errorOccurred = true;
-                continue;
-            }
+            AbstractItem job = null;
 
             try {
-                job.checkPermission(AbstractItem.READ);
-                job.checkPermission(AbstractItem.DELETE);
-            } catch (Exception e) {
-                stderr.println(e.getMessage());
-                errorOccurred = true;
-                continue;
-            }
+                job = (AbstractItem) Jenkins.getInstance().getItemByFullName(job_s);
 
-            try {
+                if(job == null) {
+                    stderr.format("No such job '%s'\n", job_s);
+                    errorOccurred = true;
+                    continue;
+                }
+
+                try {
+                    job.checkPermission(AbstractItem.DELETE);
+                } catch (Exception e) {
+                    stderr.println(e.getMessage());
+                    errorOccurred = true;
+                    continue;
+                }
+
                 job.delete();
             } catch (Exception e) {
                 stderr.format("Unexpected exception occurred during deletion of job '%s': %s\n",
-                        job.getDisplayName(),
+                        job == null ? "(null)" : job.getFullName(),
                         e.getMessage()
                 );
                 errorOccurred = true;
+                //noinspection UnnecessaryContinue
                 continue;
             }
         }

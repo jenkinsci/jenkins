@@ -73,7 +73,7 @@ public class ViewOptionHandler extends OptionHandler<View> {
         return 1;
     }
 
-    private View getView(String name) throws CmdLineException {
+    public View getView(String name) throws CmdLineException {
 
         View view = null;
         ViewGroup group = Jenkins.getInstance();
