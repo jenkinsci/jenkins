@@ -84,7 +84,7 @@ public class ExtensionList<T> extends AbstractList<T> {
     @CopyOnWrite
     private volatile List<ExtensionComponent<T>> extensions;
 
-    private List<ExtensionListListener> listeners = new CopyOnWriteArrayList<ExtensionListListener>();
+    private final List<ExtensionListListener> listeners = new CopyOnWriteArrayList<ExtensionListListener>();
 
     /**
      * Place to store manually registered instances with the per-Hudson scope.
