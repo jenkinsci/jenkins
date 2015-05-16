@@ -54,7 +54,7 @@ Upcoming changes</a>
 
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
-<ul class=image> 
+<ul class=image>
   <li class=rfe>
     ExtensionList even listener.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28434">issue 28434</a>)
@@ -64,6 +64,9 @@ Upcoming changes</a>
   <li class=bug>
     Plugins using class loader masking did not work properly over the slave channel.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27289">issue 27289</a>)
+  <li class=bug>
+    DefaultJnlpSlaveReceiver now returns true when rejecting a takeover.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27939">issue 27939</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v1.613>What's new in 1.613</a> (2015/05/10)</h3>
@@ -113,7 +116,7 @@ Upcoming changes</a>
     Search box did not work well inside folders.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24433">issue 24433</a>)
   <li class="major bug">
-    Revert changes in 1.610 made to resolve <a href="https://issues.jenkins-ci.org/browse/JENKINS-10629">issue 10629</a>. 
+    Revert changes in 1.610 made to resolve <a href="https://issues.jenkins-ci.org/browse/JENKINS-10629">issue 10629</a>.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28012">issue 28012</a>, <a href="https://issues.jenkins-ci.org/browse/JENKINS-28013">issue 28013</a>)
   <li class=rfe>
     Advertise JNLP slave agents to the correct host name, even in the presence of a reverse proxy.
@@ -140,7 +143,7 @@ Upcoming changes</a>
 <h3><a name=v1.609>What's new in 1.609</a> (2015/04/12)</h3>
 <ul class=image>
   <li class=bug>
-    When concurrent builds are enabled, artifact retention policy may delete artifact being 
+    When concurrent builds are enabled, artifact retention policy may delete artifact being
     used by an actually running build.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27836">issue 27836</a>)
   <li class=bug>
@@ -195,7 +198,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27563">issue 27563</a>)
   <li class=bug>
     AdjunctManager: exception upon startup
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15355">issue 15355</a>) 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15355">issue 15355</a>)
   <li class=bug>
     Removes race condition rendering the list of executors
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27564">issue 27564</a>)
