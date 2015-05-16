@@ -231,6 +231,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             } catch (InstantiationError e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "could not load " + d, e);
             }
         }
         return null;
