@@ -78,13 +78,18 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         return v;
     }
 
-    public void setAdminAddress(String adminAddress) {
-        if(adminAddress.startsWith("\"") && adminAddress.endsWith("\"")) {
+    /**
+     * Sets the e-mail address of Jenkins administrator.
+     * @param adminAddress Admin address. Use null to reset the value to default.
+     */
+    public void setAdminAddress(@CheckForNull String adminAddress) {
+        String address = Util.nullify(adminAddress);
+        if(address != null && address.startsWith("\"") && address.endsWith("\"")) {
             // some users apparently quote the whole thing. Don't konw why
             // anyone does this, but it's a machine's job to forgive human mistake
-            adminAddress = adminAddress.substring(1,adminAddress.length()-1);
+            address = address.substring(1,address.length()-1);
         }
-        this.adminAddress = adminAddress;
+        this.adminAddress = address;
         save();
     }
 
