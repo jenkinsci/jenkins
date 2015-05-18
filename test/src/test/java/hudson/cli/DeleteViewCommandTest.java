@@ -45,7 +45,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
- * @author ??, pjanouse
+ * @author ogondza, pjanouse
  */
 public class DeleteViewCommandTest {
 

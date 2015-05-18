@@ -51,15 +51,21 @@ public class DeleteJobCommand extends CLICommand {
     protected int run() throws Exception {
 
         boolean errorOccurred = false;
+        final Jenkins jenkins = Jenkins.getInstance();
 
-        HashSet<String> hs = new HashSet<String>();
+        if (jenkins == null) {
+            stderr.println("The Jenkins instance has not been started, or was already shut down!");
+            return -1;
+        }
+
+        final HashSet<String> hs = new HashSet<String>();
         hs.addAll(jobs);
 
         for (String job_s: hs) {
             AbstractItem job = null;
 
             try {
-                job = (AbstractItem) Jenkins.getInstance().getItemByFullName(job_s);
+                job = (AbstractItem) jenkins.getItemByFullName(job_s);
 
                 if(job == null) {
                     stderr.format("No such job '%s'\n", job_s);

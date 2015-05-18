@@ -38,6 +38,8 @@ import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Refers to {@link View} by its name.
  *
@@ -73,10 +75,25 @@ public class ViewOptionHandler extends OptionHandler<View> {
         return 1;
     }
 
-    public View getView(String name) throws CmdLineException {
+    /**
+     *
+     * Gets a view by its name
+     *
+     * @param name A view name
+     * @return The {@link View} instance. Null if {@link Jenkins#getInstance()} returns null.
+     * @throws CmdLineException
+     *      If view isn't found or an un-expected error occurred
+     * @since TODO
+     */
+    @CheckForNull
+    public View getView(final String name) throws CmdLineException {
 
-        View view = null;
         ViewGroup group = Jenkins.getInstance();
+        View view = null;
+
+        if (group == null)
+            throw new CmdLineException(owner,
+                    "The Jenkins instance has not been started, or was already shut down!");
 
         final StringTokenizer tok = new StringTokenizer(name, "/");
         while(tok.hasMoreTokens()) {

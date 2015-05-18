@@ -52,15 +52,21 @@ public class DeleteNodeCommand extends CLICommand {
     protected int run() throws Exception {
 
         boolean errorOccurred = false;
+        final Jenkins jenkins = Jenkins.getInstance();
 
-        HashSet<String> hs = new HashSet<String>();
+        if (jenkins == null) {
+            stderr.println("The Jenkins instance has not been started, or was already shut down!");
+            return -1;
+        }
+
+        final HashSet<String> hs = new HashSet<String>();
         hs.addAll(nodes);
 
         for (String node_s : hs) {
             Node node = null;
 
             try {
-                node = Jenkins.getInstance().getNode(node_s);
+                node = jenkins.getNode(node_s);
 
                 if(node == null) {
                     stderr.format("No such node '%s'\n", node_s);
@@ -76,7 +82,7 @@ public class DeleteNodeCommand extends CLICommand {
                     continue;
                 }
 
-                Jenkins.getInstance().removeNode(node);
+                jenkins.removeNode(node);
             } catch (Exception e) {
                 stderr.format("Unexpected exception occurred during deletion of node '%s': %s\n",
                         node == null ? "(null)" : node.toComputer().getName(),
