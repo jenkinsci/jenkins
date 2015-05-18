@@ -943,7 +943,9 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * How many {@link BuildableItem}s are assigned for the given label?
-     * @param l Label to be checked. If null, any label will be accepted
+     * @param l Label to be checked. If null, any label will be accepted.
+     *    If you want to count {@link BuildableItem}s without assigned labels,
+     *    use {@link #strictCountBuildableItemsFor(hudson.model.Label)}.
      * @return Number of {@link BuildableItem}s for the specified label. 
      */
     public @Nonnegative int countBuildableItemsFor(@CheckForNull Label l) {
@@ -956,6 +958,30 @@ public class Queue extends ResourceController implements Saveable {
         for (BuildableItem bi : snapshot.pendings)
             for (SubTask st : bi.task.getSubTasks())
                 if (null == l || bi.getAssignedLabelFor(st) == l)
+                    r++;
+        return r;
+    }
+    
+    /**
+     * How many {@link BuildableItem}s are assigned for the given label?
+     * <p/>
+     * The implementation is quite similar to {@link #countBuildableItemsFor(hudson.model.Label)},
+     * but it has another behavior for null parameters.
+     * @param l Label to be checked. If null, only jobs without assigned labels
+     *      will be taken into the account.
+     * @return Number of {@link BuildableItem}s for the specified label.
+     * @since TODO
+     */
+    public @Nonnegative int strictCountBuildableItemsFor(@CheckForNull Label l) {
+        Snapshot _snapshot = this.snapshot;
+        int r = 0;
+        for (BuildableItem bi : _snapshot.buildables)
+            for (SubTask st : bi.task.getSubTasks())
+                if (bi.getAssignedLabelFor(st) == l)
+                    r++;
+        for (BuildableItem bi : _snapshot.pendings)
+            for (SubTask st : bi.task.getSubTasks())
+                if (bi.getAssignedLabelFor(st) == l)
                     r++;
         return r;
     }
