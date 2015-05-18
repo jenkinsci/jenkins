@@ -325,8 +325,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (Trigger t : triggers()) {
             try {
                 t.start(this, Items.currentlyUpdatingByXml());
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + name + "'", e);
+            } catch (Throwable e) {
+                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
             }
         }
         if(scm==null)
