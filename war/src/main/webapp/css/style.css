@@ -1036,6 +1036,10 @@ table.parameters > tbody:hover {
   width: 70%;
   text-align: right;
 }
+.build-row-cell .build-badge span:after {
+    content: " ";
+    font-size: 0%;
+}
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {
   width: 70%;
