@@ -31,9 +31,11 @@ import hudson.model.OverallLoadStatistics;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
+import hudson.model.queue.Tasks;
 import hudson.util.Iterators;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * {@link LoadStatistics} that track the "free roam" jobs (whose {@link Task#getAssignedLabel()} is null)
@@ -78,7 +80,20 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
 
     @Override
     public int computeQueueLength() {
-        return Jenkins.getInstance().getQueue().countBuildableItemsFor(null);
+        final Jenkins j = Jenkins.getInstance();
+        if (j == null) { // Consider queue as empty when Jenkins is inactive
+            return 0;
+        }
+        
+        int result = 0;
+        final List<Queue.BuildableItem> buildableItems = j.getQueue().getBuildableItems();
+        for (Queue.BuildableItem item : buildableItems) {
+            for (SubTask st : Tasks.getSubTasksOf(item.task)) {
+                    if (item.getAssignedLabelFor(st) == null)
+                        result++;
+            }
+        }
+        return result; 
     }
 
     @Override
