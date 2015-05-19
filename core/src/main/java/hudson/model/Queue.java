@@ -28,51 +28,68 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.init.Initializer;
-import static hudson.init.InitMilestone.JOB_LOADED;
-import static hudson.util.Iterators.reverse;
-
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
+import hudson.init.Initializer;
+import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAssignmentAction;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.AbstractQueueTask;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
+import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
+import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.Executables;
+import hudson.model.queue.FoldableAction;
+import hudson.model.queue.FutureImpl;
+import hudson.model.queue.MappingWorksheet;
+import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.model.queue.QueueListener;
+import hudson.model.queue.QueueSorter;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.ScheduleResult.Created;
 import hudson.model.queue.SubTask;
-import hudson.model.queue.FutureImpl;
-import hudson.model.queue.MappingWorksheet;
-import hudson.model.queue.MappingWorksheet.Mapping;
-import hudson.model.queue.QueueSorter;
-import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
-import hudson.model.Node.Mode;
-import hudson.model.listeners.SaveableListener;
-import hudson.model.queue.CauseOfBlockage;
-import hudson.model.queue.FoldableAction;
-import hudson.model.queue.CauseOfBlockage.BecauseLabelIsBusy;
-import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
-import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
-import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
-import jenkins.security.QueueItemAuthenticatorProvider;
-import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
-import hudson.util.TimeUnit2;
-import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
 import hudson.util.ConsistentHash.Hash;
+import hudson.util.TimeUnit2;
+import hudson.util.XStream2;
+import jenkins.model.Jenkins;
+import jenkins.model.queue.AsynchronousExecution;
+import jenkins.security.QueueItemAuthenticator;
+import jenkins.security.QueueItemAuthenticatorProvider;
+import jenkins.util.AtmostOneTaskExecutor;
+import jenkins.util.Timer;
+import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.Authentication;
+import org.jenkinsci.bytecode.AdaptField;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -95,8 +112,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -104,29 +121,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
-
-import jenkins.model.Jenkins;
-import jenkins.security.QueueItemAuthenticator;
-import jenkins.util.AtmostOneTaskExecutor;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.jenkinsci.bytecode.AdaptField;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
-import javax.annotation.CheckForNull;
-import jenkins.model.queue.AsynchronousExecution;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.interceptor.RequirePOST;
+import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.util.Iterators.reverse;
 
 /**
  * Build queue.
@@ -1268,82 +1264,87 @@ public class Queue extends ResourceController implements Saveable {
      */
     public void maintain() {
         lock.lock();
-        try { try {
+        try {
 
             LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
 
             // The executors that are currently waiting for a job to run.
             Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
-
-            {// update parked (and identify any pending items whose executor has disappeared)
-                List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
-                for (Computer c : Jenkins.getInstance().getComputers()) {
-                    for (Executor e : c.getExecutors()) {
-                        if (e.isParking()) {
-                            parked.put(e, new JobOffer(e));
+            try {
+                {// update parked (and identify any pending items whose executor has disappeared)
+                    List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
+                    for (Computer c : Jenkins.getInstance().getComputers()) {
+                        for (Executor e : c.getExecutors()) {
+                            if (e.isParking()) {
+                                parked.put(e, new JobOffer(e));
+                            }
+                            final WorkUnit workUnit = e.getCurrentWorkUnit();
+                            if (workUnit != null) {
+                                lostPendings.remove(workUnit.context.item);
+                            }
                         }
-                        final WorkUnit workUnit = e.getCurrentWorkUnit();
-                        if (workUnit != null) {
-                            lostPendings.remove(workUnit.context.item);
+                    }
+                    // pending -> buildable
+                    for (BuildableItem p : lostPendings) {
+                        LOGGER.log(Level.INFO,
+                                "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
+                                p.task.getFullDisplayName());
+                        p.isPending = false;
+                        pendings.remove(p);
+                        makeBuildable(p);
+                    }
+                }
+
+
+                {// blocked -> buildable
+                    for (BlockedItem p : new ArrayList<BlockedItem>(
+                            blockedProjects.values())) {// copy as we'll mutate the list
+                        if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
+                            // ready to be executed
+                            Runnable r = makeBuildable(new BuildableItem(p));
+                            if (r != null) {
+                                p.leave(this);
+                                r.run();
+                            }
                         }
                     }
                 }
-                // pending -> buildable
-                for (BuildableItem p: lostPendings) {
-                    LOGGER.log(Level.INFO,
-                            "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
-                            p.task.getFullDisplayName());
-                    p.isPending = false;
-                    pendings.remove(p);
-                    makeBuildable(p);
-                }
-            }
 
+                // waitingList -> buildable/blocked
+                while (!waitingList.isEmpty()) {
+                    WaitingItem top = peek();
 
-            {// blocked -> buildable
-                for (BlockedItem p : new ArrayList<BlockedItem>(blockedProjects.values())) {// copy as we'll mutate the list
-                    if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
-                        // ready to be executed
-                        Runnable r = makeBuildable(new BuildableItem(p));
+                    if (top.timestamp.compareTo(new GregorianCalendar()) > 0) {
+                        break; // finished moving all ready items from queue
+                    }
+
+                    top.leave(this);
+                    Task p = top.task;
+                    if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
+                        // ready to be executed immediately
+                        Runnable r = makeBuildable(new BuildableItem(top));
                         if (r != null) {
-                            p.leave(this);
                             r.run();
+                        } else {
+                            new BlockedItem(top).enter(this);
                         }
-                    }
-                }
-            }
-
-            // waitingList -> buildable/blocked
-            while (!waitingList.isEmpty()) {
-                WaitingItem top = peek();
-
-                if (top.timestamp.compareTo(new GregorianCalendar()) > 0)
-                    break; // finished moving all ready items from queue
-
-                top.leave(this);
-                Task p = top.task;
-                if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
-                    // ready to be executed immediately
-                    Runnable r = makeBuildable(new BuildableItem(top));
-                    if (r != null) {
-                        r.run();
                     } else {
+                        // this can't be built now because another build is in progress
+                        // set this project aside.
                         new BlockedItem(top).enter(this);
                     }
-                } else {
-                    // this can't be built now because another build is in progress
-                    // set this project aside.
-                    new BlockedItem(top).enter(this);
                 }
+
+                final QueueSorter s = sorter;
+                if (s != null) {
+                    s.sortBuildableItems(buildables);
+                }
+
+                // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
+            } finally {
+                updateSnapshot();
             }
 
-            final QueueSorter s = sorter;
-            if (s != null)
-                s.sortBuildableItems(buildables);
-            
-            // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
-            updateSnapshot();
-            
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<BuildableItem>(
                     buildables)) {// copy as we'll mutate the list in the loop
@@ -1356,9 +1357,11 @@ public class Queue extends ResourceController implements Saveable {
                 }
 
                 List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
-                for (JobOffer j : parked.values())
-                    if (j.canTake(p))
+                for (JobOffer j : parked.values()) {
+                    if (j.canTake(p)) {
                         candidates.add(j);
+                    }
+                }
 
                 MappingWorksheet ws = new MappingWorksheet(p, candidates);
                 Mapping m = loadBalancer.map(p.task, ws);
@@ -1376,11 +1379,12 @@ public class Queue extends ResourceController implements Saveable {
                 m.execute(wuc);
 
                 p.leave(this);
-                if (!wuc.getWorkUnits().isEmpty())
+                if (!wuc.getWorkUnits().isEmpty()) {
                     makePending(p);
-                else
+                } else {
                     LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
-                                
+                }
+
                 // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
                 // The creation of a snapshot itself should be relatively cheap given the expected rate of
                 // job execution. You probably would need 100's of jobs starting execution every iteration
@@ -1388,12 +1392,13 @@ public class Queue extends ResourceController implements Saveable {
                 // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
                 // since the snapshot itself only ever has at most one reference originating outside of the stack
                 // it should remain in the eden space and thus be cheap to GC.
-                // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian
+                // .jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
                 // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
                 // for alternative fixes of this issue.
                 updateSnapshot();
             }
-        } finally { updateSnapshot(); } } finally {
+        } finally {
             lock.unlock();
         }
     }
