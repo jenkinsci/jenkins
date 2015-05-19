@@ -27,6 +27,7 @@ import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
@@ -301,4 +302,17 @@ public class CronTabTest {
             // ok
         }
     }
+
+    @Issue("JENKINS-9283")
+    @Test public void testTimezone() throws Exception {
+        CronTabList tabs = CronTabList.create("TZ=Australia/Sydney\nH * * * *\nH * * * *", Hash.from("seed"));
+        List<Integer> times = new ArrayList<Integer>();
+        for (int i = 0; i < 60; i++) {
+            if (tabs.check(new GregorianCalendar(2013, 3, 3, 11, i, 0))) {
+                times.add(i);
+            }
+        }
+        assertEquals("[35, 56]", times.toString());
+    }
+
 }
