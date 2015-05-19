@@ -982,6 +982,7 @@ table.parameters > tbody:hover {
 .build-row-cell .pane.build-name {
   width: 25%;
   font-weight: bold;
+  vertical-align: top;
 }
 .build-row-cell .pane.build-details {
   width: 50%;
@@ -1066,7 +1067,7 @@ table.parameters > tbody:hover {
 
 .build-row-cell .pane.build-name .display-name,
 .build-row-cell .indent-multiline {
-  margin-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
+  padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
 }
 
 .build-row .build-row-cell {
