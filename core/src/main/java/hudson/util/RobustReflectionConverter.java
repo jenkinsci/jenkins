@@ -54,6 +54,7 @@ import java.util.Set;
 import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import jenkins.util.xstream.CriticalXStreamException;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -307,9 +308,11 @@ public class RobustReflectionConverter implements Converter {
                         implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
                     }
                 }
+            } catch (CriticalXStreamException e) {
+                throw e;
             } catch (XStreamException e) {
                 if (critical) {
-                    throw e;
+                    throw new CriticalXStreamException(e);
                 }
                 addErrorInContext(context, e);
             } catch (LinkageError e) {
