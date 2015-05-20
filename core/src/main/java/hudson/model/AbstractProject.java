@@ -1945,7 +1945,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    @CLIMethod(name="disable-job")
     @RequirePOST
     public HttpResponse doDisable() throws IOException, ServletException {
         checkPermission(CONFIGURE);
@@ -1953,7 +1952,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return new HttpRedirect(".");
     }
 
-    @CLIMethod(name="enable-job")
     @RequirePOST
     public HttpResponse doEnable() throws IOException, ServletException {
         checkPermission(CONFIGURE);

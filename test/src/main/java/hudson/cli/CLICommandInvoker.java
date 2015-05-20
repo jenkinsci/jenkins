@@ -250,5 +250,21 @@ public class CLICommandInvoker {
                 }
             };
         }
+
+        public static Matcher failedWith(final String message) {
+            return new Matcher("Exited with non-zero return code writing " + message + " to stderr") {
+                @Override protected boolean matchesSafely(Result result) {
+                    return result.result != 0 && result.stderr().contains(message);
+                }
+            };
+        }
+
+        public static Matcher failed() {
+            return new Matcher("Exited with non-zero return code") {
+                @Override protected boolean matchesSafely(Result result) {
+                    return result.result != 0;
+                }
+            };
+        }
     }
 }

@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import static hudson.cli.CLICommandInvoker.Matcher.*;
+
+import hudson.cli.CLICommandInvoker;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -672,7 +675,42 @@ public class ProjectTest {
         }
        assertFalse("Project should be enabled.", project.isDisabled());
     }
-    
+
+    @Test
+    public void disableUsingCli() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("a_project");
+
+        CLICommandInvoker invoker = new CLICommandInvoker(j, "disable-job");
+        CLICommandInvoker.Result res = invoker.invokeWithArgs("a_project");
+        assertThat(res, succeededSilently());
+
+        assertTrue(project.isDisabled());
+
+        res = invoker.invokeWithArgs("no_such_project");
+        assertThat(res, failed());
+
+        res = invoker.authorizedTo(Jenkins.READ, Job.READ).invokeWithArgs("a_project");
+        assertThat(res, failedWith("user is missing the Job/Configure permission"));
+    }
+
+    @Test
+    public void enableUsingCli() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("a_project");
+        project.disable();
+
+        CLICommandInvoker invoker = new CLICommandInvoker(j, "enable-job");
+        CLICommandInvoker.Result res = invoker.invokeWithArgs("a_project");
+        assertThat(res, succeededSilently());
+
+        assertFalse(project.isDisabled());
+
+        res = invoker.invokeWithArgs("no_such_project");
+        assertThat(res, failed());
+
+        res = invoker.authorizedTo(Jenkins.READ, Job.READ).invokeWithArgs("a_project");
+        assertThat(res, failedWith("user is missing the Job/Configure permission"));
+    }
+
     /**
      * Job is un-restricted (no nabel), this is submitted to queue, which spawns an on demand slave
      * @throws Exception 

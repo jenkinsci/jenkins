@@ -2141,7 +2141,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Marks this build to keep the log.
      */
-    @CLIMethod(name="keep-build")
     public final void keepLog() throws IOException {
         keepLog(true);
     }
