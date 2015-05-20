@@ -241,13 +241,13 @@ public class RobustReflectionConverterTest {
             
             try {
                 wc.getPage(req);
-                // TODO: fail("Submitting unacceptable configuration via REST should fail.");
+                fail("Submitting unacceptable configuration via REST should fail.");
             } catch (FailingHttpStatusCodeException e) {
                 // pass
             }
             
             // Configuration should not be updated for a failure of the critical field,
-            // TODO: assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
+            assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
             
             r.jenkins.reload();
             
@@ -328,10 +328,10 @@ public class RobustReflectionConverterTest {
                 stdout,
                 stderr
             );
-            // TODO: assertNotEquals(0, ret);
+            assertNotEquals(0, ret);
             
             // Configuration should not be updated for a failure of the critical field,
-            // TODO: assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
+            assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
             
             r.jenkins.reload();
             
