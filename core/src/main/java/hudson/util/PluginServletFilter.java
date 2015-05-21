@@ -90,7 +90,8 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
 
     public static void addFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstance();
-        if (j==null) {
+        // https://marvelution.atlassian.net/browse/JJI-188
+        if (j==null || getInstance(j.servletContext) == null) {
             // report who is doing legacy registration
             LOGGER.log(Level.WARNING, "Filter instance is registered too early: "+filter, new Exception());
             LEGACY.add(filter);
@@ -103,7 +104,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
 
     public static void removeFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstance();
-        if (j==null) {
+        if (j==null || getInstance(j.servletContext) == null) {
             LEGACY.remove(filter);
         } else {
             getInstance(j.servletContext).list.remove(filter);
