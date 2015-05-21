@@ -124,6 +124,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnegative;
 import jenkins.model.queue.AsynchronousExecution;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -942,8 +943,12 @@ public class Queue extends ResourceController implements Saveable {
 
     /**
      * How many {@link BuildableItem}s are assigned for the given label?
+     * @param l Label to be checked. If null, any label will be accepted.
+     *    If you want to count {@link BuildableItem}s without assigned labels,
+     *    use {@link #strictCountBuildableItemsFor(hudson.model.Label)}.
+     * @return Number of {@link BuildableItem}s for the specified label. 
      */
-    public int countBuildableItemsFor(Label l) {
+    public @Nonnegative int countBuildableItemsFor(@CheckForNull Label l) {
         Snapshot snapshot = this.snapshot;
         int r = 0;
         for (BuildableItem bi : snapshot.buildables)
@@ -953,6 +958,30 @@ public class Queue extends ResourceController implements Saveable {
         for (BuildableItem bi : snapshot.pendings)
             for (SubTask st : bi.task.getSubTasks())
                 if (null == l || bi.getAssignedLabelFor(st) == l)
+                    r++;
+        return r;
+    }
+    
+    /**
+     * How many {@link BuildableItem}s are assigned for the given label?
+     * <p/>
+     * The implementation is quite similar to {@link #countBuildableItemsFor(hudson.model.Label)},
+     * but it has another behavior for null parameters.
+     * @param l Label to be checked. If null, only jobs without assigned labels
+     *      will be taken into the account.
+     * @return Number of {@link BuildableItem}s for the specified label.
+     * @since TODO
+     */
+    public @Nonnegative int strictCountBuildableItemsFor(@CheckForNull Label l) {
+        Snapshot _snapshot = this.snapshot;
+        int r = 0;
+        for (BuildableItem bi : _snapshot.buildables)
+            for (SubTask st : bi.task.getSubTasks())
+                if (bi.getAssignedLabelFor(st) == l)
+                    r++;
+        for (BuildableItem bi : _snapshot.pendings)
+            for (SubTask st : bi.task.getSubTasks())
+                if (bi.getAssignedLabelFor(st) == l)
                     r++;
         return r;
     }
@@ -1808,13 +1837,16 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         /**
-         * Test if the specified {@link SubTask} needs to be run on a node with a particular label, and
-         * return that {@link Label}. Otherwise null, indicating it can run on anywhere.
-         *
+         * Test if the specified {@link SubTask} needs to be run on a node with a particular label.
          * <p>
-         * This code takes {@link LabelAssignmentAction} into account, then falls back to {@link SubTask#getAssignedLabel()}
+         * This method takes {@link LabelAssignmentAction} into account, the first
+         * non-null assignment will be returned. 
+         * Otherwise falls back to {@link SubTask#getAssignedLabel()}
+         * @param st {@link SubTask} to be checked.
+         * @return Required {@link Label}. Otherwise null, indicating it can run on anywhere.
+
          */
-        public Label getAssignedLabelFor(SubTask st) {
+        public @CheckForNull Label getAssignedLabelFor(@Nonnull SubTask st) {
             for (LabelAssignmentAction laa : getActions(LabelAssignmentAction.class)) {
                 Label l = laa.getAssignedLabel(st);
                 if (l!=null)    return l;
