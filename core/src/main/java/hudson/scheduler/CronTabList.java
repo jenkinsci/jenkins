@@ -78,6 +78,7 @@ public final class CronTabList {
     /**
      * Checks if given timezone string is supported by TimeZone and returns
      * the same string if valid, null otherwise
+     * @since 1.615
      */
     public static @CheckForNull String getValidTimezone(String timezone) {
         String[] validIDs = TimeZone.getAvailableIDs();

@@ -94,8 +94,9 @@ public final class CronTab {
      * @param timezone
      *      Used to schedule cron in a differnt timezone. Null to use the default system 
      *      timezone
+     * @since 1.615
      */
-    public CronTab(String format, int line, Hash hash, String timezone) throws ANTLRException {
+    public CronTab(String format, int line, Hash hash, @CheckForNull String timezone) throws ANTLRException {
         set(format, line, hash, timezone);
     }
     
@@ -103,6 +104,9 @@ public final class CronTab {
         set(format, line, hash, null);
     }
 
+    /**
+     * @since 1.615
+     */
     private void set(String format, int line, Hash hash, String timezone) throws ANTLRException {
         CrontabLexer lexer = new CrontabLexer(new StringReader(format));
         lexer.setLine(line);
