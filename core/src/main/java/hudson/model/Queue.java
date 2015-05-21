@@ -970,7 +970,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param l Label to be checked. If null, only jobs without assigned labels
      *      will be taken into the account.
      * @return Number of {@link BuildableItem}s for the specified label.
-     * @since TODO
+     * @since 1.615
      */
     public @Nonnegative int strictCountBuildableItemsFor(@CheckForNull Label l) {
         Snapshot _snapshot = this.snapshot;
