@@ -80,7 +80,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     }
 
     public void setAdminAddress(String adminAddress) {
-        if(adminAddress.startsWith("\"") && adminAddress.endsWith("\"")) {
+        if(adminAddress != null && adminAddress.startsWith("\"") && adminAddress.endsWith("\"")) {
             // some users apparently quote the whole thing. Don't konw why
             // anyone does this, but it's a machine's job to forgive human mistake
             adminAddress = adminAddress.substring(1,adminAddress.length()-1);
