@@ -75,67 +75,50 @@ body {
 }
 
 #side-panel {
-  z-index: 1;
+  padding: 15px 15px 80px 15px;
 }
+
 #main-panel {
-  z-index: 0;
+  padding: 15px 15px 80px 15px;
 }
 
-#side-panel, #main-panel {
-  margin: 0px;
-  padding: 0px;
-}
-
-.fixedGridLayout #side-panel, .fixedGridLayout #main-panel {
-  position: absolute;
-}
-
-.fixedGridLayout #side-panel {
-  float:left;
-  width: 360px;
-  margin-left: 15px;
-}
-
-.fixedGridLayout #main-panel {
-  padding-left: 370px;
-  margin-right: 15px;
-  width: 100%
-}
-
-#side-panel-content, #main-panel-content {
-  margin: 15px
-}
+/* task */
 
 #tasks {
   margin-bottom: 20px;
 }
 
-#side-panel-content .pane-frame {
-  margin-bottom: 15px;
-}
-
-#side-panel-content .task {
-  margin-bottom: 3px;
-}
-#side-panel-content .task-link {
+#tasks .task {
+  margin-bottom: 4px;
   font-size: 1.1em;
-  vertical-align: middle;
+  white-space: nowrap;
 }
 
-#footer-container {
-  width: 100%;
-  padding: 10px 0px;
+/* buildQueue */
+
+#buildQueue {
+  margin-bottom: 20px;
+}
+
+/* footer */
+
+footer {
+  padding: 10px 0;
+  background-color: #f6faf2;
   border-top: 1px solid #d3d7cf;
-}
-#footer {
-  margin: 0px 15px 0px 15px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 12px;
   text-align: right;
-  font-size: 8pt;
 }
 
-#footer span {
+footer span {
   margin-left: 15px;
+  line-height: 14px;
 }
+
 
 /* Fonts etc */
 
@@ -150,7 +133,7 @@ body, table, form, td, th, p
   color: #333;
 }
 
-FORM {
+form {
   margin: 0;
 }
 
