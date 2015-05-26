@@ -101,7 +101,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
-    <java.level>6</java.level>
+    <java.level>7</java.level>
   </properties>
 
   <repositories>
@@ -615,7 +615,7 @@ THE SOFTWARE.
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.${java.level}</source>
-          <target>1.7</target> <!-- TODO JENKINS-28120 restore to 1.${java.level} -->
+          <target>1.${java.level}</target>
           <!-- default reuseCreated is more performant 
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -640,7 +640,7 @@ THE SOFTWARE.
                   <version>3.0</version>
                 </requireMavenVersion>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>1.7</maxJdkVersion> <!-- TODO JENKINS-28120 restore to 1.${java.level} -->
+                  <maxJdkVersion>1.${java.level}</maxJdkVersion>
                   <ignoreClasses>
                     <ignoreClass>org.eclipse.jetty.spdy.*</ignoreClass>
                   </ignoreClasses>
