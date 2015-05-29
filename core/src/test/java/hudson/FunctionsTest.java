@@ -35,7 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
+import org.apache.commons.io.IOUtils;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -337,6 +340,46 @@ public class FunctionsTest {
         LogRecord lr = new LogRecord(Level.INFO, "Bad input <xml/>");
         lr.setLoggerName("test");
         assertEquals("Bad input &lt;xml/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);
+    }
+
+    @Issue("JDK-6507809")
+    @Test public void printThrowable() throws Exception {
+        Throwable x;
+        try {
+            method1();
+            throw new AssertionError();
+        } catch (IllegalStateException _x) {
+            x = _x;
+        }
+        String stack = Functions.printThrowable(x).replace(IOUtils.LINE_SEPARATOR, "\n");
+        Matcher m = Pattern.compile(
+            "java\\.lang\\.NullPointerException: oops\n" +
+            "\tat hudson\\.FunctionsTest\\.method2\\(FunctionsTest\\.java:(\\d+)\\)\n" +
+            "\tat hudson\\.FunctionsTest\\.method1\\(FunctionsTest\\.java:(\\d+)\\)\n" +
+            "Caused: java\\.lang\\.IllegalStateException\n" +
+            "\tat hudson\\.FunctionsTest\\.method1\\(FunctionsTest\\.java:(\\d+)\\)\n" +
+            "\tat hudson\\.FunctionsTest\\.printThrowable\\(FunctionsTest\\.java:\\d+\\)\n" +
+            "(\tat .+\n)+").matcher(stack);
+        assertTrue(stack, m.matches());
+        int throwNPE = Integer.parseInt(m.group(1));
+        int callToMethod2 = Integer.parseInt(m.group(2));
+        int throwISE = Integer.parseInt(m.group(3));
+        assertEquals(callToMethod2 + 2, throwISE);
+        assertEquals(callToMethod2 + 6, throwNPE);
+        // TODO assert display of new WrapperException("more info", wrapped)
+        // TODO assert display of new WrapperException("more info: " + wrapped, wrapped)
+        // TODO assert that full stack is preserved if wrapped does not share a common stack (e.g., comes from an executor service thread)
+    }
+    // Do not change line spacing of these:
+    private static void method1() {
+        try {
+            method2();
+        } catch (Exception x) {
+            throw new IllegalStateException(x);
+        }
+    }
+    private static void method2() {
+        throw new NullPointerException("oops");
     }
 
 }
