@@ -998,7 +998,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     if (!isAlive()) // TODO except from interrupt/doYank this is called while the executor still isActive(), so how could !this.isAlive()?
                     {
                         AbstractCIBase ciBase = Jenkins.getInstance();
-                        ciBase.removeComputer(Computer.this);
+                        if (ciBase != null) {
+                            ciBase.removeComputer(Computer.this);
+                        }
                     }
                 }
             }
