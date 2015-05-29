@@ -151,6 +151,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.util.RunList;
 import java.util.concurrent.atomic.AtomicLong;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -1411,7 +1412,7 @@ public class Functions {
                 summary = summary.substring(0, summary.length() - suffix.length());
             }
         }
-        s.append(summary).append('\n');
+        s.append(summary).append(IOUtils.LINE_SEPARATOR);
         StackTraceElement[] trace = t.getStackTrace();
         int end = trace.length;
         if (higher != null) {
@@ -1425,7 +1426,7 @@ public class Functions {
             }
         }
         for (int i = 0; i < end; i++) {
-            s.append("\tat ").append(trace[i]).append('\n');
+            s.append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
         }
     }
 
