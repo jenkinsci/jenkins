@@ -150,7 +150,10 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.util.RunList;
+import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -1392,12 +1395,19 @@ public class Functions {
         return value!=null ? value : defaultValue;
     }
 
-    public static String printThrowable(Throwable t) {
+    /**
+     * Prints a stack trace from an exception into a readable form.
+     * Unlike {@link Throwable#printStackTrace(PrintWriter)}, this implementation follows the suggestion of JDK-6507809
+     * to produce a linear trace even when {@link Throwable#getCause} is used.
+     * @param t any throwable
+     * @return generally a multiline string ending in a (platform-specific) newline
+     */
+    public static @Nonnull String printThrowable(@Nonnull Throwable t) {
         StringBuilder s = new StringBuilder();
         doPrintStackTrace(s, t, null);
         return s.toString();
     }
-    private static void doPrintStackTrace(StringBuilder s, Throwable t, Throwable higher) {
+    private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher) {
         // TODO check if t overrides printStackTrace
         // TODO handle suppressed exceptions
         Throwable lower = t.getCause();
