@@ -1,26 +1,33 @@
 package jenkins.model
 
+import static org.junit.Assert.assertTrue
+
 import hudson.Functions
 import hudson.Util
 import hudson.model.Run
-import org.jvnet.hudson.test.Bug
+import org.junit.Rule
+import org.junit.Test
 import org.jvnet.hudson.test.FailureBuilder
-import org.jvnet.hudson.test.HudsonTestCase
+import org.jvnet.hudson.test.Issue
+import org.jvnet.hudson.test.JenkinsRule
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
-class PeepholePermalinkTest extends HudsonTestCase {
+class PeepholePermalinkTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule()
+
     /**
      * Basic operation of the permalink generation.
      */
-    void testBasics() {
+    @Test
+    void basics() {
         if (Functions.isWindows())  return; // can't run on windows because we rely on symlinks
 
-        def p = createFreeStyleProject()
-        def b1 = assertBuildStatusSuccess(p.scheduleBuild2(0))
+        def p = j.createFreeStyleProject()
+        def b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0))
 
         def lsb = new File(p.buildDir, "lastSuccessfulBuild")
         def lfb = new File(p.buildDir, "lastFailedBuild")
@@ -36,7 +43,7 @@ class PeepholePermalinkTest extends HudsonTestCase {
 
         // one more build and this time it succeeds
         p.buildersList.clear()
-        def b3 = assertBuildStatusSuccess(p.scheduleBuild2(0))
+        def b3 = j.assertBuildStatusSuccess(p.scheduleBuild2(0))
 
         assertLink(lsb,b3)
         assertLink(lfb,b2)
@@ -62,11 +69,12 @@ class PeepholePermalinkTest extends HudsonTestCase {
     /**
      * job/JOBNAME/lastStable and job/JOBNAME/lastSuccessful symlinks that we used to generate should still work
      */
-    void testLegacyCompatibility() {
+    @Test
+    void legacyCompatibility() {
         if (Functions.isWindows())  return; // can't run on windows because we rely on symlinks
 
-        def p = createFreeStyleProject()
-        def b1 = assertBuildStatusSuccess(p.scheduleBuild2(0))
+        def p = j.createFreeStyleProject()
+        def b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0))
 
         ["lastStable","lastSuccessful"].each { n ->
             // test if they both point to b1
@@ -74,10 +82,11 @@ class PeepholePermalinkTest extends HudsonTestCase {
         }
     }
 
-    @Bug(19034)
-    void testRebuildBuildNumberPermalinks() {
-        def p = createFreeStyleProject()
-        def b = assertBuildStatusSuccess(p.scheduleBuild2(0))
+    @Test
+    @Issue("JENKINS-19034")
+    void rebuildBuildNumberPermalinks() {
+        def p = j.createFreeStyleProject()
+        def b = j.assertBuildStatusSuccess(p.scheduleBuild2(0))
         File f = new File(p.getBuildDir(), "1")
         // assertTrue(Util.isSymlink(f))
         f.delete()

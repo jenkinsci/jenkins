@@ -84,6 +84,14 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
         }
     }
 
+    @Override
+    public synchronized void setAsCancelled() {
+        super.setAsCancelled();
+        if (!start.isDone()) {
+            start.setAsCancelled();
+        }
+    }
+
     synchronized void addExecutor(@Nonnull Executor executor) {
         this.executors.add(executor);
     }

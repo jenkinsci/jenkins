@@ -79,6 +79,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * @deprecated as of 1.425
      *      Use the default constructor that's less error prone
      */
+    @Deprecated
     protected PageDecorator(Class<? extends PageDecorator> yourClass) {
         super(yourClass);
     }
@@ -119,6 +120,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<PageDecorator> ALL = (List)new DescriptorList<PageDecorator>(PageDecorator.class);
 
     /**

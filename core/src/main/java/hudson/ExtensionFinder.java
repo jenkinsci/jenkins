@@ -85,6 +85,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      *      Use and implement {@link #find(Class,Hudson)} that allows us to put some metadata.
      */
     @Restricted(NoExternalUse.class)
+    @Deprecated
     public <T> Collection<T> findExtensions(Class<T> type, Hudson hudson) {
         return Collections.emptyList();
     }

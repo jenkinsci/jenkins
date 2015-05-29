@@ -6,7 +6,7 @@ import hudson.tasks.Builder
 import hudson.util.FormValidation
 import org.junit.Rule
 import org.junit.Test
-import org.jvnet.hudson.test.Bug
+import org.jvnet.hudson.test.Issue
 import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.TestExtension
 import org.kohsuke.stapler.DataBoundConstructor
@@ -26,7 +26,7 @@ class TextAreaTest {
     @Inject
     TestBuilder.DescriptorImpl d;
 
-    @Test @Bug(19457)
+    @Test @Issue("JENKINS-19457")
     public void validation() {
         j.jenkins.injector.injectMembers(this)
         def p = j.createFreeStyleProject()

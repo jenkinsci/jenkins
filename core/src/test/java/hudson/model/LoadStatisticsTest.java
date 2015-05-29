@@ -24,10 +24,11 @@
 package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
-import junit.framework.TestCase;
+import hudson.model.queue.SubTask;
 
 import org.apache.commons.io.IOUtils;
 import org.jfree.chart.JFreeChart;
+import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -35,11 +36,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LoadStatisticsTest extends TestCase {
-    public void testGraph() throws IOException {
+public class LoadStatisticsTest {
+
+    @Test
+    public void graph() throws IOException {
         LoadStatistics ls = new LoadStatistics(0, 0) {
             public int computeIdleExecutors() {
                 throw new UnsupportedOperationException();
@@ -52,17 +58,28 @@ public class LoadStatisticsTest extends TestCase {
             public int computeQueueLength() {
                 throw new UnsupportedOperationException();
             }
+            @Override
+            protected Iterable<Node> getNodes() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected boolean matches(Queue.Item item, SubTask subTask) {
+                throw new UnsupportedOperationException();
+            }
         };
 
         for (int i = 0; i < 50; i++) {
-            ls.totalExecutors.update(4);
+            ls.onlineExecutors.update(4);
             ls.busyExecutors.update(3);
+            ls.availableExecutors.update(1);
             ls.queueLength.update(3);
         }
 
         for (int i = 0; i < 50; i++) {
-            ls.totalExecutors.update(0);
+            ls.onlineExecutors.update(0);
             ls.busyExecutors.update(0);
+            ls.availableExecutors.update(0);
             ls.queueLength.update(1);
         }
 
@@ -76,6 +93,44 @@ public class LoadStatisticsTest extends TestCase {
         } finally {
             IOUtils.closeQuietly(os);
             tempFile.delete();
+        }
+    }
+
+    @Test
+    public void isModernWorks() throws Exception {
+        assertThat(LoadStatistics.isModern(Modern.class), is(true));
+        assertThat(LoadStatistics.isModern(LoadStatistics.class), is(false));
+    }
+
+    private class Modern extends LoadStatistics {
+
+        protected Modern(int initialOnlineExecutors, int initialBusyExecutors) {
+            super(initialOnlineExecutors, initialBusyExecutors);
+        }
+
+        @Override
+        public int computeIdleExecutors() {
+            return 0;
+        }
+
+        @Override
+        public int computeTotalExecutors() {
+            return 0;
+        }
+
+        @Override
+        public int computeQueueLength() {
+            return 0;
+        }
+
+        @Override
+        protected Iterable<Node> getNodes() {
+            return null;
+        }
+
+        @Override
+        protected boolean matches(Queue.Item item, SubTask subTask) {
+            return false;
         }
     }
 }

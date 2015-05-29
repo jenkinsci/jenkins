@@ -27,12 +27,13 @@ import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
@@ -81,7 +82,7 @@ public class CronTabTest {
     }
 
     @Test(timeout = 1000)
-    @Bug(12357)
+    @Issue("JENKINS-12357")
     public void testCeil3_DoW7() throws Exception {
         // similar to testCeil3, but DoW=7 may stuck in an infinite loop
         CronTab x = new CronTab("0 0 1 * 7");
@@ -162,7 +163,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2010,7,1,0,0),x.floor(c));
     }
 
-    @Bug(8401)
+    @Issue("JENKINS-8401")
     @Test
     public void testFloor4() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
@@ -271,6 +272,40 @@ public class CronTabTest {
 
     @Test public void repeatedHash() throws Exception {
         CronTabList tabs = CronTabList.create("H * * * *\nH * * * *", Hash.from("seed"));
+        List<Integer> times = new ArrayList<Integer>();
+        for (int i = 0; i < 60; i++) {
+            if (tabs.check(new GregorianCalendar(2013, 3, 3, 11, i, 0))) {
+                times.add(i);
+            }
+        }
+        assertEquals("[35, 56]", times.toString());
+    }
+
+    @Test public void rangeBoundsCheckOK() throws Exception {
+        new CronTab("H(0-59) H(0-23) H(1-31) H(1-12) H(0-7)");
+    }
+
+    @Test public void rangeBoundsCheckFailHour() throws Exception {
+        try {
+            new CronTab("H H(12-24) * * *");
+            fail();
+        } catch (ANTLRException e) {
+            // ok
+        }
+    }
+
+    @Test public void rangeBoundsCheckFailMinute() throws Exception {
+        try {
+            new CronTab("H(33-66) * * * *");
+            fail();
+        } catch (ANTLRException e) {
+            // ok
+        }
+    }
+
+    @Issue("JENKINS-9283")
+    @Test public void testTimezone() throws Exception {
+        CronTabList tabs = CronTabList.create("TZ=Australia/Sydney\nH * * * *\nH * * * *", Hash.from("seed"));
         List<Integer> times = new ArrayList<Integer>();
         for (int i = 0; i < 60; i++) {
             if (tabs.check(new GregorianCalendar(2013, 3, 3, 11, i, 0))) {

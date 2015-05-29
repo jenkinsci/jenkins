@@ -39,6 +39,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  * @deprecated since 2008-05-28. moved to stapler
  */
+@Deprecated
 public class LineEndNormalizingWriter extends FilterWriter {
 
     private boolean seenCR;

@@ -23,8 +23,9 @@
  */
 package jenkins.model.lazy;
 
+import static org.junit.Assert.*;
+
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,13 +39,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import org.junit.BeforeClass;
-import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class AbstractLazyLoadRunMapTest extends Assert {
+public class AbstractLazyLoadRunMapTest {
     // A=1, B=3, C=5
     @Rule
     public FakeMapBuilder aBuilder = new FakeMapBuilder();
@@ -66,7 +66,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
             return new FakeMap(getDir()) {
                 @Override
                 protected BuildReference<Build> createReference(Build r) {
-                    return new BuildReference<Build>(getIdOf(r), /* pretend referent expired */ null);
+                    return new BuildReference<Build>(Integer.toString(r.n), /* pretend referent expired */ null);
                 }
             };
         }
@@ -80,7 +80,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-        a = aBuilder.add(1, "A").add(3, "B").add(5, "C").make();
+        a = aBuilder.add(1).add(3).add(5).make();
 
         b = bBuilder.make();
     }
@@ -88,11 +88,11 @@ public class AbstractLazyLoadRunMapTest extends Assert {
     @Test
     public void lookup() {
         assertNull(a.get(0));
-        a.get(1).asserts(1, "A");
+        a.get(1).asserts(1);
         assertNull(a.get(2));
-        a.get(3).asserts(3, "B");
+        a.get(3).asserts(3);
         assertNull(a.get(4));
-        a.get(5).asserts(5, "C");
+        a.get(5).asserts(5);
         assertNull(a.get(6));
 
         assertNull(b.get(1));
@@ -108,8 +108,8 @@ public class AbstractLazyLoadRunMapTest extends Assert {
     @Test
     public void idempotentLookup() {
         for (int i=0; i<5; i++) {
-            a.get(1).asserts(1,"A");
-            a.get((Object)1).asserts(1, "A");
+            a.get(1).asserts(1);
+            a.get((Object)1).asserts(1);
         }
     }
 
@@ -132,6 +132,21 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         }
     }
 
+    @Issue("JENKINS-26690")
+    @Test public void headMap() {
+        assertEquals("[]", a.headMap(Integer.MAX_VALUE).keySet().toString());
+        assertEquals("[]", a.headMap(6).keySet().toString());
+        assertEquals("[]", a.headMap(5).keySet().toString());
+        assertEquals("[5]", a.headMap(4).keySet().toString());
+        assertEquals("[5]", a.headMap(3).keySet().toString());
+        assertEquals("[5, 3]", a.headMap(2).keySet().toString());
+        assertEquals("[5, 3]", a.headMap(1).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(0).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(-1).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(-2).keySet().toString()); // this failed
+        assertEquals("[5, 3, 1]", a.headMap(Integer.MIN_VALUE).keySet().toString());
+    }
+
     @Test
     public void lastKey() {
         assertEquals(1, a.lastKey().intValue());
@@ -150,27 +165,27 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertNull(a.search(-99, Direction.DESC));
     }
 
-    @Bug(19418)
+    @Issue("JENKINS-19418")
     @Test
     public void searchExactWhenIndexedButSoftReferenceExpired() throws IOException {
-        final FakeMap m = localExpiredBuilder.add(1, "A").add(2, "B").make();
+        final FakeMap m = localExpiredBuilder.add(1).add(2).make();
 
         // force index creation
         m.entrySet();
 
-        m.search(1, Direction.EXACT).asserts(1, "A");
+        m.search(1, Direction.EXACT).asserts(1);
         assertNull(m.search(3, Direction.EXACT));
         assertNull(m.search(0, Direction.EXACT));
     }
 
-    @Bug(22681)
+    @Issue("JENKINS-22681")
     @Test public void exactSearchShouldNotReload() throws Exception {
-        FakeMap m = localBuilder.add(1, "A").add(2, "B").make();
+        FakeMap m = localBuilder.add(1).add(2).make();
         assertNull(m.search(0, Direction.EXACT));
         Build a = m.search(1, Direction.EXACT);
-        a.asserts(1, "A");
+        a.asserts(1);
         Build b = m.search(2, Direction.EXACT);
-        b.asserts(2, "B");
+        b.asserts(2);
         assertNull(m.search(0, Direction.EXACT));
         assertSame(a, m.search(1, Direction.EXACT));
         assertSame(b, m.search(2, Direction.EXACT));
@@ -186,82 +201,19 @@ public class AbstractLazyLoadRunMapTest extends Assert {
      */
     @Test
     public void unloadableData() throws IOException {
-        FakeMap m = localBuilder.add(1, "A").addUnloadable("B").add(5, "C").make();
+        FakeMap m = localBuilder.add(1).addUnloadable(3).add(5).make();
 
         assertNull(m.search(3, Direction.EXACT));
-        m.search(3,Direction.DESC).asserts(1, "A");
-        m.search(3, Direction.ASC ).asserts(5, "C");
+        m.search(3,Direction.DESC).asserts(1);
+        m.search(3, Direction.ASC ).asserts(5);
     }
 
     @Test
     public void eagerLoading() throws IOException {
         Map.Entry[] b = a.entrySet().toArray(new Map.Entry[3]);
-        ((Build)b[0].getValue()).asserts(5, "C");
-        ((Build)b[1].getValue()).asserts(3, "B");
-        ((Build)b[2].getValue()).asserts(1, "A");
-    }
-
-    @Test
-    public void fastLookup() throws IOException {
-        FakeMap a = localBuilder.addBoth(1, "A").addBoth(3, "B").addBoth(5, "C"). make();
-
-        a.get(1).asserts(1,"A");
-        assertNull(a.get(2));
-        a.get(3).asserts(3, "B");
-        assertNull(a.get(4));
-        a.get(5).asserts(5, "C");
-    }
-
-    @Test
-    public void fastSearch() throws IOException {
-        FakeMap a = localBuilder.addBoth(1, "A").addBoth(3, "B").addBoth(5, "C").addBoth(7, "D").make();
-
-        // we should be using the cache to find the entry efficiently
-        a.search(6, Direction.ASC).asserts(7, "D");
-        a.search(2, Direction.DESC).asserts(1, "A");
-    }
-
-    @Test
-    public void bogusCache() throws IOException {
-        FakeMap a = localBuilder.addUnloadableCache(1).make();
-        assertNull(a.get(1));
-    }
-
-    @Test
-    public void bogusCacheAndHiddenRealData() throws IOException {
-        FakeMap a = localBuilder.addUnloadableCache(1).add(1, "A").make();
-        a.get(1).asserts(1, "A");
-    }
-
-    @Test
-    public void bogusCache2() throws IOException {
-        FakeMap a = localBuilder.addBogusCache(1, 3, "A").make();
-        assertNull(a.get(1));
-        a.get(3).asserts(3,"A");
-    }
-
-    @Test
-    public void incompleteCache() throws IOException {
-        FakeMapBuilder setup = localBuilder.addBoth(1, "A").add(3, "B").addBoth(5, "C");
-
-        // each test uses a fresh map since cache lookup causes additional loads
-        // to verify the results
-
-        // if we just rely on cache,
-        // it'll pick up 5:C as the first ascending value,
-        // but we should be then verifying this by loading B, so in the end we should
-        // find the correct value
-        setup.make().search(2, Direction.ASC).asserts(3,"B");
-        setup.make().search(4, Direction.DESC).asserts(3,"B");
-
-        // variation of the cache based search where we find the outer-most value via cache
-        setup.make().search(0, Direction.ASC).asserts(1,"A");
-        setup.make().search(6, Direction.DESC).asserts(5,"C");
-
-        // variation of the cache search where the cache tells us that we are searching
-        // in the direction that doesn't have any records
-        assertNull(setup.make().search(0, Direction.DESC));
-        assertNull(setup.make().search(6, Direction.ASC));
+        ((Build)b[0].getValue()).asserts(5);
+        ((Build)b[1].getValue()).asserts(3);
+        ((Build)b[2].getValue()).asserts(1);
     }
 
     @Test
@@ -271,8 +223,8 @@ public class AbstractLazyLoadRunMapTest extends Assert {
 
         Build[] b = m.values().toArray(new Build[2]);
         assertEquals(2, b.length);
-        b[0].asserts(5, "C");
-        b[1].asserts(3, "B");
+        b[0].asserts(5);
+        b[1].asserts(3);
     }
 
     @Test
@@ -283,81 +235,59 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         b.hashCode();
     }
 
-    @Bug(15439)
+    @Issue("JENKINS-15439")
     @Test
     public void indexOutOfBounds() throws Exception {
         FakeMapBuilder f = localBuilder;
-        f.add(100,"A")
-            .addUnloadable("B")
-            .addUnloadable("C")
-            .addUnloadable("D")
-            .addUnloadable("E")
-            .addUnloadable("F")
-            .addUnloadable("G")
-            .add(200,"H")
-            .add(201, "I");
+        f.add(100)
+            .addUnloadable(150)
+            .addUnloadable(151)
+            .addUnloadable(152)
+            .addUnloadable(153)
+            .addUnloadable(154)
+            .addUnloadable(155)
+            .add(200)
+            .add(201);
         FakeMap map = f.make();
 
         Build x = map.search(Integer.MAX_VALUE, Direction.DESC);
         assert x.n==201;
     }
 
-    @Bug(15652)
-    @Test public void outOfOrder() throws Exception {
-        FakeMap map = localBuilder
-                .add( 4, "2012-A")
-                .add( 5, "2012-B")
-                .add( 6, "2012-C")
-                .add( 7, "2012-D")
-                .add( 8, "2012-E")
-                .add( 9, "2012-F")
-                .add(10, "2012-G")
-                .add(11, "2012-H")
-                .add(12, "2012-I")
-                .add( 1, "2013-A")
-                .add( 7, "2013-B")
-                .add( 9, "2013-C")
-                .add(10, "2013-D")
-                .add(11, "2013-E")
-                .make();
-        map.entrySet(); // forces Index to be populated
-        assertNull(map.search(3, Direction.DESC));
-    }
-
-    @Bug(18065)
+    @Issue("JENKINS-18065")
     @Test public void all() throws Exception {
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         Set<Map.Entry<Integer,Build>> entries = a.entrySet();
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         assertFalse(entries.isEmpty());
-        assertEquals("5 since it is the latest, and 3 because, well, .search and pivot is weird", "[5, 3]", a.getLoadedBuilds().keySet().toString());
-        assertEquals(5, a.getById("C").n);
-        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
-        assertEquals("A", a.getByNumber(1).id);
-        assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("5 since it is the latest", "[5]", a.getLoadedBuilds().keySet().toString());
+        assertEquals(5, a.getById("5").n);
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
+        assertEquals(1, a.getByNumber(1).n);
+        assertEquals("[5, 1]", a.getLoadedBuilds().keySet().toString());
         a.purgeCache();
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         Iterator<Map.Entry<Integer,Build>> iterator = entries.iterator();
-        assertEquals("iterator starts off checking for newest build, so for this crazy logic see above", "[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
-        assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
+        assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
         Map.Entry<Integer,Build> entry = iterator.next();
         assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertEquals(5, entry.getKey().intValue());
         assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
-        assertEquals("C", entry.getValue().id);
+        assertEquals(5, entry.getValue().n);
         assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
         entry = iterator.next();
         assertEquals(3, entry.getKey().intValue());
         assertEquals(".next() precomputes the one after that too", "[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
-        assertEquals("B", entry.getValue().id);
+        assertEquals(3, entry.getValue().n);
         assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
         entry = iterator.next();
         assertEquals(1, entry.getKey().intValue());
         assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
-        assertEquals("A", entry.getValue().id);
+        assertEquals(1, entry.getValue().n);
         assertEquals("[5, 3, 1]", a.getLoadedBuilds().keySet().toString());
         assertFalse(iterator.hasNext());
     }
@@ -375,7 +305,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertTrue(itr.hasNext());
         Entry<Integer, Build> e = itr.next();
         assertEquals((Integer)5,e.getKey());
-        e.getValue().asserts(5, "C");
+        e.getValue().asserts(5);
 
         // now that the first entry is returned, we expect there to be two loaded
         assertTrue(a.getLoadedBuilds().size() < 3);
@@ -384,7 +314,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertTrue(itr.hasNext());
         e = itr.next();
         assertEquals((Integer)3, e.getKey());
-        e.getValue().asserts(3,"B");
+        e.getValue().asserts(3);
 
         // repeat the process for the third one
         assertTrue(a.getLoadedBuilds().size() <= 3);
@@ -393,7 +323,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
         assertTrue(itr.hasNext());
         e = itr.next();
         assertEquals((Integer) 1, e.getKey());
-        e.getValue().asserts(1,"A");
+        e.getValue().asserts(1);
 
         assertFalse(itr.hasNext());
         assertEquals(3, a.getLoadedBuilds().size());
@@ -417,7 +347,7 @@ public class AbstractLazyLoadRunMapTest extends Assert {
     @Issue("JENKINS-25655")
     @Test public void entrySetChanges() {
         assertEquals(3, a.entrySet().size());
-        a.put(new Build(7, "D"));
+        a.put(new Build(7));
         assertEquals(4, a.entrySet().size());
     }
 

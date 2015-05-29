@@ -23,21 +23,23 @@
  */
 package hudson.util;
 
+import hudson.FilePath;
 import java.io.File;
 import java.io.IOException;
-
-import hudson.FilePath;
-import hudson.Util;
-
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * @author Christoph Thelen
  */
-public class DirScannerTest extends TestCase {
+public class DirScannerTest {
 
-    public void testGlobShouldUseDefaultExcludes() throws Exception {
-        FilePath tmp = new FilePath(Util.createTempDir());
+    @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
+
+    @Test public void globShouldUseDefaultExcludes() throws Exception {
+        FilePath tmp = new FilePath(tmpRule.getRoot());
         try {
             tmp.child(".gitignore").touch(0);
             FilePath git = tmp.child(".git");
@@ -59,8 +61,8 @@ public class DirScannerTest extends TestCase {
         }
     }
     
-    public void testGlobShouldIgnoreDefaultExcludesByRequest() throws Exception {
-        FilePath tmp = new FilePath(Util.createTempDir());
+    @Test public void globShouldIgnoreDefaultExcludesByRequest() throws Exception {
+        FilePath tmp = new FilePath(tmpRule.getRoot());
         try {
             tmp.child(".gitignore").touch(0);
             FilePath git = tmp.child(".git");

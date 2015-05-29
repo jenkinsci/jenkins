@@ -1,9 +1,10 @@
 package jenkins;
 
+import static org.junit.Assert.fail;
+
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import org.apache.commons.io.output.NullOutputStream;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -43,7 +44,7 @@ public class RemotingJarSignatureTest {
             // make sure bits are signed
             IOUtils.copy(myJar.getInputStream(entry), new NullOutputStream());
             if (entry.getCodeSigners()==null) {
-                Assert.fail("No signature for " + name);
+                fail("No signature for " + name);
             }
         }
     }

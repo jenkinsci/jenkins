@@ -36,6 +36,7 @@ import hudson.model.Result;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
 import jenkins.util.VirtualFile;
@@ -44,7 +45,7 @@ import static org.junit.Assume.*;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -54,7 +55,7 @@ public class ArtifactArchiverTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
-    @Bug(3227)
+    @Issue("JENKINS-3227")
     public void testEmptyDirectories() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         Publisher artifactArchiver = new ArtifactArchiver("dir/");
@@ -83,17 +84,18 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    @Bug(10502)
+    @Issue("JENKINS-10502")
     public void testAllowEmptyArchive() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ArtifactArchiver aa = new ArtifactArchiver("f");
+        assertFalse(aa.getAllowEmptyArchive());
         aa.setAllowEmptyArchive(true);
         project.getPublishersList().replaceBy(Collections.singleton(aa));
         assertEquals("(no artifacts)", Result.SUCCESS, build(project));
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
     }
 
-    @Bug(21958)
+    @Issue("JENKINS-21958")
     @Test public void symlinks() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -125,6 +127,34 @@ public class ArtifactArchiverTest {
         assertEquals("lodge", kids[0].getName());
         // do not check that it .exists() since its target has not been archived
     }
+
+    @Issue("SECURITY-162")
+    @Test public void outsideSymlinks() throws Exception {
+        final FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                if (ws == null) {
+                    return false;
+                }
+                ws.child("hack").symlinkTo(p.getConfigFile().getFile().getAbsolutePath(), listener);
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver("hack", "", false, true));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(1, artifacts.size());
+        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        assertEquals("hack", artifact.relativePath);
+        VirtualFile[] kids = b.getArtifactManager().root().list();
+        assertEquals(1, kids.length);
+        assertEquals("hack", kids[0].getName());
+        assertFalse(kids[0].isDirectory());
+        assertFalse(kids[0].isFile());
+        assertFalse(kids[0].exists());
+        j.createWebClient().assertFails(b.getUrl() + "artifact/hack", HttpURLConnection.HTTP_NOT_FOUND);
+    }
     
     private void runNewBuildAndStartUnitlIsCreated(AbstractProject project) throws InterruptedException{
         int buildNumber = project.getNextBuildNumber();
@@ -153,7 +183,7 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    @Bug(22698)
+    @Issue("JENKINS-22698")
     public void testArchivingSkippedWhenOnlyIfSuccessfulChecked() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ArtifactArchiver aa = new ArtifactArchiver("f");
@@ -187,7 +217,7 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    @Bug(20086)
+    @Issue("JENKINS-20086")
     public void testDefaultExcludesOn() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 
@@ -203,7 +233,7 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    @Bug(20086)
+    @Issue("JENKINS-20086")
     public void testDefaultExcludesOff() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
 

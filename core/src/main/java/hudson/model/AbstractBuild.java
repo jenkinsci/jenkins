@@ -38,6 +38,8 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SCMListener;
+import hudson.remoting.ChannelClosedException;
+import hudson.remoting.RequestAbortedException;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -47,6 +49,7 @@ import hudson.scm.SCMRevisionState;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildTrigger;
@@ -410,6 +413,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @deprecated as of 1.467
      *      Please use {@link hudson.model.Run.RunExecution}
      */
+    @Deprecated
     public abstract class AbstractRunner extends AbstractBuildExecution {
 
     }
@@ -532,28 +536,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             Result result = doRun(listener);
 
-            Computer c = node.toComputer();
-            if (c==null || c.isOffline()) {
-                // As can be seen in HUDSON-5073, when a build fails because of the slave connectivity problem,
-                // error message doesn't point users to the slave. So let's do it here.
-                listener.hyperlink("/computer/"+builtOn+"/log","Looks like the node went offline during the build. Check the slave log for the details.");
-
-                if (c != null) {
-                    // grab the end of the log file. This might not work very well if the slave already
-                    // starts reconnecting. Fixing this requires a ring buffer in slave logs.
-                    AnnotatedLargeText<Computer> log = c.getLogText();
-                    StringWriter w = new StringWriter();
-                    log.writeHtmlTo(Math.max(0,c.getLogFile().length()-10240),w);
-
-                    listener.getLogger().print(ExpandableDetailsNote.encodeTo("details",w.toString()));
-                    listener.getLogger().println();
-                }
+            if (node.getChannel() != null) {
+                // kill run-away processes that are left
+                // use multiple environment variables so that people can escape this massacre by overriding an environment
+                // variable for some processes
+                launcher.kill(getCharacteristicEnvVars());
             }
-
-            // kill run-away processes that are left
-            // use multiple environment variables so that people can escape this massacre by overriding an environment
-            // variable for some processes
-            launcher.kill(getCharacteristicEnvVars());
 
             // this is ugly, but for historical reason, if non-null value is returned
             // it should become the final result.
@@ -704,6 +692,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @deprecated as of 1.356
          *      Use {@link #performAllBuildSteps(BuildListener, Map, boolean)}
          */
+       @Deprecated
         protected final void performAllBuildStep(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             performAllBuildSteps(listener,buildSteps.values(),phase);
         }
@@ -716,6 +705,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @deprecated as of 1.356
          *      Use {@link #performAllBuildSteps(BuildListener, Iterable, boolean)}
          */
+        @Deprecated
         protected final void performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             performAllBuildSteps(listener,buildSteps,phase);
         }
@@ -725,6 +715,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *
          * @param phase
          *      true for the post build processing, and false for the final "run after finished" execution.
+         *
+         * @return false if any build step failed
          */
         protected final boolean performAllBuildSteps(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             boolean r = true;
@@ -734,20 +726,33 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         if (!perform(bs,listener)) {
                             LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                             r = false;
+                            if (phase) {
+                                setResult(Result.FAILURE);
+                            }
                         }
                     } catch (Exception e) {
                         reportError(bs, e, listener, phase);
+                        r = false;
                     } catch (LinkageError e) {
                         reportError(bs, e, listener, phase);
+                        r = false;
                     }
             }
             return r;
         }
 
         private void reportError(BuildStep bs, Throwable e, BuildListener listener, boolean phase) {
-            String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
-            e.printStackTrace(listener.error(msg));
-            LOGGER.log(WARNING, msg, e);
+            final String publisher = ((Publisher) bs).getDescriptor().getDisplayName();
+
+            if (e instanceof AbortException) {
+                LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, publisher});
+                listener.error("Publisher '" + publisher + "' failed: " + e.getMessage());
+            } else {
+                String msg = "Publisher '" + publisher + "' aborted due to exception: ";
+                e.printStackTrace(listener.error(msg));
+                LOGGER.log(WARNING, msg, e);
+            }
+
             if (phase) {
                 setResult(Result.FAILURE);
             }
@@ -767,7 +772,22 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             for (BuildStepListener bsl : BuildStepListener.all()) {
                 bsl.started(AbstractBuild.this, bs, listener);
             }
-            boolean canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
+
+            boolean canContinue = false;
+            try {
+
+                canContinue = mon.perform(bs, AbstractBuild.this, launcher, listener);
+            } catch (RequestAbortedException ex) {
+                // Channel is closed, do not continue
+                reportBrokenChannel(listener);
+            } catch (ChannelClosedException ex) {
+                // Channel is closed, do not continue
+                reportBrokenChannel(listener);
+            } catch (RuntimeException ex) {
+
+                ex.printStackTrace(listener.error("Build step failed with exception"));
+            }
+
             for (BuildStepListener bsl : BuildStepListener.all()) {
                 bsl.finished(AbstractBuild.this, bs, listener, canContinue);
             }
@@ -781,6 +801,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 listener.getLogger().format("Build step '%s' marked build as failure%n", buildStepName);
             }
             return canContinue;
+        }
+
+        private void reportBrokenChannel(BuildListener listener) throws IOException {
+            final Node node = getCurrentNode();
+            listener.hyperlink("/" + node.toComputer().getUrl() + "log", "Slave went offline during the build");
+            listener.getLogger().println();
+            final OfflineCause offlineCause = node.toComputer().getOfflineCause();
+            if (offlineCause != null) {
+                listener.error(offlineCause.toString());
+            }
         }
 
         private String getBuildStepName(BuildStep bs) {
@@ -1039,6 +1069,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * @deprecated Use {@link #getAction(Class)} on {@link AbstractTestResultAction}.
      */
+    @Deprecated
     public Action getTestResultAction() {
         try {
             return getAction(Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AbstractTestResultAction").asSubclass(Action.class));
@@ -1050,6 +1081,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * @deprecated Use {@link #getAction(Class)} on {@link AggregatedTestResultAction}.
      */
+    @Deprecated
     public Action getAggregatedTestResultAction() {
         try {
             return getAction(Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AggregatedTestResultAction").asSubclass(Action.class));
@@ -1307,7 +1339,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         public List<AbstractBuild> getBuilds() {
             List<AbstractBuild> r = new ArrayList<AbstractBuild>();
 
-            AbstractBuild<?,?> b = (AbstractBuild)project.getNearestBuild(fromId);
+            AbstractBuild<?,?> b = project.getNearestBuild(fromId);
             if (b!=null && b.getNumber()==fromId)
                 b = b.getNextBuild(); // fromId exclusive
 
@@ -1328,6 +1360,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @deprecated as of 1.489
      *      Use {@link #doStop()}
      */
+    @Deprecated
     public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doStop().generateResponse(req,rsp,this);
     }

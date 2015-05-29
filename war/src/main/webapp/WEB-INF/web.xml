@@ -148,7 +148,7 @@ THE SOFTWARE.
   </listener>
 
   <!--
-    HUDSON-1235 suggests containers interprt '*' as "all roles defined in web.xml"
+    HUDSON-1235 suggests containers interpret '*' as "all roles defined in web.xml"
     as opposed to "all roles defined in the security realm", so we need to list some
     common names in the hope that users will have at least one of those roles.
   -->

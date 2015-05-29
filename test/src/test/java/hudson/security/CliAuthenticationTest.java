@@ -1,5 +1,10 @@
 package hudson.security;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import hudson.cli.CLI;
 import hudson.cli.CLICommand;
 import hudson.cli.ClientAuthenticationCache;
@@ -8,9 +13,10 @@ import hudson.cli.LogoutCommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.NullInputStream;
-import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.For;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.ByteArrayOutputStream;
@@ -19,10 +25,15 @@ import java.util.Arrays;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class CliAuthenticationTest extends HudsonTestCase {
-    public void test1() throws Exception {
+public class CliAuthenticationTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void test() throws Exception {
         // dummy security realm that authenticates when username==password
-        jenkins.setSecurityRealm(createDummySecurityRealm());
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         successfulCommand("test","--username","abc","--password","abc");
     }
@@ -32,7 +43,7 @@ public class CliAuthenticationTest extends HudsonTestCase {
     }
 
     private int command(String... args) throws Exception {
-        CLI cli = new CLI(getURL());
+        CLI cli = new CLI(j.getURL());
         try {
             return cli.execute(args);
         } finally {
@@ -41,7 +52,7 @@ public class CliAuthenticationTest extends HudsonTestCase {
     }
 
     private String commandAndOutput(String... args) throws Exception {
-        CLI cli = new CLI(getURL());
+        CLI cli = new CLI(j.getURL());
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             cli.execute(Arrays.asList(args), new NullInputStream(0), baos, baos);
@@ -61,8 +72,8 @@ public class CliAuthenticationTest extends HudsonTestCase {
         @Override
         protected int run() throws Exception {
             Authentication auth = Jenkins.getAuthentication();
-            Assert.assertNotSame(Jenkins.ANONYMOUS,auth);
-            Assert.assertEquals("abc", auth.getName());
+            assertNotSame(Jenkins.ANONYMOUS,auth);
+            assertEquals("abc", auth.getName());
             return 0;
         }
     }
@@ -77,14 +88,15 @@ public class CliAuthenticationTest extends HudsonTestCase {
         @Override
         protected int run() throws Exception {
             Authentication auth = Jenkins.getAuthentication();
-            Assert.assertSame(Jenkins.ANONYMOUS,auth);
+            assertSame(Jenkins.ANONYMOUS,auth);
             return 0;
         }
     }
 
+    @Test
     @For({LoginCommand.class, LogoutCommand.class, ClientAuthenticationCache.class})
-    public void testLogin() throws Exception {
-        jenkins.setSecurityRealm(createDummySecurityRealm());
+    public void login() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         successfulCommand("login","--username","abc","--password","abc");
         successfulCommand("test"); // now we can run without an explicit credential
@@ -95,10 +107,11 @@ public class CliAuthenticationTest extends HudsonTestCase {
     /**
      * Login failure shouldn't reveal information about the existence of user
      */
-    public void testSecurity110() throws Exception {
+    @Test
+    public void security110() throws Exception {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false,false,null);
-        jenkins.setSecurityRealm(realm);
-        jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
+        j.jenkins.setSecurityRealm(realm);
+        j.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
         realm.createAccount("alice","alice");
 
         String out1 = commandAndOutput("help", "--username", "alice", "--password", "bogus");

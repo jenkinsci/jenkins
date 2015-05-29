@@ -323,7 +323,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
         for (Trigger t : triggers()) {
-            t.start(this, Items.currentlyUpdatingByXml());
+            try {
+                t.start(this, Items.currentlyUpdatingByXml());
+            } catch (Throwable e) {
+                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
+            }
         }
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
@@ -505,6 +509,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      If you are calling this method to serve a file from the workspace, doing a form validation, etc., then
      *      use {@link #getSomeWorkspace()}
      */
+    @Deprecated
     public final FilePath getWorkspace() {
         AbstractBuild b = getBuildForDeprecatedMethods();
         return b != null ? b.getWorkspace() : null;
@@ -586,6 +591,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated as of 1.319
      *      See {@link #getWorkspace()} for a migration strategy.
      */
+    @Deprecated
     public FilePath getModuleRoot() {
         AbstractBuild b = getBuildForDeprecatedMethods();
         return b != null ? b.getModuleRoot() : null;
@@ -601,6 +607,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated as of 1.319
      *      See {@link #getWorkspace()} for a migration strategy.
      */
+    @Deprecated
     public FilePath[] getModuleRoots() {
         AbstractBuild b = getBuildForDeprecatedMethods();
         return b != null ? b.getModuleRoots() : null;
@@ -751,8 +758,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (JobProperty<? super P> p : Util.fixNull(properties))
             ta.addAll(p.getJobActions((P)this));
 
-        for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all())
-            ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
+        for (TransientProjectActionFactory tpaf : TransientProjectActionFactory.all()) {
+            try {
+                ta.addAll(Util.fixNull(tpaf.createFor(this))); // be defensive against null
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Could not load actions from " + tpaf + " for " + this, e);
+            }
+        }
         return ta;
     }
 
@@ -792,6 +804,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
 	 */
+    @Deprecated
     public boolean scheduleBuild() {
     	return getParameterizedJobMixIn().scheduleBuild();
     }
@@ -800,6 +813,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
 	 */
+    @Deprecated
     public boolean scheduleBuild(int quietPeriod) {
     	return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
     }
@@ -1221,6 +1235,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      If you need to lock a workspace while you do some computation, see the source code of
      *      {@link #pollSCMChanges(TaskListener)} for how to obtain a lock of a workspace through {@link WorkspaceList}.
      */
+    @Deprecated
     public Resource getWorkspaceResource() {
         return new Resource(getFullDisplayName()+" workspace");
     }
@@ -1294,6 +1309,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated as of 1.346
      *      Use {@link #poll(TaskListener)} instead.
      */
+    @Deprecated
     public boolean pollSCMChanges( TaskListener listener ) {
         return poll(listener).hasChanges();
     }
@@ -1451,9 +1467,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // OTOH, if a concurrent build is chosen, the user is willing to create a multiple workspace,
         // so better throughput is achieved over time (modulo the initial cost of creating that many workspaces)
         // by having multiple workspaces
-        WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
         Node node = lb.getBuiltOn();
         Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(node,listener));
+        WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
         try {
             listener.getLogger().println("Polling SCM changes on " + node.getSelfLabel().getName());
             LOGGER.fine("Polling SCM changes of " + getName());
@@ -1751,6 +1767,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated as of 1.489
      *      Inject {@link TimeDuration}.
      */
+    @Deprecated
     public int getDelay(StaplerRequest req) throws ServletException {
         String delay = req.getParameter("delay");
         if (delay==null)    return getQuietPeriod();
@@ -1867,6 +1884,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated
      *      As of 1.261. Use {@link #buildDescribable(StaplerRequest, List)} instead.
      */
+    @Deprecated
     protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, ServletException {
         return buildDescribable(req,descriptors);
     }
@@ -2214,6 +2232,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * @deprecated Just use {@link #CANCEL}.
      */
+    @Deprecated
     public static final Permission ABORT = CANCEL;
 
     /**

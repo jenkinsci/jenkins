@@ -1,5 +1,8 @@
 package hudson.tasks;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Proc;
@@ -14,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -54,7 +56,7 @@ public class ShellTest {
                 List<String> cmds = p.cmds();
                 rule.assertStringContains("/bin/sh",cmds.get(0));
                 rule.assertStringContains("-xe",cmds.get(1));
-                Assert.assertTrue(new File(cmds.get(2)).exists());
+                assertTrue(new File(cmds.get(2)).exists());
 
                 // fake the execution
                 PrintStream ps = new PrintStream(p.stdout());
@@ -70,7 +72,7 @@ public class ShellTest {
         
         FreeStyleBuild b = rule.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
 
-        Assert.assertEquals(1,s.numLaunch);
-        Assert.assertTrue(FileUtils.readFileToString(b.getLogFile()).contains("Hudson was here"));
+        assertEquals(1,s.numLaunch);
+        assertTrue(FileUtils.readFileToString(b.getLogFile()).contains("Hudson was here"));
     }
 }

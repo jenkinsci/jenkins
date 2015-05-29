@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc., CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  */
 package hudson.model;
+
+import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -39,9 +41,12 @@ import hudson.tasks.Ant;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Ant.AntInstallation;
 import jenkins.model.Jenkins;
-import org.jvnet.hudson.test.Bug;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Email;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.lang.reflect.Field;
@@ -52,45 +57,51 @@ import java.util.List;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class HudsonTest extends HudsonTestCase {
+public class HudsonTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * Tests the basic UI sanity and HtmlUnit set up.
      */
-    public void testGlobalConfigRoundtrip() throws Exception {
-        jenkins.setQuietPeriod(10);
-        jenkins.setScmCheckoutRetryCount(9);
-        jenkins.setNumExecutors(8);
-        configRoundtrip();
-        assertEquals(10,jenkins.getQuietPeriod());
-        assertEquals(9,jenkins.getScmCheckoutRetryCount());
-        assertEquals(8,jenkins.getNumExecutors());
+    @Test
+    public void globalConfigRoundtrip() throws Exception {
+        j.jenkins.setQuietPeriod(10);
+        j.jenkins.setScmCheckoutRetryCount(9);
+        j.jenkins.setNumExecutors(8);
+        j.configRoundtrip();
+        assertEquals(10, j.jenkins.getQuietPeriod());
+        assertEquals(9, j.jenkins.getScmCheckoutRetryCount());
+        assertEquals(8, j.jenkins.getNumExecutors());
     }
 
     /**
      * Performs a very basic round-trip of a non-empty system configuration screen.
      * This makes sure that the structured form submission is working (to some limited extent.)
      */
+    @Test
     @LocalData
     @Email("http://www.nabble.com/Hudson.configure-calling-deprecated-Descriptor.configure-td19051815.html")
-    public void testSimpleConfigSubmit() throws Exception {
+    public void simpleConfigSubmit() throws Exception {
         // just load the page and resubmit
-        HtmlPage configPage = new WebClient().goTo("configure");
+        HtmlPage configPage = j.createWebClient().goTo("configure");
         HtmlForm form = configPage.getFormByName("config");
-        submit(form);
+        j.submit(form);
 
         // make sure all the pieces are intact
-        assertEquals(2, jenkins.getNumExecutors());
-        assertSame(Mode.NORMAL, jenkins.getMode());
-        assertSame(SecurityRealm.NO_AUTHENTICATION, jenkins.getSecurityRealm());
-        assertSame(AuthorizationStrategy.UNSECURED, jenkins.getAuthorizationStrategy());
-        assertEquals(5, jenkins.getQuietPeriod());
+        assertEquals(2, j.jenkins.getNumExecutors());
+        assertSame(Mode.NORMAL, j.jenkins.getMode());
+        assertSame(SecurityRealm.NO_AUTHENTICATION, j.jenkins.getSecurityRealm());
+        assertSame(AuthorizationStrategy.UNSECURED, j.jenkins.getAuthorizationStrategy());
+        assertEquals(5, j.jenkins.getQuietPeriod());
 
-        List<JDK> jdks = jenkins.getJDKs();
+        List<JDK> jdks = j.jenkins.getJDKs();
         assertEquals(3,jdks.size()); // Hudson adds one more
         assertJDK(jdks.get(0),"jdk1","/tmp");
         assertJDK(jdks.get(1),"jdk2","/tmp");
 
-        AntInstallation[] ants = jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
+        AntInstallation[] ants = j.jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         assertEquals(2,ants.length);
         assertAnt(ants[0],"ant1","/tmp");
         assertAnt(ants[1],"ant2","/tmp");
@@ -112,9 +123,10 @@ public class HudsonTest extends HudsonTestCase {
      * @see SearchTest#testFailure
      *      This test makes sure that a failure will result in an exception
      */
-    public void testSearchIndex() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
-        Page jobPage = search(p.getName());
+    @Test
+    public void searchIndex() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        Page jobPage = j.search(p.getName());
 
         URL url = jobPage.getWebResponse().getUrl();
         System.out.println(url);
@@ -124,8 +136,9 @@ public class HudsonTest extends HudsonTestCase {
     /**
      * Top page should only have one item in the breadcrumb.
      */
-    public void testBreadcrumb() throws Exception {
-        HtmlPage root = new WebClient().goTo("");
+    @Test
+    public void breadcrumb() throws Exception {
+        HtmlPage root = j.createWebClient().goTo("");
         HtmlElement navbar = root.getElementById("breadcrumbs");
         assertEquals(1,navbar.selectNodes("LI/A").size());
     }
@@ -133,18 +146,20 @@ public class HudsonTest extends HudsonTestCase {
     /**
      * Configure link from "/computer/(master)/" should work.
      */
+    @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
-    public void testComputerConfigureLink() throws Exception {
-        HtmlPage page = new WebClient().goTo("computer/(master)/configure");
-        submit(page.getFormByName("config"));
+    public void computerConfigureLink() throws Exception {
+        HtmlPage page = j.createWebClient().goTo("computer/(master)/configure");
+        j.submit(page.getFormByName("config"));
     }
 
     /**
      * Configure link from "/computer/(master)/" should work.
      */
+    @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
-    public void testDeleteHudsonComputer() throws Exception {
-        HudsonTestCase.WebClient wc = new WebClient();
+    public void deleteHudsonComputer() throws Exception {
+        WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("computer/(master)/");
         for (HtmlAnchor a : page.getAnchors())
             assertFalse(a.getHrefAttribute(),a.getHrefAttribute().endsWith("delete"));
@@ -165,8 +180,9 @@ public class HudsonTest extends HudsonTestCase {
     /**
      * Legacy descriptors should be visible in the /descriptor/xyz URL.
      */
+    @Test
     @Email("http://www.nabble.com/1.286-version-and-description-The-requested-resource-%28%29-is-not--available.-td22233801.html")
-    public void testLegacyDescriptorLookup() throws Exception {
+    public void legacyDescriptorLookup() throws Exception {
         Descriptor dummy = new Descriptor(HudsonTest.class) {
             public String getDisplayName() {
                 return "dummy";
@@ -174,24 +190,25 @@ public class HudsonTest extends HudsonTestCase {
         };
 
         BuildStep.PUBLISHERS.addRecorder(dummy);
-        assertSame(dummy, jenkins.getDescriptor(HudsonTest.class.getName()));
+        assertSame(dummy, j.jenkins.getDescriptor(HudsonTest.class.getName()));
 
         BuildStep.PUBLISHERS.remove(dummy);
-        assertNull(jenkins.getDescriptor(HudsonTest.class.getName()));
+        assertNull(j.jenkins.getDescriptor(HudsonTest.class.getName()));
     }
 
     /**
      * Verify null/invalid primaryView setting doesn't result in infinite loop.
      */
-    @Bug(6938)
-    public void testInvalidPrimaryView() throws Exception {
+    @Test
+    @Issue("JENKINS-6938")
+    public void invalidPrimaryView() throws Exception {
         Field pv = Jenkins.class.getDeclaredField("primaryView");
         pv.setAccessible(true);
         String value = null;
-        pv.set(jenkins, value);
-        assertNull("null primaryView", jenkins.getView(value));
+        pv.set(j.jenkins, value);
+        assertNull("null primaryView", j.jenkins.getView(value));
         value = "some bogus name";
-        pv.set(jenkins, value);
-        assertNull("invalid primaryView", jenkins.getView(value));
+        pv.set(j.jenkins, value);
+        assertNull("invalid primaryView", j.jenkins.getView(value));
     }
 }

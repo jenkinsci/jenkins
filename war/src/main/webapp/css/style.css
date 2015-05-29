@@ -74,9 +74,32 @@ body {
   background-color: #f6faf2;
 }
 
+#side-panel {
+  z-index: 1;
+}
+#main-panel {
+  z-index: 0;
+}
+
 #side-panel, #main-panel {
-  margin: 0px 0px 40px 0px;
+  margin: 0px;
   padding: 0px;
+}
+
+.fixedGridLayout #side-panel, .fixedGridLayout #main-panel {
+  position: absolute;
+}
+
+.fixedGridLayout #side-panel {
+  float:left;
+  width: 360px;
+  margin-left: 15px;
+}
+
+.fixedGridLayout #main-panel {
+  padding-left: 370px;
+  margin-right: 15px;
+  width: 100%
 }
 
 #side-panel-content, #main-panel-content {
@@ -100,8 +123,6 @@ body {
 }
 
 #footer-container {
-  position: absolute;
-  bottom: 0;
   width: 100%;
   padding: 10px 0px;
   border-top: 1px solid #d3d7cf;
@@ -406,10 +427,10 @@ pre.console {
 }
 .tabBar [type=radio]:checked ~ a {
   border: solid 1px #f0f0f0;
+  border-bottom: none;
   background: #eee;
   color: #000;
   font-weight: bold;
-  border-bottom: 1px solid #eee;
   z-index: 2;
 }
 .tabBarBaseline {
@@ -576,6 +597,7 @@ table.bigtable.pane > tbody > tr > td:last-child {
   border: none;
   background-color: #f0f0f0;
   padding: 6px 4px;
+  white-space: nowrap;
 }
 
 .bigtable td {
@@ -935,7 +957,6 @@ table.parameters > tbody:hover {
   margin-top: 5px;
   white-space: normal;
   opacity: 0.6;
-  font-style: italic;
 }
 
 #buildHistory .build-row-cell {
@@ -961,6 +982,7 @@ table.parameters > tbody:hover {
 .build-row-cell .pane.build-name {
   width: 25%;
   font-weight: bold;
+  vertical-align: top;
 }
 .build-row-cell .pane.build-details {
   width: 50%;
@@ -1014,6 +1036,10 @@ table.parameters > tbody:hover {
   padding: 2px;
   width: 70%;
   text-align: right;
+}
+.build-row-cell .build-badge span:after {
+    content: " ";
+    font-size: 0%;
 }
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {

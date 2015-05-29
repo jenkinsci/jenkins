@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
  * @author Kohsuke Kawaguchi
  * @deprecated moved to stapler, as of Hudson 1.220
  */
+@Deprecated
 public class LargeText {
     /**
      * Represents the data source of this text.

@@ -10,7 +10,7 @@ import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import org.junit.Rule
 import org.junit.Test
-import org.jvnet.hudson.test.Bug
+import org.jvnet.hudson.test.Issue
 import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.TestExtension
 import org.kohsuke.stapler.QueryParameter
@@ -29,7 +29,7 @@ class Jenkins19124Test {
     @Inject
     DescriptorImpl d;
 
-    @Bug(19124)
+    @Issue("JENKINS-19124")
     @Test
     public void interrelatedFormValidation() {
         j.jenkins.injector.injectMembers(this);

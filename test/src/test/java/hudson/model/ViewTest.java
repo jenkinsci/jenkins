@@ -24,7 +24,7 @@
 package hudson.model;
 
 import jenkins.model.Jenkins;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
@@ -67,7 +67,7 @@ public class ViewTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(7100)
+    @Issue("JENKINS-7100")
     @Test public void xHudsonHeader() throws Exception {
         assertNotNull(j.createWebClient().goTo("").getWebResponse().getResponseHeaderValue("X-Hudson"));
     }
@@ -144,7 +144,7 @@ public class ViewTest {
 
     }
 
-    @Bug(9367)
+    @Issue("JENKINS-9367")
     @Test public void persistence() throws Exception {
         ListView view = listView("foo");
 
@@ -153,7 +153,7 @@ public class ViewTest {
         assertNotNull(v.getProperties());
     }
 
-    @Bug(9367)
+    @Issue("JENKINS-9367")
     @Test public void allImagesCanBeLoaded() throws Exception {
         User.get("user", true);
         WebClient webClient = j.createWebClient();
@@ -161,7 +161,7 @@ public class ViewTest {
         j.assertAllImageLoadSuccessfully(webClient.goTo("asynchPeople"));
     }
 
-    @Bug(16608)
+    @Issue("JENKINS-16608")
     @Test public void notAllowedName() throws Exception {
         HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("..");
@@ -176,7 +176,7 @@ public class ViewTest {
     }
 
     @Ignore("verified manually in Winstone but org.mortbay.JettyResponse.sendRedirect (6.1.26) seems to mangle the location")
-    @Bug(18373)
+    @Issue("JENKINS-18373")
     @Test public void unicodeName() throws Exception {
         HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
         String name = "I ♥ NY";
@@ -188,7 +188,7 @@ public class ViewTest {
         j.submit(j.createWebClient().getPage(view, "configure").getFormByName("viewConfig"));
     }
 
-    @Bug(17302)
+    @Issue("JENKINS-17302")
     @Test public void doConfigDotXml() throws Exception {
         ListView view = listView("v");
         view.description = "one";
@@ -304,7 +304,7 @@ public class ViewTest {
     }
 
     @Test
-    @Bug(21474)
+    @Issue("JENKINS-21474")
     public void testGetComputersNPE() throws Exception {
         ListView view = listView("aView");
         view.filterExecutors = true;

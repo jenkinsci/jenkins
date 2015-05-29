@@ -165,6 +165,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * @deprecated
      *      Use {@link #createProxy(String)}
      */
+    @Deprecated
     public Proxy createProxy() {
         return createProxy(null);
     }

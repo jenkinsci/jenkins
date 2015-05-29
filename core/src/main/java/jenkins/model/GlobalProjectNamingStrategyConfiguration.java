@@ -44,7 +44,7 @@ public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguratio
         final JSONObject optJSONObject = json.optJSONObject("useProjectNamingStrategy");
         if (optJSONObject != null) {
             final JSONObject strategyObject = optJSONObject.getJSONObject("namingStrategy");
-            final String className = strategyObject.getString("stapler-class");
+            final String className = strategyObject.getString("$class");
             try {
                 Class clazz = Class.forName(className, true, Jenkins.getInstance().getPluginManager().uberClassLoader);
                 final ProjectNamingStrategy strategy = (ProjectNamingStrategy) req.bindJSON(clazz, strategyObject);

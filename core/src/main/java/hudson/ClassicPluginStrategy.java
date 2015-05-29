@@ -56,6 +56,8 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +66,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -147,8 +150,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     @Override public PluginWrapper createPluginWrapper(File archive) throws IOException {
         final Manifest manifest;
-        URL baseResourceURL;
 
+        URL baseResourceURL = null;
         File expandDir = null;
         // if .hpi, this is the directory where war is expanded
 
@@ -197,7 +200,21 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (libs != null)
                 paths.addAll(Arrays.asList(libs));
 
-            baseResourceURL = expandDir.toURI().toURL();
+            try {
+                Class pathJDK7 = Class.forName("java.nio.file.Path");
+                Object toPath = File.class.getMethod("toPath").invoke(expandDir);
+                URI uri = (URI) pathJDK7.getMethod("toUri").invoke(toPath);
+
+                baseResourceURL = uri.toURL();
+            } catch (NoSuchMethodException e) {
+                throw new Error(e);
+            } catch (ClassNotFoundException e) {
+                baseResourceURL = expandDir.toURI().toURL();
+            } catch (InvocationTargetException e) {
+                throw new Error(e);
+            } catch (IllegalAccessException e) {
+                throw new Error(e);
+            }
         }
         File disableFile = new File(archive.getPath() + ".disabled");
         if (disableFile.exists()) {
@@ -287,13 +304,19 @@ public class ClassicPluginStrategy implements PluginStrategy {
             // don't fix the dependency for yourself, or else we'll have a cycle
             String yourName = atts.getValue("Short-Name");
             if (shortName.equals(yourName))   return;
+            if (BREAK_CYCLES.contains(yourName + '/' + shortName)) {
+                LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[] {yourName, shortName});
+                return;
+            }
 
             // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
             String jenkinsVersion = atts.getValue("Jenkins-Version");
             if (jenkinsVersion==null)
                 jenkinsVersion = atts.getValue("Hudson-Version");
-            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(splitWhen) <= 0)
-                optionalDependencies.add(new PluginWrapper.Dependency(shortName+':'+requireVersion));
+            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(splitWhen) <= 0) {
+                optionalDependencies.add(new PluginWrapper.Dependency(shortName + ':' + requireVersion));
+                LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}", new Object[] {yourName, shortName, jenkinsVersion});
+            }
         }
     }
 
@@ -313,6 +336,14 @@ public class ClassicPluginStrategy implements PluginStrategy {
         new DetachedPlugin("matrix-project","1.561.*","1.0"),
         new DetachedPlugin("junit","1.577.*","1.0")
     );
+
+    /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
+    private static final Set<String> BREAK_CYCLES = new HashSet<String>(Arrays.asList(
+            "script-security/matrix-auth",
+            "script-security/windows-slaves",
+            "script-security/antisamy-markup-formatter",
+            "script-security/matrix-project"
+    ));
 
     /**
      * Computes the classloader that takes the class masking into account.

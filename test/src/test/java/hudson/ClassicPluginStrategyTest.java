@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Alan Harder
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,8 +24,9 @@
  */
 package hudson;
 
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.LenientRunnable;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.net.URL;
@@ -74,7 +75,7 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
      * Check transitive dependency exclude disabled plugins
      */
     @LocalData
-    @Bug(18654)
+    @Issue("JENKINS-18654")
     public void testDisabledDependencyClassLoader() throws Exception {
         PluginWrapper p = jenkins.getPluginManager().getPlugin("foo4");
 
@@ -86,5 +87,20 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
             else
                 fail("disabled dependency should not be included");
         }
+    }
+
+    /**
+     * Test finding resources under masking.
+     * "foo1" plugin contains attribute of Mask-Classes: org.apache.http.
+     */
+    @LocalData
+    @Issue("JENKINS-27289")
+    public void testMaskResourceClassLoader() throws Exception {
+        PluginWrapper pw = jenkins.getPluginManager().getPlugin("foo1");
+        Class<?> clazz = pw.classLoader.loadClass("org.apache.http.impl.io.SocketInputBuffer");
+        ClassLoader cl = clazz.getClassLoader();
+        URL url = cl.getResource("org/apache/http/impl/io/SocketInputBuffer.class");
+        assertNotNull(url);
+        assertTrue("expected to find the class from foo1 plugin", url.toString().contains("plugins/foo1"));
     }
 }

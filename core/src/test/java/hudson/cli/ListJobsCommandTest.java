@@ -68,7 +68,7 @@ public class ListJobsCommandTest {
 
     /*
     @Test
-    @Bug(18393)
+    @Issue("JENKINS-18393")
     public void failForMatrixProject() throws Exception {
 
         final MatrixProject matrix = mock(MatrixProject.class);

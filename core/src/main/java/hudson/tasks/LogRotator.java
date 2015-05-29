@@ -94,6 +94,7 @@ public class LogRotator extends BuildDiscarder {
      * @deprecated since 1.350.
      *      Use {@link #LogRotator(int, int, int, int)}
      */
+    @Deprecated
     public LogRotator(int daysToKeep, int numToKeep) {
         this(daysToKeep, numToKeep, -1, -1);
     }
@@ -185,6 +186,10 @@ public class LogRotator extends BuildDiscarder {
         }
         if (r == lstb) {
             LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s the last stable build", r);
+            return true;
+        }
+        if (r.isBuilding()) {
+            LOGGER.log(FINER, "{0} is not to be removed or purged of artifacts because it’s still building", r);
             return true;
         }
         return false;

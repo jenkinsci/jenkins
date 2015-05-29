@@ -359,6 +359,7 @@ public class EnvVars extends TreeMap<String,String> {
 
     /**
      * Add a key/value but only if the value is not-null. Otherwise no-op.
+     * @since 1.556
      */
     public void putIfNotNull(String key, String value) {
         if (value!=null)

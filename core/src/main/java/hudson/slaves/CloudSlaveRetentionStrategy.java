@@ -5,6 +5,7 @@ import hudson.model.Node;
 import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +23,7 @@ import java.util.logging.Logger;
 public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionStrategy<T> {
 
     @Override
+    @GuardedBy("hudson.model.Queue.lock")
     public long check(T c) {
         if (!c.isConnecting() && c.isAcceptingTasks()) {
             if (isIdleForTooLong(c)) {

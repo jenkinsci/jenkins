@@ -31,8 +31,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:invokeStatic var="ds" className="jenkins.model.DownloadSettings" method="get"/>
-  <j:if test="${ds.useBrowser}">
+  <j:invokeStatic var="enabled" className="jenkins.model.DownloadSettings" method="usePostBack"/>
+  <j:if test="${enabled}">
   <j:forEach var="site" items="${app.updateCenter.sites}">
     <j:if test="${site.due or forcedUpdateCheck}">
       <script>

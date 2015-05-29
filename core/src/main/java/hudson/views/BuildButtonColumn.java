@@ -31,7 +31,7 @@ public class BuildButtonColumn extends ListViewColumn {
     public BuildButtonColumn() {
     }
 
-    @Extension
+    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_ACTIONS_START-1)
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {

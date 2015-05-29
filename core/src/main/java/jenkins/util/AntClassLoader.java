@@ -582,6 +582,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @deprecated since 1.6.x.
      *             Use Class.forName with initialize=true instead.
      */
+    @Deprecated
     public static void initializeClass(Class theClass) {
         // ***HACK*** We ask the VM to create an instance
         // by voluntarily providing illegal arguments to force
@@ -834,7 +835,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         // designated to use a specific loader first
         // (this one or the parent one)
 
-        // XXX - shouldn't this always return false in isolated mode?
+        // TODO shouldn't this always return false in isolated mode?
 
         boolean useParentFirst = parentFirst;
 

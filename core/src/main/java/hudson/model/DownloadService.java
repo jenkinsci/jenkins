@@ -66,7 +66,7 @@ public class DownloadService extends PageDecorator {
      * Builds up an HTML fragment that starts all the download jobs.
      */
     public String generateFragment() {
-        if (!DownloadSettings.get().isUseBrowser()) {
+        if (!DownloadSettings.usePostBack()) {
             return "";
         }
     	if (neverUpdate) return "";
@@ -162,6 +162,30 @@ public class DownloadService extends PageDecorator {
             int end = jsonp.lastIndexOf('}');
             if (start >= 0 && end > start) {
                 return jsonp.substring(start, end + 1);
+            } else {
+                throw new IOException("Could not find JSON in " + src);
+            }
+        } finally {
+            is.close();
+        }
+    }
+
+    /**
+     * Loads JSON from a JSON-with-{@code postMessage} URL.
+     * @param src a URL to a JSON HTML file (typically including {@code id} and {@code version} query parameters)
+     * @return the embedded JSON text
+     * @throws IOException if either downloading or processing failed
+     */
+    @Restricted(NoExternalUse.class)
+    public static String loadJSONHTML(URL src) throws IOException {
+        InputStream is = ProxyConfiguration.open(src).getInputStream();
+        try {
+            String jsonp = IOUtils.toString(is, "UTF-8");
+            String preamble = "window.parent.postMessage(JSON.stringify(";
+            int start = jsonp.indexOf(preamble);
+            int end = jsonp.lastIndexOf("),'*');");
+            if (start >= 0 && end > start) {
+                return jsonp.substring(start + preamble.length(), end).trim();
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
@@ -283,9 +307,7 @@ public class DownloadService extends PageDecorator {
          * This is where the browser sends us the data. 
          */
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            if (!DownloadSettings.get().isUseBrowser()) {
-                throw new IOException("not allowed");
-            }
+            DownloadSettings.checkPostBackAccess();
             long dataTimestamp = System.currentTimeMillis();
             due = dataTimestamp+getInterval();  // success or fail, don't try too often
 
@@ -317,7 +339,7 @@ public class DownloadService extends PageDecorator {
 
         @Restricted(NoExternalUse.class)
         public FormValidation updateNow() throws IOException {
-            return load(loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), System.currentTimeMillis());
+            return load(loadJSONHTML(new URL(getUrl() + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), System.currentTimeMillis());
         }
 
         /**

@@ -23,15 +23,22 @@
  */
 package hudson.util;
 
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class AlternativeUiTextProviderTest extends HudsonTestCase {
+public class AlternativeUiTextProviderTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     @TestExtension
     public static class Impl extends AlternativeUiTextProvider {
@@ -45,9 +52,9 @@ public class AlternativeUiTextProviderTest extends HudsonTestCase {
     /**
      * Makes sure that {@link AlternativeUiTextProvider} actually works at some basic level.
      */
-    public void testBasics() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("aaa");
-        assertTrue(createWebClient().getPage(p).asText().contains("XYZ:aaa"));
+    @Test
+    public void basics() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("aaa");
+        assertTrue(j.createWebClient().getPage(p).asText().contains("XYZ:aaa"));
     }
 }
-

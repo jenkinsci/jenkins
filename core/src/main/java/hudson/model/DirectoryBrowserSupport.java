@@ -75,6 +75,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * @deprecated as of 1.297
      *      Use {@link #DirectoryBrowserSupport(ModelObject, FilePath, String, String, boolean)}
      */
+    @Deprecated
     public DirectoryBrowserSupport(ModelObject owner, String title) {
         this(owner, (VirtualFile) null, title, null, false);
     }
@@ -147,6 +148,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      *      Instead of calling this method explicitly, just return the {@link DirectoryBrowserSupport} object
      *      from the {@code doXYZ} method and let Stapler generate a response for you.
      */
+    @Deprecated
     public void serveFile(StaplerRequest req, StaplerResponse rsp, FilePath root, String icon, boolean serveDirIndex) throws IOException, ServletException, InterruptedException {
         serveFile(req, rsp, root.toVirtualFile(), icon, serveDirIndex);
     }

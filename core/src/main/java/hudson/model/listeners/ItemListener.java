@@ -148,6 +148,7 @@ public class ItemListener implements ExtensionPoint {
      * @deprecated as of 1.286
      *      put {@link Extension} on your class to have it auto-registered.
      */
+    @Deprecated
     public void register() {
         all().add(this);
     }

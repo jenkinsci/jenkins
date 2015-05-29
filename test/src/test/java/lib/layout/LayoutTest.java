@@ -28,7 +28,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlLink;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.PresetData;
 
@@ -36,7 +36,7 @@ public class LayoutTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Bug(21254)
+    @Issue("JENKINS-21254")
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Test public void rejectedLinks() throws Exception {
         JenkinsRule.WebClient wc = r.createWebClient();

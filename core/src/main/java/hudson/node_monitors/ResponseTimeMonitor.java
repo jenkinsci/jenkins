@@ -142,7 +142,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
      * Immutable representation of the monitoring data.
      */
     @ExportedBean
-    public static final class Data extends OfflineCause implements Serializable {
+    public static final class Data extends MonitorOfflineCause implements Serializable {
         /**
          * Record of the past 5 times. -1 if time out. Otherwise in milliseconds.
          * Old ones first.
@@ -202,6 +202,11 @@ public class ResponseTimeMonitor extends NodeMonitor {
             if(fc>0)
                 return Util.wrapToErrorSpan(Messages.ResponseTimeMonitor_TimeOut(fc));
             return getAverage()+"ms";
+        }
+
+        @Override
+        public Class<? extends NodeMonitor> getTrigger() {
+            return ResponseTimeMonitor.class;
         }
 
         private static final long serialVersionUID = 1L;

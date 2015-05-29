@@ -337,6 +337,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if(si.email==null || !si.email.contains("@"))
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
 
+        if (! User.isIdOrFullnameAllowed(si.username)) {
+            si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
+        }
+
+        if (! User.isIdOrFullnameAllowed(si.fullname)) {
+            si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
+        }
+
         if(si.errorMessage!=null) {
             // failed. ask the user to try again.
             req.setAttribute("data",si);
@@ -459,6 +467,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * Field kept here to load old (pre 1.283) user records,
          * but now marked transient so field is no longer saved.
          */
+        @Deprecated
         private transient String password;
 
         private Details(String passwordHash) {
@@ -697,7 +706,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             HttpServletRequest req = (HttpServletRequest) request;
 
-            if(req.getRequestURI().equals(req.getContextPath()+"/")) {
+            /* allow signup from the Jenkins home page, or /manage, which is where a /configureSecurity form redirects to */
+            if(req.getRequestURI().equals(req.getContextPath()+"/") || req.getRequestURI().equals(req.getContextPath() + "/manage")) {
                 if (needsToCreateFirstUser()) {
                     ((HttpServletResponse)response).sendRedirect("securityRealm/firstUser");
                 } else {// the first user already created. the role of this filter is over.

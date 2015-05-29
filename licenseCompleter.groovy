@@ -72,12 +72,6 @@ complete {
         rewriteLicense([],jenkinsLicense)
     }
 
-    match(["org.jvnet.localizer:localizer"]) {
-        // see http://java.net/projects/localizer
-        // see http://java.net/projects/trilead-putty-extension/
-        rewriteLicense([],mitLicense);
-    }
-
     match("org.codehaus.plexus:plexus-interactivity-api") {
         rewriteLicense([],mitLicense)
     }

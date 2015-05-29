@@ -23,6 +23,9 @@
  */
 package lib.layout;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.Lists;
@@ -30,7 +33,6 @@ import hudson.model.BallColor;
 import hudson.model.StatusIcon;
 import hudson.model.StockStatusIcon;
 import jenkins.util.NonLocalizable;
-import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import javax.xml.transform.Transformer;
@@ -123,10 +125,10 @@ public class IconTest extends HudsonTestCase  {
     }
 
     private void assertIconToImageOkay(HtmlElement icon, String imgPath, String classSpec) {
-        Assert.assertEquals("img", icon.getTagName());
-        Assert.assertTrue(icon.getAttribute("src").endsWith(imgPath));
+        assertEquals("img", icon.getTagName());
+        assertTrue(icon.getAttribute("src").endsWith(imgPath));
         if (classSpec != null) {
-            Assert.assertEquals(classSpec, icon.getAttribute("class"));
+            assertEquals(classSpec, icon.getAttribute("class"));
         }
     }
 

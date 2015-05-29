@@ -82,7 +82,7 @@ public class ListJobsCommand extends CLICommand {
 
         // Print all jobs.
         for (TopLevelItem item : jobs) {
-            stdout.println(item.getDisplayName());
+            stdout.println(item.getName());
         }
 
         return 0;

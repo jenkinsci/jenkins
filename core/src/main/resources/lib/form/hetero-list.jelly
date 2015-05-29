@@ -91,14 +91,13 @@ THE SOFTWARE.
 
         <d:invokeBody/>
 
+        <f:class-entry descriptor="${descriptor}" />
         <f:block>
           <div align="right">
-            <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
           </div>
         </f:block>
       </table>
-      <input type="hidden" name="kind" value="${descriptor.id}" />
     </d:tag>
   </d:taglib>
 

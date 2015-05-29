@@ -38,7 +38,7 @@ import java.util.logging.LogRecord;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -64,7 +64,7 @@ public class LogRecorderManagerTest {
         assertEquals(logger.getLevel(), Level.FINEST);
     }
 
-    @Bug(18274)
+    @Issue("JENKINS-18274")
     @Test public void loggingOnSlaves() throws Exception {
         // TODO could also go through WebClient to assert that the config UI works
         LogRecorderManager mgr = j.jenkins.getLog();

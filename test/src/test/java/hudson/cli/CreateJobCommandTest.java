@@ -41,7 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
@@ -49,7 +49,7 @@ public class CreateJobCommandTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Bug(22262)
+    @Issue("JENKINS-22262")
     @Test public void folderPermissions() throws Exception {
         CLICommand cmd = new CreateJobCommand();
         CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);

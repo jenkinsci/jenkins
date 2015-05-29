@@ -1,23 +1,28 @@
 package hudson.widgets
 
-import org.jvnet.hudson.test.HudsonTestCase
-import org.jvnet.hudson.test.Bug
+import org.junit.Rule
+import org.junit.Test
+import org.jvnet.hudson.test.Issue
+import org.jvnet.hudson.test.JenkinsRule
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
-class HistoryWidgetTest extends HudsonTestCase {
-    @Bug(15499)
-    void testMoreLink() {
-        def p = createFreeStyleProject();
+class HistoryWidgetTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule()
+
+    @Test
+    @Issue("JENKINS-15499")
+    void moreLink() {
+        def p = j.createFreeStyleProject()
         for (x in 1..3) {
-            assertBuildStatusSuccess(p.scheduleBuild2(0))
+            j.assertBuildStatusSuccess(p.scheduleBuild2(0))
         }
 
-        def wc = createWebClient()
+        def wc = j.createWebClient()
         wc.javaScriptEnabled = false
-        wc.goTo("job/${p.name}/buildHistory/all");
+        wc.goTo("job/${p.name}/buildHistory/all")
     }
 }

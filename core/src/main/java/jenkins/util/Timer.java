@@ -1,12 +1,9 @@
 package jenkins.util;
 
-
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
 import javax.annotation.Nonnull;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
 
 /**
  * Holds the {@link ScheduledExecutorService} for running all background tasks in Jenkins.
@@ -42,7 +39,7 @@ public class Timer {
         if (executorService == null) {
             // corePoolSize is set to 10, but will only be created if needed.
             // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
-            executorService = Executors.newScheduledThreadPool(10, new NamingThreadFactory(new DaemonThreadFactory(), "jenkins.util.Timer"));
+            executorService =  new ErrorLoggingScheduledThreadPoolExecutor(10, new NamingThreadFactory(new DaemonThreadFactory(), "jenkins.util.Timer"));
         }
         return executorService;
     }

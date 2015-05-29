@@ -51,7 +51,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <p>
  * The actual meaning and the purpose of parameters are entirely up to users, so
- * what the concrete parameter implmentation is pluggable. Write subclasses
+ * what the concrete parameter implementation is pluggable. Write subclasses
  * in a plugin and put {@link Extension} on the descriptor to register them.
  *
  * <p>
@@ -82,8 +82,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <h2>Assocaited Views</h2>
  * <h4>config.jelly</h4>
  * <p>
- * {@link ParameterDefinition} class uses <tt>config.jelly</tt> to provide contribute a form
- * fragment in the job configuration screen. Values entered there is fed back to
+ * {@link ParameterDefinition} class uses <tt>config.jelly</tt> to contribute a form
+ * fragment in the job configuration screen. Values entered there are fed back to
  * {@link ParameterDescriptor#newInstance(StaplerRequest, JSONObject)} to create {@link ParameterDefinition}s.
  *
  * <h4>index.jelly</h4>
@@ -232,6 +232,7 @@ public abstract class ParameterDefinition implements
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<ParameterDefinition> LIST = new DescriptorList<ParameterDefinition>(ParameterDefinition.class);
 
     public abstract static class ParameterDescriptor extends

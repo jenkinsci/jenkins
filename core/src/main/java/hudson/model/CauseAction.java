@@ -113,6 +113,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
      * @deprecated as of 1.288
      *      but left here for backward compatibility.
      */
+    @Deprecated
     public String getShortDescription() {
         if(causes.isEmpty())    return "N/A";
         return causes.get(0).getShortDescription();

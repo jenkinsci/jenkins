@@ -116,7 +116,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     /**
-     * @since TODO
+     * @since 1.580
      */
     public String getDescription() {
         return description;

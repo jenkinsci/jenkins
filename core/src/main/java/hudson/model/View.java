@@ -58,6 +58,8 @@ import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.util.ProgressiveRendering;
+import jenkins.util.xml.XMLUtils;
+
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -75,9 +77,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedInputStream;
@@ -106,6 +106,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.model.Jenkins.*;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.xml.sax.SAXException;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -654,6 +655,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Does this {@link View} has any associated user information recorded?
      * @deprecated Potentially very expensive call; do not use from Jelly views.
      */
+    @Deprecated
     public boolean hasPeople() {
         return People.isApplicable(getItems());
     }
@@ -737,6 +739,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         /**
          * @deprecated Potentially very expensive call; do not use from Jelly views.
          */
+        @Deprecated
         public static boolean isApplicable(Collection<? extends Item> items) {
             for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
@@ -1063,7 +1066,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * Updates Job by its XML definition.
+     * Updates the View with the new XML definition.
+     * @param source source of the Item's new definition.
+     *               The source should be either a <code>StreamSource</code> or <code>SAXSource</code>, other sources
+     *               may not be handled.
      */
     public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
@@ -1072,12 +1078,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // this allows us to use UTF-8 for storing data,
             // plus it checks any well-formedness issue in the submitted
             // data
-            Transformer t = TransformerFactory.newInstance()
-                    .newTransformer();
-            t.transform(source,
-                    new StreamResult(out));
+            XMLUtils.safeTransform(source, new StreamResult(out));
             out.close();
         } catch (TransformerException e) {
+            throw new IOException("Failed to persist configuration.xml", e);
+        } catch (SAXException e) {
             throw new IOException("Failed to persist configuration.xml", e);
         }
 
@@ -1113,6 +1118,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<View> LIST = new DescriptorList<View>(View.class);
 
     /**

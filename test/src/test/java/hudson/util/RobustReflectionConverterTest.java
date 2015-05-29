@@ -32,7 +32,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -40,7 +40,7 @@ public class RobustReflectionConverterTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Bug(21024)
+    @Issue("JENKINS-21024")
     @LocalData
     @Test public void randomExceptionsReported() throws Exception {
         FreeStyleProject p = r.jenkins.getItemByFullName("j", FreeStyleProject.class);

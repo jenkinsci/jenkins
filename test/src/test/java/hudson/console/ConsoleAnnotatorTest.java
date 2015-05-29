@@ -29,7 +29,7 @@ import java.util.concurrent.Future;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SingleFileSCM;
@@ -46,7 +46,7 @@ public class ConsoleAnnotatorTest {
     /**
      * Let the build complete, and see if stateless {@link ConsoleAnnotator} annotations happen as expected.
      */
-    @Bug(6031)
+    @Issue("JENKINS-6031")
     @Test public void completedStatelessLogAnnotation() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -97,7 +97,7 @@ public class ConsoleAnnotatorTest {
         }
     }
 
-    @Bug(6034)
+    @Issue("JENKINS-6034")
     @Test public void consoleAnnotationFilterOut() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
@@ -315,7 +315,7 @@ public class ConsoleAnnotatorTest {
     /**
      * Makes sure '<', '&', are escaped.
      */
-    @Bug(5952)
+    @Issue("JENKINS-5952")
     @Test public void escape() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {

@@ -66,7 +66,7 @@ public final class BuildReference<R> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BuildReference that = (BuildReference) o;
+        BuildReference<?> that = (BuildReference) o;
         return id.equals(that.id);
 
     }
@@ -74,6 +74,11 @@ public final class BuildReference<R> {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    @Override public String toString() {
+        R r = get();
+        return r != null ? r.toString() : id;
     }
 
     /**

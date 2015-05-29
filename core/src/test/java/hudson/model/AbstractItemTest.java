@@ -3,9 +3,11 @@
  */
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.util.Collection;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -42,7 +44,7 @@ public class AbstractItemTest {
         final String displayName = "testDisplayName";
         StubAbstractItem i = new StubAbstractItem();
         i.setDisplayName(displayName);
-        Assert.assertEquals(displayName, i.getDisplayName());
+        assertEquals(displayName, i.getDisplayName());
     }
     
     @Test
@@ -51,7 +53,7 @@ public class AbstractItemTest {
         StubAbstractItem i = new StubAbstractItem();
         i.doSetName(name);
         // assert that if the displayname is not set, the name is actually returned
-        Assert.assertEquals(name,  i.getDisplayName());
+        assertEquals(name,  i.getDisplayName());
         
     }
     
@@ -61,7 +63,7 @@ public class AbstractItemTest {
         StubAbstractItem i = new StubAbstractItem();
         i.doSetName(name);
         
-        Assert.assertEquals(i.getName(),  i.getSearchName());        
+        assertEquals(i.getName(),  i.getSearchName());
     }
     
     @Test
@@ -70,11 +72,11 @@ public class AbstractItemTest {
         final String displayName = "displayName";
         StubAbstractItem i = new StubAbstractItem();
         i.doSetName(projectName);
-        Assert.assertEquals(projectName, i.getName());
-        Assert.assertNull(i.getDisplayNameOrNull());
+        assertEquals(projectName, i.getName());
+        assertNull(i.getDisplayNameOrNull());
         
         i.setDisplayName(displayName);
-        Assert.assertEquals(displayName, i.getDisplayNameOrNull());
+        assertEquals(displayName, i.getDisplayNameOrNull());
     }
 
     @Test
@@ -83,10 +85,10 @@ public class AbstractItemTest {
         final String displayName = "displayName";
         StubAbstractItem i = new StubAbstractItem();
         i.doSetName(projectName);
-        Assert.assertNull(i.getDisplayNameOrNull());
+        assertNull(i.getDisplayNameOrNull());
 
         i.setDisplayNameOrNull(displayName);
-        Assert.assertEquals(displayName, i.getDisplayNameOrNull());
-        Assert.assertEquals(displayName, i.getDisplayName());
+        assertEquals(displayName, i.getDisplayNameOrNull());
+        assertEquals(displayName, i.getDisplayName());
     }
 }

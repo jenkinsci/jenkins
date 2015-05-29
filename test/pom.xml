@@ -22,22 +22,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.595-SNAPSHOT</version>
+    <artifactId>pom</artifactId>
+    <version>1.616-SNAPSHOT</version>
   </parent>
-  <groupId>org.jenkins-ci.main</groupId>
+
   <artifactId>jenkins-test-harness</artifactId>
 
   <name>Test harness for Jenkins and plugins</name>
-  <description>
-    Unit test harness (src/main) and Unit tests for Jenkins core (src/test)
-  </description>
+  <description>Unit test harness (src/main) and Unit tests for Jenkins core (src/test)</description>
 
   <properties>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
@@ -96,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>1.0-beta-1</version>
+      <version>${matrix-project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -146,7 +143,6 @@ THE SOFTWARE.
       <artifactId>xalan</artifactId>
       <version>2.7.1</version>
     </dependency>
-
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>embedded-rhino-debugger</artifactId>
@@ -246,7 +242,6 @@ THE SOFTWARE.
             <artifactId>ant-launcher</artifactId>
             <version>1.8.0</version>
           </dependency>
-
           <dependency>
             <groupId>org.codehaus.gmaven.runtime</groupId>
             <artifactId>gmaven-runtime-2.0</artifactId>
@@ -279,9 +274,7 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <!--
-        Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
-      -->
+      <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
       <id>cobertura</id>
       <build>
         <plugins>

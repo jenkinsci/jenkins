@@ -40,7 +40,7 @@ THE SOFTWARE.
               <l:icon class="icon-grey icon-sm"/>
             </div>
             <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
-            <div class="display-name">
+            <div class="display-name" title="${%Expected build number}">
             #${queuedItems.size()==1 ? it.owner.nextBuildNumber
                : it.owner.nextBuildNumber+queuedItems.size()-i-1}
             </div>
@@ -55,7 +55,11 @@ THE SOFTWARE.
                 (${%pending})
               </j:otherwise>
             </j:choose>
-            ${item.params}
+          <j:if test="${!item.params.isEmpty()}">
+            <div style="float:right;margin-right:10px;">
+              <a href="#" tooltip="Build Parameters:${h.escape(item.params)}"><l:icon class="icon-notepad icon-sm" /></a>
+            </div>
+          </j:if>
           </div>
           <div class="pane build-controls">
             <div class="build-stop">

@@ -367,6 +367,7 @@ public final class FilePath implements Serializable {
      *
      * @deprecated as of 1.315. Use {@link #zip(OutputStream)} that has more consistent name.
      */
+    @Deprecated
     public void createZipArchive(OutputStream os) throws IOException, InterruptedException {
         zip(os);
     }
@@ -411,6 +412,7 @@ public final class FilePath implements Serializable {
      * @deprecated as of 1.315
      *      Use {@link #zip(OutputStream,String)} that has more consistent name.
      */
+    @Deprecated
     public void createZipArchive(OutputStream os, final String glob) throws IOException, InterruptedException {
         archive(ArchiverFactory.ZIP,os,glob);
     }
@@ -734,32 +736,34 @@ public final class FilePath implements Serializable {
      * that supports upgrade and downgrade. Specifically,
      *
      * <ul>
-     * <li>If the target directory doesn't exist {@linkplain #mkdirs() it'll be created}.
-     * <li>The timestamp of the .tgz file is left in the installation directory upon extraction.
-     * <li>If the timestamp left in the directory doesn't match with the timestamp of the current archive file,
+     * <li>If the target directory doesn't exist {@linkplain #mkdirs() it will be created}.
+     * <li>The timestamp of the archive is left in the installation directory upon extraction.
+     * <li>If the timestamp left in the directory does not match the timestamp of the current archive file,
      *     the directory contents will be discarded and the archive file will be re-extracted.
      * <li>If the connection is refused but the target directory already exists, it is left alone.
      * </ul>
      *
      * @param archive
-     *      The resource that represents the tgz/zip file. This URL must support the "Last-Modified" header.
-     *      (Most common usage is to get this from {@link ClassLoader#getResource(String)})
+     *      The resource that represents the tgz/zip file. This URL must support the {@code Last-Modified} header.
+     *      (For example, you could use {@link ClassLoader#getResource}.)
      * @param listener
      *      If non-null, a message will be printed to this listener once this method decides to
-     *      extract an archive.
+     *      extract an archive, or if there is any issue.
+     * @param message a message to be printed in case extraction will proceed.
      * @return
      *      true if the archive was extracted. false if the extraction was skipped because the target directory
      *      was considered up to date.
      * @since 1.299
      */
-    public boolean installIfNecessaryFrom(URL archive, TaskListener listener, String message) throws IOException, InterruptedException {
+    public boolean installIfNecessaryFrom(@Nonnull URL archive, @CheckForNull TaskListener listener, @Nonnull String message) throws IOException, InterruptedException {
         try {
             FilePath timestamp = this.child(".timestamp");
+            long lastModified = timestamp.lastModified();
             URLConnection con;
             try {
                 con = ProxyConfiguration.open(archive);
-                if (timestamp.exists()) {
-                    con.setIfModifiedSince(timestamp.lastModified());
+                if (lastModified != 0) {
+                    con.setIfModifiedSince(lastModified);
                 }
                 con.connect();
             } catch (IOException x) {
@@ -774,15 +778,21 @@ public final class FilePath implements Serializable {
                 }
             }
 
-            if (con instanceof HttpURLConnection
-                    && ((HttpURLConnection)con).getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
-                return false;
+            if (lastModified != 0 && con instanceof HttpURLConnection) {
+                HttpURLConnection httpCon = (HttpURLConnection) con;
+                int responseCode = httpCon.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                    return false;
+                } else if (responseCode != HttpURLConnection.HTTP_OK) {
+                    listener.getLogger().println("Skipping installation of " + archive + " to " + remote + " due to server error: " + responseCode + " " + httpCon.getResponseMessage());
+                    return false;
+                }
             }
 
             long sourceTimestamp = con.getLastModified();
 
             if(this.exists()) {
-                if(timestamp.exists() && sourceTimestamp ==timestamp.lastModified())
+                if (lastModified != 0 && sourceTimestamp == lastModified)
                     return false;   // already up to date
                 this.deleteContents();
             } else {
@@ -1573,6 +1583,7 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
+                // TODO first check for Java 7+ and use PosixFileAttributeView
                 _chmod(writing(f), mask);
 
                 return null;
@@ -1584,7 +1595,9 @@ public final class FilePath implements Serializable {
      * Run chmod via jnr-posix
      */
     private static void _chmod(File f, int mask) throws IOException {
-        if (Functions.isWindows())  return; // noop
+        // TODO WindowsPosix actually does something here (WindowsLibC._wchmod); should we let it?
+        // Anyway the existing calls already skip this method if on Windows.
+        if (File.pathSeparatorChar==';')  return; // noop
 
         PosixAPI.jnr().chmod(f.getAbsolutePath(),mask);
     }
@@ -2326,6 +2339,7 @@ public final class FilePath implements Serializable {
      * @see #validateFileMask(FilePath, String)
      * @deprecated use {@link #validateAntFileMask(String, int)} instead
      */
+    @Deprecated
     public String validateAntFileMask(final String fileMasks) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, Integer.MAX_VALUE);
     }

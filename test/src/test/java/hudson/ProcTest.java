@@ -1,5 +1,8 @@
 package hudson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Proc.RemoteProc;
@@ -9,8 +12,10 @@ import hudson.slaves.DumbSlave;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
 import jenkins.security.MasterToSlaveCallable;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,12 +26,17 @@ import java.nio.charset.Charset;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ProcTest extends HudsonTestCase {
+@Issue("JENKINS-7809")
+public class ProcTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * Makes sure that the output flushing and {@link RemoteProc#join()} is synced.
      */
-    @Bug(7809)
-    public void testRemoteProcOutputSync() throws Exception {
+    @Test
+    public void remoteProcOutputSync() throws Exception {
         VirtualChannel ch = createSlaveChannel();
 
         // keep the pipe fairly busy
@@ -59,7 +69,7 @@ public class ProcTest extends HudsonTestCase {
     }
 
     private VirtualChannel createSlaveChannel() throws Exception {
-        DumbSlave s = createSlave();
+        DumbSlave s = j.createSlave();
         s.toComputer().connect(false).get();
         VirtualChannel ch=null;
         while (ch==null) {
@@ -84,13 +94,13 @@ public class ProcTest extends HudsonTestCase {
         }
     }
 
-    @Bug(7809)
-    public void testIoPumpingWithLocalLaunch() throws Exception {
+    @Test
+    public void ioPumpingWithLocalLaunch() throws Exception {
         doIoPumpingTest(new LocalLauncher(new StreamTaskListener(System.out, Charset.defaultCharset())));
     }
 
-    @Bug(7809)
-    public void testIoPumpingWithRemoteLaunch() throws Exception {
+    @Test
+    public void ioPumpingWithRemoteLaunch() throws Exception {
         doIoPumpingTest(new RemoteLauncher(
                 new StreamTaskListener(System.out, Charset.defaultCharset()),
                 createSlaveChannel(), true));

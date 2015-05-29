@@ -27,7 +27,6 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.RunMap;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -44,8 +43,6 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
-import static jenkins.model.lazy.Boundary.*;
-import org.apache.commons.collections.keyvalue.DefaultMapEntry;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -60,24 +57,14 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * requested, this class {@link #retrieve(File) retrieves them} on demand, one by one.
  *
  * <p>
- * The lookup is primarily done by using the build number as the key (hence the key type is {@link Integer}),
- * but this class also provides look up based on {@linkplain #getIdOf(Object) the build ID}.
+ * The lookup is done by using the build number as the key (hence the key type is {@link Integer}).
  *
  * <p>
  * This class makes the following assumption about the on-disk layout of the data:
  *
  * <ul>
- *     <li>Every build is stored in a directory, named after its ID.
- *     <li>ID and build number are in the consistent order. That is,
- *         if there are two builds #M and #N, {@code M>N <=> M.id > N.id}.
+ *     <li>Every build is stored in a directory, named after its number.
  * </ul>
- *
- * <p>
- * On certain platforms, there are symbolic links named after build numbers that link to the build ID.
- * If these are available, they are used as a hint to speed up the lookup. Otherwise
- * we rely on the assumption above and perform a binary search to locate the build.
- * (notice that we'll have to do linear search if we don't have the consistent ordering assumption,
- * which robs the whole point of doing lazy loading.)
  *
  * <p>
  * Some of the {@link SortedMap} operations are weakly implemented. For example,
@@ -93,7 +80,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * <p>
  * Object lock of {@code this} is used to make sure mutation occurs sequentially.
  * That is, ensure that only one thread is actually calling {@link #retrieve(File)} and
- * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byNumber} and {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byId}.
+ * updating {@link jenkins.model.lazy.AbstractLazyLoadRunMap.Index#byNumber}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.485
@@ -112,8 +99,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     private LazyLoadRunMapEntrySet<R> entrySet = new LazyLoadRunMapEntrySet<R>(this);
 
     /**
-     * Pair of two maps into a single class, so that the changes can be made visible atomically,
-     * and updates can happen concurrently to read.
+     * Historical holder for map.
+     * 
+     * TODO all this mess including {@link #numberOnDisk} could probably be simplified to a single {@code TreeMap<Integer,BuildReference<R>>}
+     * where a null value means not yet loaded and a broken entry just uses {@code NoHolder}.
      *
      * The idiom is that you put yourself in a synchronized block, {@linkplain #copy() make a copy of this},
      * update the copy, then set it to {@link #index}.
@@ -121,63 +110,24 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     private class Index {
         /**
          * Stores the mapping from build number to build, for builds that are already loaded.
-         */
-        private final TreeMap<Integer,BuildReference<R>> byNumber;
-
-        /**
-         * Stores the build ID to build number for builds that we already know.
          *
          * If we have known load failure of the given ID, we record that in the map
          * by using the null value (not to be confused with a non-null {@link BuildReference}
          * with null referent, which just means the record was GCed.)
          */
-        private final TreeMap<String,BuildReference<R>> byId;
+        private final TreeMap<Integer,BuildReference<R>> byNumber;
 
         private Index() {
-            byId = new TreeMap<String,BuildReference<R>>();
-            byNumber = new TreeMap<Integer,BuildReference<R>>(COMPARATOR);
+            byNumber = new TreeMap<Integer,BuildReference<R>>(Collections.reverseOrder());
         }
 
         private Index(Index rhs) {
-            byId     = new TreeMap<String, BuildReference<R>>(rhs.byId);
             byNumber = new TreeMap<Integer,BuildReference<R>>(rhs.byNumber);
-        }
-
-        /**
-         * Returns the build record #M (<=n)
-         */
-        private Map.Entry<Integer,BuildReference<R>> ceilingEntry(int n) {
-// switch to this once we depend on JDK6
-//            return byNumber.ceilingEntry(n);
-
-            Set<Entry<Integer, BuildReference<R>>> s = byNumber.tailMap(n).entrySet();
-            if (s.isEmpty())    return null;
-            else                return s.iterator().next();
-        }
-
-        /**
-         * Returns the build record #M (>=n)
-         */
-        // >= and not <= because byNumber is in the descending order
-        private Map.Entry<Integer,BuildReference<R>> floorEntry(int n) {
-// switch to this once we depend on JDK6
-//            return byNumber.floorEntry(n);
-
-            SortedMap<Integer, BuildReference<R>> sub = byNumber.headMap(n);
-            if (sub.isEmpty())    return null;
-            Integer k = sub.lastKey();
-            return new DefaultMapEntry(k,sub.get(k));
         }
     }
 
     /**
-     * Build IDs found as directories, in the ascending order.
-     */
-    // copy on write
-    private volatile SortedList<String> idOnDisk = new SortedList<String>(Collections.<String>emptyList());
-
-    /**
-     * Build number shortcuts found on disk, in the ascending order.
+     * Build numbers found on disk, in the ascending order.
      */
     // copy on write
     private volatile SortedIntList numberOnDisk = new SortedIntList(0);
@@ -188,8 +138,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * because the compatibility requires that we make it settable
      * in the first call after the constructor.
      */
-    private File dir;
+    protected File dir;
 
+    @Restricted(NoExternalUse.class) // subclassing other than by RunMap does not guarantee compatibility
     protected AbstractLazyLoadRunMap(File dir) {
         initBaseDir(dir);
     }
@@ -199,7 +150,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         assert this.dir==null;
         this.dir = dir;
         if (dir!=null)
-            loadIdOnDisk();
+            loadNumberOnDisk();
     }
 
     /**
@@ -230,46 +181,34 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public synchronized void purgeCache() {
         index = new Index();
         fullyLoaded = false;
-        loadIdOnDisk();
+        loadNumberOnDisk();
     }
 
-    private void loadIdOnDisk() {
+    private void loadNumberOnDisk() {
         String[] kids = dir.list();
         if (kids == null) {
             // the job may have just been created
             kids = EMPTY_STRING_ARRAY;
         }
-        List<String> buildDirs = new ArrayList<String>();
-        FilenameFilter buildDirFilter = createDirectoryFilter();
         SortedIntList list = new SortedIntList(kids.length / 2);
         for (String s : kids) {
-            if (buildDirFilter.accept(dir, s)) {
-                buildDirs.add(s);
-            } else {
-                try {
-                    list.add(Integer.parseInt(s));
-                } catch (NumberFormatException e) {
-                    // this isn't a shortcut
-                }
+            try {
+                list.add(Integer.parseInt(s));
+            } catch (NumberFormatException e) {
+                // this isn't a build dir
             }
         }
-        Collections.sort(buildDirs);
-        idOnDisk = new SortedList<String>(buildDirs);
         list.sort();
         numberOnDisk = list;
     }
 
     public Comparator<? super Integer> comparator() {
-        return COMPARATOR;
+        return Collections.reverseOrder();
     }
 
-    /**
-     * If we have non-zero R in memory, we can return false right away.
-     * If we have zero R in memory, try loading one and see if we can find something.
-     */
     @Override
     public boolean isEmpty() {
-        return index.byId.isEmpty() && search(Integer.MAX_VALUE, DESC)==null;
+        return search(Integer.MAX_VALUE, DESC)==null;
     }
 
     @Override
@@ -349,7 +288,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     public R get(int n) {
-        return search(n, Direction.EXACT);
+        return getByNumber(n);
     }
 
     /**
@@ -367,184 +306,60 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If DESC, finds the closest #M that satisfies M&lt;=N.
      */
     public @CheckForNull R search(final int n, final Direction d) {
-        Entry<Integer, BuildReference<R>> c = index.ceilingEntry(n);
-        if (c!=null && c.getKey()== n) {
-            R r = c.getValue().get();
-            if (r!=null)
-            return r;    // found the exact #n
-        }
-
-        // at this point we know that we don't have #n loaded yet
-
-        {// check numberOnDisk as a cache to see if we can find it there
-            int npos = numberOnDisk.find(n);
-            if (npos>=0) {// found exact match
-                R r = load(numberOnDisk.get(npos), null);
-                if (r!=null)
-                    return r;
-            }
-
-            switch (d) {
-            case ASC:
-            case DESC:
-                // didn't find the exact match, but what's the nearest ascending value in the cache?
-                int neighbor = (d==ASC?HIGHER:LOWER).apply(npos);
-                if (numberOnDisk.isInRange(neighbor)) {
-                    R r = getByNumber(numberOnDisk.get(neighbor));
-                    if (r!=null) {
-                        // make sure that the cache is accurate by looking at the previous ID
-                        // and it actually satisfies the constraint
-                        int prev = (d==ASC?LOWER:HIGHER).apply(idOnDisk.find(getIdOf(r)));
-                        if (idOnDisk.isInRange(prev)) {
-                            R pr = getById(idOnDisk.get(prev));
-                            // sign*sign is making sure that #pr and #r sandwiches #n.
-                            if (pr!=null && signOfCompare(getNumberOf(pr),n)*signOfCompare(n,getNumberOf(r))>0)
-                                return r;
-                            else {
-                                // cache is lying. there's something fishy.
-                                // ignore the cache and do the slow search
-                            }
-                        } else {
-                            // r is the build with youngest ID
-                            return r;
-                        }
-                    } else {
-                        // cache says we should have a build but we didn't.
-                        // ignore the cache and do the slow search
-                    }
-                }
-                break;
-            case EXACT:
-                // fall through
-            }
-
-            // didn't find it in the cache, but don't give up yet
-            // maybe the cache just doesn't exist.
-            // so fall back to the slow search
-        }
-
-        // capture the snapshot and work off with it since it can be overwritten by other threads
-        SortedList<String> idOnDisk = this.idOnDisk;
-        boolean clonedIdOnDisk = false; // if we modify idOnDisk we need to write it back. this flag is set to true when we overwrit idOnDisk local var
-
-        // slow path: we have to find the build from idOnDisk by guessing ID of the build.
-        // first, narrow down the candidate IDs to try by using two known number-to-ID mapping
-        if (idOnDisk.isEmpty())     return null;
-
-        Entry<Integer, BuildReference<R>> f = index.floorEntry(n);
-
-        // if bound is null, use a sentinel value
-        String cid = c==null ? "\u0000"  : c.getValue().id;
-        String fid = f==null ? "\uFFFF" : f.getValue().id;
-        // at this point, #n must be in (cid,fid)
-
-        // We know that the build we are looking for exists in [lo,hi)  --- it's "hi)" and not "hi]" because we do +1.
-        // we will narrow this down via binary search
-        final int initialSize = idOnDisk.size();
-        int lo = idOnDisk.higher(cid);
-        int hi = idOnDisk.lower(fid)+1;
-
-        final int initialLo = lo, initialHi = hi;
-
-        if (!(0<=lo && lo<=hi && hi<=idOnDisk.size())) {
-            // assertion error, but we are so far unable to get to the bottom of this bug.
-            // but don't let this kill the loading the hard way
-            String msg = String.format(
-                    "JENKINS-15652 Assertion error #1: failing to load %s #%d %s: lo=%d,hi=%d,size=%d,size2=%d",
-                    dir, n, d, lo, hi, idOnDisk.size(), initialSize);
-            LOGGER.log(Level.WARNING, msg);
-            return null;
-        }
-
-        while (lo<hi) {
-            final int pivot = (lo+hi)/2;
-            if (!(0<=lo && lo<=pivot && pivot<hi && hi<=idOnDisk.size())) {
-                // assertion error, but we are so far unable to get to the bottom of this bug.
-                // but don't let this kill the loading the hard way
-                String msg = String.format(
-                        "JENKINS-15652 Assertion error #2: failing to load %s #%d %s: lo=%d,hi=%d,pivot=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
-                        dir, n, d, lo, hi, pivot, idOnDisk.size(), initialLo, initialHi, initialSize);
-                LOGGER.log(Level.WARNING, msg);
-                return null;
-            }
-            R r = load(idOnDisk.get(pivot), null);
-            if (r==null) {
-                // this ID isn't valid. get rid of that and retry pivot
-                hi--;
-                if (!clonedIdOnDisk) {// if we are making an edit, we need to own a copy
-                    idOnDisk = new SortedList<String>(idOnDisk);
-                    clonedIdOnDisk = true;
-                }
-                idOnDisk.remove(pivot);
-                continue;
-            }
-
-            int found = getNumberOf(r);
-            if (found==n)
-                return r;   // exact match
-
-            if (found<n)    lo = pivot+1;   // the pivot was too small. look in the upper half
-            else            hi = pivot;     // the pivot was too big. look in the lower half
-        }
-
-        if (clonedIdOnDisk)
-            this.idOnDisk = idOnDisk;   // feedback the modified result atomically
-
-        assert lo==hi;
-        // didn't find the exact match
-        // both lo and hi point to the insertion point on idOnDisk
         switch (d) {
-        case ASC:
-            if (hi==idOnDisk.size())    return null;
-            return getById(idOnDisk.get(hi));
-        case DESC:
-            if (lo<=0)                 return null;
-            if (lo-1>=idOnDisk.size()) {
-                // assertion error, but we are so far unable to get to the bottom of this bug.
-                // but don't let this kill the loading the hard way
-                LOGGER.log(Level.WARNING, String.format(
-                        "JENKINS-15652 Assertion error #3: failing to load %s #%d %s: lo=%d,hi=%d,size=%d (initial:lo=%d,hi=%d,size=%d)",
-                        dir, n,d,lo,hi,idOnDisk.size(), initialLo,initialHi,initialSize));
-                return null;
-            }
-            return getById(idOnDisk.get(lo-1));
         case EXACT:
-            if (hi<=0)                 return null;
-            R r = getById(idOnDisk.get(hi-1));
-            if (r==null)               return null;
-
-            int found = getNumberOf(r);
-            if (found==n)
-                return r;   // exact match
+            return getByNumber(n);
+        case ASC:
+            for (int m : numberOnDisk) {
+                if (m < n) {
+                    // TODO could be made more efficient with numberOnDisk.find
+                    continue;
+                }
+                R r = getByNumber(m);
+                if (r != null) {
+                    return r;
+                }
+            }
+            return null;
+        case DESC:
+            // TODO again could be made more efficient
+            List<Integer> reversed = new ArrayList<Integer>(numberOnDisk);
+            Collections.reverse(reversed);
+            for (int m : reversed) {
+                if (m > n) {
+                    continue;
+                }
+                R r = getByNumber(m);
+                if (r != null) {
+                    return r;
+                }
+            }
             return null;
         default:
             throw new AssertionError();
         }
     }
 
-    /**
-     * sign of (a-b).
-     */
-    private static int signOfCompare(int a, int b) {
-        if (a>b)    return 1;
-        if (a<b)    return -1;
-        return 0;
+    public R getById(String id) {
+        return getByNumber(Integer.parseInt(id));
     }
 
-    public R getById(String id) {
+    public R getByNumber(int n) {
         Index snapshot = index;
-        if (snapshot.byId.containsKey(id)) {
-            BuildReference<R> ref = snapshot.byId.get(id);
+        if (snapshot.byNumber.containsKey(n)) {
+            BuildReference<R> ref = snapshot.byNumber.get(n);
             if (ref==null)      return null;    // known failure
             R v = unwrap(ref);
             if (v!=null)        return v;       // already in memory
             // otherwise fall through to load
         }
-        return load(id,null);
+        return load(n, null);
     }
 
-    public R getByNumber(int n) {
-        return search(n, Direction.EXACT);
+    protected final synchronized void proposeNewNumber(int number) throws IllegalStateException {
+        if (numberOnDisk.isInRange(numberOnDisk.ceil(number))) {
+            throw new IllegalStateException("cannot create a build with number " + number + " since that (or higher) is already in use among " + numberOnDisk);
+        }
     }
 
     public R put(R value) {
@@ -557,26 +372,12 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     @Override
     public synchronized R put(Integer key, R r) {
-        String id = getIdOf(r);
         int n = getNumberOf(r);
 
         Index copy = copy();
         BuildReference<R> ref = createReference(r);
-        BuildReference<R> old = copy.byId.put(id,ref);
-        copy.byNumber.put(n,ref);
+        BuildReference<R> old = copy.byNumber.put(n,ref);
         index = copy;
-
-        /*
-            search relies on the fact that every object added via
-            put() method be available in the xyzOnDisk index, so I'm adding them here
-            however, this is awfully inefficient. I wonder if there's any better way to do this?
-         */
-        if (!idOnDisk.contains(id)) {
-            ArrayList<String> a = new ArrayList<String>(idOnDisk);
-            a.add(id);
-            Collections.sort(a);
-            idOnDisk = new SortedList<String>(a);
-        }
 
         if (!numberOnDisk.contains(n)) {
             SortedIntList a = new SortedIntList(numberOnDisk);
@@ -598,9 +399,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public synchronized void putAll(Map<? extends Integer,? extends R> rhs) {
         Index copy = copy();
         for (R r : rhs.values()) {
-            String id = getIdOf(r);
             BuildReference<R> ref = createReference(r);
-            copy.byId.put(id,ref);
             copy.byNumber.put(getNumberOf(r),ref);
         }
         index = copy;
@@ -620,9 +419,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             synchronized (this) {
                 if (!fullyLoaded) {
                     Index copy = copy();
-                    for (String id : idOnDisk) {
-                        if (!copy.byId.containsKey(id))
-                            load(id,copy);
+                    for (Integer number : numberOnDisk) {
+                        if (!copy.byNumber.containsKey(number))
+                            load(number, copy);
                     }
                     index = copy;
                     fullyLoaded = true;
@@ -640,42 +439,18 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
    }
 
     /**
-     * Tries to load the record #N by using the shortcut.
+     * Tries to load the record #N.
      * 
      * @return null if the data failed to load.
      */
     protected R load(int n, Index editInPlace) {
-        R r = null;
-        File shortcut = new File(dir,String.valueOf(n));
-        if (shortcut.isDirectory()) {
-            synchronized (this) {
-                r = load(shortcut,editInPlace);
-
-                // make sure what we actually loaded is #n,
-                // because the shortcuts can lie.
-                if (r!=null && getNumberOf(r)!=n)
-                    r = null;
-
-                if (r==null) {
-                    // if failed to locate, record that fact
-                    SortedIntList update = new SortedIntList(numberOnDisk);
-                    update.removeValue(n);
-                    numberOnDisk = update;
-                }
-            }
-        }
-        return r;
-    }
-
-
-    protected R load(String id, Index editInPlace) {
         assert dir != null;
-        R v = load(new File(dir, id), editInPlace);
+        R v = load(new File(dir, String.valueOf(n)), editInPlace);
         if (v==null && editInPlace!=null) {
             // remember the failure.
             // if editInPlace==null, we can create a new copy for this, but not sure if it's worth doing,
-            // given that we also update idOnDisk anyway.
-            editInPlace.byId.put(id,null);
+            // TODO should we also update numberOnDisk?
+            editInPlace.byNumber.put(n, null);
         }
         return v;
     }
@@ -692,10 +467,9 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
             Index copy = editInPlace!=null ? editInPlace : new Index(index);
 
-            String id = getIdOf(r);
             BuildReference<R> ref = createReference(r);
-            copy.byId.put(id,ref);
-            copy.byNumber.put(getNumberOf(r),ref);
+            BuildReference<R> old = copy.byNumber.put(getNumberOf(r), ref);
+            assert old == null || old.get() == null : "tried to overwrite " + old + " with " + ref;
 
             if (editInPlace==null)  index = copy;
 
@@ -710,10 +484,13 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * Subtype to provide {@link Run#getNumber()} so that this class doesn't have to depend on it.
      */
     protected abstract int getNumberOf(R r);
+
     /**
      * Subtype to provide {@link Run#getId()} so that this class doesn't have to depend on it.
      */
-    protected abstract String getIdOf(R r);
+    protected String getIdOf(R r) {
+        return String.valueOf(getNumberOf(r));
+    }
 
     /**
      * Allow subtype to capture a reference.
@@ -737,11 +514,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public synchronized boolean removeValue(R run) {
         Index copy = copy();
         int n = getNumberOf(run);
-        copy.byNumber.remove(n);
+        BuildReference<R> old = copy.byNumber.remove(n);
         SortedIntList a = new SortedIntList(numberOnDisk);
         a.removeValue(n);
         numberOnDisk = a;
-        BuildReference<R> old = copy.byId.remove(getIdOf(run));
         this.index = copy;
 
         entrySet.clearCache();
@@ -755,9 +531,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     public synchronized void reset(TreeMap<Integer,R> builds) {
         Index index = new Index();
         for (R r : builds.values()) {
-            String id = getIdOf(r);
             BuildReference<R> ref = createReference(r);
-            index.byId.put(id,ref);
             index.byNumber.put(getNumberOf(r),ref);
         }
 
@@ -774,17 +548,6 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         return o==this;
     }
 
-    /**
-     * Lists the actual data directory
-     */
-    protected abstract FilenameFilter createDirectoryFilter();
-
-    private static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
-        public int compare(Comparable o1, Comparable o2) {
-            return -o1.compareTo(o2);
-        }
-    };
-    
     public enum Direction {
         ASC, DESC, EXACT
     }

@@ -268,6 +268,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      *      Call {@link #poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} for use instead.
      */
+    @Deprecated
     public boolean pollChanges(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         // up until 1.336, this method was abstract, so everyone should have overridden this method
         // without calling super.pollChanges. So the compatibility implementation is purely for
@@ -578,6 +579,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated since 1.382
      *      Use/override {@link #getModuleRoot(FilePath, AbstractBuild)} instead.
      */
+    @Deprecated
     public FilePath getModuleRoot(FilePath workspace) {
         if (Util.isOverridden(SCM.class,getClass(),"getModuleRoot", FilePath.class,AbstractBuild.class))
             // if the subtype already implements newer getModuleRoot(FilePath,AbstractBuild), call that.
@@ -632,6 +634,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated as of 1.382.
      *      Use/derive from {@link #getModuleRoots(FilePath, AbstractBuild)} instead.
      */
+    @Deprecated
     public FilePath[] getModuleRoots(FilePath workspace) {
         if (Util.isOverridden(SCM.class,getClass(),"getModuleRoots", FilePath.class, AbstractBuild.class))
             // if the subtype already derives newer getModuleRoots(FilePath,AbstractBuild), delegate to it
@@ -700,10 +703,13 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     }
 
     /**
-     * Returns the list of {@link SCMDescriptor}s that are applicable to the given project.
+     * Determines which kinds of SCMs are applicable to a given project.
+     * @param project a project on which we might be configuring SCM, or null if unknown
+     * @return all descriptors which {@link SCMDescriptor#isApplicable(Job)} to it, also filtered by {@link TopLevelItemDescriptor#isApplicable};
+     *         or simply {@link #all} if there is no project
      * @since 1.568
      */
-    public static List<SCMDescriptor<?>> _for(@Nonnull final Job project) {
+    public static List<SCMDescriptor<?>> _for(@CheckForNull final Job project) {
         if(project==null)   return all();
         
         final Descriptor pd = Jenkins.getInstance().getDescriptor((Class) project.getClass());

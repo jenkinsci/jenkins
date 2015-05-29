@@ -25,27 +25,36 @@ package lib.form;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import net.sf.json.JSONObject;
-import org.jvnet.hudson.test.HudsonTestCase;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Tests the handling of @nameRef in the form tree.
- *
- * @author Kohsuke Kawaguchi
  */
-public class NameRefTest extends HudsonTestCase {
-    public void test1() throws Exception {
-        jenkins.setCrumbIssuer(null);
-        HtmlPage p = createWebClient().goTo("self/test1");
-        submit(p.getFormByName("config"));
+public class NameRefTest {
+
+    @Rule public JenkinsRule r = new JenkinsRuleWithJelly();
+
+    @Test public void test() throws Exception {
+        r.jenkins.setCrumbIssuer(null);
+        HtmlPage p = r.createWebClient().goTo("self/test1");
+        r.submit(p.getFormByName("config"));
     }
 
-    public HttpResponse doSubmitTest1(StaplerRequest req) throws Exception {
-        JSONObject f = req.getSubmittedForm();
-        System.out.println(f);
-        assertEquals("{\"foo\":{\"bar\":{\"zot\":\"zot\"}}}",f.toString());
-        return HttpResponses.ok();
+    public static class JenkinsRuleWithJelly extends JenkinsRule {
+
+        public HttpResponse doSubmitTest1(StaplerRequest req) throws Exception {
+            JSONObject f = req.getSubmittedForm();
+            System.out.println(f);
+            assertEquals("{\"foo\":{\"bar\":{\"zot\":\"zot\"}}}",f.toString());
+            return HttpResponses.ok();
+        }
+
     }
+
 }

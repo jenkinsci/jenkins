@@ -94,6 +94,7 @@ THE SOFTWARE.
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">
               <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
+              <wbr/>
             </j:if>
           </j:forEach>
         </div>

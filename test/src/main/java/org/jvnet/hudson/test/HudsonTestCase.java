@@ -101,6 +101,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -276,6 +277,8 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      */
     protected File explodedWarDir;
 
+    private boolean origDefaultUseCache = true;
+
     protected HudsonTestCase(String name) {
         super(name);
     }
@@ -298,6 +301,18 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
     @Override
     protected void  setUp() throws Exception {
+        if(Functions.isWindows()) {
+            // JENKINS-4409.
+            // URLConnection caches handles to jar files by default,
+            // and it prevents delete temporary directories on Windows.
+            // Disables caching here.
+            // Though defaultUseCache is a static field,
+            // its setter and getter are provided as instance methods.
+            URLConnection aConnection = new File(".").toURI().toURL().openConnection();
+            origDefaultUseCache = aConnection.getDefaultUseCaches();
+            aConnection.setDefaultUseCaches(false);
+        }
+        
         env.pin();
         recipe();
         for (Runner r : recipes) {
@@ -411,15 +426,26 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
 
             if (jenkins!=null)
                 jenkins.cleanUp();
-            env.dispose();
             ExtensionList.clearLegacyInstances();
             DescriptorExtensionList.clearLegacyInstances();
+
+            try {
+                env.dispose();
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
 
             // Jenkins creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
             // but because there's no explicit dispose method on ClassLoader, they won't get GC-ed until
             // at some later point, leading to possible file descriptor overflow. So encourage GC now.
             // see http://bugs.sun.com/view_bug.do?bug_id=4950148
             System.gc();
+            
+            // restore defaultUseCache
+            if(Functions.isWindows()) {
+                URLConnection aConnection = new File(".").toURI().toURL().openConnection();
+                aConnection.setDefaultUseCaches(origDefaultUseCache);
+            }
         }
     }
 

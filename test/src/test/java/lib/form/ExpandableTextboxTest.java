@@ -27,7 +27,7 @@ import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.w3c.dom.NodeList;
 
@@ -35,7 +35,7 @@ import org.w3c.dom.NodeList;
  * @author Kohsuke Kawaguchi
  */
 public class ExpandableTextboxTest extends HudsonTestCase {
-    @Bug(2816)
+    @Issue("JENKINS-2816")
     public void testMultiline() throws Exception {
         // because attribute values are normalized, it's not very easy to encode multi-line string as @value. So let's use the system message here.
         jenkins.setSystemMessage("foo\nbar\nzot");

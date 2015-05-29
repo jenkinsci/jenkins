@@ -93,6 +93,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #launch(SlaveComputer, TaskListener)}
      */
+    @Deprecated
     public void launch(SlaveComputer computer, StreamTaskListener listener) throws IOException , InterruptedException {
         throw new UnsupportedOperationException(getClass()+" must implement the launch method");
     }
@@ -117,6 +118,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #afterDisconnect(SlaveComputer, TaskListener)}
      */
+    @Deprecated
     public void afterDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
 
@@ -143,6 +145,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #beforeDisconnect(SlaveComputer, TaskListener)} 
      */
+    @Deprecated
     public void beforeDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
 
@@ -159,6 +162,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      *      Use {@link Extension} for registration, and use
      *      {@link jenkins.model.Jenkins#getDescriptorList(Class)} for read access.
      */
+    @Deprecated
     public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>(ComputerLauncher.class);
 
     /**

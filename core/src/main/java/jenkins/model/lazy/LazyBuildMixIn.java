@@ -47,6 +47,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import static java.util.logging.Level.FINER;
+import jenkins.model.RunIdMigrator;
 
 /**
  * Makes it easier to use a lazy {@link RunMap} from a {@link Job} implementation.
@@ -62,9 +63,6 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
 
     @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
     private @Nonnull RunMap<RunT> builds = new RunMap<RunT>();
-
-    // keep track of the previous time we started a build
-    private long lastBuildStartTime;
 
     /**
      * Initializes this mixin.
@@ -92,14 +90,14 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     }
 
     /**
-     * Something to be called from {@link AbstractItem#onCreatedFromScratch}.
+     * Something to be called from {@link Job#onCreatedFromScratch}.
      */
     public final void onCreatedFromScratch() {
         builds = createBuildRunMap();
     }
 
     /**
-     * Something to be called from {@link AbstractItem#onLoad}.
+     * Something to be called from {@link Job#onLoad}.
      */
     @SuppressWarnings("unchecked")
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
@@ -123,7 +121,8 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
             // if we are reloading, keep all those that are still building intact
             for (RunT r : currentBuilds.getLoadedBuilds().values()) {
                 if (r.isBuilding()) {
-                    _builds.put(r);
+                    // Do not use RunMap.put(Run):
+                    _builds.put(r.getNumber(), r);
                 }
             }
         }
@@ -131,11 +130,15 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     }
 
     private RunMap<RunT> createBuildRunMap() {
-        return new RunMap<RunT>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
+        RunMap<RunT> r = new RunMap<RunT>(asJob().getBuildDir(), new RunMap.Constructor<RunT>() {
             @Override public RunT create(File dir) throws IOException {
                 return loadBuild(dir);
             }
         });
+        RunIdMigrator runIdMigrator = asJob().runIdMigrator;
+        assert runIdMigrator != null;
+        r.runIdMigrator = runIdMigrator;
+        return r;
     }
 
     /**
@@ -169,19 +172,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
      * Calls the ({@link Job}) constructor of {@link #getBuildClass}.
      * Suitable for {@link SubTask#createExecutable}.
      */
-    @SuppressWarnings("SleepWhileHoldingLock")
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("SWL_SLEEP_WITH_LOCK_HELD")
     public final synchronized RunT newBuild() throws IOException {
-    	// make sure we don't start two builds in the same second
-    	// so the build directories will be different too
-    	long timeSinceLast = System.currentTimeMillis() - lastBuildStartTime;
-    	if (timeSinceLast < 1000) {
-    		try {
-				Thread.sleep(1000 - timeSinceLast);
-			} catch (InterruptedException e) {
-			}
-    	}
-    	lastBuildStartTime = System.currentTimeMillis();
         try {
             RunT lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
             builds.put(lastBuild);

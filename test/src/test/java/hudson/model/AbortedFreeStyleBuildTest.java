@@ -1,16 +1,26 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.Launcher;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.TestBuildWrapper;
 import org.jvnet.hudson.test.TestBuilder;
 
 import java.io.IOException;
 
-public class AbortedFreeStyleBuildTest extends HudsonTestCase {
-    @Bug(8054)
-    public void testBuildWrapperSeesAbortedStatus() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+public class AbortedFreeStyleBuildTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    @Issue("JENKINS-8054")
+    public void buildWrapperSeesAbortedStatus() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
         TestBuildWrapper wrapper = new TestBuildWrapper();
         project.getBuildWrappersList().add(wrapper);
         project.getBuildersList().add(new AbortingBuilder());
@@ -19,16 +29,10 @@ public class AbortedFreeStyleBuildTest extends HudsonTestCase {
         assertEquals(Result.ABORTED, wrapper.buildResultInTearDown);
     }
 
-    private static class AbortingBuilder extends TestBuilder {
-        @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-            throw new InterruptedException();
-        }
-    }
-
-    @Bug(9203)
-    public void testInterruptAsFailure() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+    @Test
+    @Issue("JENKINS-9203")
+    public void interruptAsFailure() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
         TestBuildWrapper wrapper = new TestBuildWrapper();
         project.getBuildWrappersList().add(wrapper);
         project.getBuildersList().add(new TestBuilder() {
@@ -41,5 +45,12 @@ public class AbortedFreeStyleBuildTest extends HudsonTestCase {
         Run build = project.scheduleBuild2(0).get();
         assertEquals(Result.FAILURE, build.getResult());
         assertEquals(Result.FAILURE, wrapper.buildResultInTearDown);
+    }
+
+    private static class AbortingBuilder extends TestBuilder {
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            throw new InterruptedException();
+        }
     }
 }

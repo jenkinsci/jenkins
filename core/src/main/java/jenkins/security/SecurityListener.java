@@ -80,12 +80,6 @@ public abstract class SecurityListener implements ExtensionPoint {
      */
     protected abstract void loggedOut(@Nonnull String username);
 
-    // TODO event for authenticated via SSH key in CLI (SshCliAuthenticator)
-    // TODO event for authenticated via API token (ApiTokenFilter)
-    // TODO event for permission denied exception thrown (mainly ACL.checkPermission), and/or caught at top level (ExceptionTranslationFilter.handleException)
-    // TODO event for new user signed up (e.g. in HudsonPrivateSecurityRealm)
-    // TODO event for CAPTCHA failure
-
     /** @since 1.569 */
     public static void fireAuthenticated(@Nonnull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {

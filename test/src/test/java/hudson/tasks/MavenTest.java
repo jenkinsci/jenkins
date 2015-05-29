@@ -55,7 +55,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -261,11 +261,48 @@ public class MavenTest {
         }
     }
 
-    @Bug(18898)
-    public void testNullHome() throws Exception {
+    @Issue("JENKINS-18898")
+    @Test public void testNullHome() {
         EnvVars env = new EnvVars();
         new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);
         assertEquals("{}", env.toString());
     }
 
+    @Issue("JENKINS-26684")
+    @Test public void specialCharsInBuildVariablesPassedAsProperties() throws Exception {
+        MavenInstallation maven = j.configureMaven3();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new Maven("--help", maven.getName()));
+        p.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("tilde", "~"),
+                new StringParameterDefinition("exclamation_mark", "!"),
+                new StringParameterDefinition("at_sign", "@"),
+                new StringParameterDefinition("sharp", "#"),
+                new StringParameterDefinition("dolar", "$"),
+                new StringParameterDefinition("percent", "%"),
+                new StringParameterDefinition("circumflex", "^"),
+                new StringParameterDefinition("ampersand", "&"),
+                new StringParameterDefinition("asterix", "*"),
+                new StringParameterDefinition("parentheses", "()"),
+                new StringParameterDefinition("underscore", "_"),
+                new StringParameterDefinition("plus", "+"),
+                new StringParameterDefinition("braces", "{}"),
+                new StringParameterDefinition("brackets", "[]"),
+                new StringParameterDefinition("colon", ":"),
+                new StringParameterDefinition("semicolon", ";"),
+                new StringParameterDefinition("quote", "\""),
+                new StringParameterDefinition("apostrophe", "'"),
+                new StringParameterDefinition("backslash", "\\"),
+                new StringParameterDefinition("pipe", "|"),
+                new StringParameterDefinition("angle_brackets", "<>"),
+                new StringParameterDefinition("comma", ","),
+                new StringParameterDefinition("period", "."),
+                new StringParameterDefinition("slash", "/"),
+                new StringParameterDefinition("question_mark", "?"),
+                new StringParameterDefinition("space", " ")
+        ));
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+    }
 }

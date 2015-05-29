@@ -39,16 +39,16 @@ Some tips:
 Help other Jenkins users by letting the community know which releases you've used,
 and whether they had any significant issues. <br>
 Legend: <br>
- <img src="http://ci.jenkins-ci.org/images/16x16/health-80plus.gif" width="16" height="16"
+ <img src="//ci.jenkins-ci.org/images/16x16/health-80plus.gif" width="16" height="16"
   alt="Sunny"> = I use it on my production site without major issues. <br>
- <img src="http://ci.jenkins-ci.org/images/16x16/health-40to59.gif" width="16" height="16"
+ <img src="//ci.jenkins-ci.org/images/16x16/health-40to59.gif" width="16" height="16"
   alt="Cloudy"> = I don't recommend it. <br>
- <img src="http://ci.jenkins-ci.org/images/16x16/health-00to19.gif" width="16" height="16"
+ <img src="//ci.jenkins-ci.org/images/16x16/health-00to19.gif" width="16" height="16"
   alt="Lightning"> = I tried it but rolled back to a previous version. <br>
 View ratings below, and click one of the icons next to your version to provide your input.
 </div>
 
-<a href="" onClick="document.getElementById('trunk').style.display=document.getElementById('rc').style.display='block';return false">
+<a href="" onClick="document.getElementById('trunk').style.display='block';return false">
 Upcoming changes</a>
 <a href="" style="padding-left:3em" onClick="return loaddata(this)">Community ratings</a>
 
@@ -56,33 +56,413 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=bug>
+    Job loading can be broken by <code>NullPointerException</code> in a build trigger
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27549">issue 27549</a>) 
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v1.615>What's new in 1.615</a> (2015/05/25)</h3>
+<ul class=image>
+  <li class=bug>
+    Improper calculation of queue length in <code>UnlabeledLoadStatistics</code>
+    causing overheads in Cloud slave provisioning
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28446">issue 28446</a>)  
+  <li class=bug>
+    Category titles in Available Plugins list appear wrong in reverse sort order
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17290">issue 17290</a>) 
+  <li class=rfe>
+    <code>CronTab</code> API: Timezone support for scheduling
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-9283">issue 9283</a>)
+  <li class=bug>
+    <code>NullPointerException</code> when trying to reset Jenkins admin address
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28419">issue 28419</a>)
+  <li class=rfe>
+    Reduce the thread overhead in <code>NodeMonitorUpdater</code>
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1714">PR 1714</a>)
+  <li class=bug>
+    Build history overflows
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28425">issue 28425</a>)
+  <li class=bug>
+    Build History badges don't wrap
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28455">issue 28455</a>)
+</ul>
+<h3><a name=v1.614>What's new in 1.614</a> (2015/05/17)</h3>
+<ul class=image>
+  <li class=rfe>
+    ExtensionList even listener.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28434">issue 28434</a>)
+  <li class=bug>
+    <code>NullPointerException</code> computing load statistics under some conditions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28384">issue 28384</a>)
+  <li class=bug>
+    Plugins using class loader masking did not work properly over the slave channel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27289">issue 27289</a>)
+  <li class=bug>
+    DefaultJnlpSlaveReceiver now returns true when rejecting a takeover.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27939">issue 27939</a>)
+  <li class=bug>
+    Do not follow href after sending POST via l:task
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28437">issue 28437</a>)
+</ul>
+<h3><a name=v1.613>What's new in 1.613</a> (2015/05/10)</h3>
+<ul class=image>
+  <li class=bug>
+    Update bundled LDAP plugin in order to restore missing help files
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28233">issue 28233</a>)
+  <li class=bug>
+    hudson.model.Run.getLog() throws IndexOutOfBoundsException when called with maxLines=0
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27441">issue 27441</a>)
+</ul>
+<h3><a name=v1.612>What's new in 1.612</a> (2015/05/03)</h3>
+<ul class=image>
+  <li class=rfe>
+    <strong>Jenkins now requires Java 7</strong>.
+    (<a href="http://jenkins-ci.org/content/good-bye-java6">announcement</a>,
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-28120">issue 28120</a>)
+  <li class=bug>
+    Handle AbortException publisher status in the same way as deprecated false boolean status
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26964">issue 26964</a>)
+  <li class=bug>
+    Ensures GlobalSettingsProvider does not swallow fatal exceptions
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26604">issue 26604</a>)
+  <li class=rfe>
+     add datestamp to node-offline message
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23917">issue 23917</a>)
+  <li class=rfe>
+    Larger minimum popup menu height.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27067">issue 27067</a>)
+  <li class=bug>
+    <code>Descriptor.getId</code> fix in 1.610 introduced regressions affecting at least the Performance and NodeJS plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28093">issue 28093</a> and <a href="https://issues.jenkins-ci.org/browse/JENKINS-28110">issue 28110</a>)
+  <li class=bug>
+    Under rare conditions Executor.getProgress() can throw a Division by zero exception.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28115">issue 28115</a>)
+  <li class=bug>
+    The Run from the command line option for launching a JNLP slave should display the
+    configured JVM options.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28111">issue 28111</a>)
+</ul>
+<h3><a name=v1.611>What's new in 1.611</a> (2015/04/26)</h3>
+<ul class=image>
+  <li class=bug>
+    <code>Descriptor.getId</code> fix in 1.610 introduced a regression affecting at least the Copy Artifacts plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28011">issue 28011</a>)
+  <li class=bug>
+    Search box did not work well inside folders.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24433">issue 24433</a>)
+  <li class="major bug">
+    Revert changes in 1.610 made to resolve <a href="https://issues.jenkins-ci.org/browse/JENKINS-10629">issue 10629</a>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28012">issue 28012</a>, <a href="https://issues.jenkins-ci.org/browse/JENKINS-28013">issue 28013</a>)
+  <li class=rfe>
+    Advertise JNLP slave agents to the correct host name, even in the presence of a reverse proxy.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27218">issue 27218</a>)
+  <li class=rfe>
+    Advertised TCP slave agent port number is made tweakable.
+  <li class=bug>
+    Correctly identify Channel listener onClose propagated exceptions
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28062">issue 28062</a>
+</ul>
+<h3><a name=v1.610>What's new in 1.610</a> (2015/04/19)</h3>
+<ul class=image>
+  <li class=bug>
+    Since 1.598 overrides of <code>Descriptor.getId</code> were not correctly handled by form binding, breaking at least the CloudBees Templates plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26781">issue 26781</a>)
+  <li class=bug>
+    <b>Reverted in 1.611</b>. Archiving of large artifacts. Tar implementation cannot handle files having a size >8GB.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10629">issue 10629</a>)
+  <li class=bug>
+    The queue state was not updated between scheduling builds.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27708">issue 27708</a>,
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-27871">issue 27871</a>)
+</ul>
+<h3><a name=v1.609>What's new in 1.609</a> (2015/04/12)</h3>
+<ul class=image>
+  <li class=bug>
+    When concurrent builds are enabled, artifact retention policy may delete artifact being
+    used by an actually running build.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27836">issue 27836</a>)
+  <li class=bug>
+    Documentation for $BUILD_ID did not reflect current reality
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26520">issue 26520</a>)
+</ul>
+<h3><a name=v1.608>What's new in 1.608</a> (2015/04/05)</h3>
+<ul class=image>
+  <li class=bug>
+    PeepholePermalink RunListenerImpl oncompleted should be triggered before downstream builds are triggered.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20989">issue 20989</a>)
+  <li class=bug>
+    NPE when /script used on offline slave.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26751">issue 26751</a>)
+  <li class=rfe>
+    Make periodic workspace cleanup configurable through system properties.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21322">issue 21322</a>)
+  <li class=bug>
+    Do not offer to restart on /restart and /safeRestart if the configuration does not support it.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27414">issue 27414</a>)
+  <li class=rfe>
+    Polling was skipped while quieting down, resulting in ignored commit notifications. This behavior was changed.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26208">issue 26208</a>)
+  <li class=rfe>
+    Starting this version, native packages are produced from <a href="https://github.com/jenkinsci/packaging">the new repository</a>.
+    File issues related to installers and packages in the <code>packaging</code> component.
+</ul>
+<h3><a name=v1.607>What's new in 1.607</a> (2015/03/30)</h3>
+<ul class=image>
+  <li class=bug>
+    JSONP served with the wrong MIME type and rejected by Chrome.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27607">issue 27607</a>)
+  <li class=bug>
+    Security file pattern whitelist was broken for some plugins since 1.597.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27055">issue 27055</a>)
+  <li class=rfe>
+    Lock an Executor without creating a Thread
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25938">issue 25938</a>)
+  <li class=rfe>
+    Hide flyweight master executor when ≥1 heavyweight executors running as subtasks
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26900">issue 26900</a>)
+  <li class=rfe>
+    Way to mark an Executable that should not block isReadyToRestart
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22941">issue 22941</a>)
+  <li class=rfe>
+    Refactor the Queue and Nodes to use a consistent locking strategy
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27565">issue 27565</a>)
+    <strong>Note</strong> that this change involved moving slave definitions outside the main <code>config.xml</code> file.
+    If you downgrade after this, your slave settings will be lost.
+  <li class=bug>
+    Makes the Jenkins is loading screen not block on the extensions loading lock
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27563">issue 27563</a>)
+  <li class=bug>
+    AdjunctManager: exception upon startup
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15355">issue 15355</a>)
+  <li class=bug>
+    Removes race condition rendering the list of executors
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27564">issue 27564</a>)
+  <li class=bug>
+    Tidy up the locks that were causing deadlocks with the once retention strategy in durable tasks
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27476">issue 27476</a>)
+  <li class=bug>
+    Remove any requirement from Jenkins Core to lock on the Queue when rendering the Jenkins UI
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27566">issue 27566</a>)
+  <li class=bug>
+    Prevent lazy loading operation when obtaining label information.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26391">issue 26391</a>)
+  <li class=bug>
+    Ensure that the LoadStatistics return a self-consistent result.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21618">issue 21618</a>)
+  <li class=bug>
+    Build reports to be running for 45 yr and counting.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26777">issue 26777</a>)
+</ul>
+<h3><a name=v1.606>What's new in 1.606</a> (2015/03/23)</h3>
+<ul class=image>
+  <li class=bug>
+    Jenkins CLI doesn't handle arguments with equal signs
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21160">issue 21160</a>)
+  <li class=bug>
+    master/slave communication ping reacts badly if a clock jumps.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21251">issue 21251</a>)
+  <li class=rfe>
+    JNLP slaves can now connect to master through HTTP proxy.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-6167">issue 6167</a>)
+  <li class='major bug'>
+    Fixes to several security vulnerabilities.
+    (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2015-03-23">advisory</a>)
+</ul>
+<h3><a name=v1.605>What's new in 1.605</a> (2015/03/16)</h3>
+<ul class=image>
+  <li class=bug>
+    Integrate Stapler fix for queue item API always returning 404 Not Found since 1.601.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27256">issue 27256</a>)
+</ul>
+<h3><a name=v1.604>What's new in 1.604</a> (2015/03/15)</h3>
+<ul class=image>
+  <li class=rfe>
+    Added a switch (<tt>-Dhudson.model.User.allowNonExistentUserToLogin=true</tt>) to let users login even when the record is not found in the backend security realm.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22346">issue 22346</a>)
+  <li class=bug>
+    Avoid deadlock when using build-monitor-plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27183">issue 27183</a>)
+  <li class=rfe>
+    As security hardening, mark "remember me" cookie as HTTP only
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27277">issue 27277</a>)
+  <li class="rfe">
+    Show displayName in build remote API.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26723">issue 26723</a>)
+</ul>
+<h3><a name=v1.602>What's new in 1.602</a> (2015/03/08)</h3>
+<ul class=image>
+  <li class="rfe">
+    Show Check Now button also on Available and Updates tabs of plugin manager.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1593">PR 1593</a>)
+</ul>
+<h3><a name=v1.601>What's new in 1.601</a> (2015/03/03)</h3>
+<ul class=image>
+  <li class="major bug">
+    Regression with environment variables in 1.600.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27188">issue 27188</a>)
+  <li class="major bug">
+    Errors with concurrent matrix builds since 1.597.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26739">issue 26739</a>)
+  <li class=bug>
+    Errors in Dashboard View plugin since 1.597.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26690">issue 26690</a>)
+  <li class=bug>
+    Robustness improvement when setting up Archive Artifacts programmatically.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25779">issue 25779</a>)
+  <li class="rfe">
+    Map Queue.Item.id onto Run
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27096">issue 27096</a>)
+</ul>
+<h3><a name=v1.600>What's new in 1.600</a> (2015/02/28)</h3>
+<ul class=image>
+  <li class="major bug">
+    Fixes to multiple security vulnerabilities.
+    (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2015-02-27">security advisory</a>)
+  <li class="rfe">
+    JDK auto-installer for Mac OSX
+  <li class=bug>
+    An error thrown in the wrong place in a publisher could result in a failure to release a workspace lock.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26698">issue 26698</a>)
+  <li class=bug>
+    Cache node environment to prevent unnecessary channel usage
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26755">issue 26755</a>)
+  <li class=bug>
+    Build history text field wrap fails when containing markup
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26406">issue 26406</a>)
+  <li class=bug>
+    Maven build step fail to launch mvn process when special chars are present in build variables.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26684">issue 26684</a>)
+</ul>
+<h3><a name=v1.599>What's new in 1.599</a> (2015/02/16)</h3>
+<ul class=image>
+  <li class=bug>
+    Errors in some Maven builds since 1.598.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26601">issue 26601</a>)
+  <li class='major bug'>
+    Build format change migrator in 1.597 did not work on some Windows systems.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26519">issue 26519</a>)
+  <li class=bug>
+    Remote <code>FilePath.chmod</code> fails with <code>ClassNotFoundException: javax.servlet.ServletException</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26476">issue 26476</a>)
+  <li class=rfe>
+    Added <code>SimpleBuildWrapper</code> API.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24673">issue 24673</a>)
+  <li class=bug>
+    Animated ball in job's build history widget won't open Console Output.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26365">issue 26365</a>)
+  <li class=rfe>
+    Show job name in <em>Schedule Build</em> column tool tip.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25234">issue 25234</a>)
+  <li class=bug>
+    Allow OldDataMonitor to discard promoted-build-plugin Promotions
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26718">issue 26718</a>)
+</ul>
+<h3><a name=v1.598>What's new in 1.598</a> (2015/01/25)</h3>
+<ul class=image>
+  <li class=bug>
+    FutureImpl does not cancel its start future.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25514">issue 25514</a>)
+  <li class=bug>
+    Flyweight tasks were under some conditions actually being run on heavyweight executors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-10944">issue 10944</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24519">issue 24519</a>)
+  <li class=bug>
+    Folder loading broken when child item loading throws exception.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22811">issue 22811</a>)
+  <li class=bug>
+    Plugin icon images were broken when running Jenkins from a UNC path.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26203">issue 26203</a>)
+  <li class=bug>
+    Allow admin signup from <code>/manage</code> as well.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26382">issue 26382</a>)
+  <li class=bug>
+    Amend <code>JAVA_HOME</code> check to work with JDK 9.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25601">issue 25601</a>)
+  <li class=bug>
+    CLI <code>list-jobs</code> command should display raw name, not display name, where they differ.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25338">issue 25338</a>)
+  <li class=rfe>
+    Show queue item parameters in tool tip.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22311">issue 22311</a>)
+  <li class=bug>
+    Better support functional tests from Gradle-based plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26331">issue 26331</a>)
+  <li class=rfe>
+    Allow users to delete builds even if they are supposed to be kept.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26281">issue 26281</a>)
+  <li class=bug>
+    Fixed side/main panel scrolling issues.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26312">issue 26312</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-26298">issue 26298</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-26306">issue 26306</a>)
+  <li class=rfe>
+    Improve error reporting when channel closed during build.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26411">issue 26411</a>)
+  <li class=bug>
+    Fixed CodeMirror issue with height and re-enabled syntax highlighting in shell build step.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25455">issue 25455</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-23151">issue 23151</a>)
+</ul>
+<h3><a name=v1.597>What's new in 1.597</a> (2015/01/19)</h3>
+<ul class=image>
+  <li class='major rfe'>
+    <b><tt>JENKINS_HOME</tt> layout change</b>: builds are now keyed by build numbers and not timestamps.
+    See <a href="https://wiki.jenkins-ci.org/display/JENKINS/JENKINS-24380+Migration">Wiki</a> for details
+    and downgrade.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24380">issue 24380</a>)
+  <li class=bug>
+    Do not throw exception on <code>/signup</code> when not possible.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11172">issue 11172</a>)
+  <li class=bug>
+    Tool installer which downloads and unpacks archives should not fail the build if the tool already exists and the server returns an error code.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26196">issue 26196</a>)
+  <li class=bug>
+    Fingerprint compaction aggravated lazy-loading performance issues.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19392">issue 19392</a>)
+  <li class=bug>
+    Possible unreleased workspace lock if SCM polling fails during setup.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26201">issue 26201</a>)
+  <li class=bug>
+    Misleading description of the 'workspace' permission.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20148">issue 20148</a>)
+  <li class=bug>
+    Run parameters should show display name if set, rather than build numbers.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25174">issue 25174</a>)
+  <li class=bug>
+    Add range check for H(X-Y) syntax.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25897">issue 25897</a>)
+</ul>
+<h3><a name=v1.596>What's new in 1.596</a> (2015/01/04)</h3>
+<ul class=image>
+  <li class=bug>
+    Build page was broken in Hungarian localization while building.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26155">issue 26155</a>)
+  <li class=bug>
+    Allow breaking label and node lists.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25989">issue 25989</a>)
+</ul>
+<h3><a name=v1.595>What's new in 1.595</a> (2014/12/21)</h3>
+<ul class=image>
+  <li class=bug>
     Spurious warnings in the log after deleting builds.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25788">issue 25788</a>)
   <li class=bug>
     Master labels disappear when system configuration is updated.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23966">issue 23966</a>)
+  <li class=bug>
+    Updated icon-set dependency to version 1.0.5.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25499">issue 25499</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-25498">issue 25498</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-
-<!-- these changes are controlled by the release process. DO NOT MODIFY -->
-<div id="rc" style="display:none;"><!--=BEGIN=-->
-<h3><a name=v1.594>What's new in 1.594</a> <!--=DATE=--></h3>
+<h3><a name=v1.594>What's new in 1.594</a> (2014/12/14)</h3>
 <ul class=image>
   <li class=bug>
     After recent Java security updates, Jenkins would not gracefully recover from a deleted <code>secrets/master.key</code>.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25937">issue 25937</a>)
+  <li class=bug>
+    <i>Restrict where this project can be run</i> regressed in 1.589 when using the ClearCase plugin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25533">issue 25533</a>)
 </ul>
-</div><!--=END=-->
 <h3><a name=v1.593>What's new in 1.593</a> (2014/12/07)</h3>
-<ul class=image>
-  <li class=rfe>
-    Dynamic Single/Multi line Build History layout.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25381">issue 25381</a>,
-     <a href="https://issues.jenkins-ci.org/browse/JENKINS-25393">issue 25393</a>,
-     <a href="https://issues.jenkins-ci.org/browse/JENKINS-24687">issue 24687</a>,
-     <a href="https://issues.jenkins-ci.org/browse/JENKINS-24589">issue 24589</a>)
-</ul>
-<h3><a name=v1.593>What's new in 1.593</a> (2014/11/30)</h3>
 <ul class=image>
   <li class=rfe>
     Dynamic Single/Multi line Build History layout.
@@ -101,7 +481,7 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Always use forward slashes in path separators during in ZIP archives generated by Directory Browser
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22514">issue 22514</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22514">issue 22514</a>)
 </ul>
 <h3><a name=v1.590>What's new in 1.590</a> (2014/11/16)</h3>
 <ul class=image>
@@ -113,7 +493,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25400">issue 25400</a>)
   <li class=bug>
     Fixed various real or potential resource leaks discovered by <a href="https://scan.coverity.com/projects/94/">Coverity Scan</code>
-    (<a href="https://github.com/jenkinsci/jenkins/pull/1434">pull request 1434</a>)  
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1434">pull request 1434</a>)
   <li class=rfe>
     API changes: Expose <code>AbstractProject.AbstractProjectDescriptor#validateLabelExpression</code> for plugins.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1456">pull request 1456</a>)
@@ -122,7 +502,7 @@ Upcoming changes</a>
     (<a href="https://github.com/jenkinsci/jenkins/pull/1458">pull request 1458</a>)
   <li class=rfe>
     API method to get non-null <code>Jenkins</code> instance with internal validation
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23339">issue 23339</a>)    
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23339">issue 23339</a>)
 </ul>
 <h3><a name=v1.589>What's new in 1.589</a> (2014/11/09)</h3>
 <ul class=image>
@@ -168,7 +548,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25019">issue 25019</a>)
   <li class=bug>
     Existing <code>FileParameter</code>s should be handled as different values to avoid merging of queued builds
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19017">issue 19017</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19017">issue 19017</a>)
 </ul>
 <h3><a name=v1.585>What's new in 1.585</a> (2014/10/19)</h3>
 <ul class=image>
@@ -188,22 +568,22 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25065">issue 25065</a>)
   <li class=bug>
     Greater-than characters are not escaped in HTML outputs like e-mails
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16184">issue 16184</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16184">issue 16184</a>)
   <li class=bug>
     Thread starvation from <code>OldDataMonitor</code>.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24763">issue 24763</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24763">issue 24763</a>)
   <li class=bug>
-    Integer overflow in quiet-down timeout calculation 
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24914">issue 24914</a>)  
+    Integer overflow in quiet-down timeout calculation
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24914">issue 24914</a>)
   <li class=bug>
     Don't put session IDs in URLs even when cookies are disabled.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22358">issue 22358</a>)
   <li class=rfe>
     Show keep build log reason in tool tips
-    (<a href="https://github.com/jenkinsci/jenkins/pull/1422">pull request 1422</a>)  
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1422">pull request 1422</a>)
   <li class=bug>
     Do not disable projects, which do not support such operation (like Matrix configurations)
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24340">issue 24340</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24340">issue 24340</a>)
   <li class=rfe>
     Improved the scalability of SSH slaves plugin caused by global lock in <tt>SecureRandom</tt>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20108">issue 20108</a>)
@@ -457,7 +837,7 @@ Upcoming changes</a>
 <ul class=image>
   <li class="rfe">
     UI redesign: Use Helvetica as default font
-    (<a href="https://github.com/jenkinsci/jenkins/pull/1315">pull 1315</a>, 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1315">pull 1315</a>,
     <a href="https://issues.jenkins-ci.org/browse/JENKINS-23840">issue 23840</a>)
   <li class="bug">
     Synchronization issue during tool installation
@@ -600,7 +980,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20499">issue 20499</a>)
   <li class="bug">
     Fixed <code>NullPointerException</code> on plugin installations when invalid update center is set
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20031">issue 20031</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20031">issue 20031</a>)
   <li class="bug">
     Use DISABLED_ANIME icon while building a disabled project
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-8358">issue 8358</a>)
@@ -613,22 +993,22 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18116">issue 18116</a>)
   <li class="bug">
     Properly close input streams in <code>FileParameterValue</code>
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22693">issue 22693</a>)      
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22693">issue 22693</a>)
   <li class="bug">
     Incorrect failure age in the JUnit test results
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18626">issue 18626</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18626">issue 18626</a>)
   <li class="bug">
     Fixed deletion links for JVM Crash error logs
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22617">issue 22617</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22617">issue 22617</a>)
   <li class="rfe">
     Distinguish &quot;nodes for label offline&quot; from &quot;no nodes for label&quot;
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17114">issue 17114</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17114">issue 17114</a>)
   <li class="rfe">
     Add causes to queue item tool tip
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19250">issue 19250</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19250">issue 19250</a>)
   <li class="rfe">
     RPM: added JENKINS_HTTPS_KEYSTORE and JENKINS_HTTPS_KEYSTORE_PASSWORD options to Jenkins sysconfig file
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11673">issue 11673</a>)  
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11673">issue 11673</a>)
   <li class="bug">
     RPM: Do not install jenkins.repo file
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22690">issue 22690</a>)
@@ -978,7 +1358,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19559">issue 19559</a>)
   <li class=bug>
     Fix autocompletion for items in folders.
-    (<a href="https://github.com/jenkinsci/jenkins/pull/1124">pull request 1124</a>)  
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1124">pull request 1124</a>)
 </ul>
 <h3><a name=v1.552>What's new in 1.552</a> (2014/02/24)</h3>
 <ul class=image>
@@ -1285,7 +1665,7 @@ Upcoming changes</a>
     Added CLI commands that manipulate views
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19996">issue 19996</a>)
   <li class=rfe>
-    Improved the /cli help screen. 
+    Improved the /cli help screen.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20023">issue 20023</a>)
   <li class=bug>
     Polling-triggered jobs get scheduled en-mass on start-up if slaves aren't online yet.
@@ -1355,7 +1735,7 @@ Upcoming changes</a>
     <a href="https://issues.jenkins-ci.org/browse/JENKINS-18879">issue 18879</a>,
     <a href="https://issues.jenkins-ci.org/browse/JENKINS-19619">issue 19619</a>)
   <li class='major rfe'>
-    Upgrade bundled iplugin versions: ssh-slaves to 1.4, ssh-credentials to 1.5.3 and 
+    Upgrade bundled iplugin versions: ssh-slaves to 1.4, ssh-credentials to 1.5.3 and
     credentials to 1.8.3
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19945">issue 19945</a>)
   <li class='major rfe'>
@@ -1945,7 +2325,7 @@ Upcoming changes</a>
     ”My Views" links leads to 404 Not Found.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17317">issue 17317</a>)
   <li class=bug>
-    Quoting Issue with JDK Installer with Windows Installer. 
+    Quoting Issue with JDK Installer with Windows Installer.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5408">issue 5408</a>)
   <li class=bug>
     Restored compatibility in <code>ArtifactArchiver</code> signature; broken in 1.509 and could affect plugins.
@@ -2021,7 +2401,7 @@ Upcoming changes</a>
     ChangeLog should produce some output even if some (plugin) annotator fails
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17084">issue 17084</a>)
   <li class=bug>
-    View name should not allow "..".    
+    View name should not allow "..".
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16608">issue 16608</a>)
 </ul>
 <h3><a name=v1.508>What's new in 1.508</a> (2013/03/25)</h3>
@@ -2053,7 +2433,7 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16089">issue 16089</a>)
   <li class=bug>
     Wrong build result in post build steps after failed pre build step in maven projects.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17177">issue 17177</a>)     
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-17177">issue 17177</a>)
 </ul>
 <h3><a name=v1.506>What's new in 1.506</a> (2013/03/17)</h3>
 <ul class=image>
@@ -2242,7 +2622,7 @@ Upcoming changes</a>
   <li class=bug>
     Fixed NullPointerException when copying from existing Maven job
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16499">issue 16499</a>)
-    
+
 </ul>
 <h3><a name=v1.500>What's new in 1.500</a> (2013/01/26)</h3>
 <ul class=image>

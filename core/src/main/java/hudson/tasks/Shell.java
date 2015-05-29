@@ -125,6 +125,7 @@ public class Shell extends CommandInterpreter {
          *  @deprecated 1.403
          *      Use {@link #getShellOrDefault(hudson.remoting.VirtualChannel) }.
          */
+        @Deprecated
         public String getShellOrDefault() {
             if(shell==null)
                 return Functions.isWindows() ?"sh":"/bin/sh";

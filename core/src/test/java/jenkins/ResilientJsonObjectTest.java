@@ -2,7 +2,7 @@ package jenkins;
 
 import net.sf.json.JSONObject;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -14,7 +14,7 @@ public class ResilientJsonObjectTest {
      * {@link JSONObject} databinding should be able to ignore non-existent fields.
      */
     @Test
-    @Bug(15105)
+    @Issue("JENKINS-15105")
     public void databindingShouldIgnoreUnrecognizedJsonProperty() {
         JSONObject o = JSONObject.fromObject("{a:1,b:2}");
         Foo f = (Foo)JSONObject.toBean(o,Foo.class);

@@ -23,25 +23,33 @@
  */
 package hudson.util;
 
+import static org.junit.Assert.fail;
+
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormFieldValidatorTest.BrokenFormValidatorBuilder.DescriptorImpl;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FormFieldValidatorTest extends HudsonTestCase {
-    @Bug(2771)
+public class FormFieldValidatorTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    @Issue("JENKINS-2771")
     @WithPlugin("tasks.jpi")
-    public void test2771() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
-        new WebClient().getPage(p,"configure");
+    public void configure() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        j.createWebClient().getPage(p, "configure");
     }
 
     public static class BrokenFormValidatorBuilder extends Publisher {
@@ -67,14 +75,15 @@ public class FormFieldValidatorTest extends HudsonTestCase {
     /**
      * Make sure that the validation methods are really called by testing a negative case.
      */
-    @Bug(3382)
-    public void testNegative() throws Exception {
+    @Test
+    @Issue("JENKINS-3382")
+    public void negative() throws Exception {
         DescriptorImpl d = new DescriptorImpl();
         Publisher.all().add(d);
         try {
-            FreeStyleProject p = createFreeStyleProject();
+            FreeStyleProject p = j.createFreeStyleProject();
             p.getPublishersList().add(new BrokenFormValidatorBuilder());
-            new WebClient().getPage(p,"configure");
+            j.createWebClient().getPage(p, "configure");
             fail("should have failed");
         } catch(AssertionError e) {
             if(e.getMessage().contains("doCheckXyz is broken"))
@@ -85,5 +94,4 @@ public class FormFieldValidatorTest extends HudsonTestCase {
             Publisher.all().remove(d);
         }
     }
-
 }

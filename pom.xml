@@ -33,11 +33,12 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.595-SNAPSHOT</version>
+  <version>1.616-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
   <description>The module that constitutes the main jenkins.war</description>
+
   <licenses>
     <license>
       <name>The MIT license</name>
@@ -60,6 +61,7 @@ THE SOFTWARE.
     <url>https://github.com/jenkinsci/jenkins</url>
     <tag>HEAD</tag>
   </scm>
+
   <distributionManagement>
     <site>
       <id>github-pages</id>
@@ -96,9 +98,10 @@ THE SOFTWARE.
 
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <maven-plugin.version>2.7.1</maven-plugin.version>
+    <matrix-project.version>1.4.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
 
-    <java.level>6</java.level>
+    <java.level>7</java.level>
   </properties>
 
   <repositories>
@@ -113,6 +116,7 @@ THE SOFTWARE.
       </snapshots>
     </repository>
   </repositories>
+
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
@@ -128,7 +132,6 @@ THE SOFTWARE.
 
   <dependencyManagement>
     <dependencies>
-
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
@@ -150,18 +153,18 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>1.8.5</version>
+        <version>1.9.5</version>
       </dependency>
       
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.4.10</version>
+        <version>1.5.6</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
-        <version>1.4.10</version>
+        <version>1.5.6</version>
       </dependency>
 
       <dependency>
@@ -173,7 +176,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.48</version>
+        <version>2.51</version>
       </dependency>
 
       <dependency>
@@ -186,7 +189,6 @@ THE SOFTWARE.
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
         <version>4.0-beta</version>
-        <classifier>no_aop</classifier>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -222,6 +224,7 @@ THE SOFTWARE.
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
     <dependency>
       <!-- for JRE requirement check annotation -->
@@ -327,6 +330,7 @@ THE SOFTWARE.
           </configuration>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
           <version>1.4</version>
         </plugin>
@@ -343,18 +347,19 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>2.4</version>
+          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
-          <version>2.3</version>
+          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.16</version> <!-- ignoring ${maven-surefire-plugin.version} -->
           <configuration>
+            <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
@@ -437,7 +442,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.15</version>
+          <version>1.23</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
@@ -476,7 +481,7 @@ THE SOFTWARE.
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-pmd-plugin</artifactId>
           <version>2.7.1</version>
-         </plugin>
+        </plugin>
         <plugin>
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
@@ -491,7 +496,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.106</version>
+          <version>1.110</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -560,6 +565,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.1</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
@@ -628,7 +634,7 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>1.6.0-18</version>
+                  <version>1.7.0</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.0</version>

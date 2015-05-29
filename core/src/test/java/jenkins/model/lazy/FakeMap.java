@@ -26,7 +26,6 @@ package jenkins.model.lazy;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 
 /**
@@ -43,49 +42,26 @@ public class FakeMap extends AbstractLazyLoadRunMap<Build> {
     }
 
     @Override
-    protected String getIdOf(Build build) {
-        return build.id;
-    }
-
-    @Override
-    protected FilenameFilter createDirectoryFilter() {
-        return new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                try {
-                    Integer.parseInt(name);
-                    return false;
-                } catch (NumberFormatException e) {
-                    return true;
-                }
-            }
-        };
-    }
-
-    @Override
     protected Build retrieve(File dir) throws IOException {
         String n = FileUtils.readFileToString(new File(dir, "n")).trim();
-        String id = FileUtils.readFileToString(new File(dir, "id")).trim();
-        //new Exception("loading " + id + " #" + n).printStackTrace();
-        return new Build(Integer.parseInt(n),id);
+        //new Exception("loading #" + n).printStackTrace();
+        return new Build(Integer.parseInt(n));
     }
 }
 
 class Build {
     final int n;
-    final String id;
 
-    Build(int n, String id) {
+    Build(int n) {
         this.n = n;
-        this.id = id;
     }
 
-    public void asserts(int n, String id) {
+    public void asserts(int n) {
         assert this.n==n;
-        assert this.id.equals(id);
     }
 
     @Override public String toString() {
-        return "Build #" + n + " [" + id + "] @" + hashCode();
+        return "Build #" + n + " @" + hashCode();
     }
 
 }

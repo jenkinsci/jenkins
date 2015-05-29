@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 import java.util.TreeSet;
+import jenkins.model.DownloadSettings;
 import net.sf.json.JSONObject;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.kohsuke.stapler.StaplerResponse;
@@ -30,9 +31,10 @@ public class DownloadServiceTest extends HudsonTestCase {
         // to bypass the URL restriction, we'll trigger downloadService.download ourselves
         job = new Downloadable("test", "UNUSED");
         Downloadable.all().add(job);
+        DownloadSettings.get().setUseBrowser(true);
     }
 
-    @Bug(5536)
+    @Issue("JENKINS-5536")
     public void testPost() throws Exception {
         // initially it should fail because the data doesn't have a signature
         assertNull(job.getData());

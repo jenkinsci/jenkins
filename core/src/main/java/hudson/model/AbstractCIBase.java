@@ -34,7 +34,6 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
@@ -47,8 +46,6 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     public static boolean LOG_STARTUP_PERFORMANCE = Configuration.getBooleanConfigParameter("logStartupPerformance", false);
 
     private static final Logger LOGGER = Logger.getLogger(AbstractCIBase.class.getName());
-
-    private final transient Object updateComputerLock = new Object();
 
     /**
      * If you are calling this on Hudson something is wrong.
@@ -64,8 +61,9 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
    /**
      * @deprecated
      *      Why are you calling a method that always returns ""?
-    *       You probably want o call {@link Jenkins#getRootUrl()}
+    *       You probably want to call {@link Jenkins#getRootUrl()}
      */
+    @Deprecated
     public String getUrl() {
         return "";
     }
@@ -137,15 +135,20 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         used.add(c);
     }
 
-    /*package*/ void removeComputer(Computer computer) {
-        Map<Node,Computer> computers = getComputerMap();
-        for (Map.Entry<Node, Computer> e : computers.entrySet()) {
-            if (e.getValue() == computer) {
-                computers.remove(e.getKey());
-                computer.onRemoved();
-                return;
+    /*package*/ void removeComputer(final Computer computer) {
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                Map<Node,Computer> computers = getComputerMap();
+                for (Map.Entry<Node, Computer> e : computers.entrySet()) {
+                    if (e.getValue() == computer) {
+                        computers.remove(e.getKey());
+                        computer.onRemoved();
+                        return;
+                    }
+                }
             }
-        }
+        });
     }
 
     /*package*/ @CheckForNull Computer getComputer(Node n) {
@@ -160,36 +163,46 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * This method tries to reuse existing {@link Computer} objects
      * so that we won't upset {@link Executor}s running in it.
      */
-    protected void updateComputerList(boolean automaticSlaveLaunch) throws IOException {
-        Map<Node,Computer> computers = getComputerMap();
-        synchronized(updateComputerLock) {// just so that we don't have two code updating computer list at the same time
-            Map<String,Computer> byName = new HashMap<String,Computer>();
-            for (Computer c : computers.values()) {
-                Node node = c.getNode();
-                if (node == null)
-                    continue;   // this computer is gone
-                byName.put(node.getNodeName(),c);
-            }
+    protected void updateComputerList(final boolean automaticSlaveLaunch) {
+        final Map<Node,Computer> computers = getComputerMap();
+        final Set<Computer> old = new HashSet<Computer>(computers.size());
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                Map<String,Computer> byName = new HashMap<String,Computer>();
+                for (Computer c : computers.values()) {
+                    old.add(c);
+                    Node node = c.getNode();
+                    if (node == null)
+                        continue;   // this computer is gone
+                    byName.put(node.getNodeName(),c);
+                }
 
-            final Set<Computer> old = new HashSet<Computer>(computers.values());
-            Set<Computer> used = new HashSet<Computer>();
+                Set<Computer> used = new HashSet<Computer>(old.size());
 
-            updateComputer(this, byName, used, automaticSlaveLaunch);
-            for (Node s : getNodes()) {
-                long start = System.currentTimeMillis();
-                updateComputer(s, byName, used, automaticSlaveLaunch);
-                if(LOG_STARTUP_PERFORMANCE)
-                    LOGGER.info(String.format("Took %dms to update node %s",
-                            System.currentTimeMillis()-start, s.getNodeName()));
-            }
+                updateComputer(AbstractCIBase.this, byName, used, automaticSlaveLaunch);
+                for (Node s : getNodes()) {
+                    long start = System.currentTimeMillis();
+                    updateComputer(s, byName, used, automaticSlaveLaunch);
+                    if(LOG_STARTUP_PERFORMANCE)
+                        LOGGER.info(String.format("Took %dms to update node %s",
+                                System.currentTimeMillis()-start, s.getNodeName()));
+                }
 
-            // find out what computers are removed, and kill off all executors.
-            // when all executors exit, it will be removed from the computers map.
-            // so don't remove too quickly
-            old.removeAll(used);
-            for (Computer c : old) {
-                killComputer(c);
+                // find out what computers are removed, and kill off all executors.
+                // when all executors exit, it will be removed from the computers map.
+                // so don't remove too quickly
+                old.removeAll(used);
+                // we need to start the process of reducing the executors on all computers as distinct
+                // from the killing action which should not excessively use the Queue lock.
+                for (Computer c : old) {
+                    c.inflictMortalWound();
+                }
             }
+        });
+        for (Computer c : old) {
+            // when we get to here, the number of executors should be zero so this call should not need the Queue.lock
+            killComputer(c);
         }
         getQueue().scheduleMaintenance();
         for (ComputerListener cl : ComputerListener.all())

@@ -34,7 +34,7 @@ import org.apache.commons.io.input.NullInputStream;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
@@ -43,7 +43,7 @@ public class GetJobCommandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Bug(20236)
+    @Issue("JENKINS-20236")
     @Test public void withFolders() throws Exception {
         MockFolder d = j.createFolder("d");
         FreeStyleProject p = d.createProject(FreeStyleProject.class, "p");

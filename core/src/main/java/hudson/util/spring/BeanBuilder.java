@@ -327,7 +327,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	public void loadBeans(Resource[] resources) throws IOException {
 		Closure beans = new Closure(this){
 			@Override
-			public Object call(Object[] args) {
+			public Object call(Object... args) {
 				return beans((Closure)args[0]);
 			}
 		};

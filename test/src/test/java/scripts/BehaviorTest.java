@@ -25,7 +25,7 @@ package scripts;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
@@ -54,7 +54,7 @@ public class BehaviorTest extends HudsonTestCase {
         return ((Double)r.getJavaScriptResult()).intValue();
     }
 
-    @Bug(14495)
+    @Issue("JENKINS-14495")
     public void testDuplicateRegistrations() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testDuplicateRegistrations");
         ScriptResult r = p.executeJavaScript("document.getElementsBySelector('DIV.a')[0].innerHTML");

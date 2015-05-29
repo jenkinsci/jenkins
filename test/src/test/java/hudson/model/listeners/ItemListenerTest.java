@@ -23,9 +23,15 @@
  */
 package hudson.model.listeners;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.cli.CLI;
 import hudson.model.Item;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,13 +42,16 @@ import java.util.Arrays;
  * Tests for ItemListener events.
  * @author Alan.Harder@sun.com
  */
-public class ItemListenerTest extends HudsonTestCase {
-    private ItemListener listener;
+public class ItemListenerTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     private StringBuffer events = new StringBuffer();
 
-    @Override protected void setUp() throws Exception {
-        super.setUp();
-        listener = new ItemListener() {
+    @Before
+    public void setUp() throws Exception {
+        ItemListener listener = new ItemListener() {
             @Override public void onCreated(Item item) {
                 events.append('C');
             }
@@ -53,17 +62,18 @@ public class ItemListenerTest extends HudsonTestCase {
         ItemListener.all().add(0, listener);
     }
 
-    public void testOnCreatedViaCLI() throws Exception {
+    @Test
+    public void onCreatedViaCLI() throws Exception {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(buf);
-        CLI cli = new CLI(getURL());
+        CLI cli = new CLI(j.getURL());
         try {
             cli.execute(Arrays.asList("create-job", "testJob"),
                     new ByteArrayInputStream(("<project><actions/><builders/><publishers/>"
                             + "<buildWrappers/></project>").getBytes()),
                     out, out);
             out.flush();
-            assertNotNull("job should be created: " + buf, jenkins.getItem("testJob"));
+            assertNotNull("job should be created: " + buf, j.jenkins.getItem("testJob"));
             assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());
         } finally {
             cli.close();

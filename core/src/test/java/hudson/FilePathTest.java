@@ -27,13 +27,7 @@ import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.NullStream;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.NullOutputStream;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Chmod;
-import org.jvnet.hudson.test.Bug;
-import org.mockito.Mockito;
-
+import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,6 +35,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -56,18 +52,31 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Chmod;
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
-
+import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FilePathTest extends ChannelTestCase {
+public class FilePathTest {
 
-    public void testCopyTo() throws Exception {
-        File tmp = File.createTempFile("testCopyTo","");
-        FilePath f = new FilePath(french,tmp.getPath());
+    @Rule public ChannelRule channels = new ChannelRule();
+    @Rule public TemporaryFolder temp = new TemporaryFolder();
+
+    @Test public void copyTo() throws Exception {
+        File tmp = temp.newFile();
+        FilePath f = new FilePath(channels.french, tmp.getPath());
         f.copyTo(new NullStream());
         assertTrue("target does not exist", tmp.exists());
         assertTrue("could not delete target " + tmp.getPath(), tmp.delete());
@@ -79,12 +88,12 @@ public class FilePathTest extends ChannelTestCase {
      */
     // TODO: this test is much too slow to be a traditional unit test. Should be extracted into some stress test
     // which is no part of the default test harness?
-    public void testNoFileLeakInCopyTo() throws Exception {
+    @Test public void noFileLeakInCopyTo() throws Exception {
         for (int j=0; j<2500; j++) {
-            File tmp = File.createTempFile("testCopyFrom","");
+            File tmp = temp.newFile();
             FilePath f = new FilePath(tmp);
-            File tmp2 = File.createTempFile("testCopyTo","");
-            FilePath f2 = new FilePath(british,tmp2.getPath());
+            File tmp2 = temp.newFile();
+            FilePath f2 = new FilePath(channels.british, tmp2.getPath());
 
             f.copyTo(f2);
 
@@ -105,11 +114,10 @@ public class FilePathTest extends ChannelTestCase {
      *
      * Also see JENKINS-7897
      */
-    @Bug(7871)
-    public void testNoRaceConditionInCopyTo() throws Exception {
-        final File tmp = File.createTempFile("testNoRaceConditionInCopyTo","");
+    @Issue("JENKINS-7871")
+    @Test public void noRaceConditionInCopyTo() throws Exception {
+        final File tmp = temp.newFile();
 
-        try {
            int fileSize = 90000;
         
             givenSomeContentInFile(tmp, fileSize);
@@ -119,9 +127,6 @@ public class FilePathTest extends ChannelTestCase {
             // THEN copied count was always equal the expected size
             for (Future<Integer> f : results)
                 assertEquals(fileSize,f.get().intValue());
-        } finally {
-            tmp.delete();
-        }
     }
 
     private void givenSomeContentInFile(File file, int size) throws IOException {
@@ -173,7 +178,7 @@ public class FilePathTest extends ChannelTestCase {
                         }
                     }
 
-                    FilePath f = new FilePath(french, file.getPath());
+                    FilePath f = new FilePath(channels.french, file.getPath());
                     Sink sink = new Sink();
                     f.copyTo(sink);
                     return sink.count;
@@ -189,31 +194,24 @@ public class FilePathTest extends ChannelTestCase {
         }
     }
 
-    public void testRepeatCopyRecursiveTo() throws Exception {
+    @Test public void repeatCopyRecursiveTo() throws Exception {
         // local->local copy used to return 0 if all files were "up to date"
         // should return number of files processed, whether or not they were copied or already current
-        File tmp = Util.createTempDir(), src = new File(tmp, "src"), dst = new File(tmp, "dst");
-        try {
-            assertTrue(src.mkdir());
-            assertTrue(dst.mkdir());
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
             File.createTempFile("foo", ".tmp", src);
             FilePath fp = new FilePath(src);
             assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
             // copy again should still report 1
             assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
     }
 
-    @Bug(9540)
-    public void testErrorMessageInRemoteCopyRecursive() throws Exception {
-        File tmp = Util.createTempDir();
-        try {
-            File src = new File(tmp, "src");
-            File dst = new File(tmp, "dst");
+    @Issue("JENKINS-9540")
+    @Test public void errorMessageInRemoteCopyRecursive() throws Exception {
+        File src = temp.newFolder("src");
+        File dst = temp.newFolder("dst");
             FilePath from = new FilePath(src);
-            FilePath to = new FilePath(british, dst.getAbsolutePath());
+            FilePath to = new FilePath(channels.british, dst.getAbsolutePath());
             for (int i = 0; i < 10000; i++) {
                 // TODO is there a simpler way to force the TarOutputStream to be flushed and the reader to start?
                 // Have not found a way to make the failure guaranteed.
@@ -241,24 +239,17 @@ public class FilePathTest extends ChannelTestCase {
             } finally {
                 toF.chmod(700);
             }
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
     }
 
-    public void testArchiveBug4039() throws Exception {
-        File tmp = Util.createTempDir();
-        try {
-            FilePath d = new FilePath(french,tmp.getPath());
+    @Issue("JENKINS-4039")
+    @Test public void archiveBug() throws Exception {
+            FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
             d.child("test").touch(0);
             d.zip(new NullOutputStream());
             d.zip(new NullOutputStream(),"**/*");
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
     }
 
-    public void testNormalization() throws Exception {
+    @Test public void normalization() throws Exception {
         compare("abc/def\\ghi","abc/def\\ghi"); // allow mixed separators
 
         {// basic '.' trimming
@@ -285,7 +276,7 @@ public class FilePathTest extends ChannelTestCase {
         compare("abc/..",".");
         compare(".",".");
 
-        // @Bug(5951)
+        // @Issue("JENKINS-5951")
         compare("C:\\Hudson\\jobs\\foo\\workspace/../../otherjob/workspace/build.xml",
                 "C:\\Hudson\\jobs/otherjob/workspace/build.xml");
         // Other cases that failed before
@@ -311,8 +302,8 @@ public class FilePathTest extends ChannelTestCase {
         assertEquals(answer,new FilePath((VirtualChannel)null,original).getRemote());
     }
 
-    // @Bug(6494)
-    public void testGetParent() throws Exception {
+    @Issue("JENKINS-6494")
+    @Test public void getParent() throws Exception {
         FilePath fp = new FilePath((VirtualChannel)null, "/abc/def");
         assertEquals("/abc", (fp = fp.getParent()).getRemote());
         assertEquals("/", (fp = fp.getParent()).getRemote());
@@ -337,10 +328,56 @@ public class FilePathTest extends ChannelTestCase {
         FileUtils.touch(building);
         return new FilePath(building);
     }
+    
+    /**
+     * Performs round-trip archiving for Tar handling methods.
+     * @throws Exception test failure
+     */
+    @Test public void compressTarUntarRoundTrip() throws Exception {
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);   
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100); 
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000); 
+    }
+            
+    /**
+     * Checks that big files (>8GB) can be archived and then unpacked.
+     * This test is disabled by default due the impact on RAM.
+     * The actual file size limit is 8589934591 bytes.
+     * @throws Exception test failure
+     */
+    @Issue("JENKINS-10629")
+    @Ignore
+    @Test public void archiveBigFile() throws Exception {
+        final long largeFileSize = 9000000000L; // >8589934591 bytes
+        final String filePrefix = "JENKINS-10629";
+        checkTarUntarRoundTrip(filePrefix, largeFileSize);
+    }
+     
+    private void checkTarUntarRoundTrip(String filePrefix, long fileSize) throws Exception {
+        final File tmpDir = temp.newFolder(filePrefix);
+        final File tempFile =  new File(tmpDir, filePrefix + ".log");
+        RandomAccessFile file = new RandomAccessFile(tempFile, "rw");
+        final File tarFile = new File(tmpDir, filePrefix + ".tar");
 
-    public void testList() throws Exception {
-        File baseDir = Util.createTempDir();
-        try {
+        file.setLength(fileSize);
+        assumeTrue(fileSize == file.length());
+        file.close();
+
+        // Compress archive
+        final FilePath tmpDirPath = new FilePath(tmpDir);
+        int tar = tmpDirPath.tar(new FileOutputStream(tarFile), tempFile.getName());
+        assertEquals("One file should have been compressed", 1, tar);
+
+        // Decompress
+        FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
+        final FilePath outFile = outDir.child(tempFile.getName());
+        tmpDirPath.child( filePrefix + ".tar").untar(outDir, TarCompression.NONE);
+        assertEquals("Result file after the roundtrip differs from the initial file",
+                new FilePath(tempFile).digest(), outFile.digest());
+    }
+
+    @Test public void list() throws Exception {
+        File baseDir = temp.getRoot();
             final Set<FilePath> expected = new HashSet<FilePath>();
             expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
             expected.add(createFilePath(baseDir, "top", "sub", "trace.log"));
@@ -348,14 +385,10 @@ public class FilePathTest extends ChannelTestCase {
             expected.add(createFilePath(baseDir, "top", "db", "trace.log"));
             final FilePath[] result = new FilePath(baseDir).list("**");
             assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
-        } finally {
-            Util.deleteRecursive(baseDir);
-        }
     }
 
-    public void testListWithExcludes() throws Exception {
-        File baseDir = Util.createTempDir();
-        try {
+    @Test public void listWithExcludes() throws Exception {
+        File baseDir = temp.getRoot();
             final Set<FilePath> expected = new HashSet<FilePath>();
             expected.add(createFilePath(baseDir, "top", "sub", "app.log"));
             createFilePath(baseDir, "top", "sub", "trace.log");
@@ -363,14 +396,10 @@ public class FilePathTest extends ChannelTestCase {
             createFilePath(baseDir, "top", "db", "trace.log");
             final FilePath[] result = new FilePath(baseDir).list("**", "**/trace.log");
             assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
-        } finally {
-            Util.deleteRecursive(baseDir);
-        }
     }
 
-    public void testListWithDefaultExcludes() throws Exception {
-        File baseDir = Util.createTempDir();
-        try {
+    @Test public void listWithDefaultExcludes() throws Exception {
+        File baseDir = temp.getRoot();
             final Set<FilePath> expected = new HashSet<FilePath>();
             expected.add(createFilePath(baseDir, "top", "sub", "backup~"));
             expected.add(createFilePath(baseDir, "top", "CVS", "somefile,v"));
@@ -379,13 +408,10 @@ public class FilePathTest extends ChannelTestCase {
             assertEquals(0, new FilePath(baseDir).list("**", "").length);
             final FilePath[] result = new FilePath(baseDir).list("**", "", false);
             assertEquals(expected, new HashSet<FilePath>(Arrays.asList(result)));
-        } finally {
-            Util.deleteRecursive(baseDir);
-        }
     }
 
-    @Bug(11073)
-    public void testIsUnix() {
+    @Issue("JENKINS-11073")
+    @Test public void isUnix() {
         VirtualChannel dummy = Mockito.mock(VirtualChannel.class);
         FilePath winPath = new FilePath(dummy,
                 " c:\\app\\hudson\\workspace\\3.8-jelly-db\\jdk/jdk1.6.0_21/label/sqlserver/profile/sqlserver\\acceptance-tests\\distribution.zip");
@@ -408,9 +434,8 @@ public class FilePathTest extends ChannelTestCase {
      * Also tries to check that a problem with setting the last-modified date on Windows doesn't fail the whole copy
      * - well at least when running this test on a Windows OS. See JENKINS-11073
      */
-    public void testCopyToWithPermission() throws IOException, InterruptedException {
-        File tmp = Util.createTempDir();
-        try {
+    @Test public void copyToWithPermission() throws IOException, InterruptedException {
+        File tmp = temp.getRoot();
             File child = new File(tmp,"child");
             FilePath childP = new FilePath(child);
             childP.touch(4711);
@@ -421,7 +446,7 @@ public class FilePathTest extends ChannelTestCase {
             chmodTask.setPerm("0400");
             chmodTask.execute();
             
-            FilePath copy = new FilePath(british,tmp.getPath()).child("copy");
+            FilePath copy = new FilePath(channels.british, tmp.getPath()).child("copy");
             childP.copyToWithPermission(copy);
             
             assertEquals(childP.mode(),copy.mode());
@@ -433,19 +458,15 @@ public class FilePathTest extends ChannelTestCase {
             // Windows seems to have random failures when setting the timestamp on newly generated
             // files. So test that:
             for (int i=0; i<100; i++) {
-                copy = new FilePath(british,tmp.getPath()).child("copy"+i);
+                copy = new FilePath(channels.british, tmp.getPath()).child("copy"+i);
                 childP.copyToWithPermission(copy);
             }
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
     }
 
-    public void testSymlinkInTar() throws Exception {
+    @Test public void symlinkInTar() throws Exception {
         if (Functions.isWindows())  return; // can't test on Windows
 
-        FilePath tmp = new FilePath(Util.createTempDir());
-        try {
+        FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");
             in.mkdirs();
             in.child("c").touch(0);
@@ -458,13 +479,10 @@ public class FilePathTest extends ChannelTestCase {
             tar.untar(dst, TarCompression.NONE);
 
             assertEquals("c",dst.child("b").readLink());
-        } finally {
-            tmp.deleteRecursive();
-        }
     }
 
-    @Bug(13649)
-    public void testMultiSegmentRelativePaths() throws Exception {
+    @Issue("JENKINS-13649")
+    @Test public void multiSegmentRelativePaths() throws Exception {
         VirtualChannel d = Mockito.mock(VirtualChannel.class);
         FilePath winPath = new FilePath(d, "c:\\app\\jenkins\\workspace");
         FilePath nixPath = new FilePath(d, "/opt/jenkins/workspace");
@@ -477,10 +495,9 @@ public class FilePathTest extends ChannelTestCase {
         assertEquals("/opt/jenkins/workspace/foo/bar/manchu", new FilePath(nixPath, "foo/bar/manchu").getRemote());
     }
 
-    public void testValidateAntFileMask() throws Exception {
-        File tmp = Util.createTempDir();
-        try {
-            FilePath d = new FilePath(french, tmp.getPath());
+    @Test public void validateAntFileMask() throws Exception {
+        File tmp = temp.getRoot();
+            FilePath d = new FilePath(channels.french, tmp.getPath());
             d.child("d1/d2/d3").mkdirs();
             d.child("d1/d2/d3/f.txt").touch(0);
             d.child("d1/d2/d3/f.html").touch(0);
@@ -492,9 +509,6 @@ public class FilePathTest extends ChannelTestCase {
             assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAnything("index.htm"), d, "index.htm");
             assertValidateAntFileMask(Messages.FilePath_validateAntFileMask_doesntMatchAndSuggest("f.html", "d1/d2/d3/f.html"), d, "f.html");
             // TODO lots more to test, e.g. multiple patterns separated by commas; ought to have full code coverage for this method
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
     }
 
     @SuppressWarnings("deprecation")
@@ -504,10 +518,9 @@ public class FilePathTest extends ChannelTestCase {
 
     @Issue("JENKINS-7214")
     @SuppressWarnings("deprecation")
-    public void testValidateAntFileMaskBounded() throws Exception {
-        File tmp = Util.createTempDir();
-        try {
-            FilePath d = new FilePath(french, tmp.getPath());
+    @Test public void validateAntFileMaskBounded() throws Exception {
+        File tmp = temp.getRoot();
+            FilePath d = new FilePath(channels.french, tmp.getPath());
             FilePath d2 = d.child("d1/d2");
             d2.mkdirs();
             for (int i = 0; i < 100; i++) {
@@ -524,16 +537,12 @@ public class FilePathTest extends ChannelTestCase {
             } catch (InterruptedException x) {
                 // good
             }
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
     }
    
-    @Bug(15418)
-    public void testDeleteLongPathOnWindows() throws Exception {
-        File tmp = Util.createTempDir();
-        try {
-            FilePath d = new FilePath(french, tmp.getPath());
+    @Issue("JENKINS-15418")
+    @Test public void deleteLongPathOnWindows() throws Exception {
+        File tmp = temp.getRoot();
+            FilePath d = new FilePath(channels.french, tmp.getPath());
             
             // construct a very long path
             StringBuilder sb = new StringBuilder();
@@ -551,16 +560,11 @@ public class FilePathTest extends ChannelTestCase {
             Util.deleteRecursive(firstDirectory);
             
             assertFalse("Could not delete directory!", firstDirectory.exists());
-            
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
     }
 
-    @Bug(16215)
-    public void testInstallIfNecessaryAvoidsExcessiveDownloadsByUsingIfModifiedSince() throws Exception {
-        final File tmp = Util.createTempDir();
-        try {
+    @Issue("JENKINS-16215")
+    @Test public void installIfNecessaryAvoidsExcessiveDownloadsByUsingIfModifiedSince() throws Exception {
+        File tmp = temp.getRoot();
             final FilePath d = new FilePath(tmp);
 
             d.child(".timestamp").touch(123000);
@@ -574,15 +578,11 @@ public class FilePathTest extends ChannelTestCase {
             assertFalse(d.installIfNecessaryFrom(url, null, null));
 
             verify(con).setIfModifiedSince(123000);
-        } finally {
-            Util.deleteRecursive(tmp);
-        }
     }
 
-    @Bug(16215)
-    public void testInstallIfNecessaryPerformsInstallation() throws Exception {
-        final File tmp = Util.createTempDir();
-        try {
+    @Issue("JENKINS-16215")
+    @Test public void installIfNecessaryPerformsInstallation() throws Exception {
+        File tmp = temp.getRoot();
             final FilePath d = new FilePath(tmp);
 
             final HttpURLConnection con = mock(HttpURLConnection.class);
@@ -595,9 +595,25 @@ public class FilePathTest extends ChannelTestCase {
               .thenReturn(someZippedContent());
 
             assertTrue(d.installIfNecessaryFrom(url, null, null));
-        } finally {
-          Util.deleteRecursive(tmp);
-        }
+    }
+
+    @Issue("JENKINS-26196")
+    @Test public void installIfNecessarySkipsDownloadWhenErroneous() throws Exception {
+        File tmp = temp.getRoot();
+        final FilePath d = new FilePath(tmp);
+        d.child(".timestamp").touch(123000);
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        final URL url = someUrlToZipFile(con);
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_GATEWAY_TIMEOUT);
+        when(con.getResponseMessage()).thenReturn("Gateway Timeout");
+        when(con.getInputStream()).thenThrow(new ConnectException());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String message = "going ahead";
+        assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+        verify(con).setIfModifiedSince(123000);
+        String log = baos.toString();
+        assertFalse(log, log.contains(message));
+        assertTrue(log, log.contains("504 Gateway Timeout"));
     }
 
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
@@ -622,11 +638,9 @@ public class FilePathTest extends ChannelTestCase {
         return new ByteArrayInputStream(buf.toByteArray());
     }
 
-    @Bug(16846)
-    public void testMoveAllChildrenTo() throws IOException, InterruptedException {
-        final File tmp = Util.createTempDir();
-        try
-        {
+    @Issue("JENKINS-16846")
+    @Test public void moveAllChildrenTo() throws IOException, InterruptedException {
+        File tmp = temp.getRoot();
             final String dirname = "sub";
             final File top = new File(tmp, "test");
             final File sub = new File(top, dirname);
@@ -644,10 +658,5 @@ public class FilePathTest extends ChannelTestCase {
             
             // test conflict subdir
             src.moveAllChildrenTo(dst);
-        }
-        finally
-        {
-          Util.deleteRecursive(tmp);
-        }
     }
 }

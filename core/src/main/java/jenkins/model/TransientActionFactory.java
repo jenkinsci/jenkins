@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.TopLevelItem;
@@ -37,7 +38,7 @@ import javax.annotation.Nonnull;
  * @see Actionable#getAllActions
  * @since 1.548
  */
-public abstract class TransientActionFactory<T> {
+public abstract class TransientActionFactory<T> implements ExtensionPoint {
 
     /**
      * The type of object this factory cares about.

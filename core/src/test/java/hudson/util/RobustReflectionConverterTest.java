@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,24 +23,29 @@
  */
 package hudson.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.junit.Test;
+
 /**
  * @author Kohsuke Kawaguchi
  */
-public class RobustReflectionConverterTest extends TestCase {
+public class RobustReflectionConverterTest {
 
     static {
         Logger.getLogger(RobustReflectionConverter.class.getName()).setLevel(Level.OFF);
     }
 
-    public void testRobustUnmarshalling() {
+    @Test
+    public void robustUnmarshalling() {
         Point p = read(new XStream2());
         assertEquals(p.x,1);
         assertEquals(p.y,2);
@@ -51,7 +56,8 @@ public class RobustReflectionConverterTest extends TestCase {
         return (Point) xs.fromXML("<" + clsName + "><x>1</x><y>2</y><z>3</z></" + clsName + '>');
     }
 
-    public void testIfWeNeedWorkaround() {
+    @Test
+    public void ifWorkaroundNeeded() {
         try {
             read(new XStream());
             fail();
@@ -61,7 +67,8 @@ public class RobustReflectionConverterTest extends TestCase {
         }
     }
 
-    public void testClassOwnership() throws Exception {
+    @Test
+    public void classOwnership() throws Exception {
         XStream xs = new XStream2(new XStream2.ClassOwnership() {
             @Override public String ownerOf(Class<?> clazz) {
                 Owner o = clazz.getAnnotation(Owner.class);
@@ -96,6 +103,7 @@ public class RobustReflectionConverterTest extends TestCase {
         Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
         assertEquals(Billy.class, s.lover.getClass());
     }
+
     @Retention(RetentionPolicy.RUNTIME) @interface Owner {String value();}
     public static class Projekt {
         Bild[] bildz;

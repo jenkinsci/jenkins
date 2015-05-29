@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,8 +23,10 @@
  */
 package hudson;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
 import hudson.MarkupText.SubText;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -32,7 +34,9 @@ import java.util.regex.Pattern;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class MarkupTextTest extends TestCase {
+public class MarkupTextTest {
+
+    @Test
     public void test1() {
         MarkupText t = new MarkupText("I fixed issue #155. The rest is trick text: xissue #155 issue #123x");
         for (SubText st : t.findTokens(pattern)) {
@@ -43,7 +47,8 @@ public class MarkupTextTest extends TestCase {
         assertEquals("I fixed <155>issue #155<155>. The rest is trick text: xissue #155 issue #123x", t.toString(false));
     }
 
-    public void testBoundary() {
+    @Test
+    public void boundary() {
         MarkupText t = new MarkupText("issue #155---issue #123");
         for (SubText st : t.findTokens(pattern))
             st.surroundWith("<$1>","<$1>");
@@ -51,7 +56,8 @@ public class MarkupTextTest extends TestCase {
         assertEquals("<155>issue #155<155>---<123>issue #123<123>", t.toString(false));
     }
 
-    public void testFindTokensOnSubText() {
+    @Test
+    public void findTokensOnSubText() {
         MarkupText t = new MarkupText("Fixed 2 issues in this commit, fixing issue 155, 145");
         List<SubText> tokens = t.findTokens(Pattern.compile("issue .*"));
         assertEquals("Expected one token", 1, tokens.size());
@@ -62,7 +68,8 @@ public class MarkupTextTest extends TestCase {
         assertEquals("Fixed 2 issues in this commit, fixing issue <155>155<155>, <145>145<145>", t.toString(false));
     }
 
-    public void testLiteralTextSurround() {
+    @Test
+    public void literalTextSurround() {
         MarkupText text = new MarkupText("AAA test AAA");
         for(SubText token : text.findTokens(Pattern.compile("AAA"))) {
             token.surroundWithLiteral("$9","$9");
@@ -73,7 +80,8 @@ public class MarkupTextTest extends TestCase {
     /**
      * Start/end tag nesting should be correct regardless of the order tags are added.
      */
-    public void testAdjacent() {
+    @Test
+    public void adjacent() {
         MarkupText text = new MarkupText("abcdef");
         text.addMarkup(0,3,"$","$");
         text.addMarkup(3,6,"#","#");
@@ -85,7 +93,8 @@ public class MarkupTextTest extends TestCase {
         assertEquals("$abc$#def#",text.toString(false));
     }
 
-    public void testEscape() {
+    @Test
+    public void escape() {
         MarkupText text = new MarkupText("&&&");
         assertEquals("&amp;&amp;&amp;",text.toString(false));
 
@@ -94,15 +103,17 @@ public class MarkupTextTest extends TestCase {
         assertEquals("&amp;<foo>&amp;&nbsp;&amp;",text.toString(false));
     }
 
-    public void testPreEscape() {
+    @Test
+    public void preEscape() {
         MarkupText text = new MarkupText("Line\n2   & 3\n<End>\n");
         assertEquals("Line\n2   &amp; 3\n&lt;End&gt;\n", text.toString(true));
         text.addMarkup(4, "<hr/>");
         assertEquals("Line<hr/>\n2   &amp; 3\n&lt;End&gt;\n", text.toString(true));
     }
 
-    /* @Bug(6252) */
-    public void testSubTextSubText() {
+    /* @Issue("JENKINS-6252") */
+    @Test
+    public void subTextSubText() {
         MarkupText text = new MarkupText("abcdefgh");
         SubText sub = text.subText(2, 7);
         assertEquals("cdefg", sub.getText());

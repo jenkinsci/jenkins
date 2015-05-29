@@ -102,6 +102,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
     @Override
+    @Deprecated
     public int size() {
         if (size==null) {
             int sz=0;
@@ -119,6 +120,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
      */
     @Override
+    @Deprecated
     public R get(int index) {
         return Iterators.get(iterator(),index);
     }

@@ -26,7 +26,7 @@ package hudson.bugs;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.net.HttpURLConnection;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
@@ -36,7 +36,7 @@ import org.jvnet.hudson.test.recipes.PresetData.DataSet;
  *
  * @author Kohsuke Kawaguchi
  */
-@Bug(2290)
+@Issue("JENKINS-2290")
 public class LoginRedirectTest extends HudsonTestCase {
     protected void setUp() throws Exception {
         contextPath = "/hudson";
