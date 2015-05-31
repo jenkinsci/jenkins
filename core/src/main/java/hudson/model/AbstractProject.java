@@ -266,7 +266,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         buildMixIn = createBuildMixIn();
         builds = buildMixIn.getRunMap();
 
-        if(Jenkins.getInstance()!=null && !Jenkins.getInstance().getNodes().isEmpty()) {
+        final Jenkins j = Jenkins.getInstance();
+        final List<Node> nodes = j != null ? j.getNodes() : null;
+        if(nodes!=null && !nodes.isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
             // make it roamable by default
             canRoam = true;
