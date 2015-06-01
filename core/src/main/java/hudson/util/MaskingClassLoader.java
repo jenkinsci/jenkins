@@ -25,7 +25,12 @@ package hudson.util;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Enumeration;
+import java.util.Collections;
 
 /**
  * {@link ClassLoader} that masks a specified set of classes
@@ -72,20 +77,14 @@ public class MaskingClassLoader extends ClassLoader {
 
     @Override
     public synchronized URL getResource(String name) {
-        for (String mask : masksResources) {
-            if(name.startsWith(mask))
-                return null;
-        }
+        if (isMasked(name)) return null;
 
         return super.getResource(name);
     }
 
     @Override
     public Enumeration<URL> getResources(String name) throws IOException {
-        for (String mask : masksResources) {
-            if(name.startsWith(mask))
-                return null;
-        }
+        if (isMasked(name)) return Collections.emptyEnumeration();
 
         return super.getResources(name);
     }
@@ -95,5 +94,13 @@ public class MaskingClassLoader extends ClassLoader {
         if(prefix !=null){
             masksResources.add(prefix.replace(".","/"));
         }
+    }
+
+    private boolean isMasked(String name) {
+        for (String mask : masksResources) {
+            if(name.startsWith(mask))
+                return true;
+        }
+        return false;
     }
 }
