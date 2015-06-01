@@ -476,12 +476,12 @@ public class Executor extends Thread implements ModelObject {
     }
     
     /**
-     * Returns causes of interruption
+     * Returns causes of interruption.
      *
-     * @return Unmodifiable collection of causes of interruption
-     *      
+     * @return Unmodifiable collection of causes of interruption.
+     * @since  1.617    
      */
-    public Collection<CauseOfInterruption> getCausesOfInterruption(){
+    public @Nonnull Collection<CauseOfInterruption> getCausesOfInterruption() {
         return Collections.unmodifiableCollection(causes);
     }
 
