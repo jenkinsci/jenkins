@@ -12,7 +12,7 @@
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.616-SNAPSHOT</version>
+  <version>1.616</version>
   <packaging>pom</packaging>
 
   <!--
@@ -23,7 +23,7 @@
     <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</connection>
     <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</developerConnection>
     <url>https://svn.jenkins-ci.org/trunk/hudson/plugins/</url>
-    <tag>HEAD</tag>
+    <tag>jenkins-1.616</tag>
   </scm>
 
   <issueManagement>
@@ -41,19 +41,19 @@
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.616-SNAPSHOT</version>
+      <version>1.616</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.616-SNAPSHOT</version>
+      <version>1.616</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.616-SNAPSHOT</version>
+      <version>1.616</version>
       <scope>test</scope>
     </dependency>
     <!--
