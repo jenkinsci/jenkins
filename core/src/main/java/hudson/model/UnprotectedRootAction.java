@@ -45,7 +45,7 @@ public interface UnprotectedRootAction extends RootAction, ExtensionPoint {
      * This method should return a string that's unique among other {@link Action}s.
      *
      * <p>
-     * <em>Unlike normal {@link Action}s the returned string is always assumed to be relative to the context path of the Jenkins webapp and should not be prefixed with a '/'.
+     * <strong>Unlike normal {@link Action}s the returned string is always assumed to be relative to the context path of the Jenkins webapp and should not be prefixed with a '/'.</strong>
      * 
      * As UnprotectedRootActions are always accessible this should not return a {@code null} value.
      * @return
