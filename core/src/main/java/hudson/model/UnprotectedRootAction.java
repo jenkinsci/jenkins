@@ -32,4 +32,26 @@ import hudson.ExtensionPoint;
  * @since 1.398
  */
 public interface UnprotectedRootAction extends RootAction, ExtensionPoint {
+
+    /**
+     * Gets the URL path name.
+     *
+     * <p>
+     * For example, if this method returns "xyz", and if the parent object
+     * (that this action is associated with) is bound to /foo/bar/zot,
+     * then this action object will be exposed to /foo/bar/zot/xyz.
+     *
+     * <p>
+     * This method should return a string that's unique among other {@link Action}s.
+     *
+     * <p>
+     * <em>Unlike normal {@link Action}s the returned string is always assumed to be relative to the context path of the Jenkins webapp and should not be prefixed with a '/'.
+     * 
+     * As UnprotectedRootActions are always accessible this should not return a {@code null} value.
+     * @return
+     *      a non-null url name.
+     */
+    @Override
+    String getUrlName();
+    
 }
