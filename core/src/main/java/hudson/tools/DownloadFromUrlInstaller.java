@@ -4,13 +4,18 @@ import hudson.FilePath;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import net.sf.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.net.URL;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Partial convenience implementation of {@link ToolInstaller} that just downloads
@@ -137,16 +142,30 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         /**
          * List of installable tools.
          *
-         * <p>
-         * The UI uses this information to populate the drop-down. Subtypes can override this method
-         * if it wants to change the way the list is filled.
-         *
          * @return never null.
          */
         public List<? extends Installable> getInstallables() throws IOException {
             JSONObject d = Downloadable.get(getId()).getData();
             if(d==null)     return Collections.emptyList();
             return Arrays.asList(((InstallableList)JSONObject.toBean(d,InstallableList.class)).list);
+        }
+        
+        /**
+         * The UI uses this information to populate the drop-down.
+         * 
+         * @return JSON array of installable tools, never null
+         * @since 1.617
+         */
+        @Restricted(DoNotUse.class)
+        public JSONArray getInstallablesJson() throws IOException {
+            JSONArray tools = new JSONArray();
+            final Downloadable d = Downloadable.get(getId());
+            if (d != null) {
+                final JSONObject data = d.getData();
+                if (data != null)
+                    tools = data.getJSONArray("list");
+            }
+            return tools;
         }
     }
 
