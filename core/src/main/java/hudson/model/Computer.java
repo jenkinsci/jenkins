@@ -1595,7 +1595,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             return true;
         }
 
-        @Extension
+        @Extension(ordinal = Double.MAX_VALUE)
         @Restricted(DoNotUse.class)
         public static class InternalComputerListener extends ComputerListener {
             @Override
