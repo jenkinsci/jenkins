@@ -32,6 +32,7 @@ import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author ogondza, pjanouse
@@ -42,6 +43,8 @@ public class DeleteViewCommand extends CLICommand {
 
     @Argument(usage="View names to delete", required=true, multiValued=true)
     private List<String> views;
+
+    private static final Logger LOGGER = Logger.getLogger(DeleteViewCommand.class.getName());
 
     @Override
     public String getShortDescription() {
@@ -85,10 +88,11 @@ public class DeleteViewCommand extends CLICommand {
 
                 group.deleteView(view);
             } catch (Exception e) {
-                stderr.format("Unexpected exception occurred during deletion of view '%s': %s\n",
+                final String errorMsg = String.format("Unexpected exception occurred during deletion of view '%s': %s",
                         view == null ? "(null)" : view.getViewName(),
-                        e.getMessage()
-                );
+                        e.getMessage());
+                stderr.println(errorMsg);
+                LOGGER.warning(errorMsg);
                 errorOccurred = true;
                 //noinspection UnnecessaryContinue
                 continue;

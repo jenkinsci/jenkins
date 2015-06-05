@@ -31,6 +31,7 @@ import org.kohsuke.args4j.Argument;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author pjanouse
@@ -41,6 +42,8 @@ public class DeleteNodeCommand extends CLICommand {
 
     @Argument(usage="Nodes name to delete", required=true, multiValued=true)
     private List<String> nodes;
+
+    private static final Logger LOGGER = Logger.getLogger(DeleteNodeCommand.class.getName());
 
     @Override
     public String getShortDescription() {
@@ -84,10 +87,11 @@ public class DeleteNodeCommand extends CLICommand {
 
                 jenkins.removeNode(node);
             } catch (Exception e) {
-                stderr.format("Unexpected exception occurred during deletion of node '%s': %s\n",
+                final String errorMsg = String.format("Unexpected exception occurred during deletion of node '%s': %s",
                         node == null ? "(null)" : node.toComputer().getName(),
-                        e.getMessage()
-                );
+                        e.getMessage());
+                stderr.println(errorMsg);
+                LOGGER.warning(errorMsg);
                 errorOccurred = true;
                 //noinspection UnnecessaryContinue
                 continue;

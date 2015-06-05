@@ -30,6 +30,7 @@ import org.kohsuke.args4j.Argument;
 
 import java.util.List;
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 /**
  * @author pjanouse
@@ -40,6 +41,8 @@ public class DeleteJobCommand extends CLICommand {
 
     @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
     private List<String> jobs;
+
+    private static final Logger LOGGER = Logger.getLogger(DeleteJobCommand.class.getName());
 
     @Override
     public String getShortDescription() {
@@ -83,10 +86,11 @@ public class DeleteJobCommand extends CLICommand {
 
                 job.delete();
             } catch (Exception e) {
-                stderr.format("Unexpected exception occurred during deletion of job '%s': %s\n",
+                final String errorMsg = String.format("Unexpected exception occurred during deletion of job '%s': %s",
                         job == null ? "(null)" : job.getFullName(),
-                        e.getMessage()
-                );
+                        e.getMessage());
+                stderr.println(errorMsg);
+                LOGGER.warning(errorMsg);
                 errorOccurred = true;
                 //noinspection UnnecessaryContinue
                 continue;
