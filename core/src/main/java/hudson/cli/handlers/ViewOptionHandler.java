@@ -78,9 +78,11 @@ public class ViewOptionHandler extends OptionHandler<View> {
     /**
      *
      * Gets a view by its name
+     * Note: Personal user's views aren't supported now.
      *
      * @param name A view name
-     * @return The {@link View} instance. Null if {@link Jenkins#getInstance()} returns null.
+     * @return The {@link View} instance. Null if {@link Jenkins#getInstance()} returns null
+     *         sor user doesn't have a READ permission.
      * @throws CmdLineException
      *      If view isn't found or an un-expected error occurred
      * @since TODO
@@ -106,7 +108,8 @@ public class ViewOptionHandler extends OptionHandler<View> {
                     viewName, group.getDisplayName()
             ));
 
-            view.checkPermission(View.READ);
+            if(!view.hasPermission(View.READ))
+                return null;
 
             if (view instanceof ViewGroup) {
                 group = (ViewGroup) view;
