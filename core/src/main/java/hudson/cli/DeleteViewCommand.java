@@ -69,6 +69,11 @@ public class DeleteViewCommand extends CLICommand {
             try {
                 try {
                     view = voh.getView(view_s);
+                    if (view == null) {
+                        stderr.println("user is missing the View/Read permission");
+                        errorOccurred = true;
+                        continue;
+                    }
                     view.checkPermission(View.DELETE);
                 } catch (Exception e) {
                     stderr.println(e.getMessage());
