@@ -323,7 +323,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
         for (Trigger t : triggers()) {
-            t.start(this, Items.currentlyUpdatingByXml());
+            try {
+                t.start(this, Items.currentlyUpdatingByXml());
+            } catch (Throwable e) {
+                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
+            }
         }
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
