@@ -78,4 +78,31 @@ H 9-16/2 * * 1-5
 # once a day on the 1st and 15th of every month except December
 H H 1,15 1-11 *
 </pre>
+<p>
+  <b>Timezone specification</b>. <br/>
+  Periodic tasks are normally executed at the scheduled time in the timezone of 
+  the Jenkins master JVM (currently Central European Time). 
+  This behaviour can be <b>optionally</b> changed by specifying an alternative timezone in the
+  first line of the field.
+</p>
+<ul>
+  <li>Timezone specification should contain the &quot;TZ=$(timezoneID)&quot; string</li>
+  <li>If a timezone is not specified or if it is specified incorrectly, the default Jenkins JVM timezone will be used</li>
+  <li>Th supports all timezones returned by 
+    <a href="https://docs.oracle.com/javase/7/docs/api/java/util/TimeZone.html#getAvailableIDs()">
+      java.util.TimeZone::getAvailableIDs()
+    </a> on the Jenkins server JVM
+  </li>
+  <li>Examples: EST, Etc/GMT+5, US/Pacific, America/Indiana/Petersburg, etc.</li>
+</ul>
+<p>
+  Example:
+</p>
+<pre>
+TZ=Europe/London
+# This job needs to be run in the morning, London time
+H 8 * * *
+# Butlers do not have a five o'clock, so we run the job again
+H(0-30) 17 * * * 
+</pre>
 </div>
