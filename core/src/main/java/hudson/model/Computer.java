@@ -27,6 +27,7 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -66,6 +67,7 @@ import jenkins.model.queue.AsynchronousExecution;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -415,7 +417,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      make much sense because as soon as {@link Computer} is connected it can be disconnected by some other threads.)
      */
     public final Future<?> connect(boolean forceReconnect) {
-        this.cachedEnvironment = null;
     	connectTime = System.currentTimeMillis();
     	return _connect(forceReconnect);
     }
@@ -1624,6 +1625,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             }
 
             return true;
+        }
+
+        @Extension(ordinal = Double.MAX_VALUE)
+        @Restricted(DoNotUse.class)
+        public static class InternalComputerListener extends ComputerListener {
+            @Override
+            public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+                c.cachedEnvironment = null;
+            }
         }
 
         @Override
