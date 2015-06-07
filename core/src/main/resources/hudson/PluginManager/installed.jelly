@@ -48,7 +48,7 @@ THE SOFTWARE.
             <j:otherwise>
               <tr>
                 <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
-                <th initialSortDir="down">${%Name}</th>
+                <th initialSortDir="up">${%Name}</th>
                 <th width="1">${%Version}</th>
                 <th width="1">${%Previously installed version}</th>
                 <th width="1">${%Pinned}</th>
