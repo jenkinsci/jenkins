@@ -44,7 +44,7 @@ THE SOFTWARE.
             </j:when>
             <j:otherwise>
               <tr>
-                <th class="pane-header" initialSortDir="down">${%Name}</th>
+                <th class="pane-header" initialSortDir="up">${%Name}</th>
                 <th class="pane-header">${%Version}</th>
                 <th class="pane-header">${%Enabled}</th>
                 <th class="pane-header">${%Pinned}</th>
