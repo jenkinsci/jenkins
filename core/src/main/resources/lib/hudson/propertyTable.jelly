@@ -33,7 +33,7 @@ THE SOFTWARE.
   </st:documentation>
   <table class="pane sortable bigtable">
     <tr>
-      <th class="pane-header" initialSortDir="down">${%Name}</th>
+      <th class="pane-header" initialSortDir="up">${%Name}</th>
       <th class="pane-header">${%Value}</th>
     </tr>
     <j:forEach var="e" items="${items}">
