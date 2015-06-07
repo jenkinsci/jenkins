@@ -42,7 +42,7 @@ THE SOFTWARE.
     <table id="computers" class="sortable pane bigtable">
       <tr>
         <th width="32">S</th>
-        <th initialSortDir="down" align="left">${%Name}</th>
+        <th initialSortDir="up" align="left">${%Name}</th>
         <j:forEach var="m" items="${monitors}">
           <j:if test="${m.columnCaption!=null}">
             <j:set var="tableWidth" value="${tableWidth+1}"/>
