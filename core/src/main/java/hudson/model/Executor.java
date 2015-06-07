@@ -380,7 +380,7 @@ public class Executor extends Thread implements ModelObject {
      * @return null if the death is expected death or the thread is {@link #isAlive() still alive}.
      * @since 1.142
      */
-    public Throwable getCauseOfDeath() {
+    public @CheckForNull Throwable getCauseOfDeath() {
         return causeOfDeath;
     }
 
