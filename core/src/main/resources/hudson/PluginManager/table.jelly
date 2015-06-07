@@ -60,10 +60,10 @@ THE SOFTWARE.
         <div class="pane-frame">
           <table id="plugins" class="sortable pane bigtable stripped-odd">
             <tr>
-              <th initialSortDir="${isUpdates?null:'down'}"
+              <th initialSortDir="${isUpdates?null:'up'}"
                   tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
                   width="32" onclick="showhideCategories(this,1)">${%Install}</th>
-              <th initialSortDir="${isUpdates?'down':null}"
+              <th initialSortDir="${isUpdates?'up':null}"
                   onclick="showhideCategories(this,0)">${%Name}</th>
               <th onclick="showhideCategories(this,0)">${%Version}</th>
               <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
