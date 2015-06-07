@@ -95,6 +95,7 @@ import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.kohsuke.stapler.export.ExportedBean;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -442,7 +443,35 @@ public class QueueTest {
         String tagName = queueItem.getDocumentElement().getTagName();
         assertTrue(tagName.equals("blockedItem") || tagName.equals("buildableItem"));
     }
+    
+    @Issue("JENKINS-28361")
+    @Test public void taskWithoutExportedBeanInAPI() throws Exception {
+        final AtomicInteger cnt = new AtomicInteger(); 
+        final Label label = Label.get("unknown-slave");
+        final TestLabeledTask task = new TestLabeledTask(label, cnt);
+        
+        // Schedule task without the ExportedBean specification
+        r.jenkins.getQueue().schedule(task, 5);
+        
+        // Retrieve API, it should not fail with the exception
+        JenkinsRule.WebClient webclient = r.createWebClient();
+        XmlPage queueItems = webclient.goToXml("queue/api/xml");
+    }
 
+    private static class TestLabeledTask extends TestTask {
+        private final Label assignedLabel;
+
+        public TestLabeledTask(Label assignedLabel, AtomicInteger cnt) {
+            super(cnt);
+            this.assignedLabel = assignedLabel;
+        }
+
+        @Override
+        public Label getAssignedLabel() {
+            return assignedLabel;
+        }  
+    }
+    
     private static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
         Executor exec;
         private final Label assignedLabel;
@@ -468,6 +497,7 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
+    
     private static class TestTask extends AbstractQueueTask {
         private final AtomicInteger cnt;
         TestTask(AtomicInteger cnt) {
@@ -503,7 +533,7 @@ public class QueueTest {
             };
         }
     }
-
+    
     @Test public void waitForStart() throws Exception {
         final OneShotEvent ev = new OneShotEvent();
         FreeStyleProject p = r.createFreeStyleProject();
