@@ -69,7 +69,7 @@ THE SOFTWARE.
             <table class="sortable" style="margin-top:1em;" id="trend">
               <tr>
                 <th><st:nbsp/></th>
-                <th initialSortDir="up">${%Build}</th>
+                <th initialSortDir="down">${%Build}</th>
                 <th>${%Duration}</th>
                 <j:if test="${isMasterSlaveEnabled}">
                   <th>${%Slave}</th>
