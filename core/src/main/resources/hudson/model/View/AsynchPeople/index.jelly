@@ -103,7 +103,7 @@ THE SOFTWARE.
           <th />
           <th>${%User Id}</th>
           <th>${%Name}</th>
-          <th initialSortDir="up">${%Last Commit Activity}</th>
+          <th initialSortDir="down">${%Last Commit Activity}</th>
           <th>${%On}</th>
         </tr>
       </table>
