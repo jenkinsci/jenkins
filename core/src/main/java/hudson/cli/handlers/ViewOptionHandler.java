@@ -103,19 +103,23 @@ public class ViewOptionHandler extends OptionHandler<View> {
             String viewName = tok.nextToken();
 
             view = group.getView(viewName);
-            if (view == null) throw new CmdLineException(owner, String.format(
-                    "No view named %s inside view %s",
-                    viewName, group.getDisplayName()
-            ));
+            if (view == null)
+                throw new CmdLineException(owner, String.format(
+                        "No view named %s inside view %s",
+                        viewName, group.getDisplayName()
+                ));
 
-            if(!view.hasPermission(View.READ))
-                return null;
+            try {
+                view.checkPermission(View.READ);
+            } catch (Exception e) {
+                throw new CmdLineException(owner, e.getMessage());
+            }
 
             if (view instanceof ViewGroup) {
                 group = (ViewGroup) view;
             } else if (tok.hasMoreTokens()) {
                 throw new CmdLineException(
-                        owner, view.getViewName() + " view can not contain views"
+                        owner,  view.getViewName() + " view can not contain views"
                 );
             }
         }
