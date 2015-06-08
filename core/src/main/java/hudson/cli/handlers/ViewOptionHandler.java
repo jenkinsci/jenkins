@@ -26,8 +26,6 @@ package hudson.cli.handlers;
 import hudson.model.ViewGroup;
 import hudson.model.View;
 
-import java.util.StringTokenizer;
-
 import jenkins.model.Jenkins;
 
 import org.kohsuke.MetaInfServices;
@@ -69,38 +67,14 @@ public class ViewOptionHandler extends OptionHandler<View> {
     @Override
     public int parseArguments(Parameters params) throws CmdLineException {
 
-        setter.addValue(getView(params.getParameter(0)));
-        return 1;
-    }
-
-    private View getView(String name) throws CmdLineException {
-
-        View view = null;
-        ViewGroup group = Jenkins.getInstance();
-
-        final StringTokenizer tok = new StringTokenizer(name, "/");
-        while(tok.hasMoreTokens()) {
-
-            String viewName = tok.nextToken();
-
-            view = group.getView(viewName);
-            if (view == null) throw new CmdLineException(owner, String.format(
-                    "No view named %s inside view %s",
-                    viewName, group.getDisplayName()
+        try {
+            setter.addValue(View.getViewByFullName(
+                    params.getParameter(0), Jenkins.getInstance()
             ));
-
-            view.checkPermission(View.READ);
-
-            if (view instanceof ViewGroup) {
-                group = (ViewGroup) view;
-            } else if (tok.hasMoreTokens()) {
-                throw new CmdLineException(
-                        owner, view.getViewName() + " view can not contain views"
-                );
-            }
+            return 1;
+        } catch(IllegalArgumentException ex) {
+            throw new CmdLineException(owner, ex.getMessage(), ex);
         }
-
-        return view;
     }
 
     @Override

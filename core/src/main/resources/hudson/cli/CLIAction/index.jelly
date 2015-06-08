@@ -41,7 +41,8 @@ THE SOFTWARE.
       <table>
         <j:forEach items="${h.getCLICommands()}" var="command">
           <tr>
-            <td><a href="command/${command.name}" style="color: black; font-weight: bold">${command.name}</a></td>
+            <j:set var="decoration" value="${command.deprecated?'line-through':'underline'}"/>
+            <td><a href="command/${command.name}" style="color: black; font-weight: bold; text-decoration: ${decoration}">${command.name}</a></td>
             <td>${command.shortDescription}</td>
           </tr>
         </j:forEach>

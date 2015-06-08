@@ -99,6 +99,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -581,6 +582,41 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     public boolean hasPermission(Permission p) {
         return getACL().hasPermission(p);
+    }
+
+    /**
+     * Get view by full name.
+     * @param name '/' separated list of nested view names.
+     * @param context ViewGroup to start with. Use <tt>Jenkins.getInstance()</tt> for top level views.
+     * @since 1.558
+     */
+    public static View getViewByFullName(String name, ViewGroup context) {
+
+        View view = null;
+
+        final StringTokenizer tok = new StringTokenizer(name, "/");
+        while(tok.hasMoreTokens()) {
+
+            String viewName = tok.nextToken();
+
+            view = context.getView(viewName);
+            if (view == null) throw new IllegalArgumentException(String.format(
+                    "No view named %s inside view %s",
+                    viewName, context.getDisplayName()
+            ));
+
+            view.checkPermission(View.READ);
+
+            if (view instanceof ViewGroup) {
+                context = (ViewGroup) view;
+            } else if (tok.hasMoreTokens()) {
+                throw new IllegalArgumentException(
+                        view.getViewName() + " view can not contain views"
+                );
+            }
+        }
+
+        return view;
     }
 
     /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */

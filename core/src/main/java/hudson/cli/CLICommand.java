@@ -395,11 +395,24 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
+     * Command is deprecated.
+     *
+     * <tt>true</tt> for commands annotated with <tt>@Deprecated</tt>.
+     * @since 1.558
+     */
+    public boolean isDeprecated() {
+        return getClass().getAnnotation(Deprecated.class) != null;
+    }
+
+    /**
      * Called while producing usage. This is a good method to override
      * to render the general description of the command that goes beyond
      * a single-line summary. 
      */
     protected void printUsageSummary(PrintStream stderr) {
+        if (isDeprecated()) {
+            stderr.append(Messages.CLICommand_Deprecated()).append(" ");
+        }
         stderr.println(getShortDescription());
     }
 
