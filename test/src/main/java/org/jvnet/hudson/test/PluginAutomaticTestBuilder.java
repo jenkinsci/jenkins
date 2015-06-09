@@ -23,9 +23,11 @@
  */
 package org.jvnet.hudson.test;
 
+import hudson.PluginWrapper;
 import hudson.cli.CLICommand;
 import java.io.File;
 import java.util.Map;
+import jenkins.model.Jenkins;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -55,7 +57,8 @@ public class PluginAutomaticTestBuilder {
         ||  notSkipTests("JellyTest")) { // TODO this is probably obsolete given -Dmaven-hpi-plugin.disabledTestInjection
             File outputDirectory = new File((String)params.get("outputDirectory"));
             TestSuite suite = JellyTestSuiteBuilder.build(outputDirectory,toBoolean(params.get("requirePI")));
-            suite.addTest(new OtherTests("testCliSanity"));
+            suite.addTest(new OtherTests("testCliSanity", params));
+            suite.addTest(new OtherTests("testPluginActive", params));
             return suite;
         } else {
             return new TestSuite();
@@ -77,12 +80,24 @@ public class PluginAutomaticTestBuilder {
 
     public static class OtherTests extends TestCase {
 
-        public OtherTests(String name) {
+        private final Map<String,?> params;
+
+        public OtherTests(String name, Map<String,?> params) {
             super(name);
+            this.params = params;
         }
 
         public void testCliSanity() {
             CLICommand.clone("help");
+        }
+
+        public void testPluginActive() {
+            String plugin = (String) params.get("artifactId");
+            if (plugin != null) {
+                PluginWrapper pw = Jenkins.getInstance().getPluginManager().getPlugin(plugin);
+                assertNotNull(pw);
+                assertTrue(plugin + " was not active", pw.isActive());
+            }
         }
 
     }
