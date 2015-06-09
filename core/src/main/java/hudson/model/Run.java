@@ -39,10 +39,7 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
-import hudson.console.AnnotatedLargeText;
-import hudson.console.ConsoleLogFilter;
-import hudson.console.ConsoleNote;
-import hudson.console.ModelHyperlinkNote;
+import hudson.console.*;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
@@ -2086,19 +2083,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        // Prevent jelly from flushing stream so Content-Length header can be added afterwards
-        FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-        try{
-        	getLogText().writeLogTo(0,out);
-        } catch (IOException e) {
-			// see comment in writeLogTo() method
-			InputStream input = getLogInputStream();
-			try {
-				IOUtils.copy(input, out);
-			} finally {
-				IOUtils.closeQuietly(input);
-			}
-		} finally {
+        PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(rsp.getCompressedOutputStream(req));
+        InputStream input = getLogInputStream();
+        try {
+            IOUtils.copy(input, out);
+            out.flush();
+        } finally {
+            IOUtils.closeQuietly(input);
             IOUtils.closeQuietly(out);
         }
     }
