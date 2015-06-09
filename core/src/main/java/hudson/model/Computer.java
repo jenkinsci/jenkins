@@ -1439,7 +1439,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Really deletes the slave.
      */
-    @CLIMethod(name="delete-node")
     @RequirePOST
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);

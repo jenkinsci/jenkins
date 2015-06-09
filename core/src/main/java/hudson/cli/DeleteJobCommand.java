@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2013-5 Red Hat, Inc.
+ * Copyright (c) 2015 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,77 +24,70 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.cli.handlers.ViewOptionHandler;
-import hudson.model.ViewGroup;
-import hudson.model.View;
-
+import hudson.model.AbstractItem;
+import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 /**
- * @author ogondza, pjanouse
- * @since 1.538
+ * @author pjanouse
+ * @since TODO
  */
 @Extension
-public class DeleteViewCommand extends CLICommand {
+public class DeleteJobCommand extends CLICommand {
 
-    @Argument(usage="View names to delete", required=true, multiValued=true)
-    private List<String> views;
+    @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
+    private List<String> jobs;
 
-    private static final Logger LOGGER = Logger.getLogger(DeleteViewCommand.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DeleteJobCommand.class.getName());
 
     @Override
     public String getShortDescription() {
 
-        return Messages.DeleteViewCommand_ShortDescription();
+        return Messages.DeleteJobCommand_ShortDescription();
     }
 
     @Override
     protected int run() throws Exception {
 
         boolean errorOccurred = false;
+        final Jenkins jenkins = Jenkins.getInstance();
 
-        // Remove duplicates
+        if (jenkins == null) {
+            stderr.println("The Jenkins instance has not been started, or was already shut down!");
+            return -1;
+        }
+
         final HashSet<String> hs = new HashSet<String>();
-        hs.addAll(views);
+        hs.addAll(jobs);
 
-        ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
-
-        for(String view_s : hs) {
-            View view = null;
+        for (String job_s: hs) {
+            AbstractItem job = null;
 
             try {
+                job = (AbstractItem) jenkins.getItemByFullName(job_s);
+
+                if(job == null) {
+                    stderr.format("No such job '%s'\n", job_s);
+                    errorOccurred = true;
+                    continue;
+                }
+
                 try {
-                    view = voh.getView(view_s);
-                    if (view == null) {
-                        stderr.println("user is missing the View/Read permission");
-                        errorOccurred = true;
-                        continue;
-                    }
-                    view.checkPermission(View.DELETE);
+                    job.checkPermission(AbstractItem.DELETE);
                 } catch (Exception e) {
                     stderr.println(e.getMessage());
                     errorOccurred = true;
                     continue;
                 }
 
-                ViewGroup group = view.getOwner();
-                if (!group.canDelete(view)) {
-                    stderr.format("%s does not allow to delete '%s' view\n",
-                            group.getDisplayName(),
-                            view.getViewName()
-                    );
-                    errorOccurred = true;
-                    continue;
-                }
-
-                group.deleteView(view);
+                job.delete();
             } catch (Exception e) {
-                final String errorMsg = String.format("Unexpected exception occurred during deletion of view '%s': %s",
-                        view == null ? "(null)" : view.getViewName(),
+                final String errorMsg = String.format("Unexpected exception occurred during deletion of job '%s': %s",
+                        job == null ? "(null)" : job.getFullName(),
                         e.getMessage());
                 stderr.println(errorMsg);
                 LOGGER.warning(errorMsg);
