@@ -1641,8 +1641,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public List<JDK> getJDKs() {
-        if(jdks==null)
+        if(jdks==null) {
             jdks = new ArrayList<JDK>();
+        }
+        if (jdks.isEmpty()) jdks.add(JDK.SYSTEM);
         return jdks;
     }
 
@@ -1650,12 +1652,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the JDK installation of the given name, or returns null.
      */
     public JDK getJDK(String name) {
-        if(name==null) {
-            // if only one JDK is configured, "default JDK" should mean that JDK.
-            List<JDK> jdks = getJDKs();
-            if(jdks.size()==1)  return jdks.get(0);
-            return null;
-        }
         for (JDK j : getJDKs()) {
             if(j.getName().equals(name))
                 return j;

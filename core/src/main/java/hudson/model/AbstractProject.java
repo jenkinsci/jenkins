@@ -334,6 +334,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
 
+        if (jdk == null) {
+            List<JDK> jdks = Jenkins.getInstance().getJDKs();
+            if (jdks.size() == 1) jdk = jdks.get(0).getName();
+        }
+
         if(transientActions==null)
             transientActions = new Vector<Action>();    // happens when loaded from disk
         updateTransientActions();

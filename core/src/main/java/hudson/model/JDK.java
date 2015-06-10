@@ -59,6 +59,8 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      */
     public static final String DEFAULT_NAME = "(Default)";
 
+    public static final JDK SYSTEM = new JDK(DEFAULT_NAME, null);
+
     /**
      * @deprecated since 2009-02-25
      */
