@@ -342,7 +342,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
             "script-security/matrix-auth",
             "script-security/windows-slaves",
             "script-security/antisamy-markup-formatter",
-            "script-security/matrix-project"
+            "script-security/matrix-project",
+            "credentials/matrix-auth",
+            "credentials/windows-slaves"
     ));
 
     /**
