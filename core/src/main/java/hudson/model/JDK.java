@@ -166,11 +166,8 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
         }
 
-        // this isn't really synchronized well since the list is Hudson.jdks :(
-        public @Override synchronized void setInstallations(JDK... jdks) {
-            List<JDK> list = Jenkins.getInstance().getJDKs();
-            list.clear();
-            list.addAll(Arrays.asList(jdks));
+        public @Override void setInstallations(JDK... jdks) {
+            Jenkins.getInstance().setJDKs(Arrays.asList(jdks));
         }
 
         @Override
