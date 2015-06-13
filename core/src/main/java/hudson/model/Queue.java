@@ -123,9 +123,11 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import hudson.model.queue.QueueTaskFilter;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import jenkins.model.queue.AsynchronousExecution;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -1550,6 +1552,10 @@ public class Queue extends ResourceController implements Saveable {
      * also represents the "primary" sub-task (and as implied by this
      * design, a {@link Task} must have at least one sub-task.)
      * Most of the time, the primary subtask is the only sub task.
+     * 
+     * <p>
+     * Tasks are being exported to API in {@link Item#task}, so every child class
+     * is expected to have the {@link ExportedBean} attribute.
      */
     public interface Task extends ModelObject, SubTask {
         /**
@@ -1686,6 +1692,41 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Nonnull Authentication getDefaultAuthentication(Queue.Item item);
     }
+    
+    /**
+     * Allows to represent unknown {@link Queue.Task}s in {@link Queue} APIs.
+     * This class is private in order to make the fix of JENKINS-28361 back-portable.
+     * @author Oleg Nenashev
+     * @since TODO
+     */
+    @ExportedBean
+    private static class UnknownTask extends QueueTaskFilter {
+
+        public UnknownTask(@Nonnull Queue.Task base) {
+            super(base);
+        }
+
+        /**
+         * Gets a class name of the unknown {@link Queue.Task}.
+         *
+         * @return Class name in a format of {@link Class#getName()}
+         */
+        @Exported
+        public @Nonnull
+        String getClassName() {
+            return getOwnerTask().getClass().getName();
+        }
+
+        @Override
+        public Authentication getDefaultAuthentication() {
+            return getOwnerTask().getDefaultAuthentication();
+        }
+
+        @Override
+        public Authentication getDefaultAuthentication(Queue.Item item) {
+            return getOwnerTask().getDefaultAuthentication(item);
+        }
+    }
 
     /**
      * Represents the real meat of the computation run by {@link Executor}.
@@ -1762,10 +1803,9 @@ public class Queue extends ResourceController implements Saveable {
         }
 
 
-		/**
+        /**
          * Project to be built.
          */
-        @Exported
         public final Task task;
 
         private /*almost final*/ transient FutureImpl future;
@@ -1820,6 +1860,27 @@ public class Queue extends ResourceController implements Saveable {
         @WithBridgeMethods(Future.class)
         public QueueTaskFuture<Executable> getFuture() { return future; }
 
+        /**
+         * Gets a {@link Task}, which is guaranteed to have the {@link ExportedBean}
+         * attribute.
+         * This method is designed to workaround JENKINS-28361
+         * @return {@link Task} instance with {@link ExportedBean} attribute.
+         *      If the original task has no such attribute, a new {@link ProxyTask}
+         *      will be created. Returns null if {@link #task} is null.
+         * @since TODO
+         */
+        @Restricted(NoExternalUse.class)
+        @Exported(name = "task")
+        public @CheckForNull Task getTaskForAPI() {
+            final Task outputTask = task;
+            if (outputTask == null) {
+                return null;
+            }
+            
+            final ExportedBean bean = outputTask.getClass().getAnnotation(ExportedBean.class);
+            return bean != null ? outputTask : new UnknownTask(outputTask);
+        }
+        
         /**
          * If this task needs to be run on a node with a particular label,
          * return that {@link Label}. Otherwise null, indicating

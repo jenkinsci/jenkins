@@ -455,7 +455,8 @@ public class QueueTest {
         
         // Retrieve API, it should not fail with the exception
         JenkinsRule.WebClient webclient = r.createWebClient();
-        XmlPage queueItems = webclient.goToXml("queue/api/xml");
+        XmlPage queueItems = webclient.goToXml("queue/api/xml?depth=999");
+        r.assertXPathValue(queueItems, "queue/item/task/className", TestLabeledTask.class.getName());
     }
 
     private static class TestLabeledTask extends TestTask {
