@@ -238,7 +238,7 @@ public class Nodes implements Saveable {
                         newNodes.put(node.getNodeName(), node);
                     }
                 } catch (IOException e) {
-                    Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not load " + subdir, e);
+                    Logger.getLogger(Nodes.class.getName()).log(Level.WARNING, "could not load " + subdir, e);
                 }
             }
         }
