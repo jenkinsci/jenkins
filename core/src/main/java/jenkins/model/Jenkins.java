@@ -2778,13 +2778,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             LOGGER.log(SEVERE, "Failed to execute termination",e);
         }
 
-        Set<Future<?>> pending = new HashSet<Future<?>>();
+        final Set<Future<?>> pending = new HashSet<Future<?>>();
         terminating = true;
-        for( Computer c : computers.values() ) {
-            c.interrupt();
-            killComputer(c);
-            pending.add(c.disconnect(null));
-        }
+        // JENKINS-28840 we know we will be interrupting all the Computers so get the Queue lock once for all
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                for( Computer c : computers.values() ) {
+                    c.interrupt();
+                    killComputer(c);
+                    pending.add(c.disconnect(null));
+                }
+            }
+        });
         if(udpBroadcastThread!=null)
             udpBroadcastThread.shutdown();
         if(dnsMultiCast!=null)
