@@ -1179,7 +1179,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
+     * Some operations require the {@link Queue} lock held. Use one of these methods rather
      * than locking directly on Queue in order to allow for future refactoring.
      *
      * @param callable the operation to perform.
@@ -1220,11 +1220,11 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
-     * than locking directly on Queue in order to allow for future refactoring.
+     * Invokes the supplied {@link Runnable} if the {@link Queue} lock was obtained without blocking.
+     *
      * @param runnable the operation to perform.
-     * @return {@code true} if the lock available and the operation performed. 
-     * @since 1.FIXME
+     * @return {@code true} if the lock was available and the operation was performed.
+     * @since 1.618
      */
     public static boolean tryWithLock(Runnable runnable) {
         final Jenkins jenkins = Jenkins.getInstance();
@@ -1240,7 +1240,7 @@ public class Queue extends ResourceController implements Saveable {
      * Wraps a {@link Runnable} with the  {@link Queue} lock held. 
      *
      * @param runnable the operation to wrap.
-     * @since 1.FIXME
+     * @since 1.618
      */
     public static Runnable wrapWithLock(Runnable runnable) {
         final Jenkins jenkins = Jenkins.getInstance();
@@ -1252,7 +1252,7 @@ public class Queue extends ResourceController implements Saveable {
      * Wraps a {@link hudson.remoting.Callable} with the  {@link Queue} lock held. 
      *
      * @param callable the operation to wrap.
-     * @since 1.FIXME
+     * @since 1.618
      */
     public static <V, T extends Throwable> hudson.remoting.Callable<V, T> wrapWithLock(hudson.remoting.Callable<V, T> callable) {
         final Jenkins jenkins = Jenkins.getInstance();
@@ -1264,7 +1264,7 @@ public class Queue extends ResourceController implements Saveable {
      * Wraps a {@link java.util.concurrent.Callable} with the {@link Queue} lock held. 
      *
      * @param callable the operation to wrap.
-     * @since 1.FIXME
+     * @since 1.618
      */
     public static <V> java.util.concurrent.Callable<V> wrapWithLock(java.util.concurrent.Callable<V> callable) {
         final Jenkins jenkins = Jenkins.getInstance();
@@ -1298,11 +1298,11 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
-     * than locking directly on Queue in order to allow for future refactoring.
+     * Invokes the supplied {@link Runnable} if the {@link Queue} lock was obtained without blocking.
+     *
      * @param runnable the operation to perform.
-     * @return {@code true} if the lock available and the operation performed. 
-     * @since 1.FIXME
+     * @return {@code true} if the lock was available and the operation was performed.
+     * @since 1.618
      */
     protected boolean _tryWithLock(Runnable runnable) {
         if (lock.tryLock()) {
