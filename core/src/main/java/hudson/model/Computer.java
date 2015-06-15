@@ -990,14 +990,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
     /*package*/ void removeExecutor(final Executor e) {
-        Queue.withLock(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 synchronized (Computer.this) {
                     executors.remove(e);
                     addNewExecutorIfNecessary();
-                    if (!isAlive()) // TODO except from interrupt/doYank this is called while the executor still isActive(), so how could !this.isAlive()?
-                    {
+                    if (!isAlive()) {
                         AbstractCIBase ciBase = Jenkins.getInstance();
                         if (ciBase != null) {
                             ciBase.removeComputer(Computer.this);
@@ -1005,7 +1004,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     }
                 }
             }
-        });
+        };
+        if (!Queue.tryWithLock(task)) {
+            // JENKINS-28840 if we couldn't get the lock push the operation to a separate thread to avoid deadlocks
+            threadPoolForRemoting.submit(Queue.wrapWithLock(task));
+        }
     }
 
     /**
@@ -1028,9 +1031,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Called from {@link Jenkins#cleanUp}.
      */
     public void interrupt() {
-        for (Executor e : executors) {
-            e.interruptForShutdown();
-        }
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                for (Executor e : executors) {
+                    e.interruptForShutdown();
+                }
+            }
+        });
     }
 
     public String getSearchUrl() {
