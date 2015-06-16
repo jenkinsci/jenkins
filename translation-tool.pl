@@ -163,7 +163,7 @@ sub processFile {
       }
    }
 
-   # calculate keys which has the same value in english 
+   # calculate keys which have the same value in English
    my $same = "";
    foreach (keys %okeys) {
       if ($okeys{$_} && $ekeys{$_} && $okeys{$_} eq $ekeys{$_}) {
@@ -199,13 +199,13 @@ sub processFile {
       close(F);
    }
    
-   # open the editor if the user has especified it and there are changes to manage
+   # open the editor if the user has specified it and there are changes to manage
    system("$editor $ofile") if ($editor && $add && ($missing ne "" || $same ne "" || $nj ne ''));
 
    # write new keys in our file adding the English translation as a reference
    removeUnusedKeys($ofile, %keys) if ($remove && $unused ne "");
    
-   # convert the language file to ISO or ACII which are
+   # convert the language file to ISO or ASCII which are
    # the charsets which Jenkins supports right now
    convert($ofile, $toiso, $toascii) if ( -f $ofile );
 }
@@ -408,7 +408,7 @@ Usage: $0 --lang=xx [options] [dir]
         $0 --lang=es --editor=gedit --toiso main
      - Convert all Japanese files in the current folder encoded with UTF-8 to ASCII
         $0 --lang=ja --toascii .
-     - Remove all orphand keys from German files which are in the current file
+     - Remove all orphaned keys from German files which are in the current file
         $0 --lang=de --remove .   
    
 ";
