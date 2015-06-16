@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 # The MIT License
 #
 # Copyright (c) 2004-, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number of other of contributers
@@ -106,10 +106,9 @@ if ($tkeys != 0) {
    $psame = $tsame/$tkeys*100;
    $pnojenkins = $tnojenkins/$tkeys*100;
 }
-printf ("\nTOTAL: Files: %d Keys: %d Done: %d(%.2f\%)\n       Missing: %d(%.2f\%) Orphan: %d(%.2f\%) Empty: %d(%.2f\%) Same: %d(%.2f\%) NoJenkins: %d(%.2f\%)\n\n", 
-        $tfiles, $tkeys, $tdone, $pdone,
-        $tmissing, $pmissing, $tunused, $punused, 
-        $tempty, $pempty, $tsame, $psame, $tnojenkins, $pnojenkins);
+
+my @formatParameters = ($tfiles, $tkeys, $tdone, $pdone, $tmissing, $pmissing, $tunused, $punused, $tempty, $pempty, $tsame, $psame, $tnojenkins, $pnojenkins);
+printf "\nTOTAL: Files: %d Keys: %d Done: %d(%.2f%%)\n       Missing: %d(%.2f%%) Orphan: %d(%.2f%%) Empty: %d(%.2f%%) Same: %d(%.2f%%) NoJenkins: %d(%.2f%%)\n\n", (@formatParameters);
 ## end
 exit();
 
