@@ -45,7 +45,7 @@ use strict;
 use File::Find;
 
 my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse) = (undef, undef, "./", undef, undef, undef, undef, undef);
-my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins) = (0, 0, 0, 0, 0, 0);
+my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins) = (0, 0, 0, 0, 0, 0, 0);
 ## read arguments
 foreach (@ARGV) {
   if (/^--lang=(.*)$/) {
