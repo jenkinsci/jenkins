@@ -26,7 +26,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      * (We want the time since in queue by default as blocking on upstream/downstream considers waiting items
      * also and thus the blocking starts once the task is in the queue not once the task is buildable)
      *
-     * @since 1.FIXME
+     * @since 1.618
      */
     public static final Comparator<Queue.BlockedItem> DEFAULT_BLOCKED_ITEM_COMPARATOR = new Comparator<Queue.BlockedItem>() {
         @Override
@@ -50,7 +50,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      *
      * @param blockedItems
      *      List of blocked items in the queue. Never null.
-     * @since 1.FIXME
+     * @since 1.618
      */
     public void sortBlockedItems(List<Queue.BlockedItem> blockedItems) {
         Collections.sort(blockedItems, DEFAULT_BLOCKED_ITEM_COMPARATOR);
