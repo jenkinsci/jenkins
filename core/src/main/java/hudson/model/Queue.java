@@ -1403,15 +1403,29 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
+            final QueueSorter s = sorter;
 
             {// blocked -> buildable
-                for (BlockedItem p : new ArrayList<BlockedItem>(blockedProjects.values())) {// copy as we'll mutate the list
+                // copy as we'll mutate the list and we want to process in a potentially different order
+                // TODO replace with <> operator after backporting to 1.609.3
+                List<BlockedItem> blockedItems = new ArrayList<BlockedItem>(blockedProjects.values());
+                // if facing a cycle of blocked tasks, ensure we process in the desired sort order
+                if (s != null) {
+                    s.sortBlockedItems(blockedItems);
+                } else {
+                    Collections.sort(blockedItems, QueueSorter.DEFAULT_BLOCKED_ITEM_COMPARATOR);
+                }
+                for (BlockedItem p : blockedItems) {
                     if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
                         // ready to be executed
                         Runnable r = makeBuildable(new BuildableItem(p));
                         if (r != null) {
                             p.leave(this);
                             r.run();
+                            // JENKINS-28926 we have removed a task from the blocked projects and added to building
+                            // thus we should update the snapshot so that subsequent blocked projects can correctly
+                            // determine if they are blocked by the lucky winner
+                            updateSnapshot();
                         }
                     }
                 }
@@ -1441,7 +1455,6 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            final QueueSorter s = sorter;
             if (s != null)
                 s.sortBuildableItems(buildables);
             
@@ -1456,6 +1469,9 @@ public class Queue extends ResourceController implements Saveable {
                     p.leave(this);
                     new BlockedItem(p).enter(this);
                     LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
+                    // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
+                    // so that other buildables which might have been blocked by this can see the state change
+                    updateSnapshot();
                     continue;
                 }
 
