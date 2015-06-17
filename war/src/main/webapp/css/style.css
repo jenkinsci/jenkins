@@ -76,10 +76,23 @@ body {
 
 #side-panel {
   padding: 15px 15px 80px 15px;
+  float: left;
+  width: 320px;
 }
 
 #main-panel {
   padding: 15px 15px 80px 15px;
+  margin-left: 320px;
+}
+
+@media (min-width: 1170px) {
+  #side-panel {
+    width: 360px;
+  }
+
+  #main-panel {
+    margin-left: 360px;
+  }
 }
 
 /* task */

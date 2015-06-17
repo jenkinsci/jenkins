@@ -227,36 +227,32 @@ ${h.initPageVariables(context)}
     </div>
 
     <div id="page-body">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-7" id="side-panel">
-            <j:set var="mode" value="side-panel" />
-            <d:invokeBody />
+      <div id="side-panel">
+        <j:set var="mode" value="side-panel" />
+        <d:invokeBody />
   
-            <!-- add YUI logger if debugging YUI -->
-            <j:if test="${h.yuiSuffix=='debug'}">
-              <div id="yui-logreader" style="margin-top:1em"/>
-              <script>
-                Behaviour.addLoadEvent(function(){
-                  var logReader = new YAHOO.widget.LogReader("yui-logreader");
-                  logReader.collapse();
-                });
-              </script>
-            </j:if>
-          </div>
-          <div class="col-md-17" id="main-panel">
-            <j:set var="mode" value="main-panel" />
-            <d:invokeBody/>
-          </div>
-        </div>
+        <!-- add YUI logger if debugging YUI -->
+        <j:if test="${h.yuiSuffix=='debug'}">
+        <div id="yui-logreader" style="margin-top:1em"/>
+          <script>
+            Behaviour.addLoadEvent(function(){
+              var logReader = new YAHOO.widget.LogReader("yui-logreader");
+              logReader.collapse();
+            });
+          </script>
+        </j:if>
+      </div>
+      <div id="main-panel">
+         <j:set var="mode" value="main-panel" />
+         <d:invokeBody/>
       </div>
     </div>
 
     <footer>
       <div class="container-fluid">
         <div class="row">
-          <div class="col-md-12" id="footer"></div>
-          <div class="col-md-12">
+          <div class="col-md-6" id="footer"></div>
+          <div class="col-md-18">
             <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/></span>
             <span class="rest_api"><a href="api/">REST API</a></span>
             <span class="jenkins_ver"><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></span>
