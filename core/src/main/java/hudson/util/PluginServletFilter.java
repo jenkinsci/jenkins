@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.security.SecurityRealm;
 import jenkins.model.Jenkins;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -71,8 +72,11 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
 
     /**
      * Lookup the instance from servlet context.
+     *
+     * @param c the ServletContext most of the time taken from a Jenkins instance
+     * @return get the current PluginServletFilter if it is already available
      */
-    private static PluginServletFilter getInstance(ServletContext c) {
+    private static @CheckForNull PluginServletFilter getInstance(ServletContext c) {
         return (PluginServletFilter)c.getAttribute(KEY);
     }
 
