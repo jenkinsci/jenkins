@@ -1412,8 +1412,7 @@ public class Queue extends ResourceController implements Saveable {
 
             {// blocked -> buildable
                 // copy as we'll mutate the list and we want to process in a potentially different order
-                // TODO replace with <> operator after backporting to 1.609.3
-                List<BlockedItem> blockedItems = new ArrayList<BlockedItem>(blockedProjects.values());
+                List<BlockedItem> blockedItems = new ArrayList<>(blockedProjects.values());
                 // if facing a cycle of blocked tasks, ensure we process in the desired sort order
                 if (s != null) {
                     s.sortBlockedItems(blockedItems);
