@@ -103,7 +103,7 @@ body {
 
 #tasks .task {
   margin-bottom: 4px;
-  font-size: 1.1em;
+  font-size: 14px;
   white-space: nowrap;
 }
 
@@ -383,7 +383,7 @@ pre.console {
 /* tabBar */
 
 .tabBar {
-  clear: both;
+  /*clear: both;*/
   overflow: auto;
   position: relative;
   top: 1px;
@@ -486,11 +486,6 @@ pre.console {
 }
 
 .main-table {
-}
-
-div.dashboard {
-  width: 100%;
-  clear:both;
 }
 
 /* pane */
