@@ -85,6 +85,19 @@ body {
   margin-left: 320px;
 }
 
+@media (max-width: 750px) {
+  #side-panel {
+    width: 100%;
+    float: none;
+    padding-bottom: 20px;
+  }
+
+  #main-panel {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
 @media (min-width: 1170px) {
   #side-panel {
     width: 360px;
