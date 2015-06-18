@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 # The MIT License
 #
 # Copyright (c) 2004-, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number of other of contributers
@@ -45,7 +45,7 @@ use strict;
 use File::Find;
 
 my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse) = (undef, undef, "./", undef, undef, undef, undef, undef);
-my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins) = (0, 0, 0, 0, 0, 0);
+my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins) = (0, 0, 0, 0, 0, 0, 0);
 ## read arguments
 foreach (@ARGV) {
   if (/^--lang=(.*)$/) {
@@ -106,10 +106,9 @@ if ($tkeys != 0) {
    $psame = $tsame/$tkeys*100;
    $pnojenkins = $tnojenkins/$tkeys*100;
 }
-printf ("\nTOTAL: Files: %d Keys: %d Done: %d(%.2f\%)\n       Missing: %d(%.2f\%) Orphan: %d(%.2f\%) Empty: %d(%.2f\%) Same: %d(%.2f\%) NoJenkins: %d(%.2f\%)\n\n", 
-        $tfiles, $tkeys, $tdone, $pdone,
-        $tmissing, $pmissing, $tunused, $punused, 
-        $tempty, $pempty, $tsame, $psame, $tnojenkins, $pnojenkins);
+
+my @formatParameters = ($tfiles, $tkeys, $tdone, $pdone, $tmissing, $pmissing, $tunused, $punused, $tempty, $pempty, $tsame, $psame, $tnojenkins, $pnojenkins);
+printf "\nTOTAL: Files: %d Keys: %d Done: %d(%.2f%%)\n       Missing: %d(%.2f%%) Orphan: %d(%.2f%%) Empty: %d(%.2f%%) Same: %d(%.2f%%) NoJenkins: %d(%.2f%%)\n\n", (@formatParameters);
 ## end
 exit();
 
@@ -163,7 +162,7 @@ sub processFile {
       }
    }
 
-   # calculate keys which has the same value in english 
+   # calculate keys which have the same value in English
    my $same = "";
    foreach (keys %okeys) {
       if ($okeys{$_} && $ekeys{$_} && $okeys{$_} eq $ekeys{$_}) {
@@ -199,13 +198,13 @@ sub processFile {
       close(F);
    }
    
-   # open the editor if the user has especified it and there are changes to manage
+   # open the editor if the user has specified it and there are changes to manage
    system("$editor $ofile") if ($editor && $add && ($missing ne "" || $same ne "" || $nj ne ''));
 
    # write new keys in our file adding the English translation as a reference
    removeUnusedKeys($ofile, %keys) if ($remove && $unused ne "");
    
-   # convert the language file to ISO or ACII which are
+   # convert the language file to ISO or ASCII which are
    # the charsets which Jenkins supports right now
    convert($ofile, $toiso, $toascii) if ( -f $ofile );
 }
@@ -408,7 +407,7 @@ Usage: $0 --lang=xx [options] [dir]
         $0 --lang=es --editor=gedit --toiso main
      - Convert all Japanese files in the current folder encoded with UTF-8 to ASCII
         $0 --lang=ja --toascii .
-     - Remove all orphand keys from German files which are in the current file
+     - Remove all orphaned keys from German files which are in the current file
         $0 --lang=de --remove .   
    
 ";
