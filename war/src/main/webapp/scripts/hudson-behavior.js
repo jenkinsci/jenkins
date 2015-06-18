@@ -1932,6 +1932,9 @@ function updateBuildHistory(ajaxUrl,nBuild) {
             window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
         }
     }
+
+    //updateBuilds();
+    checkAllRowCellOverflows();
     window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
 
     onBuildHistoryChange(function() {
