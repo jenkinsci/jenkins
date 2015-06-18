@@ -159,7 +159,7 @@ ${h.initPageVariables(context)}
     </j:if>
 
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 

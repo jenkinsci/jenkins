@@ -75,6 +75,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.triggers.ReverseBuildTrigger;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.PrincipalSid;
@@ -83,6 +84,9 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 
 import org.junit.Assert;
@@ -441,6 +445,38 @@ public class QueueTest {
         assertNotNull(queueItem);
         String tagName = queueItem.getDocumentElement().getTagName();
         assertTrue(tagName.equals("blockedItem") || tagName.equals("buildableItem"));
+    }
+    
+    @Issue("JENKINS-28926")
+    @Test
+    public void upstreamDownstreamCycle() throws Exception {
+        FreeStyleProject trigger = r.createFreeStyleProject();
+        FreeStyleProject chain1 = r.createFreeStyleProject();
+        FreeStyleProject chain2a = r.createFreeStyleProject();
+        FreeStyleProject chain2b = r.createFreeStyleProject();
+        FreeStyleProject chain3 = r.createFreeStyleProject();
+        trigger.getPublishersList().add(new BuildTrigger(String.format("%s, %s, %s, %s", chain1.getName(), chain2a.getName(), chain2b.getName(), chain3.getName()), true));
+        trigger.setQuietPeriod(0);
+        chain1.setQuietPeriod(1);
+        chain2a.setQuietPeriod(1);
+        chain2b.setQuietPeriod(1);
+        chain3.setQuietPeriod(1);
+        chain1.getPublishersList().add(new BuildTrigger(String.format("%s, %s", chain2a.getName(), chain2b.getName()), true));
+        chain2a.getPublishersList().add(new BuildTrigger(chain3.getName(), true));
+        chain2b.getPublishersList().add(new BuildTrigger(chain3.getName(), true));
+        chain1.setBlockBuildWhenDownstreamBuilding(true);
+        chain2a.setBlockBuildWhenDownstreamBuilding(true);
+        chain2b.setBlockBuildWhenDownstreamBuilding(true);
+        chain3.setBlockBuildWhenUpstreamBuilding(true);
+        r.jenkins.rebuildDependencyGraph();
+        r.buildAndAssertSuccess(trigger);
+        // the trigger should build immediately and schedule the cycle
+        r.waitUntilNoActivity();
+        final Queue queue = r.getInstance().getQueue();
+        assertThat("The cycle should have been defanged and chain1 executed", queue.getItem(chain1), nullValue());
+        assertThat("The cycle should have been defanged and chain2a executed", queue.getItem(chain2a), nullValue());
+        assertThat("The cycle should have been defanged and chain2b executed", queue.getItem(chain2b), nullValue());
+        assertThat("The cycle should have been defanged and chain3 executed", queue.getItem(chain3), nullValue());
     }
 
     private static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
