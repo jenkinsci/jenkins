@@ -383,7 +383,6 @@ pre.console {
 /* tabBar */
 
 .tabBar {
-  /*clear: both;*/
   overflow: auto;
   position: relative;
   top: 1px;
