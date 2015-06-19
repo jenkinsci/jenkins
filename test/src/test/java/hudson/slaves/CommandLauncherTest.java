@@ -28,11 +28,14 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import hudson.Functions;
 import hudson.model.Node;
 
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,7 +69,7 @@ public class CommandLauncherTest {
 
     public DumbSlave createSlave(String command) throws Exception {
         DumbSlave slave;
-        synchronized (j.jenkins) {
+        synchronized (j.jenkins) { // TODO this lock smells like a bug post 1.607
             slave = new DumbSlave(
                     "dummy",
                     "dummy",
@@ -81,7 +84,12 @@ public class CommandLauncherTest {
             j.jenkins.addNode(slave);
         }
 
-        Thread.sleep(100);
+        try {
+            slave.toComputer().connect(false).get(1, TimeUnit.SECONDS);
+            fail("the slave was not supposed to connect successfully");
+        } catch (ExecutionException e) {
+            // ignore, we just want to
+        }
 
         return slave;
     }

@@ -31,6 +31,7 @@ import hudson.model.BuildListener;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -139,4 +140,13 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
      * Don't write 'this', so that subtypes can be implemented as anonymous class.
      */
     private Object writeReplace() { return new Object(); }
+
+    @Override public SCMDescriptor<?> getDescriptor() {
+        return new SCMDescriptor<ExtractResourceWithChangesSCM>(ExtractResourceWithChangesSCM.class, null) {
+            @Override public String getDisplayName() {
+                return "ExtractResourceWithChangesSCM";
+            }
+        };
+    }
+
 }

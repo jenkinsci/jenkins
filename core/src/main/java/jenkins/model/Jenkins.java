@@ -1640,10 +1640,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return Messages.Hudson_DisplayName();
     }
 
-    public List<JDK> getJDKs() {
+    public synchronized List<JDK> getJDKs() {
         if(jdks==null)
             jdks = new ArrayList<JDK>();
         return jdks;
+    }
+
+    /**
+     * Replaces all JDK installations with those from the given collection.
+     *
+     * Use {@link hudson.model.JDK.DescriptorImpl#setInstallations(JDK...)} to
+     * set JDK installations from external code.
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized void setJDKs(Collection<? extends JDK> jdks) {
+        this.jdks = new ArrayList<JDK>(jdks);
     }
 
     /**
@@ -2767,13 +2778,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             LOGGER.log(SEVERE, "Failed to execute termination",e);
         }
 
-        Set<Future<?>> pending = new HashSet<Future<?>>();
+        final Set<Future<?>> pending = new HashSet<Future<?>>();
         terminating = true;
-        for( Computer c : computers.values() ) {
-            c.interrupt();
-            killComputer(c);
-            pending.add(c.disconnect(null));
-        }
+        // JENKINS-28840 we know we will be interrupting all the Computers so get the Queue lock once for all
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                for( Computer c : computers.values() ) {
+                    c.interrupt();
+                    killComputer(c);
+                    pending.add(c.disconnect(null));
+                }
+            }
+        });
         if(udpBroadcastThread!=null)
             udpBroadcastThread.shutdown();
         if(dnsMultiCast!=null)
@@ -2852,8 +2869,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
-            jdks.clear();
-            jdks.addAll(req.bindJSONToList(JDK.class,json.get("jdks")));
+            setJDKs(req.bindJSONToList(JDK.class, json.get("jdks")));
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())

@@ -1072,7 +1072,10 @@ table.parameters > tbody:hover {
   border-left: 1px solid #cdcdcd;
 }
 
-.build-row-cell .pane.build-name .display-name,
+.build-row-cell .pane.build-name .display-name {
+  margin-left: 20px;
+}
+
 .build-row-cell .indent-multiline {
   padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
 }

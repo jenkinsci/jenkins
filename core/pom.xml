@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.615-SNAPSHOT</version>
+    <version>1.618-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -558,9 +558,9 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
-      <groupId>findbugs</groupId>
+      <groupId>com.google.code.findbugs</groupId>
       <artifactId>annotations</artifactId>
-      <version>1.0.0</version>
+      <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -865,7 +865,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.5.2</version>
             <configuration>
               <effort>Max</effort>
               <threshold>High</threshold>

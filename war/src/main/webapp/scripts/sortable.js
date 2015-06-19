@@ -178,7 +178,7 @@ var Sortable = (function() {
             var dir = this.pref.direction;
 
             var s = this.getSorter(column);
-            if(dir === arrowTable.down) {// only need to reverse when it's descending
+            if(dir === arrowTable.up) {// ascending
                 s = sorter.reverse(s);
             }
 

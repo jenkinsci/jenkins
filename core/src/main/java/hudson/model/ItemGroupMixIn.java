@@ -104,11 +104,11 @@ public abstract class ItemGroupMixIn {
                 // Try to retain the identity of an existing child object if we can.
                 V item = (V) parent.getItem(subdir.getName());
                 if (item == null) {
-                    XmlFile xmlFile = Items.getConfigFile( subdir );
+                    XmlFile xmlFile = Items.getConfigFile(subdir);
                     if (xmlFile.exists()) {
-                        item = (V) Items.load( parent, subdir );
-                    }else{
-                        Logger.getLogger( ItemGroupMixIn.class.getName() ).log( Level.WARNING, "could not find file " + xmlFile.getFile());
+                        item = (V) Items.load(parent, subdir);
+                    } else {
+                        Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not find file " + xmlFile.getFile());
                         continue;
                     }
                 } else {

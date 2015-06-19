@@ -99,7 +99,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -113,6 +112,7 @@ import jenkins.util.AtmostOneTaskExecutor;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.jenkinsci.bytecode.AdaptField;
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.export.Exported;
@@ -337,7 +337,7 @@ public class Queue extends ResourceController implements Saveable {
         }
     });
 
-    private transient final Lock lock = new ReentrantLock();
+    private transient final ReentrantLock lock = new ReentrantLock();
 
     private transient final Condition condition = lock.newCondition();
 
@@ -652,17 +652,9 @@ public class Queue extends ResourceController implements Saveable {
 
             boolean queueUpdated = false;
             for (WaitingItem wi : Util.filter(duplicatesInQueue, WaitingItem.class)) {
-                if (quietPeriod <= 0) {
-                    // the user really wants to build now, and they mean NOW.
-                    // so let's pull in the timestamp if we can.
-                    if (wi.timestamp.before(due))
-                        continue;
-                } else {
-                    // otherwise we do the normal quiet period implementation
-                    if (wi.timestamp.after(due))
-                        continue;
-                    // quiet period timer reset. start the period over again
-                }
+                // make sure to always use the shorter of the available due times
+                if (wi.timestamp.before(due))
+                    continue;
 
                 // waitingList is sorted, so when we change a timestamp we need to maintain order
                 wi.leave(this);
@@ -1179,7 +1171,7 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
-     * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
+     * Some operations require the {@link Queue} lock held. Use one of these methods rather
      * than locking directly on Queue in order to allow for future refactoring.
      *
      * @param callable the operation to perform.
@@ -1219,6 +1211,59 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
 
+    /**
+     * Invokes the supplied {@link Runnable} if the {@link Queue} lock was obtained without blocking.
+     *
+     * @param runnable the operation to perform.
+     * @return {@code true} if the lock was available and the operation was performed.
+     * @since 1.618
+     */
+    public static boolean tryWithLock(Runnable runnable) {
+        final Jenkins jenkins = Jenkins.getInstance();
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        if (queue == null) {
+            runnable.run();
+            return true;
+        } else {
+            return queue._tryWithLock(runnable);
+        }
+    }
+    /**
+     * Wraps a {@link Runnable} with the  {@link Queue} lock held. 
+     *
+     * @param runnable the operation to wrap.
+     * @since 1.618
+     */
+    public static Runnable wrapWithLock(Runnable runnable) {
+        final Jenkins jenkins = Jenkins.getInstance();
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        return queue == null ? runnable : new LockedRunnable(runnable);
+    }
+
+    /**
+     * Wraps a {@link hudson.remoting.Callable} with the  {@link Queue} lock held. 
+     *
+     * @param callable the operation to wrap.
+     * @since 1.618
+     */
+    public static <V, T extends Throwable> hudson.remoting.Callable<V, T> wrapWithLock(hudson.remoting.Callable<V, T> callable) {
+        final Jenkins jenkins = Jenkins.getInstance();
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        return queue == null ? callable : new LockedHRCallable<>(callable);
+    }
+
+    /**
+     * Wraps a {@link java.util.concurrent.Callable} with the {@link Queue} lock held. 
+     *
+     * @param callable the operation to wrap.
+     * @since 1.618
+     */
+    public static <V> java.util.concurrent.Callable<V> wrapWithLock(java.util.concurrent.Callable<V> callable) {
+        final Jenkins jenkins = Jenkins.getInstance();
+        final Queue queue = jenkins == null ? null : jenkins.getQueue();
+        return queue == null ? callable : new LockedJUCCallable<V>(callable);
+    }
+
     @Override
     protected void _await() throws InterruptedException {
         condition.await();
@@ -1241,6 +1286,26 @@ public class Queue extends ResourceController implements Saveable {
             runnable.run();
         } finally {
             lock.unlock();
+        }
+    }
+
+    /**
+     * Invokes the supplied {@link Runnable} if the {@link Queue} lock was obtained without blocking.
+     *
+     * @param runnable the operation to perform.
+     * @return {@code true} if the lock was available and the operation was performed.
+     * @since 1.618
+     */
+    protected boolean _tryWithLock(Runnable runnable) {
+        if (lock.tryLock()) {
+            try {
+                runnable.run();
+            } finally {
+                lock.unlock();
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -1308,6 +1373,13 @@ public class Queue extends ResourceController implements Saveable {
                 List<BuildableItem> lostPendings = new ArrayList<BuildableItem>(pendings);
                 for (Computer c : Jenkins.getInstance().getComputers()) {
                     for (Executor e : c.getExecutors()) {
+                        if (e.isInterrupted()) {
+                            // JENKINS-28840 we will deadlock if we try to touch this executor while interrupt flag set
+                            // we need to clear lost pendings as we cannot know what work unit was on this executor
+                            // while it is interrupted. (All this dancing is a result of Executor extending Thread)
+                            lostPendings.clear(); // we'll get them next time around when the flag is cleared.
+                            continue;
+                        }
                         if (e.isParking()) {
                             parked.put(e, new JobOffer(e));
                         }
@@ -1328,15 +1400,28 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
+            final QueueSorter s = sorter;
 
             {// blocked -> buildable
-                for (BlockedItem p : new ArrayList<BlockedItem>(blockedProjects.values())) {// copy as we'll mutate the list
+                // copy as we'll mutate the list and we want to process in a potentially different order
+                List<BlockedItem> blockedItems = new ArrayList<>(blockedProjects.values());
+                // if facing a cycle of blocked tasks, ensure we process in the desired sort order
+                if (s != null) {
+                    s.sortBlockedItems(blockedItems);
+                } else {
+                    Collections.sort(blockedItems, QueueSorter.DEFAULT_BLOCKED_ITEM_COMPARATOR);
+                }
+                for (BlockedItem p : blockedItems) {
                     if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
                         // ready to be executed
                         Runnable r = makeBuildable(new BuildableItem(p));
                         if (r != null) {
                             p.leave(this);
                             r.run();
+                            // JENKINS-28926 we have removed a task from the blocked projects and added to building
+                            // thus we should update the snapshot so that subsequent blocked projects can correctly
+                            // determine if they are blocked by the lucky winner
+                            updateSnapshot();
                         }
                     }
                 }
@@ -1366,7 +1451,6 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            final QueueSorter s = sorter;
             if (s != null)
                 s.sortBuildableItems(buildables);
             
@@ -1381,6 +1465,9 @@ public class Queue extends ResourceController implements Saveable {
                     p.leave(this);
                     new BlockedItem(p).enter(this);
                     LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
+                    // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
+                    // so that other buildables which might have been blocked by this can see the state change
+                    updateSnapshot();
                     continue;
                 }
 
@@ -2569,6 +2656,51 @@ public class Queue extends ResourceController implements Saveable {
             this.blockedProjects = new ArrayList<BlockedItem>(blockedProjects);
             this.buildables = new ArrayList<BuildableItem>(buildables);
             this.pendings = new ArrayList<BuildableItem>(pendings);
+        }
+    }
+    
+    private static class LockedRunnable implements Runnable  {
+        private final Runnable delegate;
+
+        private LockedRunnable(Runnable delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void run() {
+            withLock(delegate);
+        }
+    }
+
+    private static class LockedJUCCallable<V> implements java.util.concurrent.Callable<V> {
+        private final java.util.concurrent.Callable<V> delegate;
+
+        private LockedJUCCallable(java.util.concurrent.Callable<V> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public V call() throws Exception {
+            return withLock(delegate);
+        }
+    }
+
+    private static class LockedHRCallable<V,T extends Throwable> implements hudson.remoting.Callable<V,T> {
+        private static final long serialVersionUID = 1L;
+        private final hudson.remoting.Callable<V,T> delegate;
+
+        private LockedHRCallable(hudson.remoting.Callable<V,T> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public V call() throws T {
+            return withLock(delegate);
+        }
+
+        @Override
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            delegate.checkRoles(checker);
         }
     }
 

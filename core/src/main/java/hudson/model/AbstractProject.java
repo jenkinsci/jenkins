@@ -266,7 +266,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         buildMixIn = createBuildMixIn();
         builds = buildMixIn.getRunMap();
 
-        if(Jenkins.getInstance()!=null && !Jenkins.getInstance().getNodes().isEmpty()) {
+        final Jenkins j = Jenkins.getInstance();
+        final List<Node> nodes = j != null ? j.getNodes() : null;
+        if(nodes!=null && !nodes.isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
             // make it roamable by default
             canRoam = true;
@@ -323,7 +325,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
         for (Trigger t : triggers()) {
-            t.start(this, Items.currentlyUpdatingByXml());
+            try {
+                t.start(this, Items.currentlyUpdatingByXml());
+            } catch (Throwable e) {
+                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
+            }
         }
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
@@ -1467,7 +1473,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(node,listener));
         WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
         try {
-            listener.getLogger().println("Polling SCM changes on " + node.getSelfLabel().getName());
+            String nodeName = node != null ? node.getSelfLabel().getName() : "[node_unavailable]";
+            listener.getLogger().println("Polling SCM changes on " + nodeName);
             LOGGER.fine("Polling SCM changes of " + getName());
             if (pollingBaseline==null) // see NOTE-NO-BASELINE above
                 calcPollingBaseline(lb,launcher,listener);
