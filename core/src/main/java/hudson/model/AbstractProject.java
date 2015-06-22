@@ -1098,23 +1098,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Blocked because the previous build is already in progress.
+     * @deprecated use {@link BlockedBecauseOfBuildInProgress} instead.
      */
-    public static class BecauseOfBuildInProgress extends CauseOfBlockage {
-        private final AbstractBuild<?,?> build;
-
+    public static class BecauseOfBuildInProgress extends BlockedBecauseOfBuildInProgress {
         public BecauseOfBuildInProgress(AbstractBuild<?, ?> build) {
-            this.build = build;
-        }
-
-        @Override
-        public String getShortDescription() {
-            Executor e = build.getExecutor();
-            String eta = "";
-            if (e != null)
-                eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
-            int lbn = build.getNumber();
-            return Messages.AbstractProject_BuildInProgress(lbn, eta);
+            super(build);
         }
     }
 
@@ -1150,10 +1138,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    public CauseOfBlockage getCauseOfBlockage() {
+    @Override public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
-        if (isLogUpdated() && !isConcurrentBuild())
-            return new BecauseOfBuildInProgress(getLastBuild());
+        if (isLogUpdated() && !isConcurrentBuild()) {
+            return new BlockedBecauseOfBuildInProgress(getLastBuild());
+        }
         if (blockBuildWhenDownstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingDownstream();
             if (bup!=null)
