@@ -1579,6 +1579,7 @@ table#legend-table td {
   border-style: none;
   border-color: transparent;
   background: none;
+  text-decoration: none;
 }
 
 #jenkins .yui-button .first-child {
