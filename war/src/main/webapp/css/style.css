@@ -37,6 +37,14 @@ body {
   margin-left: auto;
 }
 
+a:link {
+  text-decoration: none;
+}
+
+h1 {
+  font-weight: normal;
+}
+
 #header {
   background-color: #000000;
   height: 40px;
