@@ -9,26 +9,24 @@ __TODO__: Move to jenkins-ci web/wiki if changes accepted.
 
 Different search terms are __AND__ together to result in a matching Build, while multiples of the same search term are __OR__'d together e.g.
 
-* result: FAILURE desc: staging desc: production
+* `result: FAILURE desc: staging desc: production`
 
-Is interpreted as:
-
-* (result: FAILURE) AND (desc: staging OR desc: production)
+Is interpreted as: "(result: FAILURE) AND (desc: staging OR desc: production)"
 
 ## Examples
 
 Builds that contain the words "staging" or "production" in the description:
 
-* desc: staging desc: production
+* `desc: staging desc: production`
 
 Failed builds in last week (7 days):
 
-* result: FAILURE date-from: 1 week
+* `result: FAILURE date-from: 1 week`
 
 Failed builds since a specific date:
 
-* result: FAILURE date-from: 2015-03-31
+* `result: FAILURE date-from: 2015-03-31`
 
 Unstable builds in March:
 
-* result: UNSTABLE date-from: 2015-03-01 date-to: 2015-04-01
+* `result: UNSTABLE date-from: 2015-03-01 date-to: 2015-04-01`

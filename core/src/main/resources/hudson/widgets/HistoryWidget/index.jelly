@@ -69,7 +69,7 @@ THE SOFTWARE.
                         <input placeholder="${%find}"></input>
                     </td>
                     <td class="build-search-help">
-                        <a href="https://github.com/tfennelly/jenkins/blob/JENKINS-26445-pagination-search/core/src/main/java/hudson/widgets/buildsearch/README.md" target="_blank"><l:icon class="icon-help icon-sm"/></a>
+                        <a href="https://github.com/tfennelly/jenkins/blob/JENKINS-26445-pagination-search/core/src/main/java/jenkins/widgets/buildsearch/README.md" target="_blank"><l:icon class="icon-help icon-sm"/></a>
                     </td>
                 </tr>
             </table>
