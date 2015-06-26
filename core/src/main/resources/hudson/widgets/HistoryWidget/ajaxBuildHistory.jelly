@@ -26,5 +26,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:include page="ajaxBuildHistory.jelly" it="${it.page}" />
+  <st:include page="ajaxBuildHistory.jelly" it="${it.historyPageFilter}" />
 </j:jelly>

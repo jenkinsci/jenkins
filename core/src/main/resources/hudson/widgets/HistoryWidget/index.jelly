@@ -51,7 +51,7 @@ THE SOFTWARE.
     </span>
   </j:parse>
 
-  <j:set var="page" value="${it.page}" />
+  <j:set var="page" value="${it.historyPageFilter}" />
   <div id="buildHistoryPage" page-entry-newest="${page.newestOnPage}" page-entry-oldest="${page.oldestOnPage}" page-has-up="${page.hasUpPage}" page-has-down="${page.hasDownPage}">
     <div id="buildHistoryPageNav">
       <div class="nav pageOne" title="Page 1 (Newest/Latest Builds)"></div>
