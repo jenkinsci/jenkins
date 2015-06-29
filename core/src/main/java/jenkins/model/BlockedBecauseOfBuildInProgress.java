@@ -21,8 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
 
+package jenkins.model;
+
+import hudson.model.Executor;
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.model.queue.CauseOfBlockage;
 
 /**
@@ -42,10 +46,10 @@ public class BlockedBecauseOfBuildInProgress extends CauseOfBlockage {
         Executor e = build.getExecutor();
         String eta = "";
         if (e != null) {
-            eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
+            eta = Messages.BlockedBecauseOfBuildInProgress_ETA(e.getEstimatedRemainingTime());
         }
         int lbn = build.getNumber();
-        return Messages.AbstractProject_BuildInProgress(lbn, eta);
+        return Messages.BlockedBecauseOfBuildInProgress_shortDescription(lbn, eta);
     }
 
 }
