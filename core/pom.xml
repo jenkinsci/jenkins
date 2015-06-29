@@ -396,6 +396,10 @@ THE SOFTWARE.
           <groupId>org.springframework</groupId>
           <artifactId>spring-support</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -466,6 +470,10 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
+    </dependency>
+    <dependency><!-- [JENKINS-4433] -->
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
