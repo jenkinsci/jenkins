@@ -48,7 +48,6 @@ import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
 import jenkins.model.WorkspaceWriter;
 import jenkins.model.Jenkins;
-import hudson.model.AbstractProject.BecauseOfBuildInProgress;
 import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
 import hudson.model.Cause.LegacyCodeCause;
@@ -87,9 +86,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
 
 import org.junit.Ignore;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestBuilder;
 
@@ -359,7 +358,7 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.getBuildersList().add(new Shell("sleep 10"));
         QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
-        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BecauseOfBuildInProgress.class);
+        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BlockedBecauseOfBuildInProgress.class);
         p.getLastBuild().getExecutor().interrupt();
         b1.get();   // wait for it to finish
 
