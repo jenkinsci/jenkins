@@ -1933,7 +1933,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         }
     }
 
-    //updateBuilds();
     checkAllRowCellOverflows();
     window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
 
