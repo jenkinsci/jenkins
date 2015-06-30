@@ -152,6 +152,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.util.RunList;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.CheckForNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -1392,7 +1393,17 @@ public class Functions {
         return value!=null ? value : defaultValue;
     }
 
-    public static String printThrowable(Throwable t) {
+    /**
+     * Gets info about the specified {@link Throwable}.
+     * @param t Input {@link Throwable}
+     * @return If {@link Throwable} is not null, a summary info with the 
+     *      stacktrace will be returned. Otherwise, the method returns a default
+     *      &quot;No exception details&quot; string.
+     */
+    public static String printThrowable(@CheckForNull Throwable t) {
+        if (t == null) {
+            return Messages.Functions_NoExceptionDetails();
+        }
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
         return sw.toString();

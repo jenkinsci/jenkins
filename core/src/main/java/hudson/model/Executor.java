@@ -205,7 +205,14 @@ public class Executor extends Thread implements ModelObject {
     }
 
     public Result abortResult() {
-        lock.readLock().lock();
+        // this method is almost always called as a result of the current thread being interrupted
+        // as a result we need to clean the interrupt flag so that the lock's lock method doesn't
+        // get confused and think it was interrupted while awaiting the lock
+        Thread.interrupted(); 
+        // we need to use a write lock as we may be repeatedly interrupted while processing and
+        // we need the same lock as used in void interrupt(Result,boolean,CauseOfInterruption...)
+        // JENKINS-28690
+        lock.writeLock().lock();
         try {
             Result r = interruptStatus;
             if (r == null) r =
@@ -213,7 +220,7 @@ public class Executor extends Thread implements ModelObject {
 
             return r;
         } finally {
-            lock.readLock().unlock();
+            lock.writeLock().unlock();
         }
     }
 
@@ -620,7 +627,7 @@ public class Executor extends Thread implements ModelObject {
      * @return null if the death is expected death or the thread {@link #isActive}.
      * @since 1.142
      */
-    public Throwable getCauseOfDeath() {
+    public @CheckForNull Throwable getCauseOfDeath() {
         return causeOfDeath;
     }
 

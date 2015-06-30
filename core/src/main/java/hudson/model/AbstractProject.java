@@ -1473,7 +1473,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(node,listener));
         WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
         try {
-            listener.getLogger().println("Polling SCM changes on " + node.getSelfLabel().getName());
+            String nodeName = node != null ? node.getSelfLabel().getName() : "[node_unavailable]";
+            listener.getLogger().println("Polling SCM changes on " + nodeName);
             LOGGER.fine("Polling SCM changes of " + getName());
             if (pollingBaseline==null) // see NOTE-NO-BASELINE above
                 calcPollingBaseline(lb,launcher,listener);

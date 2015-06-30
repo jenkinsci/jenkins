@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.617</version>
+  <version>1.618</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -59,7 +59,7 @@ THE SOFTWARE.
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
     <url>https://github.com/jenkinsci/jenkins</url>
-    <tag>jenkins-1.617</tag>
+    <tag>jenkins-1.618</tag>
   </scm>
 
   <distributionManagement>
@@ -100,6 +100,7 @@ THE SOFTWARE.
     <maven-plugin.version>2.7.1</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
+    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
 
     <java.level>7</java.level>
   </properties>
@@ -216,6 +217,11 @@ THE SOFTWARE.
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>1.1.3</version>
+      </dependency>
+      <dependency><!-- [JENKINS-4433] -->
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.17</version>
       </dependency>
       <dependency>
         <groupId>org.samba.jcifs</groupId>
@@ -475,7 +481,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <version>2.5.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -501,7 +506,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.1</version>
+          <version>3.3</version>
           <dependencies>
             <dependency>
               <groupId>org.kohsuke</groupId>
@@ -762,7 +767,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.5.2</version>
             <configuration>
               <threshold>High</threshold>
             </configuration>
