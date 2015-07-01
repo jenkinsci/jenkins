@@ -1101,6 +1101,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * @deprecated use {@link BlockedBecauseOfBuildInProgress} instead.
      */
+    @Deprecated
     public static class BecauseOfBuildInProgress extends BlockedBecauseOfBuildInProgress {
         public BecauseOfBuildInProgress(AbstractBuild<?, ?> build) {
             super(build);
