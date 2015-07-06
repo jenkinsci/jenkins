@@ -2678,9 +2678,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                 // retainAll doesn't work well because of CopyOnWriteMap implementation, so remove one by one
                 // hopefully there shouldn't be too many of them.
-                for (String name : items.keySet()) {
-                    if (!loadedNames.contains(name))
-                        items.remove(name);
+                final Iterator<String> it = items.keySet().iterator();
+                while (it.hasNext()) {
+                    final String name = it.next();
+                    if (!loadedNames.contains(name)) {
+                        it.remove();
+                    }
                 }
             }
         });
