@@ -1252,7 +1252,7 @@ public class Queue extends ResourceController implements Saveable {
     public static <V, T extends Throwable> hudson.remoting.Callable<V, T> wrapWithLock(hudson.remoting.Callable<V, T> callable) {
         final Jenkins jenkins = Jenkins.getInstance();
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
-        return queue == null ? callable : new LockedHRCallable<>(callable);
+        return queue == null ? callable : new LockedHRCallable<V, T>(callable);
     }
 
     /**
