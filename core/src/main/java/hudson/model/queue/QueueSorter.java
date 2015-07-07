@@ -31,7 +31,9 @@ public abstract class QueueSorter implements ExtensionPoint {
     public static final Comparator<Queue.BlockedItem> DEFAULT_BLOCKED_ITEM_COMPARATOR = new Comparator<Queue.BlockedItem>() {
         @Override
         public int compare(Queue.BlockedItem o1, Queue.BlockedItem o2) {
-            return Long.compare(o1.getInQueueSince(), o2.getInQueueSince());
+            long x = o1.getInQueueSince();
+            long y = o2.getInQueueSince();
+            return (x < y) ? -1 : ((x == y) ? 0 : 1);
         }
     };
 
