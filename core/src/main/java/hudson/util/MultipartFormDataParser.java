@@ -71,4 +71,23 @@ public class MultipartFormDataParser {
         for (FileItem item : byName.values())
             item.delete();
     }
+
+    public static boolean isMultipart(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+
+        String[] parts = contentType.split(";");
+        if (parts.length == 0) {
+            return false;
+        }
+
+        for (int i = 0; i < parts.length; i++) {
+            if ("multipart/form-data".equals(parts[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
