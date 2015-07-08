@@ -74,10 +74,9 @@ public class MultipartFormDataParser {
     }
 
     /**
-     * Checks a <a href="http://www.w3.org/Protocols/rfc1341/4_Content-Type.html">Content-Type</a> string
-     * to assert if it is "multipart/form-data".
+     * Checks a Content-Type string to assert if it is "multipart/form-data".
      *
-     * @param contentType <a href="http://www.w3.org/Protocols/rfc1341/4_Content-Type.html">Content-Type</a> string.
+     * @param contentType Content-Type string.
      * @return {@code true} if the content type is "multipart/form-data", otherwise {@code false}.
      * @since TODO
      */
