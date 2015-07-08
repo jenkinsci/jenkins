@@ -98,7 +98,7 @@ public class CrumbFilter implements Filter {
             return false;
         }
 
-        return MultipartFormDataParser.isMultipart(request.getContentType());
+        return MultipartFormDataParser.isMultiPartForm(request.getContentType());
     }
 
     /**

@@ -33,11 +33,11 @@ public class MultipartFormDataParserTest {
     
     @Test
     public void testIsMultipart() throws Exception {
-        Assert.assertEquals(false, MultipartFormDataParser.isMultipart(null));
-        Assert.assertEquals(false, MultipartFormDataParser.isMultipart("blah"));
+        Assert.assertEquals(false, MultipartFormDataParser.isMultiPartForm(null));
+        Assert.assertEquals(false, MultipartFormDataParser.isMultiPartForm("blah"));
 
-        Assert.assertEquals(true, MultipartFormDataParser.isMultipart("multipart/form-data"));
-        Assert.assertEquals(true, MultipartFormDataParser.isMultipart("multipart/form-data;"));
-        Assert.assertEquals(true, MultipartFormDataParser.isMultipart("multipart/form-data; boundary=----WebKitFormBoundary8OOwv1Xp4c5XkBmD"));
+        Assert.assertEquals(true, MultipartFormDataParser.isMultiPartForm("multipart/form-data"));
+        Assert.assertEquals(true, MultipartFormDataParser.isMultiPartForm("multipart/form-data;"));
+        Assert.assertEquals(true, MultipartFormDataParser.isMultiPartForm("multipart/form-data; boundary=----WebKitFormBoundary8OOwv1Xp4c5XkBmD"));
     }
 }

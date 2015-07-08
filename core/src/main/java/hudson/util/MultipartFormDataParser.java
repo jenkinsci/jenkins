@@ -28,6 +28,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletException;
 import java.util.List;
@@ -72,7 +73,15 @@ public class MultipartFormDataParser {
             item.delete();
     }
 
-    public static boolean isMultipart(String contentType) {
+    /**
+     * Checks a <a href="http://www.w3.org/Protocols/rfc1341/4_Content-Type.html">Content-Type</a> string
+     * to assert if it is "multipart/form-data".
+     *
+     * @param contentType <a href="http://www.w3.org/Protocols/rfc1341/4_Content-Type.html">Content-Type</a> string.
+     * @return {@code true} if the content type is "multipart/form-data", otherwise {@code false}.
+     * @since TODO
+     */
+    public static boolean isMultiPartForm(@CheckForNull String contentType) {
         if (contentType == null) {
             return false;
         }
