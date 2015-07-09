@@ -34,6 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.diagnosis.OldDataMonitor;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -115,7 +116,10 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                         }
                     }
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+                    if(this instanceof Saveable)
+                        OldDataMonitor.report((Saveable) this, Collections.<Throwable>singleton(e));
+
+                        LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
                 }
             }
         }
