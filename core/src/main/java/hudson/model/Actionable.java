@@ -116,7 +116,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                         }
                     }
                 } catch (Exception e) {
-                    if(this instanceof Saveable)
+                    if (this instanceof Saveable)
                         OldDataMonitor.report((Saveable) this, Collections.<Throwable>singleton(e));
 
                         LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
