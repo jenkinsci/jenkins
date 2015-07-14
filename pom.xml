@@ -663,6 +663,7 @@ THE SOFTWARE.
                 <bannedDependencies>
                   <excludes>
                     <exclude>org.sonatype.sisu:sisu-guice</exclude>
+                    <exclude>log4j:log4j</exclude>
                   </excludes>
                 </bannedDependencies>
               </rules>
