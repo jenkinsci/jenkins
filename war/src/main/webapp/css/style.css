@@ -37,10 +37,6 @@ body {
   margin-left: auto;
 }
 
-a:link {
-  text-decoration: none;
-}
-
 h1 {
   font-weight: normal;
 }
@@ -239,7 +235,7 @@ dt {
 }
 
 a:link {
-  text-decoration: underline;
+  text-decoration: none;
   color: #204A87;
 }
 
