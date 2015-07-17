@@ -234,14 +234,9 @@ dt {
     color: #ccc;
 }
 
-a:link {
+a:link, a:visited {
   text-decoration: none;
-  color: #204A87;
-}
-
-a:visited {
-  text-decoration: underline;
-  color: #5c3566;
+  color: #204AAE;
 }
 
 a.lowkey:link {
