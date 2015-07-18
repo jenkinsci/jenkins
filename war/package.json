@@ -1,8 +1,9 @@
 {
-    "name": "jenkins",
-    "version": "0.0.0",
-    "dependencies": {
-    },
-    "devDependencies": {
-    }
+  "name": "jenkins",
+  "version": "0.0.0",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "jenkins-js-builder": "0.0.4"
+  }
 }
