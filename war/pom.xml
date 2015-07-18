@@ -373,6 +373,12 @@ THE SOFTWARE.
                   <version>1.2-beta-4</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.ui</groupId>
+                  <artifactId>jquery-detached</artifactId>
+                  <version>1.0-beta-1-SNAPSHOT</version>
+                  <type>hpi</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins</outputDirectory>
               <stripVersion>true</stripVersion>
