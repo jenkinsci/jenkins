@@ -44,5 +44,9 @@ jenkins_*.changes
 *.pkg
 *.zip
 push-build.sh
-war/node_modules/
 .java-version
+
+# Node
+node/
+node_modules/
+npm-debug.log
