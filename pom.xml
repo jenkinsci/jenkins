@@ -103,6 +103,10 @@ THE SOFTWARE.
     <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
 
     <java.level>7</java.level>
+
+    <!-- TODO: Move to parent pom -->
+    <node.version>0.12.7</node.version>
+    <npm.version>2.13.1</npm.version>
   </properties>
 
   <repositories>
@@ -736,6 +740,157 @@ THE SOFTWARE.
   </build>
 
   <profiles>
+
+    <!-- TODO: Move to parent pom -->
+    <!--
+    Prevent node and npm from being downloaded all the time (on linux i.e. CI machines)
+    -->
+    <profile>
+        <id>node-and-npm-from-repo</id>
+        <activation>
+            <os>
+                <family>Linux</family>
+                <arch>amd64</arch>
+            </os>
+            <file>
+                <exists>package.json</exists>
+            </file>
+        </activation>
+        <properties>
+            <node.classifier>linux-x64</node.classifier>
+        </properties>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>2.9</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <phase>initialize</phase>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.jenkins-ci.ui.libs</groupId>
+                                        <artifactId>node</artifactId>
+                                        <version>${node.version}</version>
+                                        <type>tgz</type>
+                                        <classifier>${node.classifier}</classifier>
+                                        <outputDirectory>${project.build.directory}/cache/v${node.version}</outputDirectory>
+                                        <destFileName>node-v${node.version}-${node.classifier}.tar.gz</destFileName>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>org.jenkins-ci.ui.libs</groupId>
+                                        <artifactId>npm</artifactId>
+                                        <version>${npm.version}</version>
+                                        <type>tgz</type>
+                                        <outputDirectory>${project.build.directory}/cache</outputDirectory>
+                                        <destFileName>npm-${npm.version}.tgz</destFileName>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <configuration>
+                        <nodeDownloadRoot>${project.baseUri}target/cache/</nodeDownloadRoot>
+                        <npmDownloadRoot>${project.baseUri}target/cache/</npmDownloadRoot>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+
+    <!-- TODO: Move to parent pom -->
+    <profile>
+        <id>gulp-execution</id>
+        <activation>
+            <file>
+                <exists>gulpfile.js</exists>
+            </file>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.3.1</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-versions</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireMavenVersion>
+                                        <version>3.1.0</version>
+                                    </requireMavenVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>0.0.23</version>
+
+                    <executions>
+
+                        <execution>
+                            <phase>initialize</phase>
+                            <id>install node and npm</id>
+                            <goals>
+                                <goal>install-node-and-npm</goal>
+                            </goals>
+                            <configuration>
+                                <nodeVersion>v${node.version}</nodeVersion>
+                                <npmVersion>${npm.version}</npmVersion>
+                            </configuration>
+                        </execution>
+
+                        <execution>
+                            <phase>initialize</phase>
+                            <id>npm install</id>
+                            <goals>
+                                <goal>npm</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Note that this may not be omitted lest maven-release-plugin be confused (frontend-maven-plugin #109): -->
+                                <arguments>install</arguments>
+                            </configuration>
+                        </execution>
+
+                        <execution>
+                            <phase>generate-sources</phase>
+                            <id>gulp bundle</id>
+                            <goals>
+                                <goal>gulp</goal>
+                            </goals>
+                            <configuration><arguments>bundle</arguments></configuration>
+                        </execution>
+
+                        <execution>
+                            <phase>test</phase>
+                            <id>gulp test</id>
+                            <goals>
+                                <goal>gulp</goal>
+                            </goals>
+                            <configuration><arguments>test</arguments></configuration>
+                        </execution>
+
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
     <profile>
       <id>rc</id>
       <properties>
