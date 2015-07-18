@@ -1,11 +1,8 @@
 {
     "name": "jenkins",
     "version": "0.0.0",
-    "dependencies": {},
-    "devDependencies": {
-        "grunt": "~0.4.1"
+    "dependencies": {
     },
-    "engines": {
-        "node": ">=0.8.0"
+    "devDependencies": {
     }
 }
