@@ -1,9 +1,11 @@
 {
   "name": "jenkins",
   "version": "0.0.0",
-  "dependencies": {},
   "devDependencies": {
     "gulp": "^3.9.0",
-    "jenkins-js-builder": "0.0.4"
+    "jenkins-js-builder": "0.0.10",
+    "jenkins-js-test": "0.0.2",
+    "jquery-detached-2.1.4": "^2.1.4-v2",
+    "window-handle": "0.0.6"
   }
 }
