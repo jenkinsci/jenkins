@@ -101,6 +101,7 @@ ${h.initPageVariables(context)}
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
+    <script src="${resURL}/bundles/jenkins.js" type="text/javascript"/>
 
     <!-- we include our own prototype.js, so don't let stapler pull in another. -->
     <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"

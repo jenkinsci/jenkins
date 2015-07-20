@@ -3,9 +3,12 @@
   "version": "0.0.0",
   "devDependencies": {
     "gulp": "^3.9.0",
-    "jenkins-js-builder": "0.0.10",
+    "jenkins-js-builder": "0.0.11",
     "jenkins-js-test": "0.0.2",
     "jquery-detached-2.1.4": "^2.1.4-v2",
     "window-handle": "0.0.6"
+  },
+  "dependencies": {
+    "jenkins-modules": "^1.0.0-alpha-21"
   }
 }
