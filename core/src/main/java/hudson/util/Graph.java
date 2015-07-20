@@ -26,6 +26,7 @@ package hudson.util;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.plot.Plot;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -84,8 +85,27 @@ public abstract class Graph {
         String h = req.getParameter("height");
         if(h==null)     h=String.valueOf(defaultH);
 
+        Color graphBg = stringToColor(req.getParameter("graphBg"));
+        Color plotBg = stringToColor(req.getParameter("plotBg"));
+
         if (graph==null)    graph = createGraph();
+        graph.setBackgroundPaint(graphBg);
+        Plot p = graph.getPlot();
+        p.setBackgroundPaint(plotBg);
+
         return graph.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h),info);
+    }
+
+    private static Color stringToColor(String s) {
+        if (s != null) {
+            try {
+                return Color.decode("0x" + s);
+            } catch (NumberFormatException e) {
+                return Color.WHITE;
+            }
+        } else {
+            return Color.WHITE;
+        }
     }
 
     /**
