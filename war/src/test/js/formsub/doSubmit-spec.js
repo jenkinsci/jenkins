@@ -6,9 +6,6 @@ describe("form submission doSubit tests", function () {
         jsTest.onPage(function(window) {
             var formsub = require('../../../main/js/formsub'); // TODO: clean this up - add a srcRequire function to 'jenkins-js-test' and eliminate all the relative path shenanigans
 
-            var doSubmit = formsub.doSubmit('#myform');
-
-            console.log('*** The form element contains: "' + doSubmit + '"');
 
             done();
 
