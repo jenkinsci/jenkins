@@ -3,7 +3,7 @@ var builder = require('jenkins-js-builder');
 //
 // Use the predefined tasks from jenkins-js-builder.
 //
-builder.defineTasks(['test', 'bundle']);
+builder.defineTasks(['test', 'bundle', 'rebundle']);
 
 //
 // Need to override the default src locations.
