@@ -16,4 +16,6 @@ builder.tests('./src/test/js');
 //
 builder.bundle('src/main/js/jenkins.js')
     .withExternalModuleMapping('jquery-detached-2.1.4', 'jquery-detached:jquery2')
+    .withExternalModuleMapping('bootstrap-detached-3.3', 'bootstrap:bootstrap3')
+    .withExternalModuleMapping('moment', 'momentjs:momentjs3')
     .inDir('src/main/webapp/bundles');
