@@ -177,58 +177,6 @@ var FormChecker = {
     }
 }
 
-/**
- * Find the sibling (in the sense of the structured form submission) form item of the given name,
- * and returns that DOM node.
- *
- * @param {HTMLElement} e
- * @param {string} name
- *      Name of the control to find. Can include "../../" etc in the prefix.
- *      See @RelativePath.
- *
- *      We assume that the name is normalized and doesn't contain any redundant component.
- *      That is, ".." can only appear as prefix, and "foo/../bar" is not OK (because it can be reduced to "bar")
- */
-function findNearBy(e,name) {
-    while (name.startsWith("../")) {
-        name = name.substring(3);
-        e = findFormParent(e,null,true);
-    }
-
-    // name="foo/bar/zot"  -> prefixes=["bar","foo"] & name="zot"
-    var prefixes = name.split("/");
-    name = prefixes.pop();
-    prefixes = prefixes.reverse();
-
-    // does 'e' itself match the criteria?
-    // as some plugins use the field name as a parameter value, instead of 'value'
-    var p = findFormItem(e,name,function(e,filter) {
-        return filter(e) ? e : null;
-    });
-    if (p!=null && prefixes.length==0)    return p;
-
-    var owner = findFormParent(e,null,true);
-
-    function locate(iterator,e) {// keep finding elements until we find the good match
-        while (true) {
-            e = iterator(e,name);
-            if (e==null)    return null;
-
-            // make sure this candidate element 'e' is in the right point in the hierarchy
-            var p = e;
-            for (var i=0; i<prefixes.length; i++) {
-                p = findFormParent(p,null,true);
-                if (p.getAttribute("name")!=prefixes[i])
-                    return null;
-            }
-            if (findFormParent(p,null,true)==owner)
-                return e;
-        }
-    }
-
-    return locate(findPreviousFormItem,e) || locate(findNextFormItem,e);
-}
-
 function controlValue(e) {
     if (e==null)    return null;
     // compute the form validation value to be sent to the server
@@ -272,84 +220,6 @@ function qs(owner) {
             return this.params;
         }
     };
-}
-
-// find the nearest ancestor node that has the given tag name
-function findAncestor(e, tagName) {
-    do {
-        e = e.parentNode;
-    } while (e != null && e.tagName != tagName);
-    return e;
-}
-
-function findAncestorClass(e, cssClass) {
-    do {
-        e = e.parentNode;
-    } while (e != null && !Element.hasClassName(e,cssClass));
-    return e;
-}
-
-function findFollowingTR(input, className) {
-    // identify the parent TR
-    var tr = input;
-    while (tr.tagName != "TR")
-        tr = tr.parentNode;
-
-    // then next TR that matches the CSS
-    do {
-        tr = $(tr).next();
-    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
-
-    return tr;
-}
-
-function find(src,filter,traversalF) {
-    while(src!=null) {
-        src = traversalF(src);
-        if(src!=null && filter(src))
-            return src;
-    }
-    return null;
-}
-
-/**
- * Traverses a form in the reverse document order starting from the given element (but excluding it),
- * until the given filter matches, or run out of an element.
- */
-function findPrevious(src,filter) {
-    return find(src,filter,function (e) {
-        var p = e.previousSibling;
-        if(p==null) return e.parentNode;
-        while(p.lastChild!=null)
-            p = p.lastChild;
-        return p;
-    });
-}
-
-function findNext(src,filter) {
-    return find(src,filter,function (e) {
-        var n = e.nextSibling;
-        if(n==null) return e.parentNode;
-        while(n.firstChild!=null)
-            n = n.firstChild;
-        return n;
-    });
-}
-
-function findFormItem(src,name,directionF) {
-    var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
-}
-
-/**
- * Traverses a form in the reverse document order and finds an INPUT element that matches the given name.
- */
-function findPreviousFormItem(src,name) {
-    return findFormItem(src,name,findPrevious);
-}
-
-function findNextFormItem(src,name) {
-    return findFormItem(src,name,findNext);
 }
 
 /**
@@ -1552,6 +1422,8 @@ Form.findMatchingInput = function(base, name) {
 
     return null;        // not found
 }
+
+
 
 function onBuildHistoryChange(handler) {
     Event.observe(window, 'jenkins:buildHistoryChanged', handler);

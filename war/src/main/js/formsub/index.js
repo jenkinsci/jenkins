@@ -1,4 +1,5 @@
 var jquery = require('jquery-detached-2.1.4');
+var finder = require('../find');
 
 exports.init = function() {
     var $ = jquery.getJQuery();
@@ -48,7 +49,7 @@ exports.buildFormTree = function(form) {
         // find the grouping parent node, which will have @name.
         // then return the corresponding object in the map
         function findParent(e) {
-            var p = exports.findFormParent(e,form);
+            var p = finder.findFormParent(e,form);
             if (p==null)    return {};
 
             var m = p.formDom;
@@ -161,62 +162,6 @@ exports.buildFormTree = function(form) {
         return false;
     }
 };
-// Hack to offer backward compatibility for callers of the
-// global version that used to be defined in hudson-behavior.js
-if (typeof window !== 'undefined') {
-    window.buildFormTree = function (form) {
-        // TODO: some sort of low noise warning
-        return exports.buildFormTree(form);
-    };
-}
-
-/**
- * Finds the DOM node of the given DOM node that acts as a parent in the form submission.
- *
- * @param {HTMLElement} e
- *      The node whose parent we are looking for.
- * @param {HTMLFormElement} form
- *      The form element that owns 'e'. Passed in as a performance improvement. Can be null.
- * @return null
- *      if the given element shouldn't be a part of the final submission.
- */
-exports.findFormParent = function(e,form,isStatic) {
-    isStatic = isStatic || false;
-
-    if (form==null) // caller can pass in null to have this method compute the owning form
-        form = findAncestor(e,"FORM");
-
-    while(e!=form) {
-        // this is used to create a group where no single containing parent node exists,
-        // like <optionalBlock>
-        var nameRef = e.getAttribute("nameRef");
-        if(nameRef!=null)
-            e = $(nameRef);
-        else
-            e = e.parentNode;
-
-        if(!isStatic && e.getAttribute("field-disabled")!=null)
-            return null;  // this field shouldn't contribute to the final result
-
-        var name = e.getAttribute("name");
-        if(name!=null && name.length>0) {
-            if(e.tagName=="INPUT" && !isStatic && !xor(e.checked,Element.hasClassName(e,"negative")))
-                return null;  // field is not active
-
-            return e;
-        }
-    }
-
-    return form;
-};
-// Hack to offer backward compatibility for callers of the
-// global version that used to be defined in hudson-behavior.js
-if (typeof window !== 'undefined') {
-    window.findFormParent = function (e,form,isStatic) {
-        // TODO: some sort of low noise warning
-        return exports.findFormParent(e,form,isStatic);
-    };
-}
 
 // compute the form field name from the control name
 function shortenName(name) {
@@ -229,3 +174,7 @@ function shortenName(name) {
     if(idx>=0)  name = name.substring(idx+1);
     return name;
 }
+
+// Hack to offer backward compatibility for callers of the
+// global version that used to be defined in hudson-behavior.js
+require('../backcompatib').globalize(module, ['buildFormTree']);
