@@ -162,10 +162,13 @@ exports.buildFormTree = function(form) {
     }
 };
 // Hack to offer backward compatibility for callers of the
-window.buildFormTree = function (form) {
-    // TODO: some sort of low noise warning
-    return exports.buildFormTree(form);
-};
+// global version that used to be defined in hudson-behavior.js
+if (typeof window !== 'undefined') {
+    window.buildFormTree = function (form) {
+        // TODO: some sort of low noise warning
+        return exports.buildFormTree(form);
+    };
+}
 
 /**
  * Finds the DOM node of the given DOM node that acts as a parent in the form submission.
@@ -207,10 +210,13 @@ exports.findFormParent = function(e,form,isStatic) {
     return form;
 };
 // Hack to offer backward compatibility for callers of the
-window.findFormParent = function (e,form,isStatic) {
-    // TODO: some sort of low noise warning
-    return exports.findFormParent(e,form,isStatic);
-};
+// global version that used to be defined in hudson-behavior.js
+if (typeof window !== 'undefined') {
+    window.findFormParent = function (e,form,isStatic) {
+        // TODO: some sort of low noise warning
+        return exports.findFormParent(e,form,isStatic);
+    };
+}
 
 // compute the form field name from the control name
 function shortenName(name) {
