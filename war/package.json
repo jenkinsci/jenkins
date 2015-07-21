@@ -9,6 +9,6 @@
     "window-handle": "0.0.6"
   },
   "dependencies": {
-    "jenkins-modules": "^1.0.0-alpha-21"
+    "jenkins-modules": "1.0.0"
   }
 }
