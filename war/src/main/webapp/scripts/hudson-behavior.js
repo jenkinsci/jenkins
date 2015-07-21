@@ -769,20 +769,20 @@ var jenkinsRules = {
         makeButton(e);
     },
 
-    "TR.optional-block-start": function(e) { // see optionalBlock.jelly
+    ".optional-block-start": function(e) { // see optionalBlock.jelly
         // set start.ref to checkbox in preparation of row-set-end processing
         var checkbox = e.down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
     // see RowVisibilityGroupTest
-    "TR.rowvg-start" : function(e) {
+    ".rowvg-start" : function(e) {
         // figure out the corresponding end marker
         function findEnd(e) {
             for( var depth=0; ; e=$(e).next()) {
                 if(Element.hasClassName(e,"rowvg-start"))    depth++;
                 if(Element.hasClassName(e,"rowvg-end"))      depth--;
-                if(depth==0)    return e;
+                if(depth==0 || !$(e).next() )    return e;
             }
         }
 
@@ -851,7 +851,7 @@ var jenkinsRules = {
         };
     },
 
-    "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+    ".row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
         e = $(e);
         var end = e;
@@ -873,7 +873,7 @@ var jenkinsRules = {
         applyNameRef(start,end,ref);
     },
 
-    "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
+    ".optional-block-start ": function(e) { // see optionalBlock.jelly
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwitch row-set-end
         // this requires "TR.row-set-end" to mark rows

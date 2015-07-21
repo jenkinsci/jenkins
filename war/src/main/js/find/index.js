@@ -17,14 +17,15 @@ exports.findAncestorClass = function(e, cssClass) {
 exports.findFollowingTR = function(input, className) {
     // identify the parent TR
     var tr = input;
-    while (tr.tagName != "TR")
+    while (tr && tr.tagName !== "TR" && !tr.hasClassName('tr')){
         tr = tr.parentNode;
-
-    // then next TR that matches the CSS
-    do {
-        tr = $(tr).next();
-    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
-
+    }
+    if(tr && (tr.tagName === 'TR' ||  tr.hasClassName('tr'))){
+      // then next TR that matches the CSS
+      do {
+          tr = $(tr).next();
+      } while (tr != null && ((tr.tagName != "TR" && !tr.hasClassName('tr')) || !Element.hasClassName(tr,className)));
+    }
     return tr;
 };
 
