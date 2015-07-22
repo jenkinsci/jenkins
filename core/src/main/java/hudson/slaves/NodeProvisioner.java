@@ -250,9 +250,9 @@ public class NodeProvisioner {
                             for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
                                 cl.onFailure(f, e);
                             }
+                        } finally {
+                            f.spent();
                         }
-
-                        f.spent();
                     }
 
                     float plannedCapacity = plannedCapacitySnapshot;
