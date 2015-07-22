@@ -774,7 +774,7 @@ THE SOFTWARE.
                             <configuration>
                                 <artifactItems>
                                     <artifactItem>
-                                        <groupId>org.jenkins-ci.ui.libs</groupId>
+                                        <groupId>org.jenkins-ci.nodejs</groupId>
                                         <artifactId>node</artifactId>
                                         <version>${node.version}</version>
                                         <type>tgz</type>
@@ -783,7 +783,7 @@ THE SOFTWARE.
                                         <destFileName>node-v${node.version}-${node.classifier}.tar.gz</destFileName>
                                     </artifactItem>
                                     <artifactItem>
-                                        <groupId>org.jenkins-ci.ui.libs</groupId>
+                                        <groupId>org.jenkins-ci.nodejs</groupId>
                                         <artifactId>npm</artifactId>
                                         <version>${npm.version}</version>
                                         <type>tgz</type>
