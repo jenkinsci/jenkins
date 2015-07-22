@@ -27,11 +27,11 @@ THE SOFTWARE.
   <st:documentation>
     Renders a row that shows description text below an input field.
   </st:documentation>
-	<tr>
-    <td colspan="2"/>
-    <td class="setting-description">
+	<div class="tr">
+    <div class="td colspan2" colspan="2"/>
+    <div class="td setting-description">
 	    <d:invokeBody />
-	  </td>
-	  <td />
-	</tr>
+	  </div>
+	  <div class="td" />
+	</div>
 </j:jelly>

@@ -46,6 +46,9 @@ THE SOFTWARE.
     <st:attribute name="inline">
       if present, the folded section will not be grouped into a separate JSON object upon submission.
     </st:attribute>
+    <st:attribute name="classname">
+      if present, the folded section will not be grouped into a separate JSON object upon submission.
+    </st:attribute>
     <st:attribute name="help">
       If specified, the (?) help icon will be rendered on the right,
       for in place help text. See &lt;f:entry> for the details.
@@ -53,21 +56,24 @@ THE SOFTWARE.
   </st:documentation>
 
   <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
-
-	<tr class="radio-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-	  <td colspan="3">
-      <label>
-	      <input type="radio" name="${name}" value="${value}"
-             class="radio-block-control" checked="${checked?'true':null}" />
-        ${title}
-      </label>
-    </td>
-    <f:helpLink url="${help}" featureName="${title}" />
-	</tr>
-  <j:if test="${attrs.help!=null}">
-    <f:helpArea />
-  </j:if>
-	<d:invokeBody />
-	<!-- end marker -->
-	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none" />
+  <div class="radio-group-box">
+  	<div class="tr radio-block-start ${attrs.inline?'':'row-set-start'} ${attrs.classname}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+  	  <div class="td colspan3 chk-name" colspan="3">
+        <label>
+  	      <input type="radio" name="${name}" value="${value}"
+               class="radio-block-control" checked="${checked?'true':null}" />
+          ${title}
+        </label>
+      </div>
+      <f:helpLink url="${help}" featureName="${title}" />
+  	</div>
+    <j:if test="${attrs.help!=null}">
+      <f:helpArea />
+    </j:if>
+    <div class="radio-group">
+  	 <d:invokeBody />
+    </div>
+  	<!-- end marker -->
+  	<div class="tr ${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none" />
+  </div>
 </j:jelly>

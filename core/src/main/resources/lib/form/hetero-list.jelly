@@ -72,17 +72,17 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <table style="width:100%">
+      <div class="tbl" style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
-          <tr>
-            <td colspan="3">
+          <div class="tr">
+            <div class="td colspan3" colspan="3">
               <div class="dd-handle">
                 <b>${descriptor.displayName}</b>
               </div>
-            </td>
+            </div>
             <f:helpLink url="${help}"/>
-          </tr>
+          </div>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
             <f:helpArea />
@@ -93,11 +93,11 @@ THE SOFTWARE.
 
         <f:class-entry descriptor="${descriptor}" />
         <f:block>
-          <div align="right">
+          <div class="dlt-btn" align="right">
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
           </div>
         </f:block>
-      </table>
+      </div>
     </d:tag>
   </d:taglib>
 
@@ -105,6 +105,9 @@ THE SOFTWARE.
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
+    <j:if test="${empty(attrs.items)}">
+    <div class="none">No ${attrs.name} selected.</div>
+    </j:if>
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
@@ -126,7 +129,7 @@ THE SOFTWARE.
         <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
           <j:set var="capture" value="${attrs.capture?:''}" />
           <local:body deleteCaption="${attrs.deleteCaption}">
-            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
+            <l:renderOnDemand tag="div" clazz="config-page" capture="descriptor,it,instance,${capture}">
               <l:ajax>
                 <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
               </l:ajax>
@@ -136,7 +139,7 @@ THE SOFTWARE.
       </j:forEach>
     </div>
 
-    <div>
+    <div class="btn-box">
       <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
     </div>
   </div>

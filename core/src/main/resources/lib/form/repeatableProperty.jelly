@@ -31,7 +31,7 @@ THE SOFTWARE.
     Unless that nested config.jelly already adds a delete button (deprecated), you should normally put the following inside this tag:
 
       	<f:entry title="">
-          <div align="right">
+          <div class="dlt-btn" align="right">
             <f:repeatableDeleteButton />
           </div>
         </f:entry>
@@ -62,9 +62,9 @@ THE SOFTWARE.
 
 
   <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}">
-    <table style="width:100%">
+    <div class="tbl" style="width:100%">
       <st:include page="config.jelly" class="${descriptor.clazz}" />
       <d:invokeBody/>
-    </table>
+    </div>
   </f:repeatable>
 </j:jelly>

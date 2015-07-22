@@ -45,13 +45,16 @@ THE SOFTWARE.
       @target of the &lt;form> HTML element. Works like &lt;a target="...">
       and controls which window the result of the submission goes to.
     </st:attribute>
+    <st:attribute name="classname">
+      Optional class attribute for &lt;form> that is created in the form.
+    </st:attribute>    
     <st:attribute name="tableClass">
       Optional class attribute for &lt;table> that is created in the form.
     </st:attribute>
   </st:documentation>
-  <form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}">
-    <table width="100%" class="${attrs.tableClass}">
+  <form action="${action}" class="bootstrap3 ${attrs.classname}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}">
+    <div class="tbl panel-group form-inner ${attrs.tableClass}"><div class="tbody">
       <d:invokeBody/>
-    </table>
+    </div></div>
   </form>
 </j:jelly>

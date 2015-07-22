@@ -27,6 +27,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<!-- 
   <f:optionalBlock name="disable" title="${%Disable Build} (${%No new builds will be executed until the project is re-enabled.})" checked="${it.disabled}"
                    help="/help/project-config/disable.html" inline="true" />
+                   
+  <j:if test="${it.supportsLogRotator()}">
+
+    <f:optionalBlock name="logrotate"
+      help="/help/project-config/log-rotation.html"
+      title="${%Discard Old Builds}" checked="${it.buildDiscarder!=null}" inline="true">
+      <f:dropdownDescriptorSelector field="buildDiscarder" title="${%Strategy}"/>
+    </f:optionalBlock>
+  </j:if>
+  -->                 
 </j:jelly>

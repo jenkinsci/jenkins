@@ -859,7 +859,7 @@ var jenkinsRules = {
         for( var depth=0; ; e=e.previous()) {
             if(e.hasClassName("row-set-end"))        depth++;
             if(e.hasClassName("row-set-start"))      depth--;
-            if(depth==0)    break;
+            if(depth==0 || !e.previous())    break;
         }
         var start = e;
 
@@ -1016,16 +1016,17 @@ var jenkinsRules = {
 
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
-
+            var parentWidth = sticker.up().getWidth();
             var viewport = DOM.getClientRegion();
             var pos = DOM.getRegion(shadow);
-
+            sticker.style.width = parentWidth +'px';
             sticker.style.position = "fixed";
 
             var bottomPos = Math.max(0, viewport.bottom - pos.bottom);
 
-            sticker.style.bottom = bottomPos + "px"
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
+            sticker.style.bottom = bottomPos + "px";
+            sticker.style.left = '0px';
+            sticker.style.paddingLeft = Math.max(0,pos.left-viewport.left) + "px";
         }
 
         // react to layout change
@@ -1189,10 +1190,27 @@ function updateOptionalBlock(c,scroll) {
 
     // find the beginning of the rowvg
     var vg =s;
-    while (!vg.hasClassName("rowvg-start"))
+    var checked = xor(c.checked,Element.hasClassName(c,"negative"));
+    var $groupBox = s.match('.option-group-box') ? s : s.up('.option-group-box');
+    var $group = $groupBox.down('.option-group'); 
+    var $panel = $groupBox.match('.panel-collapse') ? s : s.up('.panel-collapse');
+    
+    while (vg && !vg.hasClassName("rowvg-start"))
         vg = vg.next();
 
-    var checked = xor(c.checked,Element.hasClassName(c,"negative"));
+    if(!vg){
+        if(! $group) return;
+        
+        if(checked){ 
+          $group.show();
+          $groupBox.addClassName('shown');
+        }
+        else{
+          $group.hide();
+          $groupBox.removeClassName('shown');
+        }
+        return;
+    }
 
     vg.rowVisibilityGroup.makeInnerVisisble(checked);
 

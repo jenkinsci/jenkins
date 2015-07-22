@@ -40,7 +40,7 @@ THE SOFTWARE.
     </div>
 
     <l:hasPermission permission="${permission}">
-      <div align="right"><a id="description-link" href="editDescription" onclick="${h.isAutoRefresh(request) ? null : 'return replaceDescription();'}">
+      <div class="description-box"><a id="description-link" href="editDescription" onclick="${h.isAutoRefresh(request) ? null : 'return replaceDescription();'}">
         <l:icon class="icon-notepad icon-sm"/>
         <j:choose>
           <j:when test="${empty(it.description)}">

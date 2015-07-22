@@ -25,10 +25,12 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-
   <j:if test="${it.supportsMakeDisabled()}">
     <st:include page="makeDisabled.jelly" />
   </j:if>
+  <div class="row">
+    <div class="col col-md-12">
+    
 
   <p:projectActionFloatingBox />
 
@@ -60,4 +62,14 @@ THE SOFTWARE.
   </j:forEach>
 
   <p:upstream-downstream />
+
+    
+    
+    </div>
+  </div>
+  
+
+  
+
+
 </j:jelly>

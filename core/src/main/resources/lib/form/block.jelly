@@ -27,9 +27,9 @@ THE SOFTWARE.
   <st:documentation>
     Full-width space in the form table that can be filled with arbitrary HTML.
   </st:documentation>
-	<tr>
-	  <td colspan="4">
+	<div class="tr ${attrs.classname}">
+	  <div class="td colspan4" colspan="4">
 	    <d:invokeBody />
-	  </td>
-	</tr>
+	  </div>
+	</div>
 </j:jelly>

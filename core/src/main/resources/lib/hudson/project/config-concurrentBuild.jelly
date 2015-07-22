@@ -27,5 +27,26 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<div class="section panel panel-default" data-type="section">
+  <div class="z-section-header panel-heading">
+    <h4 class="panel-title"><a href="#">Maintenance Settings</a></h4>
+  </div>
+  <div class="panel-collapse"><div class="panel-body">
+  
+  <f:optionalBlock name="disable" title="${%Disable Build} (${%No new builds will be executed until the project is re-enabled.})" checked="${it.disabled}"
+                   help="/help/project-config/disable.html" inline="true" />
+                   
+  <j:if test="${it.supportsLogRotator()}">
+    <!-- log rotator -->
+    <f:optionalBlock name="logrotate"
+      help="/help/project-config/log-rotation.html"
+      title="${%Discard Old Builds}" checked="${it.buildDiscarder!=null}" inline="true">
+      <f:dropdownDescriptorSelector field="buildDiscarder" title="${%Strategy}"/>
+    </f:optionalBlock>
+  </j:if> 
+  
   <f:optionalBlock field="concurrentBuild" title="${%title.concurrentbuilds}" inline="true" />
+  
+  </div></div>
+</div>
 </j:jelly>

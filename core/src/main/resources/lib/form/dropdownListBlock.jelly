@@ -50,7 +50,7 @@ THE SOFTWARE.
     </j:when>
     <j:when test="${dropdownListMode=='generateEntries'}">
       <!-- sandwich them by markers so that we know what to show/hide -->
-      <tr class="dropdownList-start rowvg-start" />
+      <div class="tr dropdownList-start rowvg-start" />
       <j:choose>
         <j:when test="${attrs.lazy!=null and !attrs.selected}">
           <l:renderOnDemand capture="${attrs.lazy}" tag="tr">
@@ -64,7 +64,7 @@ THE SOFTWARE.
       <j:if test="${!empty(attrs.staplerClass)}">
         <f:class-entry clazz="${attrs.staplerClass}" />
       </j:if>
-      <tr class="dropdownList-end rowvg-end" />
+      <div class="tr dropdownList-end rowvg-end" />
     </j:when>
   </j:choose>
 </j:jelly>

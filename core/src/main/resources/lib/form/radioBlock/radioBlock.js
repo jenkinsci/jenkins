@@ -9,6 +9,15 @@ var radioBlockSupport = {
 
     // update one block based on the status of the given radio button
     updateSingleButton : function(radio, blockStart, blockEnd) {
+      var groupBox =  radio.match('.radio-group-box') ? radio : radio.up('.radio-group-box');
+      var panelBox =  radio.match('.panel-collapse') ? radio : radio.up('.panel-collapse');
+      panelBox.removeAttribute('style');
+       
+      if(radio.checked) 
+        groupBox.addClassName('shown');
+      else  
+        groupBox.removeClassName('shown');
+      
         var show = radio.checked;
         blockStart = $(blockStart);
 
@@ -31,6 +40,8 @@ Behaviour.specify("INPUT.radio-block-control", 'radioBlock', -100, function(r) {
         // when one radio button is clicked, we need to update foldable block for
         // other radio buttons with the same name. To do this, group all the
         // radio buttons with the same name together and hang it under the form object
+        
+        
         var f = r.form;
         var radios = f.radios;
         if (radios == null)
@@ -50,6 +61,7 @@ Behaviour.specify("INPUT.radio-block-control", 'radioBlock', -100, function(r) {
             var e = s;
             var cnt=1;
             while(cnt>0) {
+                if (!$(e).next()) break;
                 e = $(e).next();
                 if (Element.hasClassName(e,"radio-block-start"))
                     cnt++;

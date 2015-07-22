@@ -43,7 +43,7 @@ THE SOFTWARE.
       If field is specified, instances are assumed to be instance[field].
 
       When this attribute is specified, JSON structure is properly set up so that the databinding
-      can set the field (or pass this collection as a constructor parameter of the same name.
+      can set the field (or pass this collection as a constructor parameter of the same name. 
 
       This is more modern way of doing databinding, and thus preferred approach.
     </st:attribute>
@@ -67,11 +67,11 @@ THE SOFTWARE.
   <j:if test="${!empty(descriptors) or context['org.apache.commons.jelly.body']!=null}">
     <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}">
       <j:if test="${attrs.field!=null}">
-        <tr>
-          <td>
+        <div class="tr">
+          <div class="td">
             <input type="hidden" name="stapler-class-bag" value="true" />
-          </td>
-        </tr>
+          </div>
+        </div>
       </j:if>
 
       <d:invokeBody />

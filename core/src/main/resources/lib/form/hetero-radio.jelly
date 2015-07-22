@@ -37,7 +37,7 @@ THE SOFTWARE.
 
   <f:prepareDatabinding />
 
-  <table style="width:100%">
+  <div class="tbl" style="width:100%">
     <j:set var="currentInstance" value="${instance[field]}" />
     <j:set var="currentDescriptor" value="${currentInstance.descriptor}" />
     <j:set var="uniqueId" value="${h.generateId()}" />
@@ -50,6 +50,6 @@ THE SOFTWARE.
         <f:class-entry descriptor="${d}" />
       </f:radioBlock>
     </j:forEach>
-  </table>
+  </div>
   <!-- TODO consider customizedFields -->
 </j:jelly>
