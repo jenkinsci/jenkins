@@ -29,7 +29,7 @@ exports.findFollowingTR = function(input, className) {
     return tr;
 };
 
-exports.findNode = function(src,filter,traversalF) {
+function findNode(src,filter,traversalF) {
     while(src!=null) {
         src = traversalF(src);
         if(src!=null && filter(src))
@@ -42,8 +42,8 @@ exports.findNode = function(src,filter,traversalF) {
 * Traverses a form in the reverse document order starting from the given element (but excluding it),
 * until the given filter matches, or run out of an element.
 */
-exports.findPrevious = function(src,filter) {
-    return exports.findNode(src,filter,function (e) {
+function findPrevious(src,filter) {
+    return findNode(src,filter,function (e) {
         var p = e.previousSibling;
         if(p==null) return e.parentNode;
         while(p.lastChild!=null)
@@ -52,8 +52,8 @@ exports.findPrevious = function(src,filter) {
     });
 };
 
-exports.findNext = function(src,filter) {
-    return exports.findNode(src,filter,function (e) {
+function findNext(src,filter) {
+    return findNode(src,filter,function (e) {
         var n = e.nextSibling;
         if(n==null) return e.parentNode;
         while(n.firstChild!=null)
@@ -62,7 +62,7 @@ exports.findNext = function(src,filter) {
     });
 };
 
-exports.findFormItem = function(src,name,directionF) {
+function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
     return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
 };
@@ -71,11 +71,11 @@ exports.findFormItem = function(src,name,directionF) {
 * Traverses a form in the reverse document order and finds an INPUT element that matches the given name.
 */
 exports.findPreviousFormItem = function(src,name) {
-    return exports.findFormItem(src,name,findPrevious);
+    return findFormItem(src,name,findPrevious);
 };
 
 exports.findNextFormItem = function(src,name) {
-    return exports.findFormItem(src,name,findNext);
+    return findFormItem(src,name,findNext);
 }
 
 /**
@@ -144,7 +144,7 @@ exports.findNearBy = function(e,name) {
 
     // does 'e' itself match the criteria?
     // as some plugins use the field name as a parameter value, instead of 'value'
-    var p = exports.findFormItem(e,name,function(e,filter) {
+    var p = findFormItem(e,name,function(e,filter) {
         return filter(e) ? e : null;
     });
     if (p!=null && prefixes.length==0)    return p;
@@ -175,6 +175,5 @@ exports.findNearBy = function(e,name) {
 // global version that used to be defined in hudson-behavior.js
 require('../backcompatib')
     .globalize(module, ['findAncestor', 'findAncestorClass', 'findFollowingTR',
-            {from: 'findNode', to: 'find'}, 'findPrevious', 'findNext',
-            'findFormItem', 'findPreviousFormItem', 'findNextFormItem',
+            'findPreviousFormItem', 'findNextFormItem',
             'findFormParent', 'findNearBy']);
