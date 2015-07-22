@@ -5,7 +5,7 @@
     "bootstrap-detached-3.3": "^3.3.4-v5",
     "gulp": "^3.9.0",
     "jenkins-js-builder": "0.0.15",
-    "jenkins-js-test": "0.0.5",
+    "jenkins-js-test": "0.0.6",
     "jquery-detached-2.1.4": "^2.1.4-v2",
     "moment": "^2.10.3",
     "window-handle": "0.0.6"
