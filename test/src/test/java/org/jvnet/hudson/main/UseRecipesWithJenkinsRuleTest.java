@@ -62,7 +62,7 @@ public class UseRecipesWithJenkinsRuleTest {
 
     private void verifyNotError(WebClient wc) throws IOException, SAXException {
         HtmlPage p = wc.goTo("loginError");
-        URL url = p.getWebResponse().getUrl();
+        URL url = p.getUrl();
         System.out.println(url);
         assertFalse(url.toExternalForm().contains("login"));
     }
