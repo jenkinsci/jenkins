@@ -5,19 +5,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpWebConnection;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Util;
 import hudson.model.User;
 import jenkins.model.Jenkins;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScheme;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.auth.CredentialsNotAvailableException;
-import org.apache.commons.httpclient.auth.CredentialsProvider;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -53,20 +47,22 @@ public class ApiTokenPropertyTest {
         assertSame(t, u.getProperty(ApiTokenProperty.class));
 
         WebClient wc = j.createWebClient();
-        wc.setCredentialsProvider(new CredentialsProvider() {
-            public Credentials getCredentials(AuthScheme scheme, String host, int port, boolean proxy) throws CredentialsNotAvailableException {
-                return new UsernamePasswordCredentials("foo", token);
-            }
-        });
-        wc.setWebConnection(new HttpWebConnection(wc) {
-            @Override
-            protected HttpClient getHttpClient() {
-                HttpClient c = super.getHttpClient();
-                c.getParams().setAuthenticationPreemptive(true);
-                c.getState().setCredentials(new AuthScope("localhost", AuthScope.ANY_PORT, AuthScope.ANY_REALM), new UsernamePasswordCredentials("foo", token));
-                return c;
-            }
-        });
+        wc.getCredentialsProvider().setCredentials(
+                new AuthScope("localhost", AuthScope.ANY_PORT),
+                new UsernamePasswordCredentials("foo", token)
+        );
+// TODO: Find a way to do this.
+// May need to upgrade to httpclient 4.3+ by adding a org.apache.httpcomponents:httpclient exclusion on the maven-plugin
+// See http://stackoverflow.com/questions/2014700/preemptive-basic-authentication-with-apache-httpclient-4 etc
+//        wc.setWebConnection(new HttpWebConnection(wc) {
+//            @Override
+//            protected HttpClient getHttpClient() {
+//                HttpClient c = super.getHttpClient();
+//                c.getParams().setAuthenticationPreemptive(true);
+//                c.getState().setCredentials(new AuthScope("localhost", AuthScope.ANY_PORT, AuthScope.ANY_REALM), new UsernamePasswordCredentials("foo", token));
+//                return c;
+//            }
+//        });
 
         // test the authentication
         assertEquals(u,wc.executeOnServer(new Callable<User>() {
