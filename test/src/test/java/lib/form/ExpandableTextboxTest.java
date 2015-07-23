@@ -25,7 +25,7 @@ package lib.form;
 
 import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -53,7 +53,7 @@ public class ExpandableTextboxTest extends HudsonTestCase {
     protected HtmlPage evaluateAsHtml(String jellyScript) throws Exception {
         HudsonTestCase.WebClient wc = new WebClient();
         
-        WebRequestSettings req = new WebRequestSettings(wc.createCrumbedUrl("eval"), POST);
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), POST);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core' xmlns:st='jelly:stapler' xmlns:l='/lib/layout' xmlns:f='/lib/form'>"+jellyScript+"</j:jelly>");
         Page page = wc.getPage(req);
         return (HtmlPage) page;
