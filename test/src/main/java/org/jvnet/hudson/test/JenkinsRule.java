@@ -30,7 +30,7 @@ import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
@@ -39,8 +39,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
@@ -173,7 +175,6 @@ import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
@@ -190,6 +191,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.ClassDescriptor;
@@ -1179,8 +1182,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Asserts that the XPath matches.
      */
     public void assertXPath(HtmlPage page, String xpath) {
+        HtmlElement documentElement = page.getDocumentElement();
         assertNotNull("There should be an object that matches XPath:" + xpath,
-                page.getDocumentElement().selectSingleNode(xpath));
+                DomNodeUtil.selectSingleNode(documentElement, xpath));
     }
 
     /** Asserts that the XPath matches the contents of a DomNode page. This
@@ -1236,7 +1240,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * (By default, HtmlUnit doesn't load images.)
      */
     public void assertAllImageLoadSuccessfully(HtmlPage p) {
-        for (HtmlImage img : p.<HtmlImage>selectNodes("//IMG")) {
+        for (HtmlImage img : DomNodeUtil.<HtmlImage>selectNodes(p, "//IMG")) {
             try {
                 img.getHeight();
             } catch (IOException e) {
@@ -1299,7 +1303,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Plain {@link com.gargoylesoftware.htmlunit.html.HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
     public HtmlPage submit(HtmlForm form) throws Exception {
-        return (HtmlPage) form.submit((HtmlButton) last(form.getHtmlElementsByTagName("button")));
+        return (HtmlPage) HtmlFormUtil.submit(form);
     }
 
     /**
@@ -1312,23 +1316,14 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
             HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
             if(p.getAttribute("name").equals(name)) {
-                // To make YUI event handling work, this combo seems to be necessary
-                // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
-                // (a comment alluding to this behavior can be seen in submitForm method)
-                // so to complete it, submit the form later.
-                //
-                // Just doing form.submit() doesn't work either, because it doesn't do
-                // the preparation work needed to pass along the name of the button that
-                // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
-                ((HtmlButton)e).click();
-                return (HtmlPage)form.submit((HtmlButton)e);
+                return (HtmlPage)HtmlFormUtil.submit(form, (HtmlSubmitInput) e);
             }
         }
         throw new AssertionError("No such submit button with the name "+name);
     }
 
     public HtmlInput findPreviousInputElement(HtmlElement current, String name) {
-        return (HtmlInput)current.selectSingleNode("(preceding::input[@name='_."+name+"'])[last()]");
+        return DomNodeUtil.selectSingleNode(current, "(preceding::input[@name='_."+name+"'])[last()]");
     }
 
     public HtmlButton getButtonByCaption(HtmlForm f, String s) {
@@ -1839,7 +1834,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
             // so trying something else, until we discover another problem.
-            super(BrowserVersion.FIREFOX_2);
+            super(BrowserVersion.FIREFOX_38);
 
 //            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
@@ -1847,7 +1842,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
                 private static final long serialVersionUID = -5844060943564822678L;
-                public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
+                public boolean processSynchron(HtmlPage page, WebRequest settings, boolean async) {
                     return false;
                 }
             });
@@ -1892,7 +1887,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
             // avoid a hang by setting a time out. It should be long enough to prevent
             // false-positive timeout on slow systems
-            setTimeout(60*1000);
+            //setTimeout(60*1000);
         }
 
         /**
@@ -1918,7 +1913,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 // remember me not available is OK so long as the caller didn't ask for it
                 assert !rememberMe;
             }
-            form.submit(null);
+            HtmlFormUtil.submit(form, null);
             return this;
         }
 
@@ -1984,7 +1979,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             HtmlPage top = goTo("");
             HtmlForm search = top.getFormByName("search");
             search.getInputByName("q").setValueAttribute(q);
-            return (HtmlPage)search.submit(null);
+            return (HtmlPage)HtmlFormUtil.submit(search, null);
         }
 
         /**
@@ -2126,14 +2121,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
         /**
          * Adds a security crumb to the request.
-         * Use {@link #createCrumbedUrl} instead if you intend to call {@link WebRequestSettings#setRequestBody}, typical of a POST request.
+         * Use {@link #createCrumbedUrl} instead if you intend to call {@link WebRequest#setRequestBody}, typical of a POST request.
          */
-        public WebRequestSettings addCrumb(WebRequestSettings req) {
-            NameValuePair crumb[] = { new NameValuePair() };
-
-            crumb[0].setName(jenkins.getCrumbIssuer().getDescriptor().getCrumbRequestField());
-            crumb[0].setValue(jenkins.getCrumbIssuer().getCrumb( null ));
-
+        public WebRequest addCrumb(WebRequest req) {
+            NameValuePair crumb = new NameValuePair(
+                    jenkins.getCrumbIssuer().getDescriptor().getCrumbRequestField(),
+                    jenkins.getCrumbIssuer().getCrumb( null ));
             req.setRequestParameters(Arrays.asList( crumb ));
             return req;
         }

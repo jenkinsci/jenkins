@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2015, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,34 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jvnet.hudson.test.junit;
+package com.gargoylesoftware.htmlunit.html;
 
-import junit.framework.TestCase;
+import com.gargoylesoftware.htmlunit.html.xpath.XPathUtils;
+
+import java.util.List;
 
 /**
- * {@link TestCase} implementation that has already failed.
- * Used to represent a problem happened during a test suite construction.
- *
- * @author Kohsuke Kawaguchi
+ * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class FailedTest extends TestCase {
-    /**
-     * The failure. If null, the test will succeed, despite the class name.
-     */
-    private final Throwable problem;
+public class DomNodeUtil {
 
-    public FailedTest(String name, Throwable problem) {
-        super(name);
-        this.problem = problem;
+    public static <E> List<E> getByXPath(final DomNode domNode, final String xpathExpr) {
+        return (List) XPathUtils.getByXPath(domNode, xpathExpr, null);
     }
 
-    public FailedTest(Class name, Throwable problem) {
-        this(name.getName(),problem);
+    public static <E> List<E> selectNodes(final DomNode domNode, final String xpathExpr) {
+        return getByXPath(domNode, xpathExpr);
     }
 
-    @Override
-    protected void runTest() throws Throwable {
-        if (problem!=null)
-            throw problem;
+    public static <X> X selectSingleNode(final DomNode domNode, final String xpathExpr) {
+        return domNode.<X>getFirstByXPath(xpathExpr);
     }
 }
