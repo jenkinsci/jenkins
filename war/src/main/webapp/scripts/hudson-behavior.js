@@ -770,6 +770,7 @@ var jenkinsRules = {
     },
 
     ".optional-block-start": function(e) { // see optionalBlock.jelly
+    // BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
         // set start.ref to checkbox in preparation of row-set-end processing
         var checkbox = e.down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
@@ -874,6 +875,7 @@ var jenkinsRules = {
     },
 
     ".optional-block-start ": function(e) { // see optionalBlock.jelly
+    // BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwitch row-set-end
         // this requires "TR.row-set-end" to mark rows
@@ -1180,6 +1182,7 @@ function applyNameRef(s,e,id) {
 }
 
 
+// BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
 function updateOptionalBlock(c,scroll) {
@@ -1190,27 +1193,10 @@ function updateOptionalBlock(c,scroll) {
 
     // find the beginning of the rowvg
     var vg =s;
-    var checked = xor(c.checked,Element.hasClassName(c,"negative"));
-    var $groupBox = s.match('.option-group-box') ? s : s.up('.option-group-box');
-    var $group = $groupBox.down('.option-group'); 
-    var $panel = $groupBox.match('.panel-collapse') ? s : s.up('.panel-collapse');
-    
-    while (vg && !vg.hasClassName("rowvg-start"))
+    while (!vg.hasClassName("rowvg-start"))
         vg = vg.next();
 
-    if(!vg){
-        if(! $group) return;
-        
-        if(checked){ 
-          $group.show();
-          $groupBox.addClassName('shown');
-        }
-        else{
-          $group.hide();
-          $groupBox.removeClassName('shown');
-        }
-        return;
-    }
+    var checked = xor(c.checked,Element.hasClassName(c,"negative"));
 
     vg.rowVisibilityGroup.makeInnerVisisble(checked);
 

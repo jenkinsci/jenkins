@@ -63,13 +63,14 @@ THE SOFTWARE.
     <j:set target="${attrs}" property="help"
            value="${descriptor.getHelpFile(attrs.field)}" />
   </j:if>
+  <st:adjunct includes="lib.form.optionalBlock.optionalBlock"/>
 
   <j:choose>
     <j:when test="${attrs.title!=null}">
-      <div class="option-group-box">
-        <div class="tr optional-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+      <div class="option-group-box" inline="${attrs.inline}">
+        <div class="tr" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
           <div class="td colspan3 chk-name" colspan="3">
-            <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
+            <f:checkbox name="${attrs.name}"
                         negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
           </div>
           <f:helpLink url="${attrs.help}" featureName="${title}"/>
@@ -78,10 +79,7 @@ THE SOFTWARE.
           <f:helpArea />
         </j:if>
         <div class="option-group">
-          <div class="tr rowvg-start" />
           <d:invokeBody />
-          <!-- end marker -->
-          <div class="tr ${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end" />
         </div>
       </div>
     </j:when>
