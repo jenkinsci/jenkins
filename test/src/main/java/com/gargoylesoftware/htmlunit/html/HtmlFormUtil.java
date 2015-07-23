@@ -25,15 +25,6 @@ package com.gargoylesoftware.htmlunit.html;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.javascript.host.Event;
-import com.gargoylesoftware.htmlunit.protocol.javascript.JavaScriptURLConnection;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.Assert;
 
 import java.io.IOException;
 import java.util.List;
@@ -55,54 +46,18 @@ public class HtmlFormUtil {
      * Plain {@link com.gargoylesoftware.htmlunit.html.HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
     public static Page submit(HtmlForm htmlForm, HtmlSubmitInput submitElement) throws IOException {
-        final HtmlPage htmlPage = (HtmlPage) htmlForm.getPage();
-        final WebClient webClient = htmlPage.getWebClient();
-        if (webClient.getOptions().isJavaScriptEnabled()) {
-            if (submitElement != null) {
-                // To make YUI event handling work, this combo seems to be necessary
-                // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
-                // (a comment alluding to this behavior can be seen in submitForm method)
-                // so to complete it, submit the form later.
-                //
-                // Just doing form.submit() doesn't work either, because it doesn't do
-                // the preparation work needed to pass along the name of the button that
-                // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
-                submitElement.click();
-
-                try {
-                    FieldUtils.writeField(htmlForm, "isPreventDefault_", false, true);
-                    final ScriptResult scriptResult = htmlForm.fireEvent(Event.TYPE_SUBMIT);
-                    if ((Boolean)FieldUtils.readField(htmlForm, "isPreventDefault_", true)) {
-                        // null means 'nothing executed'
-                        if (scriptResult == null) {
-                            return htmlPage;
-                        }
-                        return scriptResult.getNewPage();
-                    }
-                } catch (IllegalAccessException e) {
-                    Assert.fail("Unexpected error accessing property HtmlForm.isPreventDefault_: ");
-                }
-            }
-
-            final String action = htmlForm.getActionAttribute().trim();
-            if (StringUtils.startsWithIgnoreCase(action, JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
-                return htmlPage.executeJavaScriptIfPossible(action, "Form action", htmlForm.getStartLineNumber()).getNewPage();
-            }
+        if (submitElement != null) {
+            // To make YUI event handling work, this combo seems to be necessary
+            // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
+            // (a comment alluding to this behavior can be seen in submitForm method)
+            // so to complete it, submit the form later.
+            //
+            // Just doing form.submit() doesn't work either, because it doesn't do
+            // the preparation work needed to pass along the name of the button that
+            // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
+            submitElement.click();
         }
-        else {
-            if (StringUtils.startsWithIgnoreCase(htmlForm.getActionAttribute(), JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
-                // The action is JavaScript but JavaScript isn't enabled.
-                // Return the current page.
-                return htmlPage;
-            }
-        }
-
-        final WebRequest request = htmlForm.getWebRequest(submitElement);
-        final String target = htmlPage.getResolvedTarget(htmlForm.getTargetAttribute());
-
-        final WebWindow webWindow = htmlPage.getEnclosingWindow();
-        webClient.download(webWindow, target, request, false, "JS form.submit()");
-        return htmlPage;
+        return htmlForm.submit(submitElement);
     }
 
     /**
