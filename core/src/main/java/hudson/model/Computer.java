@@ -1422,7 +1422,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         // replace the old Node object by the new one
         synchronized (app) {
             List<Node> nodes = new ArrayList<Node>(app.getNodes());
-            Node node = getNode();
+            final @CheckForNull Node node = getNode();
             int i  = (node != null) ? nodes.indexOf(node) : -1;
             if(i<0) {
                 throw new IOException("This slave appears to be removed while you were editing the configuration");
@@ -1430,6 +1430,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
             nodes.set(i, newNode);
             app.setNodes(nodes);
+            
+            for (ComputerListener listener : ComputerListener.all()) {
+                try {
+                    if (node != null) {
+                        listener.onConfigurationChange(this, node, newNode);
+                    } else {
+                        listener.onCreated(this, newNode);
+                    }
+                } catch (Throwable t) {
+                    LOGGER.log(Level.SEVERE, "Error in ComputerListener for "+getName(), t);
+                }
+            }
         }
     }
 
