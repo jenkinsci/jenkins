@@ -9,6 +9,8 @@ $(document).ready(function() {
     
     //common form elements from core...
     require('./section').init();
+    require('./optionalBlock').init();
+    require('./radioBlock').init();
     
         
 });
