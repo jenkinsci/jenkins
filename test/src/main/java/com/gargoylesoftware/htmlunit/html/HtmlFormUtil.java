@@ -82,10 +82,10 @@ public class HtmlFormUtil {
         return getSubmitButtons(htmlForm).get(0);
     }
 
-    public static HtmlButton getButtonByCaption(final HtmlForm htmlForm, final String caption) throws ElementNotFoundException {
+    public static HtmlSubmitInput getButtonByCaption(final HtmlForm htmlForm, final String caption) throws ElementNotFoundException {
         for (HtmlElement b : htmlForm.getHtmlElementsByTagName("button")) {
             if(b.getTextContent().trim().equals(caption))
-                return (HtmlButton)b;
+                return (HtmlSubmitInput) b;
         }
         throw new ElementNotFoundException("button", "caption", caption);
     }
