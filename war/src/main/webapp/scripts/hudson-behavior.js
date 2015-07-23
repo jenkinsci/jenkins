@@ -853,6 +853,7 @@ var jenkinsRules = {
     },
 
     ".row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+    // BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
         // figure out the corresponding start block
         e = $(e);
         var end = e;
