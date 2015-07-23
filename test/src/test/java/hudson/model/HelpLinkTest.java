@@ -3,6 +3,7 @@ package hudson.model;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import hudson.tasks.BuildStepMonitor;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class HelpLinkTest {
     }
 
     private void clickAllHelpLinks(HtmlPage p) throws Exception {
-        List<?> helpLinks = p.selectNodes("//a[@class='help-button']");
+        List<?> helpLinks = DomNodeUtil.selectNodes(p, "//a[@class='help-button']");
         assertTrue(helpLinks.size()>0);
         System.out.println("Clicking "+helpLinks.size()+" help links");
 
