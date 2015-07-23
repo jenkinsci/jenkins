@@ -23,6 +23,7 @@
  */
 package lib.form;
 
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.QueryParameter;
 import hudson.model.Describable;
@@ -41,7 +42,7 @@ public class ValidateButtonTest extends HudsonTestCase implements Describable<Va
         DescriptorImpl d = getDescriptor();
         d.test1Outcome = new Exception(); // if doValidateTest1() doesn't get invoked, we want to know.
         HtmlPage p = createWebClient().goTo("self/test1");
-        p.getFormByName("config").getButtonByCaption("test").click();
+        HtmlFormUtil.getButtonByCaption(p.getFormByName("config"), "test").click();
         if (d.test1Outcome!=null)
             throw d.test1Outcome;
     }
