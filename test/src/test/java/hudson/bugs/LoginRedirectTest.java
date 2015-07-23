@@ -24,6 +24,7 @@
 package hudson.bugs;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.net.HttpURLConnection;
 import org.jvnet.hudson.test.Issue;
@@ -47,7 +48,7 @@ public class LoginRedirectTest extends HudsonTestCase {
     public void testRedirect() throws Exception {
         WebClient wc = new WebClient();
         // Hudson first causes 403 FORBIDDEN error, then redirect the browser to the page
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         HtmlPage p = wc.goTo("/");
         System.out.println(p.getDocumentURI());
@@ -55,7 +56,7 @@ public class LoginRedirectTest extends HudsonTestCase {
         HtmlForm form = p.getFormByName("login");
         form.getInputByName("j_username").setValueAttribute("alice");
         form.getInputByName("j_password").setValueAttribute("alice");
-        p = (HtmlPage) form.submit(null);
+        p = (HtmlPage) HtmlFormUtil.submit(form, null);
 
         System.out.println(p);
     }
