@@ -38,20 +38,20 @@ THE SOFTWARE.
 
   
   
-  <div class="section panel panel-default" data-type="section">
+  <div class="section panel panel-default">
   <st:adjunct includes="lib.form.section_" />
   <f:rowSet name="${attrs.name}">
     <j:if test="${attrs.title==null}">
-      <div class="z-section-header panel-heading" role="tab">
-         <h4 class="panel-title"><a data-toggle="collapse" href="#">Add-on Options</a></h4>
+      <div class="panel-section-header panel-heading no-title">
+         <h4 class="panel-title"><a href="#">Add-on Options</a></h4>
       </div>
     </j:if>
     <j:if test="${attrs.title!=null}">
-      <div class="z-section-header panel-heading">
-         <h4 class="panel-title"><a data-toggle="collapse" href="#">${title}</a></h4>
+      <div class="panel-section-header panel-heading">
+         <h4 class="panel-title"><a href="#">${title}</a></h4>
       </div>
     </j:if>
-    <div class="panel-collapse" role="tabpanel"><div class="panel-body">
+    <div class="panel-collapse"><div class="panel-body">
       <d:invokeBody />
     </div></div>
   </f:rowSet>
