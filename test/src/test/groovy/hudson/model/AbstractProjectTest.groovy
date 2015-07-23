@@ -25,18 +25,13 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequestSettings
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.security.*
+import com.gargoylesoftware.htmlunit.HttpMethod
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.BuildTrigger
-import hudson.tasks.Publisher
 import hudson.tasks.Recorder;
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import hudson.maven.MavenModuleSet;
 import hudson.security.*;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM
@@ -53,17 +48,12 @@ import hudson.triggers.TriggerDescriptor;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent
 import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.MemoryAssert
-import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet
 import org.apache.commons.io.FileUtils;
-import java.lang.ref.WeakReference
 
 import org.jvnet.hudson.test.MockFolder
 
@@ -393,7 +383,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     private String deleteRedirectTarget(String job) {
         def wc = createWebClient();
         String base = wc.getContextPath();
-        String loc = wc.getPage(wc.addCrumb(new WebRequestSettings(new URL(base + job + "/doDelete"), HttpMethod.POST))).getWebResponse().getUrl().toString();
+        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URL(base + job + "/doDelete"), HttpMethod.POST))).getWebResponse().getUrl().toString();
         assert loc.startsWith(base): loc;
         return loc.substring(base.length());
     }
