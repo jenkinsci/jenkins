@@ -1315,8 +1315,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     public HtmlPage submit(HtmlForm form, String name) throws Exception {
         for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
             HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
-            if(p.getAttribute("name").equals(name)) {
-                return (HtmlPage)HtmlFormUtil.submit(form, (HtmlSubmitInput) e);
+            if(e instanceof HtmlButton && p.getAttribute("name").equals(name)) {
+                return (HtmlPage)HtmlFormUtil.submit(form, (HtmlButton) e);
             }
         }
         throw new AssertionError("No such submit button with the name "+name);
