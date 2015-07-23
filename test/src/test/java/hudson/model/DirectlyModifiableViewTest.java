@@ -186,7 +186,7 @@ public class DirectlyModifiableViewTest {
 
     private Page doPost(View view, String path) throws Exception {
         WebClient wc = j.createWebClient();
-        // wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         WebRequest req = new WebRequest(
                 new URL(j.jenkins.getRootUrl() + view.getUrl() + path),
                 HttpMethod.POST
