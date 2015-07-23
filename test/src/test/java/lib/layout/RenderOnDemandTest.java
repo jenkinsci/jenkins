@@ -24,6 +24,7 @@
 package lib.layout;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -75,7 +76,7 @@ public class RenderOnDemandTest extends HudsonTestCase {
         HtmlPage p = createWebClient().goTo("self/testScript");
         assertNull(p.getElementById("loaded"));
 
-        p.getElementById("button").click();
+        ((HtmlElement)p.getElementById("button")).click();
         // all AJAX calls complete before the above method returns
 
         assertNotNull(p.getElementById("loaded"));
