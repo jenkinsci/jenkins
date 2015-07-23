@@ -1,3 +1,4 @@
+var jquery = require('jquery-detached-2.1.4');
 
 // find the nearest ancestor node that has the given tag name
 exports.findAncestor = function(e, tagName) {
@@ -27,44 +28,6 @@ exports.findFollowingTR = function(input, className) {
       } while (tr != null && ((tr.tagName != "TR" && !tr.hasClassName('tr')) || !Element.hasClassName(tr,className)));
     }
     return tr;
-};
-
-function findNode(src,filter,traversalF) {
-    while(src!=null) {
-        src = traversalF(src);
-        if(src!=null && filter(src))
-            return src;
-    }
-    return null;
-};
-
-/**
-* Traverses a form in the reverse document order starting from the given element (but excluding it),
-* until the given filter matches, or run out of an element.
-*/
-function findPrevious(src,filter) {
-    return findNode(src,filter,function (e) {
-        var p = e.previousSibling;
-        if(p==null) return e.parentNode;
-        while(p.lastChild!=null)
-            p = p.lastChild;
-        return p;
-    });
-};
-
-function findNext(src,filter) {
-    return findNode(src,filter,function (e) {
-        var n = e.nextSibling;
-        if(n==null) return e.parentNode;
-        while(n.firstChild!=null)
-            n = n.firstChild;
-        return n;
-    });
-};
-
-function findFormItem(src,name,directionF) {
-    var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
 };
 
 /**
@@ -118,7 +81,6 @@ exports.findFormParent = function(e,form,isStatic) {
     return form;
 };
 
-
 /**
  * Find the sibling (in the sense of the structured form submission) form item of the given name,
  * and returns that DOM node.
@@ -169,6 +131,45 @@ exports.findNearBy = function(e,name) {
     }
 
     return locate(exports.findPreviousFormItem,e) || locate(exports.findNextFormItem,e);
+};
+
+
+function findNode(src,filter,traversalF) {
+    while(src!=null) {
+        src = traversalF(src);
+        if(src!=null && filter(src))
+            return src;
+    }
+    return null;
+};
+
+/**
+* Traverses a form in the reverse document order starting from the given element (but excluding it),
+* until the given filter matches, or run out of an element.
+*/
+function findPrevious(src,filter) {
+    return findNode(src,filter,function (e) {
+        var p = e.previousSibling;
+        if(p==null) return e.parentNode;
+        while(p.lastChild!=null)
+            p = p.lastChild;
+        return p;
+    });
+};
+
+function findNext(src,filter) {
+    return findNode(src,filter,function (e) {
+        var n = e.nextSibling;
+        if(n==null) return e.parentNode;
+        while(n.firstChild!=null)
+            n = n.firstChild;
+        return n;
+    });
+};
+
+function findFormItem(src,name,directionF) {
+    var name2 = "_."+name; // handles <textbox field="..." /> notation silently
+    return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
 };
 
 // Hack to offer backward compatibility for callers of the
