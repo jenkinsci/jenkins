@@ -179,7 +179,7 @@ public class JavaScriptEngine {
             }
         };
 
-        callAction(action);
+        getContextFactory().call(action);
     }
 
     /**
@@ -681,7 +681,7 @@ public class JavaScriptEngine {
             }
         };
 
-        return (Script) callAction(action);
+        return (Script) getContextFactory().call(action);
     }
 
     /**
@@ -727,10 +727,6 @@ public class JavaScriptEngine {
             }
         };
 
-        return callAction(action);
-    }
-
-    private Object callAction(ContextAction action) {
         try {
             return getContextFactory().call(action);
         } finally {
@@ -784,7 +780,7 @@ public class JavaScriptEngine {
                 return cx.decompileFunction(function, 2);
             }
         };
-        return callAction(action);
+        return getContextFactory().call(action);
     }
 
     private Scriptable getScope(final HtmlPage htmlPage, final DomNode htmlElement) {
@@ -879,17 +875,17 @@ public class JavaScriptEngine {
     private void doProcessPostponedActions() {
         holdPostponedActions_ = false;
 
-        try {
-            getWebClient().loadDownloadedResponses();
-        }
-        catch (final RuntimeException e) {
-            throw e;
-        }
-        catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-
         while (true) { // postponed action can result in more postponed actions
+            try {
+                getWebClient().loadDownloadedResponses();
+            }
+            catch (final RuntimeException e) {
+                throw e;
+            }
+            catch (final Exception e) {
+                throw new RuntimeException(e);
+            }
+
             final List<PostponedAction> actions = postponedActions_.get();
             if (actions == null) {
                 break;
