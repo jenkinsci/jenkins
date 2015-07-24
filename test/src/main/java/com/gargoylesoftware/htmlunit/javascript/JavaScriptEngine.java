@@ -727,7 +727,11 @@ public class JavaScriptEngine {
             }
         };
 
-        return getContextFactory().call(action);
+        try {
+            return getContextFactory().call(action);
+        } finally {
+            doProcessPostponedActions();
+        }
     }
 
     /**
@@ -881,23 +885,29 @@ public class JavaScriptEngine {
             throw new RuntimeException(e);
         }
 
-        final List<PostponedAction> actions = postponedActions_.get();
-        if (actions != null) {
-            postponedActions_.set(null);
-            try {
-                for (final PostponedAction action : actions) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Processing PostponedAction " + action);
-                    }
+        while (true) { // postponed action can result in more postponed actions
+            final List<PostponedAction> actions = postponedActions_.get();
+            if (actions == null) {
+                break;
+            }
 
-                    // verify that the page that registered this PostponedAction is still alive
-                    if (action.isStillAlive()) {
-                        action.execute();
+            if (actions != null) {
+                postponedActions_.set(null);
+                try {
+                    for (final PostponedAction action : actions) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Processing PostponedAction " + action);
+                        }
+
+                        // verify that the page that registered this PostponedAction is still alive
+                        if (action.isStillAlive()) {
+                            action.execute();
+                        }
                     }
                 }
-            }
-            catch (final Exception e) {
-                Context.throwAsScriptRuntimeEx(e);
+                catch (final Exception e) {
+                    Context.throwAsScriptRuntimeEx(e);
+                }
             }
         }
     }
