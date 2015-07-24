@@ -117,10 +117,10 @@ public class AbstractProjectTest extends HudsonTestCase {
         def webClient = createWebClient();
         HtmlPage page = webClient.getPage(jenkins.getItem("test0"));
 
-        page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
+        page = (HtmlPage)page.getAnchorByText("Workspace").click();
         try {
         	String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
-           	page.getFirstAnchorByText(wipeOutLabel);
+		page.getAnchorByText(wipeOutLabel);
             fail("shouldn't find a link");
         } catch (ElementNotFoundException e) {
             // OK
@@ -383,7 +383,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     private String deleteRedirectTarget(String job) {
         def wc = createWebClient();
         String base = wc.getContextPath();
-        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URL(base + job + "/doDelete"), HttpMethod.POST))).getWebResponse().getUrl().toString();
+        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URL(base + job + "/doDelete"), HttpMethod.POST))).getUrl().toString();
         assert loc.startsWith(base): loc;
         return loc.substring(base.length());
     }
