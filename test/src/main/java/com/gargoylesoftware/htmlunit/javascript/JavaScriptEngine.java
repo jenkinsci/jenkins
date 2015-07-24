@@ -727,11 +727,7 @@ public class JavaScriptEngine {
             }
         };
 
-        try {
-            return getContextFactory().call(action);
-        } finally {
-            doProcessPostponedActions();
-        }
+        return getContextFactory().call(action);
     }
 
     /**
