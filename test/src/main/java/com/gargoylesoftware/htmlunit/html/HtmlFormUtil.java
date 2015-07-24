@@ -38,14 +38,14 @@ public class HtmlFormUtil {
      * Plain {@link com.gargoylesoftware.htmlunit.html.HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
     public static Page submit(final HtmlForm htmlForm) throws IOException {
-        final HtmlButton submitElement = getSubmitButton(htmlForm);
+        HtmlElement submitElement = getSubmitButton(htmlForm);
         return submit(htmlForm, submitElement);
     }
 
     /**
      * Plain {@link com.gargoylesoftware.htmlunit.html.HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
-    public static Page submit(HtmlForm htmlForm, HtmlButton submitElement) throws IOException {
+    public static Page submit(HtmlForm htmlForm, HtmlElement submitElement) throws IOException {
         if (submitElement != null) {
             // To make YUI event handling work, this combo seems to be necessary
             // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
@@ -57,31 +57,41 @@ public class HtmlFormUtil {
             // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
             submitElement.click();
         }
-        return htmlForm.submit(submitElement);
+        if (submitElement instanceof SubmittableElement) {
+            htmlForm.submit((SubmittableElement) submitElement);
+        }
+        return htmlForm.getPage();
     }
 
     /**
      * Returns all the &lt;input type="submit"> elements in this form.
      */
-    public static List<HtmlButton> getSubmitButtons(final HtmlForm htmlForm) throws ElementNotFoundException {
-        final List<HtmlButton> list = htmlForm.getElementsByAttribute("input", "type", "submit");
+    public static List<HtmlElement> getSubmitButtons(final HtmlForm htmlForm) throws ElementNotFoundException {
+        final List<HtmlElement> list = htmlForm.getElementsByAttribute("input", "type", "submit");
 
         // collect inputs from lost children
         for (final HtmlElement elt : htmlForm.getLostChildren()) {
-            if (elt instanceof HtmlButton) {
-                list.add((HtmlButton) elt);
-            }
+            list.add(elt);
         }
+
         return list;
     }
 
     /**
      * Gets the first &lt;input type="submit"> element in this form.
      */
-    public static HtmlButton getSubmitButton(final HtmlForm htmlForm) throws ElementNotFoundException {
-        List<HtmlButton> submitButtons = getSubmitButtons(htmlForm);
+    public static HtmlElement getSubmitButton(final HtmlForm htmlForm) throws ElementNotFoundException {
+        List<HtmlElement> submitButtons = getSubmitButtons(htmlForm);
         if (!submitButtons.isEmpty()) {
             return submitButtons.get(0);
+        }
+        for (HtmlElement element : htmlForm.getHtmlElementsByTagName("button")) {
+            if(element instanceof HtmlButton) {
+                HtmlButton button = (HtmlButton) element;
+                if (button.isSubmittableByEnter()) {
+                    return element;
+                }
+            }
         }
         return null;
     }
