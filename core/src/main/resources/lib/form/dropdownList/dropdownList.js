@@ -1,3 +1,35 @@
+Behaviour.specify(".dropdown-list-group", 'dropdownList', 0, function(e) {
+    if(isInsideRemovable(e))    return;
+
+    var container = e.down('.dropdown-list-container');
+    var control = e.down('.dropdown-list-control select')
+    var blocks = container.down().down().childElements(); // all the DIV.dropdown-list-block elements
+
+    // control visibility
+    function updateDropDownList() {
+        for (var i = 0; i < blocks.length; i++) {
+            var show = control.selectedIndex == i;
+            var f = blocks[i];
+
+            if (show) {
+                renderOnDemand(f.next());
+                f.style.display = '';
+                f.removeAttribute("field-disabled");
+            } else {
+                f.style.display = 'none';
+                f.setAttribute("field-disabled","true");
+            }
+        }
+    }
+
+    control.onchange = updateDropDownList;
+
+    updateDropDownList();
+});
+
+
+
+// BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
 Behaviour.specify("SELECT.dropdownList", 'dropdownList', 0, function(e) {
     if(isInsideRemovable(e))    return;
 

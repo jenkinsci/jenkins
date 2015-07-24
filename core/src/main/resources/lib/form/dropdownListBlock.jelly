@@ -49,22 +49,21 @@ THE SOFTWARE.
       <f:option selected="${attrs.selected}" value="${value}">${title}</f:option>
     </j:when>
     <j:when test="${dropdownListMode=='generateEntries'}">
-      <!-- sandwich them by markers so that we know what to show/hide -->
-      <div class="tr dropdownList-start rowvg-start" />
-      <j:choose>
-        <j:when test="${attrs.lazy!=null and !attrs.selected}">
-          <l:renderOnDemand capture="${attrs.lazy}" tag="tr">
+      <div class="dropdown-list-block">
+        <j:choose>
+          <j:when test="${attrs.lazy!=null and !attrs.selected}">
+            <l:renderOnDemand capture="${attrs.lazy}">
+              <d:invokeBody />
+            </l:renderOnDemand>
+          </j:when>
+          <j:otherwise>
             <d:invokeBody />
-          </l:renderOnDemand>
-        </j:when>
-        <j:otherwise>
-          <d:invokeBody />
-        </j:otherwise>
-      </j:choose>
-      <j:if test="${!empty(attrs.staplerClass)}">
-        <f:class-entry clazz="${attrs.staplerClass}" />
-      </j:if>
-      <div class="tr dropdownList-end rowvg-end" />
+          </j:otherwise>
+        </j:choose>
+        <j:if test="${!empty(attrs.staplerClass)}">
+          <f:class-entry clazz="${attrs.staplerClass}" />
+        </j:if>
+      </div>
     </j:when>
   </j:choose>
 </j:jelly>
