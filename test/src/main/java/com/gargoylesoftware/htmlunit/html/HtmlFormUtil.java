@@ -46,7 +46,9 @@ public class HtmlFormUtil {
      * Plain {@link com.gargoylesoftware.htmlunit.html.HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
     public static Page submit(HtmlForm htmlForm, HtmlElement submitElement) throws IOException {
-        if (submitElement != null) {
+        if (submitElement == null || submitElement instanceof SubmittableElement) {
+            htmlForm.submit((SubmittableElement) submitElement);
+        } else {
             // To make YUI event handling work, this combo seems to be necessary
             // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
             // (a comment alluding to this behavior can be seen in submitForm method)
@@ -56,9 +58,6 @@ public class HtmlFormUtil {
             // the preparation work needed to pass along the name of the button that
             // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
             submitElement.click();
-        }
-        if (submitElement instanceof SubmittableElement) {
-            htmlForm.submit((SubmittableElement) submitElement);
         }
         return htmlForm.getPage();
     }
@@ -87,10 +86,7 @@ public class HtmlFormUtil {
         }
         for (HtmlElement element : htmlForm.getHtmlElementsByTagName("button")) {
             if(element instanceof HtmlButton) {
-                HtmlButton button = (HtmlButton) element;
-                if (button.isSubmittableByEnter()) {
-                    return element;
-                }
+                return element;
             }
         }
         return null;
