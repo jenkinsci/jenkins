@@ -776,6 +776,7 @@ var jenkinsRules = {
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
+    // BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
     // see RowVisibilityGroupTest
     ".rowvg-start" : function(e) {
         // figure out the corresponding end marker
