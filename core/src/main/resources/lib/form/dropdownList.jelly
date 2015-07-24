@@ -38,6 +38,8 @@ THE SOFTWARE.
       Path to the inline help. See &lt;f:entry help="..." />
     </st:attribute>
   </st:documentation>
+  <st:adjunct includes="lib.form.dropdownList.dropdownList"/>
+
   <j:if test="${!empty(attrs.field)}">
     <j:set var="single" value="single" />
   </j:if>
