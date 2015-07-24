@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>on
+  <st:documentation>
     Radio button with a label that hides additional controls.
     When checked, those additional controls are displayed. This is useful
     for presenting mutually exclusive options, where each option comes
