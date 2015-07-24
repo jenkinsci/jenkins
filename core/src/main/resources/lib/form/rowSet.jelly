@@ -42,7 +42,7 @@ THE SOFTWARE.
       <d:invokeBody />
     </j:when>
     <j:otherwise>
-      <div name='${attrs.name}' nameRef='${attrs.ref}'>
+      <div name='${attrs.name}' nameRef='${attrs.ref}' data-tagName="rowSet" class="rowSet ${attrs.name} ${attrs.ref}">
         <d:invokeBody />
       </div>
     </j:otherwise>

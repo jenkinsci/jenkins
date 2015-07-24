@@ -56,9 +56,9 @@ THE SOFTWARE.
   </st:documentation>
 
   <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
-  <div class="radio-group-box">
+  <div class="radio-group-box radioBlock" data-tagName="radioBlock">
   	<div class="tr radio-block-start ${attrs.inline?'':'row-set-start'} ${attrs.classname}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-  	  <div class="td colspan3 chk-name" colspan="3">
+  	  <div class="td colspan3 chk-name radio-group-label" colspan="3">
         <label>
   	      <input type="radio" name="${name}" value="${value}"
                class="radio-block-control" checked="${checked?'true':null}" />

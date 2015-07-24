@@ -6,6 +6,13 @@ var $ = jquery.getJQuery();
 
 $(document).ready(function() {
     require('./formsub').init();
+    
+    //common form elements from core...
+    require('./section').init();
+    require('./optionalBlock').init();
+    require('./radioBlock').init();
+    
+        
 });
 
 
