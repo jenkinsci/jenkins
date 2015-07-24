@@ -179,7 +179,7 @@ public class JavaScriptEngine {
             }
         };
 
-        getContextFactory().call(action);
+        callAction(action);
     }
 
     /**
@@ -681,7 +681,7 @@ public class JavaScriptEngine {
             }
         };
 
-        return (Script) getContextFactory().call(action);
+        return (Script) callAction(action);
     }
 
     /**
@@ -727,6 +727,10 @@ public class JavaScriptEngine {
             }
         };
 
+        return callAction(action);
+    }
+
+    private Object callAction(ContextAction action) {
         try {
             return getContextFactory().call(action);
         } finally {
@@ -780,7 +784,7 @@ public class JavaScriptEngine {
                 return cx.decompileFunction(function, 2);
             }
         };
-        return getContextFactory().call(action);
+        return callAction(action);
     }
 
     private Scriptable getScope(final HtmlPage htmlPage, final DomNode htmlElement) {
