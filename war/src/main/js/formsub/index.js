@@ -4,21 +4,23 @@ var finder = require('../find');
 exports.init = function() {
     var $ = jquery.getJQuery();
 
-    $('form').each(function() {
-        var form = this;
+    $(document).ready(function() {
+        $('form').each(function() {
+            var form = this;
 
-        crumb.appendToForm(form);
-        if(Element.hasClassName(form, "no-json"))
-            return;
-        // add the hidden 'json' input field, which receives the form structure in JSON
-        $(form).append("<div><input type='hidden' name='json' value='init'></div>");
+            crumb.appendToForm(form);
+            if(Element.hasClassName(form, "no-json"))
+                return;
+            // add the hidden 'json' input field, which receives the form structure in JSON
+            $(form).append("<div><input type='hidden' name='json' value='init'></div>");
 
-        var oldOnsubmit = form.onsubmit;
-        if (typeof oldOnsubmit == "function") {
-            form.onsubmit = function() { return buildFormTree(this) && oldOnsubmit.call(this); }
-        } else {
-            form.onsubmit = function() { return buildFormTree(this); };
-        }
+            var oldOnsubmit = form.onsubmit;
+            if (typeof oldOnsubmit == "function") {
+                form.onsubmit = function() { return exports.buildFormTree(this) && oldOnsubmit.call(this); }
+            } else {
+                form.onsubmit = function() { return exports.buildFormTree(this); };
+            }
+        });
     });
 };
 
@@ -174,7 +176,3 @@ function shortenName(name) {
     if(idx>=0)  name = name.substring(idx+1);
     return name;
 }
-
-// Hack to offer backward compatibility for callers of the
-// global version that used to be defined in hudson-behavior.js
-require('../backcompatib').globalize(module, ['buildFormTree']);

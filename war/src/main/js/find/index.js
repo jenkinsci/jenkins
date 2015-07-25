@@ -171,10 +171,3 @@ function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
     return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
 };
-
-// Hack to offer backward compatibility for callers of the
-// global version that used to be defined in hudson-behavior.js
-require('../backcompatib')
-    .globalize(module, ['findAncestor', 'findAncestorClass', 'findFollowingTR',
-            'findPreviousFormItem', 'findNextFormItem',
-            'findFormParent', 'findNearBy']);

@@ -1,11 +1,13 @@
-
-/**
- * A backward compatibility hack to expose functions that
+/*
+ * A backward compatibility hack to expose modularized functions that
  * existing JS code may look for in the global scope.
- * @param module The module containing functions to be exported.
- * @param functions An array of function names.
+ * <p>
+ * This module should have no external dependencies (i.e. that need to be loaded before it).
+ * The functions need to be loaded immediately because the non-modularized .js code that
+ * they are servicing (e.g. adjuncts) will be loaded immediately.
  */
-exports.globalize = function(module, functions) {
+
+function globalize(module, functions) {
     if (typeof window !== 'undefined') {
         function apply(funcNum) {
             var functionInfo = functions[funcNum];
@@ -22,7 +24,7 @@ exports.globalize = function(module, functions) {
 
             window[globalFuncName] = function () {
                 // TODO: Come up with a way of gather this info so we can track code using non modularized code.
-                return module.exports[moduleFuncName].apply(window, arguments);
+                return module[moduleFuncName].apply(window, arguments);
             };
         }
         for (var i = 0; i < functions.length; i++) {
@@ -30,3 +32,11 @@ exports.globalize = function(module, functions) {
         }
     }
 };
+
+// Need to globalize some functions from the 'find' module.
+globalize(require('./find'), ['findAncestor', 'findAncestorClass', 'findFollowingTR',
+        'findPreviousFormItem', 'findNextFormItem',
+        'findFormParent', 'findNearBy']);
+
+// Need to globalize some functions from the 'formsub' module.
+globalize(require('./formsub'), ['buildFormTree']);
