@@ -1,65 +1,83 @@
 console.log('section/index.js');
 var jquery = require('jquery-detached-2.1.4');
-var booty = require('bootstrap-detached-3.3');
+
+var tagName = '[data-tagName="section"]'; //what DOM element am I attached to...
+var scope = 'form'; //how much of the DOM do I need to watch for changes...
+
+// Events to attach...
+exports.openCloseEvent = function(e){
+  var $ = jquery.getJQuery();
+  var $header = $(this);
+  var $section = $header.closest(tagName);
+  var $body  = $section.children('.panel-collapse').addClass('collapse in').height('auto');
+  var orgHeight = $body.height(); 
+  
+  e.preventDefault(); 
+  
+  if(!$section.hasClass('not-shown')){
+    $body.removeAttr('style');
+    orgHeight = $body.height();
+    $body.height(orgHeight);
+    $section.removeClass('shown').addClass('not-shown');
+    $body.height(0);
+  }
+  else{
+    $section.addClass('shown').removeClass('not-shown');
+    $body.height(orgHeight);
+  }
+  
+  return {$elem:$section,event:e};
+};
+
+exports.redrawEvent = function(e){
+  var $ = jquery.getJQuery();
+  var $input = (e.currentTarget)? $(e.currentTarget) : e;
+  var $body  = $input.closest('.panel-collapse').addClass('collapse in').height('auto');
+  var orgHeight = $body.height();
+  
+  return {$elem:$body,event:e};
+};
 
 exports.init = function() {
-
   var $ = jquery.getJQuery();
-  $(this.findElem);
+  var thisObj = this;
+  var openCloseEvent = thisObj.openCloseEvent;
+  var redrawEvent = thisObj.redrawEvent;
   
-  return this;
+  $(scope).on('click',tagName + '> .panel-section-header',openCloseEvent);
+  $(scope).on('click',(tagName + '> .panel-collapse button'),redrawEvent);
+  $(scope).on('click',(tagName + '> .panel-collapse a'),redrawEvent);
+  $(scope).on('click',(tagName + '> .panel-collapse input'),redrawEvent);
+  $(scope).on('change',(tagName + '> .panel-collapse input'),redrawEvent);
+  $(scope).on('change',(tagName + '> .panel-collapse select'),redrawEvent);
+  
+  $(function(){
+    $(scope).on('DOMNodeInserted',$.proxy(thisObj.findElems,thisObj));
+  });
+  return thisObj;
 
 };
 
-exports.findElem = function() {
+exports.findElems = function() {
   var $ = jquery.getJQuery();
-  
-  var $sections = $('.section.panel')
-  .each(function(i,section){
-    var $section = $(section);
-    var $header = $section.children('.panel-heading');
-    var $body  = $section.children('.panel-collapse').addClass('collapse in');
-    var orgHeight = $body.height();    
+  var thisObj = this;
 
-    $header.click(function(e){
-      e.preventDefault();        
-      if(!$section.hasClass('not-shown')){
-        $body.removeAttr('style');
-        orgHeight = $body.height();
-        $body.height(orgHeight);
-        $section.removeClass('shown').addClass('not-shown');
-        $body.height(0);
-      }
-      else{
-        $section.addClass('shown').removeClass('not-shown');
-        $body.height(orgHeight);
-      }
+  var $elems = $(tagName)
+    .each(function(i,section){
+      var $section = $(section);
+      var $body  = $section.children('.panel-collapse').addClass('collapse in');
       
-    });
-    
-    // if the section needs to change height because of content, it should redraw, which can be called by child elements...
-    $section.bind('redraw',function(e,param){
-      setTimeout(function(){
-        $body.removeAttr('style');
-        orgHeight = $body.height();
-        $body.height(orgHeight);
-      },1);
-    });
-    
-    // chanage of radio, checkboxes and selects are common causes of size change needs...
-    $body.find('input, select').change(function(e){
-      $section.trigger('redraw',e)
-    }); 
-    
-    // color code child nested nodes so that they box up correctly when nested...
-    $body.find('.setting-main').each(function(i){
-      var $main = $(this);
-      var $repeated = $main.children('.repeated-container');
-      if($repeated && $repeated.length > 0)
-        $main.addClass('fill');
-    });
+      thisObj.redrawEvent($body);
+      
+      // color code child nested nodes so that they box up correctly when nested...
+      $body.find('.setting-main').each(function(i){
+        var $main = $(this);
+        var $repeated = $main.children('.repeated-container');
+        if($repeated && $repeated.length > 0)
+          $main.addClass('fill');
+      });
 
-  });      
+    });      
   
-  return $sections;
+  return $elems;
 };

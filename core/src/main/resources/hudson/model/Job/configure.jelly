@@ -46,8 +46,8 @@ THE SOFTWARE.
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />
 
-        <div class="section panel panel-default" data-type="section">
-          <div class="z-section-header panel-heading"><h4 class="panel-title"><a href="#">Overview</a></h4></div>
+        <div class="section panel panel-default" data-type="section" data-tagName="section">
+          <div class="panel-section-header panel-heading"><h4 class="panel-title"><a href="#">Overview</a></h4></div>
           
           <div class="panel-collapse"><div class="panel-body">
             <j:if test="${it.isNameEditable()}">

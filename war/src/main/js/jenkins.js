@@ -11,8 +11,9 @@ $(document).ready(function() {
     require('./section').init();
     require('./optionalBlock').init();
     require('./radioBlock').init();
-    
-        
+    require('./hetero-list').init();
+    require('./expandableTextbox').init();
+       
 });
 
 //// Example of using bootstrap.

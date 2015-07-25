@@ -481,6 +481,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', e
   .bootstrap3 .hetero-list-container > .btn-box {border-top:1px solid rgba(50,75,100,.33);}
   .bootstrap3 .repeated-container .repeated-chunk,
   .bootstrap3 .hetero-list-container .repeated-chunk {padding:10px; margin:0;   box-shadow: 0 -1px rgba(0,0,0,.1);  box-sizing: border-box;}
+  .bootstrap3 .hetero-list-container .repeated-chunk > .setting-help {margin-right:28px;}
   .bootstrap3 .repeated-container .repeated-chunk .form-group
   .bootstrap3 .hetero-list-container .repeated-chunk .form-group {margin:10px -10px 0; padding:10px; border-top:1px solid rgba(0,50,100,.1)}
   .bootstrap3 .repeated-chunk:nth-of-type(odd) {background:rgba(75,150,200,.05)}
@@ -496,6 +497,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', e
   .bootstrap3 .option-group-box.shown.none  .chk-name {border-color:transparent !important; background:none !important; box-shadow:none !important; color:#333 !important; text-shadow:none !important}
   .bootstrap3 .panel-group.form-inner .panel {margin:0 ; border-radius:0;}
   .bootstrap3 .tr .dlt-btn {position:absolute; right:1px; top:1px;}
+  .bootstrap3 .tr .dlt-btn .first-child:before {content: "\e664";font-family:'icomoon'}
+  #jenkins .bootstrap3 .tr .dlt-btn .yui-button.danger button {font-size:0; position:absolute; top:0; left:0; right:0; bottom:0;}
   .bootstrap3 .section.panel .panel-collapse{transition: all 0.4s ease 0s; display:block !important; visibility:visible !important;}
   .bootstrap3 .section.panel.not-shown .panel-collapse {overflow:hidden;}
   .bootstrap3 .section .tr:empty,

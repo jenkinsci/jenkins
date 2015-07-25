@@ -38,9 +38,8 @@ THE SOFTWARE.
 
   
   
-  <div class="section panel panel-default">
+  <div class="section panel panel-default" data-tagName="section">
   <st:adjunct includes="lib.form.section_" />
-  <f:rowSet name="${attrs.name}">
     <j:if test="${attrs.title==null}">
       <div class="panel-section-header panel-heading no-title">
          <h4 class="panel-title"><a href="#">Add-on Options</a></h4>
@@ -54,6 +53,5 @@ THE SOFTWARE.
     <div class="panel-collapse"><div class="panel-body">
       <d:invokeBody />
     </div></div>
-  </f:rowSet>
   </div>
 </j:jelly>

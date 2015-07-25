@@ -1,18 +1,22 @@
 console.log('optionBlock/index.js');
 var jquery = require('jquery-detached-2.1.4');
-var booty = require('bootstrap-detached-3.3');
+
+var tagName = '[data-tagName="optionalBlock"]'; //what DOM element am I attached to...
+var scope = 'form'; //how much of the DOM do I need to watch for changes...
 
 exports.init = function() {
-
   var $ = jquery.getJQuery();
-  $(this.findElem);
-  //$('body').on('DOMNodeInserted',findElem);
+  var thisObj = this;
+  $(function(){
+    $(scope).on('DOMNodeInserted',thisObj.findElems);
+  });
+  return this;
+
 };
 
-exports.findElem = function(){
+exports.findElems = function() {
   var $ = jquery.getJQuery();
-
-  var $elems = $('[data-tagName="optionalBlock"]')
+  var $elems = $(tagName)
     .each(function(i,elem){
       var $elem = $(elem);
       var $groupBox = $elem;
@@ -37,5 +41,6 @@ exports.findElem = function(){
       }
       
     });        
-
-}
+  
+  return $elems;
+};

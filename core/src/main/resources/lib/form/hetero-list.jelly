@@ -72,17 +72,13 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <div class="tbl" style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
-          <div class="tr">
-            <div class="td colspan3" colspan="3">
+
               <div class="dd-handle">
                 <b>${descriptor.displayName}</b>
               </div>
-            </div>
             <f:helpLink url="${help}"/>
-          </div>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
             <f:helpArea />
@@ -93,18 +89,15 @@ THE SOFTWARE.
 
         <f:class-entry descriptor="${descriptor}" />
         <f:block>
-          <div class="dlt-btn" align="right">
-            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-          </div>
+          <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
         </f:block>
-      </div>
     </d:tag>
   </d:taglib>
 
   <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
+  <div data-tagName="hetero-list" class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <j:if test="${empty(attrs.items)}">
     <div class="none">No ${attrs.name} selected.</div>
     </j:if>
@@ -112,7 +105,7 @@ THE SOFTWARE.
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
-      <div name="${attrs.name}" class="repeated-chunk" descriptorId="${descriptor.id}">
+      <div name="${attrs.name}" data-tagName="hetero-list-item" class="repeated-chunk" descriptorId="${descriptor.id}">
         <local:body deleteCaption="${attrs.deleteCaption}">
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </local:body>

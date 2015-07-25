@@ -27,8 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<div class="section panel panel-default" data-type="section">
-  <div class="z-section-header panel-heading">
+<div class="section panel panel-default" data-type="section" data-tagName="section">
+  <div class="panel-section-header panel-heading">
     <h4 class="panel-title"><a href="#">Maintenance Settings</a></h4>
   </div>
   <div class="panel-collapse"><div class="panel-body">
