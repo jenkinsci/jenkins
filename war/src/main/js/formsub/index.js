@@ -1,27 +1,25 @@
-var jquery = require('jquery-detached-2.1.4');
 var finder = require('../find');
 
 exports.init = function() {
-    var $ = jquery.getJQuery();
-
-    $(document).ready(function() {
-        $('form').each(function() {
-            var form = this;
-
-            crumb.appendToForm(form);
-            if(Element.hasClassName(form, "no-json"))
-                return;
-            // add the hidden 'json' input field, which receives the form structure in JSON
-            $(form).append("<div><input type='hidden' name='json' value='init'></div>");
-
-            var oldOnsubmit = form.onsubmit;
-            if (typeof oldOnsubmit == "function") {
-                form.onsubmit = function() { return exports.buildFormTree(this) && oldOnsubmit.call(this); }
-            } else {
-                form.onsubmit = function() { return exports.buildFormTree(this); };
-            }
-        });
-    });
+    // TODO: fix this. Moved back to hudson behavior.js while trying to get tests to pass. What a PITA!!
+//    Behaviour.specify("FORM", 'hudson-behavior', 0, function(form) {
+//        crumb.appendToForm(form);
+//        if(Element.hasClassName(form, "no-json"))
+//            return;
+//        // add the hidden 'json' input field, which receives the form structure in JSON
+//        var div = document.createElement("div");
+//        div.innerHTML = "<input type=hidden name=json value=init>";
+//        form.appendChild(div);
+//
+//        var oldOnsubmit = form.onsubmit;
+//        if (typeof oldOnsubmit == "function") {
+//            form.onsubmit = function() { return buildFormTree(this) && oldOnsubmit.call(this); }
+//        } else {
+//            form.onsubmit = function() { return buildFormTree(this); };
+//        }
+//
+//        form = null; // memory leak prevention
+//    });
 };
 
 //

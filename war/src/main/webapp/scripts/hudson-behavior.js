@@ -755,6 +755,26 @@ var jenkinsRules = {
         }
     },
 
+    // structured form submission
+    "FORM" : function(form) {
+        crumb.appendToForm(form);
+        if(Element.hasClassName(form, "no-json"))
+            return;
+        // add the hidden 'json' input field, which receives the form structure in JSON
+        var div = document.createElement("div");
+        div.innerHTML = "<input type=hidden name=json value=init>";
+        form.appendChild(div);
+
+        var oldOnsubmit = form.onsubmit;
+        if (typeof oldOnsubmit == "function") {
+            form.onsubmit = function() { return buildFormTree(this) && oldOnsubmit.call(this); }
+        } else {
+            form.onsubmit = function() { return buildFormTree(this); };
+        }
+
+        form = null; // memory leak prevention
+    },
+
     // hook up tooltip.
     //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
     "[tooltip]" : function(e) {
