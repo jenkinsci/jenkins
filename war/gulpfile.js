@@ -19,3 +19,6 @@ builder.bundle('src/main/js/jenkins.js')
     .withExternalModuleMapping('bootstrap-detached-3.3', 'bootstrap:bootstrap3')
     .withExternalModuleMapping('moment', 'momentjs:momentjs2')
     .inDir('src/main/webapp/bundles');
+
+// ideally we don't want to generate a file into src/ tree but maven-war-plugin only supports
+// one warSourceDirectory
