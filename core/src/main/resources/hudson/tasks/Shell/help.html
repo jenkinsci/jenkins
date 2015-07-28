@@ -6,9 +6,9 @@
   (like <tt>#!/bin/perl</tt>) or control the options that shell uses.
 
   <p>
-  By default, the shell will be invoked with the "-ex" option. So all of the commands are printed before being executed,
-  and the build is considered a failure if any of the commands exits with a non-zero exit code. Again, add the
-  <tt>#!/bin/...</tt> line to change this behavior.
+  By default, the shell will be invoked with the "-eux" option. So all of the commands are printed before being executed,
+  and the build is considered a failure if a variable is not set during substitution or any of the commands exits with a
+  non-zero exit code.  Again, add the <tt>#!/bin/...</tt> line to change this behavior.
 
   <p>
   As a best practice, try not to put a long shell script in here. Instead, consider adding the shell script

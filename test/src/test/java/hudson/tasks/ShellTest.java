@@ -55,7 +55,7 @@ public class ShellTest {
                 // test the command line argument.
                 List<String> cmds = p.cmds();
                 rule.assertStringContains("/bin/sh",cmds.get(0));
-                rule.assertStringContains("-xe",cmds.get(1));
+                rule.assertStringContains("-xue",cmds.get(1));
                 assertTrue(new File(cmds.get(2)).exists());
 
                 // fake the execution
