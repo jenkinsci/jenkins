@@ -458,11 +458,11 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', e
   .bootstrap3 .option-group-box .option-group:empty {display:none;}
   .bootstrap3 .radio-group-box .radio-group,
   .bootstrap3 .option-group-box .option-group {border:1px solid rgba(50,75,100,.33);  position:relative; padding:5px 10px; border-radius:10px; border-top-left-radius:0; margin-bottom:10px}
-  .bootstrap3 .radio-group-box.shown:hover > div >  .chk-name,
-  .bootstrap3 .option-group-box.shown:hover  .chk-name,
+  .bootstrap3 .radio-group-box.shown:hover > .radio-group-label,
+  .bootstrap3 .option-group-box.shown:hover  > .option-group-label,
   .bootstrap3 .section.panel:hover > .panel-heading {background:rgba(0,60,120,.7); color:#fff; text-shadow:0 -1px 2px rgba(50,75,100,.5); box-shadow:inset rgba(100,150,255,.5) 0 -25px 20px -20px}
-  .bootstrap3 .radio-group-box.shown > div >  .chk-name,
-  .bootstrap3 .option-group-box.shown  .chk-name,
+  .bootstrap3 .radio-group-box.shown > .radio-group-label,
+  .bootstrap3 .option-group-box.shown  > .option-group-label,
   .bootstrap3 .section.panel > .panel-heading{cursor:pointer;background:rgba(150,200,250,.25); border-bottom:1px solid rgba(50,75,100,.33)}
   .bootstrap3 .section.panel > .panel-heading > .panel-title:before {content:'\25BC'; display:inline-block; width:1.25em; text-align:center; padding-right:5px; opacity:.5; font-size:90%;}
   .bootstrap3 .section.panel.not-shown > .panel-heading > .panel-title:before {content:'\25B6';}
@@ -489,12 +489,12 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', e
   .bootstrap3 .hetero-list-container .dd-handle {}
   .bootstrap3 .hetero-list-container .none {padding:10px; box-shadow:inset 0 1px 3px rgba(0,0,0,.2); background:rgba(0,0,0,.01)}  
   .bootstrap3 .option-group-box > .optional-block-start {padding:0; margin:0;}
-  .bootstrap3 .radio-group-box  .chk-name,
-  .bootstrap3 .option-group-box  .chk-name {padding:2px 5px; hover:pointer; border:1px solid transparent; border-bottom:none;}
-  .bootstrap3 .radio-group-box.shown > div > .chk-name,
-  .bootstrap3 .option-group-box.shown  .chk-name{display:inline-block; min-width:33.3%; border-top-right-radius:10px; border:1px solid rgba(50,75,100,.33); border-bottom:none}
-  .bootstrap3 .radio-group-box.shown.none > div >  .chk-name,
-  .bootstrap3 .option-group-box.shown.none  .chk-name {border-color:transparent !important; background:none !important; box-shadow:none !important; color:#333 !important; text-shadow:none !important}
+  .bootstrap3 .radio-group-box  > .radio-group-label,
+  .bootstrap3 .option-group-box  > .option-group-label {padding:2px 5px; hover:pointer; border:1px solid transparent; border-bottom:none;}
+  .bootstrap3 .radio-group-box.shown > .radio-group-label,
+  .bootstrap3 .option-group-box.shown  > .option-group-label{display:inline-block; min-width:33.3%; border-top-right-radius:10px; border:1px solid rgba(50,75,100,.33); border-bottom:none}
+  .bootstrap3 .radio-group-box.shown.none  > .radio-group-label,
+  .bootstrap3 .option-group-box.shown.none  > .option-group-label {border-color:transparent !important; background:none !important; box-shadow:none !important; color:#333 !important; text-shadow:none !important}
   .bootstrap3 .panel-group.form-inner .panel {margin:0 ; border-radius:0;}
   .bootstrap3 .tr .dlt-btn {position:absolute; right:1px; top:1px;}
   .bootstrap3 .tr .dlt-btn .first-child:before {content: "\e664";font-family:'icomoon'}

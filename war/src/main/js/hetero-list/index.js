@@ -13,7 +13,6 @@ exports.removeItem = function(e){
 
 exports.init = function() {
 
-  debugger;
   var $ = jquery.getJQuery();
   var thisObj = this;
 

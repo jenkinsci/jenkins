@@ -8,21 +8,26 @@ $(document).ready(function() {
     require('./formsub').init();
     
     //common form elements from core...
-    require('./section').init();
-    require('./optionalBlock').init();
-    require('./radioBlock').init();
+    require('./formControls/section').init();
+    
+    
+    
+    require('./formControls/optionalBlock').init();
+    require('./formControls/radioBlock').init();
+    require('./formControls/expandableTextbox').init();
     require('./hetero-list').init();
-    require('./expandableTextbox').init();
-       
+    
+
 });
 
-//// Example of using bootstrap.
-//// NB: Don't use it here though, Gus!!!
-//var bootstrap = require('bootstrap-detached-3.3');
-//var $bs = bootstrap.getBootstrap();
-//console.log('Bootstrap version: ' + $bs.fn.tooltip.Constructor.VERSION);
-//
-//// Example of using moment.
-//// NB: Don't use it here though, Gus!!!
-//var moment = require('moment');
-//console.log('Today is: ' + moment().format("MMM Do YY"));
+
+// Example of using bootstrap.
+// NB: Don't use it here though, Gus!!!
+var bootstrap = require('bootstrap-detached-3.3');
+var $bs = bootstrap.getBootstrap();
+console.log('Bootstrap version: ' + $bs.fn.tooltip.Constructor.VERSION);
+
+// Example of using moment.
+// NB: Don't use it here though, Gus!!!
+var moment = require('moment');
+console.log('Today is: ' + moment().format("MMM Do YY"));
