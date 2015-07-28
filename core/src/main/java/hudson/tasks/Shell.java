@@ -82,7 +82,7 @@ public class Shell extends CommandInterpreter {
             args.set(0,args.get(0).substring(2));   // trim off "#!"
             return args.toArray(new String[args.size()]);
         } else 
-            return new String[] { getDescriptor().getShellOrDefault(script.getChannel()), "-xe", script.getRemote()};
+            return new String[] { getDescriptor().getShellOrDefault(script.getChannel()), "-xue", script.getRemote()};
     }
 
     protected String getContents() {
