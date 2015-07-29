@@ -36,39 +36,39 @@ exports.init = function() {
 //or to be triggered by other elements who may need to inject DOM elements by some other means.
 // takes either a DOM element, selector, or event...
 exports.resize = function(eventOrElem){
-var $ = jquery.getJQuery();
-// eventOrElem is an event if it has a current target, otherwise an element...
-var $input = (eventOrElem.currentTarget)? $(eventOrElem.currentTarget) : $(eventOrElem);
-var $body  = $input.closest('.panel-collapse').addClass('collapse in').height('auto');
-var orgHeight = $body.height();
-
-return {$elem:$body,event:eventOrElem};
+  var $ = jquery.getJQuery();
+  // eventOrElem is an event if it has a current target, otherwise an element...
+  var $input = (eventOrElem.currentTarget)? $(eventOrElem.currentTarget) : $(eventOrElem);
+  var $body  = $input.closest('.panel-collapse').addClass('collapse in').height('auto');
+  var orgHeight = $body.height();
+  
+  return {$elem:$body,event:eventOrElem};
 }; 
 
 //This is very similar to the Bootstrap Collapse, 
 //but unlike BS Collapse, the panels have no knowledge of the parent elements
 function openCloseEventHandler(e){
-var $ = jquery.getJQuery();
-var $header = $(this);
-var $section = $header.closest(tagName);
-var $body  = $section.children('.panel-collapse').addClass('collapse in').height('auto');
-var orgHeight = $body.height(); 
-
-e.preventDefault(); 
-
-if(!$section.hasClass('not-shown')){
- $body.removeAttr('style');
- orgHeight = $body.height();
- $body.height(orgHeight);
- $section.removeClass('shown').addClass('not-shown');
- $body.height(0);
-}
-else{
- $section.addClass('shown').removeClass('not-shown');
- $body.height(orgHeight);
-}
-
-return {$elem:$section,event:e};
+  var $ = jquery.getJQuery();
+  var $header = $(this);
+  var $section = $header.closest(tagName);
+  var $body  = $section.children('.panel-collapse').addClass('collapse in').height('auto');
+  var orgHeight = $body.height(); 
+  
+  e.preventDefault(); 
+  
+  if(!$section.hasClass('not-shown')){
+   $body.removeAttr('style');
+   orgHeight = $body.height();
+   $body.height(orgHeight);
+   $section.removeClass('shown').addClass('not-shown');
+   $body.height(0);
+  }
+  else{
+   $section.addClass('shown').removeClass('not-shown');
+   $body.height(orgHeight);
+  }
+  
+  return {$elem:$section,event:e};
 }
 
 
