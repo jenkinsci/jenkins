@@ -9,9 +9,6 @@ $(document).ready(function() {
     
     //common form elements from core...
     require('./formControls/section').init();
-    
-    
-    
     require('./formControls/optionalBlock').init();
     require('./formControls/radioBlock').init();
     require('./formControls/expandableTextbox').init();
