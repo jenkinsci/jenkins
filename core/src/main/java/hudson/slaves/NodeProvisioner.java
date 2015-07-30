@@ -264,7 +264,7 @@ public class NodeProvisioner {
                     int queueLengthSnapshot = snapshot.getQueueLength();
 
                     if (queueLengthSnapshot <= availableSnapshot) {
-                        LOGGER.log(Level.FINE,
+                        LOGGER.log(Level.FINER,
                                 "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
                                 new Object[]{queueLengthSnapshot, availableSnapshot});
                         provisioningState = null;
