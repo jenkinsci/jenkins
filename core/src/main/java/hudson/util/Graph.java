@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.awt.image.BufferedImage;
 import java.awt.*;
+import javax.annotation.Nonnull;
+import javax.annotation.CheckForNull;
 
 /**
  * A JFreeChart-generated graph that's bound to UI.
@@ -96,7 +98,7 @@ public abstract class Graph {
         return graph.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h),info);
     }
 
-    private static Color stringToColor(String s) {
+    @Nonnull private static Color stringToColor(@CheckForNull String s) {
         if (s != null) {
             try {
                 return Color.decode("0x" + s);
