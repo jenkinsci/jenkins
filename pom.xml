@@ -105,7 +105,9 @@ THE SOFTWARE.
     <java.level>7</java.level>
 
     <!-- TODO: Move to parent pom -->
-    <node.version>0.12.7</node.version>
+    <iojs.dist.baseurl>https://iojs.org/dist</iojs.dist.baseurl>
+    <iojs.version>2.5.0</iojs.version>
+    <npm.dist.baseurl>http://registry.npmjs.org/npm/-</npm.dist.baseurl>
     <npm.version>2.13.1</npm.version>
   </properties>
 
@@ -742,66 +744,135 @@ THE SOFTWARE.
   <profiles>
 
     <!-- TODO: Move to parent pom -->
-    <!--
-    Prevent node and npm from being downloaded all the time (on linux i.e. CI machines)
-    -->
     <profile>
-        <id>node-and-npm-from-repo</id>
+        <id>node-classifier-linux</id>
         <activation>
             <os>
                 <family>Linux</family>
                 <arch>amd64</arch>
             </os>
-            <file>
-                <exists>package.json</exists>
-            </file>
         </activation>
         <properties>
-            <node.classifier>linux-x64</node.classifier>
+            <iojs.download.file.prefix>iojs-v${iojs.version}-linux-x64</iojs.download.file.prefix>
+            <iojs.download.file>${iojs.download.file.prefix}.tar.gz</iojs.download.file>
+            <iojs.download.unpack>true</iojs.download.unpack>
+            <iojs.download.exe.path>${iojs.download.file.prefix}/bin/iojs</iojs.download.exe.path>
+            <node.exe.file>node</node.exe.file>
         </properties>
+    </profile>
+    <profile>
+        <id>node-classifier-mac</id>
+        <activation>
+            <os>
+                <family>mac</family>
+            </os>
+        </activation>
+        <properties>
+            <iojs.download.file.prefix>iojs-v${iojs.version}-darwin-x64</iojs.download.file.prefix>
+            <iojs.download.file>${iojs.download.file.prefix}.tar.gz</iojs.download.file>
+            <iojs.download.unpack>true</iojs.download.unpack>
+            <iojs.download.exe.path>${iojs.download.file.prefix}/bin/iojs</iojs.download.exe.path>
+            <node.exe.file>node</node.exe.file>
+        </properties>
+    </profile>
+    <profile>
+        <id>node-classifier-windows</id>
+        <activation>
+            <os>
+                <family>windows</family>
+            </os>
+        </activation>
+        <properties>
+            <iojs.download.file>win-x64/iojs.exe</iojs.download.file>
+            <iojs.download.unpack>false</iojs.download.unpack>
+            <iojs.download.exe.path>iojs.exe</iojs.download.exe.path>
+            <node.exe.file>node.exe</node.exe.file>
+        </properties>
+    </profile>
+    <profile>
+        <id>iojs-download</id>
+        <activation>
+            <file><exists>package.json</exists></file>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>com.googlecode.maven-download-plugin</groupId>
+                    <artifactId>download-maven-plugin</artifactId>
+                    <version>1.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>get-iojs</id>
+                            <phase>initialize</phase>
+                            <goals><goal>wget</goal></goals>
+                            <configuration>
+                                <url>${iojs.dist.baseurl}/v${iojs.version}/${iojs.download.file}</url>
+                                <unpack>${iojs.download.unpack}</unpack>
+                                <outputDirectory>${project.build.directory}/iojs</outputDirectory>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>get-npm</id>
+                            <phase>initialize</phase>
+                            <goals><goal>wget</goal></goals>
+                            <configuration>
+                                <url>${npm.dist.baseurl}/npm-${npm.version}.tgz</url>
+                                <unpack>false</unpack>
+                                <outputDirectory>${project.build.directory}</outputDirectory>
+                                <outputFileName>npm-${npm.version}.tar.gz</outputFileName>
+                            </configuration>
+                        </execution>                        
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+    <profile>
+        <id>iojs-npm-install</id>
+        <activation>
+            <file>
+                <exists>package.json</exists>
+                <missing>node/${node.exe.file}</missing>
+            </file>
+        </activation>
         <build>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.9</version>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
                     <executions>
                         <execution>
-                            <goals>
-                                <goal>copy</goal>
-                            </goals>
                             <phase>initialize</phase>
                             <configuration>
-                                <artifactItems>
-                                    <artifactItem>
-                                        <groupId>org.jenkins-ci.nodejs</groupId>
-                                        <artifactId>node</artifactId>
-                                        <version>${node.version}</version>
-                                        <type>tgz</type>
-                                        <classifier>${node.classifier}</classifier>
-                                        <outputDirectory>${project.build.directory}/cache/v${node.version}</outputDirectory>
-                                        <destFileName>node-v${node.version}-${node.classifier}.tar.gz</destFileName>
-                                    </artifactItem>
-                                    <artifactItem>
-                                        <groupId>org.jenkins-ci.nodejs</groupId>
-                                        <artifactId>npm</artifactId>
-                                        <version>${npm.version}</version>
-                                        <type>tgz</type>
-                                        <outputDirectory>${project.build.directory}/cache</outputDirectory>
-                                        <destFileName>npm-${npm.version}.tgz</destFileName>
-                                    </artifactItem>
-                                </artifactItems>
+                                <target>
+                                    <!-- 
+                                    Rest everything
+                                    -->
+                                    <delete dir="node"/>
+                                    <mkdir dir="node"/>
+                                    <!-- 
+                                    Copy the iojs/node and npm exe files to where the
+                                    frontend-maven plugin expects to find them. 
+                                    -->
+                                    <copy file="${project.build.directory}/iojs/${iojs.download.exe.path}"
+                                          tofile="node/${node.exe.file}"/>
+                                    <untar src="${project.build.directory}/npm-${npm.version}.tar.gz" dest="node" compression="gzip" />
+                                    <move file="node/package" tofile="node/npm"/>
+                                    <chmod perm="755">
+                                        <fileset dir="node">
+                                            <include name="node"/>
+                                            <include name="node.exe"/>
+                                        </fileset>
+                                        <fileset dir="node/npm/bin">
+                                            <include name="**/*"/>
+                                        </fileset>
+                                    </chmod>
+                                </target>
                             </configuration>
+                            <goals><goal>run</goal></goals>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>com.github.eirslett</groupId>
-                    <artifactId>frontend-maven-plugin</artifactId>
-                    <configuration>
-                        <nodeDownloadRoot>${project.baseUri}target/cache/</nodeDownloadRoot>
-                        <npmDownloadRoot>${project.baseUri}target/cache/</npmDownloadRoot>
-                    </configuration>
                 </plugin>
             </plugins>
         </build>
@@ -846,18 +917,6 @@ THE SOFTWARE.
 
                         <execution>
                             <phase>initialize</phase>
-                            <id>install node and npm</id>
-                            <goals>
-                                <goal>install-node-and-npm</goal>
-                            </goals>
-                            <configuration>
-                                <nodeVersion>v${node.version}</nodeVersion>
-                                <npmVersion>${npm.version}</npmVersion>
-                            </configuration>
-                        </execution>
-
-                        <execution>
-                            <phase>initialize</phase>
                             <id>npm install</id>
                             <goals>
                                 <goal>npm</goal>
@@ -894,13 +953,13 @@ THE SOFTWARE.
 
     <!-- TODO: Move to parent pom -->
     <profile>
-        <id>clean-node_modules</id>
+        <id>clean-node</id>
         <activation>
             <file>
                 <exists>package.json</exists>
             </file>
             <property>
-                <name>cleanNPMs</name>
+                <name>cleanNode</name>
             </property>
         </activation>
         <build>
@@ -910,6 +969,10 @@ THE SOFTWARE.
                     <artifactId>maven-clean-plugin</artifactId>
                     <configuration>
                         <filesets>
+                            <fileset>
+                                <directory>node</directory>
+                                <followSymlinks>false</followSymlinks>
+                            </fileset>
                             <fileset>
                                 <directory>node_modules</directory>
                                 <followSymlinks>false</followSymlinks>
