@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -522,7 +523,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIMethod(name="online-node")
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
-        setTemporarilyOffline(false,null);
+        setTemporarilyOffline(false, null);
     }
 
     /**
@@ -543,6 +544,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public @Nonnull String getName() {
         return nodeName != null ? nodeName : "";
+    }
+
+    /**
+     * True if this computer is a Unix machine (as opposed to Windows machine).
+     *
+     * @return
+     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
+     */
+    public Boolean isUnix() {
+        return !Functions.isWindows();
     }
 
     /**
