@@ -1,7 +1,8 @@
+
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright (c) 2011, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,41 +23,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Various system information for diagnostics.
-
-  TODO: merge this with Hudson/systemInfo.jelly
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${it.displayName} ${%System Information}">
-    <st:include page="sidepanel.jelly" />
+<l:layout title="Test JSON structure submitted from rowSet">
+  <l:main-panel>
+    <f:form method="post" name="config" action="submitTest1">
+      <f:entry title="a" field="a">
+        <f:textbox value="aaa" />
+      </f:entry>
+      
+      <f:rowSet><!-- rowSet without name will be just inlined -->
+        <f:entry title="b" field="b">
+          <f:textbox value="bbb" />
+        </f:entry>
+      </f:rowSet>
+      
+      <f:rowSet name="c"><!-- creates an intermediate node -->
+        <f:entry title="c1" field="c1">
+          <f:textbox value="ccc1" />
+        </f:entry>
+        <f:entry title="c2" field="c2">
+          <f:textbox value="ccc2" />
+        </f:entry>
+      </f:rowSet>
+      
+      <f:entry title="d" field="d">
+        <f:checkbox id="d-checkbox" checked="true" />
+      </f:entry>
+      <f:rowSet ref="d-checkbox"><!-- this puts  -->
+        <f:entry title="d1" field="d1">
+          <f:textbox value="d1"/>
+        </f:entry>
+        <f:entry title="d2" field="d2">
+          <f:textbox value="d2"/>
+        </f:entry>
+      </f:rowSet>
 
-    <l:main-panel>
-
-      <h1>
-        <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/>
-        ${it.caption} ${%System Information}
-        <j:if test="${!empty(it.node.nodeDescription)}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
-        </j:if>
-      </h1>
-
-      <l:hasPermission permission="${it.CONNECT}">
-        <j:choose>
-          <j:when test="${it.channel != null}">
-            <h2>${it.oSDescription} slave, version ${it.slaveVersion}</h2>
-
-            <j:forEach var="instance" items="${it.systemInfoExtensions}">
-              <h1>${instance.displayName}</h1>
-              <st:include page="systemInfo" from="${instance}"/>
-            </j:forEach>
-          </j:when>
-          <j:otherwise>
-            ${%System Information is unavailable when slave is offline.}
-          </j:otherwise>
-        </j:choose>
-      </l:hasPermission>
-    </l:main-panel>
-  </l:layout>
+      <f:bottomButtonBar>
+        <f:submit value="${%Save}"/>
+      </f:bottomButtonBar>
+    </f:form>
+  </l:main-panel>
+</l:layout>
 </j:jelly>

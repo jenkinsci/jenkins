@@ -170,12 +170,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     public T get(Computer c) {
         if(record==null || !record.data.containsKey(c)) {
             // if we don't have the data, schedule the check now
-            if(!isInProgress()) {
-                synchronized(this) {
-                    if(!isInProgress())
-                        new Record().start();
-                }
-            }
+            triggerUpdate();
             return null;
         }
         return record.data.get(c);
@@ -257,7 +252,11 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     /*package*/ synchronized Thread triggerUpdate() {
         if (inProgress != null) {
-            if (System.currentTimeMillis() > inProgressStarted + getMonitoringTimeOut() + 1000) {
+            if (!inProgress.isAlive()) {
+                LOGGER.log(Level.WARNING, "Previous {0} monitoring activity died without cleaning up after itself",
+                    getDisplayName());
+                inProgress = null;
+            } else if (System.currentTimeMillis() > inProgressStarted + getMonitoringTimeOut() + 1000) {
                 // maybe it got stuck?
                 LOGGER.log(Level.WARNING, "Previous {0} monitoring activity still in progress. Interrupting",
                         getDisplayName());

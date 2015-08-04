@@ -32,6 +32,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Cause;
+import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -237,11 +238,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         continue;
                     }
                     String name = ModelHyperlinkNote.encodeTo(trigger.job) + " #" + trigger.job.getNextBuildNumber();
-                    if (new ParameterizedJobMixIn() {
-                        @Override protected Job asJob() {
-                            return trigger.job;
-                        }
-                    }.scheduleBuild(new Cause.UpstreamCause(r))) {
+                    if (ParameterizedJobMixIn.scheduleBuild2(trigger.job, -1, new CauseAction(new Cause.UpstreamCause(r))) != null) {
                         listener.getLogger().println(hudson.tasks.Messages.BuildTrigger_Triggering(name));
                     } else {
                         listener.getLogger().println(hudson.tasks.Messages.BuildTrigger_InQueue(name));
@@ -257,10 +254,9 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             if (jenkins == null) {
                 return;
             }
-            for (ParameterizedJobMixIn.ParameterizedJob p : jenkins.getAllItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
-                Trigger<?> _t = p.getTriggers().get(jenkins.getDescriptorByType(DescriptorImpl.class));
-                if (_t instanceof ReverseBuildTrigger) {
-                    ReverseBuildTrigger t = (ReverseBuildTrigger) _t;
+            for (Job<?,?> p : jenkins.getAllItems(Job.class)) {
+                ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
+                if (t != null) {
                     String revised = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects, p.getParent());
                     if (!revised.equals(t.upstreamProjects)) {
                         t.upstreamProjects = revised;

@@ -325,11 +325,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         buildMixIn.onLoad(parent, name);
         builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
-        for (Trigger t : triggers()) {
-            try {
-                t.start(this, Items.currentlyUpdatingByXml());
-            } catch (Throwable e) {
-                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
+        if (isBuildable()) {
+            for (Trigger t : triggers()) {
+                try {
+                    t.start(this, Items.currentlyUpdatingByXml());
+                } catch (Throwable e) {
+                    LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
+                }
             }
         }
         if(scm==null)
@@ -472,6 +474,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.401
      */
     public String getBuildNowText() {
+        // For compatibility, still use the deprecated replacer if specified.
         return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, getParameterizedJobMixIn().getBuildNowText());
     }
 
@@ -1870,8 +1873,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (Trigger t : triggers())
             t.stop();
         triggers.replaceBy(buildDescribable(req, Trigger.for_(this)));
-        for (Trigger t : triggers())
-            t.start(this,true);
+        if (isBuildable()) {
+            for (Trigger t : triggers())
+                t.start(this, true);
+        }
     }
 
     /**
@@ -2230,8 +2235,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public static final Permission ABORT = CANCEL;
 
     /**
-     * Replaceable "Build Now" text.
+     * @deprecated Use {@link ParameterizedJobMixIn#BUILD_NOW_TEXT}.
      */
+    @Deprecated
     public static final Message<AbstractProject> BUILD_NOW_TEXT = new Message<AbstractProject>();
 
     /**

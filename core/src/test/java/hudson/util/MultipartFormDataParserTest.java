@@ -21,22 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson;
+package hudson.util;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * {@link ExtensionList} listener.
- *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- * @since 1.614
  */
-public abstract class ExtensionListListener {
+public class MultipartFormDataParserTest {
+    
+    @Test
+    public void testIsMultipart() throws Exception {
+        Assert.assertFalse("Wrongly identified \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm(null));
+        Assert.assertFalse("Wrongly identified \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("blah"));
 
-    /**
-     * {@link ExtensionList} contents has changed.
-     * <p>
-     * This would be called when an entry gets added to or removed from the list for any reason e.g.
-     * when a dynamically loaded plugin introduces a new {@link ExtensionPoint} implementation 
-     * that adds an entry to the {@link ExtensionList} being listened to.
-     */
-    public abstract void onChange();
+        Assert.assertTrue("Failed to identify \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("multipart/form-data"));
+        Assert.assertTrue("Failed to identify \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("multipart/form-data;"));
+        Assert.assertTrue("Failed to identify \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("multipart/form-data; boundary=----WebKitFormBoundary8OOwv1Xp4c5XkBmD"));
+    }
 }
