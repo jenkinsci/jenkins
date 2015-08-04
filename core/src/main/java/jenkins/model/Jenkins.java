@@ -3998,6 +3998,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return true;
         }
 
+        @Override
+        public Boolean isUnix() {
+            return !Functions.isWindows();
+        }
+
         /**
          * Report an error.
          */

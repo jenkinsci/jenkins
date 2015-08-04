@@ -549,12 +549,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * True if this computer is a Unix machine (as opposed to Windows machine).
      *
+     * @since 1.624
      * @return
      *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
      */
-    public Boolean isUnix() {
-        return !Functions.isWindows();
-    }
+    public abstract @CheckForNull Boolean isUnix();
 
     /**
      * Returns the {@link Node} that this computer represents.
