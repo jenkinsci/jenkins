@@ -2,6 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Martin Eigenbrodt
+ *               2015 Kanstantsin Shautsou
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +53,10 @@ public class TimerTrigger extends Trigger<BuildableItem> {
 
     @Override
     public void run() {
+        if (job == null) {
+            return;
+        }
+
         job.scheduleBuild(0, new TimerTriggerCause());
     }
 
