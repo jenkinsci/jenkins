@@ -951,15 +951,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             try {
                 tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
                 // remove previous monitor in case of previous error
-                AdministrativeMonitor previousMonitor = null;
-                for(AdministrativeMonitor am : AdministrativeMonitor.all()) {
+                for(Iterator<AdministrativeMonitor> it = AdministrativeMonitor.all().iterator(); it.hasNext();) {
+                    AdministrativeMonitor am = it.next();
                     if (administrativeMonitorId.equals(am.id)) {
-                        previousMonitor = am;
-                        break;
+                        it.remove();
                     }
-                }
-                if (previousMonitor != null) {
-                    AdministrativeMonitor.all().remove(previousMonitor);
                 }
             } catch (BindException e) {
                 new AdministrativeError(administrativeMonitorId,
