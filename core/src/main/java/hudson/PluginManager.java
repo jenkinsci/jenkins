@@ -71,6 +71,7 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -78,6 +79,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -128,7 +130,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public abstract class PluginManager extends AbstractModelObject implements OnMaster {
+public abstract class PluginManager extends AbstractModelObject implements OnMaster, StaplerProxy {
     /**
      * All discovered plugins.
      */
@@ -190,6 +192,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     private final Map<String,Manifest> bundledPluginManifests = new HashMap<String, Manifest>();
 
+    /**
+     * Proxy object to allow overriding the UI components with custom Jelly
+     */
+    protected Object proxy = null;
+
     public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
 
@@ -205,6 +212,24 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load compatibility rewrite rules",e);
         }
+    }
+
+    /**
+     * Get the handler for UI layer
+     * @return Proxy for UI if not null, else this
+     */
+    @Override
+    public Object getTarget() {
+        return (proxy != null) ? proxy : this;
+    }
+
+    /**
+     * Set the proxy for plugin manager UI handling
+     * @param proxy UI handler, else null to remove the proxy
+     */
+    @Nullable
+    public void setTarget(Object proxy) {
+        this.proxy = proxy;
     }
 
     public Transformer getCompatibilityTransformer() {
