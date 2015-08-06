@@ -331,10 +331,6 @@ public class Util {
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(@Nonnull File file) throws IOException {
-        Boolean r = isSymlinkJava7(file);
-        if (r != null) {
-            return r;
-        }
         if (Functions.isWindows()) {
             try {
                 return Kernel32Utils.isJunctionOrSymlink(file);
@@ -343,6 +339,10 @@ public class Util {
             } catch (LinkageError e) {
                 // fall through
             }
+        }
+        Boolean r = isSymlinkJava7(file);
+        if (r != null) {
+            return r;
         }
         String name = file.getName();
         if (name.equals(".") || name.equals(".."))
