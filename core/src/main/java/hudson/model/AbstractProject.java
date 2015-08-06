@@ -1143,7 +1143,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    @Override public CauseOfBlockage getCauseOfBlockage() {
+    @Override
+    public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
         if (isLogUpdated() && !isConcurrentBuild()) {
             return new BlockedBecauseOfBuildInProgress(getLastBuild());
