@@ -832,7 +832,6 @@ THE SOFTWARE.
         <activation>
             <file>
                 <exists>package.json</exists>
-                <missing>node/${node.exe.file}</missing>
             </file>
         </activation>
         <build>
@@ -843,9 +842,28 @@ THE SOFTWARE.
                     <version>1.8</version>
                     <executions>
                         <execution>
+                            <!-- 
+                            Need this shenanigans because maven doesn't seem to support multiple file exists/missing 
+                            activations, so need to use in combo with ant-run. This was supposed to have been fixed
+                            in maven v3.2.2, but that is not what we have seen here. 
+                            -->
+                            <id>check.for.node</id>
                             <phase>initialize</phase>
                             <configuration>
-                                <target>
+                                <target name="check.for.node">
+                                    <condition property="node.already.installed" value="true" else="false">
+                                        <resourceexists><file file="node/${node.exe.file}" /></resourceexists>
+                                    </condition>                                    
+                                </target>
+                                <exportAntProperties>true</exportAntProperties>
+                            </configuration>
+                            <goals><goal>run</goal></goals>
+                        </execution>
+                        <execution>
+                            <id>install</id>
+                            <phase>initialize</phase>
+                            <configuration>
+                                <target name="install" unless="${node.already.installed}">
                                     <!-- 
                                     Rest everything
                                     -->
