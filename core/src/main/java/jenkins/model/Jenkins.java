@@ -552,6 +552,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
 
+    private transient final Object tcpSlaveAgentListenerLock = new Object();
+
     private transient UDPBroadcastThread udpBroadcastThread;
 
     private transient DNSMultiCast dnsMultiCast;
@@ -941,26 +943,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void launchTcpSlaveAgentListener() throws IOException {
-        // shutdown previous agent if the port has changed
-        if(tcpSlaveAgentListener != null && tcpSlaveAgentListener.configuredPort!=slaveAgentPort) {
-            tcpSlaveAgentListener.shutdown();
-            tcpSlaveAgentListener = null;
-        }
-        if(slaveAgentPort!=-1 && tcpSlaveAgentListener == null) {
-            String administrativeMonitorId = getClass().getName()+".tcpBind";
-            try {
-                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-                // remove previous monitor in case of previous error
-                for(Iterator<AdministrativeMonitor> it = AdministrativeMonitor.all().iterator(); it.hasNext();) {
-                    AdministrativeMonitor am = it.next();
-                    if (administrativeMonitorId.equals(am.id)) {
-                        it.remove();
+        synchronized(tcpSlaveAgentListenerLock) {
+            // shutdown previous agent if the port has changed
+            if (tcpSlaveAgentListener != null && tcpSlaveAgentListener.configuredPort != slaveAgentPort) {
+                tcpSlaveAgentListener.shutdown();
+                tcpSlaveAgentListener = null;
+            }
+            if (slaveAgentPort != -1 && tcpSlaveAgentListener == null) {
+                String administrativeMonitorId = getClass().getName() + ".tcpBind";
+                try {
+                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                    // remove previous monitor in case of previous error
+                    for (Iterator<AdministrativeMonitor> it = AdministrativeMonitor.all().iterator(); it.hasNext(); ) {
+                        AdministrativeMonitor am = it.next();
+                        if (administrativeMonitorId.equals(am.id)) {
+                            it.remove();
+                        }
                     }
+                } catch (BindException e) {
+                    new AdministrativeError(administrativeMonitorId,
+                            "Failed to listen to incoming slave connection",
+                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.", e);
                 }
-            } catch (BindException e) {
-                new AdministrativeError(administrativeMonitorId,
-                        "Failed to listen to incoming slave connection",
-                        "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
             }
         }
     }
