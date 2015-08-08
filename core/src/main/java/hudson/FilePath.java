@@ -175,7 +175,7 @@ import org.jenkinsci.remoting.RoleSensitive;
  * </pre>
  *
  * <p>
- * When {@link FileCallable} is transfered to a remote node, it will be done so
+ * When {@link FileCallable} is transferred to a remote node, it will be done so
  * by using the same Java serialization scheme that the remoting module uses.
  * See {@link Channel} for more about this. 
  *

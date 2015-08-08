@@ -63,7 +63,7 @@ import javax.annotation.CheckForNull;
  * for Jenkins to control {@link Plugin}.
  *
  * <p>
- * A plug-in is packaged into a jar file whose extension is <tt>".jpi"</tt> (or <tt>".hpi"</tt> for backward compatability),
+ * A plug-in is packaged into a jar file whose extension is <tt>".jpi"</tt> (or <tt>".hpi"</tt> for backward compatibility),
  * A plugin needs to have a special manifest entry to identify what it is.
  *
  * <p>
