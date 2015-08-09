@@ -376,19 +376,19 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.ui</groupId>
                   <artifactId>jquery-detached</artifactId>
-                  <version>1.0-beta-2-SNAPSHOT</version>
+                  <version>1.0-beta-3-SNAPSHOT</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.ui</groupId>
                   <artifactId>bootstrap</artifactId>
-                  <version>1.0-beta-2-SNAPSHOT</version>
+                  <version>1.0-beta-3-SNAPSHOT</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.ui</groupId>
                   <artifactId>momentjs</artifactId>
-                  <version>1.0-beta-2-SNAPSHOT</version>
+                  <version>1.0-beta-3-SNAPSHOT</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
