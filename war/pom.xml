@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.624-SNAPSHOT</version>
+    <version>1.624</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
