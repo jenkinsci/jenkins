@@ -142,7 +142,34 @@ public class Executor extends Thread implements ModelObject {
 
     @Override
     public void interrupt() {
-        interrupt(Result.ABORTED);
+        if (Thread.currentThread() == this) {
+            // If you catch an InterruptedException the "correct" options are limited to one of two choices:
+            //   1. Propagate the exception;
+            //   2. Restore the Thread.currentThread().interrupted() flag
+            // The JVM locking support assumes such behaviour.
+            // Evil Jenkins overrides the interrupt() method so that when a different thread interrupts this thread
+            // we abort the build.
+            // but that causes JENKINS-28690 style deadlocks when the correctly written code does
+            //
+            // try {
+            //   ... some long running thing ...
+            // } catch (InterruptedException e) {
+            //   ... some tidy up
+            //   // restore interrupted flag
+            //   Thread.currentThread().interrupted();
+            // }
+            //
+            // What about why we do not set the Result.ABORTED on this branch?
+            // That is a good question to ask, the answer is that the only time a thread should be restoring
+            // its own interrupted flag is when that thread has already been interrupted by another thread
+            // as such we should assume that the result has already been applied. If that assumption were
+            // incorrect, then the Run.execute's catch (InterruptedException) block will either set the result
+            // or have been escaped - in which case the result of the run has been sealed anyway so it does not
+            // matter.
+            super.interrupt();
+        } else {
+            interrupt(Result.ABORTED);
+        }
     }
 
     void interruptForShutdown() {
