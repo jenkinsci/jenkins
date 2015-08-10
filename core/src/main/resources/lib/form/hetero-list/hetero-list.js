@@ -33,11 +33,11 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         if(!btn) return;
         var menuAlign = "tl-bl";
         if(btn) menuAlign = (btn.getAttribute("menualign")||"tl-bl");
-
         var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign.split("-"), menuminscrollheight: 250 });
         $(menuButton._button).addClassName(btn.className);    // copy class names
         $(menuButton._button).setAttribute("suffix",btn.getAttribute("suffix"));
         menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
+          debugger;
             var item = args[1];
             if (item.cfg.getProperty("disabled"))   return;
             var t = templates[parseInt(item.value)];
@@ -53,6 +53,7 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
             var targetElem = findElementsBySelector(nc,"TR.config-page")[0];
             if(!targetElem) targetElem = findElementsBySelector(nc,"DIV.config-page")[0];
             renderOnDemand(targetElem,function() {
+              debugger;
                 function findInsertionPoint() {
                     // given the element to be inserted 'prospect',
                     // and the array of existing items 'current',

@@ -133,7 +133,23 @@ THE SOFTWARE.
     </div>
 
     <div class="btn-box">
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
+      <input type="button" data-tagName="hetero-list-add" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
+    </div>
+    
+    <div data-tagName="hetero-list-choices">
+      <ul>
+      <j:set var="instance" value="${null}" />
+      <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
+      <j:forEach var="descriptor" items="${descriptors}" varStatus="loop">
+        <li><a data-name="${attrs.name}" href="#${attrs.name}">${descriptor.displayName}</a></li>
+        <j:set var="capture" value="${attrs.capture?:''}" />
+        <l:renderOnDemand tag="div" clazz="config-page" capture="descriptor,it,instance,${capture}">
+              <l:ajax>
+                <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
+              </l:ajax>
+        </l:renderOnDemand>
+      </j:forEach>    
+      </ul>
     </div>
   </div>
 </j:jelly>
