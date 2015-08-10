@@ -118,7 +118,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>${stapler.version}</version>
+      <version>1.238-alpha-1-SNAPSHOT</version> <!-- See https://github.com/tfennelly/stapler/tree/config-ui-changes -->
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -142,7 +142,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-jrebel</artifactId>
-      <version>${stapler.version}</version>
+      <version>1.238-alpha-1-SNAPSHOT</version> <!-- See https://github.com/tfennelly/stapler/tree/config-ui-changes -->
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
