@@ -827,7 +827,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 } catch (BindException e) {
                     new AdministrativeError(getClass().getName()+".tcpBind",
                             "Failed to listen to incoming slave connection",
-                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
+                            "Failed to listen to incoming slave connection. <a href='configureSecurity/'>Change the port number</a> to solve the problem.",e);
                 }
             } else
                 tcpSlaveAgentListener = null;
