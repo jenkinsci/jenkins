@@ -30,6 +30,7 @@ import jenkins.model.Jenkins;
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
+import hudson.ExtensionList;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
@@ -48,6 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 /**
  * Uses the {@link LoadStatistics} and determines when we need to allocate
@@ -126,7 +128,19 @@ public class NodeProvisioner {
     private final AtomicReference<List<PlannedNode>> pendingLaunches
             = new AtomicReference<List<PlannedNode>>(new ArrayList<PlannedNode>());
 
+    /**
+     * Guards provisioning variables within the class.
+     * Methods of this class may be called by {@link Cloud}s from {@link Queue}
+     * methods with locks. If any method of the class wants to call a Queue method,
+     * it <b>must</b> lock the {@link Queue} before acquiring this lock.
+     * Otherwise there will be a risk of deadlocks.
+     */
     private final Lock provisioningLock = new ReentrantLock();
+    
+    /**
+     * Guards application of {@link StrategyState}s.
+     */
+    private final Lock strategyApplyLock = new ReentrantLock();
 
     @GuardedBy("provisioningLock")
     private StrategyState provisioningState = null;
@@ -170,7 +184,11 @@ public class NodeProvisioner {
             lastSuggestedReview = System.currentTimeMillis();
             Computer.threadPoolForRemoting.submit(new Runnable() {
                 public void run() {
-                    update();
+                    try {
+                        update();
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.SEVERE, "Node provisioner update failed", ex);
+                    }
                 }
             });
         }
@@ -182,12 +200,11 @@ public class NodeProvisioner {
      *
      * Note: This method will obtain a lock on {@link #provisioningLock} first (to ensure that one and only one
      * instance of this provisioner is running at a time) and then a lock on {@link Queue#lock}
+     * @throws Exception if the inner callable throws an exception.
      */
-    private void update() {
-        provisioningLock.lock();
-        try {
-            lastSuggestedReview = System.currentTimeMillis();
-
+    private void update() throws Exception {       
+        lastSuggestedReview = System.currentTimeMillis();  
+                
             // We need to get the lock on Queue for two reasons:
             // 1. We will potentially adding a lot of nodes and we don't want to fight with Queue#maintain to acquire
             //    the Queue#lock in order to add each node. Much better is to hold the Queue#lock until all nodes
@@ -201,9 +218,12 @@ public class NodeProvisioner {
             // that causes issues in Queue#maintain) we should be able to remove the need for Queue#lock
             //
             // TODO once Nodes#addNode is made lock free, we should be able to remove the requirement for Queue#lock
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
+        final StrategyState currentStrategyState = Queue.withLock(new Callable<StrategyState>() {
+            @Override
+            public StrategyState call() {
+                final StrategyState assignedStrategyState;
+                provisioningLock.lock();
+                try {
                     Jenkins jenkins = Jenkins.getInstance();
                     // clean up the cancelled launch activity, then count the # of executors that we are about to
                     // bring up.
@@ -291,18 +311,25 @@ public class NodeProvisioner {
                         provisioningState = null;
                     } else {
                         provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);;
-                    }
+                    }                  
+                } finally {
+                    assignedStrategyState = provisioningState;
+                    provisioningLock.unlock();
                 }
-            });
+                return assignedStrategyState;
+            }
+        });
 
-            if (provisioningState != null) {
-                List<Strategy> strategies = Jenkins.getInstance().getExtensionList(Strategy.class);
+        strategyApplyLock.lock();
+        try {
+            if (currentStrategyState != null) {
+                List<Strategy> strategies = ExtensionList.lookup(Strategy.class);
                 for (Strategy strategy : strategies.isEmpty()
                         ? Arrays.<Strategy>asList(new StandardStrategyImpl())
                         : strategies) {
                     LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
-                            new Object[]{strategy, provisioningState});
-                    if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(provisioningState)) {
+                            new Object[]{strategy, currentStrategyState});
+                    if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(currentStrategyState)) {
                         LOGGER.log(Level.FINER, "Provisioning strategy {0} declared provisioning complete",
                                 strategy);
                         break;
@@ -310,7 +337,7 @@ public class NodeProvisioner {
                 }
             }
         } finally {
-            provisioningLock.unlock();
+            strategyApplyLock.unlock();
         }
     }
 
@@ -792,10 +819,26 @@ public class NodeProvisioner {
 
         @Override
         protected void doRun() {
-            Jenkins h = Jenkins.getInstance();
-            h.unlabeledNodeProvisioner.update();
-            for( Label l : h.getLabels() )
-                l.nodeProvisioner.update();
+            final Jenkins h = Jenkins.getInstance();
+            if (h == null) {
+                LOGGER.log(Level.WARNING, "Cannot run the provisioner." +
+                        "Jenkins has not been started, or was already shut down");
+                return;
+            }
+            try {
+                h.unlabeledNodeProvisioner.update();
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "Cannot update the unlabeled node provisioner ", ex);
+            }
+                
+            for( Label l : h.getLabels() ) {
+                try {
+                    l.nodeProvisioner.update();
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, "Cannot update the node provisioner for label " + l, ex); 
+                }
+            }
+            
         }
     }
 
