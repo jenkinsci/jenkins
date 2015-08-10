@@ -1628,7 +1628,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
             // so trying something else, until we discover another problem.
-            super(BrowserVersion.FIREFOX_24);
+            super(BrowserVersion.FIREFOX_38);
 
             setPageCreator(HudsonPageCreator.INSTANCE);
             clients.add(this);
