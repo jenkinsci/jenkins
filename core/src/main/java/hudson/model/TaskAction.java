@@ -80,6 +80,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      * @deprecated as of 1.350
      *      Use {@link #obtainLog()}, which returns the same object in a more type-safe signature.
      */
+    @Deprecated
     public LargeText getLog() {
         return obtainLog();
     }

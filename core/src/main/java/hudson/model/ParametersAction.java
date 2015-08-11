@@ -64,6 +64,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     /**
      * @deprecated since 1.283; kept to avoid warnings loading old build data, but now transient.
      */
+    @Deprecated
     private transient AbstractBuild<?, ?> build;
 
     public ParametersAction(List<ParameterValue> parameters) {

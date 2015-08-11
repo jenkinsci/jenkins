@@ -57,6 +57,7 @@ public class StreamBuildListener extends StreamTaskListener implements BuildList
      *      The caller should use {@link #StreamBuildListener(OutputStream, Charset)} to pass in
      *      the charset and output stream separately, so that this class can handle encoding correctly.
      */
+    @Deprecated
     public StreamBuildListener(PrintStream w) {
         super(w);
     }

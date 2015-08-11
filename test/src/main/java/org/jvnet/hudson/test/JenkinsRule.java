@@ -967,7 +967,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * This is useful during debugging a test so that one can inspect the state of Hudson through the web browser.
      */
     public void interactiveBreak() throws Exception {
-        System.out.println("Jenkins is running at http://localhost:"+localPort+"/");
+        System.out.println("Jenkins is running at " + getURL());
         new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
 
@@ -1146,6 +1146,33 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      */
     public static String getLog(Run run) throws IOException {
         return Util.loadFile(run.getLogFile(), run.getCharset());
+    }
+
+    /**
+     * Waits for a build to complete.
+     * Useful in conjunction with {@link BuildWatcher}.
+     * @return the same build, once done
+     * @since 1.607
+     */
+    public <R extends Run<?,?>> R waitForCompletion(R r) throws InterruptedException {
+        // Could be using com.jayway.awaitility:awaitility but it seems like overkill here.
+        while (r.isBuilding()) {
+            Thread.sleep(100);
+        }
+        return r;
+    }
+
+    /**
+     * Waits for a build log to contain a specified string.
+     * Useful in conjunction with {@link BuildWatcher}.
+     * @return the same build, once it does
+     * @since 1.607
+     */
+    public <R extends Run<?,?>> R waitForMessage(String message, R r) throws IOException, InterruptedException {
+        while (!getLog(r).contains(message)) {
+            Thread.sleep(100);
+        }
+        return r;
     }
 
     /**

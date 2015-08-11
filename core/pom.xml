@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.606-SNAPSHOT</version>
+    <version>1.625-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.236</stapler.version>
+    <stapler.version>1.237</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.4</groovy.version>
   </properties>
@@ -396,6 +396,10 @@ THE SOFTWARE.
           <groupId>org.springframework</groupId>
           <artifactId>spring-support</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -468,6 +472,10 @@ THE SOFTWARE.
       <artifactId>commons-logging</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
       <version>20110809</version>
@@ -505,7 +513,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>akuma</artifactId>
-      <version>1.9</version>
+      <version>1.10</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -558,9 +566,9 @@ THE SOFTWARE.
     </dependency>
 
     <dependency>
-      <groupId>findbugs</groupId>
+      <groupId>com.google.code.findbugs</groupId>
       <artifactId>annotations</artifactId>
-      <version>1.0.0</version>
+      <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -749,7 +757,7 @@ THE SOFTWARE.
         <configuration>
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>-XX:MaxPermSize=128m</argLine>
+          <argLine>-XX:MaxPermSize=128m -noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
@@ -865,7 +873,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.5.2</version>
             <configuration>
               <effort>Max</effort>
               <threshold>High</threshold>

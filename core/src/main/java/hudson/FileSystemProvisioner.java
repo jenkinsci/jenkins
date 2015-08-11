@@ -204,6 +204,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
         /**
          * @deprecated as of 1.350
          */
+        @Deprecated
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
             return snapshot(build, ws, "**/*", listener);
         }

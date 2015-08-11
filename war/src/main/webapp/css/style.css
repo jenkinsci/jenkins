@@ -75,67 +75,76 @@ body {
 }
 
 #side-panel {
-  z-index: 1;
+  padding: 15px 15px 80px 15px;
+  float: left;
+  width: 320px;
 }
+
 #main-panel {
-  z-index: 0;
+  padding: 15px 15px 80px 15px;
+  margin-left: 320px;
 }
 
-#side-panel, #main-panel {
-  margin: 0px;
-  padding: 0px;
+@media (max-width: 750px) {
+  #side-panel {
+    width: 100%;
+    float: none;
+    padding-bottom: 20px;
+  }
+
+  #main-panel {
+    margin-left: 0;
+    width: 100%;
+  }
 }
 
-.fixedGridLayout #side-panel, .fixedGridLayout #main-panel {
-  position: absolute;
+@media (min-width: 1170px) {
+  #side-panel {
+    width: 360px;
+  }
+
+  #main-panel {
+    margin-left: 360px;
+  }
 }
 
-.fixedGridLayout #side-panel {
-  float:left;
-  width: 360px;
-  margin-left: 15px;
-}
-
-.fixedGridLayout #main-panel {
-  padding-left: 370px;
-  margin-right: 15px;
-  width: 100%
-}
-
-#side-panel-content, #main-panel-content {
-  margin: 15px
-}
+/* task */
 
 #tasks {
   margin-bottom: 20px;
 }
 
-#side-panel-content .pane-frame {
-  margin-bottom: 15px;
+#tasks .task {
+  margin-bottom: 4px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
-#side-panel-content .task {
-  margin-bottom: 3px;
-}
-#side-panel-content .task-link {
-  font-size: 1.1em;
-  vertical-align: middle;
+/* buildQueue */
+
+#buildQueue {
+  margin-bottom: 20px;
 }
 
-#footer-container {
-  width: 100%;
-  padding: 10px 0px;
+/* footer */
+
+footer {
+  padding: 10px 0;
+  background-color: #f6faf2;
   border-top: 1px solid #d3d7cf;
-}
-#footer {
-  margin: 0px 15px 0px 15px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 12px;
   text-align: right;
-  font-size: 8pt;
 }
 
-#footer span {
+footer span {
   margin-left: 15px;
+  line-height: 14px;
 }
+
 
 /* Fonts etc */
 
@@ -150,7 +159,7 @@ body, table, form, td, th, p
   color: #333;
 }
 
-FORM {
+form {
   margin: 0;
 }
 
@@ -387,7 +396,6 @@ pre.console {
 /* tabBar */
 
 .tabBar {
-  clear: both;
   overflow: auto;
   position: relative;
   top: 1px;
@@ -490,11 +498,6 @@ pre.console {
 }
 
 .main-table {
-}
-
-div.dashboard {
-  width: 100%;
-  clear:both;
 }
 
 /* pane */
@@ -982,6 +985,7 @@ table.parameters > tbody:hover {
 .build-row-cell .pane.build-name {
   width: 25%;
   font-weight: bold;
+  vertical-align: top;
 }
 .build-row-cell .pane.build-details {
   width: 50%;
@@ -1036,6 +1040,10 @@ table.parameters > tbody:hover {
   width: 70%;
   text-align: right;
 }
+.build-row-cell .build-badge span:after {
+    content: " ";
+    font-size: 0%;
+}
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {
   width: 70%;
@@ -1064,9 +1072,12 @@ table.parameters > tbody:hover {
   border-left: 1px solid #cdcdcd;
 }
 
-.build-row-cell .pane.build-name .display-name,
+.build-row-cell .pane.build-name .display-name {
+  margin-left: 20px;
+}
+
 .build-row-cell .indent-multiline {
-  margin-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
+  padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
 }
 
 .build-row .build-row-cell {
@@ -1571,6 +1582,7 @@ table#legend-table td {
   border-style: none;
   border-color: transparent;
   background: none;
+  text-decoration: none;
 }
 
 #jenkins .yui-button .first-child {

@@ -28,7 +28,11 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
+import hudson.console.ConsoleLogFilter;
+import hudson.console.LineTransformationOutputStream;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleBuild;
@@ -45,18 +49,26 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Shell;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.Locale;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Assume;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 
 public class SimpleBuildWrapperTest {
 
+    @ClassRule public static BuildWatcher buildWatcher = new BuildWatcher();
     @Rule public JenkinsRule r = new JenkinsRule();
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
@@ -162,7 +174,44 @@ public class SimpleBuildWrapperTest {
                 return true;
             }
         }
+    }
 
+    @Issue("JENKINS-27392")
+    @Test public void loggerDecorator() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.getBuildWrappersList().add(new WrapperWithLogger());
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                listener.getLogger().println("sending a message");
+                return true;
+            }
+        });
+        r.assertLogContains("SENDING A MESSAGE", r.buildAndAssertSuccess(p));
+    }
+    public static class WrapperWithLogger extends SimpleBuildWrapper {
+        @Override public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {}
+        @Override public ConsoleLogFilter createLoggerDecorator(Run<?,?> build) {
+            return new UpcaseFilter();
+        }
+        private static class UpcaseFilter extends ConsoleLogFilter implements Serializable {
+            private static final long serialVersionUID = 1;
+            @SuppressWarnings("rawtypes") // inherited
+            @Override public OutputStream decorateLogger(AbstractBuild _ignore, final OutputStream logger) throws IOException, InterruptedException {
+                return new LineTransformationOutputStream() {
+                    @Override protected void eol(byte[] b, int len) throws IOException {
+                        logger.write(new String(b, 0, len).toUpperCase(Locale.ROOT).getBytes());
+                    }
+                };
+            }
+        }
+        @TestExtension("loggerDecorator") public static class DescriptorImpl extends BuildWrapperDescriptor {
+            @Override public String getDisplayName() {
+                return "WrapperWithLogger";
+            }
+            @Override public boolean isApplicable(AbstractProject<?,?> item) {
+                return true;
+            }
+        }
     }
 
 }

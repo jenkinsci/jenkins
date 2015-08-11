@@ -72,6 +72,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
          * @deprecated as of 1.559
          *      Use {@link #Handler(NioChannelHub, Socket)}
          */
+        @Deprecated
         public Handler(Socket socket) throws IOException {
             this(null,socket);
         }
@@ -122,7 +123,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
                         @Override
                         public void onClosed(Channel channel, IOException cause) {
                             if(cause!=null)
-                                LOGGER.log(Level.WARNING, Thread.currentThread().getName()+" for + " + nodeName + " terminated",cause);
+                                LOGGER.log(Level.WARNING, Thread.currentThread().getName() + " for " + nodeName + " terminated", cause);
                             try {
                                 socket.close();
                             } catch (IOException e) {

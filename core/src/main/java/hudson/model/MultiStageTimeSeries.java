@@ -110,6 +110,7 @@ public class MultiStageTimeSeries implements Serializable {
      * @deprecated since 2009-04-05.
      *      Use {@link #MultiStageTimeSeries(Localizable, Color, float, float)}
      */
+    @Deprecated
     public MultiStageTimeSeries(float initialValue, float decay) {
         this(Messages._MultiStageTimeSeries_EMPTY_STRING(), Color.WHITE, initialValue,decay);
     }

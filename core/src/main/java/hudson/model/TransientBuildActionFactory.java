@@ -37,6 +37,7 @@ public abstract class TransientBuildActionFactory implements ExtensionPoint {
      * @deprecated as of 1.461
      *      Override and call {@link #createFor(Run)} instead.
      */
+    @Deprecated
     public Collection<? extends Action> createFor(AbstractBuild target) {
         return Collections.emptyList();
     }

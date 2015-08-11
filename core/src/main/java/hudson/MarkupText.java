@@ -283,6 +283,7 @@ public class MarkupText extends AbstractMarkupText {
      *      Use {@link #toString(boolean)} to be explicit about the escape mode.
      */
     @Override
+    @Deprecated
     public String toString() {
         return toString(false);
     }

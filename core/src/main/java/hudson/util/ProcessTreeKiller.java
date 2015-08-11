@@ -35,12 +35,14 @@ import java.util.Map;
  * @since 1.201
  * @deprecated as of 1.315. Use {@link ProcessTree}.
  */
+@Deprecated
 public final class ProcessTreeKiller {
     /**
      * Short for {@code kill(proc,null)}
      *
      * @deprecated Use {@link OSProcess#killRecursively()}
      */
+    @Deprecated
     public void kill(Process proc) throws InterruptedException {
         kill(proc,null);
     }
@@ -73,6 +75,7 @@ public final class ProcessTreeKiller {
      *      If non-null, search-and-destroy will be performed.
      * @deprecated Use {@link ProcessTree#killAll(Map)} and {@link OSProcess#killRecursively()}
      */
+    @Deprecated
     public void kill(Process proc, Map<String, String> modelEnvVars) throws InterruptedException {
         ProcessTree pt = ProcessTree.get();
         if(proc!=null)
@@ -85,6 +88,7 @@ public final class ProcessTreeKiller {
      * Short for {@code kill(null,modelEnvVars)}
      * @deprecated Use {@link ProcessTree#killAll(Map)}
      */
+    @Deprecated
     public void kill(Map<String, String> modelEnvVars) throws InterruptedException {
         kill(null,modelEnvVars);
     }
@@ -95,6 +99,7 @@ public final class ProcessTreeKiller {
      *
      * @deprecated Use {@link EnvVars#createCookie()}
      */
+    @Deprecated
     public static EnvVars createCookie() {
         return EnvVars.createCookie();
     }

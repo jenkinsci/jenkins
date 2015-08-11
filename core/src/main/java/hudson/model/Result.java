@@ -25,9 +25,11 @@ package hudson.model;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+
 import hudson.cli.declarative.OptionHandlerExtension;
 import hudson.init.Initializer;
 import hudson.util.EditDistance;
+
 import org.apache.commons.beanutils.Converter;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -40,6 +42,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
+
 /**
  * The build outcome.
  *
@@ -49,42 +54,42 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * The build had no errors.
      */
-    public static final Result SUCCESS = new Result("SUCCESS",BallColor.BLUE,0,true);
+    public static final @Nonnull Result SUCCESS = new Result("SUCCESS",BallColor.BLUE,0,true);
     /**
      * The build had some errors but they were not fatal.
      * For example, some tests failed.
      */
-    public static final Result UNSTABLE = new Result("UNSTABLE",BallColor.YELLOW,1,true);
+    public static final @Nonnull Result UNSTABLE = new Result("UNSTABLE",BallColor.YELLOW,1,true);
     /**
      * The build had a fatal error.
      */
-    public static final Result FAILURE = new Result("FAILURE",BallColor.RED,2,true);
+    public static final @Nonnull Result FAILURE = new Result("FAILURE",BallColor.RED,2,true);
     /**
      * The module was not built.
      * <p>
      * This status code is used in a multi-stage build (like maven2)
      * where a problem in earlier stage prevented later stages from building.
      */
-    public static final Result NOT_BUILT = new Result("NOT_BUILT",BallColor.NOTBUILT,3,false);
+    public static final @Nonnull Result NOT_BUILT = new Result("NOT_BUILT",BallColor.NOTBUILT,3,false);
     /**
      * The build was manually aborted.
      *
      * If you are catching {@link InterruptedException} and interpreting it as {@link #ABORTED},
      * you should check {@link Executor#abortResult()} instead (starting 1.417.)
      */
-    public static final Result ABORTED = new Result("ABORTED",BallColor.ABORTED,4,false);
+    public static final @Nonnull Result ABORTED = new Result("ABORTED",BallColor.ABORTED,4,false);
 
-    private final String name;
+    private final @Nonnull String name;
 
     /**
      * Bigger numbers are worse.
      */
-    public final int ordinal;
+    public final @Nonnegative int ordinal;
 
     /**
      * Default ball color for this status.
      */
-    public final BallColor color;
+    public final @Nonnull BallColor color;
     
     /**
      * Is this a complete build - i.e. did it run to the end (not aborted)?
@@ -92,7 +97,7 @@ public final class Result implements Serializable, CustomExportedBean {
      */
     public final boolean completeBuild;
 
-    private Result(String name, BallColor color, int ordinal, boolean complete) {
+    private Result(@Nonnull String name, @Nonnull BallColor color, @Nonnegative int ordinal, boolean complete) {
         this.name = name;
         this.color = color;
         this.ordinal = ordinal;
@@ -102,26 +107,26 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * Combines two {@link Result}s and returns the worse one.
      */
-    public Result combine(Result that) {
+    public @Nonnull Result combine(@Nonnull Result that) {
         if(this.ordinal < that.ordinal)
             return that;
         else
             return this;
     }
 
-    public boolean isWorseThan(Result that) {
+    public boolean isWorseThan(@Nonnull Result that) {
         return this.ordinal > that.ordinal;
     }
 
-    public boolean isWorseOrEqualTo(Result that) {
+    public boolean isWorseOrEqualTo(@Nonnull Result that) {
         return this.ordinal >= that.ordinal;
     }
 
-    public boolean isBetterThan(Result that) {
+    public boolean isBetterThan(@Nonnull Result that) {
         return this.ordinal < that.ordinal;
     }
 
-    public boolean isBetterOrEqualTo(Result that) {
+    public boolean isBetterOrEqualTo(@Nonnull Result that) {
         return this.ordinal <= that.ordinal;
     }
     
@@ -133,24 +138,23 @@ public final class Result implements Serializable, CustomExportedBean {
         return this.completeBuild;
     }
 
-
     @Override
-    public String toString() {
+    public @Nonnull String toString() {
         return name;
     }
 
-    public String toExportedObject() {
+    public @Nonnull String toExportedObject() {
         return name;
     }
     
-    public static Result fromString(String s) {
+    public static @Nonnull Result fromString(@Nonnull String s) {
         for (Result r : all)
             if (s.equalsIgnoreCase(r.name))
                 return r;
         return FAILURE;
     }
 
-    private static List<String> getNames() {
+    private static @Nonnull List<String> getNames() {
         List<String> l = new ArrayList<String>();
         for (Result r : all)
             l.add(r.name);
@@ -170,10 +174,12 @@ public final class Result implements Serializable, CustomExportedBean {
     private static final Result[] all = new Result[] {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED};
 
     public static final SingleValueConverter conv = new AbstractSingleValueConverter () {
+        @Override
         public boolean canConvert(Class clazz) {
             return clazz==Result.class;
         }
 
+        @Override
         public Object fromString(String s) {
             return Result.fromString(s);
         }

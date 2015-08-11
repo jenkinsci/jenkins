@@ -160,7 +160,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     boolean keepDependencies;
 
     /**
-     * List of {@link UserProperty}s configured for this project.
+     * List of properties configured for this project.
      */
     // this should have been DescribableList but now it's too late
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
@@ -442,6 +442,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @deprecated as of 1.503
      *      Use {@link #getBuildDiscarder()}.
      */
+    @Deprecated
     public LogRotator getLogRotator() {
         if (logRotator instanceof LogRotator)
             return (LogRotator) logRotator;
@@ -452,6 +453,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @deprecated as of 1.503
      *      Use {@link #setBuildDiscarder(BuildDiscarder)}
      */
+    @Deprecated
     public void setLogRotator(LogRotator logRotator) throws IOException {
         setBuildDiscarder(logRotator);
     }
@@ -744,6 +746,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      as of 1.372. Should just do {@code getBuilds().byTimestamp(s,e)} to avoid code bloat in {@link Job}.
      */
     @WithBridgeMethods(List.class)
+    @Deprecated
     public RunList<RunT> getBuildsByTimestamp(long start, long end) {
         return getBuilds().byTimestamp(start,end);
     }

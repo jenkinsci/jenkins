@@ -774,6 +774,7 @@ public class Util {
      *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
     @Nonnull
+    @Deprecated
     public static String combine(long n, @Nonnull String suffix) {
         String s = Long.toString(n)+' '+suffix;
         if(n!=1)
@@ -1269,6 +1270,7 @@ public class Util {
      * @deprecated as of 1.456
      *      Use {@link #resolveSymlink(File)}
      */
+    @Deprecated
     public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
         return resolveSymlink(link);
     }

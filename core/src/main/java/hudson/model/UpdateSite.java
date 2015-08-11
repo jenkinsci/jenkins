@@ -406,6 +406,7 @@ public class UpdateSite {
      * @deprecated
      *      Exposed only for UI.
      */
+    @Deprecated
     public String getDownloadUrl() {
         /*
             HACKISH:
@@ -768,6 +769,7 @@ public class UpdateSite {
          * @deprecated as of 1.326
          *      Use {@link #deploy()}.
          */
+        @Deprecated
         public void install() {
             deploy();
         }

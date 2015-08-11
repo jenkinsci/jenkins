@@ -26,8 +26,6 @@ package hudson.slaves;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.AbortException;
-import hudson.remoting.ChannelBuilder;
-import hudson.util.IOUtils;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Computer;
@@ -39,24 +37,35 @@ import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
+import hudson.util.IOUtils;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
 import hudson.util.io.ReopenableFileOutputStream;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
+import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
+import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.apache.commons.io.FilenameUtils;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -74,17 +83,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
-import jenkins.model.Jenkins;
-import static hudson.slaves.SlaveComputer.LogHolder.*;
-import jenkins.security.ChannelConfigurator;
-import jenkins.security.MasterToSlaveCallable;
-import jenkins.slaves.JnlpSlaveAgentProtocol;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
+import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 
 
 /**
@@ -173,12 +172,7 @@ public class SlaveComputer extends Computer {
         this.acceptingTasks = acceptingTasks;
     }
 
-    /**
-     * True if this computer is a Unix machine (as opposed to Windows machine).
-     *
-     * @return
-     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
-     */
+    @Override
     public Boolean isUnix() {
         return isUnix;
     }
@@ -482,7 +476,15 @@ public class SlaveComputer extends Computer {
                     taskListener.getLogger().println("Connection terminated");
                 }
                 closeChannel();
-                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                try {
+                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                } catch (Throwable t) {
+                    LogRecord lr = new LogRecord(Level.SEVERE,
+                            "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
+                    lr.setThrown(t);
+                    lr.setParameters(new Object[]{launcher, SlaveComputer.this.getName(), t.getMessage()});
+                    logger.log(lr);
+                }
             }
         });
         if(listener!=null)
@@ -633,6 +635,7 @@ public class SlaveComputer extends Computer {
      *      This URL binding is no longer used and moved up directly under to {@link jenkins.model.Jenkins},
      *      but it's left here for now just in case some old JNLP slave agents request it.
      */
+    @Deprecated
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
     }
@@ -647,6 +650,12 @@ public class SlaveComputer extends Computer {
         super.kill();
         closeChannel();
         IOUtils.closeQuietly(log);
+
+        try {
+            Util.deleteRecursive(getLogDir());
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Unable to delete slave logs", ex);
+        }
     }
 
     public RetentionStrategy getRetentionStrategy() {
@@ -678,7 +687,7 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
-    protected void setNode(Node node) {
+    protected void setNode(final Node node) {
         super.setNode(node);
         launcher = grabLauncher(node);
 
@@ -686,10 +695,16 @@ public class SlaveComputer extends Computer {
         // "constructed==null" test is an ugly hack to avoid launching before the object is fully
         // constructed.
         if(constructed!=null) {
-            if (node instanceof Slave)
-                ((Slave)node).getRetentionStrategy().check(this);
-            else
+            if (node instanceof Slave) {
+                Queue.withLock(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((Slave)node).getRetentionStrategy().check(SlaveComputer.this);
+                    }
+                });
+            } else {
                 connect(false);
+            }
         }
     }
 

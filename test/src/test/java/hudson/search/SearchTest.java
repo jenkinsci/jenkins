@@ -32,6 +32,8 @@ import static org.junit.Assert.fail;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 
+import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,6 +105,37 @@ public class SearchTest {
         // make sure we've fetched the testSearchByDisplayName project page
         String contents = result.getWebResponse().getContentAsString();
         assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+    }
+
+    @Issue("JENKINS-24433")
+    @Test
+    public void testSearchByProjectNameBehindAFolder() throws Exception {
+        FreeStyleProject myFreeStyleProject = j.createFreeStyleProject("testSearchByProjectName");
+        MockFolder myMockFolder = j.createFolder("my-folder-1");
+
+        Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q="+ myFreeStyleProject.getName());
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        URL resultUrl = result.getWebResponse().getUrl();
+        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl()));
+    }
+
+    @Issue("JENKINS-24433")
+    @Test
+    public void testSearchByProjectNameInAFolder() throws Exception {
+
+        MockFolder myMockFolder = j.createFolder("my-folder-1");
+        FreeStyleProject myFreeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job-1");
+
+        Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q=" + myFreeStyleProject.getFullName());
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        URL resultUrl = result.getWebResponse().getUrl();
+        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl()));
     }
 
     @Test
@@ -220,9 +253,96 @@ public class SearchTest {
                 foundDispayName = true;
             }
         }
-        
+
         assertTrue(foundProjectName);
         assertTrue(foundDispayName);
+    }
+
+    @Issue("JENKINS-24433")
+    @Test
+    public void testProjectNameBehindAFolderDisplayName() throws Exception {
+        final String projectName1 = "job-1";
+        final String displayName1 = "job-1 display";
+
+        final String projectName2 = "job-2";
+        final String displayName2 = "job-2 display";
+
+        FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
+        project1.setDisplayName(displayName1);
+
+        MockFolder myMockFolder = j.createFolder("my-folder-1");
+
+        FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
+        project2.setDisplayName(displayName2);
+
+        WebClient wc = j.createWebClient();
+        Page result = wc.goTo(myMockFolder.getUrl() + "search/suggest?query=" + projectName1, "application/json");
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        String content = result.getWebResponse().getContentAsString();
+        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+
+        assertEquals(2, jsonArray.size());
+
+        boolean foundDisplayName = false;
+        for(Object suggestion : jsonArray) {
+            JSONObject jsonSuggestion = (JSONObject)suggestion;
+
+            String name = (String)jsonSuggestion.get("name");
+            if(projectName1.equals(name)) {
+                foundDisplayName = true;
+            }
+        }
+
+        assertTrue(foundDisplayName);
+    }
+
+    @Issue("JENKINS-24433")
+    @Test
+    public void testProjectNameInAFolderDisplayName() throws Exception {
+        final String projectName1 = "job-1";
+        final String displayName1 = "job-1 display";
+
+        final String projectName2 = "job-2";
+        final String displayName2 = "my-folder-1 job-2";
+
+        FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
+        project1.setDisplayName(displayName1);
+
+        MockFolder myMockFolder = j.createFolder("my-folder-1");
+
+        FreeStyleProject project2 = myMockFolder.createProject(FreeStyleProject.class, projectName2);
+        project2.setDisplayName(displayName2);
+
+        WebClient wc = j.createWebClient();
+        Page result = wc.goTo(myMockFolder.getUrl() + "search/suggest?query=" + projectName2, "application/json");
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        String content = result.getWebResponse().getContentAsString();
+        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+
+        assertEquals(1, jsonArray.size());
+
+        boolean foundDisplayName = false;
+        for(Object suggestion : jsonArray) {
+            JSONObject jsonSuggestion = (JSONObject)suggestion;
+
+            String name = (String)jsonSuggestion.get("name");
+
+            if(displayName2.equals(name)) {
+                foundDisplayName = true;
+            }
+        }
+
+        assertTrue(foundDisplayName);
     }
 
     /**

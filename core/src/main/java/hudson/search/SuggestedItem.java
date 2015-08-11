@@ -81,7 +81,7 @@ public class SuggestedItem {
     
     private static SuggestedItem build(SearchableModelObject searchContext, Item top) {
         ItemGroup<? extends Item> parent = top.getParent();
-        if (parent instanceof Item && parent != searchContext) {
+        if (parent instanceof Item) {
             Item parentItem = (Item)parent;
             return new SuggestedItem(build(searchContext, parentItem), top);
         }

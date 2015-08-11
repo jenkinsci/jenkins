@@ -120,6 +120,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<Node> ALL = new DescriptorList<Node>(Node.class);
 
     public static List<NodeDescriptor> allInstantiable() {

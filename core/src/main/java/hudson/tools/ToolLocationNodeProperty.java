@@ -90,6 +90,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      * @deprecated since 2009-04-09.
      *      Use {@link ToolInstallation#translateFor(Node,TaskListener)} 
      */
+    @Deprecated
     public static String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException {
         String result = null;
 
@@ -167,6 +168,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
             return home;
         }
 
+        @SuppressWarnings("deprecation") // TODO this was mistakenly made to be the ToolDescriptor class name, rather than .id as you would expect; now baked into serial form
         public ToolDescriptor getType() {
             if (descriptor == null) {
                 descriptor = (ToolDescriptor) Descriptor.find(type);

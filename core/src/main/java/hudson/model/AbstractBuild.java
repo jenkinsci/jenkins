@@ -413,6 +413,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @deprecated as of 1.467
      *      Please use {@link hudson.model.Run.RunExecution}
      */
+    @Deprecated
     public abstract class AbstractRunner extends AbstractBuildExecution {
 
     }
@@ -691,6 +692,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @deprecated as of 1.356
          *      Use {@link #performAllBuildSteps(BuildListener, Map, boolean)}
          */
+       @Deprecated
         protected final void performAllBuildStep(BuildListener listener, Map<?,? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             performAllBuildSteps(listener,buildSteps.values(),phase);
         }
@@ -703,6 +705,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @deprecated as of 1.356
          *      Use {@link #performAllBuildSteps(BuildListener, Iterable, boolean)}
          */
+        @Deprecated
         protected final void performAllBuildStep(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             performAllBuildSteps(listener,buildSteps,phase);
         }
@@ -712,6 +715,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          *
          * @param phase
          *      true for the post build processing, and false for the final "run after finished" execution.
+         *
+         * @return false if any build step failed
          */
         protected final boolean performAllBuildSteps(BuildListener listener, Iterable<? extends BuildStep> buildSteps, boolean phase) throws InterruptedException, IOException {
             boolean r = true;
@@ -721,20 +726,33 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         if (!perform(bs,listener)) {
                             LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                             r = false;
+                            if (phase) {
+                                setResult(Result.FAILURE);
+                            }
                         }
                     } catch (Exception e) {
                         reportError(bs, e, listener, phase);
+                        r = false;
                     } catch (LinkageError e) {
                         reportError(bs, e, listener, phase);
+                        r = false;
                     }
             }
             return r;
         }
 
         private void reportError(BuildStep bs, Throwable e, BuildListener listener, boolean phase) {
-            String msg = "Publisher " + bs.getClass().getName() + " aborted due to exception";
-            e.printStackTrace(listener.error(msg));
-            LOGGER.log(WARNING, msg, e);
+            final String publisher = ((Publisher) bs).getDescriptor().getDisplayName();
+
+            if (e instanceof AbortException) {
+                LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, publisher});
+                listener.error("Publisher '" + publisher + "' failed: " + e.getMessage());
+            } else {
+                String msg = "Publisher '" + publisher + "' aborted due to exception: ";
+                e.printStackTrace(listener.error(msg));
+                LOGGER.log(WARNING, msg, e);
+            }
+
             if (phase) {
                 setResult(Result.FAILURE);
             }
@@ -1051,6 +1069,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * @deprecated Use {@link #getAction(Class)} on {@link AbstractTestResultAction}.
      */
+    @Deprecated
     public Action getTestResultAction() {
         try {
             return getAction(Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AbstractTestResultAction").asSubclass(Action.class));
@@ -1062,6 +1081,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * @deprecated Use {@link #getAction(Class)} on {@link AggregatedTestResultAction}.
      */
+    @Deprecated
     public Action getAggregatedTestResultAction() {
         try {
             return getAction(Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AggregatedTestResultAction").asSubclass(Action.class));
@@ -1340,6 +1360,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @deprecated as of 1.489
      *      Use {@link #doStop()}
      */
+    @Deprecated
     public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doStop().generateResponse(req,rsp,this);
     }

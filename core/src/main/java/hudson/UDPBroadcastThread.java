@@ -59,6 +59,7 @@ public class UDPBroadcastThread extends Thread {
      * @deprecated as of 1.416
      *      Use {@link #UDPBroadcastThread(Jenkins)}
      */
+    @Deprecated
     public UDPBroadcastThread(Hudson jenkins) throws IOException {
         this((Jenkins)jenkins);
     }

@@ -20,7 +20,8 @@ import java.util.logging.Logger;
  * Match the name against the slave name and route the incoming JNLP agent as {@link Slave}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.561
+ * @since 1.561  
+ * @since 1.614 handle() returns true on handshake error as it required in JnlpAgentReceiver.
  */
 @Extension
 public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
@@ -48,7 +49,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                 }
             } else {
                 handshake.error(nodeName + " is already connected to this master. Rejecting this connection.");
-                return false;
+                return true;
             }
         }
 

@@ -78,6 +78,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * @deprecated
      *      As of 1.286. Use {@link #DescriptorList(Class)} instead.
      */
+    @Deprecated
     public DescriptorList(Descriptor<T>... descriptors) {
         this.type = null;
         this.legacy = new CopyOnWriteArrayList<Descriptor<T>>(descriptors);
@@ -114,6 +115,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      *      instead of registering a descriptor manually.
      */
     @Override
+    @Deprecated
     public boolean add(Descriptor<T> d) {
         return store().add(d);
     }
@@ -126,6 +128,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      *      instead of registering a descriptor manually.
      */
     @Override
+    @Deprecated
     public void add(int index, Descriptor<T> element) {
         add(element); // order is ignored
     }
@@ -196,6 +199,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
 
     /**
      * Finds the descriptor that has the matching fully-qualified class name.
+     * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
      */
     public Descriptor<T> find(String fqcn) {
         return Descriptor.find(this,fqcn);

@@ -34,6 +34,7 @@ import hudson.scm.SubversionSCM;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -58,12 +59,7 @@ import org.jvnet.hudson.test.recipes.WithPluginManager;
  */
 public class PluginManagerTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule() {
-        @Override public void before() throws Throwable {
-            setPluginManager(null);
-            super.before();
-        }
-    };
+    @Rule public JenkinsRule r = PluginManagerUtil.newJenkinsRule();
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     /**
@@ -279,11 +275,7 @@ public class PluginManagerTest {
     @Test public void installDependingPluginWithoutRestart() throws Exception {
         // Load dependee.
         {
-            String target = "dependee.hpi";
-            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
-            FileUtils.copyURLToFile(src, dest);
-            r.jenkins.pluginManager.dynamicLoad(dest);
+            dynamicLoad("dependee.hpi");
         }
         
         // before load depender, of course failed to call Depender.getValue()
@@ -298,11 +290,7 @@ public class PluginManagerTest {
         
         // Load depender.
         {
-            String target = "depender.hpi";
-            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
-            FileUtils.copyURLToFile(src, dest);
-            r.jenkins.pluginManager.dynamicLoad(dest);
+            dynamicLoad("depender.hpi");
         }
         
         // depender successfully accesses to dependee.
@@ -322,11 +310,7 @@ public class PluginManagerTest {
     @Test public void installDependedPluginWithoutRestart() throws Exception {
         // Load depender.
         {
-            String target = "depender.hpi";
-            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
-            FileUtils.copyURLToFile(src, dest);
-            r.jenkins.pluginManager.dynamicLoad(dest);
+            dynamicLoad("depender.hpi");
         }
         
         // before load dependee, depender does not access to dependee.
@@ -341,11 +325,7 @@ public class PluginManagerTest {
         
         // Load dependee.
         {
-            String target = "dependee.hpi";
-            URL src = getClass().getClassLoader().getResource(String.format("plugins/%s", target));
-            File dest = new File(r.jenkins.getRootDir(), String.format("plugins/%s", target));
-            FileUtils.copyURLToFile(src, dest);
-            r.jenkins.pluginManager.dynamicLoad(dest);
+            dynamicLoad("dependee.hpi");
         }
         
         // (MUST) Not throws an exception
@@ -375,4 +355,7 @@ public class PluginManagerTest {
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
+    private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {
+        PluginManagerUtil.dynamicLoad(plugin, r.jenkins);
+    }
 }
