@@ -41,7 +41,7 @@ THE SOFTWARE.
     <staplerFork>true</staplerFork>
     <stapler.version>1.236</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>2.4.3</groovy.version>
+    <groovy.version>2.4.4</groovy.version>
   </properties>
 
   <dependencies>
