@@ -47,7 +47,7 @@ public class HtmlFormUtil {
      */
     public static Page submit(HtmlForm htmlForm, HtmlElement submitElement) throws IOException {
         if (submitElement == null || submitElement instanceof SubmittableElement) {
-            htmlForm.submit((SubmittableElement) submitElement);
+            return htmlForm.submit((SubmittableElement) submitElement);
         } else {
             // To make YUI event handling work, this combo seems to be necessary
             // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
@@ -57,9 +57,8 @@ public class HtmlFormUtil {
             // Just doing form.submit() doesn't work either, because it doesn't do
             // the preparation work needed to pass along the name of the button that
             // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
-            submitElement.click();
+            return submitElement.click();
         }
-        return htmlForm.getPage();
     }
 
     /**
