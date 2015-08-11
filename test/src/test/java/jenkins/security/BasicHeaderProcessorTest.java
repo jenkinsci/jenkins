@@ -82,6 +82,7 @@ public class BasicHeaderProcessorTest {
 
     private void makeRequestWithAuthAndVerify(String userAndPass, String username) throws IOException, SAXException {
         WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
+        req.setEncodingType(null);
         if (userAndPass!=null)
             req.setAdditionalHeader("Authorization","Basic "+Scrambler.scramble(userAndPass));
         Page p = wc.getPage(req);

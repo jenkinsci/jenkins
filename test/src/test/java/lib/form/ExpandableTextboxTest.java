@@ -54,6 +54,7 @@ public class ExpandableTextboxTest extends HudsonTestCase {
         HudsonTestCase.WebClient wc = new WebClient();
         
         WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), POST);
+        req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core' xmlns:st='jelly:stapler' xmlns:l='/lib/layout' xmlns:f='/lib/form'>"+jellyScript+"</j:jelly>");
         Page page = wc.getPage(req);
         return (HtmlPage) page;

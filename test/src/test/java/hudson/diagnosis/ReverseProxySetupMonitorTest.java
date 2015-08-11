@@ -36,6 +36,7 @@ public class ReverseProxySetupMonitorTest {
 
     @Test public void normal() throws Exception {
         WebRequest wrs = new WebRequest(new URL(r.getURL(), r.jenkins.getAdministrativeMonitor(ReverseProxySetupMonitor.class.getName()).getUrl() + "/test"));
+        wrs.setEncodingType(null);
         wrs.setAdditionalHeader("Referer", r.getURL() + "manage");
         r.createWebClient().getPage(wrs);
     }

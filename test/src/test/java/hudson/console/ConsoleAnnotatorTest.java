@@ -140,6 +140,7 @@ public class ConsoleAnnotatorTest {
 
         String next() throws IOException {
             WebRequest req = new WebRequest(new URL(r.getURL() + run.getUrl() + "/logText/progressiveHtml"+(start!=null?"?start="+start:"")));
+            req.setEncodingType(null);
             Map headers = new HashMap();
             if (consoleAnnotator!=null)
                 headers.put("X-ConsoleAnnotator",consoleAnnotator);
