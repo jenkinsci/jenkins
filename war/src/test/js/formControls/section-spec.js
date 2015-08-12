@@ -9,6 +9,8 @@ describe("form section behavior tests", function () {
           
             var section = jsTest.requireSrcModule('formControls/section');
             var $ = jquery.getJQuery();
+            section.init();
+            
             var $sections = $('[data-tagName="section"]');
                 
             //get each section and click its header....                
@@ -18,8 +20,10 @@ describe("form section behavior tests", function () {
               var $body = $section.children('.panel-collapse');
               
               
-              $header.trigger('click');
-              //TODO: need to add event spy from Jasmine Jquery
+              $header.click();
+              expect($section.hasClass('not-shown')).toBe(true);
+              
+
             });
             
             expect($sections.length > 0 ).toBe(true);
