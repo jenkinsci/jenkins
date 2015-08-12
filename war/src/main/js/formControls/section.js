@@ -21,8 +21,7 @@ exports.init = function() {
   watchDomModification();
   
   addDomDecorations();
-  
-  return exports;
+
 };
 
 
@@ -48,6 +47,7 @@ exports.resize = function(eventOrElem){
 //This is very similar to the Bootstrap Collapse, 
 //but unlike BS Collapse, the panels have no knowledge of the parent elements
 function openCloseEventHandler(e){
+  console.log('openCloseEventHandler');
   var $ = jquery.getJQuery();
   var $header = $(this);
   var $section = $header.closest(tagName);
