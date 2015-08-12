@@ -465,6 +465,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             LOGGER.log(FINE, this + " in " + getRootDir() + ": result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
         }
     }
+    
+    /**
+     * Forced to set the {@link #getResult} of this build even when result is already set.
+     * May only be called after the build has started.
+     * @param r the proposed new result
+     */
+    public void setResultForced(@Nonnull Result r) {
+
+        result = r;
+        LOGGER.log(FINE, this + " in " + getRootDir() + ": result is set to " + r, LOGGER.isLoggable(Level.FINER) ? new Exception() : null);
+    }
 
     /**
      * Gets the subset of {@link #getActions()} that consists of {@link BuildBadgeAction}s.
