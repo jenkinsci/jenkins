@@ -259,7 +259,18 @@ public class UtilTest {
     }
 
     @Test
-    public void testDeleteFile() throws Exception {
+    public void testDeleteFile_success() throws Exception {
+        File d = tmp.getRoot();
+        File f = new File(d, "f");
+        // Test: File is deleted
+        mkfiles(f);
+        Util.deleteFile(f);
+        assertFalse("f exists after calling Util.deleteFile", f.exists());
+    }
+
+    @Test
+    public void testDeleteFile_throwsWhenUnableToDeleteFile() throws Exception {
+        Assume.assumeTrue(Functions.isWindows());
         Class<?> c;
         try {
             c = Class.forName("java.nio.file.FileSystemException");
@@ -269,10 +280,6 @@ public class UtilTest {
         File d = tmp.getRoot();
         try {
             File f = new File(d, "f");
-            // Test: File is deleted
-            mkfiles(f);
-            Util.deleteFile(f);
-            assertFalse("f exists after calling Util.deleteFile", f.exists());
             // Test: If we cannot delete a file, we throw explaining why
             mkfiles(f);
             lockFileForDeletion(f);
@@ -285,12 +292,28 @@ public class UtilTest {
             }
         } finally {
             unlockFilesForDeletion();
-            Util.deleteRecursive(d);
         }
     }
 
     @Test
-    public void testDeleteRecursive() throws Exception {
+    public void testDeleteRecursive_success() throws Exception {
+        final File tmpDir = tmp.getRoot();
+        final File dir = new File(tmpDir, "dir");
+        final File d1 = new File(dir, "d1");
+        final File d2 = new File(dir, "d2");
+        final File f1 = new File(dir, "f1");
+        final File d1f1 = new File(d1, "d1f1");
+        final File d2f2 = new File(d2, "d1f2");
+        // Test: Files get deleted
+        mkdirs(dir, d1, d2);
+        mkfiles(f1, d1f1, d2f2);
+        Util.deleteRecursive(dir);
+        assertFalse("dir exists", dir.exists());
+    }
+
+    @Test
+    public void testDeleteRecursive_throwsWhenUnableToDeleteFile() throws Exception {
+        Assume.assumeTrue(Functions.isWindows());
         final File tmpDir = tmp.getRoot();
         final File dir = new File(tmpDir, "dir");
         final File d1 = new File(dir, "d1");
@@ -299,11 +322,6 @@ public class UtilTest {
         final File d1f1 = new File(d1, "d1f1");
         final File d2f2 = new File(d2, "d1f2");
         try {
-            // Test: Files get deleted
-            mkdirs(dir, d1, d2);
-            mkfiles(f1, d1f1, d2f2);
-            Util.deleteRecursive(dir);
-            assertFalse("dir exists", dir.exists());
             // Test: If we cannot delete a file, we throw
             mkdirs(dir, d1, d2);
             mkfiles(f1, d1f1, d2f2);
@@ -317,10 +335,8 @@ public class UtilTest {
                 assertTrue("d1f1 exists", d1f1.exists());
                 assertThat(x.getMessage(), containsString(dir.getPath()));
             }
-            unlockFilesForDeletion();
         } finally {
             unlockFilesForDeletion();
-            Util.deleteRecursive(tmpDir);
         }
     }
 
@@ -339,17 +355,17 @@ public class UtilTest {
     }
 
     /** Means of unlocking all the files we have locked, indexed by {@link File}. */
-    private static final Map<File, Callable<Void>> unlockFileCallables = new HashMap<File, Callable<Void>>();
+    private final Map<File, Callable<Void>> unlockFileCallables = new HashMap<File, Callable<Void>>();
 
     /** Prevents a file from being deleted, so we can stress the deletion code's retries. */
-    private static void lockFileForDeletion(File f) throws IOException, InterruptedException {
+    private void lockFileForDeletion(File f) throws IOException, InterruptedException {
         assert !unlockFileCallables.containsKey(f) : f + " is already locked." ;
         // Limitation: Only works on Windows. On unix we can delete anything we can create.
         // On unix, can't use "chmod a-w" on the dir as the code-under-test undoes that.
         // On unix, can't use "chattr +i" because that needs root.
         // On unix, can't use "chattr +u" because ext fs ignores it.
         // On Windows, we can't delete files that are open for reading, so we use that.
-        Assume.assumeTrue(Functions.isWindows());
+    	assert Functions.isWindows();
         final InputStream s = new FileInputStream(f);
         unlockFileCallables.put(f, new Callable<Void>() {
             public Void call() throws IOException { s.close(); return null; };
@@ -357,12 +373,12 @@ public class UtilTest {
     }
 
     /** Undoes a call to {@link #lockFileForDeletion(File)}. */
-    private static void unlockFileForDeletion(File f) throws Exception {
+    private void unlockFileForDeletion(File f) throws Exception {
         unlockFileCallables.remove(f).call();
     }
 
     /** Undoes all calls to {@link #lockFileForDeletion(File)}. */
-    private static void unlockFilesForDeletion() throws Exception {
+    private void unlockFilesForDeletion() throws Exception {
         while( !unlockFileCallables.isEmpty() ) {
             unlockFileForDeletion(unlockFileCallables.keySet().iterator().next());
         }
