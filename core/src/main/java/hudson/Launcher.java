@@ -25,11 +25,11 @@ package hudson;
 
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
+import hudson.remoting.Callable;
 import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteInputStream;
@@ -40,6 +40,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.input.NullInputStream;
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -50,6 +51,8 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
@@ -140,6 +143,28 @@ public abstract class Launcher {
                 return c;
         return null;
     }
+
+    /**
+     * Gets the IP address of the host running the jenkins slave agent which do control this Launcher.
+     * <p>
+     * In most cases, slave agent do run on localhost, but within a containerized architecture, the
+     * slave agent hostname may be a distinct one. A {@link LauncherDecorator} responsible to setup
+     * such an architecture could then decorate this method to return the adequate slave agent host address.
+     * <p>
+     * Default implementation do return wildcard address (0.0.0.0 or ::0)
+     * @since TODO
+     */
+    public String getSlaveAgentHostAddress() throws IOException, InterruptedException {
+        return channel.call(new GetWildcardAddress());
+    }
+
+    private static class GetWildcardAddress extends MasterToSlaveCallable<String, IOException> {
+        @Override
+        public String call() throws IOException {
+            return new InetSocketAddress(0).getAddress().getHostAddress();
+        }
+    }
+
 
     /**
      * Builder pattern for configuring a process to launch.
@@ -741,6 +766,11 @@ public abstract class Launcher {
                 System.arraycopy(args,0,newArgs,prefix.length,args.length);
                 return newArgs;
             }
+
+            @Override
+            public String getSlaveAgentHostAddress() throws IOException, InterruptedException {
+                return outer.getSlaveAgentHostAddress();
+            }
         };
     }
 
@@ -778,12 +808,17 @@ public abstract class Launcher {
             public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String, String> envVars) throws IOException, InterruptedException {
                 EnvVars e = new EnvVars(env);
                 e.putAll(envVars);
-                return outer.launchChannel(cmd,out,workDir,e);
+                return outer.launchChannel(cmd, out, workDir, e);
             }
 
             @Override
             public void kill(Map<String, String> modelEnvVars) throws IOException, InterruptedException {
                 outer.kill(modelEnvVars);
+            }
+
+            @Override
+            public String getSlaveAgentHostAddress() throws IOException, InterruptedException {
+                return outer.getSlaveAgentHostAddress();
             }
         };
     }
@@ -1086,7 +1121,12 @@ public abstract class Launcher {
         public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
             return inner.launch(cmd, env, in, out, workDir); 
         }
-   
+
+        @Override
+        public String getSlaveAgentHostAddress() throws IOException, InterruptedException {
+            return inner.getSlaveAgentHostAddress();
+        }
+
         /**
          * Gets nested launcher.
          * @return Inner launcher
