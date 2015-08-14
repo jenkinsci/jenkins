@@ -301,7 +301,7 @@ public class UtilTest {
         final File f1 = new File(dir, "f1");
         final File d1f1 = new File(d1, "d1f1");
         final File d2f2 = new File(d2, "d1f2");
-        // Test: Files get deleted
+        // Test: Files and directories are deleted
         mkdirs(dir, d1, d2);
         mkfiles(f1, d1f1, d2f2);
         Util.deleteRecursive(dir);
