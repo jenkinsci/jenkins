@@ -259,17 +259,21 @@ public class UtilTest {
     }
 
     @Test
-    public void testDeleteFile_success() throws Exception {
+    public void testDeleteFile() throws Exception {
         File d = tmp.getRoot();
         File f = new File(d, "f");
-        // Test: File is deleted
-        mkfiles(f);
-        Util.deleteFile(f);
-        assertFalse("f exists after calling Util.deleteFile", f.exists());
+        try {
+            // Test: File is deleted
+            mkfiles(f);
+            Util.deleteFile(f);
+            assertFalse("f exists after calling Util.deleteFile", f.exists());
+        } finally {
+            Util.deleteRecursive(d);
+        }
     }
 
     @Test
-    public void testDeleteFile_throwsWhenUnableToDeleteFile() throws Exception {
+    public void testDeleteFile_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
         Class<?> c;
         try {
@@ -292,11 +296,12 @@ public class UtilTest {
             }
         } finally {
             unlockFilesForDeletion();
+            Util.deleteRecursive(d);
         }
     }
 
     @Test
-    public void testDeleteRecursive_success() throws Exception {
+    public void testDeleteRecursive() throws Exception {
         final File tmpDir = tmp.getRoot();
         final File dir = new File(tmpDir, "dir");
         final File d1 = new File(dir, "d1");
@@ -304,15 +309,20 @@ public class UtilTest {
         final File f1 = new File(dir, "f1");
         final File d1f1 = new File(d1, "d1f1");
         final File d2f2 = new File(d2, "d1f2");
-        // Test: Files get deleted
-        mkdirs(dir, d1, d2);
-        mkfiles(f1, d1f1, d2f2);
-        Util.deleteRecursive(dir);
-        assertFalse("dir exists", dir.exists());
+        try {
+            // Test: Files get deleted
+            mkdirs(dir, d1, d2);
+            mkfiles(f1, d1f1, d2f2);
+            Util.deleteRecursive(dir);
+            assertFalse("dir exists", dir.exists());
+        } finally {
+            unlockFilesForDeletion();
+            Util.deleteRecursive(dir);
+        }
     }
 
     @Test
-    public void testDeleteRecursive_throwsWhenUnableToDeleteFile() throws Exception {
+    public void testDeleteRecursive_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
         final File tmpDir = tmp.getRoot();
         final File dir = new File(tmpDir, "dir");
@@ -337,6 +347,7 @@ public class UtilTest {
             }
         } finally {
             unlockFilesForDeletion();
+            Util.deleteRecursive(dir);
         }
     }
 
