@@ -195,7 +195,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Proxy object to allow overriding the UI components with custom Jelly
      */
-    protected Object proxy = null;
+    protected PluginManagerUIProxy proxy = null;
 
     public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
@@ -220,15 +220,20 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Override
     public Object getTarget() {
-        return (proxy != null) ? proxy : this;
+        return (getUIProxy() != null) ? getUIProxy() : this;
+    }
+
+    public PluginManagerUIProxy getUIProxy() {
+        return proxy;
     }
 
     /**
      * Set the proxy for plugin manager UI handling
+     * FIXME typed with interface!
      * @param proxy UI handler, else null to remove the proxy
      */
     @Nullable
-    public void setTarget(Object proxy) {
+    public void setUIProxy(PluginManagerUIProxy proxy) {
         this.proxy = proxy;
     }
 
