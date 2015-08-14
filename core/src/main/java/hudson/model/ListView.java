@@ -435,25 +435,26 @@ public class ListView extends View implements DirectlyModifiableView {
         @Override public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
             ACL.impersonate(ACL.SYSTEM, new Runnable() {
                 @Override public void run() {
-                    locationChanged(item, oldFullName, newFullName);
+                    locationChanged(oldFullName, newFullName);
                 }
             });
         }
-        private void locationChanged(Item item, String oldFullName, String newFullName) {
+        private void locationChanged(String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.getInstance();
-            for (View view: jenkins.getViews()) {
-                if (view instanceof ListView) {
-                    renameViewItem(oldFullName, newFullName, jenkins, (ListView) view);
-                }
-            }
+            locationChanged(jenkins, oldFullName, newFullName);
             for (Item g : jenkins.getAllItems()) {
                 if (g instanceof ViewGroup) {
-                    ViewGroup vg = (ViewGroup) g;
-                    for (View v : vg.getViews()) {
-                        if (v instanceof ListView) {
-                            renameViewItem(oldFullName, newFullName, vg, (ListView) v);
-                        }
-                    }
+                    locationChanged((ViewGroup) g, oldFullName, newFullName);
+                }
+            }
+        }
+        private void locationChanged(ViewGroup vg, String oldFullName, String newFullName) {
+            for (View v : vg.getViews()) {
+                if (v instanceof ListView) {
+                    renameViewItem(oldFullName, newFullName, vg, (ListView) v);
+                }
+                if (v instanceof ViewGroup) {
+                    locationChanged((ViewGroup) v, oldFullName, newFullName);
                 }
             }
         }
@@ -486,19 +487,20 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         private void deleted(Item item) {
             final Jenkins jenkins = Jenkins.getInstance();
-            for (View view: jenkins.getViews()) {
-                if (view instanceof ListView) {
-                    deleteViewItem(item, jenkins, (ListView) view);
-                }
-            }
+            deleted(jenkins, item);
             for (Item g : jenkins.getAllItems()) {
                 if (g instanceof ViewGroup) {
-                    ViewGroup vg = (ViewGroup) g;
-                    for (View v : vg.getViews()) {
-                        if (v instanceof ListView) {
-                            deleteViewItem(item, vg, (ListView) v);
-                        }
-                    }
+                    deleted((ViewGroup) g, item);
+                }
+            }
+        }
+        private void deleted(ViewGroup vg, Item item) {
+            for (View v : vg.getViews()) {
+                if (v instanceof ListView) {
+                    deleteViewItem(item, vg, (ListView) v);
+                }
+                if (v instanceof ViewGroup) {
+                    deleted((ViewGroup) v, item);
                 }
             }
         }
