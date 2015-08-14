@@ -260,16 +260,11 @@ public class UtilTest {
 
     @Test
     public void testDeleteFile() throws Exception {
-        File d = tmp.getRoot();
-        File f = new File(d, "f");
-        try {
-            // Test: File is deleted
-            mkfiles(f);
-            Util.deleteFile(f);
-            assertFalse("f exists after calling Util.deleteFile", f.exists());
-        } finally {
-            Util.deleteRecursive(d);
-        }
+        File f = tmp.newFile();
+        // Test: File is deleted
+        mkfiles(f);
+        Util.deleteFile(f);
+        assertFalse("f exists after calling Util.deleteFile", f.exists());
     }
 
     @Test
@@ -281,9 +276,8 @@ public class UtilTest {
         } catch (ClassNotFoundException x) {
             throw new AssumptionViolatedException("prior to JDK 7", x);
         }
-        File d = tmp.getRoot();
         try {
-            File f = new File(d, "f");
+            File f = tmp.newFile();
             // Test: If we cannot delete a file, we throw explaining why
             mkfiles(f);
             lockFileForDeletion(f);
@@ -296,36 +290,28 @@ public class UtilTest {
             }
         } finally {
             unlockFilesForDeletion();
-            Util.deleteRecursive(d);
         }
     }
 
     @Test
     public void testDeleteRecursive() throws Exception {
-        final File tmpDir = tmp.getRoot();
-        final File dir = new File(tmpDir, "dir");
+        final File dir = tmp.newFolder();
         final File d1 = new File(dir, "d1");
         final File d2 = new File(dir, "d2");
         final File f1 = new File(dir, "f1");
         final File d1f1 = new File(d1, "d1f1");
         final File d2f2 = new File(d2, "d1f2");
-        try {
-            // Test: Files get deleted
-            mkdirs(dir, d1, d2);
-            mkfiles(f1, d1f1, d2f2);
-            Util.deleteRecursive(dir);
-            assertFalse("dir exists", dir.exists());
-        } finally {
-            unlockFilesForDeletion();
-            Util.deleteRecursive(dir);
-        }
+        // Test: Files get deleted
+        mkdirs(dir, d1, d2);
+        mkfiles(f1, d1f1, d2f2);
+        Util.deleteRecursive(dir);
+        assertFalse("dir exists", dir.exists());
     }
 
     @Test
     public void testDeleteRecursive_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
-        final File tmpDir = tmp.getRoot();
-        final File dir = new File(tmpDir, "dir");
+        final File dir = tmp.newFolder();
         final File d1 = new File(dir, "d1");
         final File d2 = new File(dir, "d2");
         final File f1 = new File(dir, "f1");
@@ -347,7 +333,6 @@ public class UtilTest {
             }
         } finally {
             unlockFilesForDeletion();
-            Util.deleteRecursive(dir);
         }
     }
 
