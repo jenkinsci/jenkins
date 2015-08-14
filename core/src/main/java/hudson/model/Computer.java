@@ -1441,6 +1441,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             nodes.set(i, newNode);
             app.setNodes(nodes);
         }
+        // labels could have changed
+        app.getQueue().scheduleMaintenance();
     }
 
     /**
