@@ -25,6 +25,7 @@ package com.gargoylesoftware.htmlunit.html;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.SgmlPage;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,17 +47,19 @@ public class HtmlFormUtil {
      * Plain {@link com.gargoylesoftware.htmlunit.html.HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
     public static Page submit(HtmlForm htmlForm, HtmlElement submitElement) throws IOException {
-        if (submitElement == null || submitElement instanceof SubmittableElement) {
-            return htmlForm.submit((SubmittableElement) submitElement);
+        if (submitElement == null) {
+            return htmlForm.submit(null);
+        } else if (submitElement instanceof SubmittableElement) {
+            SgmlPage formPage = htmlForm.getPage();
+            Page submitResultPage = htmlForm.submit((SubmittableElement) submitElement);
+            if (submitResultPage != formPage) {
+                return submitResultPage;
+            } else {
+                // We're still on the same page (form submit didn't bring us anywhere).
+                // Hackery. Seems like YUI is messing us about.
+                return submitElement.click();
+            }
         } else {
-            // To make YUI event handling work, this combo seems to be necessary
-            // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
-            // (a comment alluding to this behavior can be seen in submitForm method)
-            // so to complete it, submit the form later.
-            //
-            // Just doing form.submit() doesn't work either, because it doesn't do
-            // the preparation work needed to pass along the name of the button that
-            // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
             return submitElement.click();
         }
     }
