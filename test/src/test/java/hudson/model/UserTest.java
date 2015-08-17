@@ -302,7 +302,7 @@ public class UserTest {
         assertNotNull("User should not be null.", user);
         user.clear();
         user = User.get("John Smith", false, Collections.emptyMap());
-        assertNull("User shoudl be null", user);       
+        assertNull("User should be null", user);       
     }
 
     @Test

@@ -186,7 +186,7 @@ public class MyViewsPropertyTest {
         user.addProperty(property);
         View view = new ListView("foo", property);
         property.addView(view);
-        assertTrue("Property should contians view " + view.name, property.getViews().contains(view));
+        assertTrue("Property should contains view " + view.name, property.getViews().contains(view));
         User.reload();
         user = User.get("User");
         property = user.getProperty(property.getClass());

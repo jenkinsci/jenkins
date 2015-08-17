@@ -62,7 +62,7 @@ public class SetBuildDisplayNameCommandTest {
         assertThat(result, failedWith(-1));
     }
 
-    @Test public void setDescriptionSuccesfully() throws Exception {
+    @Test public void setDescriptionSuccessfully() throws Exception {
 
         FreeStyleProject job = j.createFreeStyleProject("project");
         FreeStyleBuild build = job.scheduleBuild2(0).get();

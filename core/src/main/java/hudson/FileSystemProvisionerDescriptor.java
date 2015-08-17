@@ -39,7 +39,7 @@ public abstract class FileSystemProvisionerDescriptor extends Descriptor<FileSys
      *
      * <p>
      * Because users may modify the file system behind Hudson, and slaves may come and go when
-     * configuration changes hapen, in general case Hudson is unable to keep track of which jobs
+     * configuration changes happen, in general case Hudson is unable to keep track of which jobs
      * have workspaces in which slaves.
      *
      * <p>

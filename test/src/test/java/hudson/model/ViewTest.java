@@ -362,7 +362,7 @@ public class ViewTest {
         ListView view2 = listView("foo");
         try{
             view2.rename("renamed");
-            fail("Attemt to rename job with a name used by another view with the same owner should throw exception");
+            fail("Attempt to rename job with a name used by another view with the same owner should throw exception");
         }
         catch(Exception Exception){
         }

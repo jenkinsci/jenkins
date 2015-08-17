@@ -460,7 +460,7 @@ public class Maven extends Builder {
         /**
          * @deprecated since 2009-02-25.
          */
-        @Deprecated // kept for backward compatiblity - use getHome()
+        @Deprecated // kept for backward compatibility - use getHome()
         private transient String mavenHome;
 
         /**

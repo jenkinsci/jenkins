@@ -92,7 +92,7 @@ public final class CronTab {
 
     /**
      * @param timezone
-     *      Used to schedule cron in a differnt timezone. Null to use the default system 
+     *      Used to schedule cron in a different timezone. Null to use the default system 
      *      timezone
      * @since 1.615
      */
