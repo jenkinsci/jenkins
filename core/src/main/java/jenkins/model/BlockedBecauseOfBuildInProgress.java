@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright 2015 Jesse Glick.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,22 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli;
+
+package jenkins.model;
+
+import hudson.model.Executor;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.model.queue.CauseOfBlockage;
 
 /**
- * {@link Cloneable} {@link CLICommand}.
- *
- * Uses {@link #clone()} instead of "new" to create a copy for execution.
- *
- * @author Kohsuke Kawaguchi
+ * Indicates that a new build is blocked because the previous build is already in progress.
+ * Useful for implementing {@link hudson.model.Queue.Task#getCauseOfBlockage} from a {@link Job} which supports {@link hudson.model.Queue.Task#isConcurrentBuild}.
+ * @since 1.624
  */
-public abstract class CloneableCLICommand extends CLICommand implements Cloneable {
-    @Override
-    protected CLICommand createClone() {
-        try {
-            return (CLICommand)clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);
-        }
+public class BlockedBecauseOfBuildInProgress extends CauseOfBlockage {
+    
+    private final Run<?, ?> build;
+
+    public BlockedBecauseOfBuildInProgress(Run<?, ?> build) {
+        this.build = build;
     }
+
+    @Override public String getShortDescription() {
+        Executor e = build.getExecutor();
+        String eta = "";
+        if (e != null) {
+            eta = Messages.BlockedBecauseOfBuildInProgress_ETA(e.getEstimatedRemainingTime());
+        }
+        int lbn = build.getNumber();
+        return Messages.BlockedBecauseOfBuildInProgress_shortDescription(lbn, eta);
+    }
+
 }

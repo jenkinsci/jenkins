@@ -36,6 +36,8 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import jenkins.util.xstream.CriticalXStreamException;
+
 
 /**
  * {@link CollectionConverter} that ignores {@link XStreamException}.
@@ -82,6 +84,8 @@ public class RobustCollectionConverter extends CollectionConverter {
             try {
                 Object item = readItem(reader, context, collection);
                 collection.add(item);
+            } catch (CriticalXStreamException e) {
+                throw e;
             } catch (XStreamException e) {
                 RobustReflectionConverter.addErrorInContext(context, e);
             } catch (LinkageError e) {
