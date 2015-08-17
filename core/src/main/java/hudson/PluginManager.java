@@ -72,7 +72,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerOverridable;
-import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -80,7 +79,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -210,18 +208,22 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
+    public Transformer getCompatibilityTransformer() {
+        return compatibilityTransformer;
+    }
+
     public Api getApi() {
         return new Api(this);
     }
 
+    /**
+     * Find all registered overrides (intended to allow custom Jelly for the UI)
+     * @return List of extensions
+     * @since 1.625
+     */
+    @Override
     public Collection<PluginManagerUIProxy> getOverrides() {
-
-        ExtensionList<PluginManagerUIProxy> proxies = PluginManagerUIProxy.all();
-        return proxies;
-    }
-
-    public Transformer getCompatibilityTransformer() {
-        return compatibilityTransformer;
+        return PluginManagerUIProxy.all();
     }
 
     /**

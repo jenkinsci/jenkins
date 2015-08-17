@@ -1,31 +1,28 @@
 package hudson;
 
-import hudson.model.Api;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.search.Search;
-import hudson.search.SearchIndex;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONArray;
-import org.jenkinsci.bytecode.Transformer;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.List;
-import java.util.jar.Manifest;
-
-/** Extension point for selective overriding parts of the PluginManager UI */
+/**
+ * Extension point for selectively overriding parts of the {@link PluginManager} UI/methods
+ * Anything registered with an @extension can override Jelly and define custom views.
+ * It is also possible to add/modify API calls coming via Stapler, but this requires caution.
+ *
+ * @author Sam Van Oort
+ * @since 1.625
+ */
 public abstract class PluginManagerUIProxy implements ExtensionPoint {
+
     public PluginManager getManager() {
-        return Jenkins.getInstance().getPluginManager();
+        Jenkins jenkins = Jenkins.getInstance();
+        return (jenkins != null) ? jenkins.getPluginManager() : null;
     }
 
     public static ExtensionList<PluginManagerUIProxy> all() {
-        return Jenkins.getInstance().getExtensionList(PluginManagerUIProxy.class);
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins != null) {
+            return jenkins.getExtensionList(PluginManagerUIProxy.class);
+        } else { // Null-safe
+            return ExtensionList.create(jenkins, PluginManagerUIProxy.class);
+        }
     }
 }
