@@ -4,6 +4,7 @@ import hudson.FilePath;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.slaves.NodeSpecific;
 import net.sf.json.JSONObject;
 
 import java.io.IOException;
@@ -63,6 +64,9 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             log.getLogger().println("Invalid tool ID "+id);
             return expected;
         }
+
+        if (inst instanceof NodeSpecific)
+        inst = (Installable) ((NodeSpecific) inst).forNode(node, log);
 
         if(isUpToDate(expected,inst))
             return expected;
