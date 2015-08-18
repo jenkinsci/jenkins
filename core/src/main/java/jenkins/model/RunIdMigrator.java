@@ -352,8 +352,10 @@ public final class RunIdMigrator {
         for (File job : jobDirs) {
 
             if (job.getName().equals("builds")) {
+                // Might be maven modules, matrix builds, etc. which are direct children of job
                 unmigrateBuildsDir(job);
             }
+
             File[] kids = job.listFiles();
             if (kids == null) {
                 continue;
@@ -365,7 +367,8 @@ public final class RunIdMigrator {
                 if (kid.getName().equals("builds")) {
                     unmigrateBuildsDir(kid);
                 } else {
-                    // Might be jobs, modules, promotions, etc.; we assume an ItemGroup.getRootDirFor implementation returns grandchildren.
+                    // Might be jobs, modules, promotions, etc.; we assume an ItemGroup.getRootDirFor implementation
+                    // returns grandchildren, unmigrateJobsDir(job) call above handles children.
                     unmigrateJobsDir(kid);
                 }
             }
