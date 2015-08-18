@@ -691,7 +691,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         mvn.copyFrom(JenkinsRule.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         mvn.unzip(new FilePath(buildDirectory));
         // TODO: switch to tar that preserves file permissions more easily
-        if(!Functions.isWindows())
+        if(Functions.isGlibcSupported())
             GNUCLibrary.LIBC.chmod(new File(mvnHome, "bin/mvn").getPath(),0755);
 
         Maven.MavenInstallation mavenInstallation = new Maven.MavenInstallation("default",
@@ -715,7 +715,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
-            if(!Functions.isWindows())
+            if(Functions.isGlibcSupported())
                 GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
 
             antInstallation = new Ant.AntInstallation("default", new File(antHome,"apache-ant-1.8.1").getAbsolutePath(),NO_PROPERTIES);
@@ -2267,7 +2267,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         // this also prevents tests from falsely advertising Hudson
         DNSMultiCast.disabled = true;
 
-        if (!Functions.isWindows()) {
+        if (Functions.isGlibcSupported()) {
             try {
                 GNUCLibrary.LIBC.unsetenv("MAVEN_OPTS");
                 GNUCLibrary.LIBC.unsetenv("MAVEN_DEBUG_OPTS");
