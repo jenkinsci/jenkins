@@ -354,7 +354,6 @@ public final class RunIdMigrator {
             if (job.getName().equals("builds")) {
                 unmigrateBuildsDir(job);
             }
-
             File[] kids = job.listFiles();
             if (kids == null) {
                 continue;
