@@ -217,13 +217,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
-     * Find all registered overrides (intended to allow custom Jelly for the UI)
+     * Find all registered overrides (intended to allow overriding/adding views)
      * @return List of extensions
      * @since 1.625
      */
     @Override
-    public Collection<PluginManagerUIProxy> getOverrides() {
-        return PluginManagerUIProxy.all();
+    public Collection<PluginManagerStaplerOverride> getOverrides() {
+        return PluginManagerStaplerOverride.all();
     }
 
     /**
