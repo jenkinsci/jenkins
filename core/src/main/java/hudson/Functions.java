@@ -1385,7 +1385,7 @@ public class Functions {
     /**
      * If the value exists, return that value. Otherwise return the default value.
      * <p>
-     * Starting 1.294, JEXL supports the elvis operator "x?:y" that supercedes this.
+     * Starting 1.294, JEXL supports the elvis operator "x?:y" that supersedes this.
      *
      * @since 1.150
      */

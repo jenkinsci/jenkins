@@ -357,7 +357,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @param fetchMembers if {@code true} then try and fetch the members of the group if it exists. Trying does not
      *                     imply that the members will be fetched and {@link hudson.security.GroupDetails#getMembers()}
      *                     may still return {@code null}
-     * @throws UserMayOrMayNotExistException if no conclusive result could be determined regarding the group existance.
+     * @throws UserMayOrMayNotExistException if no conclusive result could be determined regarding the group existence.
      * @throws UsernameNotFoundException     if the group does not exist.
      * @throws DataAccessException           if the backing security realm could not be connected to.
      * @since 1.549

@@ -127,7 +127,7 @@ public abstract class ACL {
      *
      * <p>
      * This doesn't need to be included in {@link Authentication#getAuthorities()},
-     * but {@link ACL} is responsible for checking it nontheless, as if it was the
+     * but {@link ACL} is responsible for checking it nonetheless, as if it was the
      * last entry in the granted authority.
      */
     public static final Sid EVERYONE = new Sid() {

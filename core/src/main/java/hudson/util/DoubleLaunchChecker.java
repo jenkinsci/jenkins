@@ -51,7 +51,7 @@ import java.lang.reflect.Method;
  * to forestall the problem of running multiple instances of Hudson that point to the same data directory.
  *
  * <p>
- * This set up error occasionally happens especialy when the user is trying to reassign the context path of the app,
+ * This set up error occasionally happens especially when the user is trying to reassign the context path of the app,
  * and it results in a hard-to-diagnose error, so we actively check this.
  *
  * <p>

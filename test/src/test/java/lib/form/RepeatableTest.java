@@ -340,7 +340,7 @@ public class RepeatableTest extends HudsonTestCase {
         }
     }
 
-    /** Tests nested repeatable and use of @DataBoundContructor to process formData */
+    /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     public void testNested() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testNested");
         HtmlForm f = p.getFormByName("config");
