@@ -65,8 +65,9 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             return expected;
         }
 
-        if (inst instanceof NodeSpecific)
-        inst = (Installable) ((NodeSpecific) inst).forNode(node, log);
+        if (inst instanceof NodeSpecific) {
+            inst = (Installable) ((NodeSpecific) inst).forNode(node, log);
+        }
 
         if(isUpToDate(expected,inst))
             return expected;
