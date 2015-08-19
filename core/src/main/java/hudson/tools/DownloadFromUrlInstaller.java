@@ -183,6 +183,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
 
     /**
      * Convenient abstract class to implement a NodeSpecificInstallable based on an existing Installable
+     * @since TODO
      */
     public abstract class NodeSpecificInstallable extends Installable implements NodeSpecific<NodeSpecificInstallable> {
 
