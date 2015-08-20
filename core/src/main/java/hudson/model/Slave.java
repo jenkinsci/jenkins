@@ -127,7 +127,8 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
 
-    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = 
+                                    new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
 
     /**
      * Lazily computed set of labels from {@link #label}.
@@ -408,7 +409,7 @@ public abstract class Slave extends Node implements Serializable {
                     : new CommandLauncher(agentCommand);
         }
         if(nodeProperties==null)
-            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance());
+            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
         return this;
     }
 

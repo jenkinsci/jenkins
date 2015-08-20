@@ -1711,7 +1711,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Get the {@code Nodes}object that handles maintaining {@code Node}s.
+     * Get the {@link Nodes} object that handles maintaining individual {@link Node}s.
      * @return The Nodes object.
      */
     @Restricted(NoExternalUse.class)

@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -40,7 +39,6 @@ import hudson.model.Queue.FlyweightTask;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -65,9 +63,9 @@ import hudson.util.RunList;
 import hudson.util.Futures;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
-import jenkins.model.queue.AsynchronousExecution;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.NotReallyRoleSensitiveCallable;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -1434,7 +1432,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         final Jenkins app = Jenkins.getInstance();
 
         // use the queue lock until Nodes has a way of directly modifying a single node.
-        Queue.withLock(new Callable<Void, IOException>() {
+        Queue.withLock(new NotReallyRoleSensitiveCallable<Void, IOException>() {
             public Void call() throws IOException {
                 List<Node> nodes = new ArrayList<Node>(app.getNodes());
                 Node node = getNode();
