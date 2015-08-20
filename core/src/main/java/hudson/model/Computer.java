@@ -40,6 +40,7 @@ import hudson.model.Queue.FlyweightTask;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
 import hudson.node_monitors.NodeMonitor;
+import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -67,6 +68,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -87,6 +89,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -108,6 +111,7 @@ import java.net.NetworkInterface;
 import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -1426,21 +1430,23 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Replaces the current {@link Node} by another one.
      */
-    private void replaceBy(Node newNode) throws ServletException, IOException {
+    private void replaceBy(final Node newNode) throws ServletException, IOException {
         final Jenkins app = Jenkins.getInstance();
 
-        // replace the old Node object by the new one
-        synchronized (app) {
-            List<Node> nodes = new ArrayList<Node>(app.getNodes());
-            Node node = getNode();
-            int i  = (node != null) ? nodes.indexOf(node) : -1;
-            if(i<0) {
-                throw new IOException("This slave appears to be removed while you were editing the configuration");
+        // use the queue lock until Nodes has a way of directly modifying a single node.
+        Queue.withLock(new Callable<Void, IOException>() {
+            public Void call() throws IOException {
+                List<Node> nodes = new ArrayList<Node>(app.getNodes());
+                Node node = getNode();
+                int i  = (node != null) ? nodes.indexOf(node) : -1;
+                if(i<0) {
+                    throw new IOException("This slave appears to be removed while you were editing the configuration");
+                }
+                nodes.set(i, newNode);
+                app.setNodes(nodes);
+                return null;
             }
-
-            nodes.set(i, newNode);
-            app.setNodes(nodes);
-        }
+        });
     }
 
     /**
