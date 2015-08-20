@@ -19,15 +19,6 @@ import javax.annotation.Nonnull;
 public abstract class PluginManagerStaplerOverride implements ExtensionPoint {
 
     /**
-     * Get the Jenkins plugin manager (avoids NPEs), convenience method for use in views
-     * @return The Jenkins {@link PluginManager} instance
-     */
-    protected static final @CheckForNull PluginManager getManager() {
-        Jenkins jenkins = Jenkins.getInstance();
-        return (jenkins != null) ? jenkins.getPluginManager() : null;
-    }
-
-    /**
      * Return all implementations of this extension point
      * @return All implementations of this extension point
      */
