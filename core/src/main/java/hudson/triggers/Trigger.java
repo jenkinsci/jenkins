@@ -57,6 +57,8 @@ import java.util.logging.Logger;
 
 import antlr.ANTLRException;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.Items;
 import jenkins.model.ParameterizedJobMixIn;
@@ -156,7 +158,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * periodically. This is useful when your trigger does
      * some polling work.
      */
-    protected Trigger(String cronTabSpec) throws ANTLRException {
+    protected Trigger(@Nonnull String cronTabSpec) throws ANTLRException {
         this.spec = cronTabSpec;
         this.tabs = CronTabList.create(cronTabSpec);
     }
@@ -316,7 +318,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * Returns a subset of {@link TriggerDescriptor}s that applys to the given item.
      */
     public static List<TriggerDescriptor> for_(Item i) {
-        List<TriggerDescriptor> r = new ArrayList<TriggerDescriptor>();
+        List<TriggerDescriptor> r = new ArrayList<>();
         for (TriggerDescriptor t : all()) {
             if(!t.isApplicable(i))  continue;
 
