@@ -39,6 +39,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.Nonnull;
+
 /**
  * {@link Trigger} that runs a job periodically.
  *
@@ -47,7 +49,7 @@ import org.kohsuke.stapler.QueryParameter;
 public class TimerTrigger extends Trigger<BuildableItem> {
 
     @DataBoundConstructor
-    public TimerTrigger(String spec) throws ANTLRException {
+    public TimerTrigger(@Nonnull String spec) throws ANTLRException {
         super(spec);
     }
 
