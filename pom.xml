@@ -501,7 +501,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.110</version>
+          <version>1.114</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
