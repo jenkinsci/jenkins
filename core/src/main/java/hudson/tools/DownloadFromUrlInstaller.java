@@ -4,6 +4,7 @@ import hudson.FilePath;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.slaves.NodeSpecific;
 import net.sf.json.JSONObject;
 
 import java.io.IOException;
@@ -62,6 +63,10 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         if(inst==null) {
             log.getLogger().println("Invalid tool ID "+id);
             return expected;
+        }
+
+        if (inst instanceof NodeSpecific) {
+            inst = (Installable) ((NodeSpecific) inst).forNode(node, log);
         }
 
         if(isUpToDate(expected,inst))
@@ -174,5 +179,18 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * URL.
          */
         public String url;
+    }
+
+    /**
+     * Convenient abstract class to implement a NodeSpecificInstallable based on an existing Installable
+     * @since TODO
+     */
+    public abstract class NodeSpecificInstallable extends Installable implements NodeSpecific<NodeSpecificInstallable> {
+
+        public NodeSpecificInstallable(Installable inst) {
+            this.id = inst.id;
+            this.name = inst.name;
+            this.url = inst.url;
+        }
     }
 }
