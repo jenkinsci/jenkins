@@ -2344,7 +2344,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * Note that the look up is case-insensitive.
      */
-    @Override public TopLevelItem getItem(String name) throws AccessDeniedException {
+    @CheckForNull
+    @Override
+    public TopLevelItem getItem(@Nullable String name) throws AccessDeniedException {
         if (name==null)    return null;
     	TopLevelItem item = items.get(name);
         if (item==null)
@@ -2372,7 +2374,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      null is interpreted as {@link Jenkins}. Base 'directory' of the interpretation.
      * @since 1.406
      */
-    public Item getItem(String pathName, ItemGroup context) {
+    @CheckForNull
+    public Item getItem(@Nullable String pathName, @Nullable ItemGroup context) {
         if (context==null)  context = this;
         if (pathName==null) return null;
 
@@ -2417,19 +2420,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return getItemByFullName(pathName);
     }
 
-    public final Item getItem(String pathName, Item context) {
-        return getItem(pathName,context!=null?context.getParent():null);
+    @CheckForNull
+    public final Item getItem(@Nullable String pathName, @Nullable Item context) {
+        return getItem(pathName, context!=null ? context.getParent() : null);
     }
 
-    public final <T extends Item> T getItem(String pathName, ItemGroup context, @Nonnull Class<T> type) {
+    @CheckForNull
+    public final <T extends Item> T getItem(@Nullable String pathName, @Nullable ItemGroup context, @Nonnull Class<T> type) {
         Item r = getItem(pathName, context);
         if (type.isInstance(r))
             return type.cast(r);
         return null;
     }
 
-    public final <T extends Item> T getItem(String pathName, Item context, Class<T> type) {
-        return getItem(pathName,context!=null?context.getParent():null,type);
+    @CheckForNull
+    public final <T extends Item> T getItem(@Nullable String pathName, @Nullable Item context, @Nonnull Class<T> type) {
+        return getItem(pathName, context!=null ? context.getParent() : null, type);
     }
 
     public File getRootDirFor(TopLevelItem child) {
@@ -2503,7 +2509,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * This is a short cut for deleting an existing job and adding a new one.
      */
-    public synchronized void putItem(TopLevelItem item) throws IOException, InterruptedException {
+    public synchronized void putItem(@Nonnull TopLevelItem item) throws IOException, InterruptedException {
         String name = item.getName();
         TopLevelItem old = items.get(name);
         if (old ==item)  return; // noop
