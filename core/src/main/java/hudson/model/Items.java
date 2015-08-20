@@ -204,7 +204,7 @@ public class Items {
         String[] c = context.getFullName().split("/");
         String[] p = path.split("/");
 
-        Stack<String> name = new Stack<String>();
+        Stack<String> name = new Stack<>();
         for (int i=0; i<c.length;i++) {
             if (i==0 && c[i].equals("")) continue;
             name.push(c[i]);
@@ -248,7 +248,7 @@ public class Items {
     public static String computeRelativeNamesAfterRenaming(String oldFullName, String newFullName, String relativeNames, ItemGroup context) {
 
         StringTokenizer tokens = new StringTokenizer(relativeNames,",");
-        List<String> newValue = new ArrayList<String>();
+        List<String> newValue = new ArrayList<>();
         while(tokens.hasMoreTokens()) {
             String relativeName = tokens.nextToken().trim();
             String canonicalName = getCanonicalName(context, relativeName);
@@ -267,7 +267,7 @@ public class Items {
     }
 
     // Had difficulty adapting the version in Functions to use no live items, so rewrote it:
-    static String getRelativeNameFrom(String itemFullName, String groupFullName) {
+    static String getRelativeNameFrom(@Nonnull String itemFullName, @Nonnull String groupFullName) {
         String[] itemFullNameA = itemFullName.isEmpty() ? new String[0] : itemFullName.split("/");
         String[] groupFullNameA = groupFullName.isEmpty() ? new String[0] : groupFullName.split("/");
         for (int i = 0; ; i++) {
@@ -354,7 +354,7 @@ public class Items {
         return r;
     }
     private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r) {
-        List<Item> items = new ArrayList<Item>(((ItemGroup<?>) root).getItems());
+        List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems());
         Collections.sort(items, new Comparator<Item>() {
             @Override public int compare(Item i1, Item i2) {
                 return name(i1).compareToIgnoreCase(name(i2));
