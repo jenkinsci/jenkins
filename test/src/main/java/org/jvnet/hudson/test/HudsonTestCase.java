@@ -1166,7 +1166,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Plain {@link HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
     public HtmlPage submit(HtmlForm form) throws Exception {
-        return (HtmlPage) HtmlFormUtil.submit(form);
+        return (HtmlPage) HtmlFormUtil.submit(form, last(form.getHtmlElementsByTagName("button")));
     }
 
     /**

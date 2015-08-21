@@ -28,8 +28,10 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.PageCreator;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
 
 /**
@@ -44,6 +46,17 @@ public class HudsonPageCreator extends DefaultPageCreator {
         if(contentType.equals("application/x-java-jnlp-file"))
             return createXmlPage(webResponse, webWindow);
         return super.createPage(webResponse, webWindow);
+    }
+
+    @Override
+    protected String determineContentType(String contentType, InputStream contentAsStream) throws IOException {
+        // Need to sidestep HtmlUnit default behaviour here. It defaults the response type to
+        // being text/plain (and so creates a TextPage) if the content type in the response is
+        // blank + is an empty response.
+        if (StringUtils.isEmpty(contentType)) {
+            return "text/html";
+        }
+        return super.determineContentType(contentType, contentAsStream);
     }
 
     public static final HudsonPageCreator INSTANCE = new HudsonPageCreator();
