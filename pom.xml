@@ -101,6 +101,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <test-annotations.version>1.2</test-annotations.version>
 
     <java.level>7</java.level>
   </properties>
@@ -243,7 +244,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.1</version>
+      <version>${test-annotations.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

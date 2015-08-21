@@ -108,9 +108,9 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.1</version>
-      <scope>compile</scope>
+      <version>${test-annotations.version}</version>
       <!-- in this module we need this as a compile scope, whereas in the parent it's test -->
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.mock-javamail</groupId>
