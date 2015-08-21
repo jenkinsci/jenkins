@@ -32,6 +32,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -39,7 +40,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
@@ -147,6 +147,7 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -159,6 +160,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
@@ -1828,8 +1830,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Extends {@link com.gargoylesoftware.htmlunit.WebClient} and provide convenience methods
      * for accessing Hudson.
      */
-    public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
+    public class WebClient extends com.gargoylesoftware.htmlunit.WebClient implements WebClientResponseLoadListenable {
         private static final long serialVersionUID = 5808915989048338267L;
+
+        private List<WebClientResponseLoadListener> loadListeners = new CopyOnWriteArrayList<>();
 
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
@@ -1890,6 +1894,30 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             //setTimeout(60*1000);
         }
 
+        @Override
+        public void addResponseLoadListener(@Nonnull WebClientResponseLoadListener listener) {
+            removeResponseLoadListener(listener);
+            loadListeners.add(listener);
+        }
+
+        @Override
+        public void removeResponseLoadListener(@Nonnull WebClientResponseLoadListener listener) {
+            loadListeners.remove(listener);
+        }
+
+        @Override
+        public Page loadWebResponseInto(WebResponse webResponse, WebWindow webWindow) throws IOException, FailingHttpStatusCodeException {
+            try {
+                return super.loadWebResponseInto(webResponse, webWindow);
+            } finally {
+                if (!loadListeners.isEmpty()) {
+                    for (WebClientResponseLoadListener listener : loadListeners) {
+                        listener.onLoad(webResponse, webWindow);
+                    }
+                }
+            }
+        }
+
         /**
          * Logs in to Jenkins.
          */
@@ -1925,7 +1953,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * and passwords. All the test accounts have the same user name and password.
          */
         public WebClient login(String username) throws Exception {
-            login(username,username);
+            login(username, username);
             return this;
         }
 
@@ -2008,7 +2036,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         }
 
         public HtmlPage getPage(Node item) throws IOException, SAXException {
-            return getPage(item,"");
+            return getPage(item, "");
         }
 
         public HtmlPage getPage(Node item, String relative) throws IOException, SAXException {
@@ -2127,7 +2155,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             NameValuePair crumb = new NameValuePair(
                     jenkins.getCrumbIssuer().getDescriptor().getCrumbRequestField(),
                     jenkins.getCrumbIssuer().getCrumb( null ));
-            req.setRequestParameters(Arrays.asList( crumb ));
+            req.setRequestParameters(Arrays.asList(crumb));
             return req;
         }
 

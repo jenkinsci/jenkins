@@ -26,6 +26,8 @@ package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
@@ -124,6 +126,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
@@ -1622,8 +1625,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * Extends {@link com.gargoylesoftware.htmlunit.WebClient} and provide convenience methods
      * for accessing Hudson.
      */
-    public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
+    public class WebClient extends com.gargoylesoftware.htmlunit.WebClient implements WebClientResponseLoadListenable {
         private static final long serialVersionUID = 5808915989048338267L;
+
+        private List<WebClientResponseLoadListener> loadListeners = new CopyOnWriteArrayList<>();
 
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
@@ -1685,6 +1690,31 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             // false-positive timeout on slow systems
             //setTimeout(60*1000);
         }
+
+        @Override
+        public void addResponseLoadListener(@Nonnull WebClientResponseLoadListener listener) {
+            removeResponseLoadListener(listener);
+            loadListeners.add(listener);
+        }
+
+        @Override
+        public void removeResponseLoadListener(@Nonnull WebClientResponseLoadListener listener) {
+            loadListeners.remove(listener);
+        }
+
+        @Override
+        public Page loadWebResponseInto(WebResponse webResponse, WebWindow webWindow) throws IOException, FailingHttpStatusCodeException {
+            try {
+                return super.loadWebResponseInto(webResponse, webWindow);
+            } finally {
+                if (!loadListeners.isEmpty()) {
+                    for (WebClientResponseLoadListener listener : loadListeners) {
+                        listener.onLoad(webResponse, webWindow);
+                    }
+                }
+            }
+        }
+
 
         /**
          * Logs in to Jenkins.
