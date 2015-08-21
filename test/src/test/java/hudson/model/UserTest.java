@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -451,9 +452,9 @@ public class UserTest {
             j.submit(form);
             fail("User should not be able to delete himself");
         }
-        catch(ScriptException e){
+        catch(FailingHttpStatusCodeException e){
             //ok exception should be thrown
-            Assert.assertTrue(e.getMessage().startsWith("400"));
+            Assert.assertEquals(400, e.getStatusCode());
         }
         assertTrue("User should not delete himself from memory.", User.getAll().contains(user));
         assertTrue("User should not delete his persistent data.", user.getConfigFile().exists());
