@@ -1899,6 +1899,14 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             return login(username,password,false);
         }
 
+        public boolean isJavaScriptEnabled() {
+            return getOptions().isJavaScriptEnabled();
+        }
+
+        public void setJavaScriptEnabled(boolean enabled) {
+            getOptions().setJavaScriptEnabled(enabled);
+        }
+
         /**
          * Logs in to Jenkins.
          */
