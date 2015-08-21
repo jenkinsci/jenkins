@@ -33,12 +33,14 @@ import org.jvnet.hudson.test.TestExtension;
 
 public class JenkinsRuleTimeoutTest {
 
-    @Rule public JenkinsRule r = new JenkinsRule();
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
     {
         r.timeout = 10; // let us not wait three minutes!
     }
 
-    @Test public void hangInterruptiblyInTest() throws Exception {
+    @Test
+    public void hangInterruptiblyInTest() throws Exception {
         try {
             hangInterruptibly();
         } catch (InterruptedException x) {
@@ -46,16 +48,21 @@ public class JenkinsRuleTimeoutTest {
         }
     }
 
-    @Ignore("TODO ought to use the idiom from org.junit.internal.runners.statements.FailOnTimeout: run test in its own thread so we can fail even if it does not respond to interruptions")
-    @Test public void hangUninterruptiblyInTest() throws Exception {
+    @Ignore("TODO ought to use the idiom from org.junit.internal.runners.statements.FailOnTimeout: " +
+            "run test in its own thread so we can fail even if it does not respond to interruptions")
+    @Test
+    public void hangUninterruptiblyInTest() throws Exception {
         hangUninterruptibly();
     }
 
-    @Test public void hangInterruptiblyInShutdown() throws Exception {
+    @Test
+    public void hangInterruptiblyInShutdown() throws Exception {
         System.err.println("Test itself passed…");
     }
-    @TestExtension("hangInterruptiblyInShutdown") public static class HangsInterruptibly extends ItemListener {
-        @Override public void onBeforeShutdown() {
+    @TestExtension("hangInterruptiblyInShutdown")
+    public static class HangsInterruptibly extends ItemListener {
+        @Override
+        public void onBeforeShutdown() {
             try {
                 hangInterruptibly();
             } catch (InterruptedException x) {
@@ -66,11 +73,14 @@ public class JenkinsRuleTimeoutTest {
     }
 
     @Ignore("TODO ditto")
-    @Test public void hangUninterruptiblyInShutdown() throws Exception {
+    @Test
+    public void hangUninterruptiblyInShutdown() throws Exception {
         System.err.println("Test itself passed…");
     }
-    @TestExtension("hangUninterruptiblyInShutdown") public static class HangsUninterruptibly extends ItemListener {
-        @Override public void onBeforeShutdown() {
+    @TestExtension("hangUninterruptiblyInShutdown")
+    public static class HangsUninterruptibly extends ItemListener {
+        @Override
+        public void onBeforeShutdown() {
             hangUninterruptibly();
         }
 
@@ -86,7 +96,8 @@ public class JenkinsRuleTimeoutTest {
         final Object a = new Object();
         final Object b = new Object();
         new Thread("other") {
-            @Override public void run() {
+            @Override
+            public void run() {
                 synchronized (a) {
                     try {
                         Thread.sleep(3000);
