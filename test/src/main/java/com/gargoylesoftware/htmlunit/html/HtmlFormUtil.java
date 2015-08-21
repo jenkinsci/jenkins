@@ -26,12 +26,7 @@ package com.gargoylesoftware.htmlunit.html;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import org.junit.Assert;
-import org.jvnet.hudson.test.WebClientResponseLoadListenable;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 
@@ -53,34 +48,22 @@ public class HtmlFormUtil {
 
         final HtmlPage htmlPage = (HtmlPage) htmlForm.getPage();
         final WebClient webClient = htmlPage.getWebClient();
-        Page resultPage = null;
 
         try {
-            resultPage = htmlForm.submit((SubmittableElement) submitElement);
+            htmlForm.submit((SubmittableElement) submitElement);
         } finally {
             // The HtmlForm submit doesn't really do anything. It just adds a "LoadJob"
             // to an internal queue. What we are doing here is manually forcing the load of
-            // the response for that submit LoadJob and listening in on the WebClient
-            // instance for the response, allowing us to create the correct HtmlPage
-            // object for return to the tests.
-            if (webClient instanceof WebClientResponseLoadListenable) {
-                FormSubmitResponseLoadListener loadListener = new FormSubmitResponseLoadListener();
+            // the response for that submit LoadJob and then getting the enclosing page
+            // from the current window on the WebClient, allowing us to return the correct
+            // HtmlPage object to the test.
+            webClient.loadDownloadedResponses();
+            Page resultPage = webClient.getCurrentWindow().getEnclosedPage();
 
-                ((WebClientResponseLoadListenable) webClient).addResponseLoadListener(loadListener);
-                try {
-                    webClient.loadDownloadedResponses();
-                    resultPage = loadListener.getPage();
-                } finally {
-                    ((WebClientResponseLoadListenable) webClient).removeResponseLoadListener(loadListener);
-                }
-
-                if (resultPage == htmlPage) {
-                    // We're still on the same page (form submit didn't bring us anywhere).
-                    // Hackery. Seems like YUI is messing us about.
-                    return submitElement.click();
-                }
-            } else {
-                Assert.fail("WebClient doesn't implement WebClientResponseLoadListenable.");
+            if (resultPage == htmlPage) {
+                // We're still on the same page (form submit didn't bring us anywhere).
+                // Hackery. Seems like YUI is messing us about.
+                return submitElement.click();
             }
 
             return resultPage;
@@ -124,19 +107,5 @@ public class HtmlFormUtil {
             }
         }
         throw new ElementNotFoundException("button", "caption", caption);
-    }
-
-    private static class FormSubmitResponseLoadListener implements WebClientResponseLoadListenable.WebClientResponseLoadListener {
-        private WebWindow webWindow;
-        @Override
-        public void onLoad(@Nonnull WebResponse webResponse, @Nonnull WebWindow webWindow) {
-            this.webWindow = webWindow;
-        }
-        private Page getPage() {
-            if (webWindow == null) {
-                Assert.fail("Expected FormSubmitResponseLoadListener to be called on form submit.");
-            }
-            return webWindow.getEnclosedPage();
-        }
     }
 }
