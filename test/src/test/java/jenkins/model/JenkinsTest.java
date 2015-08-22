@@ -288,12 +288,10 @@ public class JenkinsTest {
         wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
         assertNull(System.getProperty("hack"));
         WebRequest req = new WebRequest(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
-        req.setEncodingType(null);
         wc.getPage(wc.addCrumb(req));
         assertEquals("me", System.getProperty("hack"));
         wc.assertFails("scriptText?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
         req = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
-        req.setEncodingType(null);
         wc.getPage(wc.addCrumb(req));
         assertEquals("you", System.getProperty("huck"));
         wc.login("bob");
@@ -439,14 +437,15 @@ public class JenkinsTest {
 
     @Test
     public void runScriptOnOfflineComputer() throws Exception {
-        DumbSlave slave = j.createSlave();
+        DumbSlave slave = j.createSlave(true);
+        j.disconnectSlave(slave);
+
         URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
 
         WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         WebRequest req = new WebRequest(url, HttpMethod.POST);
-        req.setEncodingType(null);
         Page page = wc.getPage(wc.addCrumb(req));
         WebResponse rsp = page.getWebResponse();
 

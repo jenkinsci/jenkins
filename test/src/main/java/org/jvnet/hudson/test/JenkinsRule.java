@@ -101,6 +101,7 @@ import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildWrapper;
@@ -795,6 +796,31 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     @Deprecated
     public File createTmpDir() throws IOException {
         return env.temporaryDirectoryAllocator.allocate();
+    }
+
+    public DumbSlave createSlave(boolean waitForChannelConnect) throws Exception {
+        DumbSlave slave = createSlave();
+        if (waitForChannelConnect) {
+            long start = System.currentTimeMillis();
+            while (slave.getChannel() == null) {
+                if (System.currentTimeMillis() > (start + 10000)) {
+                    throw new IllegalStateException("Timed out waiting on DumbSlave channel to connect.");
+                }
+                Thread.sleep(200);
+            }
+        }
+        return slave;
+    }
+
+    public void disconnectSlave(DumbSlave slave) throws Exception {
+        slave.getComputer().disconnect(new OfflineCause.ChannelTermination(new Exception("terminate")));
+        long start = System.currentTimeMillis();
+        while (slave.getChannel() != null) {
+            if (System.currentTimeMillis() > (start + 10000)) {
+                throw new IllegalStateException("Timed out waiting on DumbSlave channel to disconnect.");
+            }
+            Thread.sleep(200);
+        }
     }
 
     public DumbSlave createSlave() throws Exception {
