@@ -26,6 +26,8 @@ package com.gargoylesoftware.htmlunit.html;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebClientUtil;
+import com.gargoylesoftware.htmlunit.util.WebClientUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,32 +43,37 @@ public class HtmlFormUtil {
     }
 
     public static Page submit(HtmlForm htmlForm, HtmlElement submitElement) throws IOException {
-        if (submitElement != null && !(submitElement instanceof SubmittableElement)) {
-            // Just click and return
-            return submitElement.click();
-        }
-
         final HtmlPage htmlPage = (HtmlPage) htmlForm.getPage();
         final WebClient webClient = htmlPage.getWebClient();
 
         try {
-            htmlForm.submit((SubmittableElement) submitElement);
-        } finally {
-            // The HtmlForm submit doesn't really do anything. It just adds a "LoadJob"
-            // to an internal queue. What we are doing here is manually forcing the load of
-            // the response for that submit LoadJob and then getting the enclosing page
-            // from the current window on the WebClient, allowing us to return the correct
-            // HtmlPage object to the test.
-            webClient.loadDownloadedResponses();
-            Page resultPage = webClient.getCurrentWindow().getEnclosedPage();
-
-            if (resultPage == htmlPage) {
-                // We're still on the same page (form submit didn't bring us anywhere).
-                // Hackery. Seems like YUI is messing us about.
+            if (submitElement != null && !(submitElement instanceof SubmittableElement)) {
+                // Just click and return
                 return submitElement.click();
             }
 
-            return resultPage;
+            try {
+                htmlForm.submit((SubmittableElement) submitElement);
+            } finally {
+                // The HtmlForm submit doesn't really do anything. It just adds a "LoadJob"
+                // to an internal queue. What we are doing here is manually forcing the load of
+                // the response for that submit LoadJob and then getting the enclosing page
+                // from the current window on the WebClient, allowing us to return the correct
+                // HtmlPage object to the test.
+                webClient.loadDownloadedResponses();
+                Page resultPage = webClient.getCurrentWindow().getEnclosedPage();
+
+                if (resultPage == htmlPage) {
+                    // We're still on the same page (form submit didn't bring us anywhere).
+                    // Hackery. Seems like YUI is messing us about.
+                    return submitElement.click();
+                }
+
+                return resultPage;
+            }
+        } finally {
+            // Make sure all background JS has executed.
+            WebClientUtil.waitForJSExec(webClient);
         }
     }
 
