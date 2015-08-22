@@ -24,6 +24,7 @@
 package lib.layout;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
+import com.gargoylesoftware.htmlunit.WebClientUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -42,9 +43,11 @@ public class RenderOnDemandTest extends HudsonTestCase {
         HtmlPage p = createWebClient().goTo("self/testBehaviour");
 
         p.executeJavaScript("renderOnDemand(document.getElementsBySelector('.lazy')[0])");
+        WebClientUtil.waitForJSExec(p.getWebClient());
         // all AJAX calls complete before the above method returns
 
         ScriptResult r = p.executeJavaScript("var r=document.getElementsBySelector('DIV.a'); r[0].innerHTML+r[1].innerHTML+r[2].innerHTML");
+        WebClientUtil.waitForJSExec(p.getWebClient());
         assertEquals("AlphaBravoCharlie",r.getJavaScriptResult().toString());
     }
 
@@ -77,13 +80,16 @@ public class RenderOnDemandTest extends HudsonTestCase {
         assertNull(p.getElementById("loaded"));
 
         ((HtmlElement)p.getElementById("button")).click();
+        WebClientUtil.waitForJSExec(p.getWebClient());
         // all AJAX calls complete before the above method returns
-
         assertNotNull(p.getElementById("loaded"));
         ScriptResult r = p.executeJavaScript("x");
+        WebClientUtil.waitForJSExec(p.getWebClient());
+
         assertEquals("xxx",r.getJavaScriptResult().toString());
 
         r = p.executeJavaScript("y");
+        WebClientUtil.waitForJSExec(p.getWebClient());
         assertEquals("yyy",r.getJavaScriptResult().toString());
 
         // if you want to test this in the browser
