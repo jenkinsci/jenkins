@@ -167,7 +167,6 @@ public class HudsonTest {
 
         // try to delete it by hitting the final URL directly
         WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
-        req.setEncodingType(null);
         try {
             wc.getPage(wc.addCrumb(req));
             fail("Error code expected");
