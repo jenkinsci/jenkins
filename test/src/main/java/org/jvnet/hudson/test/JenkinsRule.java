@@ -32,7 +32,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
+import com.gargoylesoftware.htmlunit.WebResponseListener;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -148,7 +148,6 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -161,7 +160,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
@@ -1859,6 +1857,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
         private static final long serialVersionUID = 5808915989048338267L;
 
+        private List<WebResponseListener> webResponseListeners = new ArrayList<>();
+
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
             // so trying something else, until we discover another problem.
@@ -1916,6 +1916,22 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             // avoid a hang by setting a time out. It should be long enough to prevent
             // false-positive timeout on slow systems
             //setTimeout(60*1000);
+        }
+
+
+        public void addWebResponseListener(WebResponseListener listener) {
+            webResponseListeners.add(listener);
+        }
+
+        @Override
+        public WebResponse loadWebResponse(final WebRequest webRequest) throws IOException {
+            WebResponse webResponse = super.loadWebResponse(webRequest);
+            if (!webResponseListeners.isEmpty()) {
+                for (WebResponseListener listener : webResponseListeners) {
+                    listener.onLoadWebResponse(webRequest, webResponse);
+                }
+            }
+            return webResponse;
         }
 
         /**
