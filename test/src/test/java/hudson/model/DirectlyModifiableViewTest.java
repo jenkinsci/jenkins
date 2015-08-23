@@ -191,7 +191,6 @@ public class DirectlyModifiableViewTest {
                 new URL(j.jenkins.getRootUrl() + view.getUrl() + path),
                 HttpMethod.POST
         );
-        req.setEncodingType(null);
 
         return wc.getPage(wc.addCrumb(req));
     }
