@@ -23,6 +23,13 @@
  */
 package com.gargoylesoftware.htmlunit;
 
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
+import org.junit.Assert;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
@@ -33,6 +40,52 @@ public class WebClientUtil {
     }
 
     public static void waitForJSExec(WebClient webClient, long timeout) {
+        webClient.getJavaScriptEngine().processPostponedActions();
         webClient.waitForBackgroundJavaScript(timeout);
+    }
+
+    public static ExceptionListener addExceptionListener(WebClient webClient) {
+        ExceptionListener exceptionListener = new ExceptionListener(webClient);
+        webClient.setJavaScriptErrorListener(exceptionListener);
+        return exceptionListener;
+    }
+
+    public static class ExceptionListener implements JavaScriptErrorListener {
+
+        private final WebClient webClient;
+        private ScriptException scriptException;
+
+        private ExceptionListener(WebClient webClient) {
+            this.webClient = webClient;
+        }
+
+        public ScriptException getScriptException() {
+            return scriptException;
+        }
+
+        public ScriptException getExpectedScriptException() {
+            assertHasException();
+            return scriptException;
+        }
+
+        @Override
+        public void scriptException(HtmlPage htmlPage, ScriptException scriptException) {
+            this.scriptException = scriptException;
+        }
+
+        public void assertHasException() {
+            WebClientUtil.waitForJSExec(webClient);
+            Assert.assertNotNull("A JavaScript Exception was expected.", scriptException);
+        }
+
+        @Override
+        public void timeoutError(HtmlPage htmlPage, long allowedTime, long executionTime) {
+        }
+        @Override
+        public void malformedScriptURL(HtmlPage htmlPage, String url, MalformedURLException malformedURLException) {
+        }
+        @Override
+        public void loadScriptError(HtmlPage htmlPage, URL scriptUrl, Exception exception) {
+        }
     }
 }
