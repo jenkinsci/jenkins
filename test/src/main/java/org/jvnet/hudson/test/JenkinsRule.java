@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebClientUtil;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebResponseListener;
@@ -2085,7 +2086,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         @SuppressWarnings("unchecked")
         @Override
         public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
-            return super.getPage(url);
+            try {
+                return super.getPage(url);
+            } finally {
+                WebClientUtil.waitForJSExec(this);
+            }
         }
 
         /**
@@ -2117,6 +2122,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             Page p;
             try {
                 p = super.getPage(getContextPath() + relative);
+                WebClientUtil.waitForJSExec(this);
             } catch (IOException x) {
                 Throwable cause = x.getCause();
                 if (cause instanceof SocketTimeoutException) {
