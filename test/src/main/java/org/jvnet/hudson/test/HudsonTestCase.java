@@ -25,13 +25,11 @@
 package org.jvnet.hudson.test;
 
 import com.gargoylesoftware.htmlunit.AlertHandler;
+import com.gargoylesoftware.htmlunit.WebClientUtil;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.google.inject.Injector;
 
 import hudson.ClassicPluginStrategy;
@@ -1818,7 +1816,11 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         @SuppressWarnings("unchecked")
         @Override
         public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
-            return super.getPage(url);
+            try {
+                return super.getPage(url);
+            } finally {
+                WebClientUtil.waitForJSExec(this);
+            }
         }
 
         /**
@@ -1842,6 +1844,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             Page p;
             try {
                 p = super.getPage(getContextPath() + relative);
+                WebClientUtil.waitForJSExec(this);
             } catch (IOException x) {
                 if (x.getCause() != null) {
                     x.getCause().printStackTrace();
