@@ -74,13 +74,7 @@ final class TarArchiver extends Archiver {
             // ignore
         }
 
-        try {
-            StringBuffer linkName = (StringBuffer) LINKNAME_FIELD.get(e);
-            linkName.setLength(0);
-            linkName.append(target);
-        } catch (IllegalAccessException x) {
-            throw new IOException("Failed to set linkName", x);
-        }
+        e.setLinkName(target);
 
         tar.putNextEntry(e);
         entriesWritten++;
