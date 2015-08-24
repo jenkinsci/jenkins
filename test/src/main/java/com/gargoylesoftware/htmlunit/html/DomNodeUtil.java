@@ -23,6 +23,7 @@
  */
 package com.gargoylesoftware.htmlunit.html;
 
+import com.gargoylesoftware.htmlunit.WebClientUtil;
 import com.gargoylesoftware.htmlunit.html.xpath.XPathUtils;
 
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.List;
 public class DomNodeUtil {
 
     public static <E> List<E> getByXPath(final DomNode domNode, final String xpathExpr) {
+        WebClientUtil.waitForJSExec(domNode.getPage().getWebClient());
         return (List) XPathUtils.getByXPath(domNode, xpathExpr, null);
     }
 
@@ -41,6 +43,7 @@ public class DomNodeUtil {
     }
 
     public static <X> X selectSingleNode(final DomNode domNode, final String xpathExpr) {
+        WebClientUtil.waitForJSExec(domNode.getPage().getWebClient());
         return domNode.<X>getFirstByXPath(xpathExpr);
     }
 }
