@@ -426,11 +426,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                     tl.onTearDown();
             }
 
-            if (timeoutTimer!=null) {
-                timeoutTimer.cancel();
-                timeoutTimer = null;
-            }
-
             // cancel pending asynchronous operations, although this doesn't really seem to be working
             for (WebClient client : clients) {
                 // unload the page to cancel asynchronous operations
@@ -465,6 +460,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 env.dispose();
             } catch (Exception x) {
                 x.printStackTrace();
+            }
+
+            if (timeoutTimer != null) {
+                timeoutTimer.cancel();
+                timeoutTimer = null;
             }
 
             // Hudson creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
