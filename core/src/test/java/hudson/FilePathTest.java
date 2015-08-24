@@ -371,7 +371,7 @@ public class FilePathTest {
         // Decompress
         FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
         final FilePath outFile = outDir.child(tempFile.getName());
-        tmpDirPath.child( filePrefix + ".tar").untar(outDir, TarCompression.NONE);
+        tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE);
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
     }
