@@ -23,7 +23,6 @@
  */
 package com.gargoylesoftware.htmlunit;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
 import org.junit.Assert;
 
@@ -69,7 +68,7 @@ public class WebClientUtil {
         }
 
         @Override
-        public void scriptException(HtmlPage htmlPage, ScriptException scriptException) {
+        public void scriptException(InteractivePage htmlPage, ScriptException scriptException) {
             this.scriptException = scriptException;
         }
 
@@ -79,13 +78,13 @@ public class WebClientUtil {
         }
 
         @Override
-        public void timeoutError(HtmlPage htmlPage, long allowedTime, long executionTime) {
+        public void timeoutError(InteractivePage htmlPage, long allowedTime, long executionTime) {
         }
         @Override
-        public void malformedScriptURL(HtmlPage htmlPage, String url, MalformedURLException malformedURLException) {
+        public void malformedScriptURL(InteractivePage htmlPage, String url, MalformedURLException malformedURLException) {
         }
         @Override
-        public void loadScriptError(HtmlPage htmlPage, URL scriptUrl, Exception exception) {
+        public void loadScriptError(InteractivePage htmlPage, URL scriptUrl, Exception exception) {
         }
     }
 }
