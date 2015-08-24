@@ -205,6 +205,7 @@ public class RobustReflectionConverterTest {
                     wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
                     HttpMethod.POST
             );
+            req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
             
@@ -237,6 +238,7 @@ public class RobustReflectionConverterTest {
                     wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
                     HttpMethod.POST
             );
+            req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
             
             try {
