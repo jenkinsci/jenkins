@@ -1711,6 +1711,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Get the {@link Nodes} object that handles maintaining individual {@link Node}s.
+     * @return The Nodes object.
+     */
+    @Restricted(NoExternalUse.class)
+    public Nodes getNodesObject() {
+        // TODO replace this with something better when we properly expose Nodes.
+        return nodes;
+    }
+
+    /**
      * Adds one more {@link Node} to Jenkins.
      */
     public void addNode(Node n) throws IOException {
