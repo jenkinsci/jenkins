@@ -2,6 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Martin Eigenbrodt
+ *               2015 Kanstantsin Shautsou
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +39,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.Nonnull;
+
 /**
  * {@link Trigger} that runs a job periodically.
  *
@@ -46,12 +49,16 @@ import org.kohsuke.stapler.QueryParameter;
 public class TimerTrigger extends Trigger<BuildableItem> {
 
     @DataBoundConstructor
-    public TimerTrigger(String spec) throws ANTLRException {
+    public TimerTrigger(@Nonnull String spec) throws ANTLRException {
         super(spec);
     }
 
     @Override
     public void run() {
+        if (job == null) {
+            return;
+        }
+
         job.scheduleBuild(0, new TimerTriggerCause());
     }
 
