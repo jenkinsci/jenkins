@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
  * In both cases, this is simply done by defining a resource or method that matches the existing one
  *
  * @author Sam Van Oort
- * @since 1.626
+ * @since 1.627
  */
 public abstract class PluginManagerStaplerOverride implements ExtensionPoint {
 

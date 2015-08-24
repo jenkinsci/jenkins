@@ -219,7 +219,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Find all registered overrides (intended to allow overriding/adding views)
      * @return List of extensions
-     * @since 1.626
+     * @since 1.627
      */
     @Override
     public Collection<PluginManagerStaplerOverride> getOverrides() {
