@@ -51,7 +51,6 @@ public class LoginRedirectTest extends HudsonTestCase {
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         HtmlPage p = wc.goTo("/");
-        //System.out.println(p.getDocumentURI());
         assertEquals(200, p.getWebResponse().getStatusCode());
         HtmlForm form = p.getFormByName("login");
         form.getInputByName("j_username").setValueAttribute("alice");

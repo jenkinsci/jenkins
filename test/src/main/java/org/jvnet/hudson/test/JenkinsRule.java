@@ -1856,7 +1856,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * for accessing Hudson.
      */
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
-        private static final long serialVersionUID = 5808915989048338267L;
+        private static final long serialVersionUID = -7944895389154288881L;
 
         private List<WebResponseListener> webResponseListeners = new ArrayList<>();
 
@@ -1870,7 +1870,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             clients.add(this);
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
-                private static final long serialVersionUID = -5844060943564822678L;
+                private static final long serialVersionUID = -76034615893907856L;
                 public boolean processSynchron(HtmlPage page, WebRequest settings, boolean async) {
                     return false;
                 }

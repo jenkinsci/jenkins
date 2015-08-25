@@ -101,8 +101,8 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
 
         // should be no warning/error now
         HtmlPage manage = wc.goTo("manage");
-        assertEquals(0,DomNodeUtil.selectNodes(manage, "//*[class='error']").size());
-        assertEquals(0,DomNodeUtil.selectNodes(manage, "//*[class='warning']").size());
+        assertEquals(0, DomNodeUtil.selectNodes(manage, "//*[class='error']").size());
+        assertEquals(0, DomNodeUtil.selectNodes(manage, "//*[class='warning']").size());
 
         // and the data should be rewritten
         verifyRewrite(jenkins.getRootDir());
@@ -141,8 +141,8 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
 
         // should be no warning/error now
         HtmlPage manage = wc.goTo("/manage");
-        assertEquals(0,DomNodeUtil.selectNodes(manage, "//*[class='error']").size());
-        assertEquals(0,DomNodeUtil.selectNodes(manage, "//*[class='warning']").size());
+        assertEquals(0, DomNodeUtil.selectNodes(manage, "//*[class='error']").size());
+        assertEquals(0, DomNodeUtil.selectNodes(manage, "//*[class='warning']").size());
     }
 
     private String encryptOld(String str) throws Exception {

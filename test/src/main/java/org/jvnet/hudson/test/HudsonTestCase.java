@@ -1176,7 +1176,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
     public HtmlPage submit(HtmlForm form, String name) throws Exception {
         for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
             HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
-            if(e instanceof HtmlButton && p.getAttribute("name").equals(name)) {
+            if (e instanceof HtmlButton && p.getAttribute("name").equals(name)) {
                 return (HtmlPage)HtmlFormUtil.submit(form, (HtmlButton) e);
             }
         }
@@ -1624,7 +1624,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
      * for accessing Hudson.
      */
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
-        private static final long serialVersionUID = 5808915989048338267L;
+        private static final long serialVersionUID = 8720028298174337333L;
 
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
@@ -1635,7 +1635,7 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             clients.add(this);
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
-                private static final long serialVersionUID = -5844060943564822678L;
+                private static final long serialVersionUID = 6730107519583349963L;
                 public boolean processSynchron(HtmlPage page, WebRequest settings, boolean async) {
                     return false;
                 }
