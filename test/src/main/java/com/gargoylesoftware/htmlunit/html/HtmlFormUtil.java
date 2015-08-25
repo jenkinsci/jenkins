@@ -27,21 +27,37 @@ import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebClientUtil;
-import com.gargoylesoftware.htmlunit.util.WebClientUtils;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
+ * {@link HtmlForm} helper functions.
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class HtmlFormUtil {
 
+    /**
+     * Submit the supplied {@link HtmlForm}.
+     * <p>
+     * Locates the submit element/button on the form.
+     * @param htmlForm The {@link HtmlForm}.
+     * @return The submit result page.
+     * @throws IOException Error performing submit.
+     */
     public static Page submit(final HtmlForm htmlForm) throws IOException {
         HtmlElement submitElement = getSubmitButton(htmlForm);
         return submit(htmlForm, submitElement);
     }
 
+    /**
+     * Submit the supplied {@link HtmlForm} via the supplied submit element.
+     * @param htmlForm The {@link HtmlForm}.
+     * @param submitElement The element through which the submit should be performed.
+     * @return The submit result page.
+     * @throws IOException Error performing submit.
+     */
     public static Page submit(HtmlForm htmlForm, HtmlElement submitElement) throws IOException {
         final HtmlPage htmlPage = (HtmlPage) htmlForm.getPage();
         final WebClient webClient = htmlPage.getWebClient();
@@ -64,12 +80,10 @@ public class HtmlFormUtil {
                 Page resultPage = webClient.getCurrentWindow().getEnclosedPage();
 
                 if (resultPage == htmlPage) {
-                    // We're still on the same page (form submit didn't bring us anywhere).
-                    // Hackery. Seems like YUI is messing us about.
-                    return submitElement.click();
+                    return HtmlElementUtil.click(submitElement);
+                } else {
+                    return resultPage;
                 }
-
-                return resultPage;
             }
         } finally {
             // Make sure all background JS has executed.
@@ -107,6 +121,13 @@ public class HtmlFormUtil {
         return null;
     }
 
+    /**
+     * Get the form button having the specified text/caption.
+     * @param htmlForm The form containing the button.
+     * @param caption The button text/caption being searched for.
+     * @return The button if found.
+     * @throws ElementNotFoundException Failed to find the button on the form.
+     */
     public static HtmlButton getButtonByCaption(final HtmlForm htmlForm, final String caption) throws ElementNotFoundException {
         for (HtmlElement b : htmlForm.getHtmlElementsByTagName("button")) {
             if(b instanceof HtmlButton && b.getTextContent().trim().equals(caption)) {

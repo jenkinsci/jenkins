@@ -30,25 +30,48 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
+ * {@link WebClient} helper methods.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class WebClientUtil {
 
+    /**
+     * Wait for all async JavaScript tasks associated with the supplied {@link WebClient} instance
+     * to complete.
+     * <p>
+     * Waits for 10 seconds before timing out.
+     * @param webClient The {@link WebClient} instance.
+     */
     public static void waitForJSExec(WebClient webClient) {
         waitForJSExec(webClient, 10000);
     }
 
+    /**
+     * Wait for all async JavaScript tasks associated with the supplied {@link WebClient} instance
+     * to complete.
+     * @param webClient The {@link WebClient} instance.
+     * @param timeout The timeout in milliseconds.                  
+     */
     public static void waitForJSExec(WebClient webClient, long timeout) {
         webClient.getJavaScriptEngine().processPostponedActions();
         webClient.waitForBackgroundJavaScript(timeout);
     }
 
+    /**
+     * Create and add an {@link ExceptionListener} to the {@link WebClient} instance.
+     * @param webClient The {@link WebClient} instance.
+     * @return The {@link ExceptionListener}.
+     */
     public static ExceptionListener addExceptionListener(WebClient webClient) {
         ExceptionListener exceptionListener = new ExceptionListener(webClient);
         webClient.setJavaScriptErrorListener(exceptionListener);
         return exceptionListener;
     }
 
+    /**
+     * JavaScript Exception listener.
+     * @see #addExceptionListener(WebClient)
+     */
     public static class ExceptionListener implements JavaScriptErrorListener {
 
         private final WebClient webClient;
@@ -58,31 +81,57 @@ public class WebClientUtil {
             this.webClient = webClient;
         }
 
+        /**
+         * Get the last {@link ScriptException}.
+         * @return The last {@link ScriptException}, or {@code null} if none happened.
+         */
         public ScriptException getScriptException() {
             return scriptException;
         }
 
+        /**
+         * Get the last {@link ScriptException}.
+         * <p>
+         * Performs a call to {@link #assertHasException()}.
+         * @return The last {@link ScriptException}.
+         */
         public ScriptException getExpectedScriptException() {
             assertHasException();
             return scriptException;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void scriptException(InteractivePage htmlPage, ScriptException scriptException) {
             this.scriptException = scriptException;
         }
 
+        /**
+         * Assert that a {@link ScriptException} occurred within the JavaScript executing
+         * on the associated {@link WebClient}.
+         */
         public void assertHasException() {
             WebClientUtil.waitForJSExec(webClient);
             Assert.assertNotNull("A JavaScript Exception was expected.", scriptException);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void timeoutError(InteractivePage htmlPage, long allowedTime, long executionTime) {
         }
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void malformedScriptURL(InteractivePage htmlPage, String url, MalformedURLException malformedURLException) {
         }
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void loadScriptError(InteractivePage htmlPage, URL scriptUrl, Exception exception) {
         }

@@ -29,19 +29,38 @@ import com.gargoylesoftware.htmlunit.html.xpath.XPathUtils;
 import java.util.List;
 
 /**
+ * {@link DomNode} helper methods.
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class DomNodeUtil {
 
-    public static <E> List<E> getByXPath(final DomNode domNode, final String xpathExpr) {
+    /**
+     * Evaluates an XPath expression from the specified node, returning the resultant nodes.
+     * <p>
+     * Calls {@link WebClientUtil#waitForJSExec(com.gargoylesoftware.htmlunit.WebClient)} before
+     * executing the query.
+     * 
+     * @param domNode the node to start searching from
+     * @param xpathExpr the XPath expression
+     * @return the list of objects found.
+     */
+    public static <E> List<E> selectNodes(final DomNode domNode, final String xpathExpr) {
         WebClientUtil.waitForJSExec(domNode.getPage().getWebClient());
         return (List) XPathUtils.getByXPath(domNode, xpathExpr, null);
     }
 
-    public static <E> List<E> selectNodes(final DomNode domNode, final String xpathExpr) {
-        return getByXPath(domNode, xpathExpr);
-    }
-
+    /**
+     * Evaluates the specified XPath expression from this node, returning the first matching element,
+     * or <tt>null</tt> if no node matches the specified XPath expression.
+     * <p>
+     * Calls {@link WebClientUtil#waitForJSExec(com.gargoylesoftware.htmlunit.WebClient)} before
+     * executing the query.
+     *
+     * @param domNode the node to start searching from
+     * @param xpathExpr the XPath expression
+     * @return the first element matching the specified XPath expression
+     */
     public static <X> X selectSingleNode(final DomNode domNode, final String xpathExpr) {
         WebClientUtil.waitForJSExec(domNode.getPage().getWebClient());
         return domNode.<X>getFirstByXPath(xpathExpr);
