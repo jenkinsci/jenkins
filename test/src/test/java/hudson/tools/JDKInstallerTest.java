@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.tools.JDKInstaller.DescriptorImpl;
 import org.junit.Before;
@@ -74,7 +75,7 @@ public class JDKInstallerTest {
         HtmlForm form = p.getFormByName("postCredential");
         form.getInputByName("username").setValueAttribute("foo");
         form.getInputByName("password").setValueAttribute("bar");
-        form.submit(null);
+        HtmlFormUtil.submit(form, null);
 
         DescriptorImpl d = j.jenkins.getDescriptorByType(DescriptorImpl.class);
         assertEquals("foo",d.getUsername());

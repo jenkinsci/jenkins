@@ -1,5 +1,6 @@
 package lib.form;
 
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
@@ -42,9 +43,9 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
     public void test1() throws Exception {
         HtmlPage p = createWebClient().goTo("self/test1");
 
-        HtmlElement outer = (HtmlElement)p.selectSingleNode("//INPUT[@name='outer']");
-        HtmlElement inner = (HtmlElement)p.selectSingleNode("//INPUT[@name='inner']");
-        HtmlInput field = (HtmlInput)p.selectSingleNode("//INPUT[@type='text'][@name='_.field']");
+        HtmlElement outer = (HtmlElement)DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
+        HtmlElement inner = (HtmlElement)DomNodeUtil.selectSingleNode(p, "//INPUT[@name='inner']");
+        HtmlInput field = (HtmlInput)DomNodeUtil.selectSingleNode(p, "//INPUT[@type='text'][@name='_.field']");
 
         // outer gets unfolded, but inner should be still folded
         outer.click();
@@ -67,7 +68,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
     public void test2() throws Exception {
         HtmlPage p = createWebClient().goTo("self/test2");
 
-        HtmlSelect s = (HtmlSelect)p.selectSingleNode("//SELECT");
+        HtmlSelect s = (HtmlSelect)DomNodeUtil.selectSingleNode(p, "//SELECT");
         List<HtmlOption> opts = s.getOptions();
 
         // those first selections will load additional HTMLs
@@ -78,13 +79,13 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         s.setSelectedAttribute(opts.get(0),true);
 
         // make sure that the inner control is still hidden
-        List<HtmlInput> textboxes = p.selectNodes("//INPUT[@name='_.textbox2']");
+        List<HtmlInput> textboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='_.textbox2']");
         assertEquals(2,textboxes.size());
         for (HtmlInput e : textboxes)
             assertTrue(!e.isDisplayed());
 
         // reveal the text box
-        List<HtmlInput> checkboxes = p.selectNodes("//INPUT[@name='inner']");
+        List<HtmlInput> checkboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='inner']");
         assertEquals(2,checkboxes.size());
         checkboxes.get(0).click();
         assertTrue(textboxes.get(0).isDisplayed());

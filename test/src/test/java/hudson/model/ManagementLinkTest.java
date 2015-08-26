@@ -25,6 +25,7 @@ package hudson.model;
 
 import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Rule;
@@ -47,7 +48,7 @@ public class ManagementLinkTest {
     @Test
     public void links() throws Exception {
         HtmlPage page = j.createWebClient().goTo("manage");
-        List<?> anchors = page.selectNodes("id('management-links')//*[@class='link']/a[not(@onclick)]");
+        List<?> anchors = DomNodeUtil.selectNodes(page, "id('management-links')//*[@class='link']/a[not(@onclick)]");
         assertTrue(anchors.size()>=8);
         for(HtmlAnchor e : (List<HtmlAnchor>) anchors) {
             e.click();

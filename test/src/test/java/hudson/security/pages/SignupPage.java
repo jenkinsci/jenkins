@@ -60,6 +60,6 @@ public class SignupPage {
     }
 
     public void assertErrorContains(String msg) {
-        assertThat(signupForm.getElementById("main-panel").getTextContent(),containsString(msg));
+        assertThat(signupForm.getPage().getElementById("main-panel").getTextContent(),containsString(msg));
     }
 }

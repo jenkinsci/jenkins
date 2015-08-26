@@ -137,7 +137,7 @@ public class JNLPLauncherTest extends HudsonTestCase {
     private String getJnlpLink(Computer c) throws Exception {
         HtmlPage p = new WebClient().goTo("computer/"+c.getName()+"/");
         String href = ((HtmlAnchor) p.getElementById("jnlp-link")).getHrefAttribute();
-        href = new URL(new URL(p.getDocumentURI()),href).toExternalForm();
+        href = new URL(new URL(p.getUrl().toExternalForm()),href).toExternalForm();
         return href;
     }
 

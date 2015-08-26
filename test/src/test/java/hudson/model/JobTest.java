@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.TextPage;
 
@@ -211,7 +212,7 @@ public class JobTest {
         // But it posts invalid data so we expect 500 if we have permission, 403 if not
         HtmlPage page = wc.goTo("userContent/post.html");
         try {
-            page.getForms().get(0).submit();
+            HtmlFormUtil.submit(page.getForms().get(0));
             fail("Expected exception: " + msg);
         } catch (FailingHttpStatusCodeException expected) {
             assertEquals(msg, status, expected.getStatusCode());

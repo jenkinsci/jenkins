@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import hudson.model.Descriptor.FormException;
@@ -42,7 +43,7 @@ public class ViewPropertyTest extends HudsonTestCase {
 
         // make sure it renders as optionalBlock
         HtmlForm f = createWebClient().getPage(foo, "configure").getFormByName("viewConfig");
-        ((HtmlLabel)f.selectSingleNode(".//LABEL[text()='Debug Property']")).click();
+        ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Debug Property']")).click();
         submit(f);
         ViewPropertyImpl vp = foo.getProperties().get(ViewPropertyImpl.class);
         assertEquals("Duke",vp.name);
