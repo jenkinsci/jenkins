@@ -38,7 +38,6 @@ body {
 }
 
 #header {
-  background-color: #000000;
   height: 40px;
 }
 
@@ -46,7 +45,7 @@ body {
   display: inline-block;
   height: inherit;
 }
-#header .logo {
+#header .logo-container {
   margin-left: 16px;
 }
 
@@ -225,12 +224,10 @@ dt {
 #header .login {
   position: relative;
   top: 6px;
-  color: white;
   margin-right: 10px;
 }
 
 #header .login a, #header .login a:visited {
-  color: white;
   text-decoration: none;
 }
 

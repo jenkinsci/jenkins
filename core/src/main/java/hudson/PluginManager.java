@@ -62,6 +62,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.bytecode.Transformer;
+import org.jenkinsci.plugins.uithemes.UIThemeContributor;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
@@ -521,6 +523,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
+
+        // If this plugin is a UIThemeContributor, tell the UIThemesProcessor about it.
+        // TODO: I don't see a plugin uninstall sequence ?
+        if (isUIThemesPluginInstalled()) {
+            Plugin pluginInstance = p.getPlugin();
+            if (pluginInstance instanceof UIThemeContributor) {
+                UIThemesProcessor.getInstance().addContributor((UIThemeContributor) pluginInstance);
+            }
+        }
     }
 
     /**
@@ -1250,6 +1261,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public List<String> getPluginsWithCycle() {
             return pluginsWithCycle;
         }
+    }
+
+    private boolean isUIThemesPluginInstalled() {
+        return (getPlugin("uithemes") != null);
     }
 
     /**

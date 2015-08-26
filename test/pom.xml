@@ -149,6 +149,22 @@ THE SOFTWARE.
       <version>1.2</version>
     </dependency>
     <dependency>
+        <!--
+            Adding an explicit dep on uithemes-processor so as to remove the org.mozilla:rhino transitive
+            dep (coming from org.lesscss:lesscss), the version of which causes compile errors due to clash with
+            the above org.jvnet.hudson:embedded-rhino-debugger.
+        -->
+        <groupId>org.jenkins-ci.plugins.uithemes</groupId>
+        <artifactId>uithemes-processor</artifactId>
+        <version>${uithemes-plugin.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.mozilla</groupId>
+                <artifactId>rhino</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
       <!-- for testing JNLP launch. -->
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>netx</artifactId>

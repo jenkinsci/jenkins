@@ -44,26 +44,34 @@ THE SOFTWARE.
 
   <j:set var="imgSrc" value="${attrs.src}"/>
   <j:set var="imgStyle" value="${attrs.style}"/>
-  <j:if test="${attrs.class != null}">
-  </j:if>
 
   <j:choose>
     <j:when test="${attrs.class != null}">
-      <!-- Derive the icon url and style from the class spec -->
+      <!-- Derive the icon metadata from the class spec -->
       <j:set var="iconMetadata" value="${icons.getIconByClassSpec(attrs.class)}"/>
     </j:when>
     <j:otherwise>
-      <!-- Attempt to work back from the image url (backward compatibility)... -->
+      <!-- Derive the icon metadata from the image url (backward compatibility)... -->
       <j:set var="iconMetadata" value="${icons.getIconByUrl(imgSrc)}"/>
     </j:otherwise>
   </j:choose>
 
-  <j:if test="${iconMetadata != null}">
-    <j:set var="imgSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
-    <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
-  </j:if>
-
-  <img class="${attrs.class}" src="${imgSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
-       alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"/>
+  <j:choose>
+    <j:when test="${iconMetadata != null}">
+      <j:choose>
+        <j:when test="${iconMetadata.useCSSRendering}">
+          <span class="${attrs.class}" title="${attrs.title}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"></span>
+        </j:when>
+        <j:otherwise>
+          <img class="${attrs.class}" src="${iconMetadata.getQualifiedUrl(context)}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
+               alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"/>
+        </j:otherwise>
+      </j:choose>
+    </j:when>
+    <j:otherwise>
+      <img class="${attrs.class}" src="${imgSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
+           alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"/>
+    </j:otherwise>
+  </j:choose>
 
 </j:jelly>

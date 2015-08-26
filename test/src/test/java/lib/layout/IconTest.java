@@ -56,14 +56,14 @@ public class IconTest extends HudsonTestCase  {
         HtmlElement iconsBlock = p.getElementById("iconsBlock");
         List<HtmlElement> icons = Lists.newArrayList(iconsBlock.getChildElements());
 
-        assertIconToImageOkay(icons.get(0), "/images/16x16/aborted.png", "icon-aborted icon-sm");
-        assertIconToImageOkay(icons.get(1), "/images/24x24/aborted.png", "icon-aborted icon-md");
-        assertIconToImageOkay(icons.get(2), "/images/32x32/aborted.png", "icon-aborted icon-lg");
-        assertIconToImageOkay(icons.get(3), "/images/48x48/aborted.png", "icon-aborted icon-xlg");
+        assertIconToImageOkay(icons.get(0), null, "icon-aborted icon-sm");
+        assertIconToImageOkay(icons.get(1), null, "icon-aborted icon-md");
+        assertIconToImageOkay(icons.get(2), null, "icon-aborted icon-lg");
+        assertIconToImageOkay(icons.get(3), null, "icon-aborted icon-xlg");
 
         // class specs not in "normal" order...
-        assertIconToImageOkay(icons.get(4), "/images/16x16/aborted.png");
-        assertIconToImageOkay(icons.get(5), "/images/24x24/aborted.png");
+        assertIconToImageOkay(icons.get(4), null, "icon-sm icon-aborted");
+        assertIconToImageOkay(icons.get(5), null, "icon-md icon-aborted");
 
         // src attribute...
         assertIconToImageOkay(icons.get(6), "/plugin/xxx/icon.png");
@@ -74,11 +74,11 @@ public class IconTest extends HudsonTestCase  {
 
         HtmlElement ballColorAborted = p.getElementById("ballColorAborted");
         List<HtmlElement> ballIcons = Lists.newArrayList(ballColorAborted.getChildElements());
-        assertIconToImageOkay(ballIcons.get(0), "/images/32x32/aborted.png", "icon-aborted icon-lg");
+        assertIconToImageOkay(ballIcons.get(0), null, "icon-aborted icon-lg");
 
         HtmlElement statusIcons = p.getElementById("statusIcons");
         List<HtmlElement> statusIconsList = Lists.newArrayList(statusIcons.getChildElements());
-        assertIconToImageOkay(statusIconsList.get(0), "/images/32x32/folder.png", "icon-folder icon-lg");
+        assertIconToImageOkay(statusIconsList.get(0), null, "icon-folder icon-lg");
 
         assertIconToImageOkay(statusIconsList.get(1), "/plugin/12345/icons/s2.png");
     }
@@ -89,11 +89,11 @@ public class IconTest extends HudsonTestCase  {
         HtmlElement tasksDiv = p.getElementById("tasks");
         List<HtmlElement> taskDivs = Lists.newArrayList(tasksDiv.getChildElements());
 
-        assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/24x24/up.png", "icon-up icon-md");
-        assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/24x24/folder.png", "icon-folder icon-md");
-        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
-        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
-        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/16x16/blue.png", "icon-blue icon-sm");
+        assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("span").get(0), null, "icon-up icon-md");
+        assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("span").get(0), null, "icon-folder icon-md");
+        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("span").get(0), null, "icon-blue icon-sm");
+        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("span").get(0), null, "icon-blue icon-sm");
+        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("span").get(0), null, "icon-blue icon-sm");
 
         assertIconToImageOkay(taskDivs.get(5).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
         assertIconToImageOkay(taskDivs.get(6).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
@@ -125,8 +125,12 @@ public class IconTest extends HudsonTestCase  {
     }
 
     private void assertIconToImageOkay(HtmlElement icon, String imgPath, String classSpec) {
-        assertEquals("img", icon.getTagName());
-        assertTrue(icon.getAttribute("src").endsWith(imgPath));
+        if (imgPath != null) {
+            assertEquals("img", icon.getTagName());
+            assertTrue(icon.getAttribute("src").endsWith(imgPath));
+        } else {
+            assertEquals("span", icon.getTagName());
+        }
         if (classSpec != null) {
             assertEquals(classSpec, icon.getAttribute("class"));
         }

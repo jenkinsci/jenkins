@@ -165,11 +165,8 @@ ${h.initPageVariables(context)}
 
     <div id="page-head">
       <div id="header">
-        <div class="logo">
-          <a id="jenkins-home-link" href="${rootURL}/">
-            <img id="jenkins-head-icon" src="${imagesURL}/headshot.png" alt="title" />
-            <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="title" width="139" height="34" />
-          </a>
+        <div class="logo-container">
+          <a id="jenkins-home-link" href="${rootURL}/"><div class="logo" title="Jenkins Home"/></a>
         </div>
         <div class="login">
           <!-- login field -->

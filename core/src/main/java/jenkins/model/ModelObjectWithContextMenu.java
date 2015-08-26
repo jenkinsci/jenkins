@@ -14,6 +14,8 @@ import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -248,6 +250,18 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public String icon;
 
         /**
+         * Icon class specification.
+         */
+        @Exported
+        public String iconClassSpec;
+
+        /**
+         * Use pure CSS for icon rendering.
+         */
+        @Exported
+        public boolean useCSSIconRendering = false;
+
+        /**
          * True to make a POST request rather than GET.
          * @since 1.504
          */
@@ -264,6 +278,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          */
         @Exported(inline=true)
         public ContextMenu subMenu;
+
+        /**
+         * Menu item icon definition.
+         */
+        private Icon iconDef;
 
         public MenuItem(String url, String icon, String displayName) {
             withUrl(url).withIcon(icon).withDisplayName(displayName);
@@ -292,6 +311,21 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         public MenuItem withIcon(String icon) {
             this.icon = icon;
+
+            iconDef = IconSet.icons.getIconByClassSpec(icon);
+            if (iconDef != null) {
+                // The icon was actually specified using a CSS selector (Vs an img url).
+                // Resolve the "classic" icon theme impl img URL.
+                this.icon = iconDef.getQualifiedUrl();
+            } else {
+                iconDef = IconSet.icons.getIconByUrl(icon);
+            }
+
+            if (iconDef != null) {
+                iconClassSpec = iconDef.getClassSpec();
+                useCSSIconRendering = iconDef.isUseCSSRendering();
+            }
+
             return this;
         }
 

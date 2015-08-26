@@ -1,0 +1,195 @@
+//
+// The MIT License
+//
+// Copyright (c) 2013-2014, CloudBees, Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+//
+// CSS3 Status icons.
+//
+
+@successColor: #${successColor};
+@successColor_startGradient: lighten(@successColor, 10%);
+
+@warningColor: #${warningColor};
+@warningColor_startGradient: lighten(@warningColor, 10%);
+
+@errorColor: #${errorColor};
+@errorColor_startGradient: lighten(@errorColor, 10%);
+
+@notBuiltColor: #${notBuiltColor};
+@notBuiltColor_startGradient: lighten(@notBuiltColor, 10%);
+
+@disabledColor: #${disabledColor};
+@disabledColor_startGradient: lighten(@disabledColor, 10%);
+
+@abortedColor: #${abortedColor};
+@abortedColor_startGradient: lighten(@abortedColor, 10%);
+
+@greenColor: #008000;
+@greenColor_startGradient: lighten(@greenColor, 10%);
+@greyColor: #808080;
+@greyColor_startGradient: lighten(@greyColor, 10%);
+
+// Static orbs
+
+.staticOrb(@stop1, @stop2) {
+  border-radius: 50%;
+  background: @stop2;
+  background-image: -moz-radial-gradient(3px 3px 45deg, circle cover, @stop1 0%, @stop2 100%);
+  background-image: -webkit-radial-gradient(3px 3px, circle cover, @stop1, @stop2);
+  background-image: radial-gradient(circle at 3px 3px, @stop1 0%, @stop2 100%);
+}
+
+.icon-blue {
+  .staticOrb(@successColor_startGradient, @successColor);
+}
+
+.icon-yellow {
+  .staticOrb(@warningColor_startGradient, @warningColor);
+}
+
+.icon-red {
+  .staticOrb(@errorColor_startGradient, @errorColor);
+}
+
+.icon-grey {
+  .staticOrb(@greyColor_startGradient, @greyColor);
+}
+
+.icon-disabled {
+  .staticOrb(@disabledColor_startGradient, @disabledColor);
+}
+
+.icon-aborted {
+  .staticOrb(@abortedColor_startGradient, @abortedColor);
+}
+
+.icon-notbuilt, .icon-nobuilt {
+  .staticOrb(@notBuiltColor_startGradient, @notBuiltColor);
+}
+
+.icon-green {
+  .staticOrb(@greenColor_startGradient, @greenColor);
+}
+
+// Animated orbs...
+
+.icon-red-anime,
+.icon-yellow-anime,
+.icon-blue-anime,
+.icon-grey-anime,
+.icon-disabled-anime,
+.icon-aborted-anime,
+.icon-notbuilt-anime,
+.icon-nobuilt-anime,
+.icon-green-anime {
+  border: solid;
+  position: relative;
+  border-radius: 50%;
+  -webkit-animation: load8 5s infinite linear;
+  animation: load8 5s infinite linear;
+}
+
+.no_anime_size(@numPixels, @margin, @iconSizeClass) {
+  @wh: unit((@numPixels - (@margin * 2)), px);
+
+  .icon-red.@{iconSizeClass},
+  .icon-yellow.@{iconSizeClass},
+  .icon-blue.@{iconSizeClass},
+  .icon-grey.@{iconSizeClass},
+  .icon-disabled.@{iconSizeClass},
+  .icon-aborted.@{iconSizeClass},
+  .icon-notbuilt.@{iconSizeClass},
+  .icon-nobuilt.@{iconSizeClass},
+  .icon-green.@{iconSizeClass} {
+    width: @wh;
+    height: @wh;
+    margin: unit(@margin, px);
+  }
+}
+
+.anime_size(@numPixels, @margin, @iconSizeClass) {
+  @wh: unit((@numPixels - (@margin * 2)), px);
+  @borderWidth: unit((@numPixels * 0.2), px);
+
+  .icon-red-anime.@{iconSizeClass},
+  .icon-yellow-anime.@{iconSizeClass},
+  .icon-blue-anime.@{iconSizeClass},
+  .icon-grey-anime.@{iconSizeClass},
+  .icon-disabled-anime.@{iconSizeClass},
+  .icon-aborted-anime.@{iconSizeClass},
+  .icon-notbuilt-anime.@{iconSizeClass},
+  .icon-nobuilt-anime.@{iconSizeClass},
+  .icon-green-anime.@{iconSizeClass} {
+    width: @wh;
+    height: @wh;
+    margin: unit(@margin, px);
+    border-width: @borderWidth;
+  }
+}
+
+.anime_color(@stateClass, @color) {
+  .@{stateClass} {
+    border-color: @color lighten(@color, 40%);
+  }
+}
+
+.no_anime_size(16, 1, icon-sm);
+.no_anime_size(24, 2, icon-md);
+.no_anime_size(32, 3, icon-lg);
+.no_anime_size(48, 4, icon-xlg);
+
+.anime_size(16, 1, icon-sm);
+.anime_size(24, 2, icon-md);
+.anime_size(32, 3, icon-lg);
+.anime_size(48, 4, icon-xlg);
+
+.anime_color(icon-red-anime, @errorColor);
+.anime_color(icon-yellow-anime, @warningColor);
+.anime_color(icon-blue-anime, @successColor);
+.anime_color(icon-grey-anime, @greyColor);
+.anime_color(icon-disabled-anime, @disabledColor);
+.anime_color(icon-aborted-anime, @abortedColor);
+.anime_color(icon-notbuilt-anime, @notBuiltColor);
+.anime_color(icon-nobuilt-anime, @notBuiltColor);
+.anime_color(icon-green-anime, @greenColor);
+
+@-webkit-keyframes load8 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes load8 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
