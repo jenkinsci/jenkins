@@ -17,7 +17,7 @@ Because HtmlUnit executes JavaScript asynchronously, it's usually not possible t
 that reason, `WebClientUtil` provides the `addExceptionListener` utility as a way of registering an exception listener.
 This typically needs to be used in conjunction with the `waitForJSExec` method e.g.
 
-```
+```java
 WebClient webClient = jenkinsRule.createWebClient();
 WebClientUtil.ExceptionListener exceptionListener = WebClientUtil.addExceptionListener(webClient);
 
