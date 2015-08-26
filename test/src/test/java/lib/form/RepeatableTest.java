@@ -24,6 +24,7 @@
 package lib.form;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
@@ -33,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -68,11 +68,11 @@ public class RepeatableTest extends HudsonTestCase {
     private void doTestSimple() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         f.getInputByValue("").setValueAttribute("value one");
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         f.getInputByValue("").setValueAttribute("value two");
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         f.getInputByValue("").setValueAttribute("value three");
         f.getInputsByName("bool").get(2).click();
         submit(f);
@@ -201,10 +201,10 @@ public class RepeatableTest extends HudsonTestCase {
     public void testRadio() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         f.getInputByValue("").setValueAttribute("txt one");
         f.getElementsByAttribute("INPUT", "type", "radio").get(1).click();
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         f.getInputByValue("").setValueAttribute("txt two");
         f.getElementsByAttribute("INPUT", "type", "radio").get(3).click();
         submit(f);
@@ -224,7 +224,7 @@ public class RepeatableTest extends HudsonTestCase {
         list.add(new FooRadio("three", "one"));
         HtmlPage p = createWebClient().goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         f.getInputByValue("").setValueAttribute("txt 4");
         f.getElementsByAttribute("INPUT", "type", "radio").get(7).click();
         submit(f);
@@ -238,12 +238,12 @@ public class RepeatableTest extends HudsonTestCase {
     public void testRadioBlock() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testRadioBlock");
         HtmlForm f = p.getFormByName("config");
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         f.getInputByValue("").setValueAttribute("txt one");
         f.getInputByValue("").setValueAttribute("avalue do not send");
         f.getElementsByAttribute("INPUT", "type", "radio").get(1).click();
         f.getInputByValue("").setValueAttribute("bvalue");
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         f.getInputByValue("").setValueAttribute("txt two");
         f.getElementsByAttribute("INPUT", "type", "radio").get(2).click();
         f.getInputByValue("").setValueAttribute("avalue two");
@@ -303,11 +303,11 @@ public class RepeatableTest extends HudsonTestCase {
     public void testDropdownList() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testDropdownList");
         HtmlForm f = p.getFormByName("config");
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         waitForJavaScript(p);
         f.getInputByValue("").setValueAttribute("17"); // seeds
         f.getInputByValue("").setValueAttribute("pie"); // word
-        f.getButtonByCaption("Add").click();
+        HtmlFormUtil.getButtonByCaption(f, "Add").click();
         waitForJavaScript(p);
         // select banana in 2nd select element:
         ((HtmlSelect)f.getElementsByTagName("select").get(1)).getOption(1).click();
@@ -367,7 +367,7 @@ public class RepeatableTest extends HudsonTestCase {
     }
 
     private void clickButton(HtmlPage p, HtmlForm f, String caption) throws IOException {
-        f.getButtonByCaption(caption).click();
+        HtmlFormUtil.getButtonByCaption(f, caption).click();
         waitForJavaScript(p);
     }
 
@@ -377,10 +377,10 @@ public class RepeatableTest extends HudsonTestCase {
         try {
             clickButton(p, f, "Add");
             f.getElementsByAttribute("input", "type", "radio").get(1).click(); // outer=two
-            f.getButtonByCaption("Add Moo").click();
+            HtmlFormUtil.getButtonByCaption(f, "Add Moo").click();
             waitForJavaScript(p);
             f.getElementsByAttribute("input", "type", "radio").get(2).click(); // inner=inone
-            f.getButtonByCaption("Add").click();
+            HtmlFormUtil.getButtonByCaption(f, "Add").click();
             waitForJavaScript(p);
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
             Thread.sleep(500);

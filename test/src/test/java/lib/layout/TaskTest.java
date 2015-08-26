@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import hudson.model.UnprotectedRootAction;
 
 import org.junit.Rule;
@@ -49,7 +50,7 @@ public class TaskTest {
     @Test public void postLink() throws Exception {
         WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo(postLink.getUrlName());
-        page.getAnchorByText("POST").click();
+        HtmlElementUtil.click(page.getAnchorByText("POST"));
         assertTrue("Action method should be invoked", postLink.called);
     }
 

@@ -58,7 +58,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 
 public class RobustReflectionConverterTest {
 
@@ -201,10 +201,11 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
             wc.login("test", "test");
-            WebRequestSettings req = new WebRequestSettings(
+            WebRequest req = new WebRequest(
                     wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
                     HttpMethod.POST
             );
+            req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
             
@@ -233,10 +234,11 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
             wc.login("test", "test");
-            WebRequestSettings req = new WebRequestSettings(
+            WebRequest req = new WebRequest(
                     wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
                     HttpMethod.POST
             );
+            req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
             
             try {

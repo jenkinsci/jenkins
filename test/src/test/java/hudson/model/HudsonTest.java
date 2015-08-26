@@ -28,9 +28,10 @@ import static org.junit.Assert.*;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Node.Mode;
@@ -128,7 +129,7 @@ public class HudsonTest {
         FreeStyleProject p = j.createFreeStyleProject();
         Page jobPage = j.search(p.getName());
 
-        URL url = jobPage.getWebResponse().getUrl();
+        URL url = jobPage.getUrl();
         System.out.println(url);
         assertTrue(url.getPath().endsWith("/job/"+p.getName()+"/"));
     }
@@ -139,8 +140,8 @@ public class HudsonTest {
     @Test
     public void breadcrumb() throws Exception {
         HtmlPage root = j.createWebClient().goTo("");
-        HtmlElement navbar = root.getElementById("breadcrumbs");
-        assertEquals(1,navbar.selectNodes("LI/A").size());
+        DomElement navbar = root.getElementById("breadcrumbs");
+        assertEquals(1, DomNodeUtil.selectNodes(navbar, "LI/A").size());
     }
 
     /**
@@ -165,7 +166,7 @@ public class HudsonTest {
             assertFalse(a.getHrefAttribute(),a.getHrefAttribute().endsWith("delete"));
 
         // try to delete it by hitting the final URL directly
-        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
         try {
             wc.getPage(wc.addCrumb(req));
             fail("Error code expected");

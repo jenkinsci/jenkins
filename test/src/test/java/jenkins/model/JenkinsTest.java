@@ -35,7 +35,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -287,11 +287,11 @@ public class JenkinsTest {
         wc.goTo("script");
         wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
         assertNull(System.getProperty("hack"));
-        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
         wc.getPage(wc.addCrumb(req));
         assertEquals("me", System.getProperty("hack"));
         wc.assertFails("scriptText?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
-        req = new WebRequestSettings(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
+        req = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
         wc.getPage(wc.addCrumb(req));
         assertEquals("you", System.getProperty("huck"));
         wc.login("bob");
@@ -333,7 +333,8 @@ public class JenkinsTest {
         }
     }
     private String eval(WebClient wc) throws Exception {
-        WebRequestSettings req = new WebRequestSettings(wc.createCrumbedUrl("eval"), HttpMethod.POST);
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), HttpMethod.POST);
+        req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
         return wc.getPage(req).getWebResponse().getContentAsString();
     }
@@ -393,7 +394,7 @@ public class JenkinsTest {
         assertTrue(!Jenkins.getInstance().getACL().hasPermission(Jenkins.ANONYMOUS,Jenkins.READ));
 
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("error/reportError");
 
         assertEquals(p.asText(), 400, p.getWebResponse().getStatusCode());  // not 403 forbidden
@@ -436,13 +437,15 @@ public class JenkinsTest {
 
     @Test
     public void runScriptOnOfflineComputer() throws Exception {
-        DumbSlave slave = j.createSlave();
+        DumbSlave slave = j.createSlave(true);
+        j.disconnectSlave(slave);
+
         URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
 
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-        WebRequestSettings req = new WebRequestSettings(url, HttpMethod.POST);
+        WebRequest req = new WebRequest(url, HttpMethod.POST);
         Page page = wc.getPage(wc.addCrumb(req));
         WebResponse rsp = page.getWebResponse();
 
