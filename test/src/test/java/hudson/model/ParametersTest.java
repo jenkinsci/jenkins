@@ -2,6 +2,8 @@ package hudson.model;
 
 import static org.junit.Assert.*;
 
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -42,38 +44,38 @@ public class ParametersTest {
         project.getBuildersList().add(builder);
 
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
 
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = (HtmlElement) form.selectSingleNode("//tr[td/div/input/@value='string']");
+        HtmlElement element = (HtmlElement) DomNodeUtil.selectSingleNode(form, "//tr[td/div/input/@value='string']");
         assertNotNull(element);
-        assertEquals("string description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
+        assertEquals("string description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
 
-        HtmlTextInput stringParameterInput = (HtmlTextInput) element.selectSingleNode(".//input[@name='value']");
+        HtmlTextInput stringParameterInput = (HtmlTextInput) DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
-        assertEquals("string", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
         stringParameterInput.setAttribute("value", "newValue");
 
-        element = (HtmlElement) form.selectSingleNode("//tr[td/div/input/@value='boolean']");
+        element = (HtmlElement) DomNodeUtil.selectSingleNode(form, "//tr[td/div/input/@value='boolean']");
         assertNotNull(element);
-        assertEquals("boolean description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
-        Object o = element.selectSingleNode(".//input[@name='value']");
+        assertEquals("boolean description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
+        Object o = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         System.out.println(o);
         HtmlCheckBoxInput booleanParameterInput = (HtmlCheckBoxInput) o;
         assertEquals(true, booleanParameterInput.isChecked());
-        assertEquals("boolean", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+        assertEquals("boolean", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
 
-        element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='choice']");
+        element = (HtmlElement) DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
 
-        element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='run']");
+        element = (HtmlElement) DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='run']");
         assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
-        assertEquals("run", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
+        assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
+        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
 
         j.submit(form);
         Queue.Item q = j.jenkins.getQueue().getItem(project);
@@ -96,15 +98,15 @@ public class ParametersTest {
         project.getBuildersList().add(builder);
 
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = (HtmlElement) form.selectSingleNode(".//tr[td/div/input/@value='choice']");
+        HtmlElement element = (HtmlElement) DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) element.getNextSibling().getNextSibling().selectSingleNode("td[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) element.selectSingleNode("td[@class='setting-name']")).getTextContent());
-        HtmlOption opt = (HtmlOption)element.selectSingleNode("td/div/select/option[@value='Choice <2>']");
+        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
+        HtmlOption opt = (HtmlOption)DomNodeUtil.selectSingleNode(element, "td/div/select/option[@value='Choice <2>']");
         assertNotNull(opt);
         assertEquals("Choice <2>", opt.asText());
         opt.setSelected(true);
@@ -183,7 +185,7 @@ public class ParametersTest {
         project.addProperty(pdp);
 
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
@@ -206,12 +208,12 @@ public class ParametersTest {
         p.addProperty(pdb);
 
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false); // Ignore 405
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false); // Ignore 405
         HtmlPage page = wc.getPage(p, "build");
 
         // java.lang.IllegalArgumentException: No such parameter definition: <gibberish>.
-        wc.setThrowExceptionOnFailingStatusCode(true);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(true);
         final HtmlForm form = page.getFormByName("parameters");
-        form.submit(form.getButtonByCaption("Build"));
+        HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
     }
 }

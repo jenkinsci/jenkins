@@ -41,6 +41,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.search.SearchIndexBuilder;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.views.BuildButtonColumn;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -262,12 +263,18 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
+     * Allows customization of the human-readable display name to be rendered in the <i>Build Now</i> link.
+     * @see #getBuildNowText
+     * @since TODO
+     */
+    public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_NOW_TEXT = new AlternativeUiTextProvider.Message<ParameterizedJob>();
+
+    /**
      * Suggested implementation of {@link ParameterizedJob#getBuildNowText}.
+     * Uses {@link #BUILD_NOW_TEXT}.
      */
     public final String getBuildNowText() {
-        // TODO JENKINS-26147 use replacement for AbstractProject.BUILD_NOW_TEXT
-        // TODO move these messages (& translations) to this package
-        return isParameterized() ? hudson.model.Messages.AbstractProject_build_with_parameters() : hudson.model.Messages.AbstractProject_BuildNow();
+        return isParameterized() ? Messages.ParameterizedJobMixIn_build_with_parameters() : AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_now());
     }
 
     /**

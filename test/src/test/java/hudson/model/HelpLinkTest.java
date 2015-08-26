@@ -1,9 +1,12 @@
 package hudson.model;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import com.gargoylesoftware.htmlunit.WebResponseListener;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import hudson.tasks.BuildStepMonitor;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -48,16 +51,22 @@ public class HelpLinkTest {
 
     private void clickAllHelpLinks(AbstractProject p) throws Exception {
         // TODO: how do we add all the builders and publishers so that we can test this meaningfully?
-        clickAllHelpLinks(j.createWebClient().getPage(p, "configure"));
+        clickAllHelpLinks(j.createWebClient(), p);
+    }
+
+    private void clickAllHelpLinks(JenkinsRule.WebClient webClient, AbstractProject p) throws Exception {
+        // TODO: how do we add all the builders and publishers so that we can test this meaningfully?
+        clickAllHelpLinks(webClient.getPage(p, "configure"));
     }
 
     private void clickAllHelpLinks(HtmlPage p) throws Exception {
-        List<?> helpLinks = p.selectNodes("//a[@class='help-button']");
+        List<?> helpLinks = DomNodeUtil.selectNodes(p, "//a[@class='help-button']");
         assertTrue(helpLinks.size()>0);
         System.out.println("Clicking "+helpLinks.size()+" help links");
 
-        for (HtmlAnchor helpLink : (List<HtmlAnchor>)helpLinks)
-            helpLink.click();
+        for (HtmlAnchor helpLink : (List<HtmlAnchor>)helpLinks) {
+            HtmlElementUtil.click(helpLink);
+        }
     }
 
     public static class HelpNotFoundBuilder extends Publisher {
@@ -92,13 +101,15 @@ public class HelpLinkTest {
         try {
             FreeStyleProject p = j.createFreeStyleProject();
             p.getPublishersList().add(new HelpNotFoundBuilder());
-            clickAllHelpLinks(p);
-            fail("should detect a failure");
-        } catch(AssertionError e) {
-            if(e.getMessage().contains(d.getHelpFile()))
-                ; // expected
-            else
-                throw e;
+            JenkinsRule.WebClient webclient = j.createWebClient();
+            WebResponseListener.StatusListener statusListener = new WebResponseListener.StatusListener(404);
+            webclient.addWebResponseListener(statusListener);
+
+            clickAllHelpLinks(webclient, p);
+
+            statusListener.assertHasResponses();
+            String contentAsString = statusListener.getResponses().get(0).getContentAsString();
+            Assert.assertTrue(contentAsString.contains(d.getHelpFile()));
         } finally {
             Publisher.all().remove(d);
         }

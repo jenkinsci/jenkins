@@ -172,12 +172,7 @@ public class SlaveComputer extends Computer {
         this.acceptingTasks = acceptingTasks;
     }
 
-    /**
-     * True if this computer is a Unix machine (as opposed to Windows machine).
-     *
-     * @return
-     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
-     */
+    @Override
     public Boolean isUnix() {
         return isUnix;
     }

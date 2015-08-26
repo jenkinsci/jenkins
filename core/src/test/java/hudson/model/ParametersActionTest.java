@@ -89,7 +89,7 @@ public class ParametersActionTest {
     
     @Test
     @Issue("JENKINS-15094")
-    public void checkNullParamaterValues() {
+    public void checkNullParameterValues() {
         SubTask subtask = mock(SubTask.class);
         Build build = mock(Build.class);
                    

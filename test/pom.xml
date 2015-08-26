@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.621-SNAPSHOT</version>
+    <version>1.627-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-test-harness</artifactId>
@@ -64,6 +64,16 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
       <version>${maven-plugin.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -108,9 +118,9 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.1</version>
-      <scope>compile</scope>
+      <version>${test-annotations.version}</version>
       <!-- in this module we need this as a compile scope, whereas in the parent it's test -->
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.mock-javamail</groupId>
@@ -127,16 +137,9 @@ THE SOFTWARE.
       <version>1.3</version>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
+      <groupId>net.sourceforge.htmlunit</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.6-jenkins-6</version>
-      <exclusions>
-        <exclusion>
-          <!--  hides JDK DOM classes in Eclipse -->
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>2.18</version>
     </dependency>
     <dependency><!-- we exclude this transient dependency from htmlunit, which we actually need in the test -->
       <groupId>xalan</groupId>

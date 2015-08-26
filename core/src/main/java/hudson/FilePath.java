@@ -33,7 +33,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
-import hudson.org.apache.tools.tar.TarInputStream;
 import hudson.os.PosixAPI;
 import hudson.os.PosixException;
 import hudson.remoting.Callable;
@@ -70,7 +69,6 @@ import org.apache.commons.io.input.CountingInputStream;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.tar.TarEntry;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.kohsuke.stapler.Stapler;
@@ -120,6 +118,8 @@ import static hudson.Util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jenkins.security.MasterToSlaveCallable;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
         
@@ -175,7 +175,7 @@ import org.jenkinsci.remoting.RoleSensitive;
  * </pre>
  *
  * <p>
- * When {@link FileCallable} is transfered to a remote node, it will be done so
+ * When {@link FileCallable} is transferred to a remote node, it will be done so
  * by using the same Java serialization scheme that the remoting module uses.
  * See {@link Channel} for more about this. 
  *
@@ -2268,12 +2268,15 @@ public final class FilePath implements Serializable {
 
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
+     * @since TODO supports large files > 10 GB, migration to commons-compress
      */
     private void readFromTar(String name, File baseDir, InputStream in) throws IOException {
-        TarInputStream t = new TarInputStream(in);
+        TarArchiveInputStream t = new TarArchiveInputStream(in);
+        
+        // TarInputStream t = new TarInputStream(in);
         try {
-            TarEntry te;
-            while ((te = t.getNextEntry()) != null) {
+            TarArchiveEntry te;
+            while ((te = t.getNextTarEntry()) != null) {
                 File f = new File(baseDir,te.getName());
                 if(te.isDirectory()) {
                     mkdirs(f);
@@ -2282,8 +2285,7 @@ public final class FilePath implements Serializable {
                     if (parent != null) mkdirs(parent);
                     writing(f);
 
-                    byte linkFlag = (Byte) LINKFLAG_FIELD.get(te);
-                    if (linkFlag==TarEntry.LF_SYMLINK) {
+                    if (te.isSymbolicLink()) {
                         new FilePath(f).symlinkTo(te.getLinkName(), TaskListener.NULL);
                     } else {
                         IOUtils.copy(t,f);
@@ -2299,8 +2301,6 @@ public final class FilePath implements Serializable {
             throw new IOException("Failed to extract "+name,e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // process this later
-            throw new IOException("Failed to extract "+name,e);
-        } catch (IllegalAccessException e) {
             throw new IOException("Failed to extract "+name,e);
         } finally {
             t.close();
@@ -2724,20 +2724,6 @@ public final class FilePath implements Serializable {
             return o1.length()-o2.length();
         }
     };
-
-    private static final Field LINKFLAG_FIELD = getTarEntryLinkFlagField();
-
-    private static Field getTarEntryLinkFlagField() {
-        try {
-            Field f = TarEntry.class.getDeclaredField("linkFlag");
-            f.setAccessible(true);
-            return f;
-        } catch (SecurityException e) {
-            throw new AssertionError(e);
-        } catch (NoSuchFieldException e) {
-            throw new AssertionError(e);
-        }
-    }
 
     /**
      * Gets the {@link FilePath} representation of the "~" directory

@@ -204,7 +204,7 @@ public class Items {
         String[] c = context.getFullName().split("/");
         String[] p = path.split("/");
 
-        Stack name = new Stack();
+        Stack<String> name = new Stack<String>();
         for (int i=0; i<c.length;i++) {
             if (i==0 && c[i].equals("")) continue;
             name.push(c[i]);
@@ -216,6 +216,11 @@ public class Items {
                 continue;
             }
             if (p[i].equals("..")) {
+                if (name.size() == 0) {
+                    throw new IllegalArgumentException(String.format(
+                            "Illegal relative path '%s' within context '%s'", path, context.getFullName()
+                    ));
+                }
                 name.pop();
                 continue;
             }

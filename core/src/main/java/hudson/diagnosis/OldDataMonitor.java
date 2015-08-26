@@ -25,6 +25,7 @@ package hudson.diagnosis;
 
 import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+
 import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
@@ -36,8 +37,10 @@ import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.ACL;
 import hudson.util.RobustReflectionConverter;
 import hudson.util.VersionNumber;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,8 +51,13 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.CheckForNull;
+
 import jenkins.model.Jenkins;
+
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -102,12 +110,21 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
-        OldDataMonitor odm = get(Jenkins.getInstance());
-        synchronized (odm) {
-            odm.data.remove(referTo(obj));
-            if (isDelete && obj instanceof Job<?,?>)
-                for (Run r : ((Job<?,?>)obj).getBuilds())
-                    odm.data.remove(referTo(r));
+        Jenkins j = Jenkins.getInstance();
+        if (j != null) {
+            OldDataMonitor odm = get(j);
+            SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
+            try {
+                synchronized (odm) {
+                    odm.data.remove(referTo(obj));
+                    if (isDelete && obj instanceof Job<?,?>)
+                        for (Run r : ((Job<?,?>)obj).getBuilds())
+                            odm.data.remove(referTo(r));
+                }
+            } 
+            finally {
+                SecurityContextHolder.setContext(oldContext);
+            }
         }
     }
 

@@ -57,7 +57,7 @@ public class ExtractResourceSCM extends NullSCM {
 
     /**
      * with this constructor your zip can contains a folder
-     * more usefull to create a project test zip foo.zip foo
+     * more useful to create a project test zip foo.zip foo
      * @param zip
      * @param parentFolder
      */

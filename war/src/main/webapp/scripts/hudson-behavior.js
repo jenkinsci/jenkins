@@ -29,6 +29,11 @@
 //     for memory leak patterns and how to prevent them.
 //
 
+if (window.isRunAsTest) {
+    // Disable postMessage when running in test mode (HtmlUnit).
+    window.postMessage = false;
+}
+
 // create a new object whose prototype is the given object
 function object(o) {
     function F() {}
