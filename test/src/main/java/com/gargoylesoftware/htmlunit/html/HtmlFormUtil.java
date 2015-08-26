@@ -33,6 +33,9 @@ import java.util.List;
 
 /**
  * {@link HtmlForm} helper functions.
+ * <p>
+ * In many cases, the methods defined here replace methods of the same name that were
+ * added to the {@link HtmlForm} class on the old forked version of HtmlUnit.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
