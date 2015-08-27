@@ -146,7 +146,6 @@ import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.EphemeralNode;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeList;
 import hudson.slaves.NodeProperty;
@@ -288,7 +287,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -3862,10 +3860,64 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     return this;
                 }
             }
+            
+            if (isPluginJenkinsModuleRes(rest)) {
+                return this;
+            }
 
             throw e;
         }
         return this;
+    }
+
+    /**
+     * Checks a path to see if it's a Jenkins Module plugin resource.
+     * @param restOfPath Resource path as returned by {@link org.kohsuke.stapler.StaplerRequest#getRestOfPath()}.
+     * @return {@code true} if the resource is a .js or .css file in a path matching
+     * "/plugin/{@code plugin-name}/jsmodules/{@code res-name}".
+     */
+    public static boolean isPluginJenkinsModuleRes(@Nonnull String restOfPath) {
+        if (!restOfPath.startsWith("/plugin/")) {
+            return false;
+        }
+        if (!restOfPath.endsWith(".js") && !restOfPath.endsWith(".css")) {
+            return false;
+        }
+        
+        File jsmoduleResFile = new File(restOfPath);
+        
+        // drop back to the "jsmodules" dir. The resource can be nested inside that dir.
+        File jsmodulesDir = jsmoduleResFile.getParentFile();
+        while (jsmodulesDir != null && !jsmodulesDir.getName().equals("jsmodules")) {
+            jsmodulesDir = jsmodulesDir.getParentFile();
+        }
+        
+        // Must be in a dir named "jsmodules"
+        if (jsmodulesDir == null || !jsmodulesDir.getName().equals("jsmodules")) {
+            return false;
+        }
+
+        // The last checks make sure that the only remaining tokens are "<plugin-name>" 
+        // with a parent dir of "plugin". "<plugin-name>" can match anything and "plugin"
+        // should be the root.
+        
+        File pluginNameDir = jsmodulesDir.getParentFile();
+        if (pluginNameDir == null) {
+            return false;
+        }
+
+        File pluginDir = pluginNameDir.getParentFile();
+        if (pluginDir == null || !pluginDir.getName().equals("plugin")) {
+            return false;
+        }
+
+        // Should be at the root dir now
+        File root = pluginDir.getParentFile();
+        if (root != null && root.getName().length() > 0) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
