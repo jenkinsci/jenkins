@@ -244,7 +244,6 @@ import org.xml.sax.InputSource;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -1603,7 +1602,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns the label atom of the given name.
      * @return non-null iff name is non-null
      */
-    public @Nullable LabelAtom getLabelAtom(@CheckForNull String name) {
+    @CheckForNull
+    public LabelAtom getLabelAtom(@CheckForNull String name) {
         if (name==null)  return null;
 
         while(true) {
@@ -1915,7 +1915,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.66
      * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML">Hyperlinks in HTML</a>
      */
-    public @Nullable String getRootUrl() {
+    @CheckForNull
+    public String getRootUrl() {
         String url = JenkinsLocationConfiguration.get().getUrl();
         if(url!=null) {
             return Util.ensureEndsWith(url,"/");
