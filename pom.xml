@@ -103,6 +103,8 @@ THE SOFTWARE.
     <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
 
     <java.level>7</java.level>
+
+    <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
   </properties>
 
   <repositories>
@@ -842,6 +844,12 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>lts-release</id>
+      <properties>
+        <changelog.url>https://jenkins-ci.org/changelog-stable</changelog.url>
+      </properties>
     </profile>
     <profile>
       <id>m2e</id>
