@@ -24,7 +24,7 @@
 
 package hudson.util;
 
-import hudson.cli.CLI;
+import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Items;
@@ -37,8 +37,6 @@ import hudson.model.Saveable;
 import hudson.security.ACL;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -272,23 +270,19 @@ public class RobustReflectionConverterTest {
             
             // Configure a bad keyword via CLI.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-            CLI cli = new CLI(r.getURL());
-            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-            ByteArrayOutputStream stderr = new ByteArrayOutputStream();
-            int ret = cli.execute(
-                Arrays.asList(
-                    "update-job",
-                    p.getFullName(),
-                    "--username",
-                    "test",
-                    "--password",
-                    "test"
-                ),
-                new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes()),
-                stdout,
-                stderr
-            );
-            assertEquals(0, ret);
+            
+            CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
+                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD).getBytes()))
+                    .withArgs(
+                            p.getFullName(),
+                            "--username",
+                            "test",
+                            "--password",
+                            "test"
+                    )
+                    .invoke();
+            
+            assertEquals(0, ret.returnCode());
             
             // AcceptOnlySpecificKeyword with bad value is not instantiated for rejected with readResolve,
             assertNull(p.getProperty(KeywordProperty.class).getNonCriticalField());
@@ -312,23 +306,17 @@ public class RobustReflectionConverterTest {
             
             // Configure a bad keyword via CLI.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-            CLI cli = new CLI(r.getURL());
-            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-            ByteArrayOutputStream stderr = new ByteArrayOutputStream();
-            int ret = cli.execute(
-                Arrays.asList(
-                    "update-job",
-                    p.getFullName(),
-                    "--username",
-                    "test",
-                    "--password",
-                    "test"
-                ),
-                new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes()),
-                stdout,
-                stderr
-            );
-            assertNotEquals(0, ret);
+            CLICommandInvoker.Result ret = new CLICommandInvoker(r, "update-job")
+                    .withStdin(new ByteArrayInputStream(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue").getBytes()))
+                    .withArgs(
+                            p.getFullName(),
+                            "--username",
+                            "test",
+                            "--password",
+                            "test"
+                    )
+                    .invoke();
+            assertNotEquals(0, ret.returnCode());
             
             // Configuration should not be updated for a failure of the critical field,
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
