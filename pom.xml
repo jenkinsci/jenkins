@@ -854,7 +854,7 @@ THE SOFTWARE.
                             <configuration>
                                 <target name="check.for.node">
                                     <condition property="node.already.installed" value="true" else="false">
-                                        <resourceexists><file file="node/${node.exe.file}" /></resourceexists>
+                                        <resourceexists><file file="node/iojs-v${iojs.version}" /></resourceexists>
                                     </condition>                                    
                                 </target>
                                 <exportAntProperties>true</exportAntProperties>
@@ -888,6 +888,10 @@ THE SOFTWARE.
                                             <include name="**/*"/>
                                         </fileset>
                                     </chmod>
+                                    
+                                    <!-- Create a version based marker file -->
+                                    <touch file="node/iojs-v${iojs.version}" />
+                                    
                                 </target>
                             </configuration>
                             <goals><goal>run</goal></goals>
