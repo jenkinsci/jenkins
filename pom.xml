@@ -867,7 +867,7 @@ THE SOFTWARE.
                             <configuration>
                                 <target name="install" unless="${node.already.installed}">
                                     <!-- 
-                                    Rest everything
+                                    Reset everything
                                     -->
                                     <delete dir="node"/>
                                     <mkdir dir="node"/>
@@ -889,7 +889,7 @@ THE SOFTWARE.
                                         </fileset>
                                     </chmod>
                                     
-                                    <!-- Create a version based marker file -->
+                                    <!-- Create a version based installation marker file. Used in "check.for.node" execution (above). -->
                                     <touch file="node/iojs-v${iojs.version}" />
                                     
                                 </target>
