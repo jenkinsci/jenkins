@@ -29,6 +29,8 @@ import com.thoughtworks.xstream.converters.ConversionException;
 
 /**
  * Wraps {@link XStreamException} to indicate it is critical for Jenkins.
+ * 
+ * @since 1.625
  */
 public class CriticalXStreamException extends ConversionException {
     private static final long serialVersionUID = 1L;
