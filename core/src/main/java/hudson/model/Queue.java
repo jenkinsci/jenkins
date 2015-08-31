@@ -1551,35 +1551,35 @@ public class Queue extends ResourceController implements Saveable {
     private @CheckForNull Runnable makeBuildable(final BuildableItem p) {
         if (p.task instanceof FlyweightTask) {
             if (!isBlockedByShutdown(p.task)) {
-            Jenkins h = Jenkins.getInstance();
-            Map<Node,Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
+                Jenkins h = Jenkins.getInstance();
+                Map<Node,Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
 
-            // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
-            hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
+                // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
+                hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
 
-            for (Node n : h.getNodes()) {
-                hashSource.put(n, n.getNumExecutors() * 100);
-            }
+                for (Node n : h.getNodes()) {
+                    hashSource.put(n, n.getNumExecutors() * 100);
+                }
 
-            ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
-            hash.addAll(hashSource);
+                ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
+                hash.addAll(hashSource);
 
-            Label lbl = p.getAssignedLabel();
-            for (Node n : hash.list(p.task.getFullDisplayName())) {
-                final Computer c = n.toComputer();
-                //    if (c==null || c.isOffline())    continue;
-                //    if (lbl!=null && !lbl.contains(n))  continue;
+                Label lbl = p.getAssignedLabel();
+                for (Node n : hash.list(p.task.getFullDisplayName())) {
+                    final Computer c = n.toComputer();
+                    //    if (c==null || c.isOffline())    continue;
+                    //    if (lbl!=null && !lbl.contains(n))  continue;
 
-                if (n.canTake(p) != null) continue;
-                if (c==null || c.isOffline()) continue;
-                return new Runnable() {
-                    @Override public void run() {
-                        c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                        p.leave(Queue.this);
-                        makePending(p);
-                    }
-                };
-            }
+                    if (n.canTake(p) != null) continue;
+                    if (c==null || c.isOffline()) continue;
+                    return new Runnable() {
+                        @Override public void run() {
+                            c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+                            p.leave(Queue.this);
+                            makePending(p);
+                        }
+                    };
+                }
             }
             // if the execution get here, it means we couldn't schedule it anywhere.
             return null;
