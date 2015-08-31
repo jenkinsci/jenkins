@@ -195,6 +195,17 @@ public class Queue extends ResourceController implements Saveable {
     private final ItemList<BlockedItem> blockedProjects = new ItemList<BlockedItem>();
 
     /**
+     * List of type {@link FlyWeightItem}.
+     *
+     * <p>
+     * This consists of {@link Item}s which require one additional executor,
+     * which is a temporary executor, to manage the execution of its nested tasks.
+     * This applies to Matrix project.
+     */
+
+    private final ItemList<FlyWeightItem> flyWeightTasks = new ItemList<FlyWeightItem>();
+
+    /**
      * {@link Task}s that can be built immediately
      * that are waiting for available {@link Executor}.
      * This list is sorted in such a way that earlier items are built earlier.
@@ -1427,6 +1438,20 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
+            //this is to solve OSS-192. We iterate on the list of flyweight tasks and execute them
+            List<FlyWeightItem> flyweightItems = new ArrayList<>(flyWeightTasks.values());
+            for (FlyWeightItem f : flyweightItems) {
+                if (!isBuildBlocked(f)) {
+                    // ready to be executed
+                    Runnable r = makeBuildable(new BuildableItem(f));
+                    if (r != null) {
+                        f.leave(this);
+                        r.run();
+                        updateSnapshot();
+                    }
+                }
+            }
+
             // waitingList -> buildable/blocked
             while (!waitingList.isEmpty()) {
                 WaitingItem top = peek();
@@ -1442,7 +1467,8 @@ public class Queue extends ResourceController implements Saveable {
                     if (r != null) {
                         r.run();
                     } else {
-                        new BlockedItem(top).enter(this);
+                        new BuildableItem(top).enter(this);
+                        new FlyWeightItem(top).enter(this);
                     }
                 } else {
                     // this can't be built now because another build is in progress
@@ -1460,6 +1486,9 @@ public class Queue extends ResourceController implements Saveable {
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<BuildableItem>(
                     buildables)) {// copy as we'll mutate the list in the loop
+                if (p.task instanceof FlyweightTask){
+                    continue;
+                }
                 // one last check to make sure this build is not blocked.
                 if (isBuildBlocked(p)) {
                     p.leave(this);
@@ -1538,12 +1567,15 @@ public class Queue extends ResourceController implements Saveable {
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 final Computer c = n.toComputer();
-                if (c==null || c.isOffline())    continue;
-                if (lbl!=null && !lbl.contains(n))  continue;
+                //    if (c==null || c.isOffline())    continue;
+                //    if (lbl!=null && !lbl.contains(n))  continue;
+
                 if (n.canTake(p) != null) continue;
+                if (c==null || c.isOffline()) continue;
                 return new Runnable() {
                     @Override public void run() {
                         c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+                        p.leave(Queue.this);
                         makePending(p);
                     }
                 };
@@ -2315,6 +2347,71 @@ public class Queue extends ResourceController implements Saveable {
             return r;
         }
     }
+
+    /**
+     * {@link Item} in the {@link Queue#flyWeightTasks} stage.
+     */
+    public final class FlyWeightItem extends NotWaitingItem {
+
+        boolean buildable;
+
+        public FlyWeightItem(WaitingItem wi) {
+            super(wi);
+        }
+
+        public FlyWeightItem(NotWaitingItem ni) {
+            super(ni);
+        }
+
+        public CauseOfBlockage getCauseOfBlockage() {
+            ResourceActivity r = getBlockingActivity(task);
+            if (r != null) {
+                if (r == task) // blocked by itself, meaning another build is in progress
+                    return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
+                return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
+            }
+
+            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
+                CauseOfBlockage cause = d.canRun(this);
+                if (cause != null)
+                    return cause;
+            }
+
+            return task.getCauseOfBlockage();
+        }
+
+        /*package*/ void enter(Queue q) {
+            LOGGER.log(Level.FINE, "{0} is blocked", this);
+            flyWeightTasks.add(this);
+            buildable = true;
+            for (QueueListener ql : QueueListener.all()) {
+                try {
+                    ql.onEnterFlyWeight(this);
+                } catch (Throwable e) {
+                    // don't let this kill the queue
+                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
+                }
+            }
+        }
+
+        /*package*/ boolean leave(Queue q) {
+            boolean r = flyWeightTasks.remove(this);
+            buildable = false;
+            if (r) {
+                LOGGER.log(Level.FINE, "{0} no longer blocked", this);
+                for (QueueListener ql : QueueListener.all()) {
+                    try {
+                        ql.onLeaveFlyWeight(this);
+                    } catch (Throwable e) {
+                        // don't let this kill the queue
+                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
+                    }
+                }
+            }
+            return r;
+        }
+    }
+
 
     /**
      * {@link Item} in the {@link Queue#buildables} stage.

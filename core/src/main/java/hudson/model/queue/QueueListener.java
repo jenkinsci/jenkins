@@ -9,6 +9,7 @@ import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.LeftItem;
 import hudson.model.Queue.WaitingItem;
+import hudson.model.Queue.FlyWeightItem;
 import jenkins.model.Jenkins;
 
 import java.util.concurrent.Executor;
@@ -29,6 +30,9 @@ import java.util.concurrent.Executor;
  * @since 1.520
  */
 public abstract class QueueListener implements ExtensionPoint {
+
+    public void onEnterFlyWeight(FlyWeightItem fw) {}
+    public void onLeaveFlyWeight(FlyWeightItem fw) {}
     /**
      * When a task is submitted to the queue, it first gets to the waiting phase,
      * where it spends until the quiet period runs out and the item becomes executable.
