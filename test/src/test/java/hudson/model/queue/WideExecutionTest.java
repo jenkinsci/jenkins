@@ -95,7 +95,7 @@ public class WideExecutionTest {
         }
     }
 
-    @Issue("OSS-192")
+    @Issue("JENKINS-30084")
     @Test
     /*
      * this is to test that when the assigned executor is not available the flyweighttask is put into the buildable list,

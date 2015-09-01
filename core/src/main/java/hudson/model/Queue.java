@@ -1438,7 +1438,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            //this is to solve OSS-192. We iterate on the list of flyweight tasks and execute them
+            //this is to solve JENKINS-30084. We iterate on the list of flyweight tasks and execute them
             List<FlyWeightItem> flyweightItems = new ArrayList<>(flyWeightTasks.values());
             for (FlyWeightItem f : flyweightItems) {
                 if (!isBuildBlocked(f)) {
@@ -2356,8 +2356,6 @@ public class Queue extends ResourceController implements Saveable {
      * {@link Item} in the {@link Queue#flyWeightTasks} stage.
      */
     public final class FlyWeightItem extends NotWaitingItem {
-
-        boolean buildable;
 
         public FlyWeightItem(WaitingItem wi) {
             super(wi);
