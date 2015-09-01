@@ -1534,20 +1534,22 @@ public class Queue extends ResourceController implements Saveable {
             if (!isBlockedByShutdown(p.task)) {
 
                 Runnable runnable = buildOnTemporaryNode(p);
-                //this is to solve JENKINS-30084: the task has to be buildable to force
-                //the provisioning of nodes
-                //if the execution gets here, it means the task could not be scheduled since the node
-                //the task is supposed to run on is offline
+
                 if(runnable!=null){
                     return runnable;
                 }
+
+                //this is to solve JENKINS-30084: the task has to be buildable to force the provisioning of nodes.
+                //if the execution gets here, it means the task could not be scheduled since the node
+                //the task is supposed to run on is offline or not available.
                 return new Runnable() {
                     @Override public void run() {
+                        //the flyweighttask enters the buildables queue and will ask Jenkins to provision a node
                         p.enter(Queue.this);
                     }
                 };
             }
-            // if the execution gets here, it means the task is blocked by shutdown.
+            // if the execution gets here, it means the task is blocked by shutdown and null is returned.
             return null;
         } else { // regular heavyweight task
             return new Runnable() {
