@@ -1469,6 +1469,7 @@ public class Queue extends ResourceController implements Saveable {
                     } else {
                         new BuildableItem(top).enter(this);
                         new FlyWeightItem(top).enter(this);
+                        updateSnapshot();
                     }
                 } else {
                     // this can't be built now because another build is in progress
@@ -1574,9 +1575,10 @@ public class Queue extends ResourceController implements Saveable {
                     if (c==null || c.isOffline()) continue;
                     return new Runnable() {
                         @Override public void run() {
+                            //p.leave(Queue.this); this won t work
+                            buildables.get(p.task).leave(Queue.this);
                             c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                            p.leave(Queue.this);
-                            makePending(p);
+                            updateSnapshot();
                         }
                     };
                 }
