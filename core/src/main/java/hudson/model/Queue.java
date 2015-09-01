@@ -1442,10 +1442,7 @@ public class Queue extends ResourceController implements Saveable {
                     if (r != null) {
                         r.run();
                     } else {
-                        //this is to solve JENKINS-30084: the task has to be buildable to force
-                        //the provisioning of nodes
-                        new BuildableItem(top).enter(this);
-
+                        new BlockedItem(top).enter(this);
                     }
                 } else {
                     // this can't be built now because another build is in progress
@@ -1560,8 +1557,17 @@ public class Queue extends ResourceController implements Saveable {
                         }
                     };
                 }
+                //this is to solve JENKINS-30084: the task has to be buildable to force
+                //the provisioning of nodes
+                //if the execution gets here, it means the task could not be scheduled since the node
+                //the task is supposed to run on is offline
+                return new Runnable() {
+                    @Override public void run() {
+                        p.enter(Queue.this);
+                    }
+                };
             }
-            // if the execution get here, it means we couldn't schedule it anywhere.
+            // if the execution gets here, it means the task is blocked by shutdown.
             return null;
         } else { // regular heavyweight task
             return new Runnable() {
