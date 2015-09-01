@@ -1576,7 +1576,9 @@ public class Queue extends ResourceController implements Saveable {
                     return new Runnable() {
                         @Override public void run() {
                             //p.leave(Queue.this); this won t work
-                            buildables.get(p.task).leave(Queue.this);
+                            if(buildables.get(p.task)!=null){
+                                buildables.get(p.task).leave(Queue.this);
+                            }
                             c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
                             updateSnapshot();
                         }
