@@ -794,10 +794,11 @@ public class QueueTest {
         project.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
+        Label label = LabelExpression.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
-        dummyCloud.label = LabelExpression.get("aws-linux-dummy");
-        r.getInstance().clouds.add(dummyCloud);
-        project.setAssignedLabel(LabelExpression.get("aws-linux-dummy"));
+        dummyCloud.label = label;
+        r.jenkins.clouds.add(dummyCloud);
+        project.setAssignedLabel(label);
         r.assertBuildStatusSuccess(project.scheduleBuild2(0));
     }
 
