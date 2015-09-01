@@ -195,17 +195,6 @@ public class Queue extends ResourceController implements Saveable {
     private final ItemList<BlockedItem> blockedProjects = new ItemList<BlockedItem>();
 
     /**
-     * List of type {@link FlyWeightItem}.
-     *
-     * <p>
-     * This consists of {@link Item}s which require one additional executor,
-     * which is a temporary executor, to manage the execution of its nested tasks.
-     * This applies to Matrix project.
-     */
-
-    private final ItemList<FlyWeightItem> flyWeightTasks = new ItemList<FlyWeightItem>();
-
-    /**
      * {@link Task}s that can be built immediately
      * that are waiting for available {@link Executor}.
      * This list is sorted in such a way that earlier items are built earlier.
@@ -1438,20 +1427,6 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            //this is to solve JENKINS-30084. We iterate on the list of flyweight tasks and execute them
-            List<FlyWeightItem> flyweightItems = new ArrayList<>(flyWeightTasks.values());
-            for (FlyWeightItem f : flyweightItems) {
-                if (!isBuildBlocked(f)) {
-                    // ready to be executed
-                    Runnable r = makeBuildable(new BuildableItem(f));
-                    if (r != null) {
-                        f.leave(this);
-                        r.run();
-                        updateSnapshot();
-                    }
-                }
-            }
-
             // waitingList -> buildable/blocked
             while (!waitingList.isEmpty()) {
                 WaitingItem top = peek();
@@ -1467,9 +1442,10 @@ public class Queue extends ResourceController implements Saveable {
                     if (r != null) {
                         r.run();
                     } else {
+                        //this is to solve JENKINS-30084: the task has to be buildable to force
+                        //the provisioning of nodes
                         new BuildableItem(top).enter(this);
-                        new FlyWeightItem(top).enter(this);
-                        updateSnapshot();
+
                     }
                 } else {
                     // this can't be built now because another build is in progress
@@ -1487,57 +1463,64 @@ public class Queue extends ResourceController implements Saveable {
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<BuildableItem>(
                     buildables)) {// copy as we'll mutate the list in the loop
-                if (p.task instanceof FlyweightTask){
-                    continue;
+                if (p.task instanceof FlyweightTask) {
+                    Runnable r = makeBuildable(new BuildableItem(p));
+                    if (r != null) {
+                        p.leave(this);
+                        r.run();
+                        updateSnapshot();
+                    }
                 }
-                // one last check to make sure this build is not blocked.
-                if (isBuildBlocked(p)) {
+                else {
+                    // one last check to make sure this build is not blocked.
+                    if (isBuildBlocked(p)) {
+                        p.leave(this);
+                        new BlockedItem(p).enter(this);
+                        LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
+                        // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
+                        // so that other buildables which might have been blocked by this can see the state change
+                        updateSnapshot();
+                        continue;
+                    }
+
+                    List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
+                    for (JobOffer j : parked.values())
+                        if (j.canTake(p))
+                            candidates.add(j);
+
+                    MappingWorksheet ws = new MappingWorksheet(p, candidates);
+                    Mapping m = loadBalancer.map(p.task, ws);
+                    if (m == null) {
+                        // if we couldn't find the executor that fits,
+                        // just leave it in the buildables list and
+                        // check if we can execute other projects
+                        LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
+                                new Object[]{p, candidates, parked.values()});
+                        continue;
+                    }
+
+                    // found a matching executor. use it.
+                    WorkUnitContext wuc = new WorkUnitContext(p);
+                    m.execute(wuc);
+
                     p.leave(this);
-                    new BlockedItem(p).enter(this);
-                    LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
-                    // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
-                    // so that other buildables which might have been blocked by this can see the state change
+                    if (!wuc.getWorkUnits().isEmpty())
+                        makePending(p);
+                    else
+                        LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
+
+                    // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
+                    // The creation of a snapshot itself should be relatively cheap given the expected rate of
+                    // job execution. You probably would need 100's of jobs starting execution every iteration
+                    // of maintain() before this could even start to become an issue and likely the calculation
+                    // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
+                    // since the snapshot itself only ever has at most one reference originating outside of the stack
+                    // it should remain in the eden space and thus be cheap to GC.
+                    // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                    // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                    // for alternative fixes of this issue.
                     updateSnapshot();
-                    continue;
                 }
-
-                List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
-                for (JobOffer j : parked.values())
-                    if (j.canTake(p))
-                        candidates.add(j);
-
-                MappingWorksheet ws = new MappingWorksheet(p, candidates);
-                Mapping m = loadBalancer.map(p.task, ws);
-                if (m == null) {
-                    // if we couldn't find the executor that fits,
-                    // just leave it in the buildables list and
-                    // check if we can execute other projects
-                    LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
-                            new Object[]{p, candidates, parked.values()});
-                    continue;
-                }
-
-                // found a matching executor. use it.
-                WorkUnitContext wuc = new WorkUnitContext(p);
-                m.execute(wuc);
-
-                p.leave(this);
-                if (!wuc.getWorkUnits().isEmpty())
-                    makePending(p);
-                else
-                    LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
-                                
-                // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
-                // The creation of a snapshot itself should be relatively cheap given the expected rate of
-                // job execution. You probably would need 100's of jobs starting execution every iteration
-                // of maintain() before this could even start to become an issue and likely the calculation
-                // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
-                // since the snapshot itself only ever has at most one reference originating outside of the stack
-                // it should remain in the eden space and thus be cheap to GC.
-                // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
-                // for alternative fixes of this issue.
-                updateSnapshot();
             }
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
@@ -1565,22 +1548,15 @@ public class Queue extends ResourceController implements Saveable {
                 ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
                 hash.addAll(hashSource);
 
-                Label lbl = p.getAssignedLabel();
                 for (Node n : hash.list(p.task.getFullDisplayName())) {
                     final Computer c = n.toComputer();
-                    //    if (c==null || c.isOffline())    continue;
-                    //    if (lbl!=null && !lbl.contains(n))  continue;
-
                     if (n.canTake(p) != null) continue;
                     if (c==null || c.isOffline()) continue;
                     return new Runnable() {
                         @Override public void run() {
-                            //p.leave(Queue.this); this won t work
-                            if(buildables.get(p.task)!=null){
-                                buildables.get(p.task).leave(Queue.this);
-                            }
                             c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                            updateSnapshot();
+                            makePending(p);
+
                         }
                     };
                 }
@@ -2351,69 +2327,6 @@ public class Queue extends ResourceController implements Saveable {
             return r;
         }
     }
-
-    /**
-     * {@link Item} in the {@link Queue#flyWeightTasks} stage.
-     */
-    public final class FlyWeightItem extends NotWaitingItem {
-
-        public FlyWeightItem(WaitingItem wi) {
-            super(wi);
-        }
-
-        public FlyWeightItem(NotWaitingItem ni) {
-            super(ni);
-        }
-
-        public CauseOfBlockage getCauseOfBlockage() {
-            ResourceActivity r = getBlockingActivity(task);
-            if (r != null) {
-                if (r == task) // blocked by itself, meaning another build is in progress
-                    return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
-                return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
-            }
-
-            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-                CauseOfBlockage cause = d.canRun(this);
-                if (cause != null)
-                    return cause;
-            }
-
-            return task.getCauseOfBlockage();
-        }
-
-        /*package*/ void enter(Queue q) {
-            LOGGER.log(Level.FINE, "{0} is blocked", this);
-            flyWeightTasks.add(this);
-            buildable = true;
-            for (QueueListener ql : QueueListener.all()) {
-                try {
-                    ql.onEnterFlyWeight(this);
-                } catch (Throwable e) {
-                    // don't let this kill the queue
-                    LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                }
-            }
-        }
-
-        /*package*/ boolean leave(Queue q) {
-            boolean r = flyWeightTasks.remove(this);
-            buildable = false;
-            if (r) {
-                LOGGER.log(Level.FINE, "{0} no longer blocked", this);
-                for (QueueListener ql : QueueListener.all()) {
-                    try {
-                        ql.onLeaveFlyWeight(this);
-                    } catch (Throwable e) {
-                        // don't let this kill the queue
-                        LOGGER.log(Level.WARNING, "QueueListener failed while processing "+this,e);
-                    }
-                }
-            }
-            return r;
-        }
-    }
-
 
     /**
      * {@link Item} in the {@link Queue#buildables} stage.
