@@ -24,6 +24,7 @@
 package hudson.model.queue;
 
 import static org.junit.Assert.assertEquals;
+
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Executor;
