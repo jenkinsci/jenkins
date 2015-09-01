@@ -31,7 +31,15 @@ import java.util.concurrent.Executor;
  */
 public abstract class QueueListener implements ExtensionPoint {
 
+    /**
+     * When a flyWeightTask is submitted to the waiting queue, but it is restricted
+     * to run on an offline node, then it gets added to the flyWeightTasks queue.
+     */
     public void onEnterFlyWeight(FlyWeightItem fw) {}
+    /**
+     * When the executor of the flyWeightTask becomes available, the tasks is removed
+     * from the list and executed.
+     */
     public void onLeaveFlyWeight(FlyWeightItem fw) {}
     /**
      * When a task is submitted to the queue, it first gets to the waiting phase,
