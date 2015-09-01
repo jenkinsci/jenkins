@@ -24,22 +24,30 @@
 package hudson.model.queue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import hudson.matrix.Axis;
+import hudson.matrix.AxisList;
+import hudson.matrix.MatrixProject;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Executor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import hudson.model.labels.LabelExpression;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -85,6 +93,33 @@ public class WideExecutionTest {
                 }
             });
         }
+    }
+
+    @Issue("OSS-192")
+    @Test
+    /*
+     * this is to test that when the assigned executor is not available the flyweighttask is put into the buildable list,
+     * thus the node will be provisioned.
+     * when the flyweight task is not assigned to an offline executors the buildable list is empty.
+     *
+     */
+    public void flyWeightTaskQueue () throws IOException {
+        MatrixProject project2 = j.createMatrixProject();
+        project2.setAxes(new AxisList(
+                new Axis("axis", "a", "b")
+        ));
+        project2.scheduleBuild2(0);
+        Queue.getInstance().maintain();
+        assertTrue(Queue.getInstance().getBuildableItems().isEmpty());
+        MatrixProject project = j.createMatrixProject();
+        project.setAxes(new AxisList(
+                new Axis("axis", "a", "b")
+        ));
+        project.setAssignedLabel(LabelExpression.get("aws-linux"));
+        project.scheduleBuild2(0);
+        Queue.getInstance().maintain();
+        assertTrue(Queue.getInstance().getBuildableItems().get(0).task.equals(project));
+        assertEquals(Queue.getInstance().getBuildableItems().get(0).getAssignedLabel().getExpression(), "aws-linux");
     }
 
     @Test
