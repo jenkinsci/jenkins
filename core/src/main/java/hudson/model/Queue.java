@@ -1461,7 +1461,7 @@ public class Queue extends ResourceController implements Saveable {
             for (BuildableItem p : new ArrayList<BuildableItem>(
                     buildables)) {// copy as we'll mutate the list in the loop
                 if (p.task instanceof FlyweightTask) {
-                    Runnable r = makeBuildable(new BuildableItem(p));
+                    Runnable r = buildOnTemporaryNode(new BuildableItem(p));
                     if (r != null) {
                         p.leave(this);
                         r.run();
@@ -1532,35 +1532,15 @@ public class Queue extends ResourceController implements Saveable {
     private @CheckForNull Runnable makeBuildable(final BuildableItem p) {
         if (p.task instanceof FlyweightTask) {
             if (!isBlockedByShutdown(p.task)) {
-                Jenkins h = Jenkins.getInstance();
-                Map<Node,Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
 
-                // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
-                hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
-
-                for (Node n : h.getNodes()) {
-                    hashSource.put(n, n.getNumExecutors() * 100);
-                }
-
-                ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
-                hash.addAll(hashSource);
-
-                for (Node n : hash.list(p.task.getFullDisplayName())) {
-                    final Computer c = n.toComputer();
-                    if (n.canTake(p) != null) continue;
-                    if (c==null || c.isOffline()) continue;
-                    return new Runnable() {
-                        @Override public void run() {
-                            c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                            makePending(p);
-
-                        }
-                    };
-                }
+                Runnable runnable = buildOnTemporaryNode(p);
                 //this is to solve JENKINS-30084: the task has to be buildable to force
                 //the provisioning of nodes
                 //if the execution gets here, it means the task could not be scheduled since the node
                 //the task is supposed to run on is offline
+                if(runnable!=null){
+                    return runnable;
+                }
                 return new Runnable() {
                     @Override public void run() {
                         p.enter(Queue.this);
@@ -1578,6 +1558,34 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
 
+    private Runnable buildOnTemporaryNode(final BuildableItem p){
+        Jenkins h = Jenkins.getInstance();
+        Map<Node,Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
+
+        // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
+        hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
+
+        for (Node n : h.getNodes()) {
+            hashSource.put(n, n.getNumExecutors() * 100);
+        }
+
+        ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
+        hash.addAll(hashSource);
+
+        for (Node n : hash.list(p.task.getFullDisplayName())) {
+            final Computer c = n.toComputer();
+            if (n.canTake(p) != null) continue;
+            if (c==null || c.isOffline()) continue;
+            return new Runnable() {
+                @Override public void run() {
+                    c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+                    makePending(p);
+
+                }
+            };
+        }
+        return null;
+    }
 
     private static Hash<Node> NODE_HASH = new Hash<Node>() {
         public String hash(Node node) {
