@@ -95,33 +95,6 @@ public class WideExecutionTest {
         }
     }
 
-    @Issue("JENKINS-30084")
-    @Test
-    /*
-     * this is to test that when the assigned executor is not available the flyweighttask is put into the buildable list,
-     * thus the node will be provisioned.
-     * when the flyweight task is not assigned to an offline executors the buildable list is empty.
-     *
-     */
-    public void flyWeightTaskQueue () throws IOException {
-        MatrixProject project2 = j.createMatrixProject();
-        project2.setAxes(new AxisList(
-                new Axis("axis", "a", "b")
-        ));
-        project2.scheduleBuild2(0);
-        Queue.getInstance().maintain();
-        assertTrue(Queue.getInstance().getBuildableItems().isEmpty());
-        MatrixProject project = j.createMatrixProject();
-        project.setAxes(new AxisList(
-                new Axis("axis", "a", "b")
-        ));
-        project.setAssignedLabel(LabelExpression.get("aws-linux"));
-        project.scheduleBuild2(0);
-        Queue.getInstance().maintain();
-        assertTrue(Queue.getInstance().getBuildableItems().get(0).task.equals(project));
-        assertEquals(Queue.getInstance().getBuildableItems().get(0).getAssignedLabel().getExpression(), "aws-linux");
-    }
-
     @Test
     public void run() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();

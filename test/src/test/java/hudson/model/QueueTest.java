@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.Launcher;
 import hudson.XmlFile;
+import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixBuild;
@@ -41,6 +42,7 @@ import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
+import hudson.model.labels.LabelExpression;
 import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
@@ -780,4 +782,25 @@ public class QueueTest {
                 "B finished at " + buildBEndTime + ", C started at " + buildC.getStartTimeInMillis(), 
                 buildC.getStartTimeInMillis() >= buildBEndTime);
     }
+
+    @Issue("JENKINS-30084")
+    @Test
+    /*
+     * this is to test that when the assigned executor is not available the flyweighttask is put into the buildable list,
+     * thus the node will be provisioned.
+     * when the flyweight task is not assigned to an offline executors the buildable list is empty.
+     *
+     */
+    public void flyWeightTaskQueue () throws Exception {
+        MatrixProject project = r.createMatrixProject();
+        project.setAxes(new AxisList(
+                new Axis("axis", "a", "b")
+        ));
+        DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
+        dummyCloud.label = LabelExpression.get("aws-linux-dummy");
+        r.getInstance().clouds.add(dummyCloud);
+        project.setAssignedLabel(LabelExpression.get("aws-linux-dummy"));
+        r.assertBuildStatusSuccess(project.scheduleBuild2(0));
+    }
+
 }
