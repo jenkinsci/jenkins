@@ -786,10 +786,8 @@ public class QueueTest {
     @Issue("JENKINS-30084")
     @Test
     /*
-     * this is to test that when the assigned executor is not available the flyweighttask is put into the buildable list,
-     * thus the node will be provisioned.
-     * when the flyweight task is not assigned to an offline executors the buildable list is empty.
-     *
+     * When a flyweight task is restricted to run on a specific node, the node will be provisioned
+     * and the flyweight task will be executed.
      */
     public void flyWeightTaskQueue () throws Exception {
         MatrixProject project = r.createMatrixProject();
