@@ -34,6 +34,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <!-- same version as in org.jenkins-ci.main:pom -->
+    <slf4jVersion>1.7.7</slf4jVersion>
   </properties>
 
   <dependencies>
@@ -79,6 +81,32 @@
       <version>1.9</version>
       <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
+    </dependency>
+    <!-- mark logging dependencies as provided by war -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- make binding to java.util.logging available during tests -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

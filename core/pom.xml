@@ -401,10 +401,6 @@ THE SOFTWARE.
           <groupId>org.springframework</groupId>
           <artifactId>spring-support</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -473,8 +469,8 @@ THE SOFTWARE.
       <version>1.1.0</version>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
