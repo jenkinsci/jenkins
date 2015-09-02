@@ -118,6 +118,31 @@
     <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.sonatype.sisu:sisu-guice</exclude>
+                    <exclude>log4j:log4j:*:jar:compile</exclude>
+                    <exclude>log4j:log4j:*:jar:runtime</exclude>
+                    <exclude>commons-logging:commons-logging:*:jar:compile</exclude>
+                    <exclude>commons-logging:commons-logging:*:jar:runtime</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
         <extensions>true</extensions>
