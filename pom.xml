@@ -671,6 +671,8 @@ THE SOFTWARE.
                 <bannedDependencies>
                   <excludes>
                     <exclude>org.sonatype.sisu:sisu-guice</exclude>
+                    <exclude>log4j:log4j</exclude>
+                    <exclude>commons-logging:commons-logging</exclude>
                   </excludes>
                 </bannedDependencies>
               </rules>
