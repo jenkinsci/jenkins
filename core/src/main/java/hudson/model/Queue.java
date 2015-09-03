@@ -1461,7 +1461,7 @@ public class Queue extends ResourceController implements Saveable {
             for (BuildableItem p : new ArrayList<BuildableItem>(
                     buildables)) {// copy as we'll mutate the list in the loop
                 if (p.task instanceof FlyweightTask) {
-                    Runnable r = buildOnTemporaryNode(new BuildableItem(p));
+                    Runnable r = makeFlyWeightTaskBuildable(new BuildableItem(p));
                     if (r != null) {
                         p.leave(this);
                         r.run();
@@ -1533,7 +1533,7 @@ public class Queue extends ResourceController implements Saveable {
         if (p.task instanceof FlyweightTask) {
             if (!isBlockedByShutdown(p.task)) {
 
-                Runnable runnable = buildOnTemporaryNode(p);
+                Runnable runnable = makeFlyWeightTaskBuildable(p);
 
                 if(runnable!=null){
                     return runnable;
@@ -1560,31 +1560,40 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
 
-    private Runnable buildOnTemporaryNode(final BuildableItem p){
-        Jenkins h = Jenkins.getInstance();
-        Map<Node,Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
+    /**
+     * This method checks if the flyweight task can be run on any of the available executors
+     * @param p - the flyweight task to be scheduled
+     * @return a Runnable if there is an executor that can take the task, null otherwise
+     */
+    private Runnable makeFlyWeightTaskBuildable(final BuildableItem p){
+        //we double check if this is a flyweight task
+        if (p.task instanceof FlyweightTask) {
+            Jenkins h = Jenkins.getInstance();
+            Map<Node, Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
 
-        // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
-        hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
+            // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
+            hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
 
-        for (Node n : h.getNodes()) {
-            hashSource.put(n, n.getNumExecutors() * 100);
-        }
+            for (Node n : h.getNodes()) {
+                hashSource.put(n, n.getNumExecutors() * 100);
+            }
 
-        ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
-        hash.addAll(hashSource);
+            ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
+            hash.addAll(hashSource);
 
-        for (Node n : hash.list(p.task.getFullDisplayName())) {
-            final Computer c = n.toComputer();
-            if (n.canTake(p) != null) continue;
-            if (c==null || c.isOffline()) continue;
-            return new Runnable() {
-                @Override public void run() {
-                    c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                    makePending(p);
+            for (Node n : hash.list(p.task.getFullDisplayName())) {
+                final Computer c = n.toComputer();
+                if (n.canTake(p) != null) continue;
+                if (c == null || c.isOffline()) continue;
+                return new Runnable() {
+                    @Override
+                    public void run() {
+                        c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+                        makePending(p);
 
-                }
-            };
+                    }
+                };
+            }
         }
         return null;
     }
