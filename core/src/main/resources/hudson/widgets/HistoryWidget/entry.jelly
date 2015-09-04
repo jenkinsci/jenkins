@@ -29,6 +29,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set var="link" value="${it.baseUrl}/${build.number}/" />
   <j:set var="transitive" value="${(it.firstTransientBuildKey!=null and (it.adapter.compare(build,it.firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
+  <j:if test="${!h.isAnonymous()}">
+    <j:invokeStatic var="userHasDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="currentUserUseDisplayTimezone" />
+    <j:if test="${userHasDisplayTimeZone}">
+      <j:invokeStatic var="userDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="currentUserGetDisplayTimezone" />
+      <i:setTimeZone value="${userDisplayTimeZone}"/>
+    </j:if>
+  </j:if>
   <tr class="build-row ${transitive} single-line">
     <td class="build-row-cell">
       <div class="pane build-name">

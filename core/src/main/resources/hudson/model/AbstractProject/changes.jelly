@@ -27,6 +27,13 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:if test="${!h.isAnonymous()}">
+    <j:invokeStatic var="userHasDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="currentUserUseDisplayTimezone" />
+    <j:if test="${userHasDisplayTimeZone}">
+      <j:invokeStatic var="userDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="currentUserGetDisplayTimezone" />
+      <i:setTimeZone value="${userDisplayTimeZone}"/>
+    </j:if>
+  </j:if>
   <l:layout title="${%changes.title(it.name)}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
