@@ -24,6 +24,8 @@
 package hudson.model;
 
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import javax.annotation.Nonnull;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -48,8 +50,23 @@ public class SlaveTest2 {
     public void shouldNotEscapeJnlpSlavesResources() throws Exception {
         Slave slave = rule.createSlave();
         
+        // Spot-check correct requests
+        assertJnlpJarUrlIsAllowed(slave, "slave.jar");
+        assertJnlpJarUrlIsAllowed(slave, "jenkins-cli.jar");
+        
+        // Go to the upper level
+        assertJnlpJarUrlFails(slave, "../");
+        assertJnlpJarUrlFails(slave, "..");
+        assertJnlpJarUrlFails(slave, "..\\");
+        assertJnlpJarUrlFails(slave, "../foo/bar");
+        assertJnlpJarUrlFails(slave, "..\\foo\\bar");
+        assertJnlpJarUrlFails(slave, "foo/../../bar");
+        assertJnlpJarUrlFails(slave, "./../foo/bar");
+    }
+    
+    private void assertJnlpJarUrlFails(@Nonnull Slave slave, @Nonnull String url) throws Exception {
         // Raw access to API
-        Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars("../");
+        Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars(url);
         try {
             jnlpJar.getURL();
         } catch (MalformedURLException ex) {
@@ -57,10 +74,23 @@ public class SlaveTest2 {
             ex.printStackTrace();
             return;
         }
-        fail("Expected the MalformedURLException");
+        fail("Expected the MalformedURLException for " + url);
         
         // Access from a Web client
         JenkinsRule.WebClient client = rule.createWebClient();
-        client.assertFails("jnlpJars/..%f", 500);
+        client.assertFails("jnlpJars/" + URLEncoder.encode(url, "UTF-8"), 500);
+    }
+    
+    private void assertJnlpJarUrlIsAllowed(@Nonnull Slave slave, @Nonnull String url) throws Exception {
+        // Raw access to API
+        Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars(url);
+        assertNotNull(jnlpJar.getURL());
+ 
+        
+        // Access from a Web client
+        JenkinsRule.WebClient client = rule.createWebClient();
+        client.getPage(client.getContextPath() + "jnlpJars/" + URLEncoder.encode(url, "UTF-8")).getWebResponse().getContentAsString();
+        client.getPage(jnlpJar.getURL()).getWebResponse().getContentAsString();
+        
     }
 }
