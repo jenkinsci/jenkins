@@ -23,9 +23,12 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.Launcher;
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
@@ -39,11 +42,16 @@ import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.queue.AbstractQueueTask;
+import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.SubTask;
 import hudson.security.ACL;
+import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.Permission;
+import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.DummyCloudImpl;
@@ -58,7 +66,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -84,7 +95,9 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.ServletHandler;
@@ -413,11 +426,11 @@ public class QueueTest extends HudsonTestCase {
         FreeStyleBuild b = v.waitForStart();
         assertEquals(1,b.getNumber());
         assertTrue(b.isBuilding());
-        assertSame(p,b.getProject());
+        assertSame(p, b.getProject());
 
         ev.signal();    // let the build complete
         FreeStyleBuild b2 = assertBuildStatusSuccess(v);
-        assertSame(b,b2);
+        assertSame(b, b2);
     }
 
     @Inject
@@ -577,6 +590,66 @@ public class QueueTest extends HudsonTestCase {
             f.get(10, TimeUnit.SECONDS);
             fail("Should not get (as it is cancelled).");
         } catch (CancellationException e) {
+        }
+    }
+
+    public void testQueueApiOutputShouldBeFilteredByUserPermission() throws Exception {
+
+        jenkins.setSecurityRealm(createDummySecurityRealm());
+        ProjectMatrixAuthorizationStrategy str = new ProjectMatrixAuthorizationStrategy();
+        str.add(Jenkins.READ, "bob");
+        str.add(Jenkins.READ, "alice");
+        str.add(Jenkins.READ, "james");
+        jenkins.setAuthorizationStrategy(str);
+
+        FreeStyleProject project = createFreeStyleProject("project");
+
+        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
+        permissions.put(Item.READ, Collections.singleton("bob"));
+        permissions.put(Item.DISCOVER, Collections.singleton("james"));
+        AuthorizationMatrixProperty prop1 = new AuthorizationMatrixProperty(permissions);
+        project.addProperty(prop1);
+        project.getBuildersList().add(new SleepBuilder(10));
+        project.scheduleBuild2(0);
+
+        WebClient webClient = new WebClient();
+        webClient.login("bob", "bob");
+        XmlPage p = webClient.goToXml("/queue/api/xml");
+
+        //bob has permission on the project and will be able to see it in the queue together with information such as the URL and the name.
+        for (DomNode element: p.getFirstChild().getFirstChild().getChildNodes()){
+            if(element.getNodeName().equals("task")){
+                assertEquals(((DomElement)element).getElementsByTagName("name").size(),1);
+                assertEquals(((DomElement) element).getElementsByTagName("name").item(0).getFirstChild().toString(), "project");
+                assertEquals(((DomElement)element).getElementsByTagName("url").size(),1);
+            }
+        }
+        WebClient webClient2 = new WebClient();
+        webClient2.login("alice");
+        XmlPage p2 = webClient2.goToXml("/queue/api/xml");
+        //alice does not have permission on the project and will not see it in the queue.
+        assertEquals("<queue></queue>", p2.getContent());
+
+        WebClient webClient3 = new WebClient();
+        webClient3.login("james");
+        XmlPage p3 = webClient3.goToXml("/queue/api/xml");
+        //james has DISCOVER permission on the project and will only be able to see the task name.
+        assertEquals("<queue><discoverableItem><task><name>project</name></task></discoverableItem></queue>",
+                p3.getContent());
+
+    }
+
+    //we force the project not to be executed so that it stays in the queue
+    @TestExtension("testQueueApiOutputShouldBeFilteredByUserPermission")
+    public static class MyQueueTaskDispatcher extends QueueTaskDispatcher {
+        @Override
+        public CauseOfBlockage canTake(Node node, Queue.BuildableItem item) {
+            return new CauseOfBlockage() {
+                @Override
+                public String getShortDescription() {
+                    return "blocked by canTake";
+                }
+            };
         }
     }
 }

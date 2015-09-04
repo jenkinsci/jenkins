@@ -109,6 +109,7 @@ import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.util.AtmostOneTaskExecutor;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.export.Exported;
@@ -694,15 +695,68 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Exported(inline=true)
     public synchronized Item[] getItems() {
-        Item[] r = new Item[waitingList.size() + blockedProjects.size() + buildables.size() + pendings.size()];
-        waitingList.toArray(r);
-        int idx = waitingList.size();
-        for (BlockedItem p : blockedProjects.values())
-            r[idx++] = p;
-        for (BuildableItem p : reverse(buildables.values()))
-            r[idx++] = p;
-        for (BuildableItem p : reverse(pendings.values()))
-            r[idx++] = p;
+        List<Item> r = new ArrayList<Item>();
+
+        for(WaitingItem p : waitingList) {
+            r = filterItemListBasedOnPermissions(r, p);
+        }
+        for (BlockedItem p : blockedProjects.values()){
+            r = filterItemListBasedOnPermissions(r, p);
+        }
+        for (BuildableItem p : reverse(buildables.values())) {
+            r = filterItemListBasedOnPermissions(r, p);
+        }
+        for (BuildableItem p : reverse(pendings.values())) {
+            r= filterItemListBasedOnPermissions(r, p);
+        }
+        Item[] items = new Item[r.size()];
+        r.toArray(items);
+        return items;
+    }
+
+    private List<Item> filterItemListBasedOnPermissions(List<Item> r, Item t) {
+        if (t.task instanceof hudson.model.Item) {
+            if (((hudson.model.Item)t.task).hasPermission(hudson.model.Item.READ)) {
+                r.add(t);
+            }
+        }
+        return r;
+    }
+
+    /**
+     * Returns an array of Item for which it is only visible the name of the task.
+     *
+     * Generally speaking the array is sorted such that the items that are most likely built sooner are
+     * at the end.
+     */
+    @Restricted(NoExternalUse.class)
+    @Exported(inline=true)
+    public synchronized StubItem[] getDiscoverableItems() {
+        List<StubItem> r = new ArrayList<StubItem>();
+
+        for(WaitingItem p : waitingList) {
+            r = filterDiscoverableItemListBasedOnPermissions(r, p);
+        }
+        for (BlockedItem p : blockedProjects.values()){
+            r = filterDiscoverableItemListBasedOnPermissions(r, p);
+        }
+        for (BuildableItem p : reverse(buildables.values())) {
+            r = filterDiscoverableItemListBasedOnPermissions(r, p);
+        }
+        for (BuildableItem p : reverse(pendings.values())) {
+            r= filterDiscoverableItemListBasedOnPermissions(r, p);
+        }
+        StubItem[] items = new StubItem[r.size()];
+        r.toArray(items);
+        return items;
+    }
+
+    private List<StubItem> filterDiscoverableItemListBasedOnPermissions(List<StubItem> r, Item t) {
+        if (t.task instanceof hudson.model.Item) {
+            if (!((hudson.model.Item)t.task).hasPermission(hudson.model.Item.READ) && ((hudson.model.Item)t.task).hasPermission(hudson.model.Item.DISCOVER)) {
+                r.add(new StubItem(new StubTask(t.task)));
+            }
+        }
         return r;
     }
 
@@ -1578,6 +1632,42 @@ public class Queue extends ResourceController implements Saveable {
             boolean r = leave(q);
             if (r)  future.setAsCancelled();
             return r;
+        }
+
+    }
+
+    /**
+     * A Stub class for {@link Task} which exposes only the name of the Task to be displayed when the user
+     * has DISCOVERY permissions only.
+     */
+    @Restricted(NoExternalUse.class)
+    @ExportedBean(defaultVisibility = 999)
+    public static class StubTask {
+
+        private String name;
+
+        public StubTask(@Nonnull Queue.Task base) {
+            this.name = base.getName();
+        }
+
+        @Exported
+        public String getName() {
+            return name;
+        }
+    }
+
+    /**
+     * A Stub class for {@link Item} which exposes only the name of the Task to be displayed when the user
+     * has DISCOVERY permissions only.
+     */
+    @Restricted(NoExternalUse.class)
+    @ExportedBean(defaultVisibility = 999)
+    public class StubItem {
+
+        @Exported public StubTask task;
+
+        public StubItem(StubTask task) {
+            this.task = task;
         }
 
     }
