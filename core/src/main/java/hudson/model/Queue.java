@@ -1541,21 +1541,14 @@ public class Queue extends ResourceController implements Saveable {
                 //this is to solve JENKINS-30084: the task has to be buildable to force the provisioning of nodes.
                 //if the execution gets here, it means the task could not be scheduled since the node
                 //the task is supposed to run on is offline or not available.
-                return new Runnable() {
-                    @Override public void run() {
-                        //the flyweighttask enters the buildables queue and will ask Jenkins to provision a node
-                        p.enter(Queue.this);
-                    }
-                };
+                //Thus, the flyweighttask enters the buildables queue and will ask Jenkins to provision a node
+                return new BuildableRunnable(p);
             }
             // if the execution gets here, it means the task is blocked by shutdown and null is returned.
             return null;
-        } else { // regular heavyweight task
-            return new Runnable() {
-                @Override public void run() {
-                    p.enter(Queue.this);
-                }
-            };
+        } else {
+            // regular heavyweight task
+            return new BuildableRunnable(p);
         }
     }
 
@@ -2709,6 +2702,20 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         public void run() {
             withLock(delegate);
+        }
+    }
+
+    private class BuildableRunnable implements Runnable  {
+        private final BuildableItem buildableItem;
+
+        private BuildableRunnable(BuildableItem p) {
+            this.buildableItem = p;
+        }
+
+        @Override
+        public void run() {
+            //the flyweighttask enters the buildables queue and will ask Jenkins to provision a node
+            buildableItem.enter(Queue.this);
         }
     }
 
