@@ -192,6 +192,8 @@ import hudson.widgets.Widget;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.install.StartupUtil;
+import jenkins.install.StartupUtil;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -4128,14 +4130,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             IOUtils.closeQuietly(is);
         }
         String ver = props.getProperty("version");
-        if(ver==null)   ver="?";
+        if(ver==null)   ver = UNCOMPUTED_VERSION;
         VERSION = ver;
         context.setAttribute("version",ver);
 
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
-        if(ver.equals("?") || Boolean.getBoolean("hudson.script.noCache"))
+        if(ver.equals(UNCOMPUTED_VERSION) || Boolean.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
             RESOURCE_PATH = "/static/"+SESSION_HASH;
@@ -4144,23 +4146,52 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * The version number before it is "computed" (by a call to computeVersion()).
+     */
+    public static final String UNCOMPUTED_VERSION = "?";
+
+    /**
      * Version number of this Jenkins.
      */
-    public static String VERSION="?";
+    public static String VERSION = UNCOMPUTED_VERSION;
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
      */
-    public static VersionNumber getVersion() {
+    public @CheckForNull static VersionNumber getVersion() {
+        return toVersion(VERSION);
+    }
+
+    /**
+     * Get the stored version of Jenkins, as stored by
+     * {@link #doConfigSubmit(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}.
+     * <p>
+     * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
+     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     */
+    public @CheckForNull static VersionNumber getStoredVersion() {
+        return toVersion(Jenkins.getActiveInstance().version);
+    }
+
+    /**
+     * Parses a version string into {@link VersionNumber}, or null if it's not parseable as a version number
+     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     */
+    private static @CheckForNull VersionNumber toVersion(@CheckForNull String versionString) {
+        if (versionString == null) {
+            return null;
+        }
+
         try {
-            return new VersionNumber(VERSION);
+            return new VersionNumber(versionString);
         } catch (NumberFormatException e) {
             try {
                 // for non-released version of Jenkins, this looks like "1.345 (private-foobar), so try to approximate.
-                int idx = VERSION.indexOf(' ');
-                if (idx>0)
-                    return new VersionNumber(VERSION.substring(0,idx));
+                int idx = versionString.indexOf(' ');
+                if (idx > 0) {
+                    return new VersionNumber(versionString.substring(0,idx));
+                }
             } catch (NumberFormatException _) {
                 // fall through
             }
