@@ -24,14 +24,22 @@
 
 package hudson.model;
 
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import java.util.Collection;
 import static org.junit.Assert.*;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
+
+import static org.hamcrest.core.StringContains.containsString;
+
 
 public class ItemGroupMixInTest {
 
@@ -47,4 +55,27 @@ public class ItemGroupMixInTest {
         assertEquals("valid", items.iterator().next().getName());
     }
 
+    @Test public void createProjectFromXMLShouldNoCreateEntities() throws IOException {
+
+        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<!DOCTYPE project[\n" +
+                "  <!ENTITY foo SYSTEM \"file:///\">\n" +
+                "]>\n" +
+                "<project>\n" +
+                "  <actions/>\n" +
+                "  <description>&foo;</description>\n" +
+                "  <keepDependencies>false</keepDependencies>\n" +
+                "  <properties/>\n" +
+                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
+                "  <canRoam>true</canRoam>\n" +
+                "  <triggers/>\n" +
+                "  <builders/>\n" +
+                "  <publishers/>\n" +
+                "  <buildWrappers/>\n" +
+                "</project>";
+
+        Item foo = r.jenkins.createProjectFromXML("foo", new ByteArrayInputStream(xml.getBytes()));
+        // if no exception then JAXP is swallowing these - so there should be no entity in the description.
+        assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
+    }
 }
