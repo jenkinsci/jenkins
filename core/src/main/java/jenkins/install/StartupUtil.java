@@ -70,14 +70,6 @@ public class StartupUtil {
     }
 
     /**
-     * Is the install wizard complete.
-     * @return {@code true} if the install wizard has already been run to completion, otherwise {@code false}.
-     */
-    public static boolean isInstallWizardComplete() {
-        return getInstallWizardCompleteMarker().exists();
-    }
-
-    /**
      * Save the current Jenkins instance version as the last executed version.
      * <p>
      * This state information is required in order to determine whether or not the Jenkins instance
@@ -117,19 +109,6 @@ public class StartupUtil {
         }
     }
 
-    /**
-     * Store an "install wizard complete" marker file in {@code JENKINS_HOME}.
-     * @see #isInstallWizardComplete()
-     */
-    public static void createInstallWizardCompleteMarker() {
-        File markerFile = getInstallWizardCompleteMarker();
-        try {
-            FileUtils.touch(markerFile);
-        } catch (IOException e) {
-            throw new IllegalStateException("Unexpected Error. Unable to write " + markerFile.getAbsolutePath(), e);
-        }
-    }
-
     private static String getCurrentExecVersion() {
         if (Jenkins.VERSION.equals(Jenkins.UNCOMPUTED_VERSION)) {
             // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
@@ -149,10 +128,6 @@ public class StartupUtil {
         } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to save " + lastExecVersionFile.getAbsolutePath(), e);
         }
-    }
-
-    static File getInstallWizardCompleteMarker() {
-        return new File(Jenkins.getActiveInstance().getRootDir(), ".install_wizard_complete");
     }
 
     static File getLastExecVersionFile() {
