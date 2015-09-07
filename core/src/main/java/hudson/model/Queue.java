@@ -1467,8 +1467,7 @@ public class Queue extends ResourceController implements Saveable {
                         r.run();
                         updateSnapshot();
                     }
-                }
-                else {
+                } else {
                     // one last check to make sure this build is not blocked.
                     if (isBuildBlocked(p)) {
                         p.leave(this);
@@ -1583,8 +1582,12 @@ public class Queue extends ResourceController implements Saveable {
 
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 final Computer c = n.toComputer();
-                if (n.canTake(p) != null) continue;
-                if (c == null || c.isOffline()) continue;
+                if (n.canTake(p) != null) {
+                    continue;
+                }
+                if (c == null || c.isOffline()) {
+                    continue;
+                }
                 return new Runnable() {
                     @Override
                     public void run() {

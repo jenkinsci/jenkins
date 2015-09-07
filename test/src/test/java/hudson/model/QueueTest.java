@@ -789,7 +789,7 @@ public class QueueTest {
      * When a flyweight task is restricted to run on a specific node, the node will be provisioned
      * and the flyweight task will be executed.
      */
-    public void flyWeightTaskQueue () throws Exception {
+    public void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Exception {
         MatrixProject project = r.createMatrixProject();
         project.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
