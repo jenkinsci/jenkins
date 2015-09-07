@@ -862,6 +862,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     LOGGER.info(String.format("Took %dms for item listener %s startup",
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
             }
+            
+            // Save this Jenkins version in case of an install/upgrade.
+            saveVersion();
 
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
@@ -4128,14 +4131,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             IOUtils.closeQuietly(is);
         }
         String ver = props.getProperty("version");
-        if(ver==null)   ver="?";
+        if(ver==null)   ver = UNCOMPUTED_VERSION;
         VERSION = ver;
         context.setAttribute("version",ver);
 
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
-        if(ver.equals("?") || Boolean.getBoolean("hudson.script.noCache"))
+        if(ver.equals(UNCOMPUTED_VERSION) || Boolean.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
             RESOURCE_PATH = "/static/"+SESSION_HASH;
@@ -4143,10 +4146,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         VIEW_RESOURCE_PATH = "/resources/"+ SESSION_HASH;
     }
 
+    private void saveVersion() throws IOException {
+        if (VERSION.equals(UNCOMPUTED_VERSION)) {
+            // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
+            throw new IllegalStateException("Unexpected call to saveVersion(). VERSION has not been initialized. Call computeVersion() first.");
+        }
+        
+        // If an install/upgrade was performed, save the version.
+        // - "version" is the Jenkins versions that was running in "this" Jenkins home last time save() was called.
+        // - "VERSION" was computed through an earlier call to computeVersion.
+        if (!version.equals(VERSION)) {
+            version = VERSION;
+            save();
+        }
+    }
+    
+    private static final String UNCOMPUTED_VERSION = "?";
+
     /**
-     * Version number of this Jenkins.
+     * Version number of this Jenkins. This gets initialized on startup by a call to computeVersion().
      */
-    public static String VERSION="?";
+    public static String VERSION = UNCOMPUTED_VERSION;
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
