@@ -75,6 +75,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.bytecode.Transformer;
 
+import javax.annotation.Nonnull;
+
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
 public class ClassicPluginStrategy implements PluginStrategy {
@@ -280,9 +282,36 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     /**
+     * Get the list of all plugins that have ever been detached from Jenkins core.
+     * @return A {@link List} of {@link DetachedPlugin}s.
+     * @since FIXME
+     */
+    public static @Nonnull List<DetachedPlugin> getDetachedPlugins() {
+        return DETACHED_LIST;
+    }
+
+    /**
+     * Get the list of plugins that have been detached since a specific Jenkins release version.
+     * @param since The Jenkins version.
+     * @return A {@link List} of {@link DetachedPlugin}s.
+     * @since FIXME
+     */
+    public static @Nonnull List<DetachedPlugin> getDetachedPlugins(@Nonnull VersionNumber since) {
+        List<DetachedPlugin> detachedPlugins = new ArrayList<>();
+
+        for (DetachedPlugin detachedPlugin : DETACHED_LIST) {
+            if (!detachedPlugin.getSplitWhen().isOlderThan(since)) {
+                detachedPlugins.add(detachedPlugin);
+            }
+        }
+
+        return detachedPlugins;
+    }
+
+    /**
      * Information about plugins that were originally in the core.
      */
-    private static final class DetachedPlugin {
+    public static final class DetachedPlugin {
         private final String shortName;
         /**
          * Plugins built for this Jenkins version (and earlier) will automatically be assumed to have
@@ -298,6 +327,30 @@ public class ClassicPluginStrategy implements PluginStrategy {
             this.shortName = shortName;
             this.splitWhen = new VersionNumber(splitWhen);
             this.requireVersion = requireVersion;
+        }
+
+        /**
+         * Get the short name of the plugin.
+         * @return The short name of the plugin.
+         */
+        public String getShortName() {
+            return shortName;
+        }
+
+        /**
+         * Get the Jenkins version from which the plugin was detached.
+         * @return The Jenkins version from which the plugin was detached.
+         */
+        public VersionNumber getSplitWhen() {
+            return splitWhen;
+        }
+
+        /**
+         * Get the minimum required version of the plugin.
+         * @return The minimum required version of the plugin.
+         */
+        public String getRequireVersion() {
+            return requireVersion;
         }
 
         private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
@@ -320,7 +373,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
-    private static final List<DetachedPlugin> DETACHED_LIST = Arrays.asList(
+    private static final List<DetachedPlugin> DETACHED_LIST = Collections.unmodifiableList(Arrays.asList(
         new DetachedPlugin("maven-plugin","1.296","1.296"),
         new DetachedPlugin("subversion","1.310","1.0"),
         new DetachedPlugin("cvs","1.340","0.1"),
@@ -335,7 +388,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         new DetachedPlugin("antisamy-markup-formatter","1.553.*","1.0"),
         new DetachedPlugin("matrix-project","1.561.*","1.0"),
         new DetachedPlugin("junit","1.577.*","1.0")
-    );
+    ));
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
     private static final Set<String> BREAK_CYCLES = new HashSet<String>(Arrays.asList(
