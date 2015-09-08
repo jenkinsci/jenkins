@@ -332,6 +332,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         /**
          * Get the short name of the plugin.
          * @return The short name of the plugin.
+         * @since FIXME
          */
         public String getShortName() {
             return shortName;
@@ -340,6 +341,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         /**
          * Get the Jenkins version from which the plugin was detached.
          * @return The Jenkins version from which the plugin was detached.
+         * @since FIXME
          */
         public VersionNumber getSplitWhen() {
             return splitWhen;
@@ -348,6 +350,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         /**
          * Get the minimum required version of the plugin.
          * @return The minimum required version of the plugin.
+         * @since FIXME
          */
         public String getRequireVersion() {
             return requireVersion;

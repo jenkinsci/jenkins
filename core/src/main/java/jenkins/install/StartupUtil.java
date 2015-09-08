@@ -54,8 +54,7 @@ public class StartupUtil {
         String lastRunVersion = getLastExecVersion();
 
         // Neither the top level config or the lastExecVersionFile have a version
-        // stored in them, which means it's a new install. Don't need to check
-        // if the install wizard has been run or not.
+        // stored in them, which means it's a new install.
         if (lastRunVersion.equals("1.0")) {
             return StartupType.NEW;
         }
@@ -118,7 +117,8 @@ public class StartupUtil {
      *     <li>Post unbundling epoc version upgrade: In this case, only plugins detached from Jenkins since the last execution need to be installed.</li>
      * </ul>
      *
-     * @return {@code true} if "this" instance of Jenkins have a last execute version file, otherwise {@code false}.
+     * @return {@code true} if "this" instance of Jenkins has started a Jenkins instance that was released since
+     * the unbundling epoc, otherwise {@code false}.
      */
     public static boolean hasStartedSinceUnbundlingEpoc() {
         // We can determine this simply from the existence of a last execute version file. Generation of that
