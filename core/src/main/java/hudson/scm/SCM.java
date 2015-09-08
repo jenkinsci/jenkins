@@ -152,7 +152,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This flag affects the behavior of Hudson when a job lost its workspace
-     * (typically due to a slave outage.) If this method returns false and
+     * (typically due to a slave outage.) If this method returns true and
      * polling is configured, then that would immediately trigger a new build.
      *
      * <p>
