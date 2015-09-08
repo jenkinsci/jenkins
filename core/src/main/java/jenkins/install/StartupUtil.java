@@ -38,6 +38,7 @@ import static java.util.logging.Level.SEVERE;
  * Jenkins startup utilities.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since FIXME
  */
 public class StartupUtil {
 
@@ -88,7 +89,7 @@ public class StartupUtil {
      * @return The last saved Jenkins instance version.
      * @see #saveLastExecVersion()
      */
-    public static String getLastExecVersion() {
+    public static @Nonnull String getLastExecVersion() {
         File lastExecVersionFile = getLastExecVersionFile();
         if (lastExecVersionFile.exists()) {
             try {
@@ -100,21 +101,29 @@ public class StartupUtil {
             // Backward compatibility. Use the last version stored in the top level config.xml.
             VersionNumber storedVersion = Jenkins.getStoredVersion();
             if (storedVersion != null) {
-                String storedVersionString = storedVersion.toString();
-                saveLastExecVersion(storedVersionString);
-                return storedVersionString;
+                return storedVersion.toString();
             } else {
                 return "1.0";
             }
         }
     }
 
-    private static String getCurrentExecVersion() {
-        if (Jenkins.VERSION.equals(Jenkins.UNCOMPUTED_VERSION)) {
-            // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
-            throw new IllegalStateException("Unexpected call to StartupUtil.getCurrentExecVersion(). Jenkins.VERSION has not been initialized. Call computeVersion() first.");
-        }
-        return Jenkins.VERSION;
+    /**
+     * Has "this" Jenkins instance gone through a startup sequence using a version released since the unbundling epoc
+     * i.e. the time when Jenkins stopped pre-bundling unessential plugins.
+     * <p>
+     * This check can be used to determine what kind of upgrade needs to be performed i.e.
+     * <ul>
+     *     <li>Pre unbundling epoc version upgrade: In this case, all plugins ever detached from Jenkins need to be installed.</li>
+     *     <li>Post unbundling epoc version upgrade: In this case, only plugins detached from Jenkins since the last execution need to be installed.</li>
+     * </ul>
+     *
+     * @return {@code true} if "this" instance of Jenkins have a last execute version file, otherwise {@code false}.
+     */
+    public static boolean hasStartedSinceUnbundlingEpoc() {
+        // We can determine this simply from the existence of a last execute version file. Generation of that
+        // file was introduced at the same time.
+        return getLastExecVersionFile().exists();
     }
 
     /**
@@ -132,5 +141,13 @@ public class StartupUtil {
 
     static File getLastExecVersionFile() {
         return new File(Jenkins.getActiveInstance().getRootDir(), ".last_exec_version");
+    }
+
+    private static String getCurrentExecVersion() {
+        if (Jenkins.VERSION.equals(Jenkins.UNCOMPUTED_VERSION)) {
+            // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
+            throw new IllegalStateException("Unexpected call to StartupUtil.getCurrentExecVersion(). Jenkins.VERSION has not been initialized. Call computeVersion() first.");
+        }
+        return Jenkins.VERSION;
     }
 }

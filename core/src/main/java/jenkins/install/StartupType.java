@@ -27,6 +27,7 @@ package jenkins.install;
  * Jenkins Start type.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since FIXME
  */
 public enum StartupType {
     /**
