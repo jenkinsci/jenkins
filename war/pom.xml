@@ -261,6 +261,20 @@ THE SOFTWARE.
                 </artifactItem>
                 <!-- bundled plugins -->
                 <artifactItem>
+                  <!-- See https://github.com/tfennelly/temp-install-wizard -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>temp-install-wizard</artifactId>
+                  <version>1.0-SNAPSHOT</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- Needed by temp-install-wizard (above). Is there no way to include this as a transitive dep of it ? -->
+                  <groupId>org.jenkins-ci.ui</groupId>
+                  <artifactId>jquery-detached</artifactId>
+                  <version>1.0-beta-4-SNAPSHOT</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>maven-plugin</artifactId>
                   <type>hpi</type>

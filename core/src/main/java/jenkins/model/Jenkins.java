@@ -192,7 +192,7 @@ import hudson.widgets.Widget;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
-import jenkins.install.StartupUtil;
+import jenkins.install.StartupType;
 import jenkins.install.StartupUtil;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
@@ -331,6 +331,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     // this field needs to be at the very top so that other components can look at this value even during unmarshalling
     private String version = "1.0";
 
+    /**
+     * The Jenkins instance startup type i.e. NEW, UPGRADE etc
+     */
+    private final StartupType startupType;
+    
     /**
      * Number of executors of the master node.
      */
@@ -764,6 +769,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(theInstance!=null)
                 throw new IllegalStateException("second instance");
             theInstance = this;
+            
+            startupType = StartupUtil.getStartupType();
 
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with slaves
@@ -871,6 +878,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         } finally {
             SecurityContextHolder.clearContext();
         }
+    }
+
+    /**
+     * Get the Jenkins {@link StartupType startup type}.   
+     * @return The Jenkins {@link StartupType startup type}.
+     * @since FIXME
+     */
+    public StartupType getStartupType() {
+        return startupType;
     }
 
     /**

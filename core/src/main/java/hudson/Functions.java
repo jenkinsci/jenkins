@@ -125,6 +125,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.install.StartupType;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.GlobalConfigurationCategory.Unclassified;
@@ -734,6 +735,15 @@ public class Functions {
         if (permission != null) {
             object.checkPermission(permission);
         }
+    }
+
+    /**
+     * Get the Jenkins instance {@link StartupType startup type}.
+     * @return The Jenkins instance {@link StartupType startup type}.
+     * @since FIXME
+     */
+    public static StartupType getStartupType() {
+        return Jenkins.getActiveInstance().getStartupType();
     }
 
     /**
