@@ -128,6 +128,7 @@ import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -303,6 +304,8 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     public JenkinsComputerConnectorTester computerConnectorTester = new JenkinsComputerConnectorTester(this);
 
+    private boolean origDefaultUseCache = true;
+
     public Jenkins getInstance() {
         return jenkins;
     }
@@ -312,6 +315,18 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * @throws Throwable if setup fails (which will disable {@code after}
      */
     public void before() throws Throwable {
+        if(Functions.isWindows()) {
+            // JENKINS-4409.
+            // URLConnection caches handles to jar files by default,
+            // and it prevents delete temporary directories on Windows.
+            // Disables caching here.
+            // Though defaultUseCache is a static field,
+            // its setter and getter are provided as instance methods.
+            URLConnection aConnection = new File(".").toURI().toURL().openConnection();
+            origDefaultUseCache = aConnection.getDefaultUseCaches();
+            aConnection.setDefaultUseCaches(false);
+        }
+        
         // Not ideal (https://github.com/junit-team/junit/issues/116) but basically works.
         if (Boolean.getBoolean("ignore.random.failures")) {
             RandomlyFails rf = testDescription.getAnnotation(RandomlyFails.class);
@@ -458,6 +473,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             // see http://bugs.sun.com/view_bug.do?bug_id=4950148
             // TODO use URLClassLoader.close() in Java 7
             System.gc();
+            
+            // restore defaultUseCache
+            if(Functions.isWindows()) {
+                URLConnection aConnection = new File(".").toURI().toURL().openConnection();
+                aConnection.setDefaultUseCaches(origDefaultUseCache);
+            }
         }
     }
 

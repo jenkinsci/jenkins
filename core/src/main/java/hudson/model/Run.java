@@ -71,7 +71,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -1875,15 +1874,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if(e instanceof IOException)
                 Util.displayIOException((IOException)e,listener);
 
-            Writer w = listener.fatalError(e.getMessage());
-            if(w!=null) {
-                try {
-                    e.printStackTrace(new PrintWriter(w));
-                    w.close();
-                } catch (IOException e1) {
-                    // ignore
-                }
-            }
+            e.printStackTrace(listener.fatalError(e.getMessage()));
         } else {
             LOGGER.log(SEVERE, getDisplayName()+" failed to build and we don't even have a listener",e);
         }
