@@ -88,7 +88,7 @@ public interface SCMTriggerItem {
          * @return itself, if a {@link SCMTriggerItem}, or an adapter, if an {@link hudson.model.SCMedItem}, else null
          */
         @SuppressWarnings("deprecation")
-        public static @CheckForNull SCMTriggerItem asSCMTriggerItem(Item item) {
+        public static @CheckForNull SCMTriggerItem asSCMTriggerItem(@CheckForNull Item item) {
             if (item instanceof SCMTriggerItem) {
                 return (SCMTriggerItem) item;
             } else if (item instanceof hudson.model.SCMedItem) {
