@@ -55,6 +55,8 @@ import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -229,8 +231,13 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public static class VersionRange {
         private static VersionNumber currentVersion = Jenkins.getVersion();
 
-        VersionNumber min, max;
+        @Restricted(NoExternalUse.class)
+        VersionNumber min;
+        @Restricted(NoExternalUse.class)
+        VersionNumber max;
+        @Restricted(NoExternalUse.class)
         boolean single = true;
+        @Restricted(NoExternalUse.class)
         public String extra;
 
         public VersionRange(String version, String extra) {
@@ -263,10 +270,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
                     && currentVersion.digit(1) - min.digit(1) >= threshold));
         }
 
+        @Restricted(NoExternalUse.class)
         synchronized VersionNumber getMax() {
             return max;
         }
 
+        @Restricted(NoExternalUse.class)
         synchronized VersionNumber getMin() {
             return min;
         }
@@ -275,11 +284,13 @@ public class OldDataMonitor extends AdministrativeMonitor {
     /**
      * Sorted list of unique max-versions in the data set.  For select list in jelly.
      */
+    @Restricted(NoExternalUse.class)
     public Iterator<VersionNumber> getVersionList() {
         TreeSet<VersionNumber> set = new TreeSet<VersionNumber>();
         for (VersionRange vr : data.values()) {
-            if (vr.getMax() != null) {
-                set.add(vr.getMax());
+            VersionNumber max = vr.getMax();
+            if (max != null) {
+                set.add(max);
             }
         }
         return set.iterator();
