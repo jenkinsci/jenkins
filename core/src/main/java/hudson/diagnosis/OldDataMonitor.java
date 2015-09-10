@@ -222,7 +222,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
             if (vr != null) {
                 vr.extra = buf.toString();
                 break;
-            } else if (odm.data.put(ref, new VersionRange(null, buf.toString())) == null) {
+            } else if (odm.data.putIfAbsent(ref, new VersionRange(null, buf.toString())) == null) {
                 break;
             }
         }
