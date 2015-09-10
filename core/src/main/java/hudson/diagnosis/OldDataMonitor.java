@@ -25,7 +25,6 @@ package hudson.diagnosis;
 
 import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-
 import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
@@ -40,7 +39,6 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.util.RobustReflectionConverter;
 import hudson.util.VersionNumber;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,13 +47,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.annotation.CheckForNull;
-
 import jenkins.model.Jenkins;
-
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.HttpRedirect;
@@ -75,7 +72,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
-    private HashMap<SaveableReference,VersionRange> data = new HashMap<SaveableReference,VersionRange>();
+    private ConcurrentMap<SaveableReference,VersionRange> data = new ConcurrentHashMap<SaveableReference,VersionRange>();
 
     static OldDataMonitor get(Jenkins j) {
         return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
@@ -95,12 +92,8 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     public Map<Saveable,VersionRange> getData() {
-        Map<SaveableReference,VersionRange> _data;
-        synchronized (this) {
-            _data = new HashMap<SaveableReference,VersionRange>(this.data);
-        }
         Map<Saveable,VersionRange> r = new HashMap<Saveable,VersionRange>();
-        for (Map.Entry<SaveableReference,VersionRange> entry : _data.entrySet()) {
+        for (Map.Entry<SaveableReference,VersionRange> entry : this.data.entrySet()) {
             Saveable s = entry.getKey().get();
             if (s != null) {
                 r.put(s, entry.getValue());
@@ -115,14 +108,13 @@ public class OldDataMonitor extends AdministrativeMonitor {
             OldDataMonitor odm = get(j);
             SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
             try {
-                synchronized (odm) {
-                    odm.data.remove(referTo(obj));
-                    if (isDelete && obj instanceof Job<?,?>)
-                        for (Run r : ((Job<?,?>)obj).getBuilds())
-                            odm.data.remove(referTo(r));
+                odm.data.remove(referTo(obj));
+                if (isDelete && obj instanceof Job<?, ?>) {
+                    for (Run r : ((Job<?, ?>) obj).getBuilds()) {
+                        odm.data.remove(referTo(r));
+                    }
                 }
-            } 
-            finally {
+            } finally {
                 SecurityContextHolder.setContext(oldContext);
             }
         }
@@ -163,15 +155,19 @@ public class OldDataMonitor extends AdministrativeMonitor {
      */
     public static void report(Saveable obj, String version) {
         OldDataMonitor odm = get(Jenkins.getInstance());
-        synchronized (odm) {
-            try {
-                SaveableReference ref = referTo(obj);
+        try {
+            SaveableReference ref = referTo(obj);
+            while (true) {
                 VersionRange vr = odm.data.get(ref);
-                if (vr != null) vr.add(version);
-                else            odm.data.put(ref, new VersionRange(version, null));
-            } catch (IllegalArgumentException ex) {
-                LOGGER.log(Level.WARNING, "Bad parameter given to OldDataMonitor", ex);
+                if (vr != null) {
+                    vr.add(version);
+                    break;
+                } else if (odm.data.putIfAbsent(ref, new VersionRange(version, null)) == null) {
+                    break;
+                }
             }
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(Level.WARNING, "Bad parameter given to OldDataMonitor", ex);
         }
     }
 
@@ -218,11 +214,15 @@ public class OldDataMonitor extends AdministrativeMonitor {
             return;
         }
         OldDataMonitor odm = get(j);
-        synchronized (odm) {
-            SaveableReference ref = referTo(obj);
+        SaveableReference ref = referTo(obj);
+        while (true) {
             VersionRange vr = odm.data.get(ref);
-            if (vr != null) vr.extra = buf.toString();
-            else            odm.data.put(ref, new VersionRange(null, buf.toString()));
+            if (vr != null) {
+                vr.extra = buf.toString();
+                break;
+            } else if (odm.data.put(ref, new VersionRange(null, buf.toString())) == null) {
+                break;
+            }
         }
     }
 
@@ -238,7 +238,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
             this.extra = extra;
         }
 
-        public void add(String version) {
+        public synchronized void add(String version) {
             VersionNumber ver = new VersionNumber(version);
             if (min==null) { min = max = ver; }
             else {
@@ -248,7 +248,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         }
 
         @Override
-        public String toString() {
+        public synchronized String toString() {
             return min==null ? "" : min.toString() + (single ? "" : " - " + max.toString());
         }
 
@@ -257,20 +257,31 @@ public class OldDataMonitor extends AdministrativeMonitor {
          * @param threshold Number of releases
          * @return True if the major version# differs or the minor# differs by >= threshold
          */
-        public boolean isOld(int threshold) {
+        public synchronized boolean isOld(int threshold) {
             return currentVersion != null && min != null && (currentVersion.digit(0) > min.digit(0)
                     || (currentVersion.digit(0) == min.digit(0)
                     && currentVersion.digit(1) - min.digit(1) >= threshold));
+        }
+
+        synchronized VersionNumber getMax() {
+            return max;
+        }
+
+        synchronized VersionNumber getMin() {
+            return min;
         }
     }
 
     /**
      * Sorted list of unique max-versions in the data set.  For select list in jelly.
      */
-    public synchronized Iterator<VersionNumber> getVersionList() {
+    public Iterator<VersionNumber> getVersionList() {
         TreeSet<VersionNumber> set = new TreeSet<VersionNumber>();
-        for (VersionRange vr : data.values())
-            if (vr.max!=null) set.add(vr.max);
+        for (VersionRange vr : data.values()) {
+            if (vr.getMax() != null) {
+                set.add(vr.getMax());
+            }
+        }
         return set.iterator();
     }
 
@@ -296,10 +307,10 @@ public class OldDataMonitor extends AdministrativeMonitor {
         final String thruVerParam = req.getParameter("thruVer");
         final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
 
-        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
+        saveAndRemoveEntries(new Predicate<Map.Entry<SaveableReference, VersionRange>>() {
             @Override
             public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                VersionNumber version = entry.getValue().max;
+                VersionNumber version = entry.getValue().getMax();
                 return version != null && (thruVer == null || !version.isNewerThan(thruVer));
             }
         });
@@ -316,7 +327,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
             @Override
             public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                return entry.getValue().max == null;
+                return entry.getValue().getMax() == null;
             }
         });
 
@@ -335,13 +346,8 @@ public class OldDataMonitor extends AdministrativeMonitor {
          * does occur: just means the user will be prompted to discard less than they should have been (and
          * would see the warning again after next restart).
          */
-        Map<SaveableReference,VersionRange> localCopy = null;
-        synchronized (this) {
-            localCopy = new HashMap<SaveableReference,VersionRange>(data);
-        }
-
         List<SaveableReference> removed = new ArrayList<SaveableReference>();
-        for (Map.Entry<SaveableReference,VersionRange> entry : localCopy.entrySet()) {
+        for (Map.Entry<SaveableReference,VersionRange> entry : data.entrySet()) {
             if (matchingPredicate.apply(entry)) {
                 Saveable s = entry.getKey().get();
                 if (s != null) {
@@ -355,9 +361,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
             }
         }
 
-        synchronized (this) {
-            data.keySet().removeAll(removed);
-        }
+        data.keySet().removeAll(removed);
     }
 
     public HttpResponse doIndex(StaplerResponse rsp) throws IOException {
