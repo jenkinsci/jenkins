@@ -190,6 +190,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
+import java.nio.channels.ClosedByInterruptException;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.ClassDescriptor;
@@ -1668,7 +1669,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
                             File dst = new File(home, "plugins/" + artifactId + ".jpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
-                                FileUtils.copyFile(dependencyJar, dst);
+                                try {
+                                    FileUtils.copyFile(dependencyJar, dst);
+                                } catch (ClosedByInterruptException x) {
+                                    throw new AssumptionViolatedException("copying dependencies was interrupted", x);
+                                }
                             }
                         }
                     }
