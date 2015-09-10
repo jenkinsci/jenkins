@@ -146,7 +146,6 @@ import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.EphemeralNode;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeList;
 import hudson.slaves.NodeProperty;
@@ -290,7 +289,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -770,6 +768,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IllegalStateException("second instance");
             theInstance = this;
             
+            loadConfig();
             startupType = StartupUtil.getStartupType();
 
             if (!new File(root,"jobs").exists()) {
@@ -2655,6 +2654,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new Hudson.MasterComputer();
     }
 
+    private void loadConfig() throws IOException {
+        XmlFile cfg = getConfigFile();
+        if (cfg.exists()) {
+            // reset some data that may not exist in the disk file
+            // so that we can take a proper compensation action later.
+            primaryView = null;
+            views.clear();
+
+            // load from disk
+            cfg.unmarshal(Jenkins.this);
+        }
+    }
+
     private synchronized TaskBuilder loadTasks() throws IOException {
         File projectsDir = new File(root,"jobs");
         if(!projectsDir.getCanonicalFile().isDirectory() && !projectsDir.mkdirs()) {
@@ -2669,17 +2681,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
-                XmlFile cfg = getConfigFile();
-                if (cfg.exists()) {
-                    // reset some data that may not exist in the disk file
-                    // so that we can take a proper compensation action later.
-                    primaryView = null;
-                    views.clear();
-
-                    // load from disk
-                    cfg.unmarshal(Jenkins.this);
-                }
-
                 // if we are loading old data that doesn't have this field
                 if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
                     nodes.setNodes(slaves);

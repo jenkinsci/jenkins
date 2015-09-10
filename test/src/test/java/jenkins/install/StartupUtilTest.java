@@ -23,13 +23,10 @@
  */
 package jenkins.install;
 
-import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.lang.reflect.Field;
 
 /**
  * Test
@@ -64,39 +61,5 @@ public class StartupUtilTest {
         // Fudge things again, changing the stored version to something old, faking an upgrade...
         StartupUtil.saveLastExecVersion("1.584");
         Assert.assertEquals(StartupType.UPGRADE, StartupUtil.getStartupType());
-    }
-
-    /**
-     * Test jenkins startup upgrade sequence, making sure we can determine the kind of upgrade to perform.
-     *
-     * @see jenkins.install.StartupUtil#hasStartedSinceUnbundlingEpoc()
-     */
-    @Test
-    public void test_hasStartedSinceUnbundlingEpoc() throws Exception {
-        // Fake the stored version. Doesn't really matter what the value is,
-        // so long as it's not "1.0" ala the Jenkins default.
-        setStoredVersion("1.609");
-
-        // Should be flagged as an upgrade
-        Assert.assertEquals(StartupType.UPGRADE, StartupUtil.getStartupType());
-
-        // But we should be able to decide what kind of upgrade to perform based
-        // on StartupUtil.hasStartedSinceUnbundlingEpoc() (see Javadoc).
-        Assert.assertFalse(StartupUtil.hasStartedSinceUnbundlingEpoc());
-
-        // Saving a last version file indicates that the Jenkins instance has run a post epoc released version
-        // (because creation of that file only started then).
-        StartupUtil.saveLastExecVersion();
-
-        // Now it should look as though the last running version was a release from after the epoc, which means
-        // different kind of upgrade.
-        Assert.assertTrue(StartupUtil.hasStartedSinceUnbundlingEpoc());
-    }
-
-    private void setStoredVersion(String version) throws Exception {
-        Field versionField = Jenkins.class.getDeclaredField("version");
-        versionField.setAccessible(true);
-        versionField.set(jenkinsRule.jenkins, version);
-        Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
     }
 }

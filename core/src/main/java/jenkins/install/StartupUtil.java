@@ -44,8 +44,6 @@ public class StartupUtil {
 
     private static final Logger LOGGER = Logger.getLogger(StartupUtil.class.getName());
 
-    // private Set<String> autoInstallPluginList = new LinkedHashSet<>();
-
     /**
      * Get the type of "startup" currently under way in Jenkins.
      * @return The type of "startup" currently under way in Jenkins.
@@ -105,25 +103,6 @@ public class StartupUtil {
                 return "1.0";
             }
         }
-    }
-
-    /**
-     * Has "this" Jenkins instance gone through a startup sequence using a version released since the unbundling epoc
-     * i.e. the time when Jenkins stopped pre-bundling unessential plugins.
-     * <p>
-     * This check can be used to determine what kind of upgrade needs to be performed i.e.
-     * <ul>
-     *     <li>Pre unbundling epoc version upgrade: In this case, all plugins ever detached from Jenkins need to be installed.</li>
-     *     <li>Post unbundling epoc version upgrade: In this case, only plugins detached from Jenkins since the last execution need to be installed.</li>
-     * </ul>
-     *
-     * @return {@code true} if "this" instance of Jenkins has started a Jenkins instance that was released since
-     * the unbundling epoc, otherwise {@code false}.
-     */
-    public static boolean hasStartedSinceUnbundlingEpoc() {
-        // We can determine this simply from the existence of a last execute version file. Generation of that
-        // file was introduced at the same time.
-        return getLastExecVersionFile().exists();
     }
 
     /**

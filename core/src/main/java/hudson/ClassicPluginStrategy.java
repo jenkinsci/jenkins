@@ -65,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -354,6 +355,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
          */
         public String getRequireVersion() {
             return requireVersion;
+        }
+
+        /**
+         * Convert a collection of DetachedPlugins to a Set of plugins names.
+         * @param detachedPlugins The collection of DetachedPlugins.
+         * @return The list of plugin names.
+         * @since FIXME
+         */
+        public static Set<String> toPluginNameList(@Nonnull Collection<ClassicPluginStrategy.DetachedPlugin> detachedPlugins) {
+            Set<String> pluginNames = new LinkedHashSet<>();
+            for (ClassicPluginStrategy.DetachedPlugin detachedPlugin : detachedPlugins) {
+                pluginNames.add(detachedPlugin.getShortName());
+            }
+            return pluginNames;
         }
 
         private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
