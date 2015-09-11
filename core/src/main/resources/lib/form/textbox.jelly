@@ -83,6 +83,7 @@ THE SOFTWARE.
          name="${name}"
          value="${value}"
          type="text"
+         placeholder="${title}"
          ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>

@@ -105,7 +105,7 @@ THE SOFTWARE.
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
-      <div name="${attrs.name}" data-tagName="hetero-list-item" class="repeated-chunk" descriptorId="${descriptor.id}">
+      <div name="${attrs.name}" data-tagName="hetero-list-item" class="tr repeated-chunk ${descriptor.id} ${attrs.name}" descriptorId="${descriptor.id}">
         <local:body deleteCaption="${attrs.deleteCaption}">
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </local:body>
@@ -119,7 +119,7 @@ THE SOFTWARE.
       <j:set var="instance" value="${null}" />
       <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
       <j:forEach var="descriptor" items="${descriptors}" varStatus="loop">
-        <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
+        <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" class="tr repeated-chunk ${descriptor.id} ${attrs.name} removed" descriptorId="${descriptor.id}">
           <j:set var="capture" value="${attrs.capture?:''}" />
           <local:body deleteCaption="${attrs.deleteCaption}">
             <l:renderOnDemand tag="div" clazz="config-page" capture="descriptor,it,instance,${capture}">
@@ -136,7 +136,7 @@ THE SOFTWARE.
       <input type="button" data-tagName="hetero-list-add" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
     </div>
     
-    <div data-tagName="hetero-list-choices">
+    <div class="hetero-list-choices" data-tagName="hetero-list-choices">
       <ul>
       <j:set var="instance" value="${null}" />
       <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />

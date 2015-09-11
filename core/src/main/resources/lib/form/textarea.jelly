@@ -87,6 +87,7 @@ THE SOFTWARE.
             checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
             rows="${h.determineRows(value)}"
             readonly="${attrs.readonly}"
+            placeholder="${title}"
             codemirror-mode="${attrs['codemirror-mode']}"
             codemirror-config="${attrs['codemirror-config']}">
     <st:out value="${value}" />

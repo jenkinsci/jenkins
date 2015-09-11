@@ -58,10 +58,12 @@ THE SOFTWARE.
   <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
   <div class="radio-group-box tr radioBlock ${attrs.classname}" data-inputName="${name}" data-tagName="radioBlock" inline="${attrs.inline}">
   	  <div class="td colspan3 radio-group-label" hasHelp="${attrs.help!=null}">
-        <label>
-  	      <input type="radio" name="${name}" value="${value}" checked="${checked?'true':null}" />
-          ${title}
-        </label>
+        <div class="chk-name">
+          <label>
+    	      <input type="radio" name="${name}" value="${value}" checked="${checked?'true':null}" />
+            ${title}
+          </label>
+        </div>
       </div>
       <f:helpLink url="${help}" featureName="${title}" />
   	

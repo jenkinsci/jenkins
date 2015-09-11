@@ -66,10 +66,10 @@ THE SOFTWARE.
          onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
          checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
          checked="${value ? 'true' : null}"/>
-  <j:if test="${attrs.title!=null}">
+  
     <label class="attach-previous"
-           title="${attrs.tooltip}">${attrs.title}</label>
-  </j:if>
+           title="${attrs.tooltip}"><span><j:if test="${attrs.title!=null}">${attrs.title}</j:if></span> <i class="art"></i></label>
+  
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>

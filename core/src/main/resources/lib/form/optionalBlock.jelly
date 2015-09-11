@@ -67,9 +67,9 @@ THE SOFTWARE.
 
   <j:choose>
     <j:when test="${attrs.title!=null}">
-      <div class="option-group-box optionalBlock" data-tagName="optionalBlock" inline="${attrs.inline}">
+      <div class="option-group-box optionalBlock ${attrs.field} ${attrs.name}" data-tagName="optionalBlock" inline="${attrs.inline}">
         <div class="tr option-group-label" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-          <div class="td colspan3 chk-name" colspan="3">
+          <div class="td colspan3 chk-name ${attrs.field} ${attrs.name}" colspan="3">
             <f:checkbox name="${attrs.name}"
                         negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
           </div>

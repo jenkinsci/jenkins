@@ -24,8 +24,6 @@ exports.init = function() {
 
 };
 
-
-
 ////////////////////////////////
 //    Event Handlers
 ////////////////////////////////
@@ -52,19 +50,32 @@ function openCloseEventHandler(e){
   var $section = $header.closest(tagName);
   var $body  = $section.children('.panel-collapse').addClass('collapse in').height('auto');
   var orgHeight = $body.height(); 
+  var timeout;
   
   e.preventDefault(); 
   
+  //Don't allow quick clicks...
+  if($section.hasClass('opening')) return false;
+  
   if(!$section.hasClass('not-shown')){
+   clearTimeout(timeout);
    $body.removeAttr('style');
    orgHeight = $body.height();
    $body.height(orgHeight);
-   $section.removeClass('shown').addClass('not-shown');
+   $section.removeClass('shown').addClass('not-shown').removeClass('opening');
    $body.height(0);
   }
   else{
-   $section.addClass('shown').removeClass('not-shown');
-   $body.height(orgHeight);
+    clearTimeout(timeout);
+    $body.height(0);
+    $body.height(orgHeight);
+    $section.addClass('shown').addClass('opening').removeClass('not-shown');
+    
+    // Release the height setting after animation is complete so DOM size change isn't hidden
+    timeout = setTimeout(function(){
+     $body.height('auto');
+     $section.removeClass('opening');
+   },400);
   }
   
   return {$elem:$section,event:e};

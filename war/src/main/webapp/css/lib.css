@@ -25,9 +25,10 @@
   font-size: 14px;
   line-height: 1.42857143;
   color: #555;
-  background-image: none;
+  background: rgba(255,255,255,.75);  
   border: 1px solid rgba(50,75,100,.33);
   border-radius: 3px}
+  .bootstrap3 textarea {background: rgba(255,255,255,.75);  }
   body .bootstrap3 h1 {font-size:28px;}
   body .bootstrap3 h2 {font-size:22px;}
   body .bootstrap3 h4 {font-size:18px;}
@@ -452,7 +453,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', e
   .bootstrap3 .repeated-chunk,
   .bootstrap3 .tr {position:relative;}
   .bootstrap3 .repeated-chunk {width:100%;}
-  .bootstrap3 .hetero-list-container .repeated-chunk .tr {position:static;}
+  .bootstrap3 .hetero-list-container .repeated-chunk .tr.block {position:static;}
   .bootstrap3 .tr .td.setting-help {position:absolute; right:0; top:0;}
   .bootstrap3 .radio-group-box .radio-group:empty,
   .bootstrap3 .option-group-box .option-group:empty {display:none;}
@@ -476,6 +477,76 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', e
   .bootstrap3 .option-group-box .option-group:hover { background:rgba(255,255,255,.67); box-shadow:rgba(0,0,0,.1) 0 2px 10px} foo{box-shadow:0 2px 100px rgba(180,220,255,.33),0 2px 10px rgba(180,220,255,.5);}
   .bootstrap3 .section.panel .panel-body {border-radius:4px;}
   .bootstrap3 .tr label {padding-top:5px; cursor:pointer}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk {padding:1px 2px 1px 15px; box-shadow:0 -1px rgba(0,0,0,.25)}
+  x.bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk .form-group input.form-control {padding:3px 5px !important; font-size:12px !important; line-height:14px !important; height:25px !important;}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.tr.Description {position:absolute; top:0; right:0}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .dd-handle {position:absolute; left:0; margin:0; top:0; right:0; bottom:0; background-position:-1px -2px}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.tr,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.option-group-box {display:inline-block;max-width:25%; padding:1px; margin:0}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.tr.cvsRoot,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.tr.tagsDir,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.tr.Choices,
+  x.bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Value {display:block; max-width:100%;}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Name {max-width:50%; width:50%}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.option-group-box.passwordRequired {float:right; width:50%; max-width:50%}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.option-group-box .passwordRequired label:before{content:'Use Password'; display:block; }
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Description,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk >.option-group-box .passwordRequired label span,
+    .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.help-area,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.validation-error-area,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk .setting-help,
+  .hetero-list-choices,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr > label,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main >  input[type="checkbox"] {display:none !important;}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Choices {width:100% !important}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .dd-handle > b {font-size:0; display:block; position:absolute; top:-3px; left:-3px; border:10px solid transparent; border-left:10px solid #369; border-top:10px solid #369; z-index:9}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main {
+    position: relative; width: 90px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+    }
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main > .attach-previous{
+        display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #999999; border-radius: 20px; padding:0
+  }
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main > .attach-previous > span {
+        display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+  }
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main > .attach-previous > span:after,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main > .attach-previous > span:before {
+    display: block; float: left; width: 50%; height: 25px; padding: 0; line-height: 25px;
+    font-size: 14px; color: white; 
+    box-sizing: border-box;
+}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main > .attach-previous > span:before {
+      content: "True";
+    padding-left: 10px;
+    background-color: #69c; color: #FFFFFF;
+  }
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main > .attach-previous > span:after {
+    content: "False";
+    padding-right: 10px;
+    background-color: #EEEEEE; color: #999999;
+    text-align: right;
+}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main > .attach-previous > .art {
+    display: block; width: 18px; margin: 6px;
+    background: #FFFFFF;
+    position: absolute; top: 0; bottom: 0;
+    right: 56px;
+    border: 2px solid #999999; border-radius: 50%;
+    transition: all 0.3s ease-in 0s; 
+}
+.bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main >  input[type="checkbox"]:checked + .attach-previous > span {
+    margin-left: 0;
+}
+.bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr.Default.Value > .setting-main >  input[type="checkbox"]:checked + .attach-previous .art {
+    right: 0px; 
+}
+
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr,
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk > .tr div {vertical-align:top;}
+  .bootstrap3 .hudson-model-ParametersDefinitionProperty .hetero-list-container .repeated-chunk .td.setting-main {width:100%; padding:0}
   .bootstrap3 .repeated-container,
   .bootstrap3 .hetero-list-container {border:1px solid rgba(50,75,100,.33); margin:1px; position:relative;}  
   .bootstrap3 .hetero-list-container > .btn-box {border-top:1px solid rgba(50,75,100,.33);}
@@ -486,7 +557,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', e
   .bootstrap3 .hetero-list-container .repeated-chunk .form-group {margin:10px -10px 0; padding:10px; border-top:1px solid rgba(0,50,100,.1)}
   .bootstrap3 .repeated-chunk:nth-of-type(odd) {background:rgba(75,150,200,.05)}
   .bootstrap3 .repeated-chunk:nth-of-type(even){background:rgba(255,255,255,.05)}
-  .bootstrap3 .hetero-list-container .dd-handle {}
+  .bootstrap3 .hetero-list-container .dd-handle { margin:-10px -10px 0; padding:10px 20px; border-bottom:1px solid rgba(0,50,100,.1) }
   .bootstrap3 .hetero-list-container .none {padding:10px; box-shadow:inset 0 1px 3px rgba(0,0,0,.2); background:rgba(0,0,0,.01)}  
   .bootstrap3 .option-group-box > .optional-block-start {padding:0; margin:0;}
   .bootstrap3 .radio-group-box  > .radio-group-label,
@@ -496,10 +567,12 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#03000000', e
   .bootstrap3 .radio-group-box.shown.none  > .radio-group-label,
   .bootstrap3 .option-group-box.shown.none  > .option-group-label {border-color:transparent !important; background:none !important; box-shadow:none !important; color:#333 !important; text-shadow:none !important}
   .bootstrap3 .panel-group.form-inner .panel {margin:0 ; border-radius:0;}
-  .bootstrap3 .tr .dlt-btn {position:absolute; right:1px; top:1px;}
-  .bootstrap3 .tr .dlt-btn .first-child:before {content: "\e664";font-family:'icomoon'}
-  #jenkins .bootstrap3 .tr .dlt-btn .yui-button.danger button {font-size:0; position:absolute; top:0; left:0; right:0; bottom:0;}
+  .bootstrap3 .tr .dlt-btn {position:absolute; right:2px; top:2px; cursor:pointer;color:#abc;}
+  .bootstrap3 .tr .dlt-btn .first-child:before {content: "\e665";font-family:'icomoon'; font-size:16px; }
+  .bootstrap3 .tr .dlt-btn .first-child:hover {color:#920}
+  #jenkins .bootstrap3 .tr .dlt-btn .yui-button.danger button {font-size:0; position:absolute; top:0; left:0; right:0; bottom:0; padding:0; border:none;}
   .bootstrap3 .section.panel .panel-collapse{transition: all 0.4s ease 0s; display:block !important; visibility:visible !important;}
+  .bootstrap3 .section.panel.opening .panel-collapse,
   .bootstrap3 .section.panel.not-shown .panel-collapse {overflow:hidden;}
   .bootstrap3 .section .tr:empty,
   .bootstrap3 .section .option-group:empty,
