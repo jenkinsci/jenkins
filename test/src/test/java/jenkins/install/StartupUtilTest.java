@@ -42,6 +42,10 @@ public class StartupUtilTest {
      */
     @Test
     public void test_newJenkinsInstall() {
+        // JenkinsRule will have created the last exec file (indirectly),
+        // so remove it so we can fake the test.
+        StartupUtil.getLastExecVersionFile().delete();
+        
         // A new test instance
         Assert.assertEquals(StartupType.NEW, StartupUtil.getStartupType());
 
@@ -61,5 +65,9 @@ public class StartupUtilTest {
         // Fudge things again, changing the stored version to something old, faking an upgrade...
         StartupUtil.saveLastExecVersion("1.584");
         Assert.assertEquals(StartupType.UPGRADE, StartupUtil.getStartupType());
+
+        // Fudge things yet again, changing the stored version to something very very new, faking a downgrade...
+        StartupUtil.saveLastExecVersion("1000.0");
+        Assert.assertEquals(StartupType.DOWNGRADE, StartupUtil.getStartupType());
     }
 }

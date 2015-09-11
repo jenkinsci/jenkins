@@ -41,5 +41,9 @@ public enum StartupType {
     /**
      * Upgrade of an existing Jenkins install.
      */
-    UPGRADE
+    UPGRADE,
+    /**
+     * Downgrade of an existing Jenkins install.
+     */
+    DOWNGRADE
 }

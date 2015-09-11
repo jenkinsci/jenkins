@@ -44,26 +44,31 @@ public class StartupUtil {
 
     private static final Logger LOGGER = Logger.getLogger(StartupUtil.class.getName());
 
+    private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
+    
     /**
      * Get the type of "startup" currently under way in Jenkins.
      * @return The type of "startup" currently under way in Jenkins.
      */
     public static StartupType getStartupType() {
-        String lastRunVersion = getLastExecVersion();
+        VersionNumber lastRunVersion = new VersionNumber(getLastExecVersion());
 
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
-        if (lastRunVersion.equals("1.0")) {
+        if (lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
             return StartupType.NEW;
         }
 
         // We have a last version.
 
-        String currentRunVersion = getCurrentExecVersion();
-        if (lastRunVersion.equals(currentRunVersion)) {
-            return StartupType.RESTART;
-        } else {
+        VersionNumber currentRunVersion = new VersionNumber(getCurrentExecVersion());
+        if (lastRunVersion.isOlderThan(currentRunVersion)) {
             return StartupType.UPGRADE;
+        } else if (lastRunVersion.isNewerThan(currentRunVersion)) {
+            return StartupType.DOWNGRADE;
+        } else {
+            // Last running version was the same as "this" running version.
+            return StartupType.RESTART;
         }
     }
 

@@ -1582,6 +1582,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         } else if (startupType == StartupType.RESTART) {
             LOGGER.log(INFO, "This is a Jenkins restart. No plugin auto-installs to be performed.");
             StartupUtil.saveLastExecVersion();
+        } else if (startupType == StartupType.DOWNGRADE) {
+            LOGGER.log(INFO, "Downgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.", new Object[] {StartupUtil.getLastExecVersion(), Jenkins.VERSION});
+            StartupUtil.saveLastExecVersion();
         } else if (startupType == StartupType.UPGRADE) {
             LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.", new Object[] {StartupUtil.getLastExecVersion(), Jenkins.VERSION});
 
