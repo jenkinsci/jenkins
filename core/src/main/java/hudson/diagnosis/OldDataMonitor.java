@@ -161,10 +161,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
             SaveableReference ref = referTo(obj);
             while (true) {
                 VersionRange vr = odm.data.get(ref);
-                if (vr != null) {
-                    vr.add(version);
+                if (vr != null && odm.data.replace(ref, vr, new VersionRange(vr, version, null))) {
                     break;
-                } else if (odm.data.putIfAbsent(ref, new VersionRange(version, null)) == null) {
+                } else if (odm.data.putIfAbsent(ref, new VersionRange(null, version, null)) == null) {
                     break;
                 }
             }
@@ -219,10 +218,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
         SaveableReference ref = referTo(obj);
         while (true) {
             VersionRange vr = odm.data.get(ref);
-            if (vr != null) {
-                vr.extra = buf.toString();
+            if (vr != null && odm.data.replace(ref, vr, new VersionRange(vr, null, buf.toString()))) {
                 break;
-            } else if (odm.data.putIfAbsent(ref, new VersionRange(null, buf.toString())) == null) {
+            } else if (odm.data.putIfAbsent(ref, new VersionRange(null, null, buf.toString())) == null) {
                 break;
             }
         }
@@ -231,31 +229,40 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public static class VersionRange {
         private static VersionNumber currentVersion = Jenkins.getVersion();
 
-        @Restricted(NoExternalUse.class)
-        VersionNumber min;
-        @Restricted(NoExternalUse.class)
-        VersionNumber max;
-        @Restricted(NoExternalUse.class)
-        boolean single = true;
-        @Restricted(NoExternalUse.class)
-        public String extra;
+        final VersionNumber min;
+        final VersionNumber max;
+        final boolean single;
+        final public String extra;
 
-        public VersionRange(String version, String extra) {
-            min = max = version != null ? new VersionNumber(version) : null;
-            this.extra = extra;
-        }
-
-        public synchronized void add(String version) {
-            VersionNumber ver = new VersionNumber(version);
-            if (min==null) { min = max = ver; }
-            else {
-                if (ver.isOlderThan(min)) { min = ver; single = false; }
-                if (ver.isNewerThan(max)) { max = ver; single = false; }
+        public VersionRange(VersionRange previous, String version, String extra) {
+            if (previous == null) {
+                min = max = version != null ? new VersionNumber(version) : null;
+                this.single = true;
+                this.extra = extra;
+            } else if (version == null) {
+                min = previous.min;
+                max = previous.max;
+                single = previous.single;
+                this.extra = extra;
+            } else {
+                VersionNumber ver = new VersionNumber(version);
+                if (previous.min == null || ver.isOlderThan(previous.min)) {
+                    this.min = ver;
+                } else {
+                    this.min = previous.min;
+                }
+                if (previous.max == null || ver.isNewerThan(previous.max)) {
+                    this.max = ver;
+                } else {
+                    this.max = previous.max;
+                }
+                this.single = this.max.isNewerThan(this.min);
+                this.extra = extra;
             }
         }
 
         @Override
-        public synchronized String toString() {
+        public String toString() {
             return min==null ? "" : min.toString() + (single ? "" : " - " + max.toString());
         }
 
@@ -264,21 +271,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
          * @param threshold Number of releases
          * @return True if the major version# differs or the minor# differs by >= threshold
          */
-        public synchronized boolean isOld(int threshold) {
+        public boolean isOld(int threshold) {
             return currentVersion != null && min != null && (currentVersion.digit(0) > min.digit(0)
                     || (currentVersion.digit(0) == min.digit(0)
                     && currentVersion.digit(1) - min.digit(1) >= threshold));
         }
 
-        @Restricted(NoExternalUse.class)
-        synchronized VersionNumber getMax() {
-            return max;
-        }
-
-        @Restricted(NoExternalUse.class)
-        synchronized VersionNumber getMin() {
-            return min;
-        }
     }
 
     /**
@@ -288,9 +286,8 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public Iterator<VersionNumber> getVersionList() {
         TreeSet<VersionNumber> set = new TreeSet<VersionNumber>();
         for (VersionRange vr : data.values()) {
-            VersionNumber max = vr.getMax();
-            if (max != null) {
-                set.add(max);
+            if (vr.max != null) {
+                set.add(vr.max);
             }
         }
         return set.iterator();
@@ -321,7 +318,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         saveAndRemoveEntries(new Predicate<Map.Entry<SaveableReference, VersionRange>>() {
             @Override
             public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                VersionNumber version = entry.getValue().getMax();
+                VersionNumber version = entry.getValue().max;
                 return version != null && (thruVer == null || !version.isNewerThan(thruVer));
             }
         });
@@ -338,7 +335,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
             @Override
             public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                return entry.getValue().getMax() == null;
+                return entry.getValue().max == null;
             }
         });
 
