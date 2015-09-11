@@ -767,10 +767,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(theInstance!=null)
                 throw new IllegalStateException("second instance");
             theInstance = this;
-            
-            loadConfig();
-            startupType = StartupUtil.getStartupType();
 
+            startupType = StartupUtil.getStartupType();
+            
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with slaves
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
@@ -2681,6 +2680,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
+                loadConfig();
                 // if we are loading old data that doesn't have this field
                 if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
                     nodes.setNodes(slaves);

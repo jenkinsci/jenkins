@@ -23,10 +23,15 @@
  */
 package jenkins.install;
 
+import jenkins.model.Jenkins;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
 
 /**
  * Test
@@ -36,16 +41,19 @@ public class StartupUtilTest {
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
+    
+    @Before
+    public void setup() {
+        // JenkinsRule will have created the last exec file (indirectly),
+        // so remove it so we can fake the tests.
+        StartupUtil.getLastExecVersionFile().delete();
+    }
 
     /**
-     * Test jenkins startup sequence for a new install.
+     * Test jenkins startup sequences and the changes to the startup type..
      */
     @Test
-    public void test_newJenkinsInstall() {
-        // JenkinsRule will have created the last exec file (indirectly),
-        // so remove it so we can fake the test.
-        StartupUtil.getLastExecVersionFile().delete();
-        
+    public void test_typeTransitions() {
         // A new test instance
         Assert.assertEquals(StartupType.NEW, StartupUtil.getStartupType());
 
@@ -69,5 +77,31 @@ public class StartupUtilTest {
         // Fudge things yet again, changing the stored version to something very very new, faking a downgrade...
         StartupUtil.saveLastExecVersion("1000.0");
         Assert.assertEquals(StartupType.DOWNGRADE, StartupUtil.getStartupType());
+    }
+    
+
+    /**
+     * Test jenkins startup sequences and the changes to the startup type..
+     */
+    @Test
+    public void test_getLastExecVersion() throws Exception {
+        // Delete the config file, forcing getLastExecVersion to return
+        // the default/unset version value.
+        StartupUtil.getConfigFile().delete();        
+        Assert.assertEquals("1.0", StartupUtil.getLastExecVersion());
+        
+        // Set the version to some stupid value and check again. This time,
+        // getLastExecVersion should read it from the file.
+        setStoredVersion("9.123");       
+        Assert.assertEquals("9.123", StartupUtil.getLastExecVersion());
+    }    
+
+    private void setStoredVersion(String version) throws Exception {
+        Field versionField = Jenkins.class.getDeclaredField("version");
+        versionField.setAccessible(true);
+        versionField.set(jenkinsRule.jenkins, version);
+        Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
+        // Force a save of the config.xml
+        jenkinsRule.jenkins.save();
     }
 }

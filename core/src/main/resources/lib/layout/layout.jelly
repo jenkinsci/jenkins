@@ -102,7 +102,7 @@ ${h.initPageVariables(context)}
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
     
-    <j:if test="${h.startupType.name() == 'NEW'}">
+    <j:if test="${h.startupType.name() == 'NEW' &amp;&amp; !h.isUnitTest}">
       <!-- TODO: Replace with the real install wizard -->  
       <!-- TODO: Get the install wizard from config, allowing swap in of a different wizard. -->  
       <script src="${resURL}/plugin/temp-install-wizard/jsmodules/wizard.js" type="text/javascript"/>
