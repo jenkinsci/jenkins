@@ -80,7 +80,7 @@ ${h.initPageVariables(context)}
   </j:if>
 <x:doctype name="html" />
 <html>
-  <head resURL="${resURL}">
+  <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
 
     <j:if test="${isMSIE}">

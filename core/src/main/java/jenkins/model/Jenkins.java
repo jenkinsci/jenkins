@@ -332,7 +332,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private final StartupType startupType;
+    private StartupType startupType;
     
     /**
      * Number of executors of the master node.
@@ -885,6 +885,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public StartupType getStartupType() {
         return startupType;
+    }
+
+    /**
+     * Save the last execute version file.
+     * @since FIXME
+     */
+    public void doSaveLastExecVersion() {
+        StartupUtil.saveLastExecVersion();
+        startupType = StartupUtil.getStartupType();
     }
 
     /**

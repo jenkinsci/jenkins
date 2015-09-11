@@ -1577,8 +1577,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         if (startupType == StartupType.NEW) {
             LOGGER.log(INFO, "This is a new Jenkins instance. The Plugin Install Wizard will be launched.");
-            // TODO: remove once we fire plugin install from the wizard.
-            StartupUtil.saveLastExecVersion();
+            // Force update of the default site file (updates/default.json).
+            updateDefaultSite();
         } else if (startupType == StartupType.RESTART) {
             LOGGER.log(INFO, "This is a Jenkins restart. No plugin auto-installs to be performed.");
             StartupUtil.saveLastExecVersion();
@@ -1599,14 +1599,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             if (!pluginsToInstall.isEmpty()) {
                 LOGGER.log(INFO, "Upgrading Jenkins. Auto-installing the following plugins: {0}.", pluginsToInstall);
 
-                try {
-                    // Need to do the following because the plugin manager will attempt to access 
-                    // $JENKINS_HOME/updates/default.json. Needs to be up to date.
-                    jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
-                } catch (Exception e) {
-                    LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update default UpdateSite. Plugin upgrades may fail.", e);
-                }
-
+                updateDefaultSite();
                 final List<Future<UpdateCenter.UpdateCenterJob>> installJobs = jenkins.getPluginManager().install(pluginsToInstall, true);
                 
                 // Fire off a thread to wait for the install jobs to complete/fail and
@@ -1644,7 +1637,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             
         }
     }
-    
+
+    private static void updateDefaultSite() {
+        try {
+            // Need to do the following because the plugin manager will attempt to access 
+            // $JENKINS_HOME/updates/default.json. Needs to be up to date.
+            Jenkins.getActiveInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
+        } catch (Exception e) {
+            LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update default UpdateSite. Plugin upgrades may fail.", e);
+        }
+    }
+
     /**
      * Sequence number generator.
      */
