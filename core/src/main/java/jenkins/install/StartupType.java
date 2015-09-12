@@ -45,5 +45,9 @@ public enum StartupType {
     /**
      * Downgrade of an existing Jenkins install.
      */
-    DOWNGRADE
+    DOWNGRADE,
+    /**
+     * Jenkins started in test mode (JenkinsRule).
+     */
+    TEST
 }

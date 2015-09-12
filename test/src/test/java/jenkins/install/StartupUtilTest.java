@@ -23,6 +23,7 @@
  */
 package jenkins.install;
 
+import hudson.Main;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,6 +48,8 @@ public class StartupUtilTest {
         // JenkinsRule will have created the last exec file (indirectly),
         // so remove it so we can fake the tests.
         StartupUtil.getLastExecVersionFile().delete();
+        // Disable the unit test flag.
+        Main.isUnitTest = false;
     }
 
     /**

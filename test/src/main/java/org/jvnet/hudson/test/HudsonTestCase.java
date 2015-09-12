@@ -44,6 +44,7 @@ import hudson.Functions;
 import hudson.Functions.ThreadGroupMap;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
+import hudson.LocalPluginManager;
 import hudson.Main;
 import hudson.PluginManager;
 import hudson.Util;
@@ -109,6 +110,7 @@ import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -146,6 +148,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
@@ -501,7 +504,21 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
         File home = homeLoader.allocate();
         for (Runner r : recipes)
             r.decorateHome(this,home);
-        return new Hudson(home, createWebServer(), useLocalPluginManager ? null : pluginManager);
+        if (useLocalPluginManager) {
+            pluginManager = new LocalPluginManager(home) {
+                @Override
+                protected Collection<String> loadBundledPlugins() {
+                    Collection<String> names = super.loadBundledPlugins();
+                    try {
+                        names.addAll(TestPluginManager.loadTestBundledPlugins(this));
+                    } catch (Exception e) {
+                        Assert.fail(e.getMessage());
+                    }
+                    return names;
+                }
+            };
+        }
+        return new Hudson(home, createWebServer(), pluginManager);
     }
 
     /**

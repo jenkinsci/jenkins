@@ -444,6 +444,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             clients.clear();
 
         } finally {
+            // Make sure the unit test flag gets reset in case a test turned
+            // it off (for whatever reason).
+            Main.isUnitTest = true;
+            
             try {
                 server.stop();
             } catch (Exception e) {

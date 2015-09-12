@@ -23,6 +23,7 @@
  */
 package jenkins.install;
 
+import hudson.Functions;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.util.xml.XMLUtils;
@@ -52,6 +53,10 @@ public class StartupUtil {
      * @return The type of "startup" currently under way in Jenkins.
      */
     public static StartupType getStartupType() {
+        if (Functions.getIsUnitTest()) {
+            return StartupType.TEST;
+        }
+        
         VersionNumber lastRunVersion = new VersionNumber(getLastExecVersion());
 
         // Neither the top level config or the lastExecVersionFile have a version
