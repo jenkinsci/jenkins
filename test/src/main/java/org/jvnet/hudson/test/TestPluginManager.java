@@ -33,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
@@ -62,12 +63,23 @@ public class TestPluginManager extends PluginManager {
 
     @Override
     protected Collection<String> loadBundledPlugins() throws Exception {
+        Set<String> names = new HashSet<>();
+        
+        File warBundledPlugins = new File(WarExploder.getExplodedDir(), "WEB-INF/plugins");
+        File testBundledPlugins = new File(System.getProperty("buildDirectory"), "bundled-plugins"); // Copied by maven - see pom.xml
+
+        names.addAll(loadBundledPlugins(warBundledPlugins));
+        names.addAll(loadBundledPlugins(testBundledPlugins));
+
+        return names;
+    }
+
+    private Set<String> loadBundledPlugins(File fromDir) throws IOException, URISyntaxException {
         Set<String> names = new HashSet<String>();
 
-        File bundledPlugins = new File(WarExploder.getExplodedDir(), "WEB-INF/plugins");
-        File[] children = bundledPlugins.listFiles();
+        File[] children = fromDir.listFiles();
         if (children==null)
-            throw new Error("Unable to find "+bundledPlugins);
+            throw new Error("Unable to find "+fromDir);
         for (File child : children) {
             try {
                 names.add(child.getName());
@@ -112,7 +124,7 @@ public class TestPluginManager extends PluginManager {
 
         return names;
     }
-    
+
     // Overwrite PluginManager#stop, not to release plugins in each tests.
     // Releasing plugins result fail to access files in webapp directory in following tests.
     @Override
