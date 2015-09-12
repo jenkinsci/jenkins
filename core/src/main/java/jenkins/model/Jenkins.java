@@ -888,6 +888,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Get the URL path to the Install Wizard JavaScript.
+     * @return The URL path to the Install Wizard JavaScript.
+     * @since FIXME
+     */
+    public String getInstallWizardJS() {
+        return servletContext.getInitParameter("install-wizard-js");
+    }
+
+    /**
      * Save the last execute version file.
      * @since FIXME
      */
