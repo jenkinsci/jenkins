@@ -51,7 +51,7 @@ public class UpdateCenterPluginInstallTest {
     @RandomlyFails("Will fail if it can't connect to the UC")
     public void test_installUnknownPlugin() throws IOException, SAXException {
         setup();
-        JenkinsRule.JSONWebResponse response = jenkinsRule.postJSON("/pluginManager/installPlugins", JSONArray.fromObject(Arrays.asList("unknown_plugin_xyz")));
+        JenkinsRule.JSONWebResponse response = jenkinsRule.postJSON("/pluginManager/installPlugins", buildInstallPayload("unknown_plugin_xyz"));
         JSONObject json = response.getJSONObject();
 
         Assert.assertEquals("error", json.get("status"));
@@ -59,16 +59,23 @@ public class UpdateCenterPluginInstallTest {
         Assert.assertEquals("error", json.get("status"));
         Assert.assertEquals("No such plugin: unknown_plugin_xyz", json.get("message"));
     }
-        
+
     @Test
     @RandomlyFails("Will fail if it can't connect to the UC")
     public void test_installKnownPlugins() throws IOException, SAXException {
         setup();
-        JenkinsRule.JSONWebResponse response = jenkinsRule.postJSON("/pluginManager/installPlugins", JSONArray.fromObject(Arrays.asList("changelog-history", "git")));
+        JenkinsRule.JSONWebResponse response = jenkinsRule.postJSON("/pluginManager/installPlugins", buildInstallPayload("changelog-history", "git"));
         JSONObject json = response.getJSONObject();
 
         Assert.assertEquals("ok", json.get("status"));
         JSONObject data = json.getJSONObject("data");
         Assert.assertTrue(data.has("correlationId"));
+    }
+
+    private JSONObject buildInstallPayload(String... plugins) {
+        JSONObject payload = new JSONObject();
+        payload.put("dynamicLoad", true);
+        payload.put("plugins", JSONArray.fromObject(Arrays.asList(plugins)));
+        return payload;
     }
 }

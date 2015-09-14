@@ -800,12 +800,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
-     * Performs the installation of the plugins.
+     * Installs a list of plugins from a JSON POST.
+     * @param req The request object.
+     * @return A JSON response.
+     * @throws IOException Error reading JSON payload fro request.
      */
     @RequirePOST
-    public JSONObjectResponse doInstallPlugins(StaplerRequest req) throws IOException, ServletException {
-        String pluginListString = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
-        JSONArray pluginListJSON = JSONArray.fromObject(pluginListString);
+    public JSONObjectResponse doInstallPlugins(StaplerRequest req) throws IOException {
+        String payload = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
+        JSONObject request = JSONObject.fromObject(payload);
+        JSONArray pluginListJSON = request.getJSONArray("plugins");
         List<String> plugins = new ArrayList<>();
         
         for (int i = 0; i < pluginListJSON.size(); i++) {
@@ -814,7 +818,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         UUID correlationId = UUID.randomUUID();
         try {
-            install(plugins, true, correlationId);
+            boolean dynamicLoad = request.getBoolean("dynamicLoad");
+            install(plugins, dynamicLoad, correlationId);
 
             JSONObject responseData = new JSONObject();
             responseData.put("correlationId", correlationId.toString());
