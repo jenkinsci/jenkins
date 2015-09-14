@@ -800,6 +800,7 @@ public class QueueTest {
         r.jenkins.clouds.add(dummyCloud);
         project.setAssignedLabel(label);
         r.assertBuildStatusSuccess(project.scheduleBuild2(0));
+        assertEquals("aws-linux-dummy", project.getBuilds().getLastBuild().getBuiltOn().getLabelString());
     }
 
 }

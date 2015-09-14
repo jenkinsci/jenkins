@@ -1500,8 +1500,9 @@ public class Queue extends ResourceController implements Saveable {
                     m.execute(wuc);
 
                     p.leave(this);
-                    if (!wuc.getWorkUnits().isEmpty())
+                    if (!wuc.getWorkUnits().isEmpty()) {
                         makePending(p);
+                    }
                     else
                         LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
 
@@ -1557,6 +1558,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param p - the flyweight task to be scheduled
      * @return a Runnable if there is an executor that can take the task, null otherwise
      */
+    @CheckForNull
     private Runnable makeFlyWeightTaskBuildable(final BuildableItem p){
         //we double check if this is a flyweight task
         if (p.task instanceof FlyweightTask) {
@@ -1575,10 +1577,10 @@ public class Queue extends ResourceController implements Saveable {
 
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 final Computer c = n.toComputer();
-                if (n.canTake(p) != null) {
+                if (c == null || c.isOffline()) {
                     continue;
                 }
-                if (c == null || c.isOffline()) {
+                if (n.canTake(p) != null) {
                     continue;
                 }
                 return new Runnable() {
