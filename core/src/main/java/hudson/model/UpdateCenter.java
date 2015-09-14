@@ -90,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -1034,6 +1035,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public final UpdateSite site;
 
         /**
+         * Simple correlation ID that can be used to associated a batch of jobs e.g. the
+         * installation of a set of plugins.
+         */
+        private UUID correlationId = null;
+
+        /**
          * If this job fails, set to the error.
          */
         protected Throwable error;
@@ -1044,6 +1051,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         public Api getApi() {
             return new Api(this);
+        }
+
+        public UUID getCorrelationId() {
+            return correlationId;
+        }
+
+        public void setCorrelationId(UUID correlationId) {
+            if (this.correlationId != null) {
+                throw new IllegalStateException("Illegal call to set the 'correlationId'. Already set.");
+            }
+            this.correlationId = correlationId;
         }
 
         /**

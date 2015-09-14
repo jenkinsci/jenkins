@@ -46,7 +46,7 @@ public class UpdateCenterConnectionStatusTest {
     
     @Test
     public void doConnectionStatus_default_site() throws IOException, SAXException {
-        JSONObject response = jenkinsRule.getJSON("updateCenter/connectionStatus");
+        JSONObject response = jenkinsRule.getJSON("updateCenter/connectionStatus").getJSONObject();
 
         Assert.assertEquals("ok", response.getString("status"));
         JSONObject statusObj = response.getJSONObject("data");
@@ -54,7 +54,7 @@ public class UpdateCenterConnectionStatusTest {
         Assert.assertTrue(statusObj.has("internet"));
 
         // The following is equivalent to the above
-        response = jenkinsRule.getJSON("updateCenter/connectionStatus?siteId=default");
+        response = jenkinsRule.getJSON("updateCenter/connectionStatus?siteId=default").getJSONObject();
 
         Assert.assertEquals("ok", response.getString("status"));
         statusObj = response.getJSONObject("data");
@@ -64,7 +64,7 @@ public class UpdateCenterConnectionStatusTest {
 
     @Test
     public void doConnectionStatus_unknown_site() throws IOException, SAXException {
-        JSONObject response = jenkinsRule.getJSON("updateCenter/connectionStatus?siteId=blahblah");
+        JSONObject response = jenkinsRule.getJSON("updateCenter/connectionStatus?siteId=blahblah").getJSONObject();
 
         Assert.assertEquals("error", response.getString("status"));
         Assert.assertEquals("Unknown site 'blahblah'.", response.getString("message"));

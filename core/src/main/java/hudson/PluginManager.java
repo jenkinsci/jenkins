@@ -40,7 +40,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
@@ -50,6 +49,7 @@ import jenkins.InitReactorRunner;
 import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
+import jenkins.util.JSONObjectResponse;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
 
@@ -60,6 +60,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.bytecode.Transformer;
 import org.jvnet.hudson.reactor.Executable;
@@ -105,6 +106,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -799,6 +801,32 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     /**
      * Performs the installation of the plugins.
+     */
+    @RequirePOST
+    public JSONObjectResponse doInstallPlugins(StaplerRequest req) throws IOException, ServletException {
+        String pluginListString = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
+        JSONArray pluginListJSON = JSONArray.fromObject(pluginListString);
+        List<String> plugins = new ArrayList<>();
+        
+        for (int i = 0; i < pluginListJSON.size(); i++) {
+            plugins.add(pluginListJSON.getString(i));
+        }
+
+        UUID correlationId = UUID.randomUUID();
+        try {
+            install(plugins, true, correlationId);
+
+            JSONObject responseData = new JSONObject();
+            responseData.put("correlationId", correlationId.toString());
+
+            return new JSONObjectResponse(responseData);
+        } catch (Exception e) {
+            return new JSONObjectResponse().error(e.getMessage());
+        }
+    }
+
+    /**
+     * Performs the installation of the plugins.
      * @param plugins The collection of plugins to install.
      * @param dynamicLoad If true, the plugin will be dynamically loaded into this Jenkins. If false, 
      *                    the plugin will only take effect after the reboot.
@@ -807,6 +835,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @since FIXME                    
      */
     public List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad) {
+        return install(plugins, dynamicLoad, null);
+    }
+    
+    private List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad, @CheckForNull UUID correlationId) {
         List<Future<UpdateCenter.UpdateCenterJob>> installJobs = new ArrayList<>();
         
         for (String n : plugins) {
@@ -837,7 +869,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (p == null) {
                 throw new Failure("No such plugin: " + n);
             }
-            installJobs.add(p.deploy(dynamicLoad));
+            Future<UpdateCenter.UpdateCenterJob> jobFuture = p.deploy(dynamicLoad, correlationId);
+            installJobs.add(jobFuture);
         }
         
         return installJobs;
