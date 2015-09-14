@@ -61,6 +61,7 @@ import jenkins.install.StartupUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONObjectResponse;
 import jenkins.util.io.OnMaster;
+import net.sf.json.JSONArray;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.apache.commons.io.input.CountingInputStream;
@@ -308,6 +309,42 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
     }
 
+    /**
+     * Get the current installation status of a plugin set.
+     * <p>
+     * Supports a "correlationId" request parameter if you only want to get the
+     * install status of a set of plugins requested for install through
+     * {@link PluginManager#doInstallPlugins(org.kohsuke.stapler.StaplerRequest)}.
+     * 
+     * @return The current installation status of a plugin set.
+     * @since FIXME
+     */
+    public JSONObjectResponse doInstallStatus(StaplerRequest request) {
+        try {
+            String correlationId = request.getParameter("correlationId");
+            List<Map<String, String>> installStates = new ArrayList<>();
+            List<UpdateCenterJob> jobCopy = getJobs();
+            
+            for (UpdateCenterJob job : jobCopy) {
+                if (job instanceof InstallationJob) {
+                    UUID jobCUUID = job.getCorrelationId();
+                    if (correlationId == null || (jobCUUID != null && correlationId.equals(jobCUUID.toString()))) {
+                        InstallationJob installationJob = (InstallationJob) job;
+                        Map<String, String> pluginInfo = new LinkedHashMap<>();
+                        pluginInfo.put("name", installationJob.plugin.name);
+                        pluginInfo.put("version", installationJob.plugin.version);
+                        pluginInfo.put("title", installationJob.plugin.title);
+                        pluginInfo.put("installStatus", installationJob.status.getType());
+                        installStates.add(pluginInfo);
+                    }
+                }
+            }
+            return new JSONObjectResponse(JSONArray.fromObject(installStates));
+        } catch (Exception e) {
+            return new JSONObjectResponse().error(String.format("ERROR: %s", e.getMessage()));
+        }
+    }
+    
     /**
      * Returns latest Jenkins upgrade job.
      * @return HudsonUpgradeJob or null if not found
@@ -1743,7 +1780,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
             // The last running version was a version that didn't have bundled plugins, which means we
             // need to auto-install the plugins that were split since the last running version.
-            Set<String> pluginsToInstall = new LinkedHashSet<>();
+            final Set<String> pluginsToInstall = new LinkedHashSet<>();
             VersionNumber lastExecVersion = new VersionNumber(StartupUtil.getLastExecVersion());
             List<ClassicPluginStrategy.DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(lastExecVersion);
 
@@ -1778,7 +1815,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                             
                             // They're all installed/failed now. Now safe to save the lastExecVersion file.
                             StartupUtil.saveLastExecVersion();
-                            LOGGER.log(INFO, "Upgrading Jenkins. Plugin auto-install completed successfully.");
+                            LOGGER.log(INFO, "Upgrading Jenkins. Plugin auto-install completed successfully. Installed {0}", pluginsToInstall);
                             break;
                         }
                     }

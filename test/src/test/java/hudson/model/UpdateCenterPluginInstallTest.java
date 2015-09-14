@@ -64,12 +64,23 @@ public class UpdateCenterPluginInstallTest {
     @RandomlyFails("Will fail if it can't connect to the UC")
     public void test_installKnownPlugins() throws IOException, SAXException {
         setup();
-        JenkinsRule.JSONWebResponse response = jenkinsRule.postJSON("/pluginManager/installPlugins", buildInstallPayload("changelog-history", "git"));
-        JSONObject json = response.getJSONObject();
+        JenkinsRule.JSONWebResponse installResponse = jenkinsRule.postJSON("/pluginManager/installPlugins", buildInstallPayload("changelog-history", "git"));
+        JSONObject json = installResponse.getJSONObject();
 
         Assert.assertEquals("ok", json.get("status"));
         JSONObject data = json.getJSONObject("data");
         Assert.assertTrue(data.has("correlationId"));
+        
+        String correlationId = data.getString("correlationId");
+        JSONObject installStatus = jenkinsRule.getJSON("updateCenter/installStatus?correlationId=" + correlationId).getJSONObject();
+        Assert.assertEquals("ok", json.get("status"));
+        JSONArray states = installStatus.getJSONArray("data");
+        Assert.assertEquals(2, states.size());
+        
+        JSONObject pluginInstallState = states.getJSONObject(0);
+        Assert.assertEquals("changelog-history", pluginInstallState.get("name"));
+        pluginInstallState = states.getJSONObject(1);
+        Assert.assertEquals("git", pluginInstallState.get("name"));
     }
 
     private JSONObject buildInstallPayload(String... plugins) {

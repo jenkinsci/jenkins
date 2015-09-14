@@ -23,6 +23,7 @@
  */
 package jenkins.util;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -60,6 +61,15 @@ public class JSONObjectResponse implements HttpResponse {
      * @param data The data.
      */
     public JSONObjectResponse(@Nonnull JSONObject data) {
+        this();
+        this.jsonObject.put("data", data);
+    }
+
+    /**
+     * Create a response containing the supplied "data".
+     * @param data The data.
+     */
+    public JSONObjectResponse(@Nonnull JSONArray data) {
         this();
         this.jsonObject.put("data", data);
     }

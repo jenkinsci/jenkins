@@ -802,8 +802,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Installs a list of plugins from a JSON POST.
      * @param req The request object.
-     * @return A JSON response.
+     * @return A JSON response that includes a "correlationId" in the "data" element.
+     * That "correlationId" can then be used in calls to
+     * {@link UpdateCenter#doInstallStatus(org.kohsuke.stapler.StaplerRequest)}.
      * @throws IOException Error reading JSON payload fro request.
+     * @since FIXME
      */
     @RequirePOST
     public JSONObjectResponse doInstallPlugins(StaplerRequest req) throws IOException {
