@@ -161,6 +161,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
@@ -914,6 +915,26 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         return createSlave(l==null ? null : l.getExpression(), env);
     }
 
+    /**
+     * Get JSON from A Jenkins endpoint.
+     * @param url The endpoint URL.
+     * @return The JSON.
+     */
+    public JSONObject getJSON(@Nonnull String url) throws IOException, SAXException {
+        JenkinsRule.WebClient webClient = createWebClient();
+
+        if (url.startsWith("/jenkins/")) {
+            url = url.substring("/jenkins/".length());
+        } else if (url.startsWith("/")) {
+            url = url.substring(1);
+        }
+
+        Page runsPage = webClient.goTo(url, "application/json");
+        String json = runsPage.getWebResponse().getContentAsString();
+        
+        return JSONObject.fromObject(json);
+    }    
+    
     /**
      * Creates a slave with certain additional environment variables
      */

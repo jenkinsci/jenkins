@@ -59,6 +59,7 @@ import jenkins.RestartRequiredException;
 import jenkins.install.StartupType;
 import jenkins.install.StartupUtil;
 import jenkins.model.Jenkins;
+import jenkins.util.JSONObjectResponse;
 import jenkins.util.io.OnMaster;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -69,6 +70,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.Nonnull;
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.ServletException;
 import java.io.File;
@@ -89,6 +91,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -105,6 +108,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
@@ -172,6 +176,36 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     private boolean requiresRestart;
 
+    /**
+     * Simple connection status enum.
+     * @since FIXME
+     */
+    private static enum ConnectionStatus {
+        /**
+         * Connection status has not started yet.
+         */
+        PRECHECK,
+        /**
+         * Connection status is being checked at this time.
+         */
+        CHECKING,
+        /**
+         * Connection status was not checked.
+         */
+        UNCHECKED,
+        /**
+         * Connection is ok.
+         */
+        OK,
+        /**
+         * Connection status check failed.
+         */
+        FAILED;
+        
+        private static final String INTERNET = "internet"; 
+        private static final String UPDATE_SITE = "updatesite"; 
+    }
+
     public UpdateCenter() {
         configure(new UpdateCenterConfiguration());
     }
@@ -236,6 +270,38 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     return ij;
             }
         return null;
+    }
+
+    /**
+     * Get the current connection status.
+     * <p>
+     * Supports a "siteId" request parameter, defaulting to "default" for the default 
+     * update site.
+     * 
+     * @return The current connection status.
+     * @since FIXME
+     */
+    public JSONObjectResponse doConnectionStatus(StaplerRequest request) {
+        try {
+            String siteId = request.getParameter("siteId");
+            if (siteId == null) {
+                siteId = ID_DEFAULT;
+            }
+            ConnectionCheckJob checkJob = getConnectionCheckJob(siteId);
+            if (checkJob == null) {
+                UpdateSite site = getSite(siteId);
+                if (site != null) {
+                    checkJob = addConnectionCheckJob(site);
+                }
+            }
+            if (checkJob != null) {
+                return new JSONObjectResponse(checkJob.connectionStates);
+            } else {
+                return new JSONObjectResponse().error(String.format("Unknown site '%s'.", siteId));
+            }
+        } catch (Exception e) {
+            return new JSONObjectResponse().error(String.format("ERROR: %s", e.getMessage()));
+        }
     }
 
     /**
@@ -499,10 +565,46 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /*package*/ synchronized Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
-        // the first job is always the connectivity check
-        if (sourcesUsed.add(job.site))
-            new ConnectionCheckJob(job.site).submit();
+        addConnectionCheckJob(job.site);
         return job.submit();
+    }
+    
+    private @Nonnull ConnectionCheckJob addConnectionCheckJob(@Nonnull UpdateSite site) {
+        // Create a connection check job if the site was not already in the sourcesUsed set i.e. the first
+        // job (in the jobs list) relating to a site must be the connection check job.
+        if (sourcesUsed.add(site)) {
+            ConnectionCheckJob connectionCheckJob = new ConnectionCheckJob(site);
+            connectionCheckJob.submit();
+            return connectionCheckJob;
+        } else {
+            // Find the existing connection check job for that site and return it.
+            ConnectionCheckJob connectionCheckJob = getConnectionCheckJob(site);
+            if (connectionCheckJob != null) {
+                return connectionCheckJob;
+            } else {
+                throw new IllegalStateException("Illegal addition of an UpdateCenter job without calling UpdateCenter.addJob. " +
+                        "No ConnectionCheckJob found for the site.");
+            }
+        }
+    }
+
+    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull String siteId) {
+        UpdateSite site = getSite(siteId);
+        if (site == null) {
+            return null;
+        }
+        return getConnectionCheckJob(site);
+    }
+    
+    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull UpdateSite site) {
+        synchronized (jobs) {
+            for (UpdateCenterJob job : jobs) {
+                if (job instanceof ConnectionCheckJob && job.site.getId().equals(site.getId())) {
+                    return (ConnectionCheckJob) job;
+                }
+            }
+        }
+        return null;
     }
 
     public String getDisplayName() {
@@ -950,6 +1052,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         public Future<UpdateCenterJob> submit() {
             LOGGER.fine("Scheduling "+this+" to installerService");
+            // TODO: seems like this access to jobs should be synchronized, no?
+            // It might get synch'd accidentally via the addJob method, but that wouldn't be good.
             jobs.add(this);
             return installerService.submit(this,this);
         }
@@ -1036,11 +1140,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class ConnectionCheckJob extends UpdateCenterJob {
         private final Vector<String> statuses= new Vector<String>();
 
+        private final Map<String, ConnectionStatus> connectionStates = new ConcurrentHashMap<>();
+        
         public ConnectionCheckJob(UpdateSite site) {
             super(site);
+            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.PRECHECK);
+            connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.PRECHECK);
         }
 
         public void run() {
+            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.UNCHECKED);
+            connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.UNCHECKED);
             if (ID_UPLOAD.equals(site.getId())) {
                 return;
             }
@@ -1048,27 +1158,35 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             try {
                 String connectionCheckUrl = site.getConnectionCheckUrl();
                 if (connectionCheckUrl!=null) {
+                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.CHECKING);
                     statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
                     try {
                         config.checkConnection(this, connectionCheckUrl);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
+                        connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
                         if(e.getMessage().contains("Connection timed out")) {
                             // Google can't be down, so this is probably a proxy issue
                             statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
                             return;
                         }
                     }
+                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                 }
 
+                connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.CHECKING);
                 statuses.add(Messages.UpdateCenter_Status_CheckingJavaNet());
+                
                 config.checkUpdateCenter(this, site.getUrl());
 
+                connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.OK);
                 statuses.add(Messages.UpdateCenter_Status_Success());
             } catch (UnknownHostException e) {
+                connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
                 statuses.add(Messages.UpdateCenter_Status_UnknownHostException(e.getMessage()));
                 addStatus(e);
                 error = e;
-            } catch (IOException e) {
+            } catch (Exception e) {
+                connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
                 statuses.add(Functions.printThrowable(e));
                 error = e;
             }
@@ -1083,6 +1201,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return statuses.toArray(new String[statuses.size()]);
             }
         }
+        
+        
     }
 
     /**
