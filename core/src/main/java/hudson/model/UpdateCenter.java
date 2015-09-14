@@ -108,7 +108,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
@@ -180,7 +179,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Simple connection status enum.
      * @since FIXME
      */
-    private static enum ConnectionStatus {
+    static enum ConnectionStatus {
         /**
          * Connection status has not started yet.
          */
@@ -202,12 +201,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         FAILED;
         
-        private static final String INTERNET = "internet"; 
-        private static final String UPDATE_SITE = "updatesite"; 
+        static final String INTERNET = "internet"; 
+        static final String UPDATE_SITE = "updatesite"; 
     }
 
     public UpdateCenter() {
         configure(new UpdateCenterConfiguration());
+    }
+
+    UpdateCenter(@Nonnull UpdateCenterConfiguration configuration) {
+        configure(configuration);
     }
 
     public Api getApi() {
@@ -573,7 +576,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         // Create a connection check job if the site was not already in the sourcesUsed set i.e. the first
         // job (in the jobs list) relating to a site must be the connection check job.
         if (sourcesUsed.add(site)) {
-            ConnectionCheckJob connectionCheckJob = new ConnectionCheckJob(site);
+            ConnectionCheckJob connectionCheckJob = newConnectionCheckJob(site);
             connectionCheckJob.submit();
             return connectionCheckJob;
         } else {
@@ -586,6 +589,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         "No ConnectionCheckJob found for the site.");
             }
         }
+    }
+
+    /**
+     * Create a {@link ConnectionCheckJob} for the specified update site.
+     * <p>
+     * Does not start/submit the job.
+     * @param site The site  for which the Job is to be created.
+     * @return A {@link ConnectionCheckJob} for the specified update site.
+     * @since FIXME
+     */
+    ConnectionCheckJob newConnectionCheckJob(UpdateSite site) {
+        return new ConnectionCheckJob(site);
     }
 
     private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull String siteId) {
@@ -1140,7 +1155,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class ConnectionCheckJob extends UpdateCenterJob {
         private final Vector<String> statuses= new Vector<String>();
 
-        private final Map<String, ConnectionStatus> connectionStates = new ConcurrentHashMap<>();
+        final Map<String, ConnectionStatus> connectionStates = new ConcurrentHashMap<>();
         
         public ConnectionCheckJob(UpdateSite site) {
             super(site);
@@ -1163,9 +1178,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     try {
                         config.checkConnection(this, connectionCheckUrl);
                     } catch (Exception e) {
-                        connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
                         if(e.getMessage().contains("Connection timed out")) {
                             // Google can't be down, so this is probably a proxy issue
+                            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
                             statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
                             return;
                         }
