@@ -65,20 +65,13 @@ public class TestPluginManager extends PluginManager {
     protected Collection<String> loadBundledPlugins() throws Exception {
         Set<String> names = new HashSet<>();
         
-        File warBundledPlugins = new File(WarExploder.getExplodedDir(), "WEB-INF/plugins");
-
-        names.addAll(loadBundledPlugins(warBundledPlugins, this));
-        names.addAll(loadTestBundledPlugins(this));
-
+        names.addAll(loadBundledPlugins(new File(WarExploder.getExplodedDir(), "WEB-INF/plugins")));
+        loadBundledPlugins(new File(WarExploder.getExplodedDir(), "WEB-INF/detached-plugins"));
+                
         return names;
     }
-    
-    public static Set<String> loadTestBundledPlugins(PluginManager pluginManager) throws IOException, URISyntaxException {
-        File testBundledPlugins = new File(System.getProperty("buildDirectory"), "bundled-plugins"); // Copied by maven - see pom.xml
-        return loadBundledPlugins(testBundledPlugins, pluginManager);
-    }
 
-    private static Set<String> loadBundledPlugins(File fromDir, PluginManager pluginManager) throws IOException, URISyntaxException {
+    private Set<String> loadBundledPlugins(File fromDir) throws IOException, URISyntaxException {
         Set<String> names = new HashSet<String>();
 
         File[] children = fromDir.listFiles();
@@ -88,7 +81,7 @@ public class TestPluginManager extends PluginManager {
             try {
                 names.add(child.getName());
 
-                pluginManager.copyBundledPlugin(child.toURI().toURL(), child.getName());
+                copyBundledPlugin(child.toURI().toURL(), child.getName());
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+child,e);
             }
@@ -100,7 +93,7 @@ public class TestPluginManager extends PluginManager {
         }
         if (u!=null) try {
             names.add("the.jpl");
-            pluginManager.copyBundledPlugin(u, "the.jpl");
+            copyBundledPlugin(u, "the.jpl");
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to copy the.jpl",e);
         }
@@ -116,9 +109,9 @@ public class TestPluginManager extends PluginManager {
                 	final URL url = new URL(index, line + ".jpi");
 					File f = new File(url.toURI());
                 	if(f.exists()){
-                		pluginManager.copyBundledPlugin(url, line + ".jpi");
+                		copyBundledPlugin(url, line + ".jpi");
                 	}else{
-                		pluginManager.copyBundledPlugin(new URL(index, line + ".hpi"), line + ".jpi"); // fallback to hpi
+                		copyBundledPlugin(new URL(index, line + ".hpi"), line + ".jpi"); // fallback to hpi
                 	}
                 }
             } finally {

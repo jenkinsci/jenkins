@@ -114,8 +114,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -508,12 +510,10 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             pluginManager = new LocalPluginManager(home) {
                 @Override
                 protected Collection<String> loadBundledPlugins() {
-                    Collection<String> names = super.loadBundledPlugins();
-                    try {
-                        names.addAll(TestPluginManager.loadTestBundledPlugins(this));
-                    } catch (Exception e) {
-                        Assert.fail(e.getMessage());
-                    }
+                    // Overriding so we can force loading of the detached plugins for testing
+                    Set<String> names = new LinkedHashSet<>();
+                    names.addAll(loadPluginsFromWar("/WEB-INF/plugins"));
+                    names.addAll(loadPluginsFromWar("/WEB-INF/detached-plugins"));
                     return names;
                 }
             };

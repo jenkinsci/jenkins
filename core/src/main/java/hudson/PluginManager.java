@@ -702,7 +702,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Copies the bundled plugin from the given URL to the destination of the given file name (like 'abc.jpi'),
      * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
      */
-    public void copyBundledPlugin(URL src, String fileName) throws IOException {
+    protected void copyBundledPlugin(URL src, String fileName) throws IOException {
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = src.openConnection().getLastModified();
