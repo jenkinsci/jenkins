@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.BulkChange;
-import hudson.ClassicPluginStrategy;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Functions;
@@ -35,7 +34,6 @@ import hudson.Util;
 import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
 import hudson.init.Initializer;
@@ -53,11 +51,9 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.PersistedList;
-import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
 import jenkins.install.StartupType;
-import jenkins.install.StartupUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONObjectResponse;
 import jenkins.util.io.OnMaster;
@@ -86,7 +82,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1757,74 +1752,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
-        // Now it's ok to run the plugin auto installs for Jenkins upgrades.
-        installDetachedPlugins();
-    }
-    
-    private static void installDetachedPlugins() {
-        Jenkins jenkins = Jenkins.getActiveInstance();
-        StartupType startupType = jenkins.getStartupType();
-
-        if (startupType == StartupType.NEW) {
+        if (Jenkins.getActiveInstance().getStartupType() == StartupType.NEW) {
             LOGGER.log(INFO, "This is a new Jenkins instance. The Plugin Install Wizard will be launched.");
             // Force update of the default site file (updates/default.json).
             updateDefaultSite();
-        } else if (startupType == StartupType.RESTART) {
-            LOGGER.log(INFO, "This is a Jenkins restart. No plugin auto-installs to be performed.");
-            StartupUtil.saveLastExecVersion();
-        } else if (startupType == StartupType.DOWNGRADE) {
-            LOGGER.log(INFO, "Downgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.", new Object[] {StartupUtil.getLastExecVersion(), Jenkins.VERSION});
-            StartupUtil.saveLastExecVersion();
-        } else if (startupType == StartupType.UPGRADE) {
-            LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.", new Object[] {StartupUtil.getLastExecVersion(), Jenkins.VERSION});
-
-            // The last running version was a version that didn't have bundled plugins, which means we
-            // need to auto-install the plugins that were split since the last running version.
-            final Set<String> pluginsToInstall = new LinkedHashSet<>();
-            VersionNumber lastExecVersion = new VersionNumber(StartupUtil.getLastExecVersion());
-            List<ClassicPluginStrategy.DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(lastExecVersion);
-
-            pluginsToInstall.addAll(ClassicPluginStrategy.DetachedPlugin.toPluginNameList(detachedPlugins));
-            
-            if (!pluginsToInstall.isEmpty()) {
-                LOGGER.log(INFO, "Upgrading Jenkins. Auto-installing the following plugins: {0}.", pluginsToInstall);
-
-                updateDefaultSite();
-                final List<Future<UpdateCenter.UpdateCenterJob>> installJobs = jenkins.getPluginManager().install(pluginsToInstall, true);
-                
-                // Fire off a thread to wait for the install jobs to complete/fail and
-                // then save the lastExecVersion file.
-                new Thread() {
-                    @Override
-                    public void run() {
-                        waitForPluginInstalls: while(true) {
-                            // TODO: Add thread stop for timeout or shutdown. 
-                            try {
-                                Thread.sleep(1000);
-                                for (Future<UpdateCenter.UpdateCenterJob> installJob : installJobs) {
-                                    if (!installJob.isDone() && !installJob.isCancelled()) {
-                                        // This install is still running (not done and not canceled). Wait.
-                                        continue waitForPluginInstalls;
-                                    }
-                                }
-                            } catch (InterruptedException e) {
-                                LOGGER.log(SEVERE, "Upgrading Jenkins. Plugin auto-install failed.", e);
-                                // Purposely not saving the lastExecVersion file.
-                                return;
-                            }
-                            
-                            // They're all installed/failed now. Now safe to save the lastExecVersion file.
-                            StartupUtil.saveLastExecVersion();
-                            LOGGER.log(INFO, "Upgrading Jenkins. Plugin auto-install completed successfully. Installed {0}", pluginsToInstall);
-                            break;
-                        }
-                    }
-                }.start();
-            } else {
-                LOGGER.log(INFO, "Upgrading Jenkins. Not plugins to be installed.");
-                StartupUtil.saveLastExecVersion();
-            }
-            
         }
     }
 

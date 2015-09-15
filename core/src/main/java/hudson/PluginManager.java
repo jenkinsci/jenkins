@@ -48,6 +48,8 @@ import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.InitReactorRunner;
 import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
+import jenkins.install.StartupType;
+import jenkins.install.StartupUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONObjectResponse;
 import jenkins.util.io.OnMaster;
@@ -87,10 +89,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -123,6 +128,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import static hudson.init.InitMilestone.*;
 import hudson.model.DownloadService;
 import hudson.util.FormValidation;
+
+import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -368,13 +375,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         // lists up initialization tasks about loading plugins.
         return TaskBuilder.union(initializerFinder, // this scans @Initializer in the core once
-            builder,new TaskGraphBuilder() {{
-            requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins",new Executable() {
+                builder, new TaskGraphBuilder() {{
+            requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins", new Executable() {
                 /**
                  * Once the plugins are listed, schedule their initialization.
                  */
                 public void run(Reactor session) throws Exception {
-                    Jenkins.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
+                    Jenkins.getInstance().lookup.set(PluginInstanceStore.class, new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
 
                     // schedule execution of loading plugins
@@ -425,6 +432,160 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             });
         }});
+    }
+
+    protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath) {
+        return loadPluginsFromWar(fromPath, null);
+    }
+
+    protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath, @CheckForNull FilenameFilter filter) {
+        Set<String> names = new HashSet();
+
+        ServletContext context = Jenkins.getInstance().servletContext;
+        Set<String> plugins = Util.fixNull((Set<String>) context.getResourcePaths(fromPath));
+        Set<URL> copiedPlugins = new HashSet<>();
+        Set<URL> dependencies = new HashSet<>();
+
+        for( String pluginPath : plugins) {
+            String fileName = pluginPath.substring(pluginPath.lastIndexOf('/')+1);
+            if(fileName.length()==0) {
+                // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
+                // I suspect some containers are returning directory names.
+                continue;
+            }
+            try {
+                names.add(fileName);
+
+                URL url = context.getResource(pluginPath);
+                if (filter != null) {
+                    if (!filter.accept(new File(url.getFile()), fileName)) {
+                        continue;
+                    }
+                }
+                
+                copyBundledPlugin(url, fileName);
+                copiedPlugins.add(url);
+                try {
+                    addDependencies(url, fromPath, dependencies);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to resolve dependencies for the bundled plugin " + fileName, e);
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
+            }
+        }
+        
+        // Copy dependencies. These are not detached plugins, but are required by them.
+        for (URL dependency : dependencies) {
+            if (copiedPlugins.contains(dependency)) {
+                // Ignore. Already copied.
+                continue;
+            }
+            
+            String fileName = new File(dependency.getFile()).getName();
+            try {
+                names.add(fileName);
+                copyBundledPlugin(dependency, fileName);
+                copiedPlugins.add(dependency);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to extract the bundled dependency plugin " + fileName, e);
+            }
+        }
+        
+        return names;
+    }
+
+    protected static void addDependencies(URL hpiResUrl, String fromPath, Set<URL> dependencySet) throws URISyntaxException, MalformedURLException {
+        if (dependencySet.contains(hpiResUrl)) {
+            return;
+        }
+        
+        Manifest manifest = parsePluginManifest(hpiResUrl);
+        String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
+        if (dependencySpec != null) {
+            String[] dependencyTokens = dependencySpec.split(",");
+            ServletContext context = Jenkins.getInstance().servletContext;
+
+            for (String dependencyToken : dependencyTokens) {
+                if (dependencyToken.endsWith(";resolution:=optional")) {
+                    // ignore optional dependencies
+                    continue;
+                }
+
+                String artifactId = dependencyToken.split(":")[0];
+                URL dependencyURL = context.getResource(fromPath + "/" + artifactId + ".hpi");
+
+                if (dependencyURL == null) {
+                    // Maybe bundling has changed .jpi files
+                    dependencyURL = context.getResource(fromPath + "/" + artifactId + ".jpi");
+                }
+
+                if (dependencyURL != null) {
+                    dependencySet.add(dependencyURL);
+                    // And transitive deps...
+                    addDependencies(dependencyURL, fromPath, dependencySet);
+                }
+            }
+        }
+    }
+
+    /**
+     * Load detached plugins and their dependencies.
+     * <p>
+     * Only loads plugins that:
+     * <ul>
+     *     <li>Have been detached since the last running version.</li>
+     *     <li>Are already installed and need to be upgraded. This can be the case if this Jenkins install has been running since before plugins were "unbundled".</li>
+     *     <li>Are dependencies of one of the above e.g. script-security is not one of the detached plugins but it must be loaded if matrix-project is loaded.</li>
+     * </ul>
+     */
+    protected void loadDetachedPlugins() {
+        StartupType startupType = Jenkins.getActiveInstance().getStartupType();
+        if (startupType == StartupType.UPGRADE) {
+            VersionNumber lastExecVersion = new VersionNumber(StartupUtil.getLastExecVersion());
+
+            LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
+                    new Object[] {lastExecVersion, Jenkins.VERSION});
+
+            final List<ClassicPluginStrategy.DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(lastExecVersion);
+
+            Set<String> loadedDetached = loadPluginsFromWar("/WEB-INF/detached-plugins", new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    name = normalisePluginName(name);
+
+                    // If it's already installed, then we possibly need to upgrade
+                    // it. copyBundledPlugin() handles the details of that - version check, pinned etc.
+                    if (isPluginInstalled(name)) {
+                        return true;
+                    }
+
+                    // If it's a plugin that was detached since the last running version.
+                    for (ClassicPluginStrategy.DetachedPlugin detachedPlugin : detachedPlugins) {
+                        if (detachedPlugin.getShortName().equals(name)) {
+                            return true;
+                        }
+                    }
+
+                    // Otherwise skip this and do not install.
+                    return false;
+                }
+            });
+            
+            LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
+                    new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
+            
+            StartupUtil.saveLastExecVersion();
+        }
+    }
+    
+    private boolean isPluginInstalled(@Nonnull String name) {
+        return new File(rootDir, normalisePluginName(name)).exists();
+    }
+
+    private String normalisePluginName(@Nonnull String name) {
+        // Normalise the name by stripping off the file extension (if present)...
+        return name.replace(".jpi", "").replace(".hpi", "");
     }
 
     /*
@@ -563,15 +724,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // - to make sure the value is not changed after each restart, so we can avoid
             // unpacking the plugin itself in ClassicPluginStrategy.explode
         }
-        if (pinFile.exists())
-            parsePinnedBundledPluginManifest(src);
+
+        Manifest manifest = parsePluginManifest(src);
+        if (pinFile.exists()) {
+            // When a pin file prevented a bundled plugin from getting extracted, check if the one we currently have
+            // is older than we bundled.            
+            String shortName = PluginWrapper.computeShortName(manifest, FilenameUtils.getName(src.getPath()));
+            bundledPluginManifests.put(shortName, manifest);
+        }
     }
 
-    /**
-     * When a pin file prevented a bundled plugin from getting extracted, check if the one we currently have
-     * is older than we bundled.
-     */
-    private void parsePinnedBundledPluginManifest(URL bundledJpi) {
+    private static Manifest parsePluginManifest(URL bundledJpi) {
         try {
             URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
             InputStream in=null;
@@ -580,8 +743,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (res!=null) {
                     in = res.openStream();
                     Manifest manifest = new Manifest(in);
-                    String shortName = PluginWrapper.computeShortName(manifest, FilenameUtils.getName(bundledJpi.getPath()));
-                    bundledPluginManifests.put(shortName, manifest);
+                    return manifest;
                 }
             } finally {
                 IOUtils.closeQuietly(in);
@@ -591,6 +753,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to parse manifest of "+bundledJpi, e);
         }
+        return null;
     }
 
     /**

@@ -769,6 +769,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             theInstance = this;
 
             startupType = StartupUtil.getStartupType();
+            if (startupType == StartupType.RESTART || startupType == StartupType.DOWNGRADE) {                
+                StartupUtil.saveLastExecVersion();
+            }
             
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with slaves
