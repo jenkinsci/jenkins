@@ -1953,6 +1953,8 @@ function getElementOverflowParams(element) {
     // wrapping is potentially happening, or not.
 
     // Force it to wrap.
+    var original = element;
+    element = element.clodeNode();
     Element.addClassName(element, "force-wrap");
     var wrappedClientWidth = element.clientWidth;
     var wrappedClientHeight = element.clientHeight;
@@ -1961,17 +1963,13 @@ function getElementOverflowParams(element) {
     // Force it to nowrap. Return the comparisons.
     Element.addClassName(element, "force-nowrap");
     var nowrapClientHeight = element.clientHeight;
-    try {
-        var overflowParams = {
-            element: element,
-            clientWidth: wrappedClientWidth,
-            scrollWidth: element.scrollWidth,
-            isOverflowed: wrappedClientHeight > nowrapClientHeight
-        };
-        return  overflowParams;
-    } finally {
-        Element.removeClassName(element, "force-nowrap");
-    }
+    var overflowParams = {
+        element: original,
+        clientWidth: wrappedClientWidth,
+        scrollWidth: element.scrollWidth,
+        isOverflowed: wrappedClientHeight > nowrapClientHeight
+    };
+    return  overflowParams;
 }
 
 var zeroWidthSpace = String.fromCharCode(8203);
