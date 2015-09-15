@@ -162,7 +162,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * if a build is currently using a workspace.
      *
      * <p>
-     * The default implementation returns true.
+     * The default implementation returns true. If polling without workspace is supported, then
+     * ${@link #compareRemoteRevisionWith(Job, Launcher, TaskListener, SCMRevisionState)} shoulc
+     * be overridden to implement workspace-free polling.
      *
      * <p>
      * See issue #1348 for more discussion of this feature.
@@ -326,7 +328,34 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public SCMRevisionState _calcRevisionsFromBuild(AbstractBuild<?, ?> build, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return calcRevisionsFromBuild(build, launcher, listener);
     }
-    
+
+
+    /**
+     * Compares the current state of the remote repository against the given baseline {@link SCMRevisionState}.
+     * <p>
+     * This method is intended to <i>estimate</i> if the remote repository state has changed compared to current
+     * baseline, as a lightweight check, and as a result can trigger a finer grained comparison using
+     * {@link #compareRemoteRevisionWith(Job, Launcher, FilePath, TaskListener, SCMRevisionState)} if the SCM
+     * implementation do claim it require a workspace - see ${@link #requiresWorkspaceForPolling()}.
+     * <p>
+     * If the lightweight check can determine there's no change, returning ${@link PollingResult.Change#NONE}, then
+     * the polling mechanism can just stop and won't need to acquire a workspace.
+     * <p>
+     * If the lightweight check can determine changes, returning ${@link PollingResult.Change#SIGNIFICANT}, and
+     * ${@link #requiresWorkspaceForPolling()} return <code>false</code>, a full polling cycle will be executed,
+     * invoking {@link #compareRemoteRevisionWith(Job, Launcher, FilePath, TaskListener, SCMRevisionState)}.
+     * with a workspace.
+     * @since TODO
+     */
+    public PollingResult compareRemoteRevisionWith(@Nonnull Job<?,?> project, @Nullable Launcher launcher, @Nonnull TaskListener listener, @Nonnull SCMRevisionState baseline) throws IOException, InterruptedException {
+        if (requiresWorkspaceForPolling())
+             return PollingResult.SIGNIFICANT;
+        else
+             // for backward compatibility, we invoke compareRemoteRevisionWith with workspace=null
+             return compareRemoteRevisionWith(project, launcher, null, listener, baseline);
+    }
+
+
     /**
      * Compares the current state of the remote repository against the given baseline {@link SCMRevisionState}.
      *
@@ -347,8 +376,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      Abstraction of the machine where the polling will take place. If SCM declares
      *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace}, this parameter is null.
      * @param workspace
-     *      The workspace directory that contains baseline files. If SCM declares
-     *      that {@linkplain #requiresWorkspaceForPolling() the polling doesn't require a workspace}, this parameter is null.
+     *      The workspace directory that contains baseline files. Before 1.TODO workspace could be null to support polling
+     *      without a workspace. If SCM implementation do support this feature, better override
+     *      ${@link #compareRemoteRevisionWith(Job, Launcher, TaskListener, SCMRevisionState)}
      * @param listener
      *      Logs during the polling should be sent here.
      * @param baseline
@@ -368,7 +398,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *      this exception should be simply propagated all the way up.
      * @since 1.568
      */
-    public PollingResult compareRemoteRevisionWith(@Nonnull Job<?,?> project, @Nullable Launcher launcher, @Nullable FilePath workspace, @Nonnull TaskListener listener, @Nonnull SCMRevisionState baseline) throws IOException, InterruptedException {
+    public PollingResult compareRemoteRevisionWith(@Nonnull Job<?,?> project, @Nullable Launcher launcher, @Nonnull FilePath workspace, @Nonnull TaskListener listener, @Nonnull SCMRevisionState baseline) throws IOException, InterruptedException {
         if (project instanceof AbstractProject && Util.isOverridden(SCM.class, getClass(), "compareRemoteRevisionWith", AbstractProject.class, Launcher.class, FilePath.class, TaskListener.class, SCMRevisionState.class)) {
             return compareRemoteRevisionWith((AbstractProject) project, launcher, workspace, listener, baseline);
         } else {

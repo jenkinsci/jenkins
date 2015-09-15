@@ -1384,6 +1384,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * {@link #poll(TaskListener)} method without the try/catch block that does listener notification and .
      */
     private PollingResult _poll(TaskListener listener, SCM scm) throws IOException, InterruptedException {
+
+        LOGGER.fine("Polling SCM changes of " + getName());
+        if (pollingBaseline==null) // see NOTE-NO-BASELINE above
+            calcPollingBaseline(getLastBuild(),null,listener);
+
+        // First try to determine changes without a workspace
+        final PollingResult pollingResult = scm.compareRemoteRevisionWith(this, null, listener, pollingBaseline);
+        if (! pollingResult.hasChanges()) {
+            return pollingResult;
+        }
+
         if (scm.requiresWorkspaceForPolling()) {
             R b = getSomeBuildWithExistingWorkspace();
             if (b == null) b = getLastBuild();
@@ -1447,13 +1458,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
 
         } else {
-            // polling without workspace
-            LOGGER.fine("Polling SCM changes of " + getName());
-            if (pollingBaseline==null) // see NOTE-NO-BASELINE above
-                calcPollingBaseline(getLastBuild(),null,listener);
-            PollingResult r = scm.poll(this, null, null, listener, pollingBaseline);
-            pollingBaseline = r.remote;
-            return r;
+            pollingBaseline = pollingResult.remote;
+            return pollingResult;
         }
     }
 
