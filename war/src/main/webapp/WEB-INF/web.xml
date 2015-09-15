@@ -45,8 +45,7 @@ THE SOFTWARE.
     
   <context-param>
       <param-name>install-wizard-js</param-name>
-      <!-- TODO: Replace with the real install wizard -->  
-      <param-value>plugin/temp-install-wizard/jsmodules/wizard.js</param-value>
+      <param-value>jsbundles/wizard.js</param-value>
   </context-param>
 
   <servlet-mapping>

@@ -1,0 +1,18 @@
+{
+  "name": "jenkins-ui",
+  "version": "1.0.0",
+  "description": "Jenkins User Interface",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "jenkins-js-builder": "0.0.19",
+    "jenkins-js-test": "0.0.12"
+  },
+  "dependencies": {
+    "jenkins-handlebars-rt": "^1.0.1",
+    "jenkins-js-modules": "1.0.1",
+    "jqueryui-detached": "^1.11.4-v8",
+    "jquery-detached": "^2.1.4-v2",
+    "window-handle": "0.0.6"
+  }
+}
