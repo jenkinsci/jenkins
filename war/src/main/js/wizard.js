@@ -11,6 +11,7 @@ modal.dialog({
     dialogClass: "jenkins-plugin-wizard-dialog",
     modal: true,
     minWidth: 400,
+    hide: { effect: "fadeOut", duration: 2000 },
     buttons: {
         "Install Recommended Plugins": function () {
             var theDialog = this;
@@ -37,5 +38,5 @@ modal.dialog({
 });
 
 // Need to wrap. See https://github.com/jenkinsci/js-libs/tree/master/jquery-detached#namespacing-pitfalls
-$('.jenkins-plugin-wizard-dialog').wrap('<div class="jquery-ui-1"></div>');
+$('.jenkins-plugin-wizard-dialog').wrap('<div class="jquery-ui-1" style="position: fixed;"></div>');
 
