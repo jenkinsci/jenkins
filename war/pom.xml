@@ -265,13 +265,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.ui</groupId>
                   <artifactId>jquery-detached</artifactId>
-                  <version>1.0-beta-4-SNAPSHOT</version>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.ui</groupId>
                   <artifactId>handlebars</artifactId>
-                  <version>1.0-beta-4-SNAPSHOT</version>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
