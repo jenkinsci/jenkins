@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.618-SNAPSHOT</version>
+    <version>1.630-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -277,6 +277,11 @@ THE SOFTWARE.
       <version>1.8.3</version>
     </dependency>
     <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.10</version>
+    </dependency>
+    <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
       <version>1.4.4</version>
@@ -464,8 +469,17 @@ THE SOFTWARE.
       <version>1.1.0</version>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
@@ -505,7 +519,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>akuma</artifactId>
-      <version>1.9</version>
+      <version>1.10</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>

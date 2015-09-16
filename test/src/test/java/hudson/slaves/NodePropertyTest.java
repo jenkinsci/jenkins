@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import hudson.model.Descriptor.FormException;
@@ -63,7 +64,7 @@ public class NodePropertyTest {
     public void basicConfigRoundtrip() throws Exception {
         DumbSlave s = j.createSlave();
         HtmlForm f = j.createWebClient().goTo("computer/" + s.getNodeName() + "/configure").getFormByName("config");
-        ((HtmlLabel)f.selectSingleNode(".//LABEL[text()='Some Property']")).click();
+        ((HtmlLabel)DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Some Property']")).click();
         j.submit(f);
         PropertyImpl p = j.jenkins.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
         assertEquals("Duke",p.name);

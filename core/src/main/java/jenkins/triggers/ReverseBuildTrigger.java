@@ -32,6 +32,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Cause;
+import hudson.model.CauseAction;
 import hudson.model.DependencyGraph;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -71,6 +72,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.Nonnull;
+
 /**
  * Like {@link BuildTrigger} but defined on the downstream project.
  * Operates via {@link BuildTrigger#execute} and {@link DependencyGraph},
@@ -83,12 +86,13 @@ import org.kohsuke.stapler.QueryParameter;
 public final class ReverseBuildTrigger extends Trigger<Job> implements DependencyDeclarer {
 
     private static final Logger LOGGER = Logger.getLogger(ReverseBuildTrigger.class.getName());
-    private static final Map<Job,Collection<ReverseBuildTrigger>> upstream2Trigger = new WeakHashMap<Job,Collection<ReverseBuildTrigger>>();
+    private static final Map<Job,Collection<ReverseBuildTrigger>> upstream2Trigger = new WeakHashMap<>();
 
     private String upstreamProjects;
     private final Result threshold;
 
-    @DataBoundConstructor public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
+    @DataBoundConstructor
+    public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
         this.upstreamProjects = upstreamProjects;
         this.threshold = threshold;
     }
@@ -154,7 +158,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                 synchronized (upstream2Trigger) {
                     Collection<ReverseBuildTrigger> triggers = upstream2Trigger.get(upstream);
                     if (triggers == null) {
-                        triggers = new LinkedList<ReverseBuildTrigger>();
+                        triggers = new LinkedList<>();
                         upstream2Trigger.put(upstream, triggers);
                     }
                     triggers.remove(this);
@@ -221,14 +225,14 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     @Extension public static final class RunListenerImpl extends RunListener<Run> {
-        @Override public void onCompleted(Run r, TaskListener listener) {
+        @Override public void onCompleted(@Nonnull Run r, @Nonnull TaskListener listener) {
             Collection<ReverseBuildTrigger> triggers;
             synchronized (upstream2Trigger) {
                 Collection<ReverseBuildTrigger> _triggers = upstream2Trigger.get(r.getParent());
                 if (_triggers == null || _triggers.isEmpty()) {
                     return;
                 }
-                triggers = new ArrayList<ReverseBuildTrigger>(_triggers);
+                triggers = new ArrayList<>(_triggers);
             }
             for (final ReverseBuildTrigger trigger : triggers) {
                 if (trigger.shouldTrigger(r, listener)) {
@@ -237,11 +241,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         continue;
                     }
                     String name = ModelHyperlinkNote.encodeTo(trigger.job) + " #" + trigger.job.getNextBuildNumber();
-                    if (new ParameterizedJobMixIn() {
-                        @Override protected Job asJob() {
-                            return trigger.job;
-                        }
-                    }.scheduleBuild(new Cause.UpstreamCause(r))) {
+                    if (ParameterizedJobMixIn.scheduleBuild2(trigger.job, -1, new CauseAction(new Cause.UpstreamCause(r))) != null) {
                         listener.getLogger().println(hudson.tasks.Messages.BuildTrigger_Triggering(name));
                     } else {
                         listener.getLogger().println(hudson.tasks.Messages.BuildTrigger_InQueue(name));
@@ -257,10 +257,9 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             if (jenkins == null) {
                 return;
             }
-            for (ParameterizedJobMixIn.ParameterizedJob p : jenkins.getAllItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
-                Trigger<?> _t = p.getTriggers().get(jenkins.getDescriptorByType(DescriptorImpl.class));
-                if (_t instanceof ReverseBuildTrigger) {
-                    ReverseBuildTrigger t = (ReverseBuildTrigger) _t;
+            for (Job<?,?> p : jenkins.getAllItems(Job.class)) {
+                ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
+                if (t != null) {
                     String revised = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects, p.getParent());
                     if (!revised.equals(t.upstreamProjects)) {
                         t.upstreamProjects = revised;

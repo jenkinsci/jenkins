@@ -63,9 +63,10 @@ import hudson.util.RunList;
 import hudson.util.Futures;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
-import jenkins.model.queue.AsynchronousExecution;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -86,6 +87,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -107,6 +109,7 @@ import java.net.NetworkInterface;
 import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -522,7 +525,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIMethod(name="online-node")
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
-        setTemporarilyOffline(false,null);
+        setTemporarilyOffline(false, null);
     }
 
     /**
@@ -544,6 +547,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public @Nonnull String getName() {
         return nodeName != null ? nodeName : "";
     }
+
+    /**
+     * True if this computer is a Unix machine (as opposed to Windows machine).
+     *
+     * @since 1.624
+     * @return
+     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
+     */
+    public abstract @CheckForNull Boolean isUnix();
 
     /**
      * Returns the {@link Node} that this computer represents.
@@ -1416,21 +1428,23 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Replaces the current {@link Node} by another one.
      */
-    private void replaceBy(Node newNode) throws ServletException, IOException {
+    private void replaceBy(final Node newNode) throws ServletException, IOException {
         final Jenkins app = Jenkins.getInstance();
 
-        // replace the old Node object by the new one
-        synchronized (app) {
-            List<Node> nodes = new ArrayList<Node>(app.getNodes());
-            Node node = getNode();
-            int i  = (node != null) ? nodes.indexOf(node) : -1;
-            if(i<0) {
-                throw new IOException("This slave appears to be removed while you were editing the configuration");
+        // use the queue lock until Nodes has a way of directly modifying a single node.
+        Queue.withLock(new NotReallyRoleSensitiveCallable<Void, IOException>() {
+            public Void call() throws IOException {
+                List<Node> nodes = new ArrayList<Node>(app.getNodes());
+                Node node = getNode();
+                int i  = (node != null) ? nodes.indexOf(node) : -1;
+                if(i<0) {
+                    throw new IOException("This slave appears to be removed while you were editing the configuration");
+                }
+                nodes.set(i, newNode);
+                app.setNodes(nodes);
+                return null;
             }
-
-            nodes.set(i, newNode);
-            app.setNodes(nodes);
-        }
+        });
     }
 
     /**
@@ -1556,8 +1570,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
                 newLocation.getParentFile().mkdirs();
-                boolean relocationSuccessfull=f.renameTo(newLocation);
-                if (relocationSuccessfull) { // The operation will fail if mkdir fails
+                boolean relocationSuccessful=f.renameTo(newLocation);
+                if (relocationSuccessful) { // The operation will fail if mkdir fails
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
                 } else {
                     LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});

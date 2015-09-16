@@ -1923,13 +1923,7 @@ if (!Node.ELEMENT_NODE) {
   }
 
   var HAS_EXTENDED_CREATE_ELEMENT_SYNTAX = (function(){
-    try {
-      var el = document.createElement('<input name="x">');
-      return el.tagName.toLowerCase() === 'input' && el.name === 'x';
-    }
-    catch(err) {
-      return false;
-    }
+    return false;
   })();
 
   var element = global.Element;

@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.Launcher;
@@ -284,7 +285,7 @@ public class QueueTest {
             HtmlForm f = p.getFormByName("main");
             HtmlFileInput input = (HtmlFileInput) f.getInputByName("test");
             input.setData(testData);
-            f.submit();
+            HtmlFormUtil.submit(f);
         } finally {
             server.stop();
         }

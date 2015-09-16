@@ -552,6 +552,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
 
+    private transient final Object tcpSlaveAgentListenerLock = new Object();
+
     private transient UDPBroadcastThread udpBroadcastThread;
 
     private transient DNSMultiCast dnsMultiCast;
@@ -821,16 +823,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(KILL_AFTER_LOAD)
                 System.exit(0);
 
-            if(slaveAgentPort!=-1) {
-                try {
-                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-                } catch (BindException e) {
-                    new AdministrativeError(getClass().getName()+".tcpBind",
-                            "Failed to listen to incoming slave connection",
-                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.",e);
-                }
-            } else
-                tcpSlaveAgentListener = null;
+            launchTcpSlaveAgentListener();
 
             if (UDPBroadcastThread.PORT != -1) {
                 try {
@@ -946,17 +939,32 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public void setSlaveAgentPort(int port) throws IOException {
         this.slaveAgentPort = port;
+        launchTcpSlaveAgentListener();
+    }
 
-        // relaunch the agent
-        if(tcpSlaveAgentListener==null) {
-            if(slaveAgentPort!=-1)
-                tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
-        } else {
-            if(tcpSlaveAgentListener.configuredPort!=slaveAgentPort) {
+    private void launchTcpSlaveAgentListener() throws IOException {
+        synchronized(tcpSlaveAgentListenerLock) {
+            // shutdown previous agent if the port has changed
+            if (tcpSlaveAgentListener != null && tcpSlaveAgentListener.configuredPort != slaveAgentPort) {
                 tcpSlaveAgentListener.shutdown();
                 tcpSlaveAgentListener = null;
-                if(slaveAgentPort!=-1)
+            }
+            if (slaveAgentPort != -1 && tcpSlaveAgentListener == null) {
+                String administrativeMonitorId = getClass().getName() + ".tcpBind";
+                try {
                     tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                    // remove previous monitor in case of previous error
+                    for (Iterator<AdministrativeMonitor> it = AdministrativeMonitor.all().iterator(); it.hasNext(); ) {
+                        AdministrativeMonitor am = it.next();
+                        if (administrativeMonitorId.equals(am.id)) {
+                            it.remove();
+                        }
+                    }
+                } catch (BindException e) {
+                    new AdministrativeError(administrativeMonitorId,
+                            "Failed to listen to incoming slave connection",
+                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.", e);
+                }
             }
         }
     }
@@ -1700,6 +1708,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public List<Node> getNodes() {
         return nodes.getNodes();
+    }
+
+    /**
+     * Get the {@link Nodes} object that handles maintaining individual {@link Node}s.
+     * @return The Nodes object.
+     */
+    @Restricted(NoExternalUse.class)
+    public Nodes getNodesObject() {
+        // TODO replace this with something better when we properly expose Nodes.
+        return nodes;
     }
 
     /**
@@ -3996,6 +4014,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Override
         protected boolean isAlive() {
             return true;
+        }
+
+        @Override
+        public Boolean isUnix() {
+            return !Functions.isWindows();
         }
 
         /**

@@ -29,6 +29,11 @@
 //     for memory leak patterns and how to prevent them.
 //
 
+if (window.isRunAsTest) {
+    // Disable postMessage when running in test mode (HtmlUnit).
+    window.postMessage = false;
+}
+
 // create a new object whose prototype is the given object
 function object(o) {
     function F() {}
@@ -1955,6 +1960,8 @@ function updateBuildHistory(ajaxUrl,nBuild) {
     }
 
     createRefreshTimeout();
+    checkAllRowCellOverflows();
+    window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
 
     onBuildHistoryChange(function() {
         checkAllRowCellOverflows();
@@ -2225,70 +2232,6 @@ function removeZeroWidthSpaces(element) {
         Element.removeClassName(element, 'zws-inserted');
     }
 }
-
-Element.observe(document, 'dom:loaded', function(){
-    if(isRunAsTest) {
-        return;
-    }
-
-    var pageHead = $('page-head');
-    var pageBody = $('page-body');
-    var sidePanel = $(pageBody).getElementsBySelector('#side-panel')[0];
-    var sidePanelContent = $(sidePanel).getElementsBySelector('#side-panel-content')[0];
-    var mainPanel = $(pageBody).getElementsBySelector('#main-panel')[0];
-    var mainPanelContent = $(mainPanel).getElementsBySelector('#main-panel-content')[0];
-    var pageFooter = $('footer-container');
-
-    function applyFixedGridLayout() {
-        var pageBodyWidth = Element.getWidth(pageBody);
-        if (pageBodyWidth > 768) {
-            pageBody.addClassName("fixedGridLayout");
-            pageBody.removeClassName("container-fluid");
-            sidePanel.removeClassName("col-sm-9");
-            mainPanel.removeClassName("col-sm-15");
-            return true; // It's a fixedGridLayout
-        } else {
-            pageBody.removeClassName("fixedGridLayout");
-            pageBody.addClassName("container-fluid");
-            sidePanel.addClassName("col-sm-9");
-            mainPanel.addClassName("col-sm-15");
-            return false; // It's not a fixedGridLayout
-        }
-    }
-
-    function applyFixedGridHeights() {
-        var windowHeight = document.viewport.getDimensions().height;
-        var headHeight = Element.getHeight(pageHead);
-        var footerHeight = Element.getHeight(pageFooter);
-        var sidePanelHeight = Element.getHeight(sidePanel);
-        var mainPanelHeight = Element.getHeight(mainPanel);
-        var minPageBodyHeight = (windowHeight - headHeight - footerHeight);
-
-        minPageBodyHeight = Math.max(minPageBodyHeight, sidePanelHeight);
-        minPageBodyHeight = Math.max(minPageBodyHeight, mainPanelHeight);
-
-        $(pageBody).setStyle({minHeight: minPageBodyHeight + 'px'});
-        $(sidePanel).setStyle({minHeight: minPageBodyHeight + 'px'});
-        $(mainPanel).setStyle({minHeight: minPageBodyHeight + 'px'});
-    }
-
-    var doPanelLayouts = function() {
-        // remove all style
-        pageBody.removeAttribute('style');
-        sidePanel.removeAttribute('style');
-        mainPanel.removeAttribute('style');
-        if (applyFixedGridLayout()) {
-            applyFixedGridHeights();
-        }
-    }
-
-    Event.observe(window, 'resize', doPanelLayouts);
-    elementResizeTracker.onResize(sidePanelContent, doPanelLayouts);
-    elementResizeTracker.onResize(mainPanelContent, doPanelLayouts);
-
-    doPanelLayouts();
-    fireBuildHistoryChanged();
-});
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
 function getStyle(e,a){

@@ -25,8 +25,11 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.QuotedStringTokenizer;
@@ -37,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.DownloadSettings;
 import jenkins.model.Jenkins;
@@ -192,6 +196,45 @@ public class DownloadService extends PageDecorator {
         } finally {
             is.close();
         }
+    }
+
+    /**
+     * This installs itself as a listener to changes to the Downloadable extension list and will download the metadata
+     * for any newly added Downloadables.
+     */
+    @Restricted(NoExternalUse.class)
+    public static class DownloadableListener extends ExtensionListListener {
+
+        /**
+         * Install this listener to the Downloadable extension list after all extensions have been loaded; we only
+         * care about those that are added after initialization
+         */
+        @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
+        public static void installListener() {
+            ExtensionList.lookup(Downloadable.class).addListener(new DownloadableListener());
+        }
+
+        /**
+         * Look for Downloadables that have no data, and update them.
+         */
+        @Override
+        public void onChange() {
+            for (Downloadable d : Downloadable.all()) {
+                TextFile f = d.getDataFile();
+                if (f == null || !f.exists()) {
+                    LOGGER.log(Level.FINE, "Updating metadata for " + d.getId());
+                    try {
+                        d.updateNow();
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Failed to update metadata for " + d.getId(), e);
+                    }
+                } else {
+                    LOGGER.log(Level.FINER, "Skipping update of metadata for " + d.getId());
+                }
+            }
+        }
+
+        private static final Logger LOGGER = Logger.getLogger(DownloadableListener.class.getName());
     }
 
     /**

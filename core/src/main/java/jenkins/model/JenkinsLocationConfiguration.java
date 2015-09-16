@@ -77,7 +77,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
 
     /**
      * Gets the service administrator e-mail address.
-     * @return Admin adress or &quot;address not configured&quot; stub
+     * @return Admin address or &quot;address not configured&quot; stub
      */
     public @Nonnull String getAdminAddress() {
         String v = adminAddress;
@@ -92,7 +92,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     public void setAdminAddress(@CheckForNull String adminAddress) {
         String address = Util.nullify(adminAddress);
         if(address != null && address.startsWith("\"") && address.endsWith("\"")) {
-            // some users apparently quote the whole thing. Don't konw why
+            // some users apparently quote the whole thing. Don't know why
             // anyone does this, but it's a machine's job to forgive human mistake
             address = address.substring(1,address.length()-1);
         }

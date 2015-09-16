@@ -2,7 +2,8 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Brian Westrich, Jean-Baptiste Quenot, Stephen Connolly, Tom Huybrechts
- * 
+ *               2015 Kanstantsin Shautsou
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -57,6 +58,8 @@ import java.util.logging.Logger;
 
 import antlr.ANTLRException;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.Items;
 import jenkins.model.ParameterizedJobMixIn;
@@ -99,6 +102,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      *
      * This method is invoked when {@link #Trigger(String)} is used
      * to create an instance, and the crontab matches the current time.
+     * <p>
+     * Maybe run even before {@link #start(hudson.model.Item, boolean)}, prepare for it.
      */
     public void run() {}
 
@@ -147,6 +152,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
     protected final String spec;
     protected transient CronTabList tabs;
+    @CheckForNull
     protected transient J job;
 
     /**
@@ -154,7 +160,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * periodically. This is useful when your trigger does
      * some polling work.
      */
-    protected Trigger(String cronTabSpec) throws ANTLRException {
+    protected Trigger(@Nonnull String cronTabSpec) throws ANTLRException {
         this.spec = cronTabSpec;
         this.tabs = CronTabList.create(cronTabSpec);
     }
@@ -241,6 +247,10 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // FIXME allow to set a global crontab spec
                 previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
                     public void run(AbstractProject p) {
+                        if (!p.isBuildable()) {
+                            return; //skip disabled/copied project
+                        }
+
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {
                                 LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
@@ -256,6 +266,12 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
         for (ParameterizedJobMixIn.ParameterizedJob p : inst.getAllItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
+            if (p instanceof AbstractProject<?, ?>) {
+               if (!((AbstractProject) p).isBuildable()) {
+                   continue; // skip disabled/copied project
+               }
+            }
+
             for (Trigger t : p.getTriggers().values()) {
                 if (! (t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[] {p, t.spec.trim()});
@@ -304,7 +320,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * Returns a subset of {@link TriggerDescriptor}s that applys to the given item.
      */
     public static List<TriggerDescriptor> for_(Item i) {
-        List<TriggerDescriptor> r = new ArrayList<TriggerDescriptor>();
+        List<TriggerDescriptor> r = new ArrayList<>();
         for (TriggerDescriptor t : all()) {
             if(!t.isApplicable(i))  continue;
 

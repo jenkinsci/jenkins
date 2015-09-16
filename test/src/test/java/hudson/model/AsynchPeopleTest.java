@@ -25,7 +25,7 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -53,7 +53,7 @@ public class AsynchPeopleTest {
         }
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         boolean found = false;
-        for (HtmlElement table : page.getElementsByTagName("table")) {
+        for (DomElement table : page.getElementsByTagName("table")) {
             if (table.getAttribute("class").contains("progress-bar")) {
                 found = true;
                 assertEquals("display: none;", table.getAttribute("style"));

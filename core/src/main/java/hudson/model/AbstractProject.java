@@ -106,6 +106,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ParameterizedJobMixIn;
@@ -324,11 +325,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         buildMixIn.onLoad(parent, name);
         builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
-        for (Trigger t : triggers()) {
-            try {
-                t.start(this, Items.currentlyUpdatingByXml());
-            } catch (Throwable e) {
-                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
+        if (isBuildable()) {
+            for (Trigger t : triggers()) {
+                try {
+                    t.start(this, Items.currentlyUpdatingByXml());
+                } catch (Throwable e) {
+                    LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
+                }
             }
         }
         if(scm==null)
@@ -471,6 +474,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.401
      */
     public String getBuildNowText() {
+        // For compatibility, still use the deprecated replacer if specified.
         return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, getParameterizedJobMixIn().getBuildNowText());
     }
 
@@ -1098,23 +1102,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Blocked because the previous build is already in progress.
+     * @deprecated use {@link BlockedBecauseOfBuildInProgress} instead.
      */
-    public static class BecauseOfBuildInProgress extends CauseOfBlockage {
-        private final AbstractBuild<?,?> build;
-
+    @Deprecated
+    public static class BecauseOfBuildInProgress extends BlockedBecauseOfBuildInProgress {
         public BecauseOfBuildInProgress(AbstractBuild<?, ?> build) {
-            this.build = build;
-        }
-
-        @Override
-        public String getShortDescription() {
-            Executor e = build.getExecutor();
-            String eta = "";
-            if (e != null)
-                eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
-            int lbn = build.getNumber();
-            return Messages.AbstractProject_BuildInProgress(lbn, eta);
+            super(build);
         }
     }
 
@@ -1150,10 +1143,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    @Override
     public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
-        if (isLogUpdated() && !isConcurrentBuild())
-            return new BecauseOfBuildInProgress(getLastBuild());
+        if (isLogUpdated() && !isConcurrentBuild()) {
+            return new BlockedBecauseOfBuildInProgress(getLastBuild());
+        }
         if (blockBuildWhenDownstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingDownstream();
             if (bup!=null)
@@ -1879,8 +1874,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (Trigger t : triggers())
             t.stop();
         triggers.replaceBy(buildDescribable(req, Trigger.for_(this)));
-        for (Trigger t : triggers())
-            t.start(this,true);
+        if (isBuildable()) {
+            for (Trigger t : triggers())
+                t.start(this, true);
+        }
     }
 
     /**
@@ -2113,8 +2110,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             }
             return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
-                    j.getRootUrl(), l.getUrl(), l.getNodes().size() + l.getClouds().size()
-            ));
+                    j.getRootUrl(), l.getUrl(), l.getNodes().size(), l.getClouds().size())
+            );
         }
 
         public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
@@ -2239,8 +2236,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public static final Permission ABORT = CANCEL;
 
     /**
-     * Replaceable "Build Now" text.
+     * @deprecated Use {@link ParameterizedJobMixIn#BUILD_NOW_TEXT}.
      */
+    @Deprecated
     public static final Message<AbstractProject> BUILD_NOW_TEXT = new Message<AbstractProject>();
 
     /**

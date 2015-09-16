@@ -9,7 +9,7 @@ import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices
 import org.acegisecurity.userdetails.User
 import org.acegisecurity.userdetails.UserDetails
 import org.acegisecurity.userdetails.UsernameNotFoundException
-import org.apache.commons.httpclient.Cookie
+import com.gargoylesoftware.htmlunit.util.Cookie
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
