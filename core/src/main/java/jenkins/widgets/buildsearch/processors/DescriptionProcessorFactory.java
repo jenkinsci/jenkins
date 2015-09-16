@@ -69,6 +69,9 @@ public class DescriptionProcessorFactory extends BuildSearchParamProcessorFactor
 
             @Override
             public boolean fitsSearchParams(String description) {
+                if (description == null) {
+                    return false;
+                }
                 // It fits if it contains any of the specified "desc" search terms.
                 for (BuildSearchParams.BuildSearchParam nameParam : descParams) {
                     if (description.contains(nameParam.get())) {

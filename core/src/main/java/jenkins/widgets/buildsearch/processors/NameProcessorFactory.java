@@ -69,6 +69,9 @@ public class NameProcessorFactory extends BuildSearchParamProcessorFactory {
 
             @Override
             public boolean fitsSearchParams(String name) {
+                if (name == null) {
+                    return false;
+                }
                 // It fits if it contains any of the specified "name" search terms.
                 for (BuildSearchParams.BuildSearchParam nameParam : nameParams) {
                     if (name.contains(nameParam.get())) {

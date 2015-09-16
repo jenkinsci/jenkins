@@ -28,6 +28,8 @@ import hudson.model.Run;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Wrapper class for the list of {@link jenkins.widgets.buildsearch.BuildSearchParamProcessor} needed to process/apply
@@ -35,57 +37,100 @@ import java.util.ArrayList;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class BuildSearchParamProcessorList {
+public class BuildSearchParamProcessorList extends BuildSearchParamProcessor {
 
-    private final ArrayList<BuildSearchParamProcessor> processors;
+    private final String searchString;
+    private final List<BuildSearchParamProcessor> processors;
 
     /**
      * Create a {@link BuildSearchParamProcessorList} instance from a set of {@link jenkins.widgets.buildsearch.BuildSearchParams}.
      * @param searchParams The search parameters to use for creating the {@link BuildSearchParamProcessorList}.
      */
     public BuildSearchParamProcessorList(@Nonnull BuildSearchParams searchParams) {
-        processors = new ArrayList<BuildSearchParamProcessor>();
-        for (BuildSearchParamProcessorFactory factory : BuildSearchParamProcessorFactory.all()) {
-            BuildSearchParamProcessor processor = factory.createProcessor(searchParams);
-            if (processor != null) {
-                processors.add(processor);
+        this.searchString = searchParams.getSearchString().toLowerCase();
+        if (searchParams.size() != 0) {
+            processors = new ArrayList();
+            for (BuildSearchParamProcessorFactory factory : BuildSearchParamProcessorFactory.all()) {
+                BuildSearchParamProcessor processor = factory.createProcessor(searchParams);
+                if (processor != null) {
+                    processors.add(processor);
+                }
             }
+        } else {
+            processors = Collections.emptyList();
         }
     }
 
-    public ArrayList<BuildSearchParamProcessor> getProcessors() {
+    public List<BuildSearchParamProcessor> getProcessors() {
         return processors;
     }
 
     /**
-     * Does the supplied {@link hudson.model.Queue.Item} fit the {@link BuildSearchParams} used to create this
-     * {@link BuildSearchParamProcessorList} instance.
-     * @param item The {@link hudson.model.Queue.Item} to test.
-     * @return {@code true} if the {@link hudson.model.Queue.Item} fits all of the {@link BuildSearchParamProcessor}s
-     * on this {@link BuildSearchParamProcessorList}, otherwise {@code false}.
+     * {@inheritDoc}
      */
+    @Override
     public boolean fitsSearchParams(@Nonnull Queue.Item item) {
-        for (BuildSearchParamProcessor processor : processors) {
-            if (!processor.fitsSearchParams(item)) {
-                return false;
+        if (!processors.isEmpty()) {
+            for (BuildSearchParamProcessor processor : processors) {
+                if (!processor.fitsSearchParams(item)) {
+                    return false;
+                }
             }
+            // All the selected processors "liked" the search term. 
+            return true;
+        } else {
+            if (fitsSearchParams(item.getDisplayName())) {
+                return true;
+            } else if (fitsSearchParams(item.getId())) {
+                return true;
+            }
+            // Non of the fuzzy matches "liked" the search term. 
+            return false;
         }
-        return true;
     }
 
     /**
-     * Does the supplied {@link hudson.model.Run} fit the {@link BuildSearchParams} used to create this
-     * {@link BuildSearchParamProcessorList} instance.
-     * @param run The {@link hudson.model.Run} to test.
-     * @return {@code true} if the {@link hudson.model.Run} fits all of the {@link BuildSearchParamProcessor}s
-     * on this {@link BuildSearchParamProcessorList}, otherwise {@code false}.
+     * {@inheritDoc}
      */
+    @Override
     public boolean fitsSearchParams(@Nonnull Run run) {
-        for (BuildSearchParamProcessor processor : processors) {
-            if (!processor.fitsSearchParams(run)) {
-                return false;
+        if (!processors.isEmpty()) {
+            for (BuildSearchParamProcessor processor : processors) {
+                if (!processor.fitsSearchParams(run)) {
+                    return false;
+                }
+            }
+            // All the selected processors "liked" the search term. 
+            return true;
+        } else {
+            if (fitsSearchParams(run.getDisplayName())) {
+                return true;
+            } else if (fitsSearchParams(run.getDescription())) {
+                return true;
+            } else if (fitsSearchParams(run.getNumber())) {
+                return true;
+            } else if (fitsSearchParams(run.getQueueId())) {
+                return true;
+            } else if (fitsSearchParams(run.getResult())) {
+                return true;
+            }
+            // Non of the fuzzy matches "liked" the search term. 
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean fitsSearchParams(Object data) {
+        if (data != null) {
+            if (data instanceof Number) {
+                return data.toString().equals(searchString);
+            } else {
+                return data.toString().toLowerCase().contains(searchString);
             }
         }
-        return true;
+        return false;
     }
 }

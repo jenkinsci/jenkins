@@ -25,6 +25,7 @@ package jenkins.widgets.buildsearch;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -111,6 +112,27 @@ public class BuildSearchParams {
         if (searchString.trim().length() > 0) {
             parseSearchString();
         }
+    }
+
+    /**
+     * Get the underlying/raw search string as entered by the user.
+     * @return The underlying/raw search string as entered by the user.
+     */
+    public String getSearchString() {
+        return searchString;
+    }
+
+    /**
+     * Get the total parameter count across all search terms.
+     * @return The total parameter count across all search terms.
+     */
+    public int size() {
+        int paramCount = 0;
+        Collection<List<BuildSearchParam>> searchParams = searchParamsSets.values();
+        for (List<BuildSearchParam> searchParam : searchParams) {
+            paramCount += searchParam.size();
+        }
+        return paramCount;
     }
 
     public List<BuildSearchParam> getParams(@Nonnull String searchTerm) {

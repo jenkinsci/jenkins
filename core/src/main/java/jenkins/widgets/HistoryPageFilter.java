@@ -27,6 +27,7 @@ import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.widgets.HistoryWidget;
+import jenkins.widgets.buildsearch.BuildSearchParamProcessor;
 import jenkins.widgets.buildsearch.BuildSearchParamProcessorList;
 import jenkins.widgets.buildsearch.BuildSearchParams;
 
@@ -46,7 +47,7 @@ public class HistoryPageFilter<T> {
     private final int maxEntries;
     private Long newerThan;
     private Long olderThan;
-    private BuildSearchParamProcessorList searchParamProcessorList;
+    private BuildSearchParamProcessor searchProcessor;
 
     // Need to use different Lists for Queue.Items and Runs because
     // we need access to them separately in the jelly files for rendering.
@@ -98,7 +99,7 @@ public class HistoryPageFilter<T> {
      */
     public void setSearchString(@Nonnull String searchString) {
         BuildSearchParams searchParams = new BuildSearchParams(searchString);
-        this.searchParamProcessorList = new BuildSearchParamProcessorList(searchParams);
+        this.searchProcessor = new BuildSearchParamProcessorList(searchParams);
     }
 
     /**
@@ -249,14 +250,14 @@ public class HistoryPageFilter<T> {
         // to the page initially, newerThan then cutting it back down to size using cutLeading()
         if (entry instanceof Queue.Item) {
             Queue.Item item = (Queue.Item) entry;
-            if (searchParamProcessorList != null && !searchParamProcessorList.fitsSearchParams(item)) {
+            if (searchProcessor != null && !searchProcessor.fitsSearchParams(item)) {
                 return false;
             }
             addQueueItem(item);
             return true;
         } else if (entry instanceof Run) {
             Run run = (Run) entry;
-            if (searchParamProcessorList != null && !searchParamProcessorList.fitsSearchParams(run)) {
+            if (searchProcessor != null && !searchProcessor.fitsSearchParams(run)) {
                 return false;
             }
             addRun(run);

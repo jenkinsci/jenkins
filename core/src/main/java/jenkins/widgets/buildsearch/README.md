@@ -1,6 +1,12 @@
 __TODO__: Move to jenkins-ci web/wiki if changes accepted.
 
-## Search Terms
+# Fuzzy Search
+This is obviously the easiest form of build item search. Just enter a string in the "find" box and build
+items/runs will be matched across a number of predefined fields (number, name, status description etc).
+ 
+For more control, see the next section.
+
+# Search Terms
 
 * [__name:__] : Is contained in the name of the build.
 * [__desc:__] : Is contained in the description of the build.d.
@@ -13,7 +19,7 @@ Different search terms are __AND__ together to result in a matching Build, while
 
 Is interpreted as: "(result: FAILURE) AND (desc: staging OR desc: production)"
 
-## Examples
+# Examples
 
 Builds that contain the words "staging" or "production" in the description:
 

@@ -80,6 +80,9 @@ public class ResultProcessorFactory extends BuildSearchParamProcessorFactory {
 
             @Override
             public boolean fitsSearchParams(Result result) {
+                if (result == null) {
+                    return false;
+                }
                 // It fits if it's any of the specified "result" search terms.
                 return interestingResults.contains(result);
             }
