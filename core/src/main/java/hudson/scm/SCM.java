@@ -341,18 +341,22 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * If the lightweight check can determine there's no change, returning ${@link PollingResult.Change#NONE}, then
      * the polling mechanism can just stop and won't need to acquire a workspace.
      * <p>
-     * If the lightweight check can determine changes, returning ${@link PollingResult.Change#SIGNIFICANT}, and
-     * ${@link #requiresWorkspaceForPolling()} return <code>false</code>, a full polling cycle will be executed,
-     * invoking {@link #compareRemoteRevisionWith(Job, Launcher, FilePath, TaskListener, SCMRevisionState)}.
-     * with a workspace.
+     * If the lightweight check can determine changes, returning ${@link PollingResult.Change#SIGNIFICANT}, a build
+     * will be triggered immediately.
+     * <p>
+     * If the lightweight check can detect changes on remote repository, but can't determine if they are significant
+     * enough to require a build, returning ${@link PollingResult#UNCERTAIN} will run a further polling by invoking
+     * {@link #compareRemoteRevisionWith(Job, Launcher, FilePath, TaskListener, SCMRevisionState)} with a workspace.
      * @since TODO
      */
     public PollingResult compareRemoteRevisionWith(@Nonnull Job<?,?> project, @Nullable Launcher launcher, @Nonnull TaskListener listener, @Nonnull SCMRevisionState baseline) throws IOException, InterruptedException {
         if (requiresWorkspaceForPolling())
-             return PollingResult.SIGNIFICANT;
+            // can't be determined without a workspace
+            return PollingResult.UNCERTAIN;
         else
-             // for backward compatibility, we invoke compareRemoteRevisionWith with workspace=null
-             return compareRemoteRevisionWith(project, launcher, null, listener, baseline);
+            // for binary backward compatibility, we invoke compareRemoteRevisionWith with workspace=null,
+            // just like the API was designed before 1.TODO
+            return compareRemoteRevisionWith(project, launcher, null, listener, baseline);
     }
 
 

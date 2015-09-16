@@ -59,6 +59,11 @@ public final class PollingResult implements Serializable {
          */
         INSIGNIFICANT,
         /**
+         * There are some changes between states, but the polling was not able to establish if the are significant or
+         * not. This value is designed for use when polling without a workspace, to trigger a full polling cycle.
+         */
+        UNCERTAIN,
+        /**
          * There are changes between states that warrant a new build. Jenkins will eventually
          * schedule a new build for this change, subject to other considerations
          * such as the quiet period.
@@ -92,13 +97,15 @@ public final class PollingResult implements Serializable {
     }
 
     public boolean hasChanges() {
-        return change.ordinal() > Change.INSIGNIFICANT.ordinal();
+        return change.ordinal() >= Change.SIGNIFICANT.ordinal();
     }
 
     /**
      * Constant to indicate no changes in the remote repository.
      */
     public static final PollingResult NO_CHANGES = new PollingResult(Change.NONE);
+
+    public static final PollingResult UNCERTAIN = new PollingResult(Change.UNCERTAIN);
 
     public static final PollingResult SIGNIFICANT = new PollingResult(Change.SIGNIFICANT);
 
