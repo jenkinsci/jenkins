@@ -102,10 +102,6 @@ ${h.initPageVariables(context)}
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
-    <!-- we include our own prototype.js, so don't let stapler pull in another. -->
-    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"
-                includes="org.kohsuke.stapler.bind"/>
-
     <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
     <l:yui module="yahoo" />
@@ -126,6 +122,13 @@ ${h.initPageVariables(context)}
     <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
+    <script src="${resURL}/bundles/jenkins-backcompat.js" type="text/javascript"/>
+    <script src="${resURL}/bundles/jenkins.js" type="text/javascript"/>
+      
+    <!-- we include our own prototype.js, so don't let stapler pull in another. -->
+    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"
+                includes="org.kohsuke.stapler.bind"/>
+      
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
@@ -157,9 +160,11 @@ ${h.initPageVariables(context)}
     <j:if test="${isMSIE}">
       <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
     </j:if>
-
+    <link rel="stylesheet" href="${resURL}/css/lib.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/font-icons.css" type="text/css" />
   </head>
   <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
+  <div id="wrapper" class="bootstrap3 queue toggled" data-sidewidget="queue">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
@@ -227,7 +232,8 @@ ${h.initPageVariables(context)}
     </div>
 
     <div id="page-body">
-      <div id="side-panel">
+    <div class="row">
+      <div id="side-panel" class="col col-md-3">
         <j:set var="mode" value="side-panel" />
         <d:invokeBody />
   
@@ -242,30 +248,48 @@ ${h.initPageVariables(context)}
           </script>
         </j:if>
       </div>
-      <div id="main-panel">
-         <j:set var="mode" value="main-panel" />
-         <d:invokeBody/>
+      <div id="main-panel" class="col col-md-9">
+          <div id="main-panel-content">
+            <div id="main-panel-content-inner">      
+              <j:set var="mode" value="main-panel" />
+        
+              <d:invokeBody/>
+            </div>
+          </div>
       </div>
     </div>
-
-    <footer>
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-6" id="footer"></div>
-          <div class="col-md-18">
-            <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/></span>
-            <span class="rest_api"><a href="api/">REST API</a></span>
-            <span class="jenkins_ver"><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></span>
-            <j:if test="${extensionsAvailable}">
-            <j:forEach var="pd" items="${h.pageDecorators}">
-              <st:include it="${pd}" page="footer.jelly" optional="true" />
-            </j:forEach>
-            </j:if>
-          </div>
+    </div>
+    <div id="footer-container" class="hidden-xs">
+      <span class="platform">CloudBees Jenkins Platform</span>
+      <div id="cloudbees-footer-resource-toolbar-box">
+        <div id="cloudbees-footer-resource-toolbar">
+          <ul class="nav">
+            <li><a target="_blank" href="http://www.cloudbees.com/documentation">Documentation</a></li>
+            <li><a target="_blank" href="http://support.cloudbees.com">Support</a></li>
+            <li class="pull-right"><a target="_blank" href="http://www.cloudbees.com">www.cloudbees.com</a></li>
+          </ul>
         </div>
       </div>
-    </footer>
-
+      <div id="footer">
+        <span class="page_generated">
+          ${%Page generated}:
+          <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
+        </span>
+        <span class="rest_api">
+          <a href="api/">REST API</a>
+        </span>
+        <span class="jenkins_ver">
+          <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a>
+        </span>
+        <j:if test="${extensionsAvailable}">
+        <j:forEach var="pd" items="${h.pageDecorators}">
+          <st:include it="${pd}" page="footer.jelly" optional="true" />
+        </j:forEach>
+        </j:if>
+      </div>
+    </div>
+    
+  </div>
   </body>
 </html>
 </j:jelly>

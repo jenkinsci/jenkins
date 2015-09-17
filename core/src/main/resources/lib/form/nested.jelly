@@ -27,10 +27,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<tr>
-    <td colspan="2"/>
-    <td colspan="2">
+	<div class="tr">
+    <div class="td colspan2" colspan="2"/>
+    <div class="td colspan2" colspan="2">
 	    <d:invokeBody />
-	  </td>
-	</tr>
+	  </div>
+	</div>
 </j:jelly>

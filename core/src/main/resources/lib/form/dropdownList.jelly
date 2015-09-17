@@ -38,39 +38,44 @@ THE SOFTWARE.
       Path to the inline help. See &lt;f:entry help="..." />
     </st:attribute>
   </st:documentation>
+  <st:adjunct includes="lib.form.dropdownList.dropdownList"/>
 
-    <tr>
-        <td class="setting-leftspace"><st:nbsp/></td>
-        <td class="setting-name">
+  <j:if test="${!empty(attrs.field)}">
+    <j:set var="single" value="single" />
+  </j:if>
+    <div class="tr form-group single select dropdown-list-group">
+      <div class="dropdown-list-control">
+        <div class="td setting-leftspace"><st:nbsp/></div>
+        <div class="td setting-name">
             ${attrs.title}
-        </td>
-        <td class="setting-main">
+        </div>
+        <div class="td setting-main">
             <!-- create drop-down list -->
-            <select class="setting-input dropdownList">
+            <select class="setting-input">
                 <j:set var="dropdownListMode" value="createSelectField"/>
                 <d:invokeBody/>
             </select>
-        </td>
+        </div>
         <f:helpLink url="${attrs.help}" featureName="${title}"/>
-    </tr>
+      </div>
 
-    <!-- generate the actual form entries -->
-    <tr class="dropdownList-container">
-      <td colspan="2"/>
-      <td colspan="2">
-        <table width="100%" name="${name}">
-            <j:set var="dropdownListMode" value="generateEntries"/>
-            <d:invokeBody/>
-        </table>
-      </td>
-    </tr>
+      <j:if test="${!empty(attrs.description)}">
+          <f:description>
+              <j:out value="${description}"/>
+          </f:description>
+      </j:if>
+      <j:if test="${attrs.help!=null}">
+          <f:helpArea/>
+      </j:if>
 
-    <j:if test="${!empty(attrs.description)}">
-        <f:description>
-            <j:out value="${description}"/>
-        </f:description>
-    </j:if>
-    <j:if test="${attrs.help!=null}">
-        <f:helpArea/>
-    </j:if>
+      <!-- generate the actual form entries -->
+      <div class="tr dropdown-list-container">
+        <div class="td colspan2" colspan="2">
+          <div class="tbl" width="100%" name="${name}">
+              <j:set var="dropdownListMode" value="generateEntries"/>
+              <d:invokeBody/>
+          </div>
+        </div>
+      </div>
+    </div>
 </j:jelly>

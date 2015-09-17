@@ -63,23 +63,25 @@ THE SOFTWARE.
     <j:set target="${attrs}" property="help"
            value="${descriptor.getHelpFile(attrs.field)}" />
   </j:if>
+  <st:adjunct includes="lib.form.optionalBlock.optionalBlock"/>
 
   <j:choose>
     <j:when test="${attrs.title!=null}">
-      <tr class="optional-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-        <td colspan="3">
-          <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
-                      negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
-        </td>
-        <f:helpLink url="${attrs.help}" featureName="${title}"/>
-      </tr>
-      <j:if test="${attrs.help!=null}">
-        <f:helpArea />
-      </j:if>
-      <tr class="rowvg-start" />
-      <d:invokeBody />
-      <!-- end marker -->
-      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end" />
+      <div class="option-group-box optionalBlock ${attrs.field} ${attrs.name}" data-tagName="optionalBlock" inline="${attrs.inline}">
+        <div class="tr option-group-label" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+          <div class="td colspan3 chk-name ${attrs.field} ${attrs.name}" colspan="3">
+            <f:checkbox name="${attrs.name}"
+                        negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
+          </div>
+          <f:helpLink url="${attrs.help}" featureName="${title}"/>
+        </div>
+        <j:if test="${attrs.help!=null}">
+          <f:helpArea />
+        </j:if>
+        <div class="option-group">
+          <d:invokeBody />
+        </div>
+      </div>
     </j:when>
 
     <j:otherwise>

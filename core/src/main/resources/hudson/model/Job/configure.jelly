@@ -29,36 +29,50 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
     <st:include page="sidepanel.jelly" />
+
     <f:breadcrumb-config-outline />
     <l:main-panel>
-      <div class="behavior-loading">${%LOADING}</div>
+      <div class="behavior-loading">
+      <div class="progress-box">
+        <div class="progress">
+          <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="67" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+            <span class="sr-only"></span>
+          </div>
+        </div>
+        ${%LOADING}
+      </div>
+      </div>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />
 
-        <j:if test="${it.isNameEditable()}">
-          <f:entry title="${%name(it.pronoun)}">
-            <f:textbox name="name" value="${it.name}" />
-          </f:entry>
-        </j:if>
-        <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
-          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-        </f:entry>
+        <div class="section panel panel-default" data-type="section" data-tagName="section">
+          <div class="panel-section-header panel-heading"><h4 class="panel-title"><a href="#">Overview</a></h4></div>
+          
+          <div class="panel-collapse"><div class="panel-body">
+            <j:if test="${it.isNameEditable()}">
+              <f:entry title="${%name(it.pronoun)}">
+                <f:textbox name="name" value="${it.name}" />
+              </f:entry>
+            </j:if>
+            <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
+              <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+            </f:entry>
+          </div></div>
+        </div>
+        
 
-        <j:if test="${it.supportsLogRotator()}">
-          <!-- log rotator -->
-          <f:optionalBlock name="logrotate"
-            help="/help/project-config/log-rotation.html"
-            title="${%Discard Old Builds}" checked="${it.buildDiscarder!=null}" inline="true">
-            <f:dropdownDescriptorSelector field="buildDiscarder" title="${%Strategy}"/>
-          </f:optionalBlock>
-        </j:if>
 
         <!-- job property configurations. This should have been <f:descriptorList> -->
         <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it.getClass())}" forceRowSet="true" />
 
+
         <!-- additional entries from derived classes -->
         <st:include page="configure-entries.jelly" />
+
+
+
+
 
         <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
           <f:bottomButtonBar>

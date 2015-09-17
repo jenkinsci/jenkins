@@ -79,10 +79,11 @@ THE SOFTWARE.
   <j:set var="default" value="${attrs.default ?: ''}"/>
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
   <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-         class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
+         class="setting-input form-control ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
          name="${name}"
          value="${value}"
          type="text"
+         placeholder="${title}"
          ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>

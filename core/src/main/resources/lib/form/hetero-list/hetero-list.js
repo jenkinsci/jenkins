@@ -30,9 +30,9 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         Element.remove(prototypes);
 
         var withDragDrop = initContainerDD(e);
-
-        var menuAlign = (btn.getAttribute("menualign")||"tl-bl");
-
+        if(!btn) return;
+        var menuAlign = "tl-bl";
+        if(btn) menuAlign = (btn.getAttribute("menualign")||"tl-bl");
         var menuButton = new YAHOO.widget.Button(btn, { type: "menu", menu: menu, menualignment: menuAlign.split("-"), menuminscrollheight: 250 });
         $(menuButton._button).addClassName(btn.className);    // copy class names
         $(menuButton._button).setAttribute("suffix",btn.getAttribute("suffix"));
@@ -42,15 +42,18 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
             var t = templates[parseInt(item.value)];
 
             var nc = document.createElement("div");
-            nc.className = "repeated-chunk";
+            nc.className = "repeated-chunk tr "+ t.name;
+            nc.setAttribute("id", "hetro-list-"+ t.name + t.descriptorId)
             nc.setAttribute("name",t.name);
             nc.setAttribute("descriptorId",t.descriptorId);
             nc.innerHTML = t.html;
             $(nc).setOpacity(0);
 
             var scroll = document.body.scrollTop;
+            var targetElem = findElementsBySelector(nc,"TR.config-page")[0];
+            if(!targetElem) targetElem = findElementsBySelector(nc,"DIV.config-page")[0];
+            renderOnDemand(targetElem,function() {
 
-            renderOnDemand(findElementsBySelector(nc,"TR.config-page")[0],function() {
                 function findInsertionPoint() {
                     // given the element to be inserted 'prospect',
                     // and the array of existing items 'current',
@@ -97,13 +100,15 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
                         return insertionPoint;
                 }
                 (e.hasClassName("honor-order") ? findInsertionPoint() : insertionPoint).insert({before:nc});
+                if(e.firstElementChild && e.firstElementChild.hasClassName('none'))
+                  e.firstElementChild.hide();
 
                 if(withDragDrop)    prepareDD(nc);
 
                 new YAHOO.util.Anim(nc, {
                     opacity: { to:1 }
                 }, 0.2, YAHOO.util.Easing.easeIn).animate();
-
+                
                 Behaviour.applySubtree(nc,true);
                 ensureVisible(nc);
                 layoutUpdateCallback.call();

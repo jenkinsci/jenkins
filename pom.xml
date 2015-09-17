@@ -104,6 +104,12 @@ THE SOFTWARE.
     <test-annotations.version>1.2</test-annotations.version>
 
     <java.level>7</java.level>
+
+    <!-- TODO: Move to parent pom -->
+    <iojs.dist.baseurl>https://iojs.org/dist</iojs.dist.baseurl>
+    <iojs.version>2.5.0</iojs.version>
+    <npm.dist.baseurl>http://registry.npmjs.org/npm/-</npm.dist.baseurl>
+    <npm.version>2.13.1</npm.version>
   </properties>
 
   <repositories>
@@ -748,6 +754,270 @@ THE SOFTWARE.
   </build>
 
   <profiles>
+
+    <!-- TODO: Move to parent pom -->
+    <profile>
+        <id>node-classifier-linux</id>
+        <activation>
+            <os>
+                <family>Linux</family>
+                <arch>amd64</arch>
+            </os>
+        </activation>
+        <properties>
+            <iojs.download.file.prefix>iojs-v${iojs.version}-linux-x64</iojs.download.file.prefix>
+            <iojs.download.file>${iojs.download.file.prefix}.tar.gz</iojs.download.file>
+            <iojs.download.unpack>true</iojs.download.unpack>
+            <iojs.download.exe.path>${iojs.download.file.prefix}/bin/iojs</iojs.download.exe.path>
+            <node.exe.file>node</node.exe.file>
+        </properties>
+    </profile>
+    <profile>
+        <id>node-classifier-mac</id>
+        <activation>
+            <os>
+                <family>mac</family>
+            </os>
+        </activation>
+        <properties>
+            <iojs.download.file.prefix>iojs-v${iojs.version}-darwin-x64</iojs.download.file.prefix>
+            <iojs.download.file>${iojs.download.file.prefix}.tar.gz</iojs.download.file>
+            <iojs.download.unpack>true</iojs.download.unpack>
+            <iojs.download.exe.path>${iojs.download.file.prefix}/bin/iojs</iojs.download.exe.path>
+            <node.exe.file>node</node.exe.file>
+        </properties>
+    </profile>
+    <profile>
+        <id>node-classifier-windows</id>
+        <activation>
+            <os>
+                <family>windows</family>
+            </os>
+        </activation>
+        <properties>
+            <iojs.download.file>win-x64/iojs.exe</iojs.download.file>
+            <iojs.download.unpack>false</iojs.download.unpack>
+            <iojs.download.exe.path>iojs.exe</iojs.download.exe.path>
+            <node.exe.file>node.exe</node.exe.file>
+        </properties>
+    </profile>
+    <profile>
+        <id>iojs-download</id>
+        <activation>
+            <file><exists>package.json</exists></file>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>com.googlecode.maven-download-plugin</groupId>
+                    <artifactId>download-maven-plugin</artifactId>
+                    <version>1.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>get-iojs</id>
+                            <phase>initialize</phase>
+                            <goals><goal>wget</goal></goals>
+                            <configuration>
+                                <url>${iojs.dist.baseurl}/v${iojs.version}/${iojs.download.file}</url>
+                                <unpack>${iojs.download.unpack}</unpack>
+                                <outputDirectory>${project.build.directory}/iojs</outputDirectory>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>get-npm</id>
+                            <phase>initialize</phase>
+                            <goals><goal>wget</goal></goals>
+                            <configuration>
+                                <url>${npm.dist.baseurl}/npm-${npm.version}.tgz</url>
+                                <unpack>false</unpack>
+                                <outputDirectory>${project.build.directory}</outputDirectory>
+                                <outputFileName>npm-${npm.version}.tar.gz</outputFileName>
+                            </configuration>
+                        </execution>                        
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+    <profile>
+        <id>iojs-npm-install</id>
+        <activation>
+            <file>
+                <exists>package.json</exists>
+            </file>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                    <executions>
+                        <execution>
+                            <!-- 
+                            Need this shenanigans because maven doesn't seem to support multiple file exists/missing 
+                            activations, so need to use in combo with ant-run. This was supposed to have been fixed
+                            in maven v3.2.2, but that is not what we have seen here. 
+                            -->
+                            <id>check.for.node</id>
+                            <phase>initialize</phase>
+                            <configuration>
+                                <target name="check.for.node">
+                                    <condition property="node.already.installed" value="true" else="false">
+                                        <resourceexists><file file="node/iojs-v${iojs.version}" /></resourceexists>
+                                    </condition>                                    
+                                </target>
+                                <exportAntProperties>true</exportAntProperties>
+                            </configuration>
+                            <goals><goal>run</goal></goals>
+                        </execution>
+                        <execution>
+                            <id>install</id>
+                            <phase>initialize</phase>
+                            <configuration>
+                                <target name="install" unless="${node.already.installed}">
+                                    <!-- 
+                                    Reset everything
+                                    -->
+                                    <delete dir="node"/>
+                                    <mkdir dir="node"/>
+                                    <!-- 
+                                    Copy the iojs/node and npm exe files to where the
+                                    frontend-maven plugin expects to find them. 
+                                    -->
+                                    <copy file="${project.build.directory}/iojs/${iojs.download.exe.path}"
+                                          tofile="node/${node.exe.file}"/>
+                                    <untar src="${project.build.directory}/npm-${npm.version}.tar.gz" dest="node" compression="gzip" />
+                                    <move file="node/package" tofile="node/npm"/>
+                                    <chmod perm="755">
+                                        <fileset dir="node">
+                                            <include name="node"/>
+                                            <include name="node.exe"/>
+                                        </fileset>
+                                        <fileset dir="node/npm/bin">
+                                            <include name="**/*"/>
+                                        </fileset>
+                                    </chmod>
+                                    
+                                    <!-- Create a version based installation marker file. Used in "check.for.node" execution (above). -->
+                                    <touch file="node/iojs-v${iojs.version}" />
+                                    
+                                </target>
+                            </configuration>
+                            <goals><goal>run</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+
+    <!-- TODO: Move to parent pom -->
+    <profile>
+        <id>gulp-execution</id>
+        <activation>
+            <file>
+                <exists>gulpfile.js</exists>
+            </file>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.3.1</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-versions</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireMavenVersion>
+                                        <version>3.1.0</version>
+                                    </requireMavenVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>0.0.23</version>
+
+                    <executions>
+
+                        <execution>
+                            <phase>initialize</phase>
+                            <id>npm install</id>
+                            <goals>
+                                <goal>npm</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Note that this may not be omitted lest maven-release-plugin be confused (frontend-maven-plugin #109): -->
+                                <arguments>install</arguments>
+                            </configuration>
+                        </execution>
+
+                        <execution>
+                            <phase>generate-sources</phase>
+                            <id>gulp bundle</id>
+                            <goals>
+                                <goal>gulp</goal>
+                            </goals>
+                            <configuration><arguments>bundle</arguments></configuration>
+                        </execution>
+
+                        <execution>
+                            <phase>test</phase>
+                            <id>gulp test</id>
+                            <goals>
+                                <goal>gulp</goal>
+                            </goals>
+                            <configuration><arguments>test</arguments></configuration>
+                        </execution>
+
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+
+    <!-- TODO: Move to parent pom -->
+    <profile>
+        <id>clean-node</id>
+        <activation>
+            <file>
+                <exists>package.json</exists>
+            </file>
+            <property>
+                <name>cleanNode</name>
+            </property>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <configuration>
+                        <filesets>
+                            <fileset>
+                                <directory>node</directory>
+                                <followSymlinks>false</followSymlinks>
+                            </fileset>
+                            <fileset>
+                                <directory>node_modules</directory>
+                                <followSymlinks>false</followSymlinks>
+                            </fileset>
+                        </filesets>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+
     <profile>
       <id>rc</id>
       <properties>

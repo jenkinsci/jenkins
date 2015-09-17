@@ -32,5 +32,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <st:adjunct includes="lib.form.repeatable.repeatable"/>
-  <input type="button" value="${attrs.value ?: '%Delete'}" class="repeatable-delete danger" />
+  <div class="dlt-btn">
+    <input type="button" value="${attrs.value ?: '%Delete'}" class="repeatable-delete danger" />
+  </div>
 </j:jelly>

@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>on
+  <st:documentation>
     Radio button with a label that hides additional controls.
     When checked, those additional controls are displayed. This is useful
     for presenting mutually exclusive options, where each option comes
@@ -46,6 +46,9 @@ THE SOFTWARE.
     <st:attribute name="inline">
       if present, the folded section will not be grouped into a separate JSON object upon submission.
     </st:attribute>
+    <st:attribute name="classname">
+      if present, the folded section will not be grouped into a separate JSON object upon submission.
+    </st:attribute>
     <st:attribute name="help">
       If specified, the (?) help icon will be rendered on the right,
       for in place help text. See &lt;f:entry> for the details.
@@ -53,21 +56,22 @@ THE SOFTWARE.
   </st:documentation>
 
   <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
-
-	<tr class="radio-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
-	  <td colspan="3">
-      <label>
-	      <input type="radio" name="${name}" value="${value}"
-             class="radio-block-control" checked="${checked?'true':null}" />
-        ${title}
-      </label>
-    </td>
-    <f:helpLink url="${help}" featureName="${title}" />
-	</tr>
-  <j:if test="${attrs.help!=null}">
-    <f:helpArea />
-  </j:if>
-	<d:invokeBody />
-	<!-- end marker -->
-	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none" />
+  <div class="radio-group-box tr radioBlock ${attrs.classname}" data-inputName="${name}" data-tagName="radioBlock" inline="${attrs.inline}">
+  	  <div class="td colspan3 radio-group-label" hasHelp="${attrs.help!=null}">
+        <div class="chk-name">
+          <label>
+    	      <input type="radio" name="${name}" value="${value}" checked="${checked?'true':null}" />
+            ${title}
+          </label>
+        </div>
+      </div>
+      <f:helpLink url="${help}" featureName="${title}" />
+  	
+    <j:if test="${attrs.help!=null}">
+      <f:helpArea />
+    </j:if>
+    <div class="radio-group">
+  	 <d:invokeBody />
+    </div>
+  </div>
 </j:jelly>

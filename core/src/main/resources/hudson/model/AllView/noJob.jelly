@@ -27,13 +27,17 @@ THE SOFTWARE.
   <!--
     This is a good place to add "welcome" materials, like pointers to the website and etc
   -->
-  <h1>${%Welcome to Jenkins!}</h1>
-
+  <div class="welcome-message max-read-width read">
+    <i class="icon-service-o watermark"></i>
+    <h1>${%Jenkins Welcomes You}</h1>
+    
+    <p>This is a Jenkins Master server. You currently have no jobs or tasks configured to run on this server. To get started, click the <a class="plus" href="newJob">+</a> button in the upper left or click the Create Item button immediately below.</p>
+  
   <j:choose xmlns:j="jelly:core">
     <!-- Only show the create new jobs link to those users that have permission to use it. -->
     <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
     <j:when test="${h.hasPermission(permission)}">
-      <div class="call-to-action">${%newJob}</div>
+      <a class="btn btn-primary btn-lg" href="newJob">Create Item</a>
     </j:when>
     <j:otherwise>
       <!-- Offer anonymous users the chance to login, then they can create jobs. -->
@@ -48,5 +52,6 @@ THE SOFTWARE.
       </j:if>
     </j:otherwise>
   </j:choose>
+  </div>
 
 </div>

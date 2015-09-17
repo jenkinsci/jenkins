@@ -182,58 +182,6 @@ var FormChecker = {
     }
 }
 
-/**
- * Find the sibling (in the sense of the structured form submission) form item of the given name,
- * and returns that DOM node.
- *
- * @param {HTMLElement} e
- * @param {string} name
- *      Name of the control to find. Can include "../../" etc in the prefix.
- *      See @RelativePath.
- *
- *      We assume that the name is normalized and doesn't contain any redundant component.
- *      That is, ".." can only appear as prefix, and "foo/../bar" is not OK (because it can be reduced to "bar")
- */
-function findNearBy(e,name) {
-    while (name.startsWith("../")) {
-        name = name.substring(3);
-        e = findFormParent(e,null,true);
-    }
-
-    // name="foo/bar/zot"  -> prefixes=["bar","foo"] & name="zot"
-    var prefixes = name.split("/");
-    name = prefixes.pop();
-    prefixes = prefixes.reverse();
-
-    // does 'e' itself match the criteria?
-    // as some plugins use the field name as a parameter value, instead of 'value'
-    var p = findFormItem(e,name,function(e,filter) {
-        return filter(e) ? e : null;
-    });
-    if (p!=null && prefixes.length==0)    return p;
-
-    var owner = findFormParent(e,null,true);
-
-    function locate(iterator,e) {// keep finding elements until we find the good match
-        while (true) {
-            e = iterator(e,name);
-            if (e==null)    return null;
-
-            // make sure this candidate element 'e' is in the right point in the hierarchy
-            var p = e;
-            for (var i=0; i<prefixes.length; i++) {
-                p = findFormParent(p,null,true);
-                if (p.getAttribute("name")!=prefixes[i])
-                    return null;
-            }
-            if (findFormParent(p,null,true)==owner)
-                return e;
-        }
-    }
-
-    return locate(findPreviousFormItem,e) || locate(findNextFormItem,e);
-}
-
 function controlValue(e) {
     if (e==null)    return null;
     // compute the form validation value to be sent to the server
@@ -277,84 +225,6 @@ function qs(owner) {
             return this.params;
         }
     };
-}
-
-// find the nearest ancestor node that has the given tag name
-function findAncestor(e, tagName) {
-    do {
-        e = e.parentNode;
-    } while (e != null && e.tagName != tagName);
-    return e;
-}
-
-function findAncestorClass(e, cssClass) {
-    do {
-        e = e.parentNode;
-    } while (e != null && !Element.hasClassName(e,cssClass));
-    return e;
-}
-
-function findFollowingTR(input, className) {
-    // identify the parent TR
-    var tr = input;
-    while (tr.tagName != "TR")
-        tr = tr.parentNode;
-
-    // then next TR that matches the CSS
-    do {
-        tr = $(tr).next();
-    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
-
-    return tr;
-}
-
-function find(src,filter,traversalF) {
-    while(src!=null) {
-        src = traversalF(src);
-        if(src!=null && filter(src))
-            return src;
-    }
-    return null;
-}
-
-/**
- * Traverses a form in the reverse document order starting from the given element (but excluding it),
- * until the given filter matches, or run out of an element.
- */
-function findPrevious(src,filter) {
-    return find(src,filter,function (e) {
-        var p = e.previousSibling;
-        if(p==null) return e.parentNode;
-        while(p.lastChild!=null)
-            p = p.lastChild;
-        return p;
-    });
-}
-
-function findNext(src,filter) {
-    return find(src,filter,function (e) {
-        var n = e.nextSibling;
-        if(n==null) return e.parentNode;
-        while(n.firstChild!=null)
-            n = n.firstChild;
-        return n;
-    });
-}
-
-function findFormItem(src,name,directionF) {
-    var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
-}
-
-/**
- * Traverses a form in the reverse document order and finds an INPUT element that matches the given name.
- */
-function findPreviousFormItem(src,name) {
-    return findFormItem(src,name,findPrevious);
-}
-
-function findNextFormItem(src,name) {
-    return findFormItem(src,name,findNext);
 }
 
 /**
@@ -924,20 +794,22 @@ var jenkinsRules = {
         makeButton(e);
     },
 
-    "TR.optional-block-start": function(e) { // see optionalBlock.jelly
+    ".optional-block-start": function(e) { // see optionalBlock.jelly
+    // BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
         // set start.ref to checkbox in preparation of row-set-end processing
         var checkbox = e.down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     },
 
+    // BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
     // see RowVisibilityGroupTest
-    "TR.rowvg-start" : function(e) {
+    ".rowvg-start" : function(e) {
         // figure out the corresponding end marker
         function findEnd(e) {
             for( var depth=0; ; e=$(e).next()) {
                 if(Element.hasClassName(e,"rowvg-start"))    depth++;
                 if(Element.hasClassName(e,"rowvg-end"))      depth--;
-                if(depth==0)    return e;
+                if(depth==0 || !$(e).next() )    return e;
             }
         }
 
@@ -1006,7 +878,8 @@ var jenkinsRules = {
         };
     },
 
-    "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+    ".row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+    // BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
         // figure out the corresponding start block
         e = $(e);
         var end = e;
@@ -1014,7 +887,7 @@ var jenkinsRules = {
         for( var depth=0; ; e=e.previous()) {
             if(e.hasClassName("row-set-end"))        depth++;
             if(e.hasClassName("row-set-start"))      depth--;
-            if(depth==0)    break;
+            if(depth==0 || !e.previous())    break;
         }
         var start = e;
 
@@ -1028,7 +901,8 @@ var jenkinsRules = {
         applyNameRef(start,end,ref);
     },
 
-    "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
+    ".optional-block-start ": function(e) { // see optionalBlock.jelly
+    // BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwitch row-set-end
         // this requires "TR.row-set-end" to mark rows
@@ -1077,45 +951,6 @@ var jenkinsRules = {
                 });
             });
         }
-    },
-
-    // dropdownList.jelly
-    "SELECT.dropdownList" : function(e) {
-        if(isInsideRemovable(e))    return;
-
-        var subForms = [];
-        var start = $(findFollowingTR(e, 'dropdownList-container')).down().next(), end;
-        do { start = start.firstChild; } while (start && start.tagName != 'TR');
-
-        if (start && !Element.hasClassName(start,'dropdownList-start'))
-            start = findFollowingTR(start, 'dropdownList-start');
-        while (start != null) {
-            subForms.push(start);
-            start = findFollowingTR(start, 'dropdownList-start');
-        }
-
-        // control visibility
-        function updateDropDownList() {
-            for (var i = 0; i < subForms.length; i++) {
-                var show = e.selectedIndex == i;
-                var f = $(subForms[i]);
-
-                if (show)   renderOnDemand(f.next());
-                f.rowVisibilityGroup.makeInnerVisisble(show);
-
-                // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
-                // so far dropdownList doesn't create such a situation.
-                f.rowVisibilityGroup.eachRow(true, show?function(e) {
-                    e.removeAttribute("field-disabled");
-                } : function(e) {
-                    e.setAttribute("field-disabled","true");
-                });
-            }
-        }
-
-        e.onchange = updateDropDownList;
-
-        updateDropDownList();
     },
 
     "A.showDetails" : function(e) {
@@ -1171,16 +1006,17 @@ var jenkinsRules = {
 
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
-
+            var parentWidth = sticker.up().getWidth();
             var viewport = DOM.getClientRegion();
             var pos = DOM.getRegion(shadow);
-
+            sticker.style.width = parentWidth +'px';
             sticker.style.position = "fixed";
 
             var bottomPos = Math.max(0, viewport.bottom - pos.bottom);
 
-            sticker.style.bottom = bottomPos + "px"
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
+            sticker.style.bottom = bottomPos + "px";
+            sticker.style.left = '0px';
+            sticker.style.paddingLeft = Math.max(0,pos.left-viewport.left) + "px";
         }
 
         // react to layout change
@@ -1334,6 +1170,7 @@ function applyNameRef(s,e,id) {
 }
 
 
+// BACKWARD COMPATIBILITY CODE: REMOVE WHEN WE SWITCH TO NEW DOM
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
 function updateOptionalBlock(c,scroll) {
@@ -1577,6 +1414,8 @@ Form.findMatchingInput = function(base, name) {
 
     return null;        // not found
 }
+
+
 
 function onBuildHistoryChange(handler) {
     Event.observe(window, 'jenkins:buildHistoryChanged', handler);
@@ -2198,202 +2037,6 @@ function createSearchBox(searchURL) {
 
     updatePos();
     box.onkeyup = updatePos;
-}
-
-
-/**
- * Finds the DOM node of the given DOM node that acts as a parent in the form submission.
- *
- * @param {HTMLElement} e
- *      The node whose parent we are looking for.
- * @param {HTMLFormElement} form
- *      The form element that owns 'e'. Passed in as a performance improvement. Can be null.
- * @return null
- *      if the given element shouldn't be a part of the final submission.
- */
-function findFormParent(e,form,isStatic) {
-    isStatic = isStatic || false;
-
-    if (form==null) // caller can pass in null to have this method compute the owning form
-        form = findAncestor(e,"FORM");
-
-    while(e!=form) {
-        // this is used to create a group where no single containing parent node exists,
-        // like <optionalBlock>
-        var nameRef = e.getAttribute("nameRef");
-        if(nameRef!=null)
-            e = $(nameRef);
-        else
-            e = e.parentNode;
-
-        if(!isStatic && e.getAttribute("field-disabled")!=null)
-            return null;  // this field shouldn't contribute to the final result
-
-        var name = e.getAttribute("name");
-        if(name!=null && name.length>0) {
-            if(e.tagName=="INPUT" && !isStatic && !xor(e.checked,Element.hasClassName(e,"negative")))
-                return null;  // field is not active
-
-            return e;
-        }
-    }
-
-    return form;
-}
-
-// compute the form field name from the control name
-function shortenName(name) {
-    // [abc.def.ghi] -> abc.def.ghi
-    if(name.startsWith('['))
-        return name.substring(1,name.length-1);
-
-    // abc.def.ghi -> ghi
-    var idx = name.lastIndexOf('.');
-    if(idx>=0)  name = name.substring(idx+1);
-    return name;
-}
-
-
-
-//
-// structured form submission handling
-//   see http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
-function buildFormTree(form) {
-    try {
-        // I initially tried to use an associative array with DOM elements as keys
-        // but that doesn't seem to work neither on IE nor Firefox.
-        // so I switch back to adding a dynamic property on DOM.
-        form.formDom = {}; // root object
-
-        var doms = []; // DOMs that we added 'formDom' for.
-        doms.push(form);
-
-        function addProperty(parent,name,value) {
-            name = shortenName(name);
-            if(parent[name]!=null) {
-                if(parent[name].push==null) // is this array?
-                    parent[name] = [ parent[name] ];
-                parent[name].push(value);
-            } else {
-                parent[name] = value;
-            }
-        }
-
-        // find the grouping parent node, which will have @name.
-        // then return the corresponding object in the map
-        function findParent(e) {
-            var p = findFormParent(e,form);
-            if (p==null)    return {};
-
-            var m = p.formDom;
-            if(m==null) {
-                // this is a new grouping node
-                doms.push(p);
-                p.formDom = m = {};
-                addProperty(findParent(p), p.getAttribute("name"), m);
-            }
-            return m;
-        }
-
-        var jsonElement = null;
-
-        for( var i=0; i<form.elements.length; i++ ) {
-            var e = form.elements[i];
-            if(e.name=="json") {
-                jsonElement = e;
-                continue;
-            }
-            if(e.tagName=="FIELDSET")
-                continue;
-            if(e.tagName=="SELECT" && e.multiple) {
-                var values = [];
-                for( var o=0; o<e.options.length; o++ ) {
-                    var opt = e.options.item(o);
-                    if(opt.selected)
-                        values.push(opt.value);
-                }
-                addProperty(findParent(e),e.name,values);
-                continue;
-            }
-                
-            var p;
-            var r;
-            var type = e.getAttribute("type");
-            if(type==null)  type="";
-            switch(type.toLowerCase()) {
-            case "button":
-            case "submit":
-                break;
-            case "checkbox":
-                p = findParent(e);
-                var checked = xor(e.checked,Element.hasClassName(e,"negative"));
-                if(!e.groupingNode) {
-                    v = e.getAttribute("json");
-                    if (v) {
-                        // if the special attribute is present, we'll either set the value or not. useful for an array of checkboxes
-                        // we can't use @value because IE6 sets the value to be "on" if it's left unspecified.
-                        if (checked)
-                            addProperty(p, e.name, v);
-                    } else {// otherwise it'll bind to boolean
-                        addProperty(p, e.name, checked);
-                    }
-                } else {
-                    if(checked)
-                        addProperty(p, e.name, e.formDom = {});
-                }
-                break;
-            case "file":
-                // to support structured form submission with file uploads,
-                // rename form field names to unique ones, and leave this name mapping information
-                // in JSON. this behavior is backward incompatible, so only do
-                // this when
-                p = findParent(e);
-                if(e.getAttribute("jsonAware")!=null) {
-                    var on = e.getAttribute("originalName");
-                    if(on!=null) {
-                        addProperty(p,on,e.name);
-                    } else {
-                        var uniqName = "file"+(iota++);
-                        addProperty(p,e.name,uniqName);
-                        e.setAttribute("originalName",e.name);
-                        e.name = uniqName;
-                    }
-                }
-                // switch to multipart/form-data to support file submission
-                // @enctype is the standard, but IE needs @encoding.
-                form.enctype = form.encoding = "multipart/form-data";
-                break;
-            case "radio":
-                if(!e.checked)  break;
-                r=0;
-                while (e.name.substring(r,r+8)=='removeme')
-                    r = e.name.indexOf('_',r+8)+1;
-                p = findParent(e);
-                if(e.groupingNode) {
-                    addProperty(p, e.name.substring(r), e.formDom = { value: e.value });
-                } else {
-                    addProperty(p, e.name.substring(r), e.value);
-                }
-                break;
-
-            default:
-                p = findParent(e);
-                addProperty(p, e.name, e.value);
-                break;
-            }
-        }
-
-        jsonElement.value = Object.toJSON(form.formDom);
-
-        // clean up
-        for( i=0; i<doms.length; i++ )
-            doms[i].formDom = null;
-
-        return true;
-    } catch(e) {
-        alert(e+'\n(form not submitted)');
-        return false;
-    }
 }
 
 /**

@@ -36,7 +36,7 @@ THE SOFTWARE.
       </div>
     </j:when>
     <j:otherwise>
-      <div align="right">
+      <div class="disable" align="right">
         <form method="post" id="disable-project" action="disable">
           <l:hasPermission permission="${it.CONFIGURE}">
             <f:submit value="${%Disable Project}" />

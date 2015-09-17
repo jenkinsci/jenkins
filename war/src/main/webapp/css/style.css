@@ -74,77 +74,68 @@ body {
   background-color: #f6faf2;
 }
 
-#side-panel {
-  padding: 15px 15px 80px 15px;
-  float: left;
-  width: 320px;
+oldold#side-panel {
+  z-index: 1;
+}
+old#main-panel {
+  z-index: 0;
 }
 
-#main-panel {
-  padding: 15px 15px 80px 15px;
-  margin-left: 320px;
+old#side-panel, old#main-panel {
+  margin: 0px;
+  padding: 0px;
 }
 
-@media (max-width: 750px) {
-  #side-panel {
-    width: 100%;
-    float: none;
-    padding-bottom: 20px;
-  }
-
-  #main-panel {
-    margin-left: 0;
-    width: 100%;
-  }
+old.fixedGridLayout #side-panel, .fixedGridLayout old#main-panel {
+  position: absolute;
 }
 
-@media (min-width: 1170px) {
-  #side-panel {
-    width: 360px;
-  }
-
-  #main-panel {
-    margin-left: 360px;
-  }
+old.fixedGridLayout old#side-panel {
+  float:left;
+  width: 360px;
+  margin-left: 15px;
 }
 
-/* task */
+old.fixedGridLayout old#main-panel {
+  padding-left: 370px;
+  margin-right: 15px;
+  width: 100%
+}
+
+old#side-panel-content, old #main-panel-content {
+  margin: 15px
+}
 
 #tasks {
   margin-bottom: 20px;
 }
 
-#tasks .task {
-  margin-bottom: 4px;
-  font-size: 14px;
-  white-space: nowrap;
+old#side-panel-content .pane-frame {
+  margin-bottom: 15px;
 }
 
-/* buildQueue */
-
-#buildQueue {
-  margin-bottom: 20px;
+#side-panel-content .task {
+  margin-bottom: 3px;
+}
+#side-panel-content .task-link {
+  font-size: 1.1em;
+  vertical-align: middle;
 }
 
-/* footer */
-
-footer {
-  padding: 10px 0;
-  background-color: #f6faf2;
-  border-top: 1px solid #d3d7cf;
+#footer-container {
   width: 100%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  font-size: 12px;
+  padding: 10px 0px;
+  border-top: 1px solid #d3d7cf;
+}
+#footer {
+  margin: 0px 15px 0px 15px;
   text-align: right;
+  font-size: 8pt;
 }
 
-footer span {
+#footer span {
   margin-left: 15px;
-  line-height: 14px;
 }
-
 
 /* Fonts etc */
 
@@ -159,7 +150,7 @@ body, table, form, td, th, p
   color: #333;
 }
 
-form {
+FORM {
   margin: 0;
 }
 
@@ -396,6 +387,7 @@ pre.console {
 /* tabBar */
 
 .tabBar {
+  clear: both;
   overflow: auto;
   position: relative;
   top: 1px;
@@ -500,6 +492,11 @@ pre.console {
 .main-table {
 }
 
+div.dashboard {
+  width: 100%;
+  clear:both;
+}
+
 /* pane */
 
 .pane-frame {
@@ -507,7 +504,7 @@ pre.console {
   border-radius: 4px;
 }
 
-#side-panel .pane-frame:hover, #side-panel .pane-frame.mouseover {
+old#side-panel .pane-frame:hover, old#side-panel .pane-frame.mouseover {
   border: solid 1px #cecece;
 }
 
@@ -1582,7 +1579,6 @@ table#legend-table td {
   border-style: none;
   border-color: transparent;
   background: none;
-  text-decoration: none;
 }
 
 #jenkins .yui-button .first-child {

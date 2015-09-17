@@ -51,30 +51,30 @@ THE SOFTWARE.
 
 
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
-
+  <h1>Create Item</h1>
   <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
-    <s:entry title="${attrs.nameTitle}">
+    <s:entry title="${attrs.nameTitle}" classname="item-name">
       <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
     </s:entry>
 
     <j:forEach var="descriptor" items="${descriptors}">
-      <s:block>
+      <s:block classname="input">
         <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <label class="attach-previous"><b>${descriptor.displayName}</b></label>
       </s:block>
-      <s:entry>
+      <s:entry  classname="input">
         <st:set var="instance" value="${descriptor}" />
         <st:include page="newInstanceDetail.jelly" it="${descriptor}" />
       </s:entry>
     </j:forEach>
     <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
-      <s:block>
+      <s:block classname="input">
         <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
         <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
       </s:block>
-      <s:entry>
+      <s:entry  classname="input">
         ${%Copy from}
         <j:choose>
           <j:when test="${attrs.copyNames}">
@@ -116,5 +116,7 @@ THE SOFTWARE.
       okButton.set('disabled',state(),false);
     }
     updateOk(okButton.getForm());
+    
+    
   ]]></script>
 </j:jelly>

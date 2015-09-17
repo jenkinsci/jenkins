@@ -373,6 +373,24 @@ THE SOFTWARE.
                   <version>1.2-beta-4</version>
                   <type>hpi</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.ui</groupId>
+                  <artifactId>jquery-detached</artifactId>
+                  <version>1.0-beta-3-SNAPSHOT</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.ui</groupId>
+                  <artifactId>bootstrap</artifactId>
+                  <version>1.0-beta-3-SNAPSHOT</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.ui</groupId>
+                  <artifactId>momentjs</artifactId>
+                  <version>1.0-beta-3-SNAPSHOT</version>
+                  <type>hpi</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins</outputDirectory>
               <stripVersion>true</stripVersion>
@@ -537,43 +555,6 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <!-- profile for running Grunt and optimize static resources -->
-      <id>grunt</id>
-        <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>install</id>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <executable>npm</executable>
-                                <arguments>
-                                    <argument>install</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>grunt</id>
-                            <phase>prepare-package</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <executable>grunt</executable>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </build>
     </profile>
   </profiles>
 </project>

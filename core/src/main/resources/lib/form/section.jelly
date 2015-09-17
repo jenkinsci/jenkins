@@ -36,15 +36,23 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
+  
+  
+  <div class="section panel panel-default" data-tagName="section">
+  
   <st:adjunct includes="lib.form.section_" />
-  <f:rowSet name="${attrs.name}">
-    <j:if test="${attrs.title!=null}">
-      <f:block>
-        <div class="section-header">
-          ${title}
-        </div>
-      </f:block>
+    <j:if test="${attrs.title==null}">
+      <div class="panel-section-header panel-heading no-title">
+         <h4 class="panel-title"><a href="#">Additional Options</a></h4>
+      </div>
     </j:if>
-    <d:invokeBody />
-  </f:rowSet>
+    <j:if test="${attrs.title!=null}">
+      <div class="panel-section-header panel-heading">
+         <h4 class="panel-title"><a href="#">${title}</a></h4>
+      </div>
+    </j:if>
+    <div class="panel-collapse"><div class="panel-body">
+      <d:invokeBody />
+    </div></div>
+  </div>
 </j:jelly>
