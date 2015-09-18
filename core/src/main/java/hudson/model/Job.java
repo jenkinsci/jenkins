@@ -38,6 +38,8 @@ import hudson.model.Fingerprint.Range;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.listeners.ItemListener;
+import hudson.model.queue.SubTask;
+import hudson.model.queue.WorkUnit;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -316,8 +318,56 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public boolean isLogUpdated() {
         RunT b = getLastBuild();
-        return b!=null && b.isLogUpdated();
-    }    
+        return b != null && b.isLogUpdated() || isCurrentWorkUnit();
+    }
+
+    /**
+     * Returns {@code true} if the job is a current work unit on any node.
+     *
+     * @return {@code true} if the job is a current work unit on any node.
+     * @since FIXME
+     */
+    public boolean isCurrentWorkUnit() {
+        if (this instanceof SubTask) {
+            // if you are not a SubTask then you cannot be a work unit on any node.
+            final Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins != null) {
+                if (isCurrentWorkUnit(jenkins)) {
+                    return true;
+                }
+                for (Node n : jenkins.getNodes()) {
+                    if (isCurrentWorkUnit(n)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if the job is a current work unit on the specified node.
+     *
+     * @param node the specified node
+     * @return {@code true} if the job is a current work unit on the specified node.
+     */
+    private boolean isCurrentWorkUnit(Node node) {
+        final Computer c = node.toComputer();
+        if (c == null) return false;
+        for (final Executor e: c.getExecutors()) {
+            final WorkUnit workUnit = e.getCurrentWorkUnit();
+            if (workUnit != null && (this == workUnit.work || this.equals(workUnit.work))) {
+                return true;
+            }
+        }
+        for (final Executor e: c.getOneOffExecutors()) {
+            final WorkUnit workUnit = e.getCurrentWorkUnit();
+            if (workUnit != null && (this == workUnit.work || this.equals(workUnit.work))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public String getPronoun() {
