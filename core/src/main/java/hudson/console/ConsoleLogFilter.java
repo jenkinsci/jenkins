@@ -26,7 +26,14 @@ package hudson.console;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.FilePath;
+import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Build;
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.util.ArgumentListBuilder;
 import jenkins.model.Jenkins;
@@ -48,8 +55,41 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
     /**
      * Called on the start of each build, giving extensions a chance to intercept
      * the data that is written to the log.
+     *
+     * @deprecated as of 1.630. Use {@link #decorateLogger(Run, OutputStream)}
      */
-    public abstract OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException;
+    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
+        if (Util.isOverridden(ConsoleLogFilter.class, getClass(), "decorateLogger", Run.class, OutputStream.class)) {
+            // old client calling newer implementation. forward the call.
+            return decorateLogger((Run) build, logger);
+        } else {
+            // happens only if the subtype fails to override neither decorateLogger method
+            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
+                    "deprecated decorateLogger(AbstractBuild,OutputStream) method. " +
+                    "Update the plugin to use setUp(Run,OutputStream) instead.");
+        }
+    }
+
+    /**
+     * Called on the start of each build, giving extensions a chance to intercept
+     * the data that is written to the log.
+     *
+     * <p>
+     * Even though this method is not marked 'abstract', this is the method that must be overridden
+     * by extensions.
+     */
+    public OutputStream decorateLogger(Run build, OutputStream logger) throws IOException, InterruptedException {
+        // this implementation is backward compatibility thunk in case subtypes only override the
+        // old signature (AbstractBuild,OutputStream)
+
+        if (build instanceof AbstractBuild) {
+            // maybe the plugin implements the old signature.
+            return decorateLogger((AbstractBuild) build, logger);
+        } else {
+            // this ConsoleLogFilter can only decorate AbstractBuild, so just pass through
+            return logger;
+        }
+    }
 
     /**
      * All the registered {@link ConsoleLogFilter}s.
