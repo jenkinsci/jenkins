@@ -71,7 +71,6 @@ public class SlaveTest2 {
             jnlpJar.getURL();
         } catch (MalformedURLException ex) {
             // we expect the exception here
-            ex.printStackTrace();
             return;
         }
         fail("Expected the MalformedURLException for " + url);
