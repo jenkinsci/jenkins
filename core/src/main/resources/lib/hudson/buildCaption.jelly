@@ -37,7 +37,7 @@ THE SOFTWARE.
 	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
             <j:if test="${it.parent.hasAbortPermission()}">
-              <l:stopButton href="stop" alt="[${%cancel}]"/>
+              <l:stopButton href="stop" confirm="${%confirm(it.fullDisplayName)}" alt="[${%cancel}]"/>
             </j:if>
 	        </td>
 	      </tr></table>

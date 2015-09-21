@@ -33,8 +33,20 @@ THE SOFTWARE.
         <st:attribute name="alt" use="required">
             Alt text for image.
         </st:attribute>
+        <st:attribute name="confirm" use="optional">
+            If defined, the user will be asked for confirmation first, and the value will be used as question.
+        </st:attribute>
     </st:documentation>
-    <a class="stop-button-link" href="${href}" onclick="new Ajax.Request(this.href); return false">
-        <l:icon class="icon-stop icon-sm"/>
-    </a>
+    <j:choose>
+      <j:when test="${confirm == null}">
+        <a class="stop-button-link" href="${href}" onclick='new Ajax.Request("${href}"); return false;'>
+          <l:icon class="icon-stop icon-sm"/>
+        </a>
+      </j:when>
+      <j:otherwise>
+          <a class="stop-button-link" href="${href}" onclick='if(confirm("${confirm}"))new Ajax.Request("${href}"); return false;'>
+            <l:icon class="icon-stop icon-sm"/>
+          </a>
+      </j:otherwise>
+    </j:choose>
 </j:jelly>

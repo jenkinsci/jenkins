@@ -119,7 +119,7 @@ THE SOFTWARE.
                 </st:include>
                 <td class="pane" align="center" valign="middle">
                   <j:if test="${e.hasStopPermission()}">
-                    <l:stopButton href="${rootURL}/${c.url}${url}/stop" alt="${%terminate this build}"/>
+                    <l:stopButton href="${rootURL}/${c.url}${url}/stop" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
                   </j:if>
                 </td>
               </j:otherwise>
