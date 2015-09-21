@@ -41,6 +41,7 @@ class CLIActionTest {
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     public void serveCliActionToAnonymousUser() throws Exception {
         def wc = j.createWebClient();
-        wc.goTo("cli");
+        // The behavior changed due to SECURITY-192. index page is no longer accessible to anonymous
+        wc.assertFails(new URL(j.URL,"cli").toString(), HttpURLConnection.HTTP_FORBIDDEN);
     }
 }
