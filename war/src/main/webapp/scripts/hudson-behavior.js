@@ -1679,6 +1679,13 @@ function updateBuildHistory(ajaxUrl,nBuild) {
             if (buildControls) {
                 Element.removeClassName(buildControls, "block");
                 buildDetails.removeAttribute('style');
+                
+                var buildBadgeLabels = $(buildControls).getElementsBySelector('.build-badge span');
+                if (buildBadgeLabels) {
+                    for (var i = 0; i < buildBadgeLabels.length; i++) {
+                        removeZeroWidthSpaces(buildBadgeLabels[i]);
+                    }
+                }
             }
         }
 
@@ -1690,6 +1697,14 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         if (desc) {
             insertZeroWidthSpacesInElementText(desc, 30);
             markMultiline();
+        }
+        if (buildControls) {
+            var buildBadgeLabels = $(buildControls).getElementsBySelector('.build-badge span');
+            if (buildBadgeLabels) {
+                for (var i = 0; i < buildBadgeLabels.length; i++) {
+                    insertZeroWidthSpacesInElementText(buildBadgeLabels[i], 4);
+                }
+            }
         }
 
         var rowWidth = bh.clientWidth;
