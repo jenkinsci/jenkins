@@ -280,6 +280,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @return The current connection status.
      * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest request) {
         try {
             String siteId = request.getParameter("siteId");
