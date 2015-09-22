@@ -886,6 +886,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return The Jenkins {@link StartupType startup type}.
      * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     public StartupType getStartupType() {
         return startupType;
     }
