@@ -25,6 +25,7 @@ package jenkins.install;
 
 import hudson.Main;
 import jenkins.model.Jenkins;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,6 +51,12 @@ public class StartupUtilTest {
         StartupUtil.getLastExecVersionFile().delete();
         // Disable the unit test flag.
         Main.isUnitTest = false;
+    }
+    
+    @After
+    public void tearDown() {
+        // Reset the unit test flag back to its default.
+        Main.isUnitTest = true;
     }
 
     /**

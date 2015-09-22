@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.util;
+package hudson.util;
 
 import net.sf.json.JSONObject;
 import org.junit.Assert;
@@ -41,7 +41,7 @@ public class JSONObjectResponseTest {
         
         data.put("val_1", "1");
         
-        JSONObjectResponse response = new JSONObjectResponse(data);
+        HttpResponses.JSONObjectResponse response = new HttpResponses.JSONObjectResponse(data);
         JSONObject payload = response.getJsonObject();
 
         Assert.assertEquals("ok", payload.getString("status"));

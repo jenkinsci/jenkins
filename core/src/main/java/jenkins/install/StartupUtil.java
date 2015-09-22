@@ -28,6 +28,8 @@ import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.util.xml.XMLUtils;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -42,6 +44,7 @@ import static java.util.logging.Level.SEVERE;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  * @since FIXME
  */
+@Restricted(NoExternalUse.class)
 public class StartupUtil {
 
     private static final Logger LOGGER = Logger.getLogger(StartupUtil.class.getName());

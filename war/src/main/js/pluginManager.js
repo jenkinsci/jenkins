@@ -12,9 +12,7 @@ exports.installPlugins = function(pluginList, callback) {
         
         // We have a nicer JSON "REST" api for this and will be using that.
         ajax.execAsyncGET('/pluginManager/install', apiCallArg, function() {
-            ajax.execAsyncGET('/saveLastExecVersion', undefined, function() {
-                callback();
-            });
+            callback();
         });
     }
 };

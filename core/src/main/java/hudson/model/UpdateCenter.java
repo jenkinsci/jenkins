@@ -55,7 +55,6 @@ import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
 import jenkins.install.StartupType;
 import jenkins.model.Jenkins;
-import jenkins.util.JSONObjectResponse;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import org.acegisecurity.Authentication;
@@ -281,7 +280,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @return The current connection status.
      * @since FIXME
      */
-    public JSONObjectResponse doConnectionStatus(StaplerRequest request) {
+    public HttpResponse doConnectionStatus(StaplerRequest request) {
         try {
             String siteId = request.getParameter("siteId");
             if (siteId == null) {
@@ -295,12 +294,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             }
             if (checkJob != null) {
-                return new JSONObjectResponse(checkJob.connectionStates);
+                return HttpResponses.okJSON(checkJob.connectionStates);
             } else {
-                return new JSONObjectResponse().error(String.format("Unknown site '%s'.", siteId));
+                return HttpResponses.errorJSON(String.format("Unknown site '%s'.", siteId));
             }
         } catch (Exception e) {
-            return new JSONObjectResponse().error(String.format("ERROR: %s", e.getMessage()));
+            return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
 
@@ -314,7 +313,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @return The current installation status of a plugin set.
      * @since FIXME
      */
-    public JSONObjectResponse doInstallStatus(StaplerRequest request) {
+    public HttpResponse doInstallStatus(StaplerRequest request) {
         try {
             String correlationId = request.getParameter("correlationId");
             List<Map<String, String>> installStates = new ArrayList<>();
@@ -334,9 +333,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     }
                 }
             }
-            return new JSONObjectResponse(JSONArray.fromObject(installStates));
+            return HttpResponses.okJSON(JSONArray.fromObject(installStates));
         } catch (Exception e) {
-            return new JSONObjectResponse().error(String.format("ERROR: %s", e.getMessage()));
+            return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
     

@@ -903,7 +903,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Save the last execute version file.
      * @since FIXME
      */
-    public void doSaveLastExecVersion() {
+    @Restricted(NoExternalUse.class)
+    public void saveLastExecVersion() {
         StartupUtil.saveLastExecVersion();
         startupType = StartupUtil.getStartupType();
     }

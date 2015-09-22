@@ -333,7 +333,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         /**
          * Get the short name of the plugin.
          * @return The short name of the plugin.
-         * @since FIXME
          */
         public String getShortName() {
             return shortName;
@@ -342,7 +341,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         /**
          * Get the Jenkins version from which the plugin was detached.
          * @return The Jenkins version from which the plugin was detached.
-         * @since FIXME
          */
         public VersionNumber getSplitWhen() {
             return splitWhen;
@@ -351,7 +349,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         /**
          * Get the minimum required version of the plugin.
          * @return The minimum required version of the plugin.
-         * @since FIXME
          */
         public String getRequireVersion() {
             return requireVersion;
@@ -361,7 +358,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
          * Convert a collection of DetachedPlugins to a Set of plugins names.
          * @param detachedPlugins The collection of DetachedPlugins.
          * @return The list of plugin names.
-         * @since FIXME
          */
         public static Set<String> toPluginNameList(@Nonnull Collection<ClassicPluginStrategy.DetachedPlugin> detachedPlugins) {
             Set<String> pluginNames = new LinkedHashSet<>();

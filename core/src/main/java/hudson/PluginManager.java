@@ -51,7 +51,6 @@ import jenkins.YesNoMaybe;
 import jenkins.install.StartupType;
 import jenkins.install.StartupUtil;
 import jenkins.model.Jenkins;
-import jenkins.util.JSONObjectResponse;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
 
@@ -972,7 +971,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @since FIXME
      */
     @RequirePOST
-    public JSONObjectResponse doInstallPlugins(StaplerRequest req) throws IOException {
+    public HttpResponse doInstallPlugins(StaplerRequest req) throws IOException {
         String payload = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
         JSONObject request = JSONObject.fromObject(payload);
         JSONArray pluginListJSON = request.getJSONArray("plugins");
@@ -990,9 +989,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             JSONObject responseData = new JSONObject();
             responseData.put("correlationId", correlationId.toString());
 
-            return new JSONObjectResponse(responseData);
+            return hudson.util.HttpResponses.okJSON(responseData);
         } catch (Exception e) {
-            return new JSONObjectResponse().error(e.getMessage());
+            return hudson.util.HttpResponses.errorJSON(e.getMessage());
         }
     }
 
@@ -1043,6 +1042,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             Future<UpdateCenter.UpdateCenterJob> jobFuture = p.deploy(dynamicLoad, correlationId);
             installJobs.add(jobFuture);
         }
+        
+        Jenkins.getActiveInstance().saveLastExecVersion();
         
         return installJobs;
     }

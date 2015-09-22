@@ -685,7 +685,7 @@ THE SOFTWARE.
                                 <nodeVersion>v${node.version}</nodeVersion>
                                 <npmVersion>${npm.version}</npmVersion>
                                 <!-- Use the pre-download node and npm packages. See download-maven-plugin config above. -->
-                                <downloadRoot>file:${project.build.directory}/frontend/</downloadRoot>
+                                <downloadRoot>${project.baseUri}target/frontend/</downloadRoot>
                             </configuration>
                         </execution>
 

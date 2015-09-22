@@ -468,15 +468,6 @@ public class Functions {
     public static String printLogRecord(LogRecord r) {
         return formatter.format(r);
     }
-    
-    /**
-     * Get the URL path to the Install Wizard JavaScript.
-     * @return The URL path to the Install Wizard JavaScript.
-     * @since FIXME
-     */
-    public static String getInstallWizardJS() {
-        return Jenkins.getActiveInstance().getInstallWizardJS();
-    }
 
     @Restricted(NoExternalUse.class)
     public static String[] printLogRecordHtml(LogRecord r, LogRecord prior) {
