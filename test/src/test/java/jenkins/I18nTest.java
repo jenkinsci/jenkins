@@ -56,9 +56,9 @@ public class I18nTest {
     
     @Test
     public void test_valid() throws IOException, SAXException {
-        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.logging.Messages&laungauge=de").getJSONObject();
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.logging.Messages&language=de").getJSONObject();
         Assert.assertEquals("ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
-        Assert.assertEquals("Initialing log recorders", data.getString("LogRecorderManager.init"));
+        Assert.assertEquals("Initialisiere Log-Rekorder", data.getString("LogRecorderManager.init"));
     }
 }

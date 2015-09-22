@@ -67,6 +67,15 @@ public class I18n implements RootAction {
 
     /**
      * Get a localised resource bundle.
+     * <p>
+     * Parameters:
+     * <ul>
+     *     <li>baseName: The resource bundle base name.</li>
+     *     <li>language: {@link Locale} Language. (optional)</li>
+     *     <li>country: {@link Locale} Country. (optional)</li>
+     *     <li>variant: {@link Locale} Language variant. (optional)</li>
+     * </ul>
+     *     
      * @param request The request.
      * @return The JSON response.
      */
