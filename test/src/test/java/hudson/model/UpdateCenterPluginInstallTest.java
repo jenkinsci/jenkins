@@ -26,13 +26,14 @@ package hudson.model;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RandomlyFails;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 /**
@@ -45,10 +46,11 @@ public class UpdateCenterPluginInstallTest {
     
     public void setup() throws IOException {
         jenkinsRule.jenkins.getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(false);
+        InetSocketAddress address = new InetSocketAddress("updates.jenkins-ci.org", 80);
+        Assume.assumeFalse("Unable to resolve updates.jenkins-ci.org. Skip test.", address.isUnresolved());
     }
         
     @Test
-    @RandomlyFails("Will fail if it can't connect to the UC")
     public void test_installUnknownPlugin() throws IOException, SAXException {
         setup();
         JenkinsRule.JSONWebResponse response = jenkinsRule.postJSON("/pluginManager/installPlugins", buildInstallPayload("unknown_plugin_xyz"));
@@ -61,7 +63,6 @@ public class UpdateCenterPluginInstallTest {
     }
 
     @Test
-    @RandomlyFails("Will fail if it can't connect to the UC")
     public void test_installKnownPlugins() throws IOException, SAXException {
         setup();
         JenkinsRule.JSONWebResponse installResponse = jenkinsRule.postJSON("/pluginManager/installPlugins", buildInstallPayload("changelog-history", "git"));
