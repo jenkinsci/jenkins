@@ -197,11 +197,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     private final PluginStrategy strategy;
 
-    /**
-     * Manifest of the plugin binaries that are bundled with core.
-     */
-    private final Map<String,Manifest> bundledPluginManifests = new HashMap<String, Manifest>();
-
     public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
 
@@ -555,7 +550,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     name = normalisePluginName(name);
 
                     // If it's already installed, then we possibly need to upgrade
-                    // it. copyBundledPlugin() handles the details of that - version check, pinned etc.
+                    // it. copyBundledPlugin() handles the details of that - version check etc.
                     if (isPluginInstalled(name)) {
                         return true;
                     }
@@ -600,8 +595,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Returns the manifest of a bundled but not-extracted plugin.
      */
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public @CheckForNull Manifest getBundledPluginManifest(String shortName) {
-        return bundledPluginManifests.get(shortName);
+        return null;
     }
 
     /**
@@ -707,16 +703,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = src.openConnection().getLastModified();
         File file = new File(rootDir, fileName);
-        File pinFile = new File(rootDir, fileName+".pinned");
 
         // normalization first, if the old file exists.
         rename(new File(rootDir,legacyName),file);
-        rename(new File(rootDir,legacyName+".pinned"),pinFile);
 
         // update file if:
         //  - no file exists today
-        //  - bundled version and current version differs (by timestamp), and the file isn't pinned.
-        if (!file.exists() || (file.lastModified() != lastModified && !pinFile.exists())) {
+        //  - bundled version and current version differs (by timestamp).
+        if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
             file.setLastModified(src.openConnection().getLastModified());
             // lastModified is set for two reasons:
@@ -724,14 +718,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // - to make sure the value is not changed after each restart, so we can avoid
             // unpacking the plugin itself in ClassicPluginStrategy.explode
         }
-
-        Manifest manifest = parsePluginManifest(src);
-        if (pinFile.exists()) {
-            // When a pin file prevented a bundled plugin from getting extracted, check if the one we currently have
-            // is older than we bundled.            
-            String shortName = PluginWrapper.computeShortName(manifest, FilenameUtils.getName(src.getPath()));
-            bundledPluginManifests.put(shortName, manifest);
-        }
+        
+        // Plugin pinning has been deprecated.
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     }
 
     private static Manifest parsePluginManifest(URL bundledJpi) {
