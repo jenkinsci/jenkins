@@ -87,32 +87,49 @@ var createPluginSetupWizard = function() {
 	var $wizard = $(pluginSetupWizard());
 	$wizard.appendTo('body');
 	var $container = $wizard.find('.modal-content');
+	var currentPanel;
 	
 	// localized messages
 	var msg = {};
 	
 	// call this to set the panel in the app, this performs some additional things & adds common transitions
 	var setPanel = function(panel, data, oncomplete) {
-		var append = function() {
-			$wizard.attr('data-panel', panel.name);
-			$container.append(panel($.extend({msg: msg}, data)));
+		var html = panel($.extend({msg: msg}, data));
+		if(panel == currentPanel) { // just replace id-marked elements
+			var $upd = $(html);
+			$upd.find('*[id]').each(function() {
+				var $el = $(this);
+				$('#'+$el.attr('id')).replaceWith($el);
+			});
+			
 			if(oncomplete) {
 				oncomplete();
 			}
-		};
-		
-		var $modalBody = $container.find('.modal-body');
-		if($modalBody.length > 0) {
-			$modalBody.stop(true).fadeOut(250, function() {
-				$container.children().remove();
-				append();
-			});
 		}
 		else {
-			$container.children().remove();
-			append();
+			var append = function() {
+				currentPanel = panel;
+				$container.append(html);
+				if(oncomplete) {
+					oncomplete();
+				}
+			};
+			var $modalBody = $container.find('.modal-body');
+			if($modalBody.length > 0) {
+				$modalBody.stop(true).fadeOut(250, function() {
+					$container.children().remove();
+					append();
+				});
+			}
+			else {
+				$container.children().remove();
+				append();
+			}
 		}
 	};
+	
+	// plugin data for the progress panel
+	var installingPlugins = [];
 	
 	// we get a 'correlationId' when install plugins, it's stored here:
 	var installId;
@@ -125,9 +142,15 @@ var createPluginSetupWizard = function() {
 			}
 			installId = data.data.correlationId;
 			
+			for(var i = 0; i < selectedPlugins.length; i++) {
+				var p = availablePlugins[selectedPlugins[i]];
+				installingPlugins.push($.extend(p, { installStatus: 'pending' }));
+			}
+			
 			showInstallProgress();
 		});
-		setPanel(progressPanel);
+		
+		setPanel(progressPanel, { installingPlugins : installingPlugins });
 	};
 	
 	// install the default plugins
@@ -137,111 +160,82 @@ var createPluginSetupWizard = function() {
 	
 	// Define actions
 	var showInstallProgress = function() {
-		setPanel(progressPanel);
+		setPanel(progressPanel, { installingPlugins : installingPlugins });
 		
-		var updateStatus = installId ?
-			function() {
-				// call to the installStatus, update progress bar & plugin details; transition on complete
-				jenkins.get('/updateCenter/installStatus?correlationId=' + installId, function(data) {
-					var i, j;
-					var complete = 0;
-					var total = 0;
-					var jobs = data.data;
-					for(i = 0; i < jobs.length; i++) {
-						j = jobs[i];
-						total++;
-						if(/.*Success.*/.test(j.installStatus)||/.*Fail.*/.test(j.installStatus)) {
-							complete++;
-						}
+		// call to the installStatus, update progress bar & plugin details; transition on complete
+		var updateStatus = function() {
+			// installStatus accepts a correlationId ?correlationId= + installId
+			jenkins.get('/updateCenter/installStatus', function(data) {
+				var i, j;
+				var complete = 0;
+				var total = 0;
+				var jobs = data.data;
+				for(i = 0; i < jobs.length; i++) {
+					j = jobs[i];
+					total++;
+					if(/.*Success.*/.test(j.installStatus)||/.*Fail.*/.test(j.installStatus)) {
+						complete++;
+					}
+				}
+				
+				// update progress bar
+				$('.progress-bar').css({width: ((100.0 * complete)/total) + '%'});
+				
+				// update details
+				var $c = $('.install-text');
+				$c.children().remove();
+				
+				for(i = 0; i < jobs.length; i++) {
+					j = jobs[i];
+					var txt = false;
+					var state = false;
+					if(/.*Success.*/.test(j.installStatus)) {
+						txt = j.title;
+						state = 'success';
+					} else if(/.*Install.*/.test(j.installStatus)) {
+						txt = j.title;
+						state = 'install';
+					}
+					else if(/.*Fail.*/.test(j.installStatus)) {
+						txt = j.title;
+						state = 'fail';
 					}
 					
-					// update progress bar
-					$('.progress-bar').css({width: ((100.0 * complete)/total) + '%'});
-					
-					// update details
-					var $c = $('.install-text');
-					$c.children().remove();
-					for(i = 0; i < jobs.length; i++) {
-						j = jobs[i];
-						if(/.*Success.*/.test(j.installStatus)) {
-							$c.append('<div>'+j.title+'</div>');
+					if(txt && state) {
+						var isSelected = selectedPlugins.indexOf(j.name) < 0 ? false : true;
+						var $div = $('<div>'+txt+'</div>');
+						if(isSelected) {
+							$div.addClass('selected');
 						}
-						else if(/.*Install.*/.test(j.installStatus)) {
-							$c.append('<div>'+j.title+'</div>');
+						else {
+							$div.addClass('dependent');
 						}
-						else if(/.*Fail.*/.test(j.installStatus)) {
-							$c.append('<div>'+j.title+' -- FAILED '+'</div>');
-						}
-					}
-					if($c.is(':visible')) {
-						$c[0].scrollTop = $c[0].scrollHeight;
+						$c.append($div);
 					}
 					
-					// keep polling while install is running
-					if(complete < total) {
-						// wait a sec
-						setTimeout(updateStatus, 250);
+					var $itemProgress = $('.selected-plugin[data-name="'+j.name+'"]');
+					if(state == 'success' && !$itemProgress.is('.success')) {
+						$itemProgress.addClass('success');
 					}
-					else {
-						// mark complete
-						$('.progress-bar').css({width: '100%'});
-						installId = null;
-						setPanel(successPanel);
-					}
-				});
-			}
-			// this might be picking up an existing installation (e.g. refreshing the page or something)
-			: function() {
-				jenkins.get('/updateCenter/api/json?tree=jobs[name,status[*],errorMessage]', function(data) {
-					var i, j;
-					var complete = 0;
-					var total = 0;
-					var jobs = data.jobs;
-					for(i = 0; i < jobs.length; i++) {
-						j = jobs[i];
-						if('status' in j) {
-							total++;
-							if(/.*Success.*/.test(j.status.type)||/.*Fail.*/.test(j.status.type)) {
-								complete++;
-							}
-						}
-					}
-					
-					$('.progress-bar').css({width: ((100.0 * complete)/total) + '%'});
-					
-					var $c = $('.install-console');
-					{
-						$c = $('.install-text');
-						$c.children().remove();
-						for(i = 0; i < jobs.length; i++) {
-							j = jobs[i];
-							if('status' in j) {
-								if(/.*Success.*/.test(j.status.type)) {
-									$c.append('<div>'+j.name+'</div>');
-								}
-								else if(/.*Install.*/.test(j.status.type)) {
-									$c.append('<div>'+j.name+'</div>');
-								}
-								else if(/.*Fail.*/.test(j.status.type)) {
-									$c.append('<div>'+j.name+' -- '+j.errorMessage+'</div>');
-								}
-							}
-						}
-						if($c.is(':visible')) {
-							$c[0].scrollTop = $c[0].scrollHeight;
-						}
-					}
-					
-					if(complete < total) {
-						// wait a sec
-						setTimeout(updateStatus, 250);
-					}
-					else {
-						$('.progress-bar').css({width: '100%'});
-						setPanel(successPanel);
-					}
-				});
-			};
+				}
+				if($c.is(':visible')) {
+					$c[0].scrollTop = $c[0].scrollHeight;
+				}
+				
+				// keep polling while install is running
+				if(complete < total) {
+					setPanel(progressPanel, { installingPlugins : installingPlugins });
+					// wait a sec
+					setTimeout(updateStatus, 250);
+				}
+				else {
+					// mark complete
+					$('.progress-bar').css({width: '100%'});
+					installId = null;
+					setPanel(successPanel);
+				}
+			});
+		};
 		
 		// kick it off
 		setTimeout(updateStatus, 250);
@@ -324,13 +318,7 @@ var createPluginSetupWizard = function() {
 	
 	// refreshes the plugin selection panel; call this if anything changes to ensure everything is kept in sync
 	var refreshPluginSelectionPanel = function() {
-		var html = pluginSelectionPanel($.extend({msg: msg}, pluginSelectionPanelData()));
-		
-		var $upd = $(html);
-		$upd.find('*[id]').each(function() {
-			var $el = $(this);
-			$('#'+$el.attr('id')).replaceWith($el);
-		});
+		setPanel(pluginSelectionPanel, pluginSelectionPanelData());
 		if(lastSearch !== '') {
 			searchForPlugins(lastSearch, false);
 		}
@@ -536,7 +524,7 @@ var createPluginSetupWizard = function() {
 		// check the connectivity api
 		var testConnectivity = function() {
 			jenkins.get('/updateCenter/connectionStatus?siteId=default', function(response) {
-				var uncheckedStatuses = ['CHECKING', 'UNCHECKED'];
+				var uncheckedStatuses = ['PRECHECK', 'CHECKING', 'UNCHECKED'];
 				if(uncheckedStatuses.indexOf(response.data.updatesite) >= 0  || uncheckedStatuses.indexOf(response.data.internet) >= 0) {
 					setTimeout(testConnectivity, 500);
 				}
