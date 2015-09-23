@@ -926,9 +926,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     public JSONWebResponse getJSON(@Nonnull String url) throws IOException, SAXException {
         JenkinsRule.WebClient webClient = createWebClient();
 
-        if (url.startsWith("/jenkins/")) {
-            url = url.substring("/jenkins/".length());
-        } else if (url.startsWith("/")) {
+        if (url.startsWith("/")) {
             url = url.substring(1);
         }
 
@@ -947,9 +945,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * @throws SAXException
      */
     public JSONWebResponse postJSON(@Nonnull String url, @Nonnull Object json) throws IOException, SAXException {
-        if (url.startsWith("/jenkins/")) {
-            url = url.substring("/jenkins/".length());
-        } else if (url.startsWith("/")) {
+        if (url.startsWith("/")) {
             url = url.substring(1);
         }
 

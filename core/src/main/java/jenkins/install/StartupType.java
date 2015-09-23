@@ -30,7 +30,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Jenkins Start type.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- * @since FIXME
  */
 @Restricted(NoExternalUse.class)
 public enum StartupType {

@@ -69,6 +69,7 @@ import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -195,11 +196,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Strategy for creating and initializing plugins
      */
     private final PluginStrategy strategy;
-
-    /**
-     * Manifest of the plugin binaries that are bundled with core.
-     */
-    private final Map<String,Manifest> bundledPluginManifests = new HashMap<String, Manifest>();
 
     public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
@@ -453,15 +449,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 continue;
             }
             try {
-                names.add(fileName);
-
                 URL url = context.getResource(pluginPath);
-                if (filter != null) {
-                    if (!filter.accept(new File(url.getFile()), fileName)) {
+                if (filter != null && url != null) {
+                    if (!filter.accept(new File(url.getFile()).getParentFile(), fileName)) {
                         continue;
                     }
                 }
                 
+                names.add(fileName);
                 copyBundledPlugin(url, fileName);
                 copiedPlugins.add(url);
                 try {
@@ -553,10 +548,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 public boolean accept(File dir, String name) {
                     name = normalisePluginName(name);
 
-                    // If it's already installed, then we possibly need to upgrade
-                    // it. copyBundledPlugin() handles the details of that - version check, pinned etc.
-                    if (isPluginInstalled(name)) {
-                        return true;
+                    // If this was a plugin that was detached some time in the past i.e. not just one of the
+                    // plugins that was bundled "for fun".
+                    if (ClassicPluginStrategy.isDetachedPlugin(name)) {
+                        // If it's already installed and the installed version is older
+                        // than the bundled version, then we upgrade. The bundled version is the min required version
+                        // for "this" version of Jenkins, so we must upgrade. 
+                        VersionNumber installedVersion = getPluginVersion(rootDir, name);
+                        VersionNumber bundledVersion = getPluginVersion(dir, name);
+                        if (installedVersion != null && bundledVersion != null && installedVersion.isOlderThan(bundledVersion)) {
+                            return true;
+                        }
                     }
 
                     // If it's a plugin that was detached since the last running version.
@@ -577,14 +579,38 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             StartupUtil.saveLastExecVersion();
         }
     }
-    
-    private boolean isPluginInstalled(@Nonnull String name) {
-        return new File(rootDir, normalisePluginName(name)).exists();
-    }
 
     private String normalisePluginName(@Nonnull String name) {
         // Normalise the name by stripping off the file extension (if present)...
         return name.replace(".jpi", "").replace(".hpi", "");
+    }
+
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull File dir, @Nonnull String pluginId) {
+        VersionNumber version = getPluginVersion(new File(dir, pluginId + ".jpi"));
+        if (version == null) {
+            version = getPluginVersion(new File(dir, pluginId + ".hpi"));
+        }
+        return version;
+    }
+    
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull File pluginFile) {
+        if (!pluginFile.exists()) {
+            return null;
+        }
+        try {
+            return getPluginVersion(pluginFile.toURI().toURL());
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
+
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull URL pluginURL) {
+        Manifest manifest = parsePluginManifest(pluginURL);        
+        if (manifest == null) {
+            return null;
+        }        
+        String versionSpec = manifest.getMainAttributes().getValue("Plugin-Version");
+        return new VersionNumber(versionSpec);
     }
 
     /*
@@ -599,8 +625,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Returns the manifest of a bundled but not-extracted plugin.
      */
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public @CheckForNull Manifest getBundledPluginManifest(String shortName) {
-        return bundledPluginManifests.get(shortName);
+        return null;
     }
 
     /**
@@ -706,16 +733,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = src.openConnection().getLastModified();
         File file = new File(rootDir, fileName);
-        File pinFile = new File(rootDir, fileName+".pinned");
 
         // normalization first, if the old file exists.
         rename(new File(rootDir,legacyName),file);
-        rename(new File(rootDir,legacyName+".pinned"),pinFile);
 
         // update file if:
         //  - no file exists today
-        //  - bundled version and current version differs (by timestamp), and the file isn't pinned.
-        if (!file.exists() || (file.lastModified() != lastModified && !pinFile.exists())) {
+        //  - bundled version and current version differs (by timestamp).
+        if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
             file.setLastModified(src.openConnection().getLastModified());
             // lastModified is set for two reasons:
@@ -723,17 +748,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // - to make sure the value is not changed after each restart, so we can avoid
             // unpacking the plugin itself in ClassicPluginStrategy.explode
         }
-
-        Manifest manifest = parsePluginManifest(src);
-        if (pinFile.exists()) {
-            // When a pin file prevented a bundled plugin from getting extracted, check if the one we currently have
-            // is older than we bundled.            
-            String shortName = PluginWrapper.computeShortName(manifest, FilenameUtils.getName(src.getPath()));
-            bundledPluginManifests.put(shortName, manifest);
-        }
+        
+        // Plugin pinning has been deprecated.
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     }
 
-    private static Manifest parsePluginManifest(URL bundledJpi) {
+    private static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
         try {
             URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
             InputStream in=null;
@@ -968,9 +988,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * That "correlationId" can then be used in calls to
      * {@link UpdateCenter#doInstallStatus(org.kohsuke.stapler.StaplerRequest)}.
      * @throws IOException Error reading JSON payload fro request.
-     * @since FIXME
      */
     @RequirePOST
+    @Restricted(DoNotUse.class)
     public HttpResponse doInstallPlugins(StaplerRequest req) throws IOException {
         String payload = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
         JSONObject request = JSONObject.fromObject(payload);

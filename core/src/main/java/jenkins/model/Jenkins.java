@@ -884,7 +884,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Get the Jenkins {@link StartupType startup type}.   
      * @return The Jenkins {@link StartupType startup type}.
-     * @since FIXME
      */
     @Restricted(NoExternalUse.class)
     public StartupType getStartupType() {
@@ -894,7 +893,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Get the URL path to the Install Wizard JavaScript.
      * @return The URL path to the Install Wizard JavaScript.
-     * @since FIXME
      */
     @Restricted(NoExternalUse.class)
     public String getInstallWizardPath() {
@@ -903,7 +901,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Save the last execute version file.
-     * @since FIXME
      */
     @Restricted(NoExternalUse.class)
     public void saveLastExecVersion() {

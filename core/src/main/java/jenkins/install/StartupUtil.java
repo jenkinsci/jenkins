@@ -37,12 +37,12 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 /**
  * Jenkins startup utilities.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- * @since FIXME
  */
 @Restricted(NoExternalUse.class)
 public class StartupUtil {
@@ -106,7 +106,9 @@ public class StartupUtil {
             try {
                 return FileUtils.readFileToString(lastExecVersionFile);
             } catch (IOException e) {
-                throw new IllegalStateException("Unexpected Error. Unable to read " + lastExecVersionFile.getAbsolutePath(), e);
+                LOGGER.log(SEVERE, "Unexpected Error. Unable to read " + lastExecVersionFile.getAbsolutePath(), e);
+                LOGGER.log(WARNING, "Unable to determine the last running version (see error above). Treating this as a restart. No plugins will be updated.");
+                return getCurrentExecVersion();
             }
         } else {
             // Backward compatibility. Use the last version stored in the top level config.xml.

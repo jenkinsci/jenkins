@@ -35,7 +35,9 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.util.Locale;
 
 /**
+ * Internationalization REST (ish) API.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since FIXME 
  */
 @Extension
 @Restricted(NoExternalUse.class)
