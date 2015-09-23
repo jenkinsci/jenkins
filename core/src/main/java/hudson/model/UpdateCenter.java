@@ -330,7 +330,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         pluginInfo.put("version", installationJob.plugin.version);
                         pluginInfo.put("title", installationJob.plugin.title);
                         pluginInfo.put("installStatus", installationJob.status.getType());
-                        pluginInfo.put("correlationId", jobCorrelationId.toString());                        
+                        if (jobCorrelationId != null) {
+                            pluginInfo.put("correlationId", jobCorrelationId.toString());
+                        }
                         installStates.add(pluginInfo);
                     }
                 }
