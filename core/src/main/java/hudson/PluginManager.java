@@ -449,15 +449,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 continue;
             }
             try {
-                names.add(fileName);
-
                 URL url = context.getResource(pluginPath);
-                if (filter != null) {
-                    if (!filter.accept(new File(url.getFile()), fileName)) {
+                if (filter != null && url != null) {
+                    if (!filter.accept(new File(url.getFile()).getParentFile(), fileName)) {
                         continue;
                     }
                 }
                 
+                names.add(fileName);
                 copyBundledPlugin(url, fileName);
                 copiedPlugins.add(url);
                 try {
@@ -549,10 +548,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 public boolean accept(File dir, String name) {
                     name = normalisePluginName(name);
 
-                    // If it's already installed, then we possibly need to upgrade
-                    // it. copyBundledPlugin() handles the details of that - version check etc.
-                    if (isPluginInstalled(name)) {
-                        return true;
+                    // If this was a plugin that was detached some time in the past i.e. not just one of the
+                    // plugins that was bundled "for fun".
+                    if (ClassicPluginStrategy.isDetachedPlugin(name)) {
+                        // If it's already installed and the installed version is older
+                        // than the bundled version, then we upgrade. The bundled version is the min required version
+                        // for "this" version of Jenkins, so we must upgrade. 
+                        VersionNumber installedVersion = getPluginVersion(rootDir, name);
+                        VersionNumber bundledVersion = getPluginVersion(dir, name);
+                        if (installedVersion != null && bundledVersion != null && installedVersion.isOlderThan(bundledVersion)) {
+                            return true;
+                        }
                     }
 
                     // If it's a plugin that was detached since the last running version.
@@ -573,14 +579,38 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             StartupUtil.saveLastExecVersion();
         }
     }
-    
-    private boolean isPluginInstalled(@Nonnull String name) {
-        return new File(rootDir, normalisePluginName(name)).exists();
-    }
 
     private String normalisePluginName(@Nonnull String name) {
         // Normalise the name by stripping off the file extension (if present)...
         return name.replace(".jpi", "").replace(".hpi", "");
+    }
+
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull File dir, @Nonnull String pluginId) {
+        VersionNumber version = getPluginVersion(new File(dir, pluginId + ".jpi"));
+        if (version == null) {
+            version = getPluginVersion(new File(dir, pluginId + ".hpi"));
+        }
+        return version;
+    }
+    
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull File pluginFile) {
+        if (!pluginFile.exists()) {
+            return null;
+        }
+        try {
+            return getPluginVersion(pluginFile.toURI().toURL());
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
+
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull URL pluginURL) {
+        Manifest manifest = parsePluginManifest(pluginURL);        
+        if (manifest == null) {
+            return null;
+        }        
+        String versionSpec = manifest.getMainAttributes().getValue("Plugin-Version");
+        return new VersionNumber(versionSpec);
     }
 
     /*
@@ -723,7 +753,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     }
 
-    private static Manifest parsePluginManifest(URL bundledJpi) {
+    private static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
         try {
             URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
             InputStream in=null;

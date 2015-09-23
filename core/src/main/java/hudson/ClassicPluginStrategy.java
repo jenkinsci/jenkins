@@ -312,6 +312,23 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     /**
+     * Is the named plugin a plugin that was detached from Jenkins at some point in the past.
+     * @param pluginId The plugin ID.
+     * @return {@code true} if the plugin is a plugin that was detached from Jenkins at some
+     * point in the past, otherwise {@code false}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isDetachedPlugin(@Nonnull String pluginId) {
+        for (DetachedPlugin detachedPlugin : DETACHED_LIST) {
+            if (detachedPlugin.getShortName().equals(pluginId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Information about plugins that were originally in the core.
      */
     public static final class DetachedPlugin {
@@ -369,20 +386,20 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     private static final List<DetachedPlugin> DETACHED_LIST = Collections.unmodifiableList(Arrays.asList(
-        new DetachedPlugin("maven-plugin","1.296","1.296"),
-        new DetachedPlugin("subversion","1.310","1.0"),
-        new DetachedPlugin("cvs","1.340","0.1"),
-        new DetachedPlugin("ant","1.430.*","1.0"),
-        new DetachedPlugin("javadoc","1.430.*","1.0"),
-        new DetachedPlugin("external-monitor-job","1.467.*","1.0"),
-        new DetachedPlugin("ldap","1.467.*","1.0"),
-        new DetachedPlugin("pam-auth","1.467.*","1.0"),
-        new DetachedPlugin("mailer","1.493.*","1.2"),
-        new DetachedPlugin("matrix-auth","1.535.*","1.0.2"),
-        new DetachedPlugin("windows-slaves","1.547.*","1.0"),
-        new DetachedPlugin("antisamy-markup-formatter","1.553.*","1.0"),
-        new DetachedPlugin("matrix-project","1.561.*","1.0"),
-        new DetachedPlugin("junit","1.577.*","1.0")
+            new DetachedPlugin("maven-plugin", "1.296", "1.296"),
+            new DetachedPlugin("subversion", "1.310", "1.0"),
+            new DetachedPlugin("cvs", "1.340", "0.1"),
+            new DetachedPlugin("ant", "1.430.*", "1.0"),
+            new DetachedPlugin("javadoc", "1.430.*", "1.0"),
+            new DetachedPlugin("external-monitor-job", "1.467.*", "1.0"),
+            new DetachedPlugin("ldap", "1.467.*", "1.0"),
+            new DetachedPlugin("pam-auth", "1.467.*", "1.0"),
+            new DetachedPlugin("mailer", "1.493.*", "1.2"),
+            new DetachedPlugin("matrix-auth", "1.535.*", "1.0.2"),
+            new DetachedPlugin("windows-slaves", "1.547.*", "1.0"),
+            new DetachedPlugin("antisamy-markup-formatter", "1.553.*", "1.0"),
+            new DetachedPlugin("matrix-project", "1.561.*", "1.0"),
+            new DetachedPlugin("junit", "1.577.*", "1.0")
     ));
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
