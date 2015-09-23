@@ -53,7 +53,7 @@ public class UpdateCenterPluginInstallTest {
     @Test
     public void test_installUnknownPlugin() throws IOException, SAXException {
         setup();
-        JenkinsRule.JSONWebResponse response = jenkinsRule.postJSON("/pluginManager/installPlugins", buildInstallPayload("unknown_plugin_xyz"));
+        JenkinsRule.JSONWebResponse response = jenkinsRule.postJSON("pluginManager/installPlugins", buildInstallPayload("unknown_plugin_xyz"));
         JSONObject json = response.getJSONObject();
 
         Assert.assertEquals("error", json.get("status"));
@@ -65,7 +65,7 @@ public class UpdateCenterPluginInstallTest {
     @Test
     public void test_installKnownPlugins() throws IOException, SAXException {
         setup();
-        JenkinsRule.JSONWebResponse installResponse = jenkinsRule.postJSON("/pluginManager/installPlugins", buildInstallPayload("changelog-history", "git"));
+        JenkinsRule.JSONWebResponse installResponse = jenkinsRule.postJSON("pluginManager/installPlugins", buildInstallPayload("changelog-history", "git"));
         JSONObject json = installResponse.getJSONObject();
 
         Assert.assertEquals("ok", json.get("status"));
