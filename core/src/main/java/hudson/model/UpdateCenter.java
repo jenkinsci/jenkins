@@ -322,14 +322,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             
             for (UpdateCenterJob job : jobCopy) {
                 if (job instanceof InstallationJob) {
-                    UUID jobCUUID = job.getCorrelationId();
-                    if (correlationId == null || (jobCUUID != null && correlationId.equals(jobCUUID.toString()))) {
+                    UUID jobCorrelationId = job.getCorrelationId();
+                    if (correlationId == null || (jobCorrelationId != null && correlationId.equals(jobCorrelationId.toString()))) {
                         InstallationJob installationJob = (InstallationJob) job;
                         Map<String, String> pluginInfo = new LinkedHashMap<>();
                         pluginInfo.put("name", installationJob.plugin.name);
                         pluginInfo.put("version", installationJob.plugin.version);
                         pluginInfo.put("title", installationJob.plugin.title);
                         pluginInfo.put("installStatus", installationJob.status.getType());
+                        pluginInfo.put("correlationId", jobCorrelationId.toString());                        
                         installStates.add(pluginInfo);
                     }
                 }
