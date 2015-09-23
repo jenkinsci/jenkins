@@ -62,6 +62,7 @@ import org.acegisecurity.context.SecurityContext;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -173,8 +174,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     /**
      * Simple connection status enum.
-     * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     static enum ConnectionStatus {
         /**
          * Connection status has not started yet.
@@ -278,9 +279,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * update site.
      * 
      * @return The current connection status.
-     * @since FIXME
      */
-    @Restricted(NoExternalUse.class)
+    @Restricted(DoNotUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest request) {
         try {
             String siteId = request.getParameter("siteId");
@@ -312,8 +312,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * {@link PluginManager#doInstallPlugins(org.kohsuke.stapler.StaplerRequest)}.
      * 
      * @return The current installation status of a plugin set.
-     * @since FIXME
      */
+    @Restricted(DoNotUse.class)
     public HttpResponse doInstallStatus(StaplerRequest request) {
         try {
             String correlationId = request.getParameter("correlationId");
@@ -630,8 +630,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Does not start/submit the job.
      * @param site The site  for which the Job is to be created.
      * @return A {@link ConnectionCheckJob} for the specified update site.
-     * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     ConnectionCheckJob newConnectionCheckJob(UpdateSite site) {
         return new ConnectionCheckJob(site);
     }

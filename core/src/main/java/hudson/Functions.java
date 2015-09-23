@@ -738,15 +738,6 @@ public class Functions {
     }
 
     /**
-     * Get the Jenkins instance {@link StartupType startup type}.
-     * @return The Jenkins instance {@link StartupType startup type}.
-     * @since FIXME
-     */
-    public static StartupType getStartupType() {
-        return Jenkins.getActiveInstance().getStartupType();
-    }
-
-    /**
      * This version is so that the 'checkPermission' on <tt>layout.jelly</tt>
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.

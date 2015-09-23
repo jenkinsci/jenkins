@@ -69,6 +69,7 @@ import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -968,9 +969,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * That "correlationId" can then be used in calls to
      * {@link UpdateCenter#doInstallStatus(org.kohsuke.stapler.StaplerRequest)}.
      * @throws IOException Error reading JSON payload fro request.
-     * @since FIXME
      */
     @RequirePOST
+    @Restricted(DoNotUse.class)
     public HttpResponse doInstallPlugins(StaplerRequest req) throws IOException {
         String payload = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
         JSONObject request = JSONObject.fromObject(payload);

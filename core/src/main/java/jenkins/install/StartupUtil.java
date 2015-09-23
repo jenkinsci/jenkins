@@ -42,7 +42,6 @@ import static java.util.logging.Level.SEVERE;
  * Jenkins startup utilities.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- * @since FIXME
  */
 @Restricted(NoExternalUse.class)
 public class StartupUtil {

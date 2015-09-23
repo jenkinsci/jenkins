@@ -75,6 +75,8 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.bytecode.Transformer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 
@@ -285,8 +287,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * Get the list of all plugins that have ever been detached from Jenkins core.
      * @return A {@link List} of {@link DetachedPlugin}s.
-     * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     public static @Nonnull List<DetachedPlugin> getDetachedPlugins() {
         return DETACHED_LIST;
     }
@@ -295,8 +297,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Get the list of plugins that have been detached since a specific Jenkins release version.
      * @param since The Jenkins version.
      * @return A {@link List} of {@link DetachedPlugin}s.
-     * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     public static @Nonnull List<DetachedPlugin> getDetachedPlugins(@Nonnull VersionNumber since) {
         List<DetachedPlugin> detachedPlugins = new ArrayList<>();
 
@@ -344,27 +346,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
          */
         public VersionNumber getSplitWhen() {
             return splitWhen;
-        }
-
-        /**
-         * Get the minimum required version of the plugin.
-         * @return The minimum required version of the plugin.
-         */
-        public String getRequireVersion() {
-            return requireVersion;
-        }
-
-        /**
-         * Convert a collection of DetachedPlugins to a Set of plugins names.
-         * @param detachedPlugins The collection of DetachedPlugins.
-         * @return The list of plugin names.
-         */
-        public static Set<String> toPluginNameList(@Nonnull Collection<ClassicPluginStrategy.DetachedPlugin> detachedPlugins) {
-            Set<String> pluginNames = new LinkedHashSet<>();
-            for (ClassicPluginStrategy.DetachedPlugin detachedPlugin : detachedPlugins) {
-                pluginNames.add(detachedPlugin.getShortName());
-            }
-            return pluginNames;
         }
 
         private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
