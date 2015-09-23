@@ -633,7 +633,7 @@ THE SOFTWARE.
         <activation><os><family>windows</family><arch>x86</arch></os></activation>
 		<properties>
 			<node.download.file>win-x86/node.exe</node.download.file>
-			<node.download.classifier>/x86</node.download.classifier>
+			<node.download.classifier></node.download.classifier>
 		</properties>
     </profile>
     <profile>
