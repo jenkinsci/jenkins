@@ -2750,15 +2750,28 @@ Ajax.Request.prototype.dispatchException = function(e) {
 }
 
 // event callback when layouts/visibility are updated and elements might have moved around
+var applyLayoutCallbacks = function() {
+    // Swap out the layoutUpdateCallback.call function with a no-op so we avoid a
+    // crazy refresh/re-layout cycle.
+    layoutUpdateCallback.call = applyLayoutCallbacksNoop;
+    setTimeout(function(){
+        for (var i = 0, length = layoutUpdateCallback.callbacks.length; i < length; i++) {
+            layoutUpdateCallback.callbacks[i]();
+        }
+        // Swap this function back in and start processing layout refreshes again.
+        layoutUpdateCallback.call = applyLayoutCallbacks;
+        //console.log('+ Processing layoutUpdateCallback.call invocations again.');
+    }, 1000);
+};
+var applyLayoutCallbacksNoop = function() {
+    //console.log('- Ignoring layoutUpdateCallback.call invocations.');
+}
 var layoutUpdateCallback = {
     callbacks : [],
     add : function (f) {
         this.callbacks.push(f);
     },
-    call : function() {
-        for (var i = 0, length = this.callbacks.length; i < length; i++)
-            this.callbacks[i]();
-    }
+    call : applyLayoutCallbacks
 }
 
 // Notification bar
