@@ -93,7 +93,7 @@ public class I18n implements RootAction {
         String variant = request.getParameter("variant");
         
         try {
-            Locale locale = Locale.getDefault();
+            Locale locale = request.getLocale();
             
             if (language != null && country != null && variant != null) {
                 locale = new Locale(language, country, variant);

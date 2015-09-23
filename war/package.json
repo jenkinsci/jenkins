@@ -6,13 +6,14 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "jenkins-js-builder": "0.0.19",
-    "jenkins-js-test": "0.0.12"
+    "jenkins-js-test": "0.0.14",
+    "handlebars": "^3.0.3"
   },
   "dependencies": {
     "jenkins-handlebars-rt": "^1.0.1",
     "jenkins-js-modules": "1.0.1",
-    "jqueryui-detached": "^1.11.4-v8",
     "jquery-detached": "^2.1.4-v2",
+    "bootstrap-detached": "^3.3.4-v6",
     "window-handle": "0.0.6"
   }
 }

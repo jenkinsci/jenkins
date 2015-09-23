@@ -897,8 +897,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since FIXME
      */
     @Restricted(NoExternalUse.class)
-    public String getInstallWizardJS() {
-        return servletContext.getInitParameter("install-wizard-js");
+    public String getInstallWizardPath() {
+        return servletContext.getInitParameter("install-wizard-path");
     }
 
     /**

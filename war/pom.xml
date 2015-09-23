@@ -270,6 +270,18 @@ THE SOFTWARE.
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.ui</groupId>
+                  <artifactId>bootstrap</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.ui</groupId>
+                  <artifactId>momentjs</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.ui</groupId>
                   <artifactId>handlebars</artifactId>
                   <version>1.0</version>
                   <type>hpi</type>

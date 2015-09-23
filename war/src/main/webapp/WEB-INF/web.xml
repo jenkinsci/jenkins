@@ -44,8 +44,8 @@ THE SOFTWARE.
   </servlet>
     
   <context-param>
-      <param-name>install-wizard-js</param-name>
-      <param-value>jsbundles/wizard.js</param-value>
+      <param-name>install-wizard-path</param-name>
+      <param-value>jsbundles/pluginSetupWizard</param-value>
   </context-param>
 
   <servlet-mapping>

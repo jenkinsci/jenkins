@@ -710,6 +710,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                     UpdateCenter.class.getName()+".xml"));
     }
 
+    @Exported
     public List<Plugin> getAvailables() {
         Map<String,Plugin> pluginMap = new LinkedHashMap<String, Plugin>();
         for (UpdateSite site : sites) {
