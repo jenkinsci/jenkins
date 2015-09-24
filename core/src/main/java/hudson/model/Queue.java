@@ -1460,14 +1460,6 @@ public class Queue extends ResourceController implements Saveable {
             // allocate buildable jobs to executors
             for (BuildableItem p : new ArrayList<BuildableItem>(
                     buildables)) {// copy as we'll mutate the list in the loop
-                if (p.task instanceof FlyweightTask) {
-                    Runnable r = makeFlyWeightTaskBuildable(new BuildableItem(p));
-                    if (r != null) {
-                        p.leave(this);
-                        r.run();
-                        updateSnapshot();
-                    }
-                } else {
                     // one last check to make sure this build is not blocked.
                     if (isBuildBlocked(p)) {
                         p.leave(this);
@@ -1479,44 +1471,53 @@ public class Queue extends ResourceController implements Saveable {
                         continue;
                     }
 
-                    List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
-                    for (JobOffer j : parked.values())
-                        if (j.canTake(p))
-                            candidates.add(j);
+                    if (p.task instanceof FlyweightTask) {
+                        Runnable r = makeFlyWeightTaskBuildable(new BuildableItem(p));
+                        if (r != null) {
+                            p.leave(this);
+                            r.run();
+                            updateSnapshot();
+                        }
+                    } else {
 
-                    MappingWorksheet ws = new MappingWorksheet(p, candidates);
-                    Mapping m = loadBalancer.map(p.task, ws);
-                    if (m == null) {
-                        // if we couldn't find the executor that fits,
-                        // just leave it in the buildables list and
-                        // check if we can execute other projects
-                        LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
-                                new Object[]{p, candidates, parked.values()});
-                        continue;
-                    }
+                        List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
+                        for (JobOffer j : parked.values())
+                            if (j.canTake(p))
+                                candidates.add(j);
 
-                    // found a matching executor. use it.
-                    WorkUnitContext wuc = new WorkUnitContext(p);
-                    m.execute(wuc);
+                        MappingWorksheet ws = new MappingWorksheet(p, candidates);
+                        Mapping m = loadBalancer.map(p.task, ws);
+                        if (m == null) {
+                            // if we couldn't find the executor that fits,
+                            // just leave it in the buildables list and
+                            // check if we can execute other projects
+                            LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
+                                    new Object[]{p, candidates, parked.values()});
+                            continue;
+                        }
 
-                    p.leave(this);
-                    if (!wuc.getWorkUnits().isEmpty()) {
-                        makePending(p);
-                    }
-                    else
-                        LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
+                        // found a matching executor. use it.
+                        WorkUnitContext wuc = new WorkUnitContext(p);
+                        m.execute(wuc);
 
-                    // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
-                    // The creation of a snapshot itself should be relatively cheap given the expected rate of
-                    // job execution. You probably would need 100's of jobs starting execution every iteration
-                    // of maintain() before this could even start to become an issue and likely the calculation
-                    // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
-                    // since the snapshot itself only ever has at most one reference originating outside of the stack
-                    // it should remain in the eden space and thus be cheap to GC.
-                    // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                    // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
-                    // for alternative fixes of this issue.
-                    updateSnapshot();
+                        p.leave(this);
+                        if (!wuc.getWorkUnits().isEmpty()) {
+                            makePending(p);
+                        }
+                        else
+                            LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
+
+                        // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
+                        // The creation of a snapshot itself should be relatively cheap given the expected rate of
+                        // job execution. You probably would need 100's of jobs starting execution every iteration
+                        // of maintain() before this could even start to become an issue and likely the calculation
+                        // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
+                        // since the snapshot itself only ever has at most one reference originating outside of the stack
+                        // it should remain in the eden space and thus be cheap to GC.
+                        // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                        // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                        // for alternative fixes of this issue.
+                        updateSnapshot();
                 }
             }
         } finally { updateSnapshot(); } } finally {
@@ -1535,7 +1536,7 @@ public class Queue extends ResourceController implements Saveable {
 
                 Runnable runnable = makeFlyWeightTaskBuildable(p);
 
-                if(runnable!=null){
+                if(runnable != null){
                     return runnable;
                 }
 
