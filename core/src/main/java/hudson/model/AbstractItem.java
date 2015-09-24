@@ -723,8 +723,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
         // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
-        if (item==null)
-            throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
+        if (item==null) {
+            AbstractProject project = AbstractProject.findNearest(name);
+            throw new CmdLineException(null, project == null ? Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name)
+                    : Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));
+        }
         return item;
     }
 
