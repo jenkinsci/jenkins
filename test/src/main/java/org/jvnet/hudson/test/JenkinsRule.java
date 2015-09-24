@@ -920,17 +920,14 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     /**
      * Get JSON from A Jenkins endpoint.
-     * @param url The endpoint URL.
+     * @param path The endpoint URL.
      * @return The JSON.
      */
-    public JSONWebResponse getJSON(@Nonnull String url) throws IOException, SAXException {
+    public JSONWebResponse getJSON(@Nonnull String path) throws IOException, SAXException {
+        assert !path.startsWith("/");
+
         JenkinsRule.WebClient webClient = createWebClient();
-
-        if (url.startsWith("/")) {
-            url = url.substring(1);
-        }
-
-        Page runsPage = webClient.goTo(url, "application/json");
+        Page runsPage = webClient.goTo(path, "application/json");
         WebResponse webResponse = runsPage.getWebResponse();
         
         return new JSONWebResponse(webResponse);
@@ -938,18 +935,16 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
     /**
      * POST a JSON payload to a URL on the underlying Jenkins instance.
-     * @param url The url path on Jenkins.
+     * @param path The url path on Jenkins.
      * @param json An object that produces a JSON string from it's {@code toString} method.
      * @return A JSON response.
      * @throws IOException
      * @throws SAXException
      */
-    public JSONWebResponse postJSON(@Nonnull String url, @Nonnull Object json) throws IOException, SAXException {
-        if (url.startsWith("/")) {
-            url = url.substring(1);
-        }
+    public JSONWebResponse postJSON(@Nonnull String path, @Nonnull Object json) throws IOException, SAXException {
+        assert !path.startsWith("/");
 
-        URL postUrl = new URL(getURL().toExternalForm() + url);
+        URL postUrl = new URL(getURL().toExternalForm() + path);
         HttpURLConnection conn = (HttpURLConnection) postUrl.openConnection();
         
         conn.setDoOutput(true);
