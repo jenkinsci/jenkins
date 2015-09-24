@@ -66,7 +66,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * {@link TopLevelItemDescriptor}s often may want to limit the scope within which they can be created.
      * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
      *
-     * @since TODO
+     * @since 1.607
      */
     public boolean isApplicableIn(ItemGroup parent) {
         return true;
@@ -76,7 +76,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * Checks if this top level item is applicable within the specified item group.
      * <p>
      * This is just a convenience function.
-     * @since TODO
+     * @since 1.607
      */
     public final void checkApplicableIn(ItemGroup parent) {
         if (!isApplicableIn(parent)) {
