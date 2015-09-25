@@ -1,3 +1,5 @@
+@import (css) 'https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css';
+
 .plugin-setup-wizard() {
 	position: fixed;
 	top: 0;
@@ -5,44 +7,74 @@
 	bottom: 0;
 	left: 0;
 	z-index: 1000;
-    background: rgba(255,255,255,.9);
-    text-align: initial;
-    
-    input,password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
+	background: rgba(255,255,255,.9);
+	text-align: initial;
+	
+	input,password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
 		&::-ms-clear { width : 0; height: 0; }
 		&::-ms-reveal { width : 0; height: 0; }
 	}
-    
-    .modal-dialog {
-	    width: 90%;
-	    height: 90%;
-	    padding: 0;
-	    position: relative;
-	    margin: 3% auto;
+	
+	a, button {
+		&:focus, &:active { outline: 0; }
+	}
+	
+	.spin(@duration: 2s) {
+		-webkit-animation-name: spin;
+		-webkit-animation-duration: @duration;
+		-webkit-animation-iteration-count: infinite;
+		-webkit-animation-timing-function: linear;
+		-moz-animation-name: spin;
+		-moz-animation-duration: @duration;
+		-moz-animation-iteration-count: infinite;
+		-moz-animation-timing-function: linear;
+		-ms-animation-name: spin;
+		-ms-animation-duration: @duration;
+		-ms-animation-iteration-count: infinite;
+		-ms-animation-timing-function: linear;
+		animation-name: spin;
+		animation-duration: @duration;
+		animation-iteration-count: infinite;
+		animation-timing-function: linear;
+	}
+	
+	.no-spin() {
+		-webkit-animation-name: none;
+		-moz-animation-name: none;
+		-ms-animation-name: none;
+		animation-name: none;
+	}
+	
+	.modal-dialog {
+		width: 90%;
+		height: 90%;
+		padding: 0;
+		position: relative;
+		margin: 3% auto;
 	}
 	
 	.modal-content {
-	    height: 100%;
-	    position: relative;
-	    box-sizing: border-box;
-	    padding: 4.2em 0 4.8em 0;
+		height: 100%;
+		position: relative;
+		box-sizing: border-box;
+		padding: 4.2em 0 4.8em 0;
 	}
 	
 	.modal-body {
 		background: linear-gradient(175deg, #f8f8f8 0%, rgba(255, 255, 255, 1) 22%, rgba(255, 255, 255, 0) 100%);
-	    overflow-y: auto;
-	    height: 100%;
+		overflow-y: auto;
+		height: 100%;
 	}
 	
 	.modal-header {
 		position: absolute;
-	    top: 0;
-	    right: 0;
-	    left: 0;
-	    height: 4.2em;
-	    z-index: 2;
-	    background: #fff;
-	    border-radius: 5px 5px 0 0;
+		top: 0;
+		right: 0;
+		left: 0;
+		height: 4.2em;
+		z-index: 2;
+		background: #fff;
+		border-radius: 5px 5px 0 0;
 	}
 	
 	.modal-footer {
@@ -52,9 +84,9 @@
 		left: 0;
 		height: 4.8em;
 		padding: 1em;
-	    z-index: 2;
-	    background: #fff;
-	    border-radius: 0 0 5px 5px;
+		z-index: 2;
+		background: #fff;
+		border-radius: 0 0 5px 5px;
 	}
 	
 	.plugin-selector {
@@ -71,45 +103,44 @@
 			
 			.plugin-select-actions, .plugin-selected-info {
 				float: left;
-			    margin-right: 20px;
-			    line-height: 34px;
-			    
-			    a + a:before {
-				    content: '|';
-				    font-size: 11px;
-				    text-decoration: none !important;
-				    display: inline-block;
-				    margin: 0 5px 0 2px;
+				margin-right: 20px;
+				line-height: 34px;
+				
+				a + a:before {
+					content: '|';
+					font-size: 11px;
+					text-decoration: none !important;
+					display: inline-block;
+					margin: 0 5px 0 2px;
 				}
 			}
 			
 			.plugin-search-controls {
 				display: inline-block;
-			    position: relative;
-			    float: left;
-			    margin-right: 18px;
+				position: relative;
+				float: left;
+				margin-right: 18px;
 				
 				input[name=searchbox] {
-				    display: inline-block;
-				    width: auto;
-			        min-width: 22em;
+					display: inline-block;
+					width: 22em;
 				}
 				
 				.clear-search {
-			        position: absolute;
-				    top: 50%;
-				    right: 8px;
-				    margin-top: -16px;
-				    font-size: 23px;
-				    line-height: 30px;
-				    background: transparent;
-				    color: #ddd;
-				    text-decoration: none;
-				    font-weight: bold;
-				    
-				    &:hover {
-				    	color: #444;
-			    	}
+					position: absolute;
+					top: 50%;
+					right: 8px;
+					margin-top: -16px;
+					font-size: 23px;
+					line-height: 30px;
+					background: transparent;
+					color: #ddd;
+					text-decoration: none;
+					font-weight: bold;
+					
+					&:hover, &:focus {
+						color: #444;
+					}
 				}
 			}
 			
@@ -117,114 +148,114 @@
 				@media screen and (min-width: 768px) {
 					position: absolute;
 				}
-			    top: 0;
-			    right: 0;
-			    left: 0;
-			    height: 2em;
-			    padding: 0 10px;
-			    height: 34px;
-			    z-index: 100;
+				top: 0;
+				right: 0;
+				left: 0;
+				height: 2em;
+				padding: 0 10px;
+				height: 34px;
+				z-index: 100;
 			}
 			
 			.plugin-list {
 				position: relative;
 				padding: 10px;
-			    margin: 0 -15px;
-			    clear: both;
+				margin: 0 -15px;
+				clear: both;
 				@media screen and (min-width: 768px) {
 					max-height: 100%;
 				}
 				overflow-y: auto;
 				
 				h2 {
-			        transition: all .15s;
+					transition: all .15s;
 					&:first-child {
-					    margin-top: 0;
+						margin-top: 0;
 					}
 				}
 				
 				&.searching-with-transition {
 					label {
 						display: none;
-					    transition: all .25s;
-					    
-					    &.match {
-				    	    display: block;
-						    background: #d9edf7;
-						    margin: 4px -7px;
+						transition: all .25s;
+						
+						&.match {
+							display: block;
+							background: #d9edf7;
+							margin: 4px -7px;
 							padding: 6px 0 6px 26px;
-						    border-radius: 2px;
-						    border: 1px solid #bce8f1;
-						    color: #31708f;
-						    
-						    &.selected {
-							    background: #dff0d8;
-							    border: 1px solid #c2e0a9;
-							    color: #3c763d;
-						    }
-					    }
+							border-radius: 2px;
+							border: 1px solid #bce8f1;
+							color: #31708f;
+							
+							&.selected {
+								background: #dff0d8;
+								border: 1px solid #c2e0a9;
+								color: #3c763d;
+							}
+						}
 					}
 					h2 {
-					    color: #ddd;
-				        transition: all .5s;
-					    font-size: 22px;
-					    margin: 6px 0 6px -10px;
+						color: #ddd;
+						transition: all .5s;
+						font-size: 22px;
+						margin: 6px 0 6px -10px;
 					}
 				}
 				
 				&.searching {
 					label {
 						display: none;
-					    transition: all .25s;
-					    
-					    &.match {
-				    	    display: block;
-					    }
+						transition: all .25s;
+						
+						&.match {
+							display: block;
+						}
 					}
 					h2 {
 						display: none;
-					    &.match {
-						    color: #ddd;
-					        transition: all .5s;
-						    font-size: 22px;
-						    margin: 6px 0 6px -10px;
-					    	display: block;
-				    	}
+						&.match {
+							color: #ddd;
+							transition: all .5s;
+							font-size: 22px;
+							margin: 6px 0 6px -10px;
+							display: block;
+						}
 					}
 				}
 				
 				label {
-				    font-weight: normal;
-				    padding: 7px 2px 7px 27px;
-				    position: relative;
-				    display: block;
-				    cursor: pointer;
-				    margin: 4px -7px;
+					font-weight: normal;
+					padding: 7px 2px 7px 27px;
+					position: relative;
+					display: block;
+					cursor: pointer;
+					margin: 4px -7px;
 
-				    
-				    &.selected {
-				        background: #dff0d8;
+					
+					&.selected {
+						background: #dff0d8;
 						margin: 4px -7px;
 						padding: 6px 0 6px 26px;
 						border-radius: 2px;
 						border: 1px solid #C2E0A9;
 						color: #3c763d;
-				    }
-						    
-				    .title {
-				    	display: block;
-				    	font-weight: bold;
-				    }
-				    .description {
-				    	display: block;
-				    	margin-top: .5em;
-				    }
-				    
-				    input[type=checkbox] {
-					    float: left;
-					    margin: 2px -18px;
-					    vertical-align: middle;
-				    }
+					}
+							
+					.title {
+						display: block;
+						font-weight: bold;
+					}
+					.description {
+						display: block;
+						margin-top: .5em;
+					}
+					
+					input[type=checkbox] {
+						float: left;
+						margin: 2px -18px;
+						vertical-align: middle;
+					}
 				}
 			}
 		}
@@ -239,71 +270,142 @@
 				max-height: 100%;
 			}
 			
-		    li {
-		    	a {
-		    		position: relative;
-				    padding: .5em;
-				    display: block;
-				    color: #444;
-				    text-decoration: none;
-				    background: transparent;
-				    border: none;
-				    
-				    &:after {
-				    	content: '';
-				    	display: none;
-				    	position: absolute;
-				    	top: .2em;
-				    	right: 0;
-				    	bottom: .2em;
-				    	width: 1px;
-					    background: #337ab7;
-				    }
-				    
-				    &:hover {
-					    color: #337ab7;
+			li {
+				a {
+					position: relative;
+					padding: .5em;
+					display: block;
+					color: #444;
+					text-decoration: none;
+					background: transparent;
+					border: none;
+					
+					&:after {
+						content: '';
+						display: none;
+						position: absolute;
+						top: .2em;
+						right: 0;
+						bottom: .2em;
+						width: 1px;
+						background: #337ab7;
+					}
+					
+					&:hover {
+						color: #337ab7;
 
-				    	&:after {
-					    	display: block;
-				    	}
-				    }
-			    }
-			    
-			    &.active a {
-				    font-weight: bold;
-				    color: #337ab7;
-				    
-				    &:after {
-				    	display: block;
-				    	width: 2px;
-			    	}
-			    }
-		    }
-	    }
+						&:after {
+							display: block;
+						}
+					}
+				}
+				
+				&.active a {
+					font-weight: bold;
+					color: #337ab7;
+					
+					&:after {
+						display: block;
+						width: 2px;
+					}
+				}
+			}
+		}
 	}
 	
 	.install-console {
 	    border: 1px solid #eee;
 	    background: #f8f8f8;
 	    padding: 1em;
-	    margin: 1em 0;
 	    border-radius: 3px;
-	    height: 12em;
-	    display: none;
+	    height: 12%;
+	    position: fixed;
+	    right: 0;
+	    left: 0;
+	    bottom: 0;
+	    top: initial;
+	    display: block;
+	    margin: 3em 7.7%;
+	    z-index: 55;
+    
 		.install-text {
-		    font: 12px monospace;
-		    overflow: auto;
-		    height: 100%;
+			font: 12px monospace;
+			overflow: auto;
+			height: 100%;
 	   }
+	   
+	   .dependent {
+ 		    color: #aaa;
+		    padding-left: .4em;
+		    
+			&:before {
+				content: ' ** ';
+			}
+		}
+	}
+	
+	.selected-plugin-progress {
+	    position: absolute;
+	    bottom: 11%;
+	    overflow: hidden;
+	    overflow-y: auto;
+	    top: 24%;
+	    margin: 8.3% 7.5% 0 6.4%;
+	 	padding: 0 0 0 5px;
+	 	
+	 	&.success-panel {
+		 	bottom: 31%;
+		}
+		
+		.selected-plugin {
+			display: inline-block;
+			width: 18em;
+			vertical-align: top;
+			padding: 5px 10px 9px 20px;
+			position: relative;
+			
+			&:before { // pending
+				font-family: FontAwesome;
+			    font-size: 17px;
+			    content: '\f10c';
+			    color: #eee;
+			    position: absolute;
+			    top: 50%;
+			    left: -5px;
+			    margin-top: -9px;
+			}
+			
+			&.installing {
+				&:before {
+					content: '\f021';
+					color: #eee;
+					.spin();
+				}
+			}
+			&.success {
+				&:before {
+					content: '\f00c';
+					color: #3c763d;
+					.no-spin();
+				}
+			}
+			&.fail {
+				&:before {
+				    content: '\f00d';
+				    color: #a94442;
+					.no-spin();
+				}
+			}
+		}
 	}
 	
 	.welcome-panel {
 		position: relative;
-	    background: transparent;
-	    padding: 0 6%;
+		background: transparent;
+		padding: 0 6%;
 		
 		@media screen and (min-width: 768px) {
-	       padding-top: 5%;
+		   padding-top: 5%;
 		}
       
         .button-set {
@@ -312,19 +414,19 @@
         }
 		
 		.btn-huge {
-		    display: inline-block;
-		    text-align: initial;
-		    width: 22em;
-		    white-space: normal;
-		    vertical-align: top;
-		    min-height: 10em;
-	        margin-right: 1em;
-	        margin-top: 1em;
+			display: inline-block;
+			text-align: initial;
+			width: 22em;
+			white-space: normal;
+			vertical-align: top;
+			min-height: 10em;
+			margin-right: 1em;
+			margin-top: 1em;
 
 			@media screen and (min-width: 768px) {
-		        max-width: 40%;
-		        min-width: 16em;
-		        margin-top: 0;
+				max-width: 40%;
+				min-width: 16em;
+				margin-top: 0;
 			}
 			
 			b {
@@ -336,6 +438,23 @@
 			}
 		}
 	}
+}
+
+@-ms-keyframes spin {
+	from { -ms-transform: rotate(0deg); }
+	to { -ms-transform: rotate(360deg); }
+}
+@-moz-keyframes spin {
+	from { -moz-transform: rotate(0deg); }
+	to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+	from { -webkit-transform: rotate(0deg); }
+	to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+	from { transform:rotate(0deg); }
+	to { transform:rotate(360deg); }
 }
 
 body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order

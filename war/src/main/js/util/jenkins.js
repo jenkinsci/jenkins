@@ -8,7 +8,7 @@ var jquery = require('jquery-detached');
 var wh = require('window-handle');
 
 // gets the base Jenkins URL including context path
-var baseUrl = function() {
+exports.baseUrl = function() {
 	var $ = jquery.getJQuery();
 	var u = $('head').attr('data-rooturl');
 	if(!u) {
@@ -18,7 +18,7 @@ var baseUrl = function() {
 };
 
 // awful hack to get around JSONifying things with Prototype taking over wrong. ugh. Prototype is the worst.
-var stringify = function(o) {
+exports.stringify = function(o) {
 	if(Array.prototype.toJSON) { // Prototype f's this up something bad
 		var protoJSON = {
 			a: Array.prototype.toJSON,
@@ -55,10 +55,17 @@ var stringify = function(o) {
 };
 
 /**
+ * Take a string and replace non-id characters to make it a friendly-ish XML id
+ */
+exports.idIfy = function(str) {
+	return (''+str).replace(/\W+/g, '_');
+};
+
+/**
  * redirect
  */
 exports.go = function(url) {
-    wh.getWindow().location.replace(baseUrl() + url);
+    wh.getWindow().location.replace(exports.baseUrl() + url);
 };
 
 /**
@@ -67,7 +74,7 @@ exports.go = function(url) {
 exports.get = function(url, success) {
 	var $ = jquery.getJQuery();
 	$.ajax({
-		url: baseUrl() + url,
+		url: exports.baseUrl() + url,
 		type: 'GET',
 		success: success
 	});
@@ -79,9 +86,9 @@ exports.get = function(url, success) {
 exports.post = function(url, data, success) {
 	var $ = jquery.getJQuery();
     $.ajax({
-		url: baseUrl() + url,
+		url: exports.baseUrl() + url,
 		type: "POST",
-	    data: stringify(data),
+	    data: exports.stringify(data),
 	    contentType: "application/json",
 		success: success
 	});
@@ -105,9 +112,49 @@ exports.initHandlebars = function() {
 		if(arr.indexOf(val) >= 0) { return options.fn(); }
 	});
 
-	Handlebars.registerHelper('id', function(str) {
-		return (''+str).replace(/\W+/g, '_');
-	});
+	Handlebars.registerHelper('id', exports.idIfy);
 	
 	return Handlebars;
+};
+
+/**
+ * Load translations for the given bundle ID, provide the message object to the handler.
+ * Optional error handler as the last argument.
+ */
+exports.loadTranslations = function(bundleName, handler, onError) {
+	exports.get('/i18n/resourceBundle?baseName='  +bundleName, function(res) {
+		if(res.status != 'ok') {
+			if(onError) {
+				onError(res.message);
+			}
+			throw 'Unable to load localization data: ' + res.message;
+		}
+		
+		handler(res.data);
+	});
+};
+
+/**
+ * Runs a connectivity test, calls handler with a boolean whether there is sufficient connectivity to the internet
+ */
+exports.testConnectivity = function(handler) {
+	// check the connectivity api
+	var testConnectivity = function() {
+		exports.get('/updateCenter/connectionStatus?siteId=default', function(response) {
+			var uncheckedStatuses = ['PRECHECK', 'CHECKING', 'UNCHECKED'];
+			if(uncheckedStatuses.indexOf(response.data.updatesite) >= 0  || uncheckedStatuses.indexOf(response.data.internet) >= 0) {
+				setTimeout(testConnectivity, 100);
+			}
+			else {
+				if(response.status != 'ok' || response.data.updatesite != 'OK' || response.data.internet != 'OK') {
+					// no connectivity
+					handler(false);
+				}
+				else {
+					handler(true);
+				}
+			}
+		});
+	};
+	testConnectivity();
 };

@@ -9,6 +9,10 @@ var getJQuery = function() {
     return $;
 };
 
+var defaults = jsTest.requireSrcModule('initialPlugins');
+
+defaults.defaultPlugins = ['git'];
+
 // common mocks for jQuery $.ajax
 var ajaxMocks = function(call) {
 	if(debug) console.log('AJAX call: ' + call.url);
@@ -23,27 +27,10 @@ var ajaxMocks = function(call) {
     		});
     		break;
     	}
-    	case '/jenkins/updateCenter/api/json?tree=jobs[name,type,status[*]]': {
+    	case '/jenkins/updateCenter/installStatus': {
     		call.success({
     			status: 'ok',
-    			jobs: []
-    		});
-    		break;
-    	}
-    	case '/jenkins/updateCenter/installStatus?correlationId=1': {
-    		call.success({
 				data: [
-			      {
-			    	  type: 'InstallJob',
-			    	  installStatus: 'Success'
-			      }
-			    ]
-    		});
-    		break;
-    	}
-    	case '/jenkins/updateCenter/api/json?tree=jobs[name,status[*],errorMessage]': {
-    		call.success({
-				jobs: [
 			      {
 			    	  type: 'InstallJob',
 			    	  installStatus: 'Success'
@@ -55,13 +42,24 @@ var ajaxMocks = function(call) {
     	case '/jenkins/updateCenter/api/json?tree=availables[*,*[*]]': {
     		call.success({
     			availables: [
-	    			    {
+    			    {
     			    	name: 'msbuild',
-    			    	title: 'MS Build Test Thing'
+    			    	title: 'MS Build Test Thing',
+    			    	dependencies: {}
+    			    },
+    			    {
+    			    	name: 'git',
+    			    	title: 'Git plugin'
     			    },
     			    {
     			    	name: 'other',
-    			    	title: 'Other thing'
+    			    	title: 'Other thing',
+    			    	dependencies: { 'git': '1' }
+    			    },
+    			    {
+    			    	name: 'slack',
+    			    	title: 'Slack plugin',
+    			    	dependencies: { 'other': '1' }
     			    }
 	            ]
     		});
@@ -179,7 +177,6 @@ describe("pluginSetupWizard.js", function () {
     it("install defaults", function (done) {
 		test(function($) {
             var jenkins = jsTest.requireSrcModule('util/jenkins');
-            var defaults = jsTest.requireSrcModule('recommendedPlugins');
             
             // Make sure the dialog was shown
             var wizard = $('.plugin-setup-wizard');
@@ -189,7 +186,7 @@ describe("pluginSetupWizard.js", function () {
             expect(goButton.size()).toBe(1);
             
             // validate a call to installPlugins with our defaults
-            validatePlugins(defaults.defaultPlugins, done);
+            validatePlugins(['git'], done);
             
             goButton.click();
         });

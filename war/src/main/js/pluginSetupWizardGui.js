@@ -5,14 +5,15 @@
 // Require modules here, make sure they get browserify'd/bundled
 var jquery = require('jquery-detached');
 var bootstrap = require('bootstrap-detached');
+var wh = require('window-handle');
+var jenkins = require('./util/jenkins');
+var pluginManager = require('./api/pluginManager');
 
 // Setup the dialog, exported
 var createPluginSetupWizard = function() {
 	// call getJQuery / getBootstrap within the main function so it will work with tests -- if getJQuery etc is called in the main 
 	var $ = jquery.getJQuery();
 	var $bs = bootstrap.getBootstrap();
-	var wh = require('window-handle');
-	var jenkins = require('./util/jenkins');
 
 	var Handlebars = jenkins.initHandlebars();
 
@@ -78,7 +79,7 @@ var createPluginSetupWizard = function() {
 
 	// This could be an AJAX call, for now, just reading the included file
 	var getInstallData = function() {
-		installData = require('./recommendedPlugins.js');
+		installData = require('./initialPlugins.js');
 		selectedPlugins = installData.defaultPlugins.slice(0); // default the set of plugins, this is just names
 	};
 	getInstallData();
@@ -90,16 +91,19 @@ var createPluginSetupWizard = function() {
 	var currentPanel;
 	
 	// localized messages
-	var msg = {};
+	var translations = {};
 	
 	// call this to set the panel in the app, this performs some additional things & adds common transitions
 	var setPanel = function(panel, data, oncomplete) {
-		var html = panel($.extend({msg: msg}, data));
+		var html = panel($.extend({translations: translations}, data));
 		if(panel == currentPanel) { // just replace id-marked elements
 			var $upd = $(html);
 			$upd.find('*[id]').each(function() {
 				var $el = $(this);
-				$('#'+$el.attr('id')).replaceWith($el);
+				var $existing = $('#'+$el.attr('id'));
+				if($el[0].outerHTML != $existing[0].outerHTML) {
+					$existing.replaceWith($el);
+				}
 			});
 			
 			if(oncomplete) {
@@ -131,20 +135,45 @@ var createPluginSetupWizard = function() {
 	// plugin data for the progress panel
 	var installingPlugins = [];
 	
-	// we get a 'correlationId' when install plugins, it's stored here:
-	var installId;
+	// recursively get all the dependencies for a particular plugin, this is used to show 'installing' status
+	// when only dependencies are being installed
+	var getAllDependencies = function(pluginName, deps) {
+		if(!deps) { // don't get stuck
+			deps = [];
+			getAllDependencies(pluginName, deps);
+			return deps;
+		}
+		if(deps.indexOf(pluginName) >= 0) {
+			return;
+		}
+		deps.push(pluginName);
+		
+		var plug = availablePlugins[pluginName];
+		if(plug) {
+			if(plug.dependencies) {
+				// plug.dependencies is  { "some-plug": "1.2.99", ... }
+				for(var k in plug.dependencies) {
+					getAllDependencies(k, deps);
+				}
+			}
+			if(plug.neededDependencies) {
+				// plug.neededDependencies is [ { name: "some-plug", ... }, ... ]
+				for(var i = 0; i < plug.neededDependencies.length; i++) {
+					getAllDependencies(plug.neededDependencies[i].name, deps);
+				}
+			}
+		}
+	};
 	
 	// call this to go install the selected set of plugins
 	var installPlugins = function(plugins) {
-		jenkins.post('/pluginManager/installPlugins', { dynamicLoad: true, plugins: plugins }, function(data) {
-			if(data.status != 'ok') {
-				// error!
-			}
-			installId = data.data.correlationId;
-			
+		pluginManager.installPlugins(plugins, function() {
 			for(var i = 0; i < selectedPlugins.length; i++) {
 				var p = availablePlugins[selectedPlugins[i]];
-				installingPlugins.push($.extend(p, { installStatus: 'pending' }));
+				installingPlugins.push($.extend({
+					installStatus: 'pending',
+					allDependencies: getAllDependencies(p.name)
+				}, p));
 			}
 			
 			showInstallProgress();
@@ -155,7 +184,9 @@ var createPluginSetupWizard = function() {
 	
 	// install the default plugins
 	var installDefaultPlugins = function() {
-		installPlugins(installData.defaultPlugins);
+		loadPluginData(function() {
+			installPlugins(installData.defaultPlugins);
+		});
 	};
 	
 	// Define actions
@@ -164,18 +195,20 @@ var createPluginSetupWizard = function() {
 		
 		// call to the installStatus, update progress bar & plugin details; transition on complete
 		var updateStatus = function() {
-			// installStatus accepts a correlationId ?correlationId= + installId
-			jenkins.get('/updateCenter/installStatus', function(data) {
+			pluginManager.installStatus(function(jobs) {
 				var i, j;
 				var complete = 0;
 				var total = 0;
-				var jobs = data.data;
 				for(i = 0; i < jobs.length; i++) {
 					j = jobs[i];
 					total++;
-					if(/.*Success.*/.test(j.installStatus)||/.*Fail.*/.test(j.installStatus)) {
+					if(/.*Success.*/.test(j.installStatus) || /.*Fail.*/.test(j.installStatus)) {
 						complete++;
 					}
+				}
+				
+				if(total == 0) { // don't end while there are actual pending plugins
+					total = installingPlugins.length;
 				}
 				
 				// update progress bar
@@ -189,12 +222,14 @@ var createPluginSetupWizard = function() {
 					j = jobs[i];
 					var txt = false;
 					var state = false;
+					
 					if(/.*Success.*/.test(j.installStatus)) {
 						txt = j.title;
 						state = 'success';
-					} else if(/.*Install.*/.test(j.installStatus)) {
+					}
+					else if(/.*Install.*/.test(j.installStatus)) {
 						txt = j.title;
-						state = 'install';
+						state = 'installing';
 					}
 					else if(/.*Fail.*/.test(j.installStatus)) {
 						txt = j.title;
@@ -202,6 +237,18 @@ var createPluginSetupWizard = function() {
 					}
 					
 					if(txt && state) {
+						for(var installingIdx = 0; installingIdx < installingPlugins.length; installingIdx++) {
+							var installing = installingPlugins[installingIdx];
+							if(installing.name == j.name) {
+								installing.installStatus = state;
+							}
+							else if(installing.installStatus == 'pending' // if no progress
+							&& installing.allDependencies.indexOf(j.name) >= 0 // and we have a dependency
+							&& ('installing' == state || 'success' == state)) { // installing or successful 
+								installing.installStatus = 'installing'; // show this is installing
+							}
+						}
+						
 						var isSelected = selectedPlugins.indexOf(j.name) < 0 ? false : true;
 						var $div = $('<div>'+txt+'</div>');
 						if(isSelected) {
@@ -211,15 +258,16 @@ var createPluginSetupWizard = function() {
 							$div.addClass('dependent');
 						}
 						$c.append($div);
-					}
-					
-					var $itemProgress = $('.selected-plugin[data-name="'+j.name+'"]');
-					if(state == 'success' && !$itemProgress.is('.success')) {
-						$itemProgress.addClass('success');
+						
+						var $itemProgress = $('.selected-plugin[id="installing-' + jenkins.idIfy(j.name) + '"]');
+						if($itemProgress.length > 0 && !$itemProgress.is('.'+state)) {
+							$itemProgress.addClass(state);
+						}
 					}
 				}
+				
 				if($c.is(':visible')) {
-					$c[0].scrollTop = $c[0].scrollHeight;
+					$c.scrollTop($c[0].scrollHeight);
 				}
 				
 				// keep polling while install is running
@@ -232,7 +280,7 @@ var createPluginSetupWizard = function() {
 					// mark complete
 					$('.progress-bar').css({width: '100%'});
 					installId = null;
-					setPanel(successPanel);
+					setPanel(successPanel, { installingPlugins : installingPlugins });
 				}
 			});
 		};
@@ -248,10 +296,9 @@ var createPluginSetupWizard = function() {
 	
 	// load the plugin data, callback
 	var loadPluginData = function(oncomplete) {
-		jenkins.get('/updateCenter/api/json?tree=availables[*,*[*]]', function(data) {
-			var a = data.availables;
-			for(var i = 0; i < a.length; i++) {
-				var plug = a[i];
+		pluginManager.availablePlugins(function(availables) {
+			for(var i = 0; i < availables.length; i++) {
+				var plug = availables[i];
 				availablePlugins[plug.name] = plug;
 			}
 			oncomplete();
@@ -278,7 +325,7 @@ var createPluginSetupWizard = function() {
 					recommendedPlugins.push(plug.name);
 					plugs.push({
 						category: a.category,
-						plugin: $.extend(plug, {
+						plugin: $.extend({}, plug, {
 							usage: plugInfo.usage,
 							title: plugInfo.title ? plugInfo.title : plug.title,
 							excerpt: plugInfo.excerpt ? plugInfo.excerpt : plug.excerpt,
@@ -498,45 +545,28 @@ var createPluginSetupWizard = function() {
 	}
 	
 	// kick off to get resource bundle
-	jenkins.get('/i18n/resourceBundle?baseName=jenkins.install.pluginSetupWizard', function(res) {
-		if(res.status != 'ok') {
-			msg = { error: 'Unable to load localization data: ' + res.message };
-			setPanel(errorPanel);
-			return;
-		}
+	jenkins.loadTranslations('jenkins.install.pluginSetupWizard', function(localizations) {
+		translations = localizations;
 		
-		msg = res.data;
-		
-		// check for updates when first loaded...
-		jenkins.get('/updateCenter/api/json?tree=jobs[name,type,status[*]]', function(data) {
-			// check for install jobs
-			for(var i = 0; i < data.jobs.length; i++) {
-				if(data.jobs[i].type != 'ConnectionCheckJob') {
+		// check for connectivity
+		jenkins.testConnectivity(function(isConnected) {
+			if(!isConnected) {
+				setPanel(offlinePanel);
+				return;
+			}
+			
+			// check for updates when first loaded...
+			pluginManager.installStatus(function(jobs) {
+				if(jobs.length < 0) {
 					showInstallProgress();
 					return;
 				}
-			}
-			
-			// If no active install, by default, we'll show the welcome screen
-			setPanel(welcomePanel);
-		});
-		
-		// check the connectivity api
-		var testConnectivity = function() {
-			jenkins.get('/updateCenter/connectionStatus?siteId=default', function(response) {
-				var uncheckedStatuses = ['PRECHECK', 'CHECKING', 'UNCHECKED'];
-				if(uncheckedStatuses.indexOf(response.data.updatesite) >= 0  || uncheckedStatuses.indexOf(response.data.internet) >= 0) {
-					setTimeout(testConnectivity, 500);
-				}
-				else {
-					if(response.status != 'ok' || response.data.updatesite != 'OK' || response.data.internet != 'OK') {
-						setPanel(offlinePanel);
-					}
-				}
+				
+				// If no active install, by default, we'll show the welcome screen
+				setPanel(welcomePanel);
 			});
-		};
-		testConnectivity();
-	});
+		});
+	}, function() { setPanel(errorPanel); });
 };
 
 // export wizard creation method

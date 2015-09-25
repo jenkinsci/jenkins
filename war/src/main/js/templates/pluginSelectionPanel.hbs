@@ -1,5 +1,5 @@
 <div class="modal-header">
-	<h4 class="modal-title">{{msg.installWizard_installCustom_title}}</h4>
+	<h4 class="modal-title">{{translations.installWizard_installCustom_title}}</h4>
 </div>
 <div class="modal-body plugin-selector">
 	<div class="categories col-sm-3">
@@ -12,16 +12,16 @@
 	<div class="plugins col-sm-9">
 		<div class="plugin-select-controls">
 			<span class="plugin-select-actions">
-				<a href="#" class="plugin-select-all">{{msg.installWizard_installCustom_selectAll}}</a>
-				<a href="#" class="plugin-select-none">{{msg.installWizard_installCustom_selectNone}}</a>
-				<a href="#" class="plugin-select-recommended">{{msg.installWizard_installCustom_selectRecommended}}</a>
+				<a href="#" class="plugin-select-all">{{translations.installWizard_installCustom_selectAll}}</a>
+				<a href="#" class="plugin-select-none">{{translations.installWizard_installCustom_selectNone}}</a>
+				<a href="#" class="plugin-select-recommended">{{translations.installWizard_installCustom_selectRecommended}}</a>
 			</span>
 			<span class="plugin-search-controls">
 				<input type="text" name="searchbox" class="form-control" />
 				<a href="#" class="clear-search">&times;</a>
 			</span>
 			<span id="plugin-selected-info" class="plugin-selected-info" data-selected-plugins="{{#each selectedPlugins}}{{this}},{{/each}}">
-				<a href="#" class="plugin-show-selected">{{msg.installWizard_installCustom_selected}}</a> {{totalPluginCount}}
+				<a href="#" class="plugin-show-selected">{{translations.installWizard_installCustom_selected}}</a> {{totalPluginCount}}
 			</span>
 		</div>
 		<div class="plugin-list">
@@ -46,9 +46,9 @@
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-link install-home">
-		{{msg.installWizard_goBack}}
+		{{translations.installWizard_goBack}}
 	</button>
 	<button type="button" class="btn btn-primary install-selected">
-		{{msg.installWizard_goInstall}}
+		{{translations.installWizard_goInstall}}
 	</button>
 </div>
