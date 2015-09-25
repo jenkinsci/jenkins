@@ -95,17 +95,24 @@
 		}
 		
 		.plugins {
-			@media screen and (min-width: 768px) {
-				height: 100%;
-			}
 			padding-top: 3em;
 			position: relative;
 			
+			@media screen and (min-width: 768px) {
+				height: 100%;
+			}
+			
 			.plugin-select-actions, .plugin-selected-info {
-				float: left;
-				margin-right: 20px;
-				line-height: 34px;
-				
+				position: absolute;
+			    top: 0;
+			    left: 10px;
+			    line-height: 34px;
+			    
+			    &.plugin-selected-info {
+				    right: 10px;
+				    left: auto;
+				}
+    			
 				a + a:before {
 					content: '|';
 					font-size: 11px;
@@ -116,14 +123,18 @@
 			}
 			
 			.plugin-search-controls {
-				display: inline-block;
 				position: relative;
-				float: left;
-				margin-right: 18px;
-				
-				input[name=searchbox] {
-					display: inline-block;
-					width: 22em;
+				display: block;
+				margin: 0 -17px;
+    				
+				@media screen and (min-width: 768px) {
+					width: 100%;
+					max-width: 32em;
+					margin: 0;
+					
+					input[name=searchbox] {
+						display: inline-block;
+					}
 				}
 				
 				.clear-search {
@@ -147,7 +158,9 @@
 			.plugin-select-controls {
 				@media screen and (min-width: 768px) {
 					position: absolute;
+					padding: 0 9em 0 14em;
 				}
+				
 				top: 0;
 				right: 0;
 				left: 0;
@@ -314,30 +327,30 @@
 	}
 	
 	.install-console {
-	    border: 1px solid #eee;
-	    background: #f8f8f8;
-	    padding: 1em;
-	    border-radius: 3px;
-	    height: 12%;
-	    position: fixed;
-	    right: 0;
-	    left: 0;
-	    bottom: 0;
-	    top: initial;
-	    display: block;
-	    margin: 3em 7.7%;
-	    z-index: 55;
-    
+		border: 1px solid #eee;
+		background: #f8f8f8;
+		padding: 1em;
+		border-radius: 3px;
+		height: 12%;
+		position: fixed;
+		right: 0;
+		left: 0;
+		bottom: 0;
+		top: initial;
+		display: block;
+		margin: 3em 7.7%;
+		z-index: 55;
+	
 		.install-text {
 			font: 12px monospace;
 			overflow: auto;
 			height: 100%;
-	   }
-	   
-	   .dependent {
- 		    color: #aaa;
-		    padding-left: .4em;
-		    
+		}
+		
+		.dependent {
+ 			color: #aaa;
+			padding-left: .4em;
+			
 			&:before {
 				content: ' ** ';
 			}
@@ -345,12 +358,12 @@
 	}
 	
 	.selected-plugin-progress {
-	    position: absolute;
-	    bottom: 11%;
-	    overflow: hidden;
-	    overflow-y: auto;
-	    top: 24%;
-	    margin: 8.3% 7.5% 0 6.4%;
+		position: absolute;
+		bottom: 11%;
+		overflow: hidden;
+		overflow-y: auto;
+		top: 15em;
+		margin: 8.3% 7.5% 0 6.4%;
 	 	padding: 0 0 0 5px;
 	 	
 	 	&.success-panel {
@@ -366,13 +379,13 @@
 			
 			&:before { // pending
 				font-family: FontAwesome;
-			    font-size: 17px;
-			    content: '\f10c';
-			    color: #eee;
-			    position: absolute;
-			    top: 50%;
-			    left: -5px;
-			    margin-top: -9px;
+				font-size: 17px;
+				content: '\f10c';
+				color: #eee;
+				position: absolute;
+				top: 50%;
+				left: -5px;
+				margin-top: -9px;
 			}
 			
 			&.installing {
@@ -391,8 +404,8 @@
 			}
 			&.fail {
 				&:before {
-				    content: '\f00d';
-				    color: #a94442;
+					content: '\f00d';
+					color: #a94442;
 					.no-spin();
 				}
 			}
@@ -405,13 +418,16 @@
 		padding: 0 6%;
 		
 		@media screen and (min-width: 768px) {
-		   padding-top: 5%;
+			padding-top: 5%;
 		}
-      
-        .button-set {
-            text-align: center;
-            margin-top: 40px;
-        }
+	  
+		.button-set {
+			margin-top: 40px;
+			
+			.btn {
+				text-align: left;
+			}
+		}
 		
 		.btn-huge {
 			display: inline-block;
@@ -459,4 +475,66 @@
 
 body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 	.plugin-setup-wizard();
+}
+
+@fb-loader-color: #E6E6E6;
+
+.loader,
+.loader:before,
+.loader:after {
+	background: @fb-loader-color;
+	-webkit-animation: fb-loader 1s infinite ease-in-out;
+	animation: fb-loader 1s infinite ease-in-out;
+	width: 7px;
+	height: 8px;
+}
+.loader:before,
+.loader:after {
+	position: absolute;
+	top: 0;
+	content: '';
+}
+.loader:before {
+	left: -10px;
+	-webkit-animation-delay: -0.32s;
+	animation-delay: -0.32s;
+}
+.loader {
+	text-indent: -9999em;
+	top: 50%;
+	margin: -4px auto 0 auto;
+	position: relative;
+	font-size: 6px;
+	-webkit-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	transform: translateZ(0);
+	-webkit-animation-delay: -0.16s;
+	animation-delay: -0.16s;
+}
+.loader:after {
+	left: 10px;
+}
+@-webkit-keyframes fb-loader {
+	0%,
+	80%,
+	100% {
+		box-shadow: 0 0 @fb-loader-color;
+		height: 4em;
+	}
+	40% {
+		box-shadow: 0 -2em @fb-loader-color;
+		height: 5em;
+	}
+}
+@keyframes fb-loader {
+	0%,
+	80%,
+	100% {
+		box-shadow: 0 0 @fb-loader-color;
+		height: 4em;
+	}
+	40% {
+		box-shadow: 0 -2em @fb-loader-color;
+		height: 5em;
+	}
 }

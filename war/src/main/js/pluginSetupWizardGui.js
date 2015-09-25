@@ -61,6 +61,7 @@ var createPluginSetupWizard = function() {
 
 	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
 	var errorPanel = require('./templates/errorPanel.hbs');
+	var loadingPanel = require('./templates/loadingPanel.hbs');
 	var welcomePanel = require('./templates/welcomePanel.hbs');
 	var progressPanel = require('./templates/progressPanel.hbs');
 	var pluginSelectionPanel = require('./templates/pluginSelectionPanel.hbs');
@@ -543,6 +544,9 @@ var createPluginSetupWizard = function() {
 	for(var cls in actions) {
 		bindClickHandler(cls, actions[cls]);
 	}
+	
+	// do this so the page isn't blank while doing connectivity checks and other downloads
+	setPanel(loadingPanel);
 	
 	// kick off to get resource bundle
 	jenkins.loadTranslations('jenkins.install.pluginSetupWizard', function(localizations) {
