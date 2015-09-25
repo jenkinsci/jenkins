@@ -27,15 +27,20 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
+import hudson.util.AtomicFileWriter;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
-import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
+import jenkins.util.xml.XMLUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -44,6 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.xml.sax.SAXException;
 
 /**
  * Defines a bunch of static methods to be used as a "mix-in" for {@link ItemGroup}
@@ -249,8 +255,12 @@ public abstract class ItemGroupMixIn {
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
         final File dir = configXml.getParentFile();
         dir.mkdirs();
+        final AtomicFileWriter out = new AtomicFileWriter(configXml);
+
         try {
-            IOUtils.copy(xml,configXml);
+            XMLUtils.safeTransform((Source)new StreamSource(xml), new StreamResult(out));
+            out.close();
+            out.commit();
 
             // load it
             TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem,IOException>() {
@@ -264,10 +274,21 @@ public abstract class ItemGroupMixIn {
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             return result;
+        } catch (TransformerException e) {
+            // if anything fails, delete the config file to avoid further confusion
+            Util.deleteRecursive(dir);
+            throw new IOException("Failed to persist config.xml", e);
+        } catch (SAXException e) {
+            // if anything fails, delete the config file to avoid further confusion
+            Util.deleteRecursive(dir);
+            throw new IOException("Failed to persist config.xml", e);
         } catch (IOException e) {
             // if anything fails, delete the config file to avoid further confusion
             Util.deleteRecursive(dir);
             throw e;
+        } finally {
+            // don't leave anything behind
+            out.abort();
         }
     }
 
