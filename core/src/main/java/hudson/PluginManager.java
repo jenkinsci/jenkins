@@ -520,7 +520,31 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
 
+        // Redo who depends on who.
+        resolveDependantPlugins();
+
         LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void resolveDependantPlugins() {
+        for (PluginWrapper plugin : plugins) {
+            Set<String> dependants = new HashSet<>();
+            for (PluginWrapper possibleDependant : plugins) {
+                // The plugin could have just been deleted. If so, it doesn't
+                // count as a dependant.
+                if (possibleDependant.isDeleted()) {
+                    continue;
+                }
+                List<Dependency> dependencies = possibleDependant.getDependencies();
+                for (Dependency dependency : dependencies) {
+                    if (dependency.shortName.equals(plugin.getShortName())) {
+                        dependants.add(possibleDependant.getShortName());
+                    }
+                }
+            }
+            plugin.setDependants(dependants);
+        }
     }
 
     /**
