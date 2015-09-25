@@ -52,9 +52,19 @@ public class SlaveTest2 {
         
         // Spot-check correct requests
         assertJnlpJarUrlIsAllowed(slave, "slave.jar");
+        assertJnlpJarUrlIsAllowed(slave, "remoting.jar");
         assertJnlpJarUrlIsAllowed(slave, "jenkins-cli.jar");
+        assertJnlpJarUrlIsAllowed(slave, "hudson-cli.jar");
         
-        // Go to the upper level
+        // Check that requests to other WEB-INF contents fail
+        assertJnlpJarUrlFails(slave, "web.xml");
+        assertJnlpJarUrlFails(slave, "web.xml");
+        assertJnlpJarUrlFails(slave, "classes/bundled-plugins.txt");
+        assertJnlpJarUrlFails(slave, "classes/dependencies.txt");
+        assertJnlpJarUrlFails(slave, "plugins/ant.hpi");
+        assertJnlpJarUrlFails(slave, "nonexistentfolder/something.txt");
+        
+        // Try various kinds of folder escaping (SECURITY-195)
         assertJnlpJarUrlFails(slave, "../");
         assertJnlpJarUrlFails(slave, "..");
         assertJnlpJarUrlFails(slave, "..\\");
@@ -89,7 +99,6 @@ public class SlaveTest2 {
         // Access from a Web client
         JenkinsRule.WebClient client = rule.createWebClient();
         client.getPage(client.getContextPath() + "jnlpJars/" + URLEncoder.encode(url, "UTF-8")).getWebResponse().getContentAsString();
-        client.getPage(jnlpJar.getURL()).getWebResponse().getContentAsString();
-        
+        client.getPage(jnlpJar.getURL()).getWebResponse().getContentAsString();  
     }
 }
