@@ -34,6 +34,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+
+import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -64,10 +67,27 @@ public class DummyCloudImpl extends Cloud {
      */
     public Label label;
 
+    public void setNodeProperties(DescribableList<NodeProperty<?>, NodePropertyDescriptor> nodeProperties) {
+        this.nodeProperties = nodeProperties;
+    }
+    public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
+        return this.nodeProperties;
+    }
+
+    DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties =
+            new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
+
     public DummyCloudImpl(JenkinsRule rule, int delay) {
         super("test");
         this.rule = rule;
         this.delay = delay;
+    }
+
+    public DummyCloudImpl(JenkinsRule rule, int delay, DescribableList<NodeProperty<?>, NodePropertyDescriptor> nodeProperties) {
+        super("test");
+        this.rule = rule;
+        this.delay = delay;
+        this.nodeProperties = nodeProperties;
     }
 
     public Collection<PlannedNode> provision(Label label, int excessWorkload) {
@@ -106,6 +126,7 @@ public class DummyCloudImpl extends Cloud {
             
             System.out.println("launching slave");
             DumbSlave slave = rule.createSlave(label);
+            slave.getNodeProperties().addAll(nodeProperties);
             computer = slave.toComputer();
             computer.connect(false).get();
             synchronized (DummyCloudImpl.this) {
