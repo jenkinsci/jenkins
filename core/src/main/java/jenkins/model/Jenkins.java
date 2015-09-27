@@ -191,8 +191,8 @@ import hudson.widgets.Widget;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
-import jenkins.install.StartupType;
-import jenkins.install.StartupUtil;
+import jenkins.install.InstallState;
+import jenkins.install.InstallUtil;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -332,7 +332,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private StartupType startupType;
+    private InstallState installState;
     
     /**
      * Number of executors of the master node.
@@ -768,9 +768,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            startupType = StartupUtil.getStartupType();
-            if (startupType == StartupType.RESTART || startupType == StartupType.DOWNGRADE) {                
-                StartupUtil.saveLastExecVersion();
+            installState = InstallUtil.getInstallState();
+            if (installState == InstallState.RESTART || installState == InstallState.DOWNGRADE) {                
+                InstallUtil.saveLastExecVersion();
             }
             
             if (!new File(root,"jobs").exists()) {
@@ -882,12 +882,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Get the Jenkins {@link StartupType startup type}.   
-     * @return The Jenkins {@link StartupType startup type}.
+     * Get the Jenkins {@link jenkins.install.InstallState install state}.   
+     * @return The Jenkins {@link jenkins.install.InstallState install state}.
      */
     @Restricted(NoExternalUse.class)
-    public StartupType getStartupType() {
-        return startupType;
+    public InstallState getInstallState() {
+        return installState;
     }
 
     /**
@@ -904,8 +904,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public void saveLastExecVersion() {
-        StartupUtil.saveLastExecVersion();
-        startupType = StartupUtil.getStartupType();
+        InstallUtil.saveLastExecVersion();
+        installState = InstallUtil.getInstallState();
     }
 
     /**

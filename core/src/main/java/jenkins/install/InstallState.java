@@ -27,14 +27,14 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Jenkins Start type.
+ * Jenkins install state.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 @Restricted(NoExternalUse.class)
-public enum StartupType {
+public enum InstallState {
     /**
-     * New Jenkins instance startup.
+     * New Jenkins instance.
      */
     NEW,
     /**

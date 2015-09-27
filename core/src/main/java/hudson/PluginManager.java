@@ -48,8 +48,8 @@ import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.InitReactorRunner;
 import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
-import jenkins.install.StartupType;
-import jenkins.install.StartupUtil;
+import jenkins.install.InstallState;
+import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
@@ -534,9 +534,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * </ul>
      */
     protected void loadDetachedPlugins() {
-        StartupType startupType = Jenkins.getActiveInstance().getStartupType();
-        if (startupType == StartupType.UPGRADE) {
-            VersionNumber lastExecVersion = new VersionNumber(StartupUtil.getLastExecVersion());
+        InstallState installState = Jenkins.getActiveInstance().getInstallState();
+        if (installState == InstallState.UPGRADE) {
+            VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
 
             LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
                     new Object[] {lastExecVersion, Jenkins.VERSION});
@@ -576,7 +576,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
                     new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
             
-            StartupUtil.saveLastExecVersion();
+            InstallUtil.saveLastExecVersion();
         }
     }
 
@@ -1063,7 +1063,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             installJobs.add(jobFuture);
         }
         
-        if (Jenkins.getActiveInstance().getStartupType() == StartupType.NEW) {
+        if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
             saveLastExecVersion(installJobs);
         }
         

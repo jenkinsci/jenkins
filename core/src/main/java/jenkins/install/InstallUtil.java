@@ -40,24 +40,24 @@ import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
 /**
- * Jenkins startup utilities.
+ * Jenkins install utilities.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 @Restricted(NoExternalUse.class)
-public class StartupUtil {
+public class InstallUtil {
 
-    private static final Logger LOGGER = Logger.getLogger(StartupUtil.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(InstallUtil.class.getName());
 
     private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
     
     /**
-     * Get the type of "startup" currently under way in Jenkins.
+     * Get the current installation state.
      * @return The type of "startup" currently under way in Jenkins.
      */
-    public static StartupType getStartupType() {
+    public static InstallState getInstallState() {
         if (Functions.getIsUnitTest()) {
-            return StartupType.TEST;
+            return InstallState.TEST;
         }
         
         VersionNumber lastRunVersion = new VersionNumber(getLastExecVersion());
@@ -65,19 +65,19 @@ public class StartupUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
-            return StartupType.NEW;
+            return InstallState.NEW;
         }
 
         // We have a last version.
 
         VersionNumber currentRunVersion = new VersionNumber(getCurrentExecVersion());
         if (lastRunVersion.isOlderThan(currentRunVersion)) {
-            return StartupType.UPGRADE;
+            return InstallState.UPGRADE;
         } else if (lastRunVersion.isNewerThan(currentRunVersion)) {
-            return StartupType.DOWNGRADE;
+            return InstallState.DOWNGRADE;
         } else {
             // Last running version was the same as "this" running version.
-            return StartupType.RESTART;
+            return InstallState.RESTART;
         }
     }
 
@@ -90,7 +90,7 @@ public class StartupUtil {
     public static void saveLastExecVersion() {
         if (Jenkins.VERSION.equals(Jenkins.UNCOMPUTED_VERSION)) {
             // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
-            throw new IllegalStateException("Unexpected call to StartupUtil.saveLastExecVersion(). Jenkins.VERSION has not been initialized. Call computeVersion() first.");
+            throw new IllegalStateException("Unexpected call to InstallUtil.saveLastExecVersion(). Jenkins.VERSION has not been initialized. Call computeVersion() first.");
         }
         saveLastExecVersion(Jenkins.VERSION);
     }
@@ -157,7 +157,7 @@ public class StartupUtil {
     private static String getCurrentExecVersion() {
         if (Jenkins.VERSION.equals(Jenkins.UNCOMPUTED_VERSION)) {
             // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
-            throw new IllegalStateException("Unexpected call to StartupUtil.getCurrentExecVersion(). Jenkins.VERSION has not been initialized. Call computeVersion() first.");
+            throw new IllegalStateException("Unexpected call to InstallUtil.getCurrentExecVersion(). Jenkins.VERSION has not been initialized. Call computeVersion() first.");
         }
         return Jenkins.VERSION;
     }

@@ -32,14 +32,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 
 /**
  * Test
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class StartupUtilTest {
+public class InstallUtilTest {
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -48,7 +47,7 @@ public class StartupUtilTest {
     public void setup() {
         // JenkinsRule will have created the last exec file (indirectly),
         // so remove it so we can fake the tests.
-        StartupUtil.getLastExecVersionFile().delete();
+        InstallUtil.getLastExecVersionFile().delete();
         // Disable the unit test flag.
         Main.isUnitTest = false;
     }
@@ -65,28 +64,28 @@ public class StartupUtilTest {
     @Test
     public void test_typeTransitions() {
         // A new test instance
-        Assert.assertEquals(StartupType.NEW, StartupUtil.getStartupType());
+        Assert.assertEquals(InstallState.NEW, InstallUtil.getInstallState());
 
         // Save the last exec version. This will only be done by Jenkins after one of:
         //   1. A successful run of the install wizard.
         //   2. A success upgrade.
         //   3. A successful restart.
-        StartupUtil.saveLastExecVersion();
+        InstallUtil.saveLastExecVersion();
 
         // Fudge things a little now, pretending there's a restart...
 
-        // Now if we ask what is the StartupType, we should be told it's a RESTART because
+        // Now if we ask what is the InstallState, we should be told it's a RESTART because
         // the install wizard is complete and the version matches the currently executing
         // Jenkins version.
-        Assert.assertEquals(StartupType.RESTART, StartupUtil.getStartupType());
+        Assert.assertEquals(InstallState.RESTART, InstallUtil.getInstallState());
 
         // Fudge things again, changing the stored version to something old, faking an upgrade...
-        StartupUtil.saveLastExecVersion("1.584");
-        Assert.assertEquals(StartupType.UPGRADE, StartupUtil.getStartupType());
+        InstallUtil.saveLastExecVersion("1.584");
+        Assert.assertEquals(InstallState.UPGRADE, InstallUtil.getInstallState());
 
         // Fudge things yet again, changing the stored version to something very very new, faking a downgrade...
-        StartupUtil.saveLastExecVersion("1000.0");
-        Assert.assertEquals(StartupType.DOWNGRADE, StartupUtil.getStartupType());
+        InstallUtil.saveLastExecVersion("1000.0");
+        Assert.assertEquals(InstallState.DOWNGRADE, InstallUtil.getInstallState());
     }
     
 
@@ -97,13 +96,13 @@ public class StartupUtilTest {
     public void test_getLastExecVersion() throws Exception {
         // Delete the config file, forcing getLastExecVersion to return
         // the default/unset version value.
-        StartupUtil.getConfigFile().delete();        
-        Assert.assertEquals("1.0", StartupUtil.getLastExecVersion());
+        InstallUtil.getConfigFile().delete();        
+        Assert.assertEquals("1.0", InstallUtil.getLastExecVersion());
         
         // Set the version to some stupid value and check again. This time,
         // getLastExecVersion should read it from the file.
         setStoredVersion("9.123");       
-        Assert.assertEquals("9.123", StartupUtil.getLastExecVersion());
+        Assert.assertEquals("9.123", InstallUtil.getLastExecVersion());
     }    
 
     private void setStoredVersion(String version) throws Exception {

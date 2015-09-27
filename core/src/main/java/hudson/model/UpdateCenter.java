@@ -53,7 +53,7 @@ import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
-import jenkins.install.StartupType;
+import jenkins.install.InstallState;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
@@ -1756,7 +1756,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
-        if (Jenkins.getActiveInstance().getStartupType() == StartupType.NEW) {
+        if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
             LOGGER.log(INFO, "This is a new Jenkins instance. The Plugin Install Wizard will be launched.");
             // Force update of the default site file (updates/default.json).
             updateDefaultSite();
