@@ -941,6 +941,55 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         LogFactory.release(uberClassLoader);
     }
 
+    /**
+     * Get the list of all plugins - available and installed.
+     * @return The list of all plugins - available and installed.
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doPlugins() {
+        JSONArray response = new JSONArray();
+        Set<String> pluginSet = new HashSet<>();
+        for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+            for (UpdateSite.Plugin plugin: site.getAvailables()) {
+                if (!pluginSet.contains(plugin.name)) {
+                    JSONObject pluginInfo = new JSONObject();
+                    pluginInfo.put("installed", false);
+                    pluginInfo.put("name", plugin.name);
+                    pluginInfo.put("title", plugin.getDisplayName());
+                    pluginInfo.put("excerpt", plugin.excerpt);
+                    pluginInfo.put("site", site.getId());
+                    pluginInfo.put("dependencies", plugin.dependencies);
+                    response.add(pluginInfo);
+                }
+            }
+        }
+        for (PluginWrapper plugin : plugins) {
+            if (!pluginSet.contains(plugin.getShortName())) {
+                JSONObject pluginInfo = new JSONObject();
+                pluginInfo.put("installed", true);
+                pluginInfo.put("name", plugin.getShortName());
+                pluginInfo.put("title", plugin.getDisplayName());
+                pluginInfo.put("active", plugin.isActive());
+                pluginInfo.put("enabled", plugin.isEnabled());
+                pluginInfo.put("bundled", plugin.isBundled);
+                pluginInfo.put("deleted", plugin.isDeleted());
+                pluginInfo.put("downgradable", plugin.isDowngradable());
+                List<Dependency> dependencies = plugin.getDependencies();
+                if (dependencies != null && !dependencies.isEmpty()) {
+                    Map<String, String> dependencyMap = new HashMap<>();
+                    for (Dependency dependency : dependencies) {
+                        dependencyMap.put(dependency.shortName, dependency.version);
+                    }
+                    pluginInfo.put("dependencies", dependencyMap);
+                } else {
+                    pluginInfo.put("dependencies", Collections.emptyMap());
+                }
+                response.add(pluginInfo);
+            }
+        }
+        return hudson.util.HttpResponses.okJSON(response);
+    }    
+
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
         Jenkins.getInstance().checkPermission(CONFIGURE_UPDATECENTER);
 
@@ -990,7 +1039,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @throws IOException Error reading JSON payload fro request.
      */
     @RequirePOST
-    @Restricted(DoNotUse.class)
+    @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doInstallPlugins(StaplerRequest req) throws IOException {
         String payload = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
         JSONObject request = JSONObject.fromObject(payload);

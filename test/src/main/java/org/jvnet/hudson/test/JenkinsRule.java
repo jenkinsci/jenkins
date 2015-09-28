@@ -923,11 +923,17 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * @param path The endpoint URL.
      * @return The JSON.
      */
-    public JSONWebResponse getJSON(@Nonnull String path) throws IOException, SAXException {
+    public JSONWebResponse getJSON(@Nonnull String path) throws IOException {
         assert !path.startsWith("/");
 
         JenkinsRule.WebClient webClient = createWebClient();
-        Page runsPage = webClient.goTo(path, "application/json");
+        Page runsPage = null;
+        try {
+            runsPage = webClient.goTo(path, "application/json");
+        } catch (SAXException e) {
+            // goTo shouldn't be throwing a SAXException for JSON.
+            throw new IllegalStateException("Unexpected SAXException.", e);
+        }
         WebResponse webResponse = runsPage.getWebResponse();
         
         return new JSONWebResponse(webResponse);

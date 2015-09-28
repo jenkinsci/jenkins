@@ -32,8 +32,9 @@ var ajaxMocks = function(responseMappings) {
               }
             ]
         },
-        '/jenkins/updateCenter/api/json?tree=availables[*,*[*]]': {
-            availables: [
+        '/jenkins/pluginManager/plugins': {
+            status: 'ok',
+            data: [
                 {
                     name: 'msbuild',
                     title: 'MS Build Test Thing',

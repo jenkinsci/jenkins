@@ -47,8 +47,13 @@ exports.installStatus = function(handler, correlationId) {
  * ]
  */
 exports.availablePlugins = function(handler) {
-	jenkins.get('/updateCenter/api/json?tree=availables[*,*[*]]', function(data) {
+	jenkins.get('/pluginManager/plugins', function(response) {
+		if(response.status !== 'ok') {
+			// error!
+			throw response.message;
+		}
+
 		// no status returned with this call
-		handler(data.availables);
+		handler(response.data);
 	});
 };
