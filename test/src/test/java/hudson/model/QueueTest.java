@@ -853,7 +853,7 @@ public class QueueTest {
         while (!Queue.getInstance().getBuildableItems().isEmpty()) {
             Thread.sleep(10);
         }
-        assertFalse(Queue.getInstance().getItems()[0].isBlocked());
+        assertTrue(Queue.getInstance().getItems()[0].isBlocked());
         assertTrue(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
 
         r.assertBuildStatusSuccess(upstream);
