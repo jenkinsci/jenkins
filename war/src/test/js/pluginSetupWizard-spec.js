@@ -14,86 +14,90 @@ var defaults = jsTest.requireSrcModule('initialPlugins');
 defaults.defaultPlugins = ['git'];
 
 // common mocks for jQuery $.ajax
-var ajaxMocks = function(call) {
-	if(debug) console.log('AJAX call: ' + call.url);
-	
-	switch(call.url) {
-    	case '/jenkins/i18n/resourceBundle?baseName=jenkins.install.pluginSetupWizard': {
-    		call.success({
-    			status: 'ok',
-				data: {
-					'installWizard_offline_title': 'Offline'
-		        }
-    		});
-    		break;
-    	}
-    	case '/jenkins/updateCenter/installStatus': {
-    		call.success({
-    			status: 'ok',
-				data: [
-			      {
-			    	  type: 'InstallJob',
-			    	  installStatus: 'Success'
-			      }
-			    ]
-    		});
-    		break;
-    	}
-    	case '/jenkins/updateCenter/api/json?tree=availables[*,*[*]]': {
-    		call.success({
-    			availables: [
-    			    {
-    			    	name: 'msbuild',
-    			    	title: 'MS Build Test Thing',
-    			    	dependencies: {}
-    			    },
-    			    {
-    			    	name: 'git',
-    			    	title: 'Git plugin'
-    			    },
-    			    {
-    			    	name: 'other',
-    			    	title: 'Other thing',
-    			    	dependencies: { 'git': '1' }
-    			    },
-    			    {
-    			    	name: 'slack',
-    			    	title: 'Slack plugin',
-    			    	dependencies: { 'other': '1' }
-    			    }
-	            ]
-    		});
-    		break;
-    	}
-    	case '/jenkins/updateCenter/connectionStatus?siteId=default': {
-    		call.success({
-    			status: 'ok',
-    			data: {
-    				updatesite: 'OK',
-    				internet: 'OK'
-    			}
-    		});
-    		break;
-    	}
-	}
-};
+var ajaxMocks = function(responseMappings) { 
+    var defaultMappings = {
+        '/jenkins/i18n/resourceBundle?baseName=jenkins.install.pluginSetupWizard': {
+            status: 'ok',
+            data: {
+                'installWizard_offline_title': 'Offline'
+            }
+        },
+        '/jenkins/updateCenter/installStatus': {
+            status: 'ok',
+            data: [
+              {
+                  name: 'git',
+                  type: 'InstallJob',
+                  installStatus: 'Success'
+              }
+            ]
+        },
+        '/jenkins/updateCenter/api/json?tree=availables[*,*[*]]': {
+            availables: [
+                {
+                    name: 'msbuild',
+                    title: 'MS Build Test Thing',
+                    dependencies: {}
+                },
+                {
+                    name: 'git',
+                    title: 'Git plugin'
+                },
+                {
+                    name: 'other',
+                    title: 'Other thing',
+                    dependencies: { 'git': '1' }
+                },
+                {
+                    name: 'slack',
+                    title: 'Slack plugin',
+                    dependencies: { 'other': '1' }
+                }
+            ]
+        },
+        '/jenkins/updateCenter/connectionStatus?siteId=default': {
+            status: 'ok',
+            data: {
+                updatesite: 'OK',
+                internet: 'OK'
+            }
+        }
+    };
+    
+    if (!responseMappings) {
+        responseMappings = {};
+    }
+
+    return function(call) {
+        if(debug) console.log('AJAX call: ' + call.url);
+        
+        var response = responseMappings[call.url];
+        if (!response) {
+            response = defaultMappings[call.url];
+        }
+        if (!response) {
+            throw 'No data mapping provided for AJAX call: ' + call.url;
+        }
+        call.success(response);
+    };
+}
 
 // call this for each test, it will provide a new wizard, jquery to the caller
-var test = function(test) {
+var test = function(test, ajaxMappings) {
 	jsTest.onPage(function() {
-		// deps
-	    var $ = getJQuery();
-	    
-	    // Respond to status request
-	    $.ajax = ajaxMocks;
-	    
-	    // load the module
-	    var pluginSetupWizard = jsTest.requireSrcModule('pluginSetupWizardGui');
+        // deps
+        var $ = getJQuery();
+
+        // Respond to status request
+        $.ajax = ajaxMocks(ajaxMappings);
+
+        // load the module
+        var pluginSetupWizard = jsTest.requireSrcModule('pluginSetupWizardGui');
 
         // exported init
         pluginSetupWizard.init();
-	    
-	    test($, pluginSetupWizard);
+
+        test($, pluginSetupWizard);
 	});
 };
 
@@ -137,7 +141,7 @@ describe("pluginSetupWizard.js", function () {
 		    var jenkins = jsTest.requireSrcModule('./util/jenkins');
 		    
 		    var $ = getJQuery();
-		    $.ajax = ajaxMocks;
+		    $.ajax = ajaxMocks();
 		    
 		    var get = jenkins.get;
 		    try {
@@ -175,7 +179,21 @@ describe("pluginSetupWizard.js", function () {
     });
 	
     it("install defaults", function (done) {
-		test(function($) {
+        var ajaxMappings = {
+            '/jenkins/updateCenter/installStatus': {
+                name: 'git',
+                status: 'ok',
+                data: []
+            }
+        };
+        test(function($) {
+            ajaxMappings['/jenkins/updateCenter/installStatus'].data = [
+              {
+                  type: 'InstallJob',
+                  installStatus: 'Success'
+              }
+            ];            
+            
             var jenkins = jsTest.requireSrcModule('util/jenkins');
             
             // Make sure the dialog was shown
@@ -186,16 +204,19 @@ describe("pluginSetupWizard.js", function () {
             expect(goButton.size()).toBe(1);
             
             // validate a call to installPlugins with our defaults
-            validatePlugins(['git'], done);
+            validatePlugins(['git'], function() {
+                done();
+            });
             
-            goButton.click();
-        });
+            goButton.click();            
+        }, ajaxMappings);
     });
     
     var doit = function($, sel, trigger) {
     	var $el = $(sel);
     	if($el.length != 1) {
     		console.log('Not found! ' + sel);
+            console.log(new Error().stack);
     	}
     	if(trigger == 'check') {
     		$el.prop('checked', true);
@@ -205,14 +226,31 @@ describe("pluginSetupWizard.js", function () {
     };
 
     it("install custom", function (done) {
-		test(function($) {
+        var ajaxMappings = {
+            '/jenkins/updateCenter/installStatus': {                
+                status: 'ok',
+                data: []
+            }
+        };
+        test(function($) {
+            ajaxMappings['/jenkins/updateCenter/installStatus'].data = [
+              {
+                  name: 'git',
+                  type: 'InstallJob',
+                  installStatus: 'Success'
+              }
+            ];            
+
             $('.install-custom').click();
             
             // validate a call to installPlugins with our defaults
-            validatePlugins(['msbuild','slack'], done);
+            validatePlugins(['msbuild','slack'], function() {
             
             // install a specific, other 'set' of plugins
             $('input[name=searchbox]').val('msbuild');
+                done();
+            });
+
             doit($, 'input[name=searchbox]', 'blur');
             
             doit($, '.plugin-select-none', 'click');
@@ -221,7 +259,7 @@ describe("pluginSetupWizard.js", function () {
             doit($, 'input[name="slack"]', 'check');
             
             doit($, '.install-selected', 'click');
-        });
+        }, ajaxMappings);
     });
 
 });

@@ -891,21 +891,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Update the current install state.
+     */
+    @Restricted(NoExternalUse.class)
+    public void setInstallState(@Nonnull InstallState newState) {
+        installState = newState;
+    }
+
+    /**
      * Get the URL path to the Install Wizard JavaScript.
      * @return The URL path to the Install Wizard JavaScript.
      */
     @Restricted(NoExternalUse.class)
     public String getInstallWizardPath() {
         return servletContext.getInitParameter("install-wizard-path");
-    }
-
-    /**
-     * Save the last execute version file.
-     */
-    @Restricted(NoExternalUse.class)
-    public void saveLastExecVersion() {
-        InstallUtil.saveLastExecVersion();
-        installState = InstallUtil.getInstallState();
     }
 
     /**

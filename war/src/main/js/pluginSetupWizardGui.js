@@ -72,7 +72,6 @@ var createPluginSetupWizard = function() {
 	// state variables for plugin data, selected plugins, etc.:
 	var installData;
 	var categories = [];
-	var selectedCategory;
 	var availablePlugins = {};
 	var categorizedPlugins = {};
 	var recommendedPlugins = [];
@@ -166,18 +165,22 @@ var createPluginSetupWizard = function() {
 		}
 	};
 	
+    function initInstallingPluginList() {
+        for (var i = 0; i < selectedPlugins.length; i++) {
+            var p = availablePlugins[selectedPlugins[i]];            
+            if (p) {
+                installingPlugins.push($.extend({
+                    installStatus: 'pending',
+                    allDependencies: getAllDependencies(p.name)
+                }, p));
+            }
+        }
+    }
+
 	// call this to go install the selected set of plugins
-	var installPlugins = function(plugins) {
+    var installPlugins = function(plugins) {
 		pluginManager.installPlugins(plugins, function() {
-			for(var i = 0; i < selectedPlugins.length; i++) {
-				var p = availablePlugins[selectedPlugins[i]];
-				installingPlugins.push($.extend({
-					installStatus: 'pending',
-					allDependencies: getAllDependencies(p.name)
-				}, p));
-			}
-			
-			showInstallProgress();
+            showInstallProgress();
 		});
 		
 		setPanel(progressPanel, { installingPlugins : installingPlugins });
@@ -192,6 +195,7 @@ var createPluginSetupWizard = function() {
 	
 	// Define actions
 	var showInstallProgress = function() {
+        initInstallingPluginList();
 		setPanel(progressPanel, { installingPlugins : installingPlugins });
 		
 		// call to the installStatus, update progress bar & plugin details; transition on complete
@@ -275,6 +279,7 @@ var createPluginSetupWizard = function() {
 				if(complete < total) {
 					setPanel(progressPanel, { installingPlugins : installingPlugins });
 					// wait a sec
+                    console.log('*** complete ' + complete + ', total ' + total);
 					setTimeout(updateStatus, 250);
 				}
 				else {
@@ -561,8 +566,25 @@ var createPluginSetupWizard = function() {
 			
 			// check for updates when first loaded...
 			pluginManager.installStatus(function(jobs) {
-				if(jobs.length < 0) {
-					showInstallProgress();
+				if(jobs.length > 0) {
+                    if (installingPlugins.length === 0) {
+                        // This can happen on a page reload if we are in the middle of
+                        // an install. So, lets get a list of plugins being installed at the
+                        // moment and use that as the "selectedPlugins" list.
+                        selectedPlugins = [];
+                        loadPluginData(function() {
+                            for (var i = 0; i < jobs.length; i++) {
+                                // If the job does not have a 'correlationId', then it was not selected
+                                // by the user for install i.e. it's probably a dependency plugin.
+                                if (jobs[i].correlationId) {
+                                    selectedPlugins.push(jobs[i].name);
+                                }
+                            }                        
+        					showInstallProgress();
+                        });
+                    } else {
+                        showInstallProgress();
+                    } 
 					return;
 				}
 				

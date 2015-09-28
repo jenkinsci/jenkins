@@ -1064,32 +1064,36 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         
         if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
-            saveLastExecVersion(installJobs);
+            trackInitialPluginInstall(installJobs);
         }
         
         return installJobs;
     }
 
-    private void saveLastExecVersion(@Nonnull final List<Future<UpdateCenter.UpdateCenterJob>> installJobs) {
-        new Thread() {
-            @Override
-            public void run() {
-                INSTALLING: while (true) {
-                    try {
-                        Thread.sleep(500);
-                        for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
-                            if(!jobFuture.isDone() && !jobFuture.isCancelled()) {
-                                continue INSTALLING;
+    private void trackInitialPluginInstall(@Nonnull final List<Future<UpdateCenter.UpdateCenterJob>> installJobs) {
+        if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
+            Jenkins.getActiveInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
+            new Thread() {
+                @Override
+                public void run() {
+                    INSTALLING: while (true) {
+                        try {
+                            Thread.sleep(500);
+                            for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
+                                if(!jobFuture.isDone() && !jobFuture.isCancelled()) {
+                                    continue INSTALLING;
+                                }
                             }
+                        } catch (InterruptedException e) {
+                            LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
                         }
-                    } catch (InterruptedException e) {
-                        LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
+                        break;
                     }
-                    break;
+                    Jenkins.getActiveInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLED);
+                    InstallUtil.saveLastExecVersion();
                 }
-                Jenkins.getActiveInstance().saveLastExecVersion();
-            }
-        }.run();
+            }.start();
+        }
     }
 
     private UpdateSite.Plugin getPlugin(String pluginName, String siteName) {

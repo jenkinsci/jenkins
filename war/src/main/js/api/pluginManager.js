@@ -26,26 +26,16 @@ exports.installPlugins = function(plugins, success) {
  */
 exports.installStatus = function(handler, correlationId) {
 	var url = '/updateCenter/installStatus';
-	if(correlationId != undefined) {
+	if(correlationId !== undefined) {
 		url += '?correlationId=' + correlationId;
 	}
 	jenkins.get(url, function(data) {
-		if(data.status != 'ok') {
+		if(data.status !== 'ok') {
 			// error!
 			throw data.message;
 		}
 		
-		var jobs = data.data;
-		var installJobs = [];
-		
-		// omit non-install jobs
-		for(var i = 0; i < jobs.length; i++) {
-			if(jobs[i].type != 'ConnectionCheckJob') {
-				installJobs.push(jobs[i]);
-			}
-		}
-		
-		handler(installJobs);
+		handler(data.data);
 	});	
 };
 

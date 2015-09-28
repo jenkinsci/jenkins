@@ -34,9 +34,18 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public enum InstallState {
     /**
-     * New Jenkins instance.
+     * New Jenkins install.
      */
     NEW,
+    /**
+     * New Jenkins install. The user has kicked off the process of installing an
+     * initial set of plugins (via the install wizard). 
+     */
+    INITIAL_PLUGINS_INSTALLING,
+    /**
+     * New Jenkins install. The initial set of plugins are not installed. 
+     */
+    INITIAL_PLUGINS_INSTALLED,
     /**
      * Restart of an existing Jenkins install.
      */
