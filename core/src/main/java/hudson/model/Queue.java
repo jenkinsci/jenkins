@@ -877,6 +877,13 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
+     * Gets the snapshot of all {@link BlockedItem}s.
+     */
+    public List<BlockedItem> getBlockedItems() {
+        return new ArrayList<BlockedItem>(snapshot.blockedProjects);
+    }
+    
+    /**
      * Returns the snapshot of all {@link LeftItem}s.
      *
      * @since 1.519

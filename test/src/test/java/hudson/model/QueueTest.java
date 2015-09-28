@@ -100,6 +100,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
@@ -807,8 +808,9 @@ public class QueueTest {
     }
 
     @Test
-    public void shouldBeAbleToBlockFlyWeightTaskOnLastMinute() throws Exception {
+    public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
         MatrixProject matrixProject = r.createMatrixProject("downstream");
+        matrixProject.setDisplayName("downstream");
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
@@ -827,19 +829,42 @@ public class QueueTest {
         //we schedule the project but we pretend no executors are available thus
         //the flyweight task is in the buildable queue without being executed
         matrixProject.scheduleBuild2(0);
+        //let s wait for the Queue instance to be updated
+        while (Queue.getInstance().getBuildableItems().size() != 1) {
+            Thread.sleep(10);
+        }
         //in this state the build is not blocked, it's just waiting for an available executor
         assertFalse(matrixProject.isBuildBlocked());
+        assertFalse(Queue.getInstance().getItem(1).isBlocked());
         //we start the upstream project that should block the downstream one
         upstreamProject.getBuildersList().add(new SleepBuilder(10000));
+        upstreamProject.setDisplayName("upstream");
         QueueTaskFuture upstream = upstreamProject.scheduleBuild2(0);
-        upstream.waitForStart();
-        //let's wait for the Queue to be updated
-        Thread.sleep(5000);
-        //the downstream project is blocked waiting for the upstream to finish
-        assertTrue(matrixProject.isBuildBlocked());
+        //let s wait for the Upstream to enter the buildable Queue
+        boolean enteredTheQueue = false;
+        while (!enteredTheQueue) {
+            for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
+                if (item.task.getDisplayName() != null && item.task.getDisplayName().equals(upstreamProject.getDisplayName())) {
+                    enteredTheQueue = true;
+                }
+            }
+        }
+        //let's wait for the upstream project to actually start so that we're sure the Queue has been updated
+        //when the upstream starts the downstream has already left the buildable queue and the queue is empty
+        while (!Queue.getInstance().getBuildableItems().isEmpty()) {
+            Thread.sleep(10);
+        }
+        assertTrue(Queue.getInstance().getItem(1).isBlocked());
+        assertTrue(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+
         r.assertBuildStatusSuccess(upstream);
-        //once the upstream is completed, the downstream can leave the buildable queue.
-        assertFalse(matrixProject.isBuildBlocked());
+        //once the upstream is completed, the downstream can join the buildable queue again.
+        while (Queue.getInstance().getBuildableItems().isEmpty()) {
+            Thread.sleep(10);
+        }
+        assertFalse(Queue.getInstance().getItem(1).isBlocked());
+        assertTrue(Queue.getInstance().getBlockedItems().isEmpty());
+        assertTrue(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
     }
 
     //let's make sure that the downstram project is not started before the upstream --> we want to simulate

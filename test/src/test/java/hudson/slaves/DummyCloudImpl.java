@@ -39,6 +39,8 @@ import hudson.util.DescribableList;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import javax.xml.ws.Provider;
+
 /**
  * {@link Cloud} implementation useful for testing.
  *
@@ -67,15 +69,12 @@ public class DummyCloudImpl extends Cloud {
      */
     public Label label;
 
-    public void setNodeProperties(DescribableList<NodeProperty<?>, NodePropertyDescriptor> nodeProperties) {
-        this.nodeProperties = nodeProperties;
-    }
-    public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
+    public List<NodeProperty<?>> getNodeProperties() {
         return this.nodeProperties;
     }
 
-    DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties =
-            new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
+    List<NodeProperty<?>> nodeProperties =
+            new ArrayList<NodeProperty<?>>();
 
     public DummyCloudImpl(JenkinsRule rule, int delay) {
         super("test");
@@ -83,7 +82,7 @@ public class DummyCloudImpl extends Cloud {
         this.delay = delay;
     }
 
-    public DummyCloudImpl(JenkinsRule rule, int delay, DescribableList<NodeProperty<?>, NodePropertyDescriptor> nodeProperties) {
+    public DummyCloudImpl(JenkinsRule rule, int delay, List<NodeProperty<?>> nodeProperties) {
         super("test");
         this.rule = rule;
         this.delay = delay;
@@ -125,8 +124,17 @@ public class DummyCloudImpl extends Cloud {
             Thread.sleep(time);
             
             System.out.println("launching slave");
-            DumbSlave slave = rule.createSlave(label);
-            slave.getNodeProperties().addAll(nodeProperties);
+            final DumbSlave slave = rule.createSlave(label);
+            Provider<NodeProperty> nodePropertyProvider = new Provider<NodeProperty>() {
+                @Override
+                public NodeProperty invoke(NodeProperty request) {
+                    request.setNode(slave);
+                    return request;
+                }
+            };
+            for (NodeProperty nodeProperty : nodeProperties) {
+                slave.getNodeProperties().add(nodePropertyProvider.invoke(nodeProperty));
+            }
             computer = slave.toComputer();
             computer.connect(false).get();
             synchronized (DummyCloudImpl.this) {
