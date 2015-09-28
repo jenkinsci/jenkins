@@ -279,7 +279,6 @@ var createPluginSetupWizard = function() {
 				if(complete < total) {
 					setPanel(progressPanel, { installingPlugins : installingPlugins });
 					// wait a sec
-                    console.log('*** complete ' + complete + ', total ' + total);
 					setTimeout(updateStatus, 250);
 				}
 				else {
