@@ -834,8 +834,7 @@ public class QueueTest {
             Thread.sleep(10);
         }
         //in this state the build is not blocked, it's just waiting for an available executor
-        assertFalse(matrixProject.isBuildBlocked());
-        assertFalse(Queue.getInstance().getItem(1).isBlocked());
+        assertFalse(Queue.getInstance().getItems()[0].isBlocked());
         //we start the upstream project that should block the downstream one
         upstreamProject.getBuildersList().add(new SleepBuilder(10000));
         upstreamProject.setDisplayName("upstream");
@@ -854,7 +853,7 @@ public class QueueTest {
         while (!Queue.getInstance().getBuildableItems().isEmpty()) {
             Thread.sleep(10);
         }
-        assertTrue(Queue.getInstance().getItem(1).isBlocked());
+        assertFalse(Queue.getInstance().getItems()[0].isBlocked());
         assertTrue(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
 
         r.assertBuildStatusSuccess(upstream);
@@ -862,7 +861,7 @@ public class QueueTest {
         while (Queue.getInstance().getBuildableItems().isEmpty()) {
             Thread.sleep(10);
         }
-        assertFalse(Queue.getInstance().getItem(1).isBlocked());
+        assertFalse(Queue.getInstance().getItems()[0].isBlocked());
         assertTrue(Queue.getInstance().getBlockedItems().isEmpty());
         assertTrue(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
     }
