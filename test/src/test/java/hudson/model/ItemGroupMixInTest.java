@@ -34,6 +34,12 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
 import org.apache.commons.io.FileUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import static org.junit.Assert.*;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
@@ -45,12 +51,9 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.core.StringContains.containsString;
 
 public class ItemGroupMixInTest {
 
@@ -195,4 +198,29 @@ public class ItemGroupMixInTest {
       }
     }
   }
+
+    @Test public void createProjectFromXMLShouldNoCreateEntities() throws IOException {
+
+        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<!DOCTYPE project[\n" +
+                "  <!ENTITY foo SYSTEM \"file:///\">\n" +
+                "]>\n" +
+                "<project>\n" +
+                "  <actions/>\n" +
+                "  <description>&foo;</description>\n" +
+                "  <keepDependencies>false</keepDependencies>\n" +
+                "  <properties/>\n" +
+                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
+                "  <canRoam>true</canRoam>\n" +
+                "  <triggers/>\n" +
+                "  <builders/>\n" +
+                "  <publishers/>\n" +
+                "  <buildWrappers/>\n" +
+                "</project>";
+
+        Item foo = r.jenkins.createProjectFromXML("foo", new ByteArrayInputStream(xml.getBytes()));
+        // if no exception then JAXP is swallowing these - so there should be no entity in the description.
+        assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
+    }
+
 }
