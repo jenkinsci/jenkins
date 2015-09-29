@@ -37,6 +37,7 @@ class CLIActionTest {
         }
     }
 
+    //TODO: Integrate the tests into existing ones in CLIActionTest2
     @Test
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {

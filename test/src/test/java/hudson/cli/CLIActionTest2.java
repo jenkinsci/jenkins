@@ -36,6 +36,7 @@ import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 import static org.junit.Assert.*;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * Tests for {@link CLIAction}.
@@ -49,10 +50,12 @@ public class CLIActionTest2 {
     
     @Test
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
+    @Issue("SECURITY-192")
     public void serveCliActionToAnonymousUser() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         
-        // The behavior changed due to SECURITY-192. index page is no longer accessible to anonymous
+        // The behavior changed due to SECURITY-192. index page is no longer accessible to anonymous,
+        // so we check the access by emulating the CLI connection post request
         WebRequestSettings settings = new WebRequestSettings(new URL(j.getURL(), "cli"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setAdditionalHeader("Session", UUID.randomUUID().toString());
