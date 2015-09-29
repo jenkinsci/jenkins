@@ -37,8 +37,16 @@ class CLIActionTest {
         }
     }
 
+    //TODO: Integrate the tests into existing ones in CLIActionTest2
     @Test
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
+    public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
+        def wc = j.createWebClient();
+        // The behavior changed due to SECURITY-192. index page is no longer accessible to anonymous
+        wc.assertFails("cli", HttpURLConnection.HTTP_FORBIDDEN);
+    }
+    
+    @Test
     public void serveCliActionToAnonymousUser() throws Exception {
         def wc = j.createWebClient();
         wc.goTo("cli");
