@@ -5,7 +5,6 @@
 // Require modules here, make sure they get browserify'd/bundled
 var jquery = require('jquery-detached');
 var bootstrap = require('bootstrap-detached');
-var wh = require('window-handle');
 var jenkins = require('./util/jenkins');
 var pluginManager = require('./api/pluginManager');
 

@@ -1,3 +1,12 @@
+//
+// TODO: Get all of this information from the Update Center via a REST API.
+//
+
+//
+// TODO: Decide on what the real "recommended" plugin set is. This is just a 1st stab.
+// Also remember, the user ultimately has full control as they can easily customize 
+// away from these.
+//
 exports.recommendedPlugins = [
     "build-timeout",
     "timestamper",
@@ -19,6 +28,10 @@ exports.recommendedPlugins = [
     "mailer"
 ];
 
+//
+// A Categorized list of the plugins offered for install in the wizard.
+// This is a community curated list. 
+//
 exports.availablePlugins = [
     {
         "category": "General",
@@ -45,7 +58,7 @@ exports.availablePlugins = [
             { "name": "compact-columns" },
             { "name": "dashboard-view" },
             { "name": "disk-usage" },
-                { "name": "cloudbees-disk-usage-simple" },
+            { "name": "cloudbees-disk-usage-simple" },
             { "name": "extra-columns" },
             { "name": "jobConfigHistory" },
             { "name": "monitoring" },
@@ -62,15 +75,15 @@ exports.availablePlugins = [
             { "name": "msbuild" },
             { "name": "nodejs" },
             { "name": "powershell" },
-                { "name": "release" },
-                { "name": "m2release" }
+            { "name": "release" },
+            { "name": "m2release" }
         ]
     },
     {
         "category":"Build Analysis and Reporting",
         "plugins": [
             { "name": "analysis-collector" },
-                { "name": "build-failure-analyzer" },
+            { "name": "build-failure-analyzer" },
             { "name": "checkstyle" },
             { "name": "cobertura" },
             { "name": "javadoc" },
