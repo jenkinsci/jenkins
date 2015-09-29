@@ -84,10 +84,6 @@ public class SlaveTest2 {
             return;
         }
         fail("Expected the MalformedURLException for " + url);
-        
-        // Access from a Web client
-        JenkinsRule.WebClient client = rule.createWebClient();
-        client.assertFails("jnlpJars/" + URLEncoder.encode(url, "UTF-8"), 500);
     }
     
     private void assertJnlpJarUrlIsAllowed(@Nonnull Slave slave, @Nonnull String url) throws Exception {
