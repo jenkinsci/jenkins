@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableSet;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
@@ -512,6 +513,5 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Provides a collection of file names, which are accessible via /jnlpJars link.
      */
-    private static final Set<String> ALLOWED_JNLPJARS_FILES = new TreeSet<String>
-        (Arrays.asList("slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar"));
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
 }

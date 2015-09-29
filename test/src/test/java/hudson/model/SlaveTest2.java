@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.junit.Assert.*;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * Tests for the {@link Slave} class.
@@ -45,8 +45,7 @@ public class SlaveTest2 {
     public JenkinsRule rule = new JenkinsRule();
     
     @Test
-    //TODO: uncomment after upgrading to the new core version (1.580+)
-    //@Issue("SECURITY-195")
+    @Issue("SECURITY-195")
     public void shouldNotEscapeJnlpSlavesResources() throws Exception {
         Slave slave = rule.createSlave();
         
@@ -94,7 +93,7 @@ public class SlaveTest2 {
         
         // Access from a Web client
         JenkinsRule.WebClient client = rule.createWebClient();
-        client.getPage(client.getContextPath() + "jnlpJars/" + URLEncoder.encode(url, "UTF-8")).getWebResponse().getContentAsString();
-        client.getPage(jnlpJar.getURL()).getWebResponse().getContentAsString();  
+        assertEquals(200, client.getPage(client.getContextPath() + "jnlpJars/" + URLEncoder.encode(url, "UTF-8")).getWebResponse().getStatusCode());
+        assertEquals(200, client.getPage(jnlpJar.getURL()).getWebResponse().getStatusCode());
     }
 }
