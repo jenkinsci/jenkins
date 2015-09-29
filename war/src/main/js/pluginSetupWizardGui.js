@@ -165,17 +165,17 @@ var createPluginSetupWizard = function() {
 		}
 	};
 	
-    function initInstallingPluginList() {
-        for (var i = 0; i < selectedPlugins.length; i++) {
-            var p = availablePlugins[selectedPlugins[i]];            
-            if (p) {
-                installingPlugins.push($.extend({
-                    installStatus: 'pending',
-                    allDependencies: getAllDependencies(p.name)
-                }, p));
-            }
-        }
-    }
+  function initInstallingPluginList() {
+      for (var i = 0; i < selectedPlugins.length; i++) {
+          var p = availablePlugins[selectedPlugins[i]];            
+          if (p) {
+              installingPlugins.push($.extend({
+                  installStatus: 'pending',
+                  allDependencies: getAllDependencies(p.name)
+              }, p));
+          }
+      }
+  }
 
 	// call this to go install the selected set of plugins
     var installPlugins = function(plugins) {
@@ -549,6 +549,8 @@ var createPluginSetupWizard = function() {
 		bindClickHandler(cls, actions[cls]);
 	}
 	
+
+	
 	// do this so the page isn't blank while doing connectivity checks and other downloads
 	setPanel(loadingPanel);
 	
@@ -589,6 +591,9 @@ var createPluginSetupWizard = function() {
 				
 				// If no active install, by default, we'll show the welcome screen
 				setPanel(welcomePanel);
+				
+			  // focus on default
+			  $('.install-recommended').focus();
 			});
 		});
 	}, function() { setPanel(errorPanel); });
