@@ -9,9 +9,9 @@ var getJQuery = function() {
     return $;
 };
 
-var defaults = jsTest.requireSrcModule('initialPlugins');
+var pluginList = jsTest.requireSrcModule('api/plugins');
 
-defaults.defaultPlugins = ['git'];
+pluginList.recommendedPlugins = ['git'];
 
 // common mocks for jQuery $.ajax
 var ajaxMocks = function(responseMappings) { 

@@ -27,7 +27,7 @@ var createPluginSetupWizard = function() {
 			var plug = plugs[i];
 			if(plug.category == cat) {
 				tot++;
-				if(selectedPlugins.indexOf(plug.plugin.name) >= 0) {
+				if(selectedPluginNames.indexOf(plug.plugin.name) >= 0) {
 					cnt++;
 				}
 			}
@@ -39,12 +39,12 @@ var createPluginSetupWizard = function() {
 	Handlebars.registerHelper('totalPluginCount', function() {
 		var tot = 0;
 		var cnt = 0;
-		for(var i = 0; i < installData.availablePlugins.length; i++) {
-			var a = installData.availablePlugins[i];
+		for(var i = 0; i < pluginList.length; i++) {
+			var a = pluginList[i];
 			for(var c = 0; c < a.plugins.length; c++) {
 				var plug = a.plugins[c];
 				tot++;
-				if(selectedPlugins.indexOf(plug.name) >= 0) {
+				if(selectedPluginNames.indexOf(plug.name) >= 0) {
 					cnt++;
 				}
 			}
@@ -54,7 +54,7 @@ var createPluginSetupWizard = function() {
 
 	// determines if the provided plugin is in the list currently selected
 	Handlebars.registerHelper('inSelectedPlugins', function(val, options) {
-		if(selectedPlugins.indexOf(val) >= 0) {
+		if(selectedPluginNames.indexOf(val) >= 0) {
 			return options.fn();
 		}
 	});
@@ -70,20 +70,13 @@ var createPluginSetupWizard = function() {
 	var pluginSetupWizard = require('./templates/pluginSetupWizard.hbs');
 
 	// state variables for plugin data, selected plugins, etc.:
-	var installData;
-	var categories = [];
-	var availablePlugins = {};
-	var categorizedPlugins = {};
-	var recommendedPlugins = [];
-	var selectedPlugins;
+	var pluginList = pluginManager.plugins();
+    var allPluginNames = pluginManager.pluginNames();
+    var selectedPluginNames = pluginManager.recommendedPluginNames();
+    var categories = [];
+    var availablePlugins = {};
+    var categorizedPlugins = {};
 
-	// This could be an AJAX call, for now, just reading the included file
-	var getInstallData = function() {
-		installData = require('./initialPlugins.js');
-		selectedPlugins = installData.defaultPlugins.slice(0); // default the set of plugins, this is just names
-	};
-	getInstallData();
-	
 	// Instantiate the wizard panel
 	var $wizard = $(pluginSetupWizard());
 	$wizard.appendTo('body');
@@ -166,8 +159,8 @@ var createPluginSetupWizard = function() {
 	};
 	
   function initInstallingPluginList() {
-      for (var i = 0; i < selectedPlugins.length; i++) {
-          var p = availablePlugins[selectedPlugins[i]];            
+      for (var i = 0; i < selectedPluginNames.length; i++) {
+          var p = availablePlugins[selectedPluginNames[i]];            
           if (p) {
               installingPlugins.push($.extend({
                   installStatus: 'pending',
@@ -189,7 +182,7 @@ var createPluginSetupWizard = function() {
 	// install the default plugins
 	var installDefaultPlugins = function() {
 		loadPluginData(function() {
-			installPlugins(installData.defaultPlugins);
+			installPlugins(pluginManager.recommendedPluginNames());
 		});
 	};
 	
@@ -254,7 +247,7 @@ var createPluginSetupWizard = function() {
 							}
 						}
 						
-						var isSelected = selectedPlugins.indexOf(j.name) < 0 ? false : true;
+						var isSelected = selectedPluginNames.indexOf(j.name) < 0 ? false : true;
 						var $div = $('<div>'+txt+'</div>');
 						if(isSelected) {
 							$div.addClass('selected');
@@ -314,8 +307,8 @@ var createPluginSetupWizard = function() {
 	var loadCustomPluginPanel = function() {
 		loadPluginData(function() {
 			categories = [];
-			for(var i = 0; i < installData.availablePlugins.length; i++) {
-				var a = installData.availablePlugins[i];
+			for(var i = 0; i < pluginList.length; i++) {
+				var a = pluginList[i];
 				categories.push(a.category);
 				var plugs = categorizedPlugins[a.category] = [];
 				for(var c = 0; c < a.plugins.length; c++) {
@@ -327,7 +320,6 @@ var createPluginSetupWizard = function() {
 							title: plugInfo.name
 						};
 					}
-					recommendedPlugins.push(plug.name);
 					plugs.push({
 						category: a.category,
 						plugin: $.extend({}, plug, {
@@ -350,7 +342,7 @@ var createPluginSetupWizard = function() {
 		return {
 			categories: categories,
 			categorizedPlugins: categorizedPlugins,
-			selectedPlugins: selectedPlugins
+			selectedPlugins: selectedPluginNames
 		};
 	};
 
@@ -380,10 +372,10 @@ var createPluginSetupWizard = function() {
 	$wizard.on('change', '.plugin-list input[type=checkbox]', function() {
 		var $input = $(this);
 		if($input.is(':checked')) {
-			addPlugin(selectedPlugins, $input.attr('name'));
+			addPlugin(selectedPluginNames, $input.attr('name'));
 		}
 		else {
-			removePlugin(selectedPlugins, $input.attr('name'));
+			removePlugin(selectedPluginNames, $input.attr('name'));
 		}
 		
 		refreshPluginSelectionPanel();
@@ -536,12 +528,12 @@ var createPluginSetupWizard = function() {
 		'.install-recommended': installDefaultPlugins,
 		'.install-custom': loadCustomPluginPanel,
 		'.install-home': function() { setPanel(welcomePanel); },
-		'.install-selected': function() { installPlugins(selectedPlugins); },
+		'.install-selected': function() { installPlugins(selectedPluginNames); },
 		'.toggle-install-details': toggleInstallDetails,
 		'.install-done': finishInstallation,
-		'.plugin-select-all': function() { selectedPlugins = recommendedPlugins.slice(0); refreshPluginSelectionPanel(); },
-		'.plugin-select-none': function() { selectedPlugins = []; refreshPluginSelectionPanel(); },
-		'.plugin-select-recommended': function() { selectedPlugins = installData.defaultPlugins.slice(0); refreshPluginSelectionPanel(); },
+		'.plugin-select-all': function() { selectedPluginNames = allPluginNames; refreshPluginSelectionPanel(); },
+		'.plugin-select-none': function() { selectedPluginNames = []; refreshPluginSelectionPanel(); },
+		'.plugin-select-recommended': function() { selectedPluginNames = pluginManager.recommendedPluginNames(); refreshPluginSelectionPanel(); },
 		'.plugin-show-selected': toggleSelectedSearch,
 		'.select-category': selectCategory
 	};
@@ -572,13 +564,13 @@ var createPluginSetupWizard = function() {
                         // This can happen on a page reload if we are in the middle of
                         // an install. So, lets get a list of plugins being installed at the
                         // moment and use that as the "selectedPlugins" list.
-                        selectedPlugins = [];
+                        selectedPluginNames = [];
                         loadPluginData(function() {
                             for (var i = 0; i < jobs.length; i++) {
                                 // If the job does not have a 'correlationId', then it was not selected
                                 // by the user for install i.e. it's probably a dependency plugin.
                                 if (jobs[i].correlationId) {
-                                    selectedPlugins.push(jobs[i].name);
+                                    selectedPluginNames.push(jobs[i].name);
                                 }
                             }                        
         					showInstallProgress();

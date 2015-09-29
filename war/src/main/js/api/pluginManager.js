@@ -4,6 +4,48 @@
 
 var jenkins = require('../util/jenkins');
 
+// TODO: Get plugin info (plugins + recommended plugin list) from update center.
+// For now, we statically store them in the wizard. 
+
+var plugins = require('./plugins.js');
+plugins.names =[];
+for (var i = 0; i < plugins.availablePlugins.length; i++) {
+    var pluginCategory = plugins.availablePlugins[i];
+    var categoryPlugins = pluginCategory.plugins;
+    for (var ii = 0; ii < categoryPlugins.length; ii++) {
+        var pluginName = categoryPlugins[ii].name;
+        if (plugins.names.indexOf(pluginName) === -1) {
+            plugins.names.push(pluginName);
+        }
+    }
+}
+
+/**
+ * Get the curated list of plugins to be offered in the wizard.
+ * @returns The curated list of plugins to be offered in the wizard.
+ */
+exports.plugins = function() {
+    return plugins.availablePlugins;
+};
+
+/**
+ * Get the curated list of plugins to be offered in the wizard by name only.
+ * @returns The curated list of plugins to be offered in the wizard by name only.
+ */
+exports.pluginNames = function() {
+    return plugins.names;
+};
+
+/**
+ * Get the subset of plugins (subset of the plugin list) that are recommended by default.
+ * <p>
+ * The user can easily change this selection.
+ * @returns The subset of plugins (subset of the plugin list) that are recommended by default.
+ */
+exports.recommendedPluginNames = function() {
+    return plugins.recommendedPlugins;
+}
+
 /**
  * Call this function to install plugins, will pass a correlationId to the success callback which
  * may be used to restrict further calls getting plugin lists. Note: do not do this.
