@@ -370,7 +370,9 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Returns a count of projects that are tied on this node. In a system without security this should be the same
+     * Returns an approximate count of projects that are tied on this node.
+     *
+     * In a system without security this should be the same
      * as {@code getTiedJobs().size()} but significantly faster as it involves fewer temporary objects and avoids
      * sorting the intermediary list. In a system with security, this will likely return a higher value as it counts
      * all jobs (mostly) irrespective of access.
