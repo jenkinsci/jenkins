@@ -36,6 +36,8 @@ import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
 
 import jenkins.security.SlaveToMasterCallable;
+
+import org.junit.Assume;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -55,12 +57,8 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Starts a JNLP slave agent and makes sure it successfully connects to Hudson. 
      */
     public void testLaunch() throws Exception {
-        if(GraphicsEnvironment.isHeadless()) {
-            System.err.println("Skipping JNLPLauncherTest.testLaunch because we are running headless");
-            return;
-        }
+        Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
 
-        System.err.println("Not in headless mode, continuing with JNLPLauncherTest.testLaunch...");
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c));
     }

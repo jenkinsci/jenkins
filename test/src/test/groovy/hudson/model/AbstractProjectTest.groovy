@@ -54,7 +54,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet
 import org.apache.commons.io.FileUtils;
-
+import org.junit.Assume;
 import org.jvnet.hudson.test.MockFolder
 
 /**
@@ -224,9 +224,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Issue("JENKINS-1986")
     public void testBuildSymlinks() {
-        // If we're on Windows, don't bother doing this.
-        if (Functions.isWindows())
-            return;
+        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         def job = createFreeStyleProject();
         job.buildersList.add(new Shell("echo \"Build #\$BUILD_NUMBER\"\n"));
@@ -260,9 +258,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Issue("JENKINS-2543")
     public void testSymlinkForPostBuildFailure() {
-        // If we're on Windows, don't bother doing this.
-        if (Functions.isWindows())
-            return;
+        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         // Links should be updated after post-build actions when final build result is known
         def job = createFreeStyleProject();
