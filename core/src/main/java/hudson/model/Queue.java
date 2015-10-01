@@ -879,7 +879,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Gets the snapshot of all {@link BlockedItem}s.
      */
-    public List<BlockedItem> getBlockedItems() {
+    protected List<BlockedItem> getBlockedItems() {
         return new ArrayList<BlockedItem>(snapshot.blockedProjects);
     }
     
@@ -1583,17 +1583,20 @@ public class Queue extends ResourceController implements Saveable {
             ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
             hash.addAll(hashSource);
 
+            Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 final Computer c = n.toComputer();
                 if (c == null || c.isOffline()) {
+                    continue;
+                }
+                if (lbl!=null && !lbl.contains(n)) {
                     continue;
                 }
                 if (n.canTake(p) != null) {
                     continue;
                 }
                 return new Runnable() {
-                    @Override
-                    public void run() {
+                    @Override public void run() {
                         c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
                         makePending(p);
 

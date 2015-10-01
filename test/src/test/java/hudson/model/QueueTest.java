@@ -814,31 +814,42 @@ public class QueueTest {
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
+
         Label label = LabelExpression.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
-        PropertyImpl property = new PropertyImpl();
+        BlockDownstreamProjectExecution property = new BlockDownstreamProjectExecution();
         dummyCloud.getNodeProperties().add(property);
         r.jenkins.clouds.add(dummyCloud);
         matrixProject.setAssignedLabel(label);
+
         FreeStyleProject upstreamProject = r.createFreeStyleProject("upstream");
+        upstreamProject.getBuildersList().add(new SleepBuilder(10000));
+        upstreamProject.setDisplayName("upstream");
+
         //let's assume the flyweighttask has an upstream project and that must be blocked
         // when the upstream project is running
         matrixProject.addTrigger(new ReverseBuildTrigger("upstream", Result.SUCCESS));
         matrixProject.setBlockBuildWhenUpstreamBuilding(true);
+
         //we schedule the project but we pretend no executors are available thus
         //the flyweight task is in the buildable queue without being executed
-        matrixProject.scheduleBuild2(0);
+        QueueTaskFuture downstream = matrixProject.scheduleBuild2(0);
+        if (downstream == null) {
+            throw new Exception("the flyweight task could not be scheduled, thus the test will be interrupted");
+        }
         //let s wait for the Queue instance to be updated
         while (Queue.getInstance().getBuildableItems().size() != 1) {
             Thread.sleep(10);
         }
         //in this state the build is not blocked, it's just waiting for an available executor
         assertFalse(Queue.getInstance().getItems()[0].isBlocked());
+
         //we start the upstream project that should block the downstream one
-        upstreamProject.getBuildersList().add(new SleepBuilder(10000));
-        upstreamProject.setDisplayName("upstream");
         QueueTaskFuture upstream = upstreamProject.scheduleBuild2(0);
+        if (upstream == null) {
+            throw new Exception("the upstream task could not be scheduled, thus the test will be interrupted");
+        }
         //let s wait for the Upstream to enter the buildable Queue
         boolean enteredTheQueue = false;
         while (!enteredTheQueue) {
@@ -856,8 +867,8 @@ public class QueueTest {
         assertTrue(Queue.getInstance().getItems()[0].isBlocked());
         assertTrue(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
 
-        r.assertBuildStatusSuccess(upstream);
         //once the upstream is completed, the downstream can join the buildable queue again.
+        r.assertBuildStatusSuccess(upstream);
         while (Queue.getInstance().getBuildableItems().isEmpty()) {
             Thread.sleep(10);
         }
@@ -868,7 +879,7 @@ public class QueueTest {
 
     //let's make sure that the downstram project is not started before the upstream --> we want to simulate
     // the case: buildable-->blocked-->buildable
-    public static class PropertyImpl extends NodeProperty<Slave> {
+    public static class BlockDownstreamProjectExecution extends NodeProperty<Slave> {
         @Override
         public CauseOfBlockage canTake(Queue.BuildableItem item) {
             if (item.task.getName().equals("downstream")) {
