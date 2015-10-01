@@ -1599,7 +1599,6 @@ public class Queue extends ResourceController implements Saveable {
                     @Override public void run() {
                         c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
                         makePending(p);
-
                     }
                 };
             }
