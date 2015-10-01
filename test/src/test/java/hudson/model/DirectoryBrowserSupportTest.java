@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipFile;
 
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -94,7 +95,7 @@ public class DirectoryBrowserSupportTest {
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     @Test
     public void doubleDots2() throws Exception {
-        if(Functions.isWindows())  return; // can't test this on Windows
+        Assume.assumeFalse("can't test this on Windows", Functions.isWindows());
 
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
