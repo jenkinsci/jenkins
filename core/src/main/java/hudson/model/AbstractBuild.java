@@ -744,10 +744,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         private void reportError(BuildStep bs, Throwable e, BuildListener listener, boolean phase) {
             final String buildStep;
 
-            if (bs instanceof Publisher)
+            if (bs instanceof Publisher) {
                 buildStep = ((Publisher) bs).getDescriptor().getDisplayName();
-            else
+            } else {
                 buildStep = bs.getClass().getName();
+            }
 
             if (e instanceof AbortException) {
                 LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, buildStep});
