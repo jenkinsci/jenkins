@@ -71,6 +71,14 @@
 		padding: 4.2em 0 4.8em 0;
 	}
 	
+	.container.error-container {
+	    padding: 4em 3em;
+	    
+	    h1 {
+	    	color: #a94442;
+    	}
+	}
+	
 	.modal-body {
 		background: linear-gradient(175deg, #f8f8f8 0%, rgba(255, 255, 255, 1) 22%, rgba(255, 255, 255, 0) 100%);
 		overflow-y: auto;
@@ -80,11 +88,11 @@
 		
 		.water-mark{
 		  font-size: 392px;
-      position: absolute;
-      display: block;
-      bottom: 0px;
-      right: 50px;
-      color: rgba(0,0,0,.05);
+	      position: absolute;
+	      display: block;
+	      bottom: 0px;
+	      right: 50px;
+	      color: rgba(0,0,0,.05);
 		}
 		
 		.installing-panel{
@@ -131,6 +139,11 @@
 		z-index: 2;
 		background: #fff;
 		border-radius: 5px 5px 0 0;
+		
+		.close {
+			line-height: 1.42857143;
+		    margin-right: 5px;
+		}
 	}
 	
 	.modal-footer {
@@ -199,10 +212,11 @@
 				}
 				
 				.clear-search {
+					display: inline-block;
 					position: absolute;
 					top: 50%;
 					right: 8px;
-					margin-top: -14px;
+					margin-top: -12px;
 					font-size: 23px;
 					line-height: 30px;
 					background: transparent;
@@ -428,8 +442,9 @@
     z-index: 5;
     top: 33.3%;
     width: 25%;
-    padding:0;
+    padding: 6px 0;
     overflow:auto;
+    
 	 @media screen and (max-width: 992px) {
        width: 100%;
        position:static; 

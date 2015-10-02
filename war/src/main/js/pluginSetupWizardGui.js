@@ -58,6 +58,14 @@ var createPluginSetupWizard = function() {
 		}
 	});
 
+	Handlebars.registerHelper('dependencyText', function(plugName) {
+		var plug = availablePlugins[plugName];
+		if(!plug) {
+			return '';
+		}
+		return plug.allDependencies.join(', ');
+	});
+
 	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
 	var errorPanel = require('./templates/errorPanel.hbs');
 	var loadingPanel = require('./templates/loadingPanel.hbs');
@@ -67,7 +75,26 @@ var createPluginSetupWizard = function() {
 	var successPanel = require('./templates/successPanel.hbs');
 	var offlinePanel = require('./templates/offlinePanel.hbs');
 	var pluginSetupWizard = require('./templates/pluginSetupWizard.hbs');
-
+	var incompleteInstallationPanel = require('./templates/incompleteInstallationPanel.hbs');
+	
+	// wrap calls with this method to handle generic errors returned by the plugin manager
+	var handleGenericError = function(success) {
+		return function() {
+			if(this.isError) {
+				var errorMessage = this.errorMessage;
+				if(!errorMessage || this.errorMessage == 'timeout') {
+					errorMessage = translations.installWizard_error_connection;
+				}
+				else {
+					errorMessage = translations.installWizard_error_message + " " + errorMessage;
+				}
+				setPanel(errorPanel, { errorMessage: errorMessage });
+				return;
+			}
+			success.apply(this, arguments);
+		};
+	};
+	
 	// state variables for plugin data, selected plugins, etc.:
 	var pluginList = pluginManager.plugins();
     var allPluginNames = pluginManager.pluginNames();
@@ -85,16 +112,45 @@ var createPluginSetupWizard = function() {
 	// localized messages
 	var translations = {};
 	
+	var decorations = [
+        function($base) {
+        	var $tips = $base.find('*[data-tooltip]');
+        	$tips.each(function() {
+        		var $tip = $bs(this);
+        		var text = $tip.attr('data-tooltip');
+        		if(!text) {
+        			return;
+        		}
+        		$tip.tooltip({
+        			html: true,
+        			title: text
+        		}).on('hide.bs.tooltip', function(e) {
+        			// prototype/bootstrap tooltip incompatibility - triggering main element to be hidden
+        			e.preventDefault();
+        			$tip.next(".tooltip").remove();
+        		});
+        	});
+        }
+    ];
+	
 	// call this to set the panel in the app, this performs some additional things & adds common transitions
 	var setPanel = function(panel, data, oncomplete) {
+		var decorate = function($base) {
+			for(var i = 0; i < decorations.length; i++) {
+				decorations[i]($base);
+			}
+		};
 		var html = panel($.extend({translations: translations}, data));
 		if(panel == currentPanel) { // just replace id-marked elements
 			var $upd = $(html);
 			$upd.find('*[id]').each(function() {
 				var $el = $(this);
 				var $existing = $('#'+$el.attr('id'));
-				if($el[0].outerHTML != $existing[0].outerHTML) {
-					$existing.replaceWith($el);
+				if($existing.length > 0) {
+					if($el[0].outerHTML != $existing[0].outerHTML) {
+						$existing.replaceWith($el);
+						decorate($el);
+					}
 				}
 			});
 			
@@ -106,6 +162,8 @@ var createPluginSetupWizard = function() {
 			var append = function() {
 				currentPanel = panel;
 				$container.append(html);
+				decorate($container);
+				
 				if(oncomplete) {
 					oncomplete();
 				}
@@ -156,24 +214,27 @@ var createPluginSetupWizard = function() {
 			}
 		}
 	};
-	
-  function initInstallingPluginList() {
-      for (var i = 0; i < selectedPluginNames.length; i++) {
-          var p = availablePlugins[selectedPluginNames[i]];            
-          if (p) {
-              installingPlugins.push($.extend({
-                  installStatus: 'pending',
-                  allDependencies: getAllDependencies(p.name)
-              }, p));
-          }
-      }
-  }
+
+	// Initializes the set of installing plugins with pending statuses
+	var initInstallingPluginList = function() {
+		installingPlugins = [];
+		for (var i = 0; i < selectedPluginNames.length; i++) {
+			var p = availablePlugins[selectedPluginNames[i]];
+			if (p) {
+				var plug = $.extend({
+					installStatus : 'pending'
+				}, p);
+				installingPlugins.push(plug);
+				installingPlugins[plug.name] = plug;
+			}
+		}
+	};
 
 	// call this to go install the selected set of plugins
     var installPlugins = function(plugins) {
-		pluginManager.installPlugins(plugins, function() {
+		pluginManager.installPlugins(plugins, handleGenericError(function() {
             showInstallProgress();
-		});
+		}));
 		
 		setPanel(progressPanel, { installingPlugins : installingPlugins });
 	};
@@ -192,10 +253,12 @@ var createPluginSetupWizard = function() {
 		
 		// call to the installStatus, update progress bar & plugin details; transition on complete
 		var updateStatus = function() {
-			pluginManager.installStatus(function(jobs) {
+			pluginManager.installStatus(handleGenericError(function(jobs) {
 				var i, j;
 				var complete = 0;
 				var total = 0;
+				var restartRequired = false;
+				
 				for(i = 0; i < jobs.length; i++) {
 					j = jobs[i];
 					total++;
@@ -219,6 +282,9 @@ var createPluginSetupWizard = function() {
 					j = jobs[i];
 					var txt = false;
 					var state = false;
+					if('true' == j.requiresRestart) {
+						restartRequired = true;
+					}
 					
 					if(/.*Success.*/.test(j.installStatus)) {
 						txt = j.title;
@@ -263,6 +329,7 @@ var createPluginSetupWizard = function() {
 					}
 				}
 				
+				$c = $('.install-console');
 				if($c.is(':visible')) {
 					$c.scrollTop($c[0].scrollHeight);
 				}
@@ -277,9 +344,12 @@ var createPluginSetupWizard = function() {
 					// mark complete
 					$('.progress-bar').css({width: '100%'});
 					installId = null;
-					setPanel(successPanel, { installingPlugins : installingPlugins });
+					setPanel(successPanel, {
+						installingPlugins : installingPlugins,
+						restartRequired: restartRequired
+					});
 				}
-			});
+			}));
 		};
 		
 		// kick it off
@@ -288,18 +358,22 @@ var createPluginSetupWizard = function() {
 	
 	// Called to complete the installation
 	var finishInstallation = function() {
-		jenkins.go('/');
+		jenkins.goTo('/');
 	};
 	
 	// load the plugin data, callback
 	var loadPluginData = function(oncomplete) {
-		pluginManager.availablePlugins(function(availables) {
+		pluginManager.availablePlugins(handleGenericError(function(availables) {
 			for(var i = 0; i < availables.length; i++) {
 				var plug = availables[i];
 				availablePlugins[plug.name] = plug;
 			}
+			for(var i = 0; i < availables.length; i++) {
+				var plug = availables[i];
+				plug.allDependencies = getAllDependencies(plug.name);
+			}
 			oncomplete();
-		});
+		}));
 	};
 	
 	// load the custom plugin panel, will result in an AJAX call to get the plugin data
@@ -514,6 +588,51 @@ var createPluginSetupWizard = function() {
 		}
 	};
 	
+	// Call this to resume an installation after restart
+	var resumeInstallation = function() {
+		// don't re-initialize installing plugins
+		initInstallingPluginList = function() { };
+		selectedPluginNames = [];
+		for(var i = 0; i < installingPlugins.length; i++) {
+			var plug = installingPlugins[i];
+			if(plug.installStatus === 'pending') {
+				selectedPluginNames.push(plug.name);
+			}
+		}
+		installPlugins(selectedPluginNames);
+	};
+	
+	// restart jenkins
+	var restartJenkins = function() {
+		pluginManager.restartJenkins(function() {
+			setPanel(loadingPanel);
+			
+			console.log('-------------------');
+			console.log('Waiting for Jenkins to come back online...');
+			console.log('-------------------');
+			var pingUntilRestarted = function() {
+				pluginManager.isRestartRequired(function(isRequired) {
+					if(this.isError || isRequired) {
+						console.log('Waiting...');
+						setTimeout(pingUntilRestarted, 1000);
+					}
+					else {
+						jenkins.goTo('/');
+					}
+				});
+			};
+			
+			pingUntilRestarted();
+		});
+	}
+	
+	// close the installer, mark not to show again
+	var closeInstaller = function() {
+		pluginManager.completeInstall(handleGenericError(function() {
+			jenkins.goTo('/');
+		}));
+	};
+	
 	// scoped click handler, prevents default actions automatically
 	var bindClickHandler = function(cls, action) {
 		$wizard.on('click', cls, function(e) {
@@ -534,60 +653,105 @@ var createPluginSetupWizard = function() {
 		'.plugin-select-none': function() { selectedPluginNames = []; refreshPluginSelectionPanel(); },
 		'.plugin-select-recommended': function() { selectedPluginNames = pluginManager.recommendedPluginNames(); refreshPluginSelectionPanel(); },
 		'.plugin-show-selected': toggleSelectedSearch,
-		'.select-category': selectCategory
+		'.select-category': selectCategory,
+		'.close': closeInstaller,
+		'.resume-installation': resumeInstallation,
+		'.install-done-restart': restartJenkins
 	};
 	for(var cls in actions) {
 		bindClickHandler(cls, actions[cls]);
 	}
 	
-
-	
 	// do this so the page isn't blank while doing connectivity checks and other downloads
 	setPanel(loadingPanel);
 	
 	// kick off to get resource bundle
-	jenkins.loadTranslations('jenkins.install.pluginSetupWizard', function(localizations) {
+	jenkins.loadTranslations('jenkins.install.pluginSetupWizard', handleGenericError(function(localizations) {
 		translations = localizations;
 		
 		// check for connectivity
-		jenkins.testConnectivity(function(isConnected) {
+		jenkins.testConnectivity(handleGenericError(function(isConnected) {
 			if(!isConnected) {
 				setPanel(offlinePanel);
 				return;
 			}
 			
 			// check for updates when first loaded...
-			pluginManager.installStatus(function(jobs) {
+			pluginManager.installStatus(handleGenericError(function(jobs) {
 				if(jobs.length > 0) {
                     if (installingPlugins.length === 0) {
                         // This can happen on a page reload if we are in the middle of
                         // an install. So, lets get a list of plugins being installed at the
                         // moment and use that as the "selectedPlugins" list.
                         selectedPluginNames = [];
-                        loadPluginData(function() {
+                        loadPluginData(handleGenericError(function() {
                             for (var i = 0; i < jobs.length; i++) {
                                 // If the job does not have a 'correlationId', then it was not selected
                                 // by the user for install i.e. it's probably a dependency plugin.
                                 if (jobs[i].correlationId) {
                                     selectedPluginNames.push(jobs[i].name);
                                 }
-                            }                        
+                            }
         					showInstallProgress();
-                        });
+                        }));
                     } else {
                         showInstallProgress();
                     } 
 					return;
 				}
 				
-				// If no active install, by default, we'll show the welcome screen
-				setPanel(welcomePanel);
-				
-			  // focus on default
-			  $('.install-recommended').focus();
-			});
-		});
-	}, function() { setPanel(errorPanel); });
+				// check for crash/restart with uninstalled initial plugins
+				pluginManager.incompleteInstallStatus(handleGenericError(function(incompleteStatus) {
+					var incompletePluginNames = [];
+					for(var plugName in incompleteStatus) {
+						incompletePluginNames.push(plugName);
+					}
+					
+					if(incompletePluginNames.length > 0) {
+						selectedPluginNames = incompletePluginNames;
+						loadPluginData(handleGenericError(function() {
+							initInstallingPluginList();
+							
+							for(var plugName in incompleteStatus) {
+								var j = installingPlugins[plugName];
+								
+								var txt = false;
+								var state = false;
+								var status = incompleteStatus[plugName];
+								
+								if(/.*Success.*/.test(status)) {
+									txt = j.title;
+									state = 'success';
+								}
+								else if(/.*Install.*/.test(status)) {
+									txt = j.title;
+									state = 'pending';
+								}
+								else if(/.*Fail.*/.test(status)) {
+									txt = j.title;
+									state = 'fail';
+								}
+								
+								if(state) {
+									j.installStatus = state;
+								}
+							}
+							setPanel(incompleteInstallationPanel, { installingPlugins : installingPlugins });
+						}));
+						return;
+					}
+					
+					// finally,  show the installer
+					// If no active install, by default, we'll show the welcome screen
+					setPanel(welcomePanel);
+
+					// focus on default
+					$('.install-recommended').focus();
+					
+				}));
+			}));
+		}));
+	}));
 };
 
 // export wizard creation method

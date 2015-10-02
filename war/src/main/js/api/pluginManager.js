@@ -20,6 +20,9 @@ for (var i = 0; i < plugins.availablePlugins.length; i++) {
     }
 }
 
+// default 10 seconds for AJAX responses to return before triggering an error condition
+var pluginManagerErrorTimeoutMillis = 10 * 1000;
+
 /**
  * Get the curated list of plugins to be offered in the wizard.
  * @returns The curated list of plugins to be offered in the wizard.
@@ -47,17 +50,24 @@ exports.recommendedPluginNames = function() {
 }
 
 /**
- * Call this function to install plugins, will pass a correlationId to the success callback which
- * may be used to restrict further calls getting plugin lists. Note: do not do this.
+ * Call this function to install plugins, will pass a correlationId to the complete callback which
+ * may be used to restrict further calls getting plugin lists. Note: do not use the correlation id.
+ * If handler is called with this.isError, there will be a corresponding this.errorMessage indicating
+ * the failure reason
  */
-exports.installPlugins = function(plugins, success) {
-	jenkins.post('/pluginManager/installPlugins', { dynamicLoad: true, plugins: plugins }, function(data) {
-		if(data.status != 'ok') {
-			// error!
-			throw data.message;
+exports.installPlugins = function(plugins, handler) {
+	jenkins.post('/pluginManager/installPlugins', { dynamicLoad: true, plugins: plugins }, function(response) {
+		if(response.status !== 'ok') {
+			handler.call({ isError: true, errorMessage: response.message });
+			return;
 		}
 		
-		success(data.data.correlationId);
+		handler.call({ isError: false }, response.data.correlationId);
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, errorMessage: errorThrown });
+		}
 	});
 };
 
@@ -71,13 +81,18 @@ exports.installStatus = function(handler, correlationId) {
 	if(correlationId !== undefined) {
 		url += '?correlationId=' + correlationId;
 	}
-	jenkins.get(url, function(data) {
-		if(data.status !== 'ok') {
-			// error!
-			throw data.message;
+	jenkins.get(url, function(response) {
+		if(response.status !== 'ok') {
+			handler.call({ isError: true, errorMessage: response.message });
+			return;
 		}
 		
-		handler(data.data);
+		handler.call({ isError: false }, response.data);
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, errorMessage: errorThrown });
+		}
 	});	
 };
 
@@ -91,11 +106,83 @@ exports.installStatus = function(handler, correlationId) {
 exports.availablePlugins = function(handler) {
 	jenkins.get('/pluginManager/plugins', function(response) {
 		if(response.status !== 'ok') {
-			// error!
-			throw response.message;
+			handler.call({ isError: true, errorMessage: response.message });
+			return;
 		}
 
-		// no status returned with this call
-		handler(response.data);
+		handler.call({ isError: false }, response.data);
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, errorMessage: errorThrown });
+		}
+	});
+};
+
+
+/**
+ * Accepts 1 or 2 arguments, if argument 2 is not provided all installing plugins will be passed 
+ * to the handler function. If argument 2 is non-null, it will be treated as a correlationId, which
+ * must be retrieved from a prior installPlugins call.
+ */
+exports.incompleteInstallStatus = function(handler, correlationId) {
+	var url = '/updateCenter/incompleteInstallStatus';
+	if(correlationId !== undefined) {
+		url += '?correlationId=' + correlationId;
+	}
+	jenkins.get(url, function(response) {
+		if(response.status !== 'ok') {
+			handler.call({ isError: true, errorMessage: response.message });
+			return;
+		}
+		
+		handler.call({ isError: false }, response.data);
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, errorMessage: errorThrown });
+		}
+	});
+};
+
+/**
+ * Call this to complete the installation without installing anything
+ */
+exports.completeInstall = function(handler) {
+	jenkins.get('/updateCenter/completeInstall', function() {
+		handler.call({ isError: false });
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, message: errorThrown });
+		}
+	});
+};
+
+/**
+ * Indicates there is a restart required to complete plugin installations
+ */
+exports.isRestartRequired = function(handler) {
+	jenkins.get('/updateCenter/api/json?tree=restartRequiredForCompletion', function(response) {
+		handler.call({ isError: false }, response.data);
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, message: errorThrown });
+		}
+	});
+}
+
+/**
+ * Restart Jenkins
+ */
+exports.restartJenkins = function(handler) {
+	jenkins.get('/updateCenter/safeRestart', function(response) {
+		handler.call({ isError: false });
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, message: errorThrown });
+		}
 	});
 };

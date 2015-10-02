@@ -1,4 +1,5 @@
 <div class="modal-header">
+	<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 	<h4 class="modal-title">{{translations.installWizard_installCustom_title}}</h4>
 </div>
 <div class="modal-body plugin-selector">
@@ -30,7 +31,7 @@
 			<h2 id="{{id @key}}" class="expanded">{{@key}} {{pluginCountForCategory @key}}</h2>
 			<div class="plugins-for-category">
 				{{#each this}}
-				<label class="{{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}}" id="row-{{plugin.name}}">
+				<label class="{{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}}" id="row-{{plugin.name}}" data-tooltip="{{dependencyText this}}">
 					<span class="title">
 						<input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
 						{{plugin.title}}

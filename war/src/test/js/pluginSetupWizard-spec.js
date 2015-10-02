@@ -13,16 +13,43 @@ var pluginList = jsTest.requireSrcModule('api/plugins');
 
 pluginList.recommendedPlugins = ['git'];
 
+// Iterates through all responses until the end and returns the last response repeatedly
+var LastResponse = function(responses) {
+	var counter = 0;
+	this.next = function() {
+		if(counter < responses.length) {
+			try {
+				return responses[counter];
+			} finally {
+				counter++;
+			}
+		}
+		if(responses.length > 0) {
+			return responses[counter-1];
+		}
+		return { status: 'fail' }
+	}
+};
+
 // common mocks for jQuery $.ajax
 var ajaxMocks = function(responseMappings) { 
     var defaultMappings = {
         '/jenkins/i18n/resourceBundle?baseName=jenkins.install.pluginSetupWizard': {
             status: 'ok',
             data: {
-                'installWizard_offline_title': 'Offline'
+                'installWizard_offline_title': 'Offline',
+                'installWizard_installIncomplete_title': 'Resume Installation'
             }
         },
-        '/jenkins/updateCenter/installStatus': {
+        '/jenkins/updateCenter/incompleteInstallStatus': {
+            status: 'ok',
+            data: []
+        },
+        '/jenkins/updateCenter/installStatus': new LastResponse([{
+            status: 'ok',
+            data: [] // first, return nothing by default, no ongoing install
+        },
+        {
             status: 'ok',
             data: [
               {
@@ -31,7 +58,7 @@ var ajaxMocks = function(responseMappings) {
                   installStatus: 'Success'
               }
             ]
-        },
+        }]),
         '/jenkins/pluginManager/plugins': {
             status: 'ok',
             data: [
@@ -79,9 +106,12 @@ var ajaxMocks = function(responseMappings) {
         if (!response) {
             throw 'No data mapping provided for AJAX call: ' + call.url;
         }
+        if(response instanceof LastResponse) {
+        	response = response.next();
+        }
         call.success(response);
     };
-}
+};
 
 // call this for each test, it will provide a new wizard, jquery to the caller
 var test = function(test, ajaxMappings) {
@@ -180,21 +210,7 @@ describe("pluginSetupWizard.js", function () {
     });
 	
     it("install defaults", function (done) {
-        var ajaxMappings = {
-            '/jenkins/updateCenter/installStatus': {
-                name: 'git',
-                status: 'ok',
-                data: []
-            }
-        };
         test(function($) {
-            ajaxMappings['/jenkins/updateCenter/installStatus'].data = [
-              {
-                  type: 'InstallJob',
-                  installStatus: 'Success'
-              }
-            ];            
-            
             var jenkins = jsTest.requireSrcModule('util/jenkins');
             
             // Make sure the dialog was shown
@@ -210,7 +226,7 @@ describe("pluginSetupWizard.js", function () {
             });
             
             goButton.click();            
-        }, ajaxMappings);
+        });
     });
     
     var doit = function($, sel, trigger) {
@@ -227,21 +243,7 @@ describe("pluginSetupWizard.js", function () {
     };
 
     it("install custom", function (done) {
-        var ajaxMappings = {
-            '/jenkins/updateCenter/installStatus': {                
-                status: 'ok',
-                data: []
-            }
-        };
         test(function($) {
-            ajaxMappings['/jenkins/updateCenter/installStatus'].data = [
-              {
-                  name: 'git',
-                  type: 'InstallJob',
-                  installStatus: 'Success'
-              }
-            ];            
-
             $('.install-custom').click();
             
             // validate a call to installPlugins with our defaults
@@ -260,6 +262,25 @@ describe("pluginSetupWizard.js", function () {
             doit($, 'input[name="slack"]', 'check');
             
             doit($, '.install-selected', 'click');
+        });
+    });
+
+    it("resume install", function (done) {
+        var ajaxMappings = {
+    		'/jenkins/updateCenter/incompleteInstallStatus': {
+                status: 'ok',
+                data: {
+                	'msbuild': 'Success',
+                	'git': 'Pending',
+                	'other': 'Failed',
+                	'slack': 'Success'
+                }
+            }
+        };
+        test(function($) {
+        	expect($('.modal-title').text()).toBe('Resume Installation');
+        	expect($('*[data-name="msbuild"]').is('.success')).toBe(true);
+        	done();
         }, ajaxMappings);
     });
 

@@ -11,6 +11,7 @@ exports.recommendedPlugins = [
     "build-timeout",
     "timestamper",
     "antisamy-markup-formatter",
+    "cloudbees-credentials",
     "cloudbees-folder",
     "ant",
     "junit",

@@ -66,32 +66,38 @@ exports.idIfy = function(str) {
 /**
  * redirect
  */
-exports.go = function(url) {
+exports.goTo = function(url) {
     wh.getWindow().location.replace(exports.baseUrl() + url);
 };
 
 /**
- * Jenkins AJAX GET callback
+ * Jenkins AJAX GET callback.
+ * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
  */
-exports.get = function(url, success) {
+exports.get = function(url, success, options) {
 	if(debug) console.log('get: ' + url);
 	var $ = jquery.getJQuery();
-	$.ajax({
+	var args = {
 		url: exports.baseUrl() + url,
 		type: 'GET',
 	    cache: false,
 		dataType: 'json',
 		success: success
-	});
+	};
+	if(options instanceof Object) {
+		$.extend(args, options);
+	}
+	$.ajax(args);
 };
 
 /**
  * Jenkins AJAX POST callback, formats data as a JSON object post (note: works around prototype.js ugliness using stringify() above)
+ * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
  */
-exports.post = function(url, data, success) {
+exports.post = function(url, data, success, options) {
 	if(debug) console.log('post: ' + url);
 	var $ = jquery.getJQuery();
-    $.ajax({
+	var args = {
 		url: exports.baseUrl() + url,
 		type: 'POST',
 	    cache: false,
@@ -99,7 +105,11 @@ exports.post = function(url, data, success) {
 	    data: exports.stringify(data),
 	    contentType: "application/json",
 		success: success
-	});
+	};
+	if(options instanceof Object) {
+		$.extend(args, options);
+	}
+    $.ajax(args);
 };
 
 /**

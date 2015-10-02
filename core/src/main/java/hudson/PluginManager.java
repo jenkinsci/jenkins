@@ -948,42 +948,41 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doPlugins() {
         JSONArray response = new JSONArray();
-        Set<String> pluginSet = new HashSet<>();
+        Map<String,JSONObject> allPlugins = new HashMap<>();
+        for (PluginWrapper plugin : plugins) {
+            JSONObject pluginInfo = new JSONObject();
+            pluginInfo.put("installed", true);
+            pluginInfo.put("name", plugin.getShortName());
+            pluginInfo.put("title", plugin.getDisplayName());
+            pluginInfo.put("active", plugin.isActive());
+            pluginInfo.put("enabled", plugin.isEnabled());
+            pluginInfo.put("bundled", plugin.isBundled);
+            pluginInfo.put("deleted", plugin.isDeleted());
+            pluginInfo.put("downgradable", plugin.isDowngradable());
+            List<Dependency> dependencies = plugin.getDependencies();
+            if (dependencies != null && !dependencies.isEmpty()) {
+                Map<String, String> dependencyMap = new HashMap<>();
+                for (Dependency dependency : dependencies) {
+                    dependencyMap.put(dependency.shortName, dependency.version);
+                }
+                pluginInfo.put("dependencies", dependencyMap);
+            } else {
+                pluginInfo.put("dependencies", Collections.emptyMap());
+            }
+            response.add(pluginInfo);
+        }
         for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
             for (UpdateSite.Plugin plugin: site.getAvailables()) {
-                if (!pluginSet.contains(plugin.name)) {
-                    JSONObject pluginInfo = new JSONObject();
-                    pluginInfo.put("installed", false);
-                    pluginInfo.put("name", plugin.name);
-                    pluginInfo.put("title", plugin.getDisplayName());
-                    pluginInfo.put("excerpt", plugin.excerpt);
-                    pluginInfo.put("site", site.getId());
-                    pluginInfo.put("dependencies", plugin.dependencies);
-                    response.add(pluginInfo);
+                JSONObject pluginInfo = allPlugins.get(plugin.name);
+                if(pluginInfo == null) {
+                	pluginInfo = new JSONObject();
+                	pluginInfo.put("installed", false);
                 }
-            }
-        }
-        for (PluginWrapper plugin : plugins) {
-            if (!pluginSet.contains(plugin.getShortName())) {
-                JSONObject pluginInfo = new JSONObject();
-                pluginInfo.put("installed", true);
-                pluginInfo.put("name", plugin.getShortName());
+                pluginInfo.put("name", plugin.name);
                 pluginInfo.put("title", plugin.getDisplayName());
-                pluginInfo.put("active", plugin.isActive());
-                pluginInfo.put("enabled", plugin.isEnabled());
-                pluginInfo.put("bundled", plugin.isBundled);
-                pluginInfo.put("deleted", plugin.isDeleted());
-                pluginInfo.put("downgradable", plugin.isDowngradable());
-                List<Dependency> dependencies = plugin.getDependencies();
-                if (dependencies != null && !dependencies.isEmpty()) {
-                    Map<String, String> dependencyMap = new HashMap<>();
-                    for (Dependency dependency : dependencies) {
-                        dependencyMap.put(dependency.shortName, dependency.version);
-                    }
-                    pluginInfo.put("dependencies", dependencyMap);
-                } else {
-                    pluginInfo.put("dependencies", Collections.emptyMap());
-                }
+                pluginInfo.put("excerpt", plugin.excerpt);
+                pluginInfo.put("site", site.getId());
+                pluginInfo.put("dependencies", plugin.dependencies);
                 response.add(pluginInfo);
             }
         }
@@ -1120,6 +1119,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     private void trackInitialPluginInstall(@Nonnull final List<Future<UpdateCenter.UpdateCenterJob>> installJobs) {
+    	Jenkins.getActiveInstance().getUpdateCenter().updateInstallStatus();
         if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
             Jenkins.getActiveInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
             new Thread() {
@@ -1127,6 +1127,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 public void run() {
                     INSTALLING: while (true) {
                         try {
+                        	Jenkins.getActiveInstance().getUpdateCenter().updateInstallStatus();
                             Thread.sleep(500);
                             for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
                                 if(!jobFuture.isDone() && !jobFuture.isCancelled()) {
@@ -1138,6 +1139,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         }
                         break;
                     }
+                	Jenkins.getActiveInstance().getUpdateCenter().updateInstallStatus();
                     Jenkins.getActiveInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLED);
                     InstallUtil.saveLastExecVersion();
                 }

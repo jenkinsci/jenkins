@@ -23,21 +23,33 @@
  */
 package jenkins.install;
 
-import hudson.Functions;
-import hudson.util.VersionNumber;
-import jenkins.model.Jenkins;
-import jenkins.util.xml.XMLUtils;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
+import com.thoughtworks.xstream.XStream;
 
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
+import hudson.Functions;
+import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
+import hudson.model.UpdateCenter.DownloadJob.Installing;
+import hudson.model.UpdateCenter.InstallationJob;
+import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.util.VersionNumber;
+import jenkins.model.Jenkins;
+import jenkins.util.xml.XMLUtils;
 
 /**
  * Jenkins install utilities.
@@ -154,6 +166,10 @@ public class InstallUtil {
         return new File(Jenkins.getActiveInstance().getRootDir(), ".last_exec_version");
     }
 
+    static File getInstallingPluginsFile() {
+        return new File(Jenkins.getActiveInstance().getRootDir(), ".installing_plugins");
+    }
+
     private static String getCurrentExecVersion() {
         if (Jenkins.VERSION.equals(Jenkins.UNCOMPUTED_VERSION)) {
             // This should never happen!! Only adding this check in case someone moves the call to this method to the wrong place.
@@ -161,4 +177,54 @@ public class InstallUtil {
         }
         return Jenkins.VERSION;
     }
+    
+    /**
+     * Returns a list of any plugins that are persisted in the installing list
+     */
+    @SuppressWarnings("unchecked")
+	public static synchronized @CheckForNull Map<String,String> getPersistedInstallStatus() {
+        File installingPluginsFile = getInstallingPluginsFile();
+        if(installingPluginsFile == null || !installingPluginsFile.exists()) {
+        	return null;
+        }
+        return (Map<String,String>)new XStream().fromXML(installingPluginsFile);
+    }
+    
+    /**
+     * Persists a list of installing plugins; this is used in the case Jenkins fails mid-installation and needs to be restarted
+     * @param installingPlugins
+     */
+    public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
+        File installingPluginsFile = getInstallingPluginsFile();
+    	if(installingPlugins == null || installingPlugins.isEmpty()) {
+    		installingPluginsFile.delete();
+    		return;
+    	}
+    	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());
+    	Map<String,String> statuses = new HashMap<String,String>();
+    	for(UpdateCenterJob j : installingPlugins) {
+    		if(j instanceof InstallationJob && j.getCorrelationId() != null) { // only include install jobs with a correlation id (directly selected)
+    			InstallationJob ij = (InstallationJob)j;
+    			InstallationStatus status = ij.status;
+    			String statusText = status.getType();
+    			if(status instanceof Installing) { // flag currently installing plugins as pending
+    				statusText = "Pending";
+    			}
+    			statuses.put(ij.plugin.name, statusText);
+    		}
+    	}
+        try {
+        	String installingPluginXml = new XStream().toXML(statuses);
+            FileUtils.write(installingPluginsFile, installingPluginXml);
+        } catch (IOException e) {
+            LOGGER.log(SEVERE, "Failed to save " + installingPluginsFile.getAbsolutePath(), e);
+        }
+    }
+
+    /**
+     * Call to remove any active install status
+     */
+	public static void clearInstallStatus() {
+		persistInstallStatus(null);
+	}
 }

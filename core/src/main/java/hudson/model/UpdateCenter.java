@@ -54,6 +54,7 @@ import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
 import jenkins.install.InstallState;
+import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
@@ -303,6 +304,58 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
+    
+    /**
+     * Called to bypass install wizard
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doCompleteInstall() {
+    	if(isRestartRequiredForCompletion()) {
+    		Jenkins.getActiveInstance().setInstallState(InstallState.RESTART);
+    	}
+        InstallUtil.saveLastExecVersion();
+        return HttpResponses.okJSON();
+    }
+    
+    /**
+     * Called to determine if there was an incomplete installation, what the statuses of the plugins are
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doIncompleteInstallStatus() {
+        try {
+        	Map<String,String> jobs = InstallUtil.getPersistedInstallStatus();
+        	if(jobs == null) {
+        		jobs = Collections.emptyMap();
+        	}
+            return HttpResponses.okJSON(jobs);
+        } catch (Exception e) {
+            return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
+        }
+    }
+    
+    /**
+     * Called to persist the current install statuses
+     */
+    public synchronized void updateInstallStatus() {
+        List<UpdateCenterJob> jobs = getJobs();
+        
+        boolean activeInstalls = false;
+        for (UpdateCenterJob job : jobs) {
+            if (job instanceof InstallationJob) {
+                InstallationJob installationJob = (InstallationJob) job;
+                if(!installationJob.status.isSuccess()) {
+                	activeInstalls = true;
+                }
+            }
+        }
+        
+        if(activeInstalls) {
+        	InstallUtil.persistInstallStatus(jobs); // save this info
+        }
+        else {
+        	InstallUtil.clearInstallStatus(); // clear this info
+        }
+    }
 
     /**
      * Get the current installation status of a plugin set.
@@ -330,6 +383,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         pluginInfo.put("version", installationJob.plugin.version);
                         pluginInfo.put("title", installationJob.plugin.title);
                         pluginInfo.put("installStatus", installationJob.status.getType());
+                        pluginInfo.put("requiresRestart", Boolean.toString(installationJob.status.requiresRestart()));
                         if (jobCorrelationId != null) {
                             pluginInfo.put("correlationId", jobCorrelationId.toString());
                         }
