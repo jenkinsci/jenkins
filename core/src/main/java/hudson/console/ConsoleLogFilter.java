@@ -26,18 +26,14 @@ package hudson.console;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.Build;
-import hudson.model.Job;
-import hudson.model.Node;
+import hudson.model.Computer;
 import hudson.model.Run;
-import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.util.ArgumentListBuilder;
-import jenkins.model.Jenkins;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -56,7 +52,7 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      * Called on the start of each build, giving extensions a chance to intercept
      * the data that is written to the log.
      *
-     * @deprecated as of 1.630. Use {@link #decorateLogger(Run, OutputStream)}
+     * @deprecated as of 1.632. Use {@link #decorateLogger(Run, OutputStream)}
      */
     public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
         if (Util.isOverridden(ConsoleLogFilter.class, getClass(), "decorateLogger", Run.class, OutputStream.class)) {
@@ -89,6 +85,18 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
             // this ConsoleLogFilter can only decorate AbstractBuild, so just pass through
             return logger;
         }
+    }
+
+    /**
+     * Called to decorate logger for master/slave communication.
+     *
+     * @param computer
+     *      Slave computer for which the logger is getting decorated. Useful to do
+     *      contextual decoration.
+     * @since 1.632
+     */
+    public OutputStream decorateLogger(@Nonnull Computer computer, OutputStream logger) throws IOException, InterruptedException {
+        return logger;      // by default no-op
     }
 
     /**
