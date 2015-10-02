@@ -76,6 +76,11 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         if (!pluginTRs) {
             return;
         }
+
+        var pluginI18n = select('.plugins.i18n');
+        function i18n(messageId) {
+            return pluginI18n.readAttribute('data-' + messageId);
+        }
         
         // Create a map of the plugin rows, making it easy to index them.
         var plugins = {};
@@ -176,7 +181,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 var dependenciesDiv = pluginMetadata.dependenciesDiv;
                 var dependencySpans = pluginMetadata.dependencies;
 
-                infoContainer.update('<div class="title">This plugin cannot be enabled</div><div class="subtitle">It has one or more disabled dependencies.</div>');
+                infoContainer.update('<div class="title">' + i18n('cannot-enable') + '</div><div class="subtitle">' + i18n('disabled-dependencies') + '.</div>');
                 
                 // Go through each dependency <span> element. Show the spans where the dependency is
                 // disabled. Hide the others. 
@@ -203,7 +208,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     var dependantsDiv = pluginMetadata.dependantsDiv;
                     var dependantSpans = pluginMetadata.dependants;
 
-                    infoContainer.update('<div class="title">This plugin cannot be disabled</div><div class="subtitle">It has one or more enabled plugins that depend on it.</div>');
+                    infoContainer.update('<div class="title">' + i18n('cannot-disable') + '</div><div class="subtitle">' + i18n('enabled-dependants') + '.</div>');
                     
                     // Go through each dependant <span> element. Show the spans where the dependant is
                     // enabled. Hide the others. 
@@ -241,7 +246,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 var dependantsDiv = pluginMetadata.dependantsDiv;
                 var dependantSpans = pluginMetadata.dependants;
 
-                infoContainer.update('<div class="title">This plugin cannot be uninstalled</div><div class="subtitle">It has one or more plugins that depend on it.</div>');
+                infoContainer.update('<div class="title">' + i18n('cannot-uninstall') + '</div><div class="subtitle">' + i18n('installed-dependants') + '.</div>');
                 
                 // Go through each dependant <span> element. Show them all. 
                 for (var i = 0; i < dependantSpans.length; i++) {

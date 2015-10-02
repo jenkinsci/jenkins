@@ -38,6 +38,14 @@ THE SOFTWARE.
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
       <div class="pane-frame">
+        <div class="plugins i18n" 
+             data-cannot-enable="${%This plugin cannot be enabled}" 
+             data-cannot-disable="${%This plugin cannot be disabled}" 
+             data-cannot-uninstall="${%This plugin cannot be uninstalled}" 
+             data-disabled-dependencies="${%It has one or more disabled dependencies}" 
+             data-enabled-dependants="${%It has one or more enabled plugins that depend on it}" 
+             data-installed-dependants="${%It has one or more installed plugins that depend on it}" 
+        />
         <table id="plugins" class="pane bigtable sortable stripped-odd">
           <j:choose>
             <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">

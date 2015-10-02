@@ -1770,3 +1770,7 @@ table#legend-table td {
     color: #f8f8f8;
     border: 1px solid #e39280;
 }
+
+.i18n {
+    display: none;
+}
