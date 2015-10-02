@@ -79,14 +79,14 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 
         var pluginI18n = select('.plugins.i18n');
         function i18n(messageId) {
-            return pluginI18n.readAttribute('data-' + messageId);
+            return pluginI18n.getAttribute('data-' + messageId);
         }
         
         // Create a map of the plugin rows, making it easy to index them.
         var plugins = {};
         for (var i = 0; i < pluginTRs.length; i++) {
             var pluginTR = pluginTRs[i];
-            var pluginId = pluginTR.readAttribute('data-plugin-id');
+            var pluginId = pluginTR.getAttribute('data-plugin-id');
             
             plugins[pluginId] = pluginTR;
         }
@@ -95,14 +95,19 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             return plugins[pluginId];
         }
         function getPluginName(pluginId) {
-            return getPluginTR(pluginId).readAttribute('data-plugin-name');
+            var pluginTR = getPluginTR(pluginId);
+            if (pluginTR) {
+                return pluginTR.getAttribute('data-plugin-name');
+            } else {
+                return pluginId;
+            }
         }
         
         function processSpanSet(spans) {
             var ids = [];
             for (var i = 0; i < spans.length; i++) {
                 var span = spans[i];
-                var pluginId = span.readAttribute('data-plugin-id');
+                var pluginId = span.getAttribute('data-plugin-id');
                 var pluginName = getPluginName(pluginId);
                 
                 span.update(pluginName);
@@ -117,7 +122,17 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             
             if (dependantIds) {
                 for (var i = 0; i < dependantIds.length; i++) {
-                    var dependantPluginTr = getPluginTR(dependantIds[i]);
+                    var dependantId = dependantIds[i];
+
+                    if (dependantId === 'jenkins-core') {
+                        // Jenkins core is always enabled. So, make sure it's not possible to disable/uninstall
+                        // any plugins that it "depends" on. (we sill have bundled plugins)
+                        pluginTR.removeClassName('all-dependants-disabled');
+                        return;
+                    }
+                    
+                    // The dependant is a plugin....
+                    var dependantPluginTr = getPluginTR(dependantId);
                     if (dependantPluginTr && dependantPluginTr.jenkinsPluginMetadata.enableInput.checked) {
                         // One of the plugins that depend on this plugin, is marked as enabled.
                         pluginTR.removeClassName('all-dependants-disabled');
@@ -187,7 +202,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 // disabled. Hide the others. 
                 for (var i = 0; i < dependencySpans.length; i++) {
                     var dependencySpan = dependencySpans[i];
-                    var pluginId = dependencySpan.readAttribute('data-plugin-id');
+                    var pluginId = dependencySpan.getAttribute('data-plugin-id');
                     var depPluginTR = getPluginTR(pluginId);
                     var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
                     if (depPluginMetadata.enableInput.checked) {
@@ -214,15 +229,21 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     // enabled. Hide the others. 
                     for (var i = 0; i < dependantSpans.length; i++) {
                         var dependantSpan = dependantSpans[i];
-                        var pluginId = dependantSpan.readAttribute('data-plugin-id');
-                        var depPluginTR = getPluginTR(pluginId);
-                        var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
-                        if (depPluginMetadata.enableInput.checked) {
-                            // It's disabled ... hide the span
+                        var dependantId = dependantSpan.getAttribute('data-plugin-id');
+                        
+                        if (dependantId === 'jenkins-core') {
+                            // show the span
                             dependantSpan.setStyle({display: 'inline-block'});
                         } else {
-                            // It's enabled ... show the span
-                            dependantSpan.setStyle({display: 'none'});
+                            var depPluginTR = getPluginTR(dependantId);
+                            var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
+                            if (depPluginMetadata.enableInput.checked) {
+                                // It's enabled ... show the span
+                                dependantSpan.setStyle({display: 'inline-block'});
+                            } else {
+                                // It's disabled ... hide the span
+                                dependantSpan.setStyle({display: 'none'});
+                            }
                         }
                     }
                     

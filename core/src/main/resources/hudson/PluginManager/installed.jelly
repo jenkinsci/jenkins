@@ -43,8 +43,8 @@ THE SOFTWARE.
              data-cannot-disable="${%This plugin cannot be disabled}" 
              data-cannot-uninstall="${%This plugin cannot be uninstalled}" 
              data-disabled-dependencies="${%It has one or more disabled dependencies}" 
-             data-enabled-dependants="${%It has one or more enabled plugins that depend on it}" 
-             data-installed-dependants="${%It has one or more installed plugins that depend on it}" 
+             data-enabled-dependants="${%It has one or more enabled dependants}" 
+             data-installed-dependants="${%It has one or more installed dependants}" 
         />
         <table id="plugins" class="pane bigtable sortable stripped-odd">
           <j:choose>
