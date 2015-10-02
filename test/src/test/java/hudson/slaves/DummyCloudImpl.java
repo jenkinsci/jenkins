@@ -34,7 +34,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+
+import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import javax.xml.ws.Provider;
 
 /**
  * {@link Cloud} implementation useful for testing.
@@ -64,10 +69,24 @@ public class DummyCloudImpl extends Cloud {
      */
     public Label label;
 
+    public List<NodeProperty<?>> getNodeProperties() {
+        return this.nodeProperties;
+    }
+
+    List<NodeProperty<?>> nodeProperties =
+            new ArrayList<NodeProperty<?>>();
+
     public DummyCloudImpl(JenkinsRule rule, int delay) {
         super("test");
         this.rule = rule;
         this.delay = delay;
+    }
+
+    public DummyCloudImpl(JenkinsRule rule, int delay, List<NodeProperty<?>> nodeProperties) {
+        super("test");
+        this.rule = rule;
+        this.delay = delay;
+        this.nodeProperties = nodeProperties;
     }
 
     public Collection<PlannedNode> provision(Label label, int excessWorkload) {
@@ -105,7 +124,17 @@ public class DummyCloudImpl extends Cloud {
             Thread.sleep(time);
             
             System.out.println("launching slave");
-            DumbSlave slave = rule.createSlave(label);
+            final DumbSlave slave = rule.createSlave(label);
+            Provider<NodeProperty> nodePropertyProvider = new Provider<NodeProperty>() {
+                @Override
+                public NodeProperty invoke(NodeProperty request) {
+                    request.setNode(slave);
+                    return request;
+                }
+            };
+            for (NodeProperty nodeProperty : nodeProperties) {
+                slave.getNodeProperties().add(nodePropertyProvider.invoke(nodeProperty));
+            }
             computer = slave.toComputer();
             computer.connect(false).get();
             synchronized (DummyCloudImpl.this) {
