@@ -121,6 +121,15 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             var dependantIds = jenkinsPluginMetadata.dependantIds;
             
             if (dependantIds) {
+                // If the only dependant is jenkins-core (it's a bundle plugin), then lets
+                // treat it like all its dependants are disabled. We're really only interested in
+                // dependant plugins in this case.
+                // Note: This does not cover "implied" dependencies ala detached plugins. See https://goo.gl/lQHrUh
+                if (dependantIds.length === 1 && dependantIds[0] === 'jenkins-core') {
+                    pluginTR.addClassName('all-dependants-disabled');
+                    return;
+                }
+
                 for (var i = 0; i < dependantIds.length; i++) {
                     var dependantId = dependantIds[i];
 
@@ -218,8 +227,19 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 infoContainer.appendChild(dependenciesDiv);
                 
                 return true;
-            } else if (pluginTR.hasClassName('has-dependants')) {
+            } if (pluginTR.hasClassName('has-dependants')) {
                 if (!pluginTR.hasClassName('all-dependants-disabled')) {
+                    var dependantIds = pluginMetadata.dependantIds;
+                    
+                    // If the only dependant is jenkins-core (it's a bundle plugin), then lets
+                    // treat it like all its dependants are disabled. We're really only interested in
+                    // dependant plugins in this case.
+                    // Note: This does not cover "implied" dependencies ala detached plugins. See https://goo.gl/lQHrUh
+                    if (dependantIds.length === 1 && dependantIds[0] === 'jenkins-core') {
+                        pluginTR.addClassName('all-dependants-disabled');
+                        return false;
+                    }
+                    
                     var dependantsDiv = pluginMetadata.dependantsDiv;
                     var dependantSpans = pluginMetadata.dependants;
 
