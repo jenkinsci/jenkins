@@ -35,6 +35,11 @@ THE SOFTWARE.
             ${%Filter}:
             <input type="text" id="filter-box"/>
         </div>
+
+      <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
+        <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
+      </j:if>
+        
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
       <div class="pane-frame">
