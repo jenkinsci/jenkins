@@ -78,6 +78,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerResponse;
 
 import static java.util.logging.Level.*;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.RunAction2;
 
 
@@ -171,9 +173,12 @@ public class SCMTrigger extends Trigger<Item> {
 
     /**
      * Returns the file that records the last/current polling activity.
+     * @return File or null if the {@link Item} has not been specified for
+     *         this trigger.
      */
+    @CheckForNull
     public File getLogFile() {
-        return new File(job.getRootDir(),"scm-polling.log");
+        return job != null ? new File(job.getRootDir(),"scm-polling.log") : null;
     }
 
     @Extension
@@ -486,7 +491,10 @@ public class SCMTrigger extends Trigger<Item> {
         
         /**
          * Where the log file is written.
+         * @return File or null if the {@link Item} has not been specified for
+         *         this trigger.
          */
+        @CheckForNull
         public File getLogFile() {
             return SCMTrigger.this.getLogFile();
         }
@@ -513,17 +521,17 @@ public class SCMTrigger extends Trigger<Item> {
             return Util.getTimeSpanString(System.currentTimeMillis()-startTime);
         }
 
-        private boolean runPolling() {
+        private boolean runPolling(@Nonnull SCMTriggerItem job, @Nonnull File logFile) {
             try {
                 // to make sure that the log file contains up-to-date text,
                 // don't do buffering.
-                StreamTaskListener listener = new StreamTaskListener(getLogFile());
+                StreamTaskListener listener = new StreamTaskListener(logFile);
 
                 try {
                     PrintStream logger = listener.getLogger();
                     long start = System.currentTimeMillis();
                     logger.println("Started on "+ DateFormat.getDateTimeInstance().format(new Date()));
-                    boolean result = job().poll(listener).hasChanges();
+                    boolean result = job.poll(listener).hasChanges();
                     logger.println("Done. Took "+ Util.getTimeSpanString(System.currentTimeMillis()-start));
                     if(result)
                         logger.println("Changes found");
@@ -552,12 +560,24 @@ public class SCMTrigger extends Trigger<Item> {
             Thread.currentThread().setName("SCM polling for "+job);
             try {
                 startTime = System.currentTimeMillis();
-                if(runPolling()) {
-                    SCMTriggerItem p = job();
+                
+                SCMTriggerItem p = job();
+                if (p == null) {
+                    throw new IllegalStateException("SCMTrigger has been launched against the job, "
+                            + "which cannot be converted to SCMTriggerItem");
+                }
+                
+                final File logFile = getLogFile();
+                if (logFile == null) {
+                    // Should never happen, because there is a job value check above
+                    throw new IllegalStateException("Cannot retrieve the log file for SCMTrigger when the job is specified");
+                }
+                            
+                if(runPolling(p, logFile)) {           
                     String name = " #"+p.getNextBuildNumber();
                     SCMTriggerCause cause;
                     try {
-                        cause = new SCMTriggerCause(getLogFile());
+                        cause = new SCMTriggerCause(logFile);
                     } catch (IOException e) {
                         LOGGER.log(WARNING, "Failed to parse the polling log",e);
                         cause = new SCMTriggerCause();
@@ -581,15 +601,19 @@ public class SCMTrigger extends Trigger<Item> {
         public boolean equals(Object that) {
             return that instanceof Runner && job == ((Runner) that)._job();
         }
+        
+        @CheckForNull
         private Item _job() {return job;}
 
         @Override
         public int hashCode() {
-            return job.hashCode();
+            // No job => we cannot stack up triggers by their hashes in execution queues
+            return job != null ? job.hashCode() : super.hashCode();
         }
     }
 
     @SuppressWarnings("deprecation")
+    @CheckForNull
     private SCMTriggerItem job() {
         return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
     }
