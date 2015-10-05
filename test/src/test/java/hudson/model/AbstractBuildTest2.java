@@ -48,7 +48,7 @@ public class AbstractBuildTest2 {
     @Test
     @Issue("JENKINS-30730")
     @SuppressWarnings("deprecation")
-    public void reportErrorShouldNotFailForNionPublisherClass() throws Exception {
+    public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = rule.createFreeStyleProject();
         prj.addProperty(new ErrorneousJobProperty());
         QueueTaskFuture<FreeStyleBuild> future = prj.scheduleBuild2(0);     
@@ -72,14 +72,13 @@ public class AbstractBuildTest2 {
             throw new IOException(ERROR_MESSAGE);
         }
         
-        @TestExtension("reportErrorShouldNotFailForNionPublisherClass")
+        @TestExtension("reportErrorShouldNotFailForNonPublisherClass")
         public static class DescriptorImpl extends JobPropertyDescriptor {
 
             @Override
             public String getDisplayName() {
                 return "Always throws exception in perform()";
-            }
-            
+            }  
         }
     }
 }
