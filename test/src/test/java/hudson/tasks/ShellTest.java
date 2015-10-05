@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -45,9 +46,7 @@ public class ShellTest {
 
     @Test
     public void testBasic() throws Exception {
-        // If we're on Windows, don't bother doing this.
-        if (Functions.isWindows())
-            return;
+        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
         PretendSlave s = rule.createPretendSlave(new FakeLauncher() {

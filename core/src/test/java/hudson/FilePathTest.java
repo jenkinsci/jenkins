@@ -58,6 +58,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -464,7 +465,7 @@ public class FilePathTest {
     }
 
     @Test public void symlinkInTar() throws Exception {
-        if (Functions.isWindows())  return; // can't test on Windows
+        assumeFalse("can't test on Windows", Functions.isWindows());
 
         FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");

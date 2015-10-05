@@ -123,11 +123,13 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
+        label.reset(); // Make sure cached value is not used
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
         for(int i =0; i< cloud.size(); i ++){
             TagCloud.Entry e = cloud.get(i);
-            if(e.item.equals(j.jenkins.getLabel("label1"))){
+            if(e.item.equals(label)){
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
             }
             else{
@@ -256,7 +258,9 @@ public class NodeTest {
         Integer labelCount = RunLoadCounter.assertMaxLoads(mavenProject, 0, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return j.jenkins.getLabel("label1").getTiedJobCount();
+                final Label label = j.jenkins.getLabel("label1");
+                label.reset(); // Make sure cached value is not used
+                return label.getTiedJobCount();
             }
         });
 
@@ -291,15 +295,16 @@ public class NodeTest {
         node1.setLabelString("label1");
 
         MavenModuleSet project = j.createMavenProject();
-        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
 
         MavenModuleSet project2 = j.createMavenProject();
-        project2.setAssignedLabel(j.jenkins.getLabel("label1"));
+        project2.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project2.scheduleBuild2(0).get());
 
-        assertEquals("Two jobs should be tied to this label.",
-                2, j.jenkins.getLabel("label1").getTiedJobCount());
+        label.reset(); // Make sure cached value is not used
+        assertEquals("Two jobs should be tied to this label.", 2, label.getTiedJobCount());
     }
 
     /**
@@ -312,12 +317,13 @@ public class NodeTest {
         node.setLabelString("label1");
 
         MavenModuleSet project = j.createMavenProject();
-        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
 
         project.setAssignedLabel(null);
-        assertEquals("Label1 should have no tied jobs after the job label was removed.",
-                0, j.jenkins.getLabel("label1").getTiedJobCount());
+        label.reset(); // Make sure cached value is not used
+        assertEquals("Label1 should have no tied jobs after the job label was removed.", 0, label.getTiedJobCount());
     }
 
     /**

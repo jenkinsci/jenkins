@@ -34,6 +34,8 @@ import java.io.File;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.*;
+
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,10 +48,7 @@ public class LauncherTest {
 
     @Issue("JENKINS-4611")
     @Test public void remoteKill() throws Exception {
-        if (File.pathSeparatorChar != ':') {
-            System.err.println("Skipping, currently Unix-specific test");
-            return;
-        }
+        Assume.assumeFalse("Skipping, currently Unix-specific test", Functions.isWindows());
 
         File tmp = temp.newFile();
 

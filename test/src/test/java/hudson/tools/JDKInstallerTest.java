@@ -7,6 +7,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.tools.JDKInstaller.DescriptorImpl;
+
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -105,9 +107,7 @@ public class JDKInstallerTest {
      */
     @Test
     public void locate() throws Exception {
-        // this is a really time consuming test, so only run it when we really want.
-        if(!Boolean.getBoolean("jenkins.testJDKInstaller"))
-            return;
+        Assume.assumeTrue("this is a really time consuming test, so only run it when we really want", Boolean.getBoolean("jenkins.testJDKInstaller"));
 
         retrieveUpdateCenterData();
 
@@ -148,9 +148,7 @@ public class JDKInstallerTest {
      * End-to-end installation test.
      */
     private void doTestAutoInstallation(String id, String fullversion) throws Exception {
-        // this is a really time consuming test, so only run it when we really want
-        if(!Boolean.getBoolean("jenkins.testJDKInstaller"))
-            return;
+        Assume.assumeTrue("this is a really time consuming test, so only run it when we really want", Boolean.getBoolean("jenkins.testJDKInstaller"));
 
         retrieveUpdateCenterData();
 
@@ -177,9 +175,7 @@ public class JDKInstallerTest {
      */
     @Test
     public void fakeUnixInstall() throws Exception {
-        // If we're on Windows, don't bother doing this.
-        if (Functions.isWindows())
-            return;
+        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         File bundle = File.createTempFile("fake-jdk-by-hudson","sh");
         try {

@@ -55,7 +55,24 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="bug">
+    Optimize TagCloud size calculation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30705">issue 30705</a>)
+  <li class="bug">
+    FlyWeightTasks tied to a label will not cause node provisioning and will be blocked forever.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30084">issue 30084</a>)
+  <li class="bug">
+    Prevent <code>NullPointerException</code> for disabled builds in <code>ReverseBuildTrigger</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-29876">issue 29876</a>)
+  <li class="rfe">
+    ConsoleLogFilter wasn't truly global
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30777">issue 30777</a>)
+  <li class="rfe">
+    API changes: <code>hudson.Util.isOverridden()</code> now supports protected methods.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30002">issue 30002</a>)
+  <li class="bug">
+    Sidepanel controls with confirmation (<code>lib/layout/task</code>) did not assign the proper CSS style.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30787">issue 30787</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v1.631>What's new in 1.631</a> (2015/09/27)</h3>
