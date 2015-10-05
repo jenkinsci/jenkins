@@ -59,7 +59,7 @@ public class CommandLauncherTest {
 
     @RandomlyFails("Sometimes gets `EOFException: unexpected stream termination` before then on CI builder; maybe needs to wait in a loop for a message to appear?")
     @Test
-    public void commandSuceedsWithoutChannel() throws Exception {
+    public void commandSucceedsWithoutChannel() throws Exception {
         assumeTrue(!Functions.isWindows());
         DumbSlave slave = createSlave("true");
 
