@@ -334,9 +334,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
     
     /**
-     * Called to persist the current install statuses
+     * Called to persist the currently installing plugin states. This allows
+     * us to support install resume if Jenkins is restarted while plugins are
+     * being installed.
      */
-    public synchronized void updateInstallStatus() {
+    public synchronized void persistInstallStatus() {
         List<UpdateCenterJob> jobs = getJobs();
         
         boolean activeInstalls = false;

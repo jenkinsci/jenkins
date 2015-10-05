@@ -1119,15 +1119,18 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     private void trackInitialPluginInstall(@Nonnull final List<Future<UpdateCenter.UpdateCenterJob>> installJobs) {
-    	Jenkins.getActiveInstance().getUpdateCenter().updateInstallStatus();
-        if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
-            Jenkins.getActiveInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
+        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final UpdateCenter updateCenter = jenkins.getUpdateCenter();
+        
+        updateCenter.persistInstallStatus();
+        if (jenkins.getInstallState() == InstallState.NEW) {
+            jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
             new Thread() {
                 @Override
                 public void run() {
                     INSTALLING: while (true) {
                         try {
-                        	Jenkins.getActiveInstance().getUpdateCenter().updateInstallStatus();
+                        	updateCenter.persistInstallStatus();
                             Thread.sleep(500);
                             for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
                                 if(!jobFuture.isDone() && !jobFuture.isCancelled()) {
@@ -1139,8 +1142,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         }
                         break;
                     }
-                	Jenkins.getActiveInstance().getUpdateCenter().updateInstallStatus();
-                    Jenkins.getActiveInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLED);
+                	updateCenter.persistInstallStatus();
+                    jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLED);
                     InstallUtil.saveLastExecVersion();
                 }
             }.start();
