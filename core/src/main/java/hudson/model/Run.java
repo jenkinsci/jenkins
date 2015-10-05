@@ -1710,7 +1710,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     // Global log filters
                     for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
-                        logger = filter.decorateLogger((AbstractBuild) build, logger);
+                        logger = filter.decorateLogger(build, logger);
                     }
 
                     // Project specific log filters

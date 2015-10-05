@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.When;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.console.ConsoleLogFilter;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.ExecutorListener;
@@ -137,8 +138,22 @@ public class SlaveComputer extends Computer {
     public SlaveComputer(Slave slave) {
         super(slave);
         this.log = new ReopenableRotatingFileOutputStream(getLogFile(),10);
-        this.taskListener = new StreamTaskListener(log);
+        this.taskListener = new StreamTaskListener(decorate(this.log));
         assert slave.getNumExecutors()!=0 : "Computer created with 0 executors";
+    }
+
+    /**
+     * Uses {@link ConsoleLogFilter} to decorate logger.
+     */
+    private OutputStream decorate(OutputStream os) {
+        for (ConsoleLogFilter f : ConsoleLogFilter.all()) {
+            try {
+                os = f.decorateLogger(this,os);
+            } catch (IOException|InterruptedException e) {
+                LOGGER.log(Level.WARNING, "Failed to filter log with "+f, e);
+            }
+        }
+        return os;
     }
 
     /**
@@ -843,4 +858,6 @@ public class SlaveComputer extends Computer {
             return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(SlaveComputer.class.getName());
 }

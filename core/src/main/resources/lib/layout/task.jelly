@@ -167,7 +167,7 @@ THE SOFTWARE.
 
           <j:choose>
             <j:when test="${requiresConfirmation and not attrs.onClick}">
-              <l:confirmationLink href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+              <l:confirmationLink class="task-icon-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
                 <j:choose>
                   <j:when test="${iconMetadata != null}">
                     <l:icon class="${iconMetadata.classSpec}" style="width: 24px; height: 24px; margin: 2px;" />
