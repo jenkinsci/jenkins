@@ -27,13 +27,14 @@ import hudson.Launcher;
 import hudson.model.queue.QueueTaskFuture;
 import java.io.IOException;
 import java.util.Arrays;
-import org.hamcrest.Matchers;
-import static org.junit.Assert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * Unit tests of {@link AbstractBuild}.
@@ -51,12 +52,12 @@ public class AbstractBuildTest2 {
         FreeStyleProject prj = rule.createFreeStyleProject();
         prj.addProperty(new ErrorneousJobProperty());
         QueueTaskFuture<FreeStyleBuild> future = prj.scheduleBuild2(0);     
-        assertThat("Build was actually scheduled", future, Matchers.notNullValue());
+        assertThat("Build should be actually scheduled by Jenkins", future, notNullValue());
         FreeStyleBuild build = future.get();
-        assertThat("Build log contains the error message", build.getLog(), 
-                Matchers.stringContainsInOrder(Arrays.asList(ErrorneousJobProperty.ERROR_MESSAGE)));
-        assertThat("Build log does not contain the class cast error", build.getLog(), 
-                Matchers.not(Matchers.stringContainsInOrder(Arrays.asList(ClassCastException.class.getName()))));
+        assertThat("Build should contain the error message", build.getLog(), 
+                stringContainsInOrder(Arrays.asList(ErrorneousJobProperty.ERROR_MESSAGE)));
+        assertThat("Build log should not contain the class cast error", build.getLog(), 
+                not(stringContainsInOrder(Arrays.asList(ClassCastException.class.getName()))));
     }
     
     /**
