@@ -101,7 +101,9 @@ THE SOFTWARE.
       </tr>
     </j:if>
   </l:pane>
-  <script defer="true">
-    updateBuildHistory("${it.baseUrl}/buildHistory/ajax",${it.nextBuildNumberToFetch});
-  </script>
+  <j:if test="!empty(it.nextBuildNumberToFetch)">
+    <script defer="true">
+      updateBuildHistory("${it.baseUrl}/buildHistory/ajax", ${it.nextBuildNumberToFetch});
+    </script>
+  </j:if>
 </j:jelly>
