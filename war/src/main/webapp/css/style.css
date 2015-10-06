@@ -1221,6 +1221,86 @@ TABLE.fingerprint-in-build TD {
   background-color: #e8eeee;
 }
 
+#plugins input.uninstall {
+  font-size: 11px;
+  padding: 3px 5px;
+  border-radius: 1px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  background-color: #4b758b;
+  color: #eee;
+  border: 1px solid #5788a1;
+}
+
+#plugins tr.has-dependants input.uninstall {
+  background-color: #e0e0e0;
+  border: 1px solid #cccccc;
+  color: #505050;
+  background-color: white;
+}
+
+#plugins tr.all-dependants-disabled .enable input {
+  pointer-events: auto;
+  opacity: 1.0;
+  visibility: visible;
+}
+
+#plugins tr.has-dependants input, #plugins tr.has-disabled-dependency .enable input {
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+#plugins tr.has-disabled-dependency .enable input {
+  opacity: 0.4;
+}
+
+#plugins tr.deleted input {
+  visibility: hidden !important;
+}
+
+#plugins .dependant-list, #plugins .dependency-list {
+  display: none;
+}
+
+#plugins .enable-state-info, #plugins .uninstall-state-info {
+    padding: 5px 20px;
+    max-width: 70%;
+    border: solid 1px #f0ad4e;
+    border-radius: 3px;
+    text-align: center;
+}
+
+#plugins .enable-state-info {
+    float: left;
+}
+
+#plugins .uninstall-state-info {
+    float: right;
+}
+
+#plugins .plugin-dependency-info .title, #plugins .plugin-dependency-info .subtitle {
+    opacity: 0.7;
+}
+#plugins .plugin-dependency-info .title {
+    margin-bottom: 5px;
+    font-size: larger;
+    font-weight: bolder;
+}
+
+#plugins .plugin-dependency-info span {
+    margin: 5px 5px 0px 0px;
+    background-color: #337ab7;
+    display: inline-block;
+    padding: .2em .6em .3em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+}
 
 /* ========================= repeatable elements ========================= */
 
@@ -1689,4 +1769,21 @@ table#legend-table td {
     background-color: #e5958c;
     color: #f8f8f8;
     border: 1px solid #e39280;
+}
+
+.i18n {
+    display: none;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
 }
