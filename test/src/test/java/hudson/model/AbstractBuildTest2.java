@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.Launcher;
 import hudson.model.queue.QueueTaskFuture;
 import java.io.IOException;
-import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -50,14 +49,13 @@ public class AbstractBuildTest2 {
     @SuppressWarnings("deprecation")
     public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = rule.createFreeStyleProject();
-        prj.addProperty(new ErrorneousJobProperty());
+        ErrorneousJobProperty errorneousJobProperty = new ErrorneousJobProperty();
+        prj.addProperty(errorneousJobProperty);
         QueueTaskFuture<FreeStyleBuild> future = prj.scheduleBuild2(0);     
         assertThat("Build should be actually scheduled by Jenkins", future, notNullValue());
         FreeStyleBuild build = future.get();
-        assertThat("Build should contain the error message", build.getLog(), 
-                stringContainsInOrder(Arrays.asList(ErrorneousJobProperty.ERROR_MESSAGE)));
-        assertThat("Build log should not contain the class cast error", build.getLog(), 
-                not(stringContainsInOrder(Arrays.asList(ClassCastException.class.getName()))));
+        rule.assertLogContains(ErrorneousJobProperty.ERROR_MESSAGE, build);
+        rule.assertLogNotContains(ClassCastException.class.getName(), build);
     }
     
     /**

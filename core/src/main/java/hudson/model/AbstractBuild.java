@@ -752,9 +752,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             if (e instanceof AbortException) {
                 LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, buildStep});
-                listener.error("Step '" + buildStep + "' failed: " + e.getMessage());
+                listener.error("Step ‘" + buildStep + "’ failed: " + e.getMessage());
             } else {
-                String msg = "Step '" + buildStep + "' aborted due to exception: ";
+                String msg = "Step ‘" + buildStep + "’ aborted due to exception: ";
                 e.printStackTrace(listener.error(msg));
                 LOGGER.log(WARNING, msg, e);
             }
