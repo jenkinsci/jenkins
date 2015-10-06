@@ -26,7 +26,6 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -40,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RandomlyFails;
 
 public class CommandLauncherTest {
 
@@ -57,8 +57,9 @@ public class CommandLauncherTest {
         assertThat(log, not(containsString("ERROR: Process terminated with exit code 0")));
     }
 
+    @RandomlyFails("Sometimes gets `EOFException: unexpected stream termination` before then on CI builder; maybe needs to wait in a loop for a message to appear?")
     @Test
-    public void commandSuceedsWithoutChannel() throws Exception {
+    public void commandSucceedsWithoutChannel() throws Exception {
         assumeTrue(!Functions.isWindows());
         DumbSlave slave = createSlave("true");
 
