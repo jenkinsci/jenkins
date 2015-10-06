@@ -23,16 +23,35 @@
  */
 package jenkins.install;
 
-import hudson.Main;
-import jenkins.model.Jenkins;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
+import hudson.Main;
+import hudson.model.UpdateCenter;
+import hudson.model.UpdateCenter.DownloadJob.Failure;
+import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
+import hudson.model.UpdateCenter.DownloadJob.Installing;
+import hudson.model.UpdateCenter.DownloadJob.Pending;
+import hudson.model.UpdateCenter.DownloadJob.Success;
+import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.model.UpdateSite;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * Test
@@ -112,5 +131,71 @@ public class InstallUtilTest {
         Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
         // Force a save of the config.xml
         jenkinsRule.jenkins.save();
+    }
+    
+    /**
+     * Validate proper statuses are persisted and install status is cleared when invoking appropriate methods on {@link InstallUtil}
+     */
+    @Test
+    public void testSaveAndRestoreInstallingPlugins() throws Exception {
+        final List<UpdateCenterJob> updates = new ArrayList<>();
+        
+        final Map<String,String> nameMap = new HashMap<>();
+        
+        new UpdateCenter() { // inner classes...
+        	{
+        		new UpdateSite("foo", "http://omg.org") {
+        			{
+        				for(String name : Arrays.asList("pending-plug:Pending", "installing-plug:Installing", "failure-plug:Failure", "success-plug:Success")) {
+        					String statusType = name.split(":")[1];
+        					name = name.split(":")[0];
+        					
+        					InstallationStatus status;
+        					if("Success".equals(statusType)) {
+        						status = Mockito.mock(Success.class);
+        					}
+        					else if("Failure".equals(statusType)) {
+        						status = Mockito.mock(Failure.class);
+        					}
+        					else if("Installing".equals(statusType)) {
+        						status = Mockito.mock(Installing.class);
+        					}
+        					else {
+        						status = Mockito.mock(Pending.class);
+        					}
+        			        
+        					nameMap.put(statusType, status.getClass().getSimpleName());
+    						
+	                		JSONObject json = new JSONObject();
+	                		json.put("name", name);
+	                		json.put("version", "1.1");
+	                		json.put("url", "http://google.com");
+	                		json.put("dependencies", new JSONArray());
+	                		Plugin p = new Plugin(getId(), json);
+	
+	    	        		InstallationJob job = new InstallationJob(p, null, null, false);
+	    					job.status = status;
+	    					job.setCorrelationId(UUID.randomUUID()); // this indicates the plugin was 'directly selected'
+	    	                updates.add(job);
+        		        }
+        			}
+        		};
+        	}
+        };
+ 
+        InstallUtil.persistInstallStatus(updates);
+    	
+    	Map<String,String> persisted = InstallUtil.getPersistedInstallStatus();
+    	
+    	Assert.assertEquals(nameMap.get("Pending"), persisted.get("pending-plug"));
+    	Assert.assertEquals("Pending", persisted.get("installing-plug")); // only marked as success/fail after successful install
+    	Assert.assertEquals(nameMap.get("Failure"), persisted.get("failure-plug"));
+    	Assert.assertEquals(nameMap.get("Success"), persisted.get("success-plug"));
+    	
+        InstallUtil.clearInstallStatus();
+    	
+    	persisted = InstallUtil.getPersistedInstallStatus();
+    	
+    	Assert.assertNull(persisted); // should be deleted
     }
 }

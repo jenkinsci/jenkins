@@ -314,6 +314,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     		Jenkins.getActiveInstance().setInstallState(InstallState.RESTART);
     	}
         InstallUtil.saveLastExecVersion();
+        Jenkins.getActiveInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLED);
         return HttpResponses.okJSON();
     }
     
