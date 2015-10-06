@@ -529,7 +529,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     @Restricted(NoExternalUse.class)
-    public void resolveDependantPlugins() {
+    public synchronized void resolveDependantPlugins() {
         for (PluginWrapper plugin : plugins) {
             Set<String> dependants = new HashSet<>();
             for (PluginWrapper possibleDependant : plugins) {

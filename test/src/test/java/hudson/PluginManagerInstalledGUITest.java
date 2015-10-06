@@ -106,10 +106,10 @@ public class PluginManagerInstalledGUITest {
         private InstalledPlugins () throws IOException, SAXException {
             JenkinsRule.WebClient webClient = jenkinsRule.createWebClient();
             HtmlPage installedPage = webClient.goTo("pluginManager/installed");
-//            System.out.println(installedPage);
-//            try {
-//                Thread.sleep(10000000000L);
-//            } catch (InterruptedException e) { e.printStackTrace(); }
+            
+            // Note for debugging... simply print installedPage to get the JenkinsRule
+            // Jenkins URL and then add a long Thread.sleep here. It's useful re being
+            // able to see what the code is testing.
 
             DomElement pluginsTable = installedPage.getElementById("plugins");
             HtmlElement tbody = pluginsTable.getElementsByTagName("TBODY").get(0);

@@ -685,11 +685,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @RequirePOST
     public HttpResponse doDoUninstall() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins jenkins = Jenkins.getActiveInstance();
+        
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         archive.delete();
 
         // Redo who depends on who.
-        Jenkins.getActiveInstance().getPluginManager().resolveDependantPlugins();
+        jenkins.getPluginManager().resolveDependantPlugins();
 
         return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
     }
