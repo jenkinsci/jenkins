@@ -28,9 +28,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${!h.isAnonymous()}">
-    <j:invokeStatic var="userHasDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="currentUserUseDisplayTimezone" />
+    <j:invokeStatic var="userHasDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="isCurrentUserUseDisplayTimezone" />
     <j:if test="${userHasDisplayTimeZone}">
-      <j:invokeStatic var="userDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="currentUserGetDisplayTimezone" />
+      <j:invokeStatic var="userDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="getCurrentUserDisplayTimezone" />
       <i:setTimeZone value="${userDisplayTimeZone}"/>
     </j:if>
   </j:if>

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Tom Huybrechts
+ * Copyright (c) 2015, Christian Meyer, Alexander Ost
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,27 +46,39 @@ public class DisplayTimezoneProperty extends hudson.model.UserProperty {
         this.displayTimezone = displayTimezone;
     }
 
+    /**
+    * Will return the time zone as a string.
+    */
     @Exported
     public String getDisplayTimezone() {
         return displayTimezone;
     }
 
+    /**
+    * Will return true if the custom user time zone is enabled.
+    */
     @Exported
-    public boolean getUseTimezone() {
+    public boolean isEnabled() {
         return useTimezone;
     }
 
-    public static boolean currentUserUseDisplayTimezone(){
+    /**
+    * Will be used in the jelly files to check if the user has customized the time zone.
+    */
+    public static boolean isCurrentUserUseDisplayTimezone(){
         User user = User.current();
         boolean result = false;
 
-        if( user!=null && user.getProperty(DisplayTimezoneProperty.class).getUseTimezone()) {
+        if ( user!=null && user.getProperty(DisplayTimezoneProperty.class).isEnabled()) {
           result = true;
         }
         return result;
     }
 
-    public static String currentUserGetDisplayTimezone(){
+    /**
+    * Will be used in the jelly files to get the user time zone as a string.
+    */
+    public static String getCurrentUserDisplayTimezone(){
         User user = User.current();
         return user.getProperty(DisplayTimezoneProperty.class).getDisplayTimezone();
     }
@@ -87,7 +99,7 @@ public class DisplayTimezoneProperty extends hudson.model.UserProperty {
         }
 
         public UserProperty newInstance(User user) {
-            return new DisplayTimezoneProperty( false, TIMEZONES.get(0) ); //default setting is first time zone listed
+            return new DisplayTimezoneProperty( false, TimeZone.getDefault().getID() ); //default setting is system time zone
         }
 
         @Override
