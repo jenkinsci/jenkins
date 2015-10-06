@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.628-SNAPSHOT</version>
+    <version>1.632</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -119,7 +119,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.4</version>
+      <version>1.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>

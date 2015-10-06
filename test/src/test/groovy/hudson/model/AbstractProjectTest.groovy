@@ -47,15 +47,17 @@ import hudson.triggers.Trigger
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent
-import jenkins.model.Jenkins;
+import jenkins.model.Jenkins
+import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet
 import org.apache.commons.io.FileUtils;
-
+import org.junit.Assume;
 import org.jvnet.hudson.test.MockFolder
+import org.kohsuke.args4j.CmdLineException
 
 /**
  * @author Kohsuke Kawaguchi
@@ -224,9 +226,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Issue("JENKINS-1986")
     public void testBuildSymlinks() {
-        // If we're on Windows, don't bother doing this.
-        if (Functions.isWindows())
-            return;
+        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         def job = createFreeStyleProject();
         job.buildersList.add(new Shell("echo \"Build #\$BUILD_NUMBER\"\n"));
@@ -260,9 +260,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Issue("JENKINS-2543")
     public void testSymlinkForPostBuildFailure() {
-        // If we're on Windows, don't bother doing this.
-        if (Functions.isWindows())
-            return;
+        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         // Links should be updated after post-build actions when final build result is known
         def job = createFreeStyleProject();
@@ -590,6 +588,25 @@ public class AbstractProjectTest extends HudsonTestCase {
         AbstractProject project = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"))
 
         assert project.triggers().size() == 1
+    }
+
+    @Issue("JENKINS-30742")
+    public void testResolveForCLI() {
+        try {
+            AbstractProject not_found = AbstractProject.resolveForCLI("never_created");
+            fail("Exception should occur before!");
+        } catch (CmdLineException e) {
+            assert e.getMessage().contentEquals("No such job \u2018never_created\u2019 exists.");
+        }
+
+        AbstractProject project = jenkins.createProject(FreeStyleProject.class, "never_created");
+        try {
+            AbstractProject not_found = AbstractProject.resolveForCLI("never_created1");
+            fail("Exception should occur before!");
+        } catch (CmdLineException e) {
+            assert e.getMessage().contentEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?")
+        }
+
     }
 
     static class MockBuildTriggerThrowsNPEOnStart<Item> extends Trigger {

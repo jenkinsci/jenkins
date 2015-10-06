@@ -107,7 +107,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
         Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null) {
+        if (jenkins == null || job == null) {
             return false;
         }
         // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
@@ -147,7 +147,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
     }
 
-    @Override public void start(Job project, boolean newInstance) {
+    @Override public void start(@Nonnull Job project, boolean newInstance) {
         super.start(project, newInstance);
         SecurityContext orig = ACL.impersonate(ACL.SYSTEM);
         try {

@@ -39,6 +39,8 @@ import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildTriggerTest;
 import hudson.triggers.Trigger;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,9 +50,16 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.Authentication;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
+
+import org.hamcrest.core.IsNull;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 
@@ -148,4 +157,30 @@ public class ReverseBuildTriggerTest {
         assertEquals(new Cause.UpstreamCause((Run) b), downstream.getLastBuild().getCause(Cause.UpstreamCause.class));
     }
 
+    @Issue("JENKINS-29876")
+    @Test
+    public void nullJobInTriggerNotCausesNPE() throws Exception {
+        final FreeStyleProject upstreamJob = r.createFreeStyleProject("upstream");
+
+        //job with trigger.job == null
+        final FreeStyleProject downstreamJob1 = r.createFreeStyleProject("downstream1");
+        final ReverseBuildTrigger reverseBuildTrigger = new ReverseBuildTrigger("upstream", Result.SUCCESS);
+        downstreamJob1.addTrigger(reverseBuildTrigger);
+        downstreamJob1.save();
+
+        //job with trigger.job != null
+        final FreeStyleProject downstreamJob2 = r.createFreeStyleProject("downstream2");
+        final ReverseBuildTrigger reverseBuildTrigger2 = new ReverseBuildTrigger("upstream", Result.SUCCESS);
+        downstreamJob2.addTrigger(reverseBuildTrigger2);
+        downstreamJob2.save();
+        r.configRoundtrip(downstreamJob2);
+
+        r.jenkins.rebuildDependencyGraph();
+        final FreeStyleBuild build = upstreamJob.scheduleBuild2(0).get();
+        r.waitUntilNoActivity();
+
+        r.assertLogNotContains("java.lang.NullPointerException", build);
+        assertThat("Build should be not triggered", downstreamJob1.getBuilds(), hasSize(0));
+        assertThat("Build should be triggered", downstreamJob2.getBuilds(), not(hasSize(0)));
+    }
 }

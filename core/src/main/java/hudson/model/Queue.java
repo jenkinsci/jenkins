@@ -877,6 +877,13 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /**
+     * Gets the snapshot of all {@link BlockedItem}s.
+     */
+    protected List<BlockedItem> getBlockedItems() {
+        return new ArrayList<BlockedItem>(snapshot.blockedProjects);
+    }
+    
+    /**
      * Returns the snapshot of all {@link LeftItem}s.
      *
      * @since 1.519
@@ -1471,43 +1478,54 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
-                List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
-                for (JobOffer j : parked.values())
-                    if (j.canTake(p))
-                        candidates.add(j);
+                if (p.task instanceof FlyweightTask) {
+                    Runnable r = makeFlyWeightTaskBuildable(new BuildableItem(p));
+                    if (r != null) {
+                        p.leave(this);
+                        r.run();
+                        updateSnapshot();
+                    }
+                } else {
 
-                MappingWorksheet ws = new MappingWorksheet(p, candidates);
-                Mapping m = loadBalancer.map(p.task, ws);
-                if (m == null) {
-                    // if we couldn't find the executor that fits,
-                    // just leave it in the buildables list and
-                    // check if we can execute other projects
-                    LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
-                            new Object[]{p, candidates, parked.values()});
-                    continue;
+                    List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
+                    for (JobOffer j : parked.values())
+                        if (j.canTake(p))
+                            candidates.add(j);
+
+                    MappingWorksheet ws = new MappingWorksheet(p, candidates);
+                    Mapping m = loadBalancer.map(p.task, ws);
+                    if (m == null) {
+                        // if we couldn't find the executor that fits,
+                        // just leave it in the buildables list and
+                        // check if we can execute other projects
+                        LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
+                                new Object[]{p, candidates, parked.values()});
+                        continue;
+                    }
+
+                    // found a matching executor. use it.
+                    WorkUnitContext wuc = new WorkUnitContext(p);
+                    m.execute(wuc);
+
+                    p.leave(this);
+                    if (!wuc.getWorkUnits().isEmpty()) {
+                        makePending(p);
+                    }
+                    else
+                        LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
+
+                    // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
+                    // The creation of a snapshot itself should be relatively cheap given the expected rate of
+                    // job execution. You probably would need 100's of jobs starting execution every iteration
+                    // of maintain() before this could even start to become an issue and likely the calculation
+                    // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
+                    // since the snapshot itself only ever has at most one reference originating outside of the stack
+                    // it should remain in the eden space and thus be cheap to GC.
+                    // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                    // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                    // for alternative fixes of this issue.
+                    updateSnapshot();
                 }
-
-                // found a matching executor. use it.
-                WorkUnitContext wuc = new WorkUnitContext(p);
-                m.execute(wuc);
-
-                p.leave(this);
-                if (!wuc.getWorkUnits().isEmpty())
-                    makePending(p);
-                else
-                    LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
-                                
-                // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
-                // The creation of a snapshot itself should be relatively cheap given the expected rate of
-                // job execution. You probably would need 100's of jobs starting execution every iteration
-                // of maintain() before this could even start to become an issue and likely the calculation
-                // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
-                // since the snapshot itself only ever has at most one reference originating outside of the stack
-                // it should remain in the eden space and thus be cheap to GC.
-                // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
-                // for alternative fixes of this issue.
-                updateSnapshot();
             }
         } finally { updateSnapshot(); } } finally {
             lock.unlock();
@@ -1522,8 +1540,38 @@ public class Queue extends ResourceController implements Saveable {
     private @CheckForNull Runnable makeBuildable(final BuildableItem p) {
         if (p.task instanceof FlyweightTask) {
             if (!isBlockedByShutdown(p.task)) {
+
+                Runnable runnable = makeFlyWeightTaskBuildable(p);
+
+                if(runnable != null){
+                    return runnable;
+                }
+
+                //this is to solve JENKINS-30084: the task has to be buildable to force the provisioning of nodes.
+                //if the execution gets here, it means the task could not be scheduled since the node
+                //the task is supposed to run on is offline or not available.
+                //Thus, the flyweighttask enters the buildables queue and will ask Jenkins to provision a node
+                return new BuildableRunnable(p);
+            }
+            // if the execution gets here, it means the task is blocked by shutdown and null is returned.
+            return null;
+        } else {
+            // regular heavyweight task
+            return new BuildableRunnable(p);
+        }
+    }
+
+    /**
+     * This method checks if the flyweight task can be run on any of the available executors
+     * @param p - the flyweight task to be scheduled
+     * @return a Runnable if there is an executor that can take the task, null otherwise
+     */
+    @CheckForNull
+    private Runnable makeFlyWeightTaskBuildable(final BuildableItem p){
+        //we double check if this is a flyweight task
+        if (p.task instanceof FlyweightTask) {
             Jenkins h = Jenkins.getInstance();
-            Map<Node,Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
+            Map<Node, Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
 
             // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
             hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
@@ -1538,9 +1586,15 @@ public class Queue extends ResourceController implements Saveable {
             Label lbl = p.getAssignedLabel();
             for (Node n : hash.list(p.task.getFullDisplayName())) {
                 final Computer c = n.toComputer();
-                if (c==null || c.isOffline())    continue;
-                if (lbl!=null && !lbl.contains(n))  continue;
-                if (n.canTake(p) != null) continue;
+                if (c == null || c.isOffline()) {
+                    continue;
+                }
+                if (lbl!=null && !lbl.contains(n)) {
+                    continue;
+                }
+                if (n.canTake(p) != null) {
+                    continue;
+                }
                 return new Runnable() {
                     @Override public void run() {
                         c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
@@ -1548,18 +1602,9 @@ public class Queue extends ResourceController implements Saveable {
                     }
                 };
             }
-            }
-            // if the execution get here, it means we couldn't schedule it anywhere.
-            return null;
-        } else { // regular heavyweight task
-            return new Runnable() {
-                @Override public void run() {
-                    p.enter(Queue.this);
-                }
-            };
         }
+        return null;
     }
-
 
     private static Hash<Node> NODE_HASH = new Hash<Node>() {
         public String hash(Node node) {
@@ -2669,6 +2714,20 @@ public class Queue extends ResourceController implements Saveable {
         @Override
         public void run() {
             withLock(delegate);
+        }
+    }
+
+    private class BuildableRunnable implements Runnable  {
+        private final BuildableItem buildableItem;
+
+        private BuildableRunnable(BuildableItem p) {
+            this.buildableItem = p;
+        }
+
+        @Override
+        public void run() {
+            //the flyweighttask enters the buildables queue and will ask Jenkins to provision a node
+            buildableItem.enter(Queue.this);
         }
     }
 
