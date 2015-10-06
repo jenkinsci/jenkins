@@ -38,6 +38,7 @@ var ajaxMocks = function(responseMappings) {
             status: 'ok',
             data: {
                 'installWizard_offline_title': 'Offline',
+                'installWizard_error_header': 'Error',
                 'installWizard_installIncomplete_title': 'Resume Installation'
             }
         },
@@ -89,6 +90,10 @@ var ajaxMocks = function(responseMappings) {
                 updatesite: 'OK',
                 internet: 'OK'
             }
+        },
+        '/jenkins/pluginManager/installPlugins': {
+        	status: 'ok',
+        	data: 'RANDOM_UUID_1234'
         }
     };
     
@@ -135,6 +140,9 @@ var test = function(test, ajaxMappings) {
 // helper to validate the appropriate plugins were installed
 var validatePlugins = function(plugins, complete) {
     var jenkins = jsTest.requireSrcModule('util/jenkins');
+    if(!jenkins.originalPost) {
+    	jenkins.originalPost = jenkins.post;
+    }
     jenkins.post = function(url, data, cb) {
         expect(url).toBe('/pluginManager/installPlugins');
         var allMatch = true;
@@ -248,9 +256,9 @@ describe("pluginSetupWizard.js", function () {
             
             // validate a call to installPlugins with our defaults
             validatePlugins(['msbuild','slack'], function() {
-            
-            // install a specific, other 'set' of plugins
-            $('input[name=searchbox]').val('msbuild');
+	            // install a specific, other 'set' of plugins
+	            $('input[name=searchbox]').val('msbuild');
+	            
                 done();
             });
 
@@ -284,4 +292,61 @@ describe("pluginSetupWizard.js", function () {
         }, ajaxMappings);
     });
 
+    it("error conditions", function (done) {
+        var ajaxMappings = {
+    		'/jenkins/updateCenter/incompleteInstallStatus': {
+                status: 'error',
+                data: {
+                	'msbuild': 'Success',
+                	'git': 'Pending',
+                	'other': 'Failed',
+                	'slack': 'Success'
+                }
+            }
+        };
+        test(function($) {
+        	expect($('.error-container h1').html()).toBe('Error');
+        	done();
+        }, ajaxMappings);
+    });
+    
+    it("restart required", function (done) {
+        var jenkins = jsTest.requireSrcModule('util/jenkins');
+        if(jenkins.originalPost) {
+            jenkins.post = jenkins.originalPost;
+        }
+        
+        var ajaxMappings = {
+            '/jenkins/updateCenter/installStatus': new LastResponse([{
+                status: 'ok',
+                data: [] // first, return nothing by default, no ongoing install
+            },
+            {
+                status: 'ok',
+                data: [
+                  {
+                      name: 'git',
+                      type: 'InstallJob',
+                      installStatus: 'Success',
+                      requiresRestart: 'true' // a string...
+                  }
+                ]
+            }])
+        };
+        test(function($) {
+            var goButton = $('.install-recommended');
+            expect(goButton.size()).toBe(1);
+            
+            // validate a call to installPlugins with our defaults
+        	setTimeout(function() {
+                expect($('.install-done').is(':visible')).toBe(false);
+                expect($('.install-done-restart').is(':visible')).toBe(true);
+                
+                done();
+        	}, 500);
+        	
+            goButton.click();            
+        }, ajaxMappings);
+    });
+    
 });
