@@ -37,6 +37,10 @@ body {
   margin-left: auto;
 }
 
+h1 {
+  font-weight: normal;
+}
+
 #header {
   background-color: #000000;
   height: 40px;
@@ -239,14 +243,9 @@ dt {
     color: #ccc;
 }
 
-a:link {
-  text-decoration: underline;
-  color: #204A87;
-}
-
-a:visited {
-  text-decoration: underline;
-  color: #5c3566;
+a:link, a:visited {
+  text-decoration: none;
+  color: #204AAE;
 }
 
 a.lowkey:link {
