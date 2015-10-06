@@ -30,9 +30,9 @@ THE SOFTWARE.
   <j:set var="link" value="${it.baseUrl}/${build.number}/" />
   <j:set var="transitive" value="${(it.firstTransientBuildKey!=null and (it.adapter.compare(build,it.firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
   <j:if test="${!h.isAnonymous()}">
-    <j:invokeStatic var="userHasDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="currentUserUseDisplayTimezone" />
+    <j:invokeStatic var="userHasDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="isCurrentUserUseDisplayTimezone" />
     <j:if test="${userHasDisplayTimeZone}">
-      <j:invokeStatic var="userDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="currentUserGetDisplayTimezone" />
+      <j:invokeStatic var="userDisplayTimeZone" className="hudson.timezone.DisplayTimezoneProperty" method="getCurrentUserDisplayTimezone" />
       <i:setTimeZone value="${userDisplayTimeZone}"/>
     </j:if>
   </j:if>
