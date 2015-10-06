@@ -77,7 +77,7 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
     private String primaryView;
     private ViewsTabBar viewsTabBar;
 
-    private MockFolder(ItemGroup parent, String name) {
+    protected MockFolder(ItemGroup parent, String name) {
         super(parent, name);
     }
 
