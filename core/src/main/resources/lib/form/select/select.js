@@ -41,6 +41,19 @@ function updateListBox(listBox,url,config) {
 }
 
 Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
+
+        function hasChanged(selectEl, originalValue) {
+            var firstValue = selectEl.options[0].value;
+            var selectedValue = selectEl.value;
+            if (originalValue == "" && selectedValue == firstValue) {
+                // There was no value pre-selected but after the call to updateListBox the first value is selected by
+                // default. This must not be considered a change.
+                return false;
+            } else {
+                return originalValue != selectedValue;
+            }
+        };
+
         // controls that this SELECT box depends on
         refillOnChange(e,function(params) {
             var value = e.value;
@@ -60,7 +73,9 @@ Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
                     fireEvent(e,"filled"); // let other interested parties know that the items have changed
 
                     // if the update changed the current selection, others listening to this control needs to be notified.
-                    if (e.value!=value) fireEvent(e,"change");
+                    if (hasChanged(e, value)) {
+                        fireEvent(e,"change");
+                    }
                 }
             });
         });

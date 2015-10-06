@@ -1803,11 +1803,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             try {
                 getParent().logRotate();
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-            }
+            } catch (Exception e) {
+		LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
+	    }
         } finally {
             onEndBuilding();
         }
