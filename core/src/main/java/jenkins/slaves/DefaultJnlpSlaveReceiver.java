@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -28,17 +29,12 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     public boolean handle(String nodeName, JnlpSlaveHandshake handshake) throws IOException, InterruptedException {
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
 
-        if(computer==null) {
-            return false;
-        }
-
-        // Validate the slave secret matches.
-        if (!computer.getJnlpMac().equals(handshake.getRequestProperty("Secret-Key"))) {
+        if (computer==null) {
             return false;
         }
 
         Channel ch = computer.getChannel();
-        if(ch !=null) {
+        if (ch !=null) {
             String c = handshake.getRequestProperty("Cookie");
             if (c!=null && c.equals(ch.getProperty(COOKIE_NAME))) {
                 // we think we are currently connected, but this request proves that it's from the party
@@ -57,6 +53,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             }
         }
 
+        if (!matchesSecret(nodeName,handshake)) {
+            handshake.error(nodeName + " can't be connected since the slave's secret does not match the handshake secret.");
+            return true;
+        }
+
         Properties response = new Properties();
         String cookie = generateCookie();
         response.put("Cookie",cookie);
@@ -70,6 +71,31 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         ch.setProperty(COOKIE_NAME, cookie);
 
         return true;
+    }
+    
+    /**
+     * Called after the client has connected to check if the slave secret matches the handshake secret
+     *
+     * @param nodeName
+     * Name of the incoming JNLP agent. All {@link JnlpAgentReceiver} shares a single namespace
+     * of names. The implementation needs to be able to tell which name belongs to them.
+     *
+     * @param handshake
+     * Encapsulation of the interaction with the incoming JNLP agent.
+     *
+     * @return
+     * true if the slave secret matches the handshake secret, false otherwise.
+     */
+    private boolean matchesSecret(String nodeName, JnlpSlaveHandshake handshake){
+        SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
+        String handshakeSecret = handshake.getRequestProperty("Secret-Key");
+        // Verify that the slave secret matches the handshake secret.
+        if (!computer.getJnlpMac().equals(handshakeSecret)) {
+            LOGGER.log(Level.WARNING, "An attempt was made to connect as {0} from {1} with an incorrect secret", new Object[]{nodeName, handshake.getSocket().getRemoteSocketAddress()});
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private String generateCookie() {
