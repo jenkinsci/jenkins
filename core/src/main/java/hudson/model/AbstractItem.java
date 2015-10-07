@@ -680,7 +680,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      *
      * @since 1.556
      */
-    @CLIMethod(name="reload-job")
     @RequirePOST
     public void doReload() throws IOException {
         checkPermission(CONFIGURE);
