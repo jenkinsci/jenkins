@@ -149,6 +149,25 @@ public class Nodes implements Saveable {
     }
 
     /**
+     * Updates an existing node on disk.
+     *
+     * @param node the node to be updated.
+     * @throws IOException if the node could not be persisted.
+     */
+    public void updateNode(final @Nonnull Node node) throws IOException {
+        if (node == nodes.get(node.getNodeName())) {
+            // no need for a full save() so we just do the minimum
+            if (node instanceof EphemeralNode) {
+                Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
+            } else {
+                XmlFile xmlFile = new XmlFile(Jenkins.XSTREAM,
+                        new File(new File(getNodesDir(), node.getNodeName()), "config.xml"));
+                xmlFile.write(node);
+            }
+        }
+    }
+
+    /**
      * Removes a node. If the node instance is not in the list of nodes, then this will be a no-op, even if
      * there is another instance with the same {@link Node#getNodeName()}.
      *

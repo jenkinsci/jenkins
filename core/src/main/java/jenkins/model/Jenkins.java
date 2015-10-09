@@ -1735,6 +1735,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         nodes.removeNode(n);
     }
 
+    /**
+     * Updates an existing {@link Node} on disk.
+     */
+    public void updateNode(Node n) throws IOException {
+        nodes.updateNode(n);
+    }
+
     public void setNodes(final List<? extends Node> n) throws IOException {
         nodes.setNodes(n);
     }
