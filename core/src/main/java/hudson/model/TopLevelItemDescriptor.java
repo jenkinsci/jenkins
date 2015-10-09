@@ -53,7 +53,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
      *
      * <p>
-     * This is useful for a workflow/company specific job type that wants to eliminate
+     * This is useful for a workflow/company specific item type that wants to eliminate
      * options that the user would see.
      *
      * @since 1.294
@@ -66,7 +66,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * {@link TopLevelItemDescriptor}s often may want to limit the scope within which they can be created.
      * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
      *
-     * @since TODO
+     * @since 1.607
      */
     public boolean isApplicableIn(ItemGroup parent) {
         return true;
@@ -76,7 +76,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * Checks if this top level item is applicable within the specified item group.
      * <p>
      * This is just a convenience function.
-     * @since TODO
+     * @since 1.607
      */
     public final void checkApplicableIn(ItemGroup parent) {
         if (!isApplicableIn(parent)) {
@@ -103,16 +103,16 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * {@inheritDoc}
      *
      * <p>
-     * Used as the caption when the user chooses what job type to create.
-     * The descriptor implementation also needs to have <tt>newJobDetail.jelly</tt>
+     * Used as the caption when the user chooses what item type to create.
+     * The descriptor implementation also needs to have <tt>newInstanceDetail.jelly</tt>
      * script, which will be used to render the text below the caption
-     * that explains the job type.
+     * that explains the item type.
      */
     public abstract String getDisplayName();
 
     /**
      * @deprecated since 2007-01-19.
-     *      This is not a valid operation for {@link Job}s.
+     *      This is not a valid operation for {@link Item}s.
      */
     @Deprecated
     public TopLevelItem newInstance(StaplerRequest req) throws FormException {

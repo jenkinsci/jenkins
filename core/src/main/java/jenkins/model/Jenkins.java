@@ -28,6 +28,7 @@ package jenkins.model;
 
 import antlr.ANTLRException;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
@@ -863,12 +864,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
             }
 
+            // All plugins are loaded. Now we can figure out who depends on who.
+            resolveDependantPlugins();
+
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
         } finally {
             SecurityContextHolder.clearContext();
         }
+    }
+
+    private void resolveDependantPlugins() throws InterruptedException, ReactorException, IOException {
+        TaskGraphBuilder graphBuilder = new TaskGraphBuilder();
+
+        graphBuilder.add("Resolving Dependant Plugins Graph", new Executable() {
+            @Override
+            public void run(Reactor reactor) throws Exception {
+                pluginManager.resolveDependantPlugins();
+            }
+        });
+
+        executeReactor(null, graphBuilder);
     }
 
     /**
@@ -3843,25 +3860,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             checkPermission(READ);
         } catch (AccessDeniedException e) {
             String rest = Stapler.getCurrentRequest().getRestOfPath();
-            if(rest.startsWith("/login")
-            || rest.startsWith("/logout")
-            || rest.startsWith("/accessDenied")
-            || rest.startsWith("/adjuncts/")
-            || rest.startsWith("/error")
-            || rest.startsWith("/oops")
-            || rest.startsWith("/signup")
-            || rest.startsWith("/tcpSlaveAgentListener")
-            // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
-            || rest.matches("/computer/[^/]+/slave-agent[.]jnlp") && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))
-            || rest.startsWith("/federatedLoginService/")
-            || rest.startsWith("/securityRealm"))
-                return this;    // URLs that are always visible without READ permission
-
+            for (String name : ALWAYS_READABLE_PATHS) {
+                if (rest.startsWith(name)) {
+                    return this;
+                }
+            }
             for (String name : getUnprotectedRootActions()) {
                 if (rest.startsWith("/" + name + "/") || rest.equals("/" + name)) {
                     return this;
                 }
             }
+
+            // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
+            if (rest.matches("/computer/[^/]+/slave-agent[.]jnlp")
+                && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))) {
+                return this;
+            }
+
 
             throw e;
         }
@@ -4241,6 +4256,24 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
+
+    /**
+     * Urls that are always visible without READ permission.
+     *
+     * <p>See also:{@link #getUnprotectedRootActions}.
+     */
+    private static final ImmutableSet<String> ALWAYS_READABLE_PATHS = ImmutableSet.of(
+        "/login",
+        "/logout",
+        "/accessDenied",
+        "/adjuncts/",
+        "/error",
+        "/oops",
+        "/signup",
+        "/tcpSlaveAgentListener",
+        "/federatedLoginService/",
+        "/securityRealm"
+    );
 
     /**
      * {@link Authentication} object that represents the anonymous user.

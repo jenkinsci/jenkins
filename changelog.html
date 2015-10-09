@@ -55,9 +55,66 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="rfe">
+    Added safari pinned tab icon.
+    (<a href="https://groups.google.com/d/msg/jenkinsci-dev/W29LIfo2uME/fpMy_YNZCgAJ">discussion</a>)
+  <li class="rfe">
+    Plugin Manager UI changes to prevent users from enabling/disabling/uninstalling plugins at the "wrong" time.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23150">issue 23150</a>)
+  <li class="bug">
+    bytecode-compatibility-transformer produces malformed bytecode.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28781">issue 28781</a>)
+  <li class="bug">
+    Properly handle <code>RuntimeException</code>s in run retention policy handler calls.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-29888">issue 29888</a>)
+  <li class="bug">
+    Prevent <code>NullPointerException</code> in CLI if Jenkins cannot find the specified job
+    or a job with the nearest name.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30742">issue 30742</a>)
+  <li class="bug">
+    Do not show <i>REST API</i> link for pages, which have no API handlers.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-29014">issue 29014</a>)
+  <li class="bug">
+    JS alert preventing to leave a configuration page without changes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21720">issue 21720</a>)
+  <li class="bug">
+    JS error triggered by collapsing build history widget.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30569">issue 30569</a>)
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v1.632>What's new in 1.632</a> (2015/10/05)</h3>
+<ul class=image>
+  <li class="bug">
+    Optimize TagCloud size calculation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30705">issue 30705</a>)
+  <li class="bug">
+    FlyWeightTasks tied to a label will not cause node provisioning and will be blocked forever.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30084">issue 30084</a>)
+  <li class="bug">
+    Prevent <code>NullPointerException</code> for disabled builds in <code>ReverseBuildTrigger</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-29876">issue 29876</a>)
+  <li class="rfe">
+    ConsoleLogFilter wasn't truly global
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30777">issue 30777</a>)
+  <li class="rfe">
+    API changes: <code>hudson.Util.isOverridden()</code> now supports protected methods.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30002">issue 30002</a>)
+  <li class="bug">
+    Sidepanel controls with confirmation (<code>lib/layout/task</code>) did not assign the proper CSS style.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30787">issue 30787</a>)
+</ul>
+<h3><a name=v1.631>What's new in 1.631</a> (2015/09/27)</h3>
+<ul class=image>
+  <li class=rfe>
+    Add proper labels for plugin categories assigned to some plugins.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1758">PR 1758</a>)
+</ul>
+<h3><a name=v1.630>What's new in 1.630</a> (2015/09/20)</h3>
+<ul class=image>
+  <li class="bug">
+    Make <tt>JenkinsRule</tt> useable on systems which don't support JNA
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-29507">issue 29507</a>)
+</ul>
 <h3><a name=v1.629>What's new in 1.629</a> (2015/09/15)</h3>
 <ul class=image>
   <li class="rfe">
