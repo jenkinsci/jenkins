@@ -425,7 +425,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the textual representation of the assigned label as it was entered by the user.
      */
     public String getAssignedLabelString() {
-        if (canRoam || assignedNode==null)    return null;
+        if (canRoam)    return null;
+        if (assignedNode == null) {
+            return Jenkins.getInstance().getSelfLabel().getExpression();
+        }
         try {
             LabelExpression.parseExpression(assignedNode);
             return assignedNode;
