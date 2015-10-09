@@ -27,9 +27,6 @@ import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.widgets.HistoryWidget;
-import jenkins.widgets.buildsearch.BuildSearchParamProcessor;
-import jenkins.widgets.buildsearch.BuildSearchParamProcessorList;
-import jenkins.widgets.buildsearch.BuildSearchParams;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -47,7 +44,7 @@ public class HistoryPageFilter<T> {
     private final int maxEntries;
     private Long newerThan;
     private Long olderThan;
-    private BuildSearchParamProcessor searchProcessor;
+    private String searchString;
 
     // Need to use different Lists for Queue.Items and Runs because
     // we need access to them separately in the jelly files for rendering.
@@ -98,8 +95,7 @@ public class HistoryPageFilter<T> {
      * @param searchString The search string.
      */
     public void setSearchString(@Nonnull String searchString) {
-        BuildSearchParams searchParams = new BuildSearchParams(searchString);
-        this.searchProcessor = new BuildSearchParamProcessorList(searchParams);
+        this.searchString = searchString;
     }
 
     /**
@@ -250,14 +246,14 @@ public class HistoryPageFilter<T> {
         // to the page initially, newerThan then cutting it back down to size using cutLeading()
         if (entry instanceof Queue.Item) {
             Queue.Item item = (Queue.Item) entry;
-            if (searchProcessor != null && !searchProcessor.fitsSearchParams(item)) {
+            if (searchString != null && !fitsSearchParams(item)) {
                 return false;
             }
             addQueueItem(item);
             return true;
         } else if (entry instanceof Run) {
             Run run = (Run) entry;
-            if (searchProcessor != null && !searchProcessor.fitsSearchParams(run)) {
+            if (searchString != null && !fitsSearchParams(run)) {
                 return false;
             }
             addRun(run);
@@ -278,4 +274,51 @@ public class HistoryPageFilter<T> {
     private int getFillCount() {
         return Math.max(0, (maxEntries - size()));
     }
+
+    private boolean fitsSearchParams(@Nonnull Queue.Item item) {
+        if (fitsSearchString(item.getDisplayName())) {
+            return true;
+        } else if (fitsSearchString(item.getId())) {
+            return true;
+        }
+        // Non of the fuzzy matches "liked" the search term. 
+        return false;
+    }
+
+    private boolean fitsSearchParams(@Nonnull Run run) {
+        if (searchString == null) {
+            return true;
+        }
+        
+        if (fitsSearchString(run.getDisplayName())) {
+            return true;
+        } else if (fitsSearchString(run.getDescription())) {
+            return true;
+        } else if (fitsSearchString(run.getNumber())) {
+            return true;
+        } else if (fitsSearchString(run.getQueueId())) {
+            return true;
+        } else if (fitsSearchString(run.getResult())) {
+            return true;
+        }
+        
+        // Non of the fuzzy matches "liked" the search term. 
+        return false;
+    }
+
+    private boolean fitsSearchString(Object data) {
+        if (searchString == null) {
+            return true;
+        }
+
+        if (data != null) {
+            if (data instanceof Number) {
+                return data.toString().equals(searchString);
+            } else {
+                return data.toString().toLowerCase().contains(searchString);
+            }
+        }
+        
+        return false;
+    }    
 }

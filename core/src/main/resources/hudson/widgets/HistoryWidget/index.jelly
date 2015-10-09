@@ -68,9 +68,6 @@ THE SOFTWARE.
                         <span class="clear" title="${%Clear}">x</span>
                         <input placeholder="${%find}"></input>
                     </td>
-                    <td class="build-search-help">
-                        <a href="https://wiki.jenkins-ci.org/display/JENKINS/Build+History+Search" target="_blank"><l:icon class="icon-help icon-sm"/></a>
-                    </td>
                 </tr>
             </table>
         </td>
@@ -120,9 +117,8 @@ THE SOFTWARE.
       </tr>
     </j:if>
   </l:pane>
-  <j:if test="!empty(it.owner.nextBuildNumber)">
-    <script defer="true">
+  </div>
+  <script defer="true">
       updateBuildHistory("${it.baseUrl}/buildHistory/ajax",${it.owner.nextBuildNumber});
-    </script>
-  </j:if>
+  </script>
 </j:jelly>
