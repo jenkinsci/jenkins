@@ -159,13 +159,20 @@ public class Nodes implements Saveable {
     }
 
     /**
-     * Updates an existing node on disk.
+     * Updates an existing node on disk. If the node instance is not in the list of nodes, then this will be a no-op, even if
+     * there is another instance with the same {@link Node#getNodeName()}.
      *
      * @param node the node to be updated.
      * @throws IOException if the node could not be persisted.
      */
     public void updateNode(final @Nonnull Node node) throws IOException {
         if (node == nodes.get(node.getNodeName())) {
+            Queue.withLock(new Runnable() {
+                @Override
+                public void run() {
+                        jenkins.trimLabels();
+                }
+            });
             persistNode(node);
         }
     }
