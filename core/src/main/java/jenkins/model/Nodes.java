@@ -137,14 +137,24 @@ public class Nodes implements Saveable {
                     jenkins.trimLabels();
                 }
             });
-            // no need for a full save() so we just do the minimum
-            if (node instanceof EphemeralNode) {
-                Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
-            } else {
-                XmlFile xmlFile = new XmlFile(Jenkins.XSTREAM,
-                        new File(new File(getNodesDir(), node.getNodeName()), "config.xml"));
-                xmlFile.write(node);
-            }
+            persistNode(node);
+        }
+    }
+
+    /**
+     * Actually persists a node on disk.
+     *
+     * @param node the node to be persisted.
+     * @throws IOException if the node could not be persisted.
+     */
+    private void persistNode(final @Nonnull Node node)  throws IOException {
+        // no need for a full save() so we just do the minimum
+        if (node instanceof EphemeralNode) {
+            Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
+        } else {
+            XmlFile xmlFile = new XmlFile(Jenkins.XSTREAM,
+                    new File(new File(getNodesDir(), node.getNodeName()), "config.xml"));
+            xmlFile.write(node);
         }
     }
 
@@ -156,14 +166,7 @@ public class Nodes implements Saveable {
      */
     public void updateNode(final @Nonnull Node node) throws IOException {
         if (node == nodes.get(node.getNodeName())) {
-            // no need for a full save() so we just do the minimum
-            if (node instanceof EphemeralNode) {
-                Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
-            } else {
-                XmlFile xmlFile = new XmlFile(Jenkins.XSTREAM,
-                        new File(new File(getNodesDir(), node.getNodeName()), "config.xml"));
-                xmlFile.write(node);
-            }
+            persistNode(node);
         }
     }
 
