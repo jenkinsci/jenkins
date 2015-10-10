@@ -1588,6 +1588,13 @@ function fireBuildHistoryChanged() {
 function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
     var bh = $('buildHistory');
+    
+    // If the build history pane is collapsed, just return immediately and don't set up
+    // the build history refresh.
+    if (bh.hasClassName('collapsed')) {
+        return;
+    }
+    
     var buildHistoryPage = $('buildHistoryPage');
 
     bh.headers = ["n",nBuild];
