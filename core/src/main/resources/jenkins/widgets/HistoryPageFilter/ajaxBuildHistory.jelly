@@ -25,6 +25,17 @@ THE SOFTWARE.
 <!--
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:include page="ajaxBuildHistory.jelly" it="${it.historyPageFilter}" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:ajax>
+    <j:choose>
+      <j:when test="${it.size() > 0}">
+	<table class="pane hasPageData" page-entry-newest="${it.newestOnPage}" page-entry-oldest="${it.oldestOnPage}" page-has-up="${it.hasUpPage}" page-has-down="${it.hasDownPage}">
+	  <st:include page="entries.jelly" />
+	</table>
+      </j:when>
+      <j:otherwise>
+	<table class="pane"></table>
+      </j:otherwise>
+    </j:choose>
+  </l:ajax>
 </j:jelly>

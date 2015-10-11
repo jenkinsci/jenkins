@@ -22,9 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:include page="ajaxBuildHistory.jelly" it="${it.historyPageFilter}" />
+  <st:include page="queue-items.jelly"/>
+  <st:include page="/hudson/widgets/HistoryWidget/entries.jelly"/>
 </j:jelly>

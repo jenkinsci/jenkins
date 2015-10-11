@@ -209,7 +209,7 @@ public class BuildTriggerTest {
         /* The long way:
         WebClient wc = createWebClient();
         wc.login("alice");
-        HtmlPage page = wc.getPage(upstream, "configure");
+        HtmlPage page = wc.getHistoryPageFilter(upstream, "configure");
         HtmlForm config = page.getFormByName("config");
         config.getButtonByCaption("Add post-build action").click(); // lib/hudson/project/config-publishers2.jelly
         page.getAnchorByText("Build other projects").click();
