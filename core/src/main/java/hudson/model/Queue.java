@@ -1423,11 +1423,12 @@ public class Queue extends ResourceController implements Saveable {
                     Collections.sort(blockedItems, QueueSorter.DEFAULT_BLOCKED_ITEM_COMPARATOR);
                 }
                 for (BlockedItem p : blockedItems) {
-                    LOGGER.log(Level.FINER, "Current blocked item: {0}", p.task.getFullDisplayName());
+                    String taskDisplayName = p.task.getFullDisplayName();
+                    LOGGER.log(Level.FINER, "Current blocked item: {0}", taskDisplayName);
                     if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
                         LOGGER.log(Level.INFO,
                                 "BlockedItem {0}: blocked -> buildable as the build is not blocked and new tasks are allowed",
-                                p.task.getFullDisplayName());
+                                taskDisplayName);
 
                         // ready to be executed
                         Runnable r = makeBuildable(new BuildableItem(p));
@@ -1457,11 +1458,12 @@ public class Queue extends ResourceController implements Saveable {
                 if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
                     // ready to be executed immediately
                     Runnable r = makeBuildable(new BuildableItem(top));
+                    String topTaskDisplayName = top.task.getFullDisplayName();
                     if (r != null) {
-                        LOGGER.log(Level.FINE, "Executing runnable {0}", top.task.getFullDisplayName());
+                        LOGGER.log(Level.FINE, "Executing runnable {0}", topTaskDisplayName);
                         r.run();
                     } else {
-                        LOGGER.log(Level.FINEST, "Item {0} was unable to be made a buildable and is now a blocked item.", top.task.getFullDisplayName());
+                        LOGGER.log(Level.FINEST, "Item {0} was unable to be made a buildable and is now a blocked item.", topTaskDisplayName);
                         new BlockedItem(top).enter(this);
                     }
                 } else {
@@ -1491,11 +1493,13 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
+                String taskDisplayName = p.task.getFullDisplayName();
+
                 if (p.task instanceof FlyweightTask) {
                     Runnable r = makeFlyWeightTaskBuildable(new BuildableItem(p));
                     if (r != null) {
                         p.leave(this);
-                        LOGGER.log(Level.FINEST, "Executing flyweight task {0}", p.task.getFullDisplayName());
+                        LOGGER.log(Level.FINEST, "Executing flyweight task {0}", taskDisplayName);
                         r.run();
                         updateSnapshot();
                     }
@@ -1506,7 +1510,7 @@ public class Queue extends ResourceController implements Saveable {
                         if (j.canTake(p)) {
                             LOGGER.log(Level.FINEST,
                                     "{0} is a potential candidate for task {1}",
-                                    new Object[]{j.executor.getDisplayName(), p.task.getFullDisplayName()});
+                                    new Object[]{j.executor.getDisplayName(), taskDisplayName});
                             candidates.add(j);
                         }
                     }
@@ -1524,12 +1528,12 @@ public class Queue extends ResourceController implements Saveable {
 
                     // found a matching executor. use it.
                     WorkUnitContext wuc = new WorkUnitContext(p);
-                    LOGGER.log(Level.FINER, "Found a matching executor for {0}. Using it.", p.task.getFullDisplayName());
+                    LOGGER.log(Level.FINER, "Found a matching executor for {0}. Using it.", taskDisplayName);
                     m.execute(wuc);
 
                     p.leave(this);
                     if (!wuc.getWorkUnits().isEmpty()) {
-                        LOGGER.log(Level.FINE, "BuildableItem {0} marked as pending.", p.task.getFullDisplayName());
+                        LOGGER.log(Level.FINE, "BuildableItem {0} marked as pending.", taskDisplayName);
                         makePending(p);
                     }
                     else
@@ -1560,10 +1564,11 @@ public class Queue extends ResourceController implements Saveable {
      */
     private @CheckForNull Runnable makeBuildable(final BuildableItem p) {
         if (p.task instanceof FlyweightTask) {
+            String taskDisplayName = p.task.getFullDisplayName();
             if (!isBlockedByShutdown(p.task)) {
 
                 Runnable runnable = makeFlyWeightTaskBuildable(p);
-                LOGGER.log(Level.FINE, "Converting flyweight task: {0} into a BuildableRunnable", p.task.getFullDisplayName());
+                LOGGER.log(Level.FINE, "Converting flyweight task: {0} into a BuildableRunnable", taskDisplayName);
                 if(runnable != null){
                     return runnable;
                 }
@@ -1572,11 +1577,11 @@ public class Queue extends ResourceController implements Saveable {
                 //if the execution gets here, it means the task could not be scheduled since the node
                 //the task is supposed to run on is offline or not available.
                 //Thus, the flyweighttask enters the buildables queue and will ask Jenkins to provision a node
-                LOGGER.log(Level.FINEST, "Flyweight task {0} is entering as buildable to provision a node.", p.task.getFullDisplayName());
+                LOGGER.log(Level.FINEST, "Flyweight task {0} is entering as buildable to provision a node.", taskDisplayName);
                 return new BuildableRunnable(p);
             }
             // if the execution gets here, it means the task is blocked by shutdown and null is returned.
-            LOGGER.log(Level.FINE, "Task {0} is blocked by shutdown.", p.task.getFullDisplayName());
+            LOGGER.log(Level.FINE, "Task {0} is blocked by shutdown.", taskDisplayName);
             return null;
         } else {
             // regular heavyweight task
