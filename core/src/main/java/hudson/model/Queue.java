@@ -1385,9 +1385,13 @@ public class Queue extends ResourceController implements Saveable {
                             // we need to clear lost pendings as we cannot know what work unit was on this executor
                             // while it is interrupted. (All this dancing is a result of Executor extending Thread)
                             lostPendings.clear(); // we'll get them next time around when the flag is cleared.
+                            LOGGER.log(Level.FINEST,
+                                    "Interrupt thread for executor {0} is set and we do not know what work unit was on the executor.",
+                                    e.getDisplayName());
                             continue;
                         }
                         if (e.isParking()) {
+                            LOGGER.log(Level.FINEST, "{0} is parking and is waiting for a job to execute.", e.getDisplayName());
                             parked.put(e, new JobOffer(e));
                         }
                         final WorkUnit workUnit = e.getCurrentWorkUnit();
@@ -1419,7 +1423,12 @@ public class Queue extends ResourceController implements Saveable {
                     Collections.sort(blockedItems, QueueSorter.DEFAULT_BLOCKED_ITEM_COMPARATOR);
                 }
                 for (BlockedItem p : blockedItems) {
+                    LOGGER.log(Level.FINER, "Current blocked item: {0}", p.task.getFullDisplayName());
                     if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
+                        LOGGER.log(Level.INFO,
+                                "BlockedItem {0}: blocked -> buildable as the build is not blocked and new tasks are allowed",
+                                p.task.getFullDisplayName());
+
                         // ready to be executed
                         Runnable r = makeBuildable(new BuildableItem(p));
                         if (r != null) {
@@ -1438,8 +1447,10 @@ public class Queue extends ResourceController implements Saveable {
             while (!waitingList.isEmpty()) {
                 WaitingItem top = peek();
 
-                if (top.timestamp.compareTo(new GregorianCalendar()) > 0)
+                if (top.timestamp.compareTo(new GregorianCalendar()) > 0) {
+                    LOGGER.log(Level.FINE, "Finished moving all ready items from queue.");
                     break; // finished moving all ready items from queue
+                }
 
                 top.leave(this);
                 Task p = top.task;
@@ -1447,8 +1458,10 @@ public class Queue extends ResourceController implements Saveable {
                     // ready to be executed immediately
                     Runnable r = makeBuildable(new BuildableItem(top));
                     if (r != null) {
+                        LOGGER.log(Level.FINE, "Executing runnable {0}", top.task.getFullDisplayName());
                         r.run();
                     } else {
+                        LOGGER.log(Level.FINEST, "Item {0} was unable to be made a buildable and is now a blocked item.", top.task.getFullDisplayName());
                         new BlockedItem(top).enter(this);
                     }
                 } else {
@@ -1482,15 +1495,19 @@ public class Queue extends ResourceController implements Saveable {
                     Runnable r = makeFlyWeightTaskBuildable(new BuildableItem(p));
                     if (r != null) {
                         p.leave(this);
+                        LOGGER.log(Level.FINEST, "Executing flyweight task {0}", p.task.getFullDisplayName());
                         r.run();
                         updateSnapshot();
                     }
                 } else {
 
                     List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
-                    for (JobOffer j : parked.values())
-                        if (j.canTake(p))
+                    for (JobOffer j : parked.values()) {
+                        if (j.canTake(p)) {
+                            LOGGER.log(Level.FINEST, "Potential candidate for ");
                             candidates.add(j);
+                        }
+                    }
 
                     MappingWorksheet ws = new MappingWorksheet(p, candidates);
                     Mapping m = loadBalancer.map(p.task, ws);
@@ -1505,10 +1522,12 @@ public class Queue extends ResourceController implements Saveable {
 
                     // found a matching executor. use it.
                     WorkUnitContext wuc = new WorkUnitContext(p);
+                    LOGGER.log(Level.FINER, "Found a matching executor for {0}. Using it.", p.task.getFullDisplayName());
                     m.execute(wuc);
 
                     p.leave(this);
                     if (!wuc.getWorkUnits().isEmpty()) {
+                        LOGGER.log(Level.FINE, "BuildableItem {0} marked as pending.", p.task.getFullDisplayName());
                         makePending(p);
                     }
                     else
@@ -1542,7 +1561,7 @@ public class Queue extends ResourceController implements Saveable {
             if (!isBlockedByShutdown(p.task)) {
 
                 Runnable runnable = makeFlyWeightTaskBuildable(p);
-
+                LOGGER.log(Level.FINE, "Converting flyweight task: {0} into a BuildableRunnable", p.task.getFullDisplayName());
                 if(runnable != null){
                     return runnable;
                 }
@@ -1551,9 +1570,11 @@ public class Queue extends ResourceController implements Saveable {
                 //if the execution gets here, it means the task could not be scheduled since the node
                 //the task is supposed to run on is offline or not available.
                 //Thus, the flyweighttask enters the buildables queue and will ask Jenkins to provision a node
+                LOGGER.log(Level.FINEST, "Flyweight task {0} is entering as buildable to provision a node.", p.task.getFullDisplayName());
                 return new BuildableRunnable(p);
             }
             // if the execution gets here, it means the task is blocked by shutdown and null is returned.
+            LOGGER.log(Level.FINE, "Task {0} is blocked by shutdown.", p.task.getFullDisplayName());
             return null;
         } else {
             // regular heavyweight task
@@ -1595,6 +1616,8 @@ public class Queue extends ResourceController implements Saveable {
                 if (n.canTake(p) != null) {
                     continue;
                 }
+
+                LOGGER.log(Level.FINE, "Creating flyweight task {0} for machine {1}", new Object[]{p.task, c.getName()});
                 return new Runnable() {
                     @Override public void run() {
                         c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
