@@ -59,7 +59,7 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
                     return;
             }
 
-            error("Unrecognized name: "+nodeName);
+            error("JNLP2-connect: rejected connection for node: " + nodeName);
         }
     }
 }
