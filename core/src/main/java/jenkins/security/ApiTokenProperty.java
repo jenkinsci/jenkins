@@ -29,6 +29,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.security.ACL;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
@@ -41,6 +42,10 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Remembers the API token for this user, that can be used like a password to login.
@@ -53,6 +58,16 @@ import java.security.SecureRandom;
 public class ApiTokenProperty extends UserProperty {
     private volatile Secret apiToken;
 
+    /**
+     * If enabled, shows API tokens to users with {@link Jenkins#ADMINISTER) permissions.
+     * Disabled by default due to the security reasons.
+     * If enabled, it restores the original Jenkins behavior (SECURITY-200).
+     * @since TODO
+     */
+    private static final boolean SHOW_TOKEN_TO_ADMINS = 
+            Boolean.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
+    
+    
     @DataBoundConstructor
     public ApiTokenProperty() {
         _changeApiToken();
@@ -66,7 +81,24 @@ public class ApiTokenProperty extends UserProperty {
         apiToken = Secret.fromString(seed);
     }
 
+    /**
+     * Gets the API token.
+     * The method performs security checks. Only the current user and SYSTEM may see it.
+     * Users with {@link Jenkins#ADMINISTER} may be allowed to do it using {@link #SHOW_TOKEN_TO_ADMINS}.
+     * 
+     * @return API Token. Never null, but may be {@link Messages#ApiTokenProperty_ChangeToken_TokenIsHidden()}
+     *         if the user has no appropriate permissions.
+     * @since TODO: the method performs security checks
+     */
+    @Nonnull
     public String getApiToken() {
+        return hasPermissionToSeeToken() ? getApiTokenInsecure() 
+                : Messages.ApiTokenProperty_ChangeToken_TokenIsHidden();
+    }
+    
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    /*package*/ String getApiTokenInsecure() {
         String p = apiToken.getPlainText();
         if (p.equals(Util.getDigestOf(Jenkins.getInstance().getSecretKey()+":"+user.getId()))) {
             // if the current token is the initial value created by pre SECURITY-49 Jenkins, we can't use that.
@@ -77,7 +109,34 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String password) {
-        return getApiToken().equals(password);
+        return  getApiTokenInsecure().equals(password);
+    }
+    
+    private boolean hasPermissionToSeeToken() {
+        final Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null) {
+            return false; // Should not happen - we don't display UIs in this stage
+        }
+        
+        // Administrators can do whatever they want
+        if (SHOW_TOKEN_TO_ADMINS && jenkins.hasPermission(Jenkins.ADMINISTER)) {
+            return true;
+        }
+        
+        
+        final User current = User.current();
+        if (current == null) { // Anonymous
+            return false;
+        }
+        
+        // SYSTEM user is always eligible to see tokens
+        if (Jenkins.getAuthentication() == ACL.SYSTEM) {
+            return true;
+        }
+             
+        //TODO: replace by IdStrategy in newer Jenkins versions
+        //return User.idStrategy().equals(user.getId(), current.getId());
+        return StringUtils.equals(user.getId(), current.getId());
     }
 
     public void changeApiToken() throws IOException {
@@ -125,7 +184,9 @@ public class ApiTokenProperty extends UserProperty {
                 p.changeApiToken();
             }
             rsp.setHeader("script","document.getElementById('apiToken').value='"+p.getApiToken()+"'");
-            return HttpResponses.html(Messages.ApiTokenProperty_ChangeToken_Success());
+            return HttpResponses.html(p.hasPermissionToSeeToken() 
+                    ? Messages.ApiTokenProperty_ChangeToken_Success() 
+                    : Messages.ApiTokenProperty_ChangeToken_SuccessHidden());
         }
     }
 
