@@ -2219,8 +2219,18 @@ public class Queue extends ResourceController implements Saveable {
         public Calendar timestamp;
 
         public WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
-            super(project, actions, COUNTER.incrementAndGet(), new FutureImpl(project));
+            super(project, actions, incCurrentCounterValue(), new FutureImpl(project));
             this.timestamp = timestamp;
+        }
+
+        private static long incCurrentCounterValue() {
+            try {
+                return COUNTER.incrementAndGet();
+            } finally {
+                // Persist the queue state in case Jenkins
+                // dies unexpectedly. JENKINS-30909
+                getInstance().save();
+            }
         }
 
         static int getCurrentCounterValue() {

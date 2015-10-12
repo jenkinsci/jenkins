@@ -127,11 +127,21 @@ public class QueueTest {
         // prevent execution to push stuff into the queue
         r.jenkins.setNumExecutors(0);
 
+        File queueFile = new File(r.jenkins.getRootDir(), "queue.xml");
+        assertFalse(queueFile.exists());
+
         FreeStyleProject testProject = r.createFreeStyleProject("test");
         testProject.scheduleBuild(new UserIdCause());
+
+        // Make sure the queue file has been persisted from when the
+        // queue item was created. See JENKINS-30909
+        assertTrue(queueFile.exists());
+
+        // The queue state has been modified since the
+        // last save, so save again.
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
+        System.out.println(FileUtils.readFileToString(queueFile));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -142,7 +152,7 @@ public class QueueTest {
         assertEquals(1, q.getItems().length);
 
         // did it bind back to the same object?
-        assertSame(q.getItems()[0].task,testProject);
+        assertSame(q.getItems()[0].task, testProject);
     }
 
     /**
