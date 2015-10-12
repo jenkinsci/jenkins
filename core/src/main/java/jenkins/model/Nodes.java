@@ -155,6 +155,7 @@ public class Nodes implements Saveable {
             XmlFile xmlFile = new XmlFile(Jenkins.XSTREAM,
                     new File(new File(getNodesDir(), node.getNodeName()), "config.xml"));
             xmlFile.write(node);
+            SaveableListener.fireOnChange(this, xmlFile);
         }
     }
 
@@ -170,7 +171,7 @@ public class Nodes implements Saveable {
             Queue.withLock(new Runnable() {
                 @Override
                 public void run() {
-                        jenkins.trimLabels();
+                    jenkins.trimLabels();
                 }
             });
             persistNode(node);
