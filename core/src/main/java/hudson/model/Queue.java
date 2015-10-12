@@ -1619,7 +1619,7 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
-                LOGGER.log(Level.FINE, "Creating flyweight task {0} for machine {1}", new Object[]{p.task, c.getName()});
+                LOGGER.log(Level.FINE, "Creating flyweight task {0} for computer {1}", new Object[]{p.task.getFullDisplayName(), c.getName()});
                 return new Runnable() {
                     @Override public void run() {
                         c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
