@@ -1504,7 +1504,9 @@ public class Queue extends ResourceController implements Saveable {
                     List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
                     for (JobOffer j : parked.values()) {
                         if (j.canTake(p)) {
-                            LOGGER.log(Level.FINEST, "Potential candidate for ");
+                            LOGGER.log(Level.FINEST,
+                                    "{0} is a potential candidate for task {1}",
+                                    new Object[]{j.executor.getDisplayName(), p.task.getFullDisplayName()});
                             candidates.add(j);
                         }
                     }
