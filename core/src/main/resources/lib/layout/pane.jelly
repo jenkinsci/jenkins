@@ -48,20 +48,19 @@ THE SOFTWARE.
       Footer of the box. Can include HTML.
     </st:attribute>
   </st:documentation>
-  <j:set var="paneIsCollapsed" value="${h.isCollapsed(attrs.id)}" />
-  <div class="container-fluid pane-frame track-mouse ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
+  <div class="container-fluid pane-frame track-mouse" id="${attrs.id}">
     <div class="row">
       <div class="col-xs-24 pane-header">
         <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
-           title="${paneIsCollapsed ? '%expand' : '%collapse'}">
-          <l:icon alt="${paneIsCollapsed ? '%expand' : '%collapse'}" class="${paneIsCollapsed ? 'icon-expand' : 'icon-collapse'} icon-sm"/>
+           title="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}">
+          <l:icon alt="${h.isCollapsed(attrs.id) ? '%expand' : '%collapse'}" class="${h.isCollapsed(attrs.id) ? 'icon-expand' : 'icon-collapse'} icon-sm"/>
         </a>
         <j:out value="${title}"/>
       </div>
     </div>
     <j:choose>
       <div class="row pane-content">
-        <j:when test="${paneIsCollapsed}">
+        <j:when test="${h.isCollapsed(attrs.id)}">
           <div class="row">
             <div class="col-xs-24 cell">${attrs.collapsedText}</div>
           </div>

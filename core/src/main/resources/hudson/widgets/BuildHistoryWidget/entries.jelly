@@ -27,6 +27,52 @@ THE SOFTWARE.
   Render build histories.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:include page="entries.jelly" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <!-- pending build -->
+  <j:set var="queuedItems" value="${it.queuedItems}" />
+  <j:if test="${!pending.isEmpty()}">
+    <j:forEach var="item" items="${queuedItems}" indexVar="i">
+      <j:set var="id" value="${h.generateId()}"/>
+      <tr class="build-row build-pending transitive single-line" id="${id}">
+        <td class="build-row-cell">
+          <div class="pane build-name">
+            <div class="build-icon">
+              <l:icon class="icon-grey icon-sm"/>
+            </div>
+            <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
+            <div class="display-name" title="${%Expected build number}">
+            #${queuedItems.size()==1 ? it.owner.nextBuildNumber
+               : it.owner.nextBuildNumber+queuedItems.size()-i-1}
+            </div>
+          </div>
+          <div class="pane build-details indent-multiline">
+            <j:set var="cause" value="${item.getCauseOfBlockage()}"/>
+            <j:choose>
+              <j:when test="${cause!=null}">
+                (${%pending}—<st:include it="${cause}" page="summary.jelly"/>)
+              </j:when>
+              <j:otherwise>
+                (${%pending})
+              </j:otherwise>
+            </j:choose>
+          <j:if test="${!item.params.isEmpty()}">
+            <div style="float:right;margin-right:10px;">
+              <a href="#" tooltip="Build Parameters:${h.escape(item.params)}"><l:icon class="icon-notepad icon-sm" /></a>
+            </div>
+          </j:if>
+          </div>
+          <div class="pane build-controls">
+            <div class="build-stop">
+              <j:if test="${item.hasCancelPermission()}">
+                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%cancel this build}"/>
+              </j:if>
+            </div>
+          </div>
+          <div class="left-bar"></div>
+        </td>
+      </tr>
+    </j:forEach>
+  </j:if>
+
+  <st:include page="/hudson/widgets/HistoryWidget/entries.jelly" />
 </j:jelly>
