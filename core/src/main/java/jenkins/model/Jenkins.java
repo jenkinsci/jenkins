@@ -864,12 +864,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
             }
 
+            // All plugins are loaded. Now we can figure out who depends on who.
+            resolveDependantPlugins();
+
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
         } finally {
             SecurityContextHolder.clearContext();
         }
+    }
+
+    private void resolveDependantPlugins() throws InterruptedException, ReactorException, IOException {
+        TaskGraphBuilder graphBuilder = new TaskGraphBuilder();
+
+        graphBuilder.add("Resolving Dependant Plugins Graph", new Executable() {
+            @Override
+            public void run(Reactor reactor) throws Exception {
+                pluginManager.resolveDependantPlugins();
+            }
+        });
+
+        executeReactor(null, graphBuilder);
     }
 
     /**
@@ -1733,6 +1749,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public void removeNode(@Nonnull Node n) throws IOException {
         nodes.removeNode(n);
+    }
+
+    /**
+     * Updates an existing {@link Node} on disk.
+     * @see Nodes#updateNode
+     */
+    public boolean updateNode(Node n) throws IOException {
+        return nodes.updateNode(n);
     }
 
     public void setNodes(final List<? extends Node> n) throws IOException {

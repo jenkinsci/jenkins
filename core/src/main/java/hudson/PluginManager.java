@@ -119,6 +119,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import static hudson.init.InitMilestone.*;
 import hudson.model.DownloadService;
 import hudson.util.FormValidation;
+
+import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -520,7 +522,31 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
 
+        // Redo who depends on who.
+        resolveDependantPlugins();
+
         LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
+    }
+
+    @Restricted(NoExternalUse.class)
+    public synchronized void resolveDependantPlugins() {
+        for (PluginWrapper plugin : plugins) {
+            Set<String> dependants = new HashSet<>();
+            for (PluginWrapper possibleDependant : plugins) {
+                // The plugin could have just been deleted. If so, it doesn't
+                // count as a dependant.
+                if (possibleDependant.isDeleted()) {
+                    continue;
+                }
+                List<Dependency> dependencies = possibleDependant.getDependencies();
+                for (Dependency dependency : dependencies) {
+                    if (dependency.shortName.equals(plugin.getShortName())) {
+                        dependants.add(possibleDependant.getShortName());
+                    }
+                }
+            }
+            plugin.setDependants(dependants);
+        }
     }
 
     /**
@@ -779,6 +805,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         boolean dynamicLoad = req.getParameter("dynamicLoad")!=null;
+        final List<Future<UpdateCenter.UpdateCenterJob>> deployJobs = new ArrayList<>();
 
         Enumeration<String> en = req.getParameterNames();
         while (en.hasMoreElements()) {
@@ -811,9 +838,36 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (p == null) {
                     throw new Failure("No such plugin: " + n);
                 }
-                p.deploy(dynamicLoad);
+                
+                deployJobs.add(p.deploy(dynamicLoad));
             }
         }
+        
+        // Fire a one-off thread to wait for the plugins to be deployed and then
+        // refresh the dependant plugins list.
+        new Thread() {
+            @Override
+            public void run() {
+                INSTALLING: while (true) {
+                    for (Future<UpdateCenter.UpdateCenterJob> deployJob : deployJobs) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            LOGGER.log(SEVERE, "Unexpected error while waiting for some plugins to install. Plugin Manager state may be invalid. Please restart Jenkins ASAP.", e);
+                        }
+                        if (!deployJob.isCancelled() && !deployJob.isDone()) {
+                            // One of the plugins is not installing/canceled, so
+                            // go back to sleep and try again in a while.
+                            continue INSTALLING;
+                        }
+                    }
+                    // All the plugins are installed. It's now safe to refresh.
+                    resolveDependantPlugins();
+                    break;
+                }
+            }
+        }.start();
+        
         rsp.sendRedirect("../updateCenter/");
     }
 
