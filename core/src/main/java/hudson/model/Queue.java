@@ -1424,9 +1424,9 @@ public class Queue extends ResourceController implements Saveable {
                 }
                 for (BlockedItem p : blockedItems) {
                     String taskDisplayName = p.task.getFullDisplayName();
-                    LOGGER.log(Level.FINER, "Current blocked item: {0}", taskDisplayName);
+                    LOGGER.log(Level.FINEST, "Current blocked item: {0}", taskDisplayName);
                     if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
-                        LOGGER.log(Level.INFO,
+                        LOGGER.log(Level.FINEST,
                                 "BlockedItem {0}: blocked -> buildable as the build is not blocked and new tasks are allowed",
                                 taskDisplayName);
 
@@ -1449,7 +1449,7 @@ public class Queue extends ResourceController implements Saveable {
                 WaitingItem top = peek();
 
                 if (top.timestamp.compareTo(new GregorianCalendar()) > 0) {
-                    LOGGER.log(Level.FINE, "Finished moving all ready items from queue.");
+                    LOGGER.log(Level.FINEST, "Finished moving all ready items from queue.");
                     break; // finished moving all ready items from queue
                 }
 
@@ -1460,7 +1460,7 @@ public class Queue extends ResourceController implements Saveable {
                     Runnable r = makeBuildable(new BuildableItem(top));
                     String topTaskDisplayName = top.task.getFullDisplayName();
                     if (r != null) {
-                        LOGGER.log(Level.FINE, "Executing runnable {0}", topTaskDisplayName);
+                        LOGGER.log(Level.FINEST, "Executing runnable {0}", topTaskDisplayName);
                         r.run();
                     } else {
                         LOGGER.log(Level.FINEST, "Item {0} was unable to be made a buildable and is now a blocked item.", topTaskDisplayName);
@@ -1528,16 +1528,16 @@ public class Queue extends ResourceController implements Saveable {
 
                     // found a matching executor. use it.
                     WorkUnitContext wuc = new WorkUnitContext(p);
-                    LOGGER.log(Level.FINER, "Found a matching executor for {0}. Using it.", taskDisplayName);
+                    LOGGER.log(Level.FINEST, "Found a matching executor for {0}. Using it.", taskDisplayName);
                     m.execute(wuc);
 
                     p.leave(this);
                     if (!wuc.getWorkUnits().isEmpty()) {
-                        LOGGER.log(Level.FINE, "BuildableItem {0} marked as pending.", taskDisplayName);
+                        LOGGER.log(Level.FINEST, "BuildableItem {0} marked as pending.", taskDisplayName);
                         makePending(p);
                     }
                     else
-                        LOGGER.log(Level.FINE, "BuildableItem {0} with empty work units!?", p);
+                        LOGGER.log(Level.FINEST, "BuildableItem {0} with empty work units!?", p);
 
                     // Ensure that identification of blocked tasks is using the live state: JENKINS-27708 & JENKINS-27871
                     // The creation of a snapshot itself should be relatively cheap given the expected rate of
@@ -1568,7 +1568,7 @@ public class Queue extends ResourceController implements Saveable {
             if (!isBlockedByShutdown(p.task)) {
 
                 Runnable runnable = makeFlyWeightTaskBuildable(p);
-                LOGGER.log(Level.FINE, "Converting flyweight task: {0} into a BuildableRunnable", taskDisplayName);
+                LOGGER.log(Level.FINEST, "Converting flyweight task: {0} into a BuildableRunnable", taskDisplayName);
                 if(runnable != null){
                     return runnable;
                 }
@@ -1581,7 +1581,7 @@ public class Queue extends ResourceController implements Saveable {
                 return new BuildableRunnable(p);
             }
             // if the execution gets here, it means the task is blocked by shutdown and null is returned.
-            LOGGER.log(Level.FINE, "Task {0} is blocked by shutdown.", taskDisplayName);
+            LOGGER.log(Level.FINEST, "Task {0} is blocked by shutdown.", taskDisplayName);
             return null;
         } else {
             // regular heavyweight task
@@ -1624,7 +1624,7 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
-                LOGGER.log(Level.FINE, "Creating flyweight task {0} for computer {1}", new Object[]{p.task.getFullDisplayName(), c.getName()});
+                LOGGER.log(Level.FINEST, "Creating flyweight task {0} for computer {1}", new Object[]{p.task.getFullDisplayName(), c.getName()});
                 return new Runnable() {
                     @Override public void run() {
                         c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
