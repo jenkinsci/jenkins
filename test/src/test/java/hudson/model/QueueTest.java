@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.Launcher;
 import hudson.XmlFile;
+import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.LabelAxis;
 import hudson.matrix.MatrixBuild;
@@ -41,7 +42,9 @@ import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
+import hudson.model.labels.LabelExpression;
 import hudson.model.queue.AbstractQueueTask;
+import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.SubTask;
@@ -50,6 +53,8 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.DummyCloudImpl;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisionerRule;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
@@ -99,6 +104,7 @@ import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.SequenceLock;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
@@ -779,5 +785,120 @@ public class QueueTest {
         assertTrue("Project B build should be finished before the build of project C starts. " +
                 "B finished at " + buildBEndTime + ", C started at " + buildC.getStartTimeInMillis(), 
                 buildC.getStartTimeInMillis() >= buildBEndTime);
+    }
+
+    @Issue("JENKINS-30084")
+    @Test
+    /*
+     * When a flyweight task is restricted to run on a specific node, the node will be provisioned
+     * and the flyweight task will be executed.
+     */
+    public void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Exception {
+        MatrixProject matrixProject = r.createMatrixProject();
+        matrixProject.setAxes(new AxisList(
+                new Axis("axis", "a", "b")
+        ));
+        Label label = LabelExpression.get("aws-linux-dummy");
+        DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
+        dummyCloud.label = label;
+        r.jenkins.clouds.add(dummyCloud);
+        matrixProject.setAssignedLabel(label);
+        r.assertBuildStatusSuccess(matrixProject.scheduleBuild2(0));
+        assertEquals("aws-linux-dummy", matrixProject.getBuilds().getLastBuild().getBuiltOn().getLabelString());
+    }
+
+    @Test
+    public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
+        MatrixProject matrixProject = r.createMatrixProject("downstream");
+        matrixProject.setDisplayName("downstream");
+        matrixProject.setAxes(new AxisList(
+                new Axis("axis", "a", "b")
+        ));
+
+        Label label = LabelExpression.get("aws-linux-dummy");
+        DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
+        dummyCloud.label = label;
+        BlockDownstreamProjectExecution property = new BlockDownstreamProjectExecution();
+        dummyCloud.getNodeProperties().add(property);
+        r.jenkins.clouds.add(dummyCloud);
+        matrixProject.setAssignedLabel(label);
+
+        FreeStyleProject upstreamProject = r.createFreeStyleProject("upstream");
+        upstreamProject.getBuildersList().add(new SleepBuilder(10000));
+        upstreamProject.setDisplayName("upstream");
+
+        //let's assume the flyweighttask has an upstream project and that must be blocked
+        // when the upstream project is running
+        matrixProject.addTrigger(new ReverseBuildTrigger("upstream", Result.SUCCESS));
+        matrixProject.setBlockBuildWhenUpstreamBuilding(true);
+
+        //we schedule the project but we pretend no executors are available thus
+        //the flyweight task is in the buildable queue without being executed
+        QueueTaskFuture downstream = matrixProject.scheduleBuild2(0);
+        if (downstream == null) {
+            throw new Exception("the flyweight task could not be scheduled, thus the test will be interrupted");
+        }
+        //let s wait for the Queue instance to be updated
+        while (Queue.getInstance().getBuildableItems().size() != 1) {
+            Thread.sleep(10);
+        }
+        //in this state the build is not blocked, it's just waiting for an available executor
+        assertFalse(Queue.getInstance().getItems()[0].isBlocked());
+
+        //we start the upstream project that should block the downstream one
+        QueueTaskFuture upstream = upstreamProject.scheduleBuild2(0);
+        if (upstream == null) {
+            throw new Exception("the upstream task could not be scheduled, thus the test will be interrupted");
+        }
+        //let s wait for the Upstream to enter the buildable Queue
+        boolean enteredTheQueue = false;
+        while (!enteredTheQueue) {
+            for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
+                if (item.task.getDisplayName() != null && item.task.getDisplayName().equals(upstreamProject.getDisplayName())) {
+                    enteredTheQueue = true;
+                }
+            }
+        }
+        //let's wait for the upstream project to actually start so that we're sure the Queue has been updated
+        //when the upstream starts the downstream has already left the buildable queue and the queue is empty
+        while (!Queue.getInstance().getBuildableItems().isEmpty()) {
+            Thread.sleep(10);
+        }
+        assertTrue(Queue.getInstance().getItems()[0].isBlocked());
+        assertTrue(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+
+        //once the upstream is completed, the downstream can join the buildable queue again.
+        r.assertBuildStatusSuccess(upstream);
+        while (Queue.getInstance().getBuildableItems().isEmpty()) {
+            Thread.sleep(10);
+        }
+        assertFalse(Queue.getInstance().getItems()[0].isBlocked());
+        assertTrue(Queue.getInstance().getBlockedItems().isEmpty());
+        assertTrue(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+    }
+
+    //let's make sure that the downstram project is not started before the upstream --> we want to simulate
+    // the case: buildable-->blocked-->buildable
+    public static class BlockDownstreamProjectExecution extends NodeProperty<Slave> {
+        @Override
+        public CauseOfBlockage canTake(Queue.BuildableItem item) {
+            if (item.task.getName().equals("downstream")) {
+                return new CauseOfBlockage() {
+                    @Override
+                    public String getShortDescription() {
+                        return "slave not provisioned";
+                    }
+                };
+            }
+            return null;
+        }
+
+        @TestExtension("shouldBeAbleToBlockFlyWeightTaskOnLastMinute")
+        public static class DescriptorImpl extends NodePropertyDescriptor {
+            @Override
+            public String getDisplayName() {
+                return "Some Property";
+            }
+        }
     }
 }

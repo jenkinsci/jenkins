@@ -75,6 +75,7 @@ import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.Iterators;
+import hudson.util.jna.GNUCLibrary;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
@@ -458,6 +459,15 @@ public class Functions {
 
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
+    }
+    
+    public static boolean isGlibcSupported() {
+        try {
+            GNUCLibrary.LIBC.getpid();
+            return true;
+        } catch(Throwable t) {
+            return false;
+        }
     }
 
     public static List<LogRecord> getLogRecords() {

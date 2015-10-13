@@ -24,6 +24,7 @@
  */
 package hudson;
 
+import com.google.common.collect.ImmutableSet;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.Api;
 import hudson.model.ModelObject;
@@ -40,7 +41,10 @@ import java.io.OutputStream;
 import java.io.Closeable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
@@ -57,6 +61,7 @@ import java.util.Enumeration;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Represents a Jenkins plug-in and associated control information
@@ -140,6 +145,54 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Is this plugin bundled in jenkins.war?
      */
     /*package*/ boolean isBundled;
+
+    /**
+     * List of plugins that depend on this plugin.
+     */
+    private Set<String> dependants = Collections.emptySet();
+
+    /**
+     * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
+     * depends on the plugin e.g. UI support library bundle plugin.
+     */
+    private static Set<String> CORE_ONLY_DEPENDANT = ImmutableSet.copyOf(Arrays.asList("jenkins-core"));
+
+    /**
+     * Set the list of components that depend on this plugin.
+     * @param dependants The list of components that depend on this plugin.
+     */
+    public void setDependants(@Nonnull Set<String> dependants) {
+        this.dependants = dependants;
+    }
+
+    /**
+     * Get the list of components that depend on this plugin.
+     * @return The list of components that depend on this plugin.
+     */
+    public @Nonnull Set<String> getDependants() {
+        if (isBundled && dependants.isEmpty()) {
+            return CORE_ONLY_DEPENDANT;
+        } else {
+            return dependants;
+        }
+    }
+
+    /**
+     * Does this plugin have anything that depends on it.
+     * @return {@code true} if something (Jenkins core, or another plugin) depends on this
+     * plugin, otherwise {@code false}.
+     */
+    public boolean hasDependants() {
+        return (isBundled || !dependants.isEmpty());
+    }
+    
+    /**
+     * Does this plugin depend on any other plugins.
+     * @return {@code true} if this plugin depends on other plugins, otherwise {@code false}.
+     */
+    public boolean hasDependencies() {
+        return (dependencies != null && !dependencies.isEmpty());
+    }
 
     @ExportedBean
     public static final class Dependency {
@@ -618,8 +671,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @RequirePOST
     public HttpResponse doDoUninstall() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins jenkins = Jenkins.getActiveInstance();
+        
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         archive.delete();
+
+        // Redo who depends on who.
+        jenkins.getPluginManager().resolveDependantPlugins();
+
         return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
     }
 

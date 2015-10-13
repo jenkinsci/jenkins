@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.629-SNAPSHOT</version>
+  <version>1.634-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -104,6 +104,8 @@ THE SOFTWARE.
     <test-annotations.version>1.2</test-annotations.version>
 
     <java.level>7</java.level>
+
+    <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
   </properties>
 
   <repositories>
@@ -853,6 +855,12 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>lts-release</id>
+      <properties>
+        <changelog.url>https://jenkins-ci.org/changelog-stable</changelog.url>
+      </properties>
     </profile>
     <profile>
       <id>m2e</id>

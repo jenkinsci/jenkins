@@ -201,6 +201,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
+import java.nio.channels.ClosedByInterruptException;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.ClassDescriptor;
@@ -704,7 +705,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         mvn.copyFrom(JenkinsRule.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         mvn.unzip(new FilePath(buildDirectory));
         // TODO: switch to tar that preserves file permissions more easily
-        if(!Functions.isWindows())
+        if(Functions.isGlibcSupported())
             GNUCLibrary.LIBC.chmod(new File(mvnHome, "bin/mvn").getPath(),0755);
 
         Maven.MavenInstallation mavenInstallation = new Maven.MavenInstallation("default",
@@ -728,7 +729,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
-            if(!Functions.isWindows())
+            if(Functions.isGlibcSupported())
                 GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
 
             antInstallation = new Ant.AntInstallation("default", new File(antHome,"apache-ant-1.8.1").getAbsolutePath(),NO_PROPERTIES);
@@ -1806,7 +1807,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
                             File dst = new File(home, "plugins/" + artifactId + ".jpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
-                                FileUtils.copyFile(dependencyJar, dst);
+                                try {
+                                    FileUtils.copyFile(dependencyJar, dst);
+                                } catch (ClosedByInterruptException x) {
+                                    throw new AssumptionViolatedException("copying dependencies was interrupted", x);
+                                }
                             }
                         }
                     }
@@ -2437,7 +2442,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         // this also prevents tests from falsely advertising Hudson
         DNSMultiCast.disabled = true;
 
-        if (!Functions.isWindows()) {
+        if (Functions.isGlibcSupported()) {
             try {
                 GNUCLibrary.LIBC.unsetenv("MAVEN_OPTS");
                 GNUCLibrary.LIBC.unsetenv("MAVEN_DEBUG_OPTS");
