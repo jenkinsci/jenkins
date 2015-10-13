@@ -31,7 +31,8 @@
 			<h2 id="{{id @key}}" class="expanded">{{@key}} {{pluginCountForCategory @key}}</h2>
 			<div class="plugins-for-category">
 				{{#each this}}
-				<label class="{{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}}" id="row-{{plugin.name}}" data-tooltip="{{dependencyText this}}">
+				<label class="{{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}}" id="row-{{plugin.name}}"
+					{{#hasDependencies plugin.name}}data-tooltip="{{../../../translations.installWizard_installCustom_dependenciesPrefix}}: {{dependencyText ../plugin.name}}"{{/hasDependencies}}>
 					<span class="title">
 						<input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
 						{{plugin.title}}

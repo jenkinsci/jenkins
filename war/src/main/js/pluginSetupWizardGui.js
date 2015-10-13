@@ -58,12 +58,35 @@ var createPluginSetupWizard = function() {
 		}
 	});
 
+	// executes a block if there are dependencies
+	Handlebars.registerHelper('hasDependencies', function(plugName, options) {
+		var plug = availablePlugins[plugName];
+		if(plug && plug.allDependencies && plug.allDependencies.length > 1) { // includes self
+			return options.fn();
+		}
+	});
+
+	// gets user friendly dependency text
 	Handlebars.registerHelper('dependencyText', function(plugName) {
 		var plug = availablePlugins[plugName];
 		if(!plug) {
 			return '';
 		}
-		return plug.allDependencies.join(', ');
+		var deps = $.grep(plug.allDependencies, function(value) { // remove self
+			return value != plugName;
+		});
+		var out = '';
+		for(var i = 0; i < deps.length; i++) {
+			if(i > 0) {
+				out += ', ';
+			}
+			var depName = deps[i];
+			var dep = availablePlugins[depName];
+			if(dep) {
+				out += dep.title;
+			}
+		}
+		return out;
 	});
 
 	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
@@ -109,27 +132,27 @@ var createPluginSetupWizard = function() {
 	var $container = $wizard.find('.modal-content');
 	var currentPanel;
 	
+	// show tooltips; this is done here to work around a bootstrap/prototype incompatibility
+	$(document).on('mouseenter', '*[data-tooltip]', function() {
+		var $tip = $bs(this);
+		var text = $tip.attr('data-tooltip');
+		if(!text) {
+			return;
+		}
+		// prototype/bootstrap tooltip incompatibility - triggering main element to be hidden
+		this.hide = undefined;
+		$tip.tooltip({
+			html: true,
+			title: text
+		}).tooltip('show');
+	});
+	
 	// localized messages
 	var translations = {};
 	
 	var decorations = [
         function($base) {
-        	var $tips = $base.find('*[data-tooltip]');
-        	$tips.each(function() {
-        		var $tip = $bs(this);
-        		var text = $tip.attr('data-tooltip');
-        		if(!text) {
-        			return;
-        		}
-        		$tip.tooltip({
-        			html: true,
-        			title: text
-        		}).on('hide.bs.tooltip', function(e) {
-        			// prototype/bootstrap tooltip incompatibility - triggering main element to be hidden
-        			e.preventDefault();
-        			$tip.next(".tooltip").remove();
-        		});
-        	});
+        	// any decorations after DOM replacement go here
         }
     ];
 	
@@ -267,7 +290,7 @@ var createPluginSetupWizard = function() {
 					}
 				}
 				
-				if(total == 0) { // don't end while there are actual pending plugins
+				if(total === 0) { // don't end while there are actual pending plugins
 					total = installingPlugins.length;
 				}
 				
@@ -305,9 +328,9 @@ var createPluginSetupWizard = function() {
 							if(installing.name == j.name) {
 								installing.installStatus = state;
 							}
-							else if(installing.installStatus == 'pending' // if no progress
-							&& installing.allDependencies.indexOf(j.name) >= 0 // and we have a dependency
-							&& ('installing' == state || 'success' == state)) { // installing or successful 
+							else if(installing.installStatus == 'pending' && // if no progress
+									installing.allDependencies.indexOf(j.name) >= 0 && // and we have a dependency
+									('installing' == state || 'success' == state)) { // installing or successful 
 								installing.installStatus = 'installing'; // show this is installing
 							}
 						}
@@ -364,12 +387,13 @@ var createPluginSetupWizard = function() {
 	// load the plugin data, callback
 	var loadPluginData = function(oncomplete) {
 		pluginManager.availablePlugins(handleGenericError(function(availables) {
-			for(var i = 0; i < availables.length; i++) {
-				var plug = availables[i];
+			var i, plug;
+			for(i = 0; i < availables.length; i++) {
+				plug = availables[i];
 				availablePlugins[plug.name] = plug;
 			}
-			for(var i = 0; i < availables.length; i++) {
-				var plug = availables[i];
+			for(i = 0; i < availables.length; i++) {
+				plug = availables[i];
 				plug.allDependencies = getAllDependencies(plug.name);
 			}
 			oncomplete();
@@ -574,7 +598,7 @@ var createPluginSetupWizard = function() {
 		}, 250, function() {
 			var top = $pl.scrollTop() + $el.position().top;
 			$pl.stop(true).scrollTop(top);
-		})
+		});
 	};
 	
 	// handle show/hide details during the installation progress panel
@@ -624,7 +648,7 @@ var createPluginSetupWizard = function() {
 			
 			pingUntilRestarted();
 		});
-	}
+	};
 	
 	// close the installer, mark not to show again
 	var closeInstaller = function() {

@@ -47,7 +47,7 @@ exports.pluginNames = function() {
  */
 exports.recommendedPluginNames = function() {
     return plugins.recommendedPlugins;
-}
+};
 
 /**
  * Call this function to install plugins, will pass a correlationId to the complete callback which
@@ -171,7 +171,7 @@ exports.isRestartRequired = function(handler) {
 			handler.call({ isError: true, message: errorThrown });
 		}
 	});
-}
+};
 
 /**
  * Restart Jenkins
