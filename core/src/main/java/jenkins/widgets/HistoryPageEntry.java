@@ -59,14 +59,7 @@ public class HistoryPageEntry<T> {
             return ((Queue.Item) entry).getId();
         } else if (entry instanceof Run) {
             Run run = (Run) entry;
-            long queueId = run.getQueueId();
-            if (queueId == Run.QUEUE_ID_UNKNOWN) {
-                // Backward compatibility. This is a run from before the Queue.Item IDs
-                // were mapped onto their resulting Run instance.
-                return (Integer.MIN_VALUE + run.getNumber());
-            } else {
-                return queueId;
-            }
+            return (Integer.MIN_VALUE + run.getNumber());
         } else {
             return Run.QUEUE_ID_UNKNOWN;
         }
