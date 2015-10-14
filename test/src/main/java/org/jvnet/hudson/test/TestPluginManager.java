@@ -28,6 +28,7 @@ import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
+import org.junit.Assert;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -56,7 +57,7 @@ import java.util.logging.Logger;
 public class TestPluginManager extends PluginManager {
     public static final PluginManager INSTANCE;
 
-    private TestPluginManager() throws IOException {
+    public TestPluginManager() throws IOException {
         // TestPluginManager outlives a Jetty server, so can't pass in ServletContext.
         super(null, Util.createTempDir());
     }
@@ -120,6 +121,19 @@ public class TestPluginManager extends PluginManager {
         }
 
         return names;
+    }
+    
+    /**
+     * Install a plugin from the resources directory.
+     * @param pluginName The plugin name.
+     * @throws IOException Error copying plugin.
+     */
+    public void installResourcePlugin(String pluginName) throws Exception {
+        URL res = getClass().getClassLoader().getResource("plugins/" + pluginName);
+        if (res == null) {
+            Assert.fail("Plugin '" + pluginName + "' not found in /resources/plugins.");
+        }
+        copyBundledPlugin(res, pluginName);
     }
 
     // Overwrite PluginManager#stop, not to release plugins in each tests.
