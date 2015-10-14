@@ -67,7 +67,7 @@ THE SOFTWARE.
         <d:invokeBody/>
       </div>
       <!-- project list -->
-      <div class="pane-frame">
+      <div class="pane-frame table">
         <table id="projectstatus" class="sortable pane bigtable stripped-odd">
           <tr class="header">
             <j:forEach var="col" items="${columnExtensions}">
