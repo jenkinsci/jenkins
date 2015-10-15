@@ -26,6 +26,7 @@ package hudson;
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
+import hudson.util.DirScanner;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
@@ -207,6 +208,66 @@ public class FilePathTest {
             assertEquals(1, fp.copyRecursiveTo(new FilePath(dst)));
     }
 
+    public void testCopyRecursiveToWithExe() throws Exception {
+	File tmp = Util.createTempDir();
+	File src = new File(tmp, "src");
+	File dst = new File(tmp, "dst");
+	File srcInDst = new File(dst, "src");
+	try {
+	    assertTrue(src.mkdir());
+	    assertTrue(dst.mkdir());
+	    File exFile = File.createTempFile("exFile", ".tmp", src);
+	    File noExFile = File.createTempFile("noExFile", ".tmp", src);
+	    assertTrue(exFile.setExecutable(true));
+	    assertTrue(noExFile.setExecutable(false));
+	    // Simulate old modification time
+	    assertTrue(exFile.setLastModified(exFile.lastModified()-1));
+	    assertTrue(noExFile.setLastModified(noExFile.lastModified()-1));
+	    FilePath fp = new FilePath(src);
+	    fp.copyRecursiveTo(new DirScanner.Full(), new FilePath(dst), "Test case copier.", true, false);
+	    File newExFile = new File(srcInDst, exFile.getName());
+	    File newNoExFile = new File(srcInDst, noExFile.getName());
+	    assertTrue(newExFile.exists());
+	    assertTrue(newExFile.canExecute());
+	    assertTrue(newNoExFile.exists());
+	    assertFalse(newNoExFile.canExecute());
+	    assertTrue(newExFile.lastModified() != exFile.lastModified());
+	    assertTrue(newNoExFile.lastModified() != noExFile.lastModified());
+	} finally {
+	    Util.deleteRecursive(tmp);
+	}
+    }
+
+    public void testCopyRecursiveToWithMtime() throws Exception {
+	File tmp = Util.createTempDir();
+	File src = new File(tmp, "src");
+	File dst = new File(tmp, "dst");
+	File srcInDst = new File(dst, "src");
+	try {
+	    assertTrue(src.mkdir());
+	    assertTrue(dst.mkdir());
+	    File exFile = File.createTempFile("exFile", ".tmp", src);
+	    File noExFile = File.createTempFile("noExFile", ".tmp", src);
+	    assertTrue(exFile.setExecutable(true));
+	    assertTrue(noExFile.setExecutable(false));
+	    // Simulate old modification time
+	    assertTrue(exFile.setLastModified(exFile.lastModified()-1));
+	    assertTrue(noExFile.setLastModified(noExFile.lastModified()-1));
+	    FilePath fp = new FilePath(src);
+	    fp.copyRecursiveTo(new DirScanner.Full(), new FilePath(dst), "Test case copier.", false, true);
+	    File newExFile = new File(srcInDst, exFile.getName());
+	    File newNoExFile = new File(srcInDst, noExFile.getName());
+	    assertTrue(newExFile.exists());
+	    assertFalse(newExFile.canExecute());
+	    assertTrue(newNoExFile.exists());
+	    assertFalse(newNoExFile.canExecute());
+	    assertTrue(newExFile.lastModified() == exFile.lastModified());
+	    assertTrue(newNoExFile.lastModified() == noExFile.lastModified());
+	} finally {
+	    Util.deleteRecursive(tmp);
+	}
+    }
+    
     @Issue("JENKINS-9540")
     @Test public void errorMessageInRemoteCopyRecursive() throws Exception {
         File src = temp.newFolder("src");

@@ -93,6 +93,16 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     private boolean fingerprint;
 
     /**
+     * Preserve execute bit when copying
+     */
+    private boolean preserveExecute;
+
+    /**
+     * Preserve modification time when copying
+     */
+    private boolean preserveMtime;
+
+    /**
      * Default ant exclusion
      */
     @Nonnull
@@ -189,6 +199,16 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         this.defaultExcludes = defaultExcludes;
     }
 
+    @DataBoundSetter
+    public final void setPreserveExecute(boolean preserveExecute) {
+	this.preserveExecute = preserveExecute;
+    }
+
+    @DataBoundSetter
+    public final void setPreserveMtime(boolean preserveMtime) {
+	this.preserveMtime = preserveMtime;
+    }
+    
     private void listenerWarnOrError(TaskListener listener, String message) {
     	if (allowEmptyArchive) {
     		listener.getLogger().println(String.format("WARN: %s", message));
@@ -216,7 +236,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes));
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
+                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files, this.preserveExecute, this.preserveMtime);
                 if (fingerprint) {
                     new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
                 }

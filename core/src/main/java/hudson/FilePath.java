@@ -2123,6 +2123,20 @@ public final class FilePath implements Serializable {
      * @since 1.532
      */
     public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description) throws IOException, InterruptedException {
+	return copyRecursiveTo(scanner, target, description, false, false);
+    }
+
+    /**
+     * Copies files according to a specified scanner to a target node.
+     * @param scanner a way of enumerating some files (must be serializable for possible delivery to remote side)
+     * @param target the destination basedir
+     * @param description a description of the fileset, for logging purposes
+     * @param preserveExecute if true, sets the execute bit on the target if the execute bit is set on the source
+     * @param preserveMtime if true, sets the modification time of the target to match the modification time of the source
+     * @return the number of files copied
+     */
+    public int copyRecursiveTo(final DirScanner scanner, final FilePath target, final String description,
+			       final boolean preserveExecute, final boolean preserveMtime) throws IOException, InterruptedException {
         if(this.channel==target.channel) {
             // local to local copy.
             return act(new SecureFileCallable<Integer>() {
@@ -2139,6 +2153,12 @@ public final class FilePath implements Serializable {
                                 File target = new File(dest, relativePath);
                                 mkdirsE(target.getParentFile());
                                 Util.copyFile(f, writing(target));
+                                if (preserveExecute) {
+                                    target.setExecutable(f.canExecute());
+                                }
+                                if (preserveMtime) {
+                                    target.setLastModified(f.lastModified());
+                                }
                                 count.incrementAndGet();
                             }
                         }

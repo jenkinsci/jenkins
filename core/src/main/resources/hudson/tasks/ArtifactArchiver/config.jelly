@@ -43,5 +43,11 @@ THE SOFTWARE.
         <f:entry field="defaultExcludes" >
           <f:checkbox title="${%defaultExcludes}" default="true"/>
         </f:entry>
+    <f:entry field="preserveExecute" >
+      <f:checkbox title="${%preserveExecute}" default="true"/>
+    </f:entry>
+    <f:entry field="preserveMtime" >
+      <f:checkbox title="${%preserveMtime}" default="true"/>
+    </f:entry>
   </f:advanced>
 </j:jelly>
