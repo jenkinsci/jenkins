@@ -1897,6 +1897,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         }
     }
 
+    var updateBuildsRefreshInterval = 5000;
     function updateBuilds() {
         if(isPageVisible()){
             if (bh.headers == null) {
@@ -1947,13 +1948,12 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     createRefreshTimeout();
                 }
 	        });
-	} else {
+	    } else {
             // Reschedule again
 	        createRefreshTimeout();
         }
     }
 
-    var updateBuildsRefreshInterval = 5000;
     var buildRefreshTimeout;
     function createRefreshTimeout() {
         cancelRefreshTimeout();
@@ -1968,7 +1968,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
 
     createRefreshTimeout();
     checkAllRowCellOverflows();
-    window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
 
     onBuildHistoryChange(function() {
         checkAllRowCellOverflows();
@@ -2005,10 +2004,10 @@ function updateBuildHistory(ajaxUrl,nBuild) {
             return buildHistoryPage.getAttribute('page-has-down') === 'true';
         }
         function getNewestEntryId() {
-            return parseInt(buildHistoryPage.getAttribute('page-entry-newest'));
+            return buildHistoryPage.getAttribute('page-entry-newest');
         }
         function getOldestEntryId() {
-            return parseInt(buildHistoryPage.getAttribute('page-entry-oldest'));
+            return buildHistoryPage.getAttribute('page-entry-oldest');
         }
         function updatePageParams(dataTable) {
             buildHistoryPage.setAttribute('page-has-up', dataTable.getAttribute('page-has-up'));
@@ -2106,8 +2105,13 @@ function updateBuildHistory(ajaxUrl,nBuild) {
             loadPage({'newer-than': getNewestEntryId()});
         });
         pageDown.observe('click', function() {
-            cancelRefreshTimeout();
-            loadPage({'older-than': getOldestEntryId()});
+            if (hasPageDown()) {
+                cancelRefreshTimeout();
+                loadPage({'older-than': getOldestEntryId()});
+            } else {
+                // wrap back around to the top
+                loadPage();
+            }
         });
 
         togglePageUpDown();
