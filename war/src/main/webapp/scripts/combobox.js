@@ -118,6 +118,8 @@ function ComboBox(idOrField, callback, config) {
 			if (this.oldonsubmit) this.oldonsubmit();
 			return true;
 		};
+		// repopulate and display the dropdown
+		this.comboBox.valueChanged();
 	}
 	this.field.onblur = function() {
 		var cb = this.comboBox;
