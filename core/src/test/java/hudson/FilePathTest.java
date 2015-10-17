@@ -63,6 +63,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
@@ -538,6 +539,25 @@ public class FilePathTest {
             } catch (InterruptedException x) {
                 // good
             }
+    }
+    
+    @Issue("5253")
+    public void testValidateCaseSensitivity() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath d = new FilePath(channels.french, tmp.getPath());
+            d.child("d1/d2/d3").mkdirs();
+            d.child("d1/d2/d3/f.txt").touch(0);
+            d.child("d1/d2/d3/f.html").touch(0);
+            d.child("d1/d2/f.txt").touch(0);
+            
+            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+            assertEquals(Messages.FilePath_validateAntFileMask_matchWithCaseInsensitive("**/D1/**/F.*"), d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+            assertEquals(null, d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
     }
    
     @Issue("JENKINS-15418")
