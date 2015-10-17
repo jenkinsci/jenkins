@@ -64,6 +64,9 @@ Upcoming changes</a>
   <li class="bug">
     Prevent <code>ClassCastException</code> in <code>AbstractBuild::reportError()</code> if the build step is not Publisher.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30730">issue 30730</a>)
+  <li class="bug">
+    Trim job names during the rename operation (it is impossible to delete or rename jobs with trailing spaces).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30502">issue 30502</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v1.633>What's new in 1.633</a> (2015/10/11)</h3>
