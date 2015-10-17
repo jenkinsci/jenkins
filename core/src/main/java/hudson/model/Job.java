@@ -1210,7 +1210,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             String newName = req.getParameter("name");
             final ProjectNamingStrategy namingStrategy = Jenkins.getInstance().getProjectNamingStrategy();
-            if (newName != null && !newName.equals(name)) {
+            if (validRename(name, newName)) {
+                newName = newName.trim();
                 // check this error early to avoid HTTP response splitting.
                 Jenkins.checkGoodName(newName);
                 namingStrategy.checkName(newName);
@@ -1229,6 +1230,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             Logger.getLogger(Job.class.getName()).log(Level.WARNING, "failed to parse " + json, e);
             sendError(e, req, rsp);
         }
+    }
+
+    private boolean validRename(String oldName, String newName) {
+        if (newName == null) {
+            return false;
+        }
+        boolean noChange = oldName.equals(newName);
+        boolean spaceAdded = oldName.equals(newName.trim());
+        return !noChange && !spaceAdded;
     }
 
     /**
