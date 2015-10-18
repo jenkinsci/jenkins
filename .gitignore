@@ -16,6 +16,7 @@ build
 
 # vim
 *~
+*.swp
 
 # ctags
 tags
