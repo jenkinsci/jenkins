@@ -31,7 +31,7 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly"/>
   <l:main-panel>
     <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager" />
-    <div class="pane-frame table">
+    <div class="pane-frame">
       <table id="pluginsAdv" class="pane" style="margin-top:0; border-top:none">
         <tr style="border-top:none; white-space: normal">
           <td>

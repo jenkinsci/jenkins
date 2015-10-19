@@ -57,7 +57,7 @@ THE SOFTWARE.
 
         <j:set var="isUpdates" value="${attrs.page=='updates'}" />
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
-        <div class="pane-frame table">
+        <div class="pane-frame">
           <table id="plugins" class="sortable pane bigtable stripped-odd">
             <tr>
               <th initialSortDir="${isUpdates?null:'down'}"

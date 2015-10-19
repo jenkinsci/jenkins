@@ -42,7 +42,7 @@ THE SOFTWARE.
         
       <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
-      <div class="pane-frame table">
+      <div class="pane-frame">
         <div class="plugins i18n" 
              data-cannot-enable="${%This plugin cannot be enabled}" 
              data-cannot-disable="${%This plugin cannot be disabled}" 
