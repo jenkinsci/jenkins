@@ -34,6 +34,7 @@ import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
+import java.util.concurrent.Callable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -157,6 +158,7 @@ public class Nodes implements Saveable {
             xmlFile.write(node);
             SaveableListener.fireOnChange(this, xmlFile);
         }
+        jenkins.getQueue().scheduleMaintenance();
     }
 
     /**
@@ -166,17 +168,27 @@ public class Nodes implements Saveable {
      * @param node the node to be updated.
      * @return {@code true}, if the node was updated. {@code false}, if the node was not in the list of nodes.
      * @throws IOException if the node could not be persisted.
+     * @since 1.634
      */
     public boolean updateNode(final @Nonnull Node node) throws IOException {
-        if (node == nodes.get(node.getNodeName())) {
-            Queue.withLock(new Runnable() {
+        boolean exists;
+        try {
+            exists = Queue.withLock(new Callable<Boolean>() {
                 @Override
-                public void run() {
-                    jenkins.trimLabels();
+                public Boolean call() throws Exception {
+                    if (node == nodes.get(node.getNodeName())) {
+                        jenkins.trimLabels();
+                        return true;
+                    }
+                    return false;
                 }
             });
+        } catch (Exception e) {
+            // can never happen
+            exists = false;
+        }
+        if (exists) {
             persistNode(node);
-            jenkins.getQueue().scheduleMaintenance();
             return true;
         }
         return false;

@@ -695,7 +695,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (node != null) {
             node.setTemporaryOfflineCause(offlineCause);
         }
-        Jenkins.getInstance().getQueue().scheduleMaintenance();
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
         }
