@@ -254,7 +254,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 String dirPath = dir.getRemote() + '/';
                 dirPath = dirPath.endsWith("/") ? dirPath : dirPath + "/";
                 if (!dirPath.startsWith(wsPath)) {
-                    listener.error(Messages.ArtifactArchiver_ContextOutsideWorkspace());
+                    listener.error(Messages.ArtifactArchiver_BasePathOutsideWorkspace());
                     build.setResult(Result.FAILURE);
                     return;
                 }
@@ -288,7 +288,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     if (dir == ws) {
                         message = Messages.ArtifactArchiver_NoMatchFound(artifacts);
                     } else {
-                        message = Messages.ArtifactArchiver_NoMatchFoundInContext(artifacts, basePath);
+                        message = Messages.ArtifactArchiver_NoMatchFoundInBasePath(artifacts, basePath);
                     }
 
 
@@ -372,10 +372,10 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             if (project == null) {
                 return FormValidation.ok();
             }
-            // Make sure context path is valid first, otherwise this suggests files outside the workspace
-            FormValidation contextPathValidation = doCheckBasePath(project, basePath);
-            if (contextPathValidation.kind != FormValidation.Kind.OK) {
-                // if context path is invalid, treat this like no workspace exists rather than e.g. show the same validation error twice
+            // Make sure base path is valid first, otherwise this suggests files outside the workspace
+            FormValidation basePathValidation = doCheckBasePath(project, basePath);
+            if (basePathValidation.kind != FormValidation.Kind.OK) {
+                // if base path is invalid, treat this like no workspace exists rather than e.g. show the same validation error twice
                 return FormValidation.ok();
             }
             FilePath ws = project.getSomeWorkspace();
@@ -391,7 +391,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             if (project == null) {
                 return FormValidation.ok();
             }
-            FilePath ws = null;
+            FilePath ws = project.getSomeWorkspace();
             FilePath reference;
             if (ws == null) {
                 // we're not writing anything, just checking whether the basePath escapes a reference directory
@@ -400,17 +400,17 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             } else {
                 reference = ws;
             }
-            FilePath context = reference.child(basePath);
-            if (!context.getRemote().startsWith(reference.getRemote())) {
-                return FormValidation.error(Messages.ArtifactArchiver_ContextOutsideWorkspace());
+            FilePath filePath = reference.child(basePath);
+            if (!filePath.getRemote().startsWith(reference.getRemote())) {
+                return FormValidation.error(Messages.ArtifactArchiver_BasePathOutsideWorkspace());
             }
 
             if (ws != null && ws.exists()) {
-                if (!context.exists()) {
-                    return FormValidation.warning(Messages.ArtifactArchiver_ContextDoesNotExist());
+                if (!filePath.exists()) {
+                    return FormValidation.warning(Messages.ArtifactArchiver_BasePathDoesNotExist());
                 }
-                if (!context.isDirectory()) {
-                    return FormValidation.warning(Messages.ArtifactArchiver_ContextIsFile());
+                if (!filePath.isDirectory()) {
+                    return FormValidation.warning(Messages.ArtifactArchiver_BasePathIsFile());
                 }
             }
 

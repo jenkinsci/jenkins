@@ -345,6 +345,7 @@ public class ArtifactArchiverTest {
         Assert.assertEquals("no workspace", FormValidation.Kind.OK, desc.doCheckBasePath(p, "foo").kind);
         Assert.assertEquals("relative path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
         Assert.assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
+        Assert.assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "../workfoo").kind);
 
         // create workspace for the project
         p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));
@@ -352,7 +353,7 @@ public class ArtifactArchiverTest {
 
         Assert.assertEquals("workspace exists but path does not", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "foo").kind);
         Assert.assertEquals("workspace exists and path does", FormValidation.Kind.OK, desc.doCheckBasePath(p, "module").kind);
-        Assert.assertEquals("file specified as context path", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "module/dist/target/file").kind);
+        Assert.assertEquals("file specified as base path", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "module/dist/target/file").kind);
         Assert.assertEquals("relative path breakout", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
 
         Assert.assertEquals("absolute path breakout", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
@@ -360,7 +361,7 @@ public class ArtifactArchiverTest {
 
     @Test
     @Issue("JENKINS-12379")
-    public void testContextPathNotExistingButOptional() throws Exception {
+    public void testBasePathNotExistingButOptional() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));
@@ -377,7 +378,7 @@ public class ArtifactArchiverTest {
 
     @Test
     @Issue("JENKINS-12379")
-    public void testContextPathIsAFile() throws Exception {
+    public void testBasePathIsAFile() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));

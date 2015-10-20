@@ -28,7 +28,7 @@ THE SOFTWARE.
 	  <f:textbox />
 	</f:entry>
   <f:advanced>
-    <f:entry title="${%Search Context}" field="contextPath">
+    <f:entry title="${%Base Path}" field="basePath">
       <f:textbox />
     </f:entry>
     <f:entry title="${%Excludes}" field="excludes">
