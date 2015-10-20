@@ -176,6 +176,7 @@ public class Nodes implements Saveable {
                 }
             });
             persistNode(node);
+            jenkins.getQueue().scheduleMaintenance();
             return true;
         }
         return false;
