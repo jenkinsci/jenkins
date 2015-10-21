@@ -27,8 +27,8 @@ var LastResponse = function(responses) {
 		if(responses.length > 0) {
 			return responses[counter-1];
 		}
-		return { status: 'fail' }
-	}
+		return { status: 'fail' };
+	};
 };
 
 // common mocks for jQuery $.ajax
@@ -102,7 +102,9 @@ var ajaxMocks = function(responseMappings) {
     }
 
     return function(call) {
-        if(debug) console.log('AJAX call: ' + call.url);
+        if(debug) {
+            console.log('AJAX call: ' + call.url);
+        }
         
         var response = responseMappings[call.url];
         if (!response) {
@@ -186,9 +188,11 @@ describe("pluginSetupWizard.js", function () {
 		    try {
 			    // Respond with failure
 		    	jenkins.get = function(url, cb) {
-			    	if(debug) console.log('Jenkins.GET: ' + url);
+			    	if (debug) {
+                        console.log('Jenkins.GET: ' + url);
+                    }
 			    	
-			    	if(url == '/updateCenter/connectionStatus?siteId=default') {
+			    	if(url === '/updateCenter/connectionStatus?siteId=default') {
 			    		cb({
 		    				status: 'ok',
 			    			data: {
@@ -198,7 +202,7 @@ describe("pluginSetupWizard.js", function () {
 			    		});
 			    	}
 			    	else {
-				    	get(url, cb)
+				    	get(url, cb);
 			    	}
 			    };
 			    
@@ -219,8 +223,6 @@ describe("pluginSetupWizard.js", function () {
 	
     it("install defaults", function (done) {
         test(function($) {
-            var jenkins = jsTest.requireSrcModule('util/jenkins');
-            
             // Make sure the dialog was shown
             var wizard = $('.plugin-setup-wizard');
             expect(wizard.size()).toBe(1);
@@ -239,11 +241,11 @@ describe("pluginSetupWizard.js", function () {
     
     var doit = function($, sel, trigger) {
     	var $el = $(sel);
-    	if($el.length != 1) {
+    	if($el.length !== 1) {
     		console.log('Not found! ' + sel);
             console.log(new Error().stack);
     	}
-    	if(trigger == 'check') {
+    	if(trigger === 'check') {
     		$el.prop('checked', true);
     		trigger = 'change';
     	}

@@ -24,7 +24,7 @@ var createPluginSetupWizard = function() {
 		var cnt = 0;
 		for(var i = 0; i < plugs.length; i++) {
 			var plug = plugs[i];
-			if(plug.category == cat) {
+			if(plug.category === cat) {
 				tot++;
 				if(selectedPluginNames.indexOf(plug.plugin.name) >= 0) {
 					cnt++;
@@ -73,7 +73,7 @@ var createPluginSetupWizard = function() {
 			return '';
 		}
 		var deps = $.grep(plug.allDependencies, function(value) { // remove self
-			return value != plugName;
+			return value !== plugName;
 		});
 		var out = '';
 		for(var i = 0; i < deps.length; i++) {
@@ -105,7 +105,7 @@ var createPluginSetupWizard = function() {
 		return function() {
 			if(this.isError) {
 				var errorMessage = this.errorMessage;
-				if(!errorMessage || this.errorMessage == 'timeout') {
+				if(!errorMessage || this.errorMessage === 'timeout') {
 					errorMessage = translations.installWizard_error_connection;
 				}
 				else {
@@ -151,7 +151,7 @@ var createPluginSetupWizard = function() {
 	var translations = {};
 	
 	var decorations = [
-        function($base) {
+        function() {
         	// any decorations after DOM replacement go here
         }
     ];
@@ -164,13 +164,13 @@ var createPluginSetupWizard = function() {
 			}
 		};
 		var html = panel($.extend({translations: translations}, data));
-		if(panel == currentPanel) { // just replace id-marked elements
+		if(panel === currentPanel) { // just replace id-marked elements
 			var $upd = $(html);
 			$upd.find('*[id]').each(function() {
 				var $el = $(this);
 				var $existing = $('#'+$el.attr('id'));
 				if($existing.length > 0) {
-					if($el[0].outerHTML != $existing[0].outerHTML) {
+					if($el[0].outerHTML !== $existing[0].outerHTML) {
 						$existing.replaceWith($el);
 						decorate($el);
 					}
@@ -305,7 +305,7 @@ var createPluginSetupWizard = function() {
 					j = jobs[i];
 					var txt = false;
 					var state = false;
-					if('true' == j.requiresRestart) {
+					if('true' === j.requiresRestart) {
 						restartRequired = true;
 					}
 					
@@ -325,12 +325,12 @@ var createPluginSetupWizard = function() {
 					if(txt && state) {
 						for(var installingIdx = 0; installingIdx < installingPlugins.length; installingIdx++) {
 							var installing = installingPlugins[installingIdx];
-							if(installing.name == j.name) {
+							if(installing.name === j.name) {
 								installing.installStatus = state;
 							}
-							else if(installing.installStatus == 'pending' && // if no progress
+							else if(installing.installStatus === 'pending' && // if no progress
 									installing.allDependencies.indexOf(j.name) >= 0 && // and we have a dependency
-									('installing' == state || 'success' == state)) { // installing or successful 
+									('installing' === state || 'success' === state)) { // installing or successful 
 								installing.installStatus = 'installing'; // show this is installing
 							}
 						}
@@ -366,7 +366,6 @@ var createPluginSetupWizard = function() {
 				else {
 					// mark complete
 					$('.progress-bar').css({width: '100%'});
-					installId = null;
 					setPanel(successPanel, {
 						installingPlugins : installingPlugins,
 						restartRequired: restartRequired
@@ -490,8 +489,9 @@ var createPluginSetupWizard = function() {
         }
         for (i = 0; i<n; i++) {
             child = element.childNodes[i];
-            if (child.nodeType===1)
+            if (child.nodeType === 1) {
                 walk(elements, child, text, xform);
+            }
         }
     };
     
@@ -509,7 +509,7 @@ var createPluginSetupWizard = function() {
 	// scroll to the next match
 	var scrollPlugin = function($pl, matches, term) {
 		if(matches.length > 0) {
-			if(lastSearch != term) {
+			if(lastSearch !== term) {
 				findIndex = 0;
 			}
 			else {
@@ -542,13 +542,13 @@ var createPluginSetupWizard = function() {
 		$pl.find('h2').removeClass('match');
 		
 		if(text.length > 1) {
-			if(text == 'show:selected') {
+			if(text === 'show:selected') {
 				$('.plugin-list .selected').addClass('match');
 			}
 			else {
 				var matches = findElementsWithText($pl[0], text.toLowerCase(), function(d) { return d.toLowerCase(); });
 				$(matches).parents('label').addClass('match');
-				if(lastSearch != text && scroll) {
+				if(lastSearch !== text && scroll) {
 					scrollPlugin($pl, matches, text);
 				}
 			}
@@ -563,7 +563,7 @@ var createPluginSetupWizard = function() {
 	};
 	
 	// handle input for the search here
-	$wizard.on('keyup change', '.plugin-select-controls input[name=searchbox]', function(e) {
+	$wizard.on('keyup change', '.plugin-select-controls input[name=searchbox]', function() {
 		var val = $(this).val();
 		searchForPlugins(val, true);
 	});
@@ -578,7 +578,7 @@ var createPluginSetupWizard = function() {
 	var toggleSelectedSearch = function() {
 		var $srch = $('input[name=searchbox]');
 		var val = 'show:selected';
-		if($srch.val() == val) {
+		if($srch.val() === val) {
 			val = '';
 		}
 		$srch.val(val);
@@ -589,7 +589,6 @@ var createPluginSetupWizard = function() {
 	var selectCategory = function() {
 		$('input[name=searchbox]').val('');
 		searchForPlugins('', false);
-		var id = $(this).attr('href');
 		var $el = $($(this).attr('href'));
 		var $pl = $('.plugin-list');
 		var top = $pl.scrollTop() + $el.position().top;

@@ -177,7 +177,7 @@ exports.isRestartRequired = function(handler) {
  * Restart Jenkins
  */
 exports.restartJenkins = function(handler) {
-	jenkins.get('/updateCenter/safeRestart', function(response) {
+	jenkins.get('/updateCenter/safeRestart', function() {
 		handler.call({ isError: false });
 	}, {
 		timeout: pluginManagerErrorTimeoutMillis,

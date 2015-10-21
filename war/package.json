@@ -5,10 +5,9 @@
   "license": "MIT",
   "devDependencies": {
     "gulp": "^3.9.0",
-    "jenkins-js-builder": "0.0.24",
-    "jenkins-js-test": "0.0.15",
     "handlebars": "^3.0.3",
-    "gulp-jshint": "^1.11.2"
+    "jenkins-js-builder": "0.0.26",
+    "jenkins-js-test": "0.0.15"
   },
   "dependencies": {
     "jenkins-handlebars-rt": "^1.0.1",

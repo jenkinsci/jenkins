@@ -75,7 +75,9 @@ exports.goTo = function(url) {
  * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
  */
 exports.get = function(url, success, options) {
-	if(debug) console.log('get: ' + url);
+	if(debug) {
+        console.log('get: ' + url);
+    }
 	var $ = jquery.getJQuery();
 	var args = {
 		url: exports.baseUrl() + url,
@@ -95,7 +97,9 @@ exports.get = function(url, success, options) {
  * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
  */
 exports.post = function(url, data, success, options) {
-	if(debug) console.log('post: ' + url);
+	if(debug) {
+        console.log('post: ' + url);
+    }
 	var $ = jquery.getJQuery();
 	var args = {
 		url: exports.baseUrl() + url,
@@ -119,15 +123,21 @@ exports.initHandlebars = function() {
 	var Handlebars = require('handlebars');
 	
 	Handlebars.registerHelper('ifeq', function(o1, o2, options) {
-		if(o1 == o2) { return options.fn(); }
+		if(o1 === o2) { 
+            return options.fn(); 
+        }
 	});
 
 	Handlebars.registerHelper('ifneq', function(o1, o2, options) {
-		if(o1 != o2) { return options.fn(); }
+		if(o1 !== o2) { 
+            return options.fn(); 
+        }
 	});
 
 	Handlebars.registerHelper('in-array', function(arr, val, options) {
-		if(arr.indexOf(val) >= 0) { return options.fn(); }
+		if(arr.indexOf(val) >= 0) { 
+            return options.fn(); 
+        }
 	});
 
 	Handlebars.registerHelper('id', exports.idIfy);
@@ -141,7 +151,7 @@ exports.initHandlebars = function() {
  */
 exports.loadTranslations = function(bundleName, handler, onError) {
 	exports.get('/i18n/resourceBundle?baseName='  +bundleName, function(res) {
-		if(res.status != 'ok') {
+		if(res.status !== 'ok') {
 			if(onError) {
 				onError(res.message);
 			}
@@ -164,7 +174,7 @@ exports.testConnectivity = function(handler) {
 				setTimeout(testConnectivity, 100);
 			}
 			else {
-				if(response.status != 'ok' || response.data.updatesite != 'OK' || response.data.internet != 'OK') {
+				if(response.status !== 'ok' || response.data.updatesite !== 'OK' || response.data.internet !== 'OK') {
 					// no connectivity
 					handler(false);
 				}
