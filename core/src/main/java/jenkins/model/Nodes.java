@@ -183,6 +183,9 @@ public class Nodes implements Saveable {
                     return false;
                 }
             });
+        } catch (RuntimeException e) {
+            // should never happen, but if it does let's do the right thing
+            throw e;
         } catch (Exception e) {
             // can never happen
             exists = false;
