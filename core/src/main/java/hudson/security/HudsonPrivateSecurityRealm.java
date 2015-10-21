@@ -541,12 +541,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Extension
         public static final class DescriptorImpl extends UserPropertyDescriptor {
+            @Override
             public String getDisplayName() {
-                // this feature is only when HudsonPrivateSecurityRealm is enabled
-                if(isEnabled())
-                    return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
-                else
-                    return null;
+                return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
             }
 
             @Override
@@ -568,6 +565,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             @Override
             public boolean isEnabled() {
+                // this feature is only when HudsonPrivateSecurityRealm is enabled
                 return Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 

@@ -149,10 +149,10 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     @Extension
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         @Override
-        public LastGrantedAuthoritiesProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new LastGrantedAuthoritiesProperty();
+        public boolean isEnabled() {
+            return false;
         }
-
+        
         public UserProperty newInstance(User user) {
             return null;
         }
