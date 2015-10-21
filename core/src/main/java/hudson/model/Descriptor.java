@@ -293,7 +293,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     /**
      * Human readable name of this kind of configurable object.
-     * By default, it uses {@link Class#getSimpleName} on {@link #clazz}, but this should be overridden for visible descriptors.
+     * Should be overridden for most descriptors, if the display name is visible somehow.
+     * As a fallback it uses {@link Class#getSimpleName} on {@link #clazz}, so for example {@code MyThing} from {@code some.pkg.MyThing.DescriptorImpl}.
      */
     public String getDisplayName() {
         return clazz.getSimpleName();
