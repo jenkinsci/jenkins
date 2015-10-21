@@ -138,6 +138,7 @@ public class Nodes implements Saveable {
                     jenkins.trimLabels();
                 }
             });
+            // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             persistNode(node);
         }
     }
@@ -191,6 +192,7 @@ public class Nodes implements Saveable {
             exists = false;
         }
         if (exists) {
+            // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             persistNode(node);
             return true;
         }
