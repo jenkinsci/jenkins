@@ -65,12 +65,7 @@ public class ViewPropertyTest extends HudsonTestCase {
         }
 
         @TestExtension
-        public static class DescriptorImpl extends ViewPropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return "Debug Property";
-            }
-        }
+        public static class DescriptorImpl extends ViewPropertyDescriptor {}
     }
 
     public void testInvisibleProperty() throws Exception {
@@ -98,11 +93,6 @@ public class ViewPropertyTest extends HudsonTestCase {
         }
 
         @TestExtension
-        public static class DescriptorImpl extends ViewPropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return null;
-            }
-        }
+        public static class DescriptorImpl extends ViewPropertyDescriptor {}
     }
 }

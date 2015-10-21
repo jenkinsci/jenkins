@@ -52,12 +52,7 @@ public class NodePropertyTest {
         }
 
         @TestExtension("invisibleProperty")
-        public static class DescriptorImpl extends NodePropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return null;
-            }
-        }
+        public static class DescriptorImpl extends NodePropertyDescriptor {}
     }
 
     @Test
@@ -86,11 +81,6 @@ public class NodePropertyTest {
         }
 
         @TestExtension("basicConfigRoundtrip")
-        public static class DescriptorImpl extends NodePropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return "Some Property";
-            }
-        }
+        public static class DescriptorImpl extends NodePropertyDescriptor {}
     }
 }

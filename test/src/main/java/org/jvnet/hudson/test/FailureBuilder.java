@@ -42,9 +42,6 @@ public class FailureBuilder extends MockBuilder {
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
-        public String getDisplayName() {
-            return "Always fail";
-        }
         public FailureBuilder newInstance(StaplerRequest req, JSONObject data) {
             return new FailureBuilder();
         }

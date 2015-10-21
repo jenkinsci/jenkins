@@ -184,11 +184,7 @@ public class HudsonTest {
     @Test
     @Email("http://www.nabble.com/1.286-version-and-description-The-requested-resource-%28%29-is-not--available.-td22233801.html")
     public void legacyDescriptorLookup() throws Exception {
-        Descriptor dummy = new Descriptor(HudsonTest.class) {
-            public String getDisplayName() {
-                return "dummy";
-            }
-        };
+        Descriptor dummy = new Descriptor(HudsonTest.class) {};
 
         BuildStep.PUBLISHERS.addRecorder(dummy);
         assertSame(dummy, j.jenkins.getDescriptor(HudsonTest.class.getName()));

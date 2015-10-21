@@ -279,11 +279,7 @@ public class RunParameterDefinitionTest {
         }
 
         public Descriptor<Publisher> getDescriptor() {
-            return new Descriptor<Publisher>(ResultPublisher.class) {
-                public String getDisplayName() {
-                    return "ResultPublisher";
-                }
-            };
+            return new Descriptor<Publisher>(ResultPublisher.class) {};
         }
     }
 }

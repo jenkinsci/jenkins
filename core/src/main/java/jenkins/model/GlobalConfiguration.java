@@ -51,14 +51,6 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
     }
 
-    /**
-     * Unless this object has additional web presence, display name is not used at all.
-     * So default to "".
-     */
-    public String getDisplayName() {
-        return "";
-    }
-
     @Override
     public String getGlobalConfigPage() {
         return getConfigPage();

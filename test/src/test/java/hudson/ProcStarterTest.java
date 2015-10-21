@@ -33,6 +33,7 @@ import hudson.tasks.BuildWrapperDescriptor;
 import java.io.IOException;
 import org.jvnet.hudson.test.Issue;
 import hudson.Launcher.DecoratedLauncher;
+import hudson.Launcher.ProcStarter;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -71,11 +72,6 @@ public class ProcStarterTest {
         @Override
         public boolean isApplicable(AbstractProject<?, ?> ap) {
             return true;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "testStub";
         }
     }
 

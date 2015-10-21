@@ -2049,11 +2049,6 @@ public abstract class HudsonTestCase extends TestCase implements RootAction {
             public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) {
                 throw new UnsupportedOperationException();
             }
-
-            @Override
-            public String getDisplayName() {
-                return this.getClass().getName();
-            }
         }
     }
 }

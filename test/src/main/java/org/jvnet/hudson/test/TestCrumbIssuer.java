@@ -42,11 +42,6 @@ public class TestCrumbIssuer extends CrumbIssuer
             load();
         }
 
-        @Override
-        public String getDisplayName() {
-            return "Test Crumb";
-        }
-        
         public TestCrumbIssuer newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new TestCrumbIssuer();
         }

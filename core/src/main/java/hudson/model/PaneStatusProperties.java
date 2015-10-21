@@ -52,11 +52,6 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
 		}
 
 		@Override
-		public String getDisplayName() {
-			return null;
-		}
-		
-		@Override
 		public boolean isEnabled() {
 			return false;
 		}

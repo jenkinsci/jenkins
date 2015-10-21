@@ -1805,10 +1805,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Extension
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
 
-        public String getDisplayName() {
-            return "";
-        }
-
         @Override
         public boolean isInstantiable() {
             return false;

@@ -50,9 +50,5 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
     }
 
     @Extension
-    public static final class DescriptorImpl extends Descriptor<PasswordTest> {
-        public String getDisplayName() {
-            return null;
-        }
-    }
+    public static final class DescriptorImpl extends Descriptor<PasswordTest> {}
 }

@@ -271,10 +271,6 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
 
     @Extension public static class DescriptorImpl extends TopLevelItemDescriptor {
 
-        @Override public String getDisplayName() {
-            return "MockFolder";
-        }
-
         @Override public TopLevelItem newInstance(ItemGroup parent, String name) {
             return new MockFolder(parent, name);
         }

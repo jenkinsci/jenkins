@@ -148,10 +148,6 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
 
     @Extension
     public static final class DescriptorImpl extends UserPropertyDescriptor {
-        public String getDisplayName() {
-            return null;    // not visible
-        }
-
         @Override
         public LastGrantedAuthoritiesProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new LastGrantedAuthoritiesProperty();

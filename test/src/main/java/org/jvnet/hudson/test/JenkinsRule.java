@@ -2358,11 +2358,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) {
                 throw new UnsupportedOperationException();
             }
-
-            @Override
-            public String getDisplayName() {
-                return this.getClass().getName();
-            }
         }
     }
 

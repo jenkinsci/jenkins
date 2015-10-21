@@ -62,11 +62,6 @@ class TextAreaTest {
                 this.text2 = "Received "+text1;
                 return FormValidation.ok();
             }
-
-            @Override
-            String getDisplayName() {
-                return this.class.name;
-            }
         }
 
     }

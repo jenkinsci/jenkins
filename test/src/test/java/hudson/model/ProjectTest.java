@@ -836,11 +836,7 @@ public class ProjectTest {
             return true;
         }
         @Override public SCMDescriptor<?> getDescriptor() {
-            return new SCMDescriptor<SCM>(null) {
-                @Override public String getDisplayName() {
-                    return "";
-                }
-            };
+            return new SCMDescriptor<SCM>(null) {};
         }
         
         @Override

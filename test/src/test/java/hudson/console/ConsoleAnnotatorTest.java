@@ -272,11 +272,7 @@ public class ConsoleAnnotatorTest {
         }
 
         @TestExtension
-        public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
-            public String getDisplayName() {
-                return "Dollar mark";
-            }
-        }
+        public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {}
     }
 
 
@@ -299,11 +295,7 @@ public class ConsoleAnnotatorTest {
         }
 
         @TestExtension("scriptInclusion")
-        public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
-            public String getDisplayName() {
-                return "just to include a script";
-            }
-        }
+        public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {}
     }
 
     @TestExtension("scriptInclusion")
@@ -373,11 +365,6 @@ public class ConsoleAnnotatorTest {
         public static final class DescriptorImpl extends SCMDescriptor<PollingSCM> {
             public DescriptorImpl() {
                 super(PollingSCM.class, RepositoryBrowser.class);
-            }
-
-            @Override
-            public String getDisplayName() {
-                return "Test SCM";
             }
         }
     }

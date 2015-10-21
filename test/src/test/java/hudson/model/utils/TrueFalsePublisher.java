@@ -35,8 +35,6 @@ public class TrueFalsePublisher extends Recorder {
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         @Override
-        public String getDisplayName() { return "return true or false"; }
-        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) { return true; }
     }
 }

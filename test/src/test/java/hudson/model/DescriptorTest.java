@@ -107,9 +107,6 @@ public class DescriptorTest {
         @Override public Builder newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
             return new BuilderImpl(id);
         }
-        @Override public String getDisplayName() {
-            return id;
-        }
         @Override public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -130,14 +127,12 @@ public class DescriptorTest {
     public static class D1 extends D {
         @DataBoundConstructor public D1() {}
         @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<D> {
-            @Override public String getDisplayName() {return "D 1";}
             @Override public String getId() {return "D1-id";}
         }
     }
     public static class D2 extends D {
         @DataBoundConstructor public D2() {}
         @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<D> {
-            @Override public String getDisplayName() {return "D 2";}
             @Override public String getId() {return "D2-id";}
         }
     }
@@ -150,9 +145,7 @@ public class DescriptorTest {
             listener.getLogger().println(ds);
             return true;
         }
-        @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<Builder> {
-            @Override public String getDisplayName() {return "B1";}
-        }
+        @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 
     @Ignore("never worked: TypePair.convertJSON looks for @DataBoundConstructor on D3 (Stapler does not grok Descriptor)")
@@ -187,9 +180,6 @@ public class DescriptorTest {
         @Override public D3 newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
             return new D3(id);
         }
-        @Override public String getDisplayName() {
-            return id;
-        }
     }
     @TestExtension("nestedDescribableSharingClass") public static final Descriptor<D3> d3a = new D3D("d3a");
     @TestExtension("nestedDescribableSharingClass") public static final Descriptor<D3> d3b = new D3D("d3b");
@@ -202,9 +192,7 @@ public class DescriptorTest {
             listener.getLogger().println(ds);
             return true;
         }
-        @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {
-            @Override public String getDisplayName() {return "B2";}
-        }
+        @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 
 }

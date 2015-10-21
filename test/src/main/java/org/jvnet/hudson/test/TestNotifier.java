@@ -41,11 +41,6 @@ public abstract class TestNotifier extends Notifier {
             public boolean isApplicable(Class<? extends AbstractProject> jobType) {
                 return true;
             }
-
-            @Override
-            public String getDisplayName() {
-                return "Bogus";
-            }
         };
     }
 
