@@ -119,7 +119,7 @@ public class DescriptorTest {
         FreeStyleProject p = rule.createFreeStyleProject("p");
         p.getBuildersList().add(new B1(Arrays.asList(new D1(), new D2())));
         rule.configRoundtrip(p);
-        rule.assertLogContains("[D 1, D 2]", rule.buildAndAssertSuccess(p));
+        rule.assertLogContains("[D1, D2]", rule.buildAndAssertSuccess(p));
     }
     public static abstract class D extends AbstractDescribableImpl<D> {
         @Override public String toString() {return getDescriptor().getDisplayName();}

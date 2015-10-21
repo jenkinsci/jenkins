@@ -59,7 +59,7 @@ public class NodePropertyTest {
     public void basicConfigRoundtrip() throws Exception {
         DumbSlave s = j.createSlave();
         HtmlForm f = j.createWebClient().goTo("computer/" + s.getNodeName() + "/configure").getFormByName("config");
-        ((HtmlLabel)DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Some Property']")).click();
+        ((HtmlLabel)DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='PropertyImpl']")).click();
         j.submit(f);
         PropertyImpl p = j.jenkins.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
         assertEquals("Duke",p.name);
