@@ -151,6 +151,30 @@ public class AbstractBuildTest {
         assertThat(log, containsString("Build step 'Bogus' marked build as failure"));
     }
 
+    @Test void fixEmptyDisplayName() {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        p.setDisplayName("");
+        assertEquals("An empty display name should be ignored.", "foo", p.getDisplayName());
+    }
+
+    @Test void fixBlankDisplayName() {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        p.setDisplayName(" ");
+        assertEquals("A blank display name should be ignored.", "foo", p.getDisplayName());
+    }
+
+    @Test void validDisplayName() {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        p.setDisplayName("bar");
+        assertEquals("A non-blank display name should be used.", "bar", p.getDisplayName());
+    }
+
+    @Test void trimValidDisplayName() {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        p.setDisplayName("    bar    ");
+        assertEquals("A non-blank display name with whitespace should be trimmed.", "bar", p.getDisplayName());
+    }
+
     private static class ThrowBuilder extends org.jvnet.hudson.test.TestBuilder {
         @Override public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             throw new NullPointerException();

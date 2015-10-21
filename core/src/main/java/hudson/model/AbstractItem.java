@@ -164,7 +164,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
     
     public void setDisplayName(String displayName) throws IOException {
-        this.displayName = Util.fixEmpty(displayName);
+        this.displayName = Util.fixEmptyAndTrim(displayName);
         save();
     }
              
