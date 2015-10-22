@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.629-SNAPSHOT</version>
+  <version>1.635-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -104,6 +104,8 @@ THE SOFTWARE.
     <test-annotations.version>1.2</test-annotations.version>
 
     <java.level>7</java.level>
+
+    <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
   </properties>
 
   <repositories>
@@ -149,24 +151,24 @@ THE SOFTWARE.
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.11</version>
+        <version>4.12</version>
       </dependency>
 
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>1.9.5</version>
+        <version>1.10.19</version>
       </dependency>
       
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.5.6</version>
+        <version>1.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
-        <version>1.5.6</version>
+        <version>1.6.2</version>
       </dependency>
 
       <dependency>
@@ -853,6 +855,12 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>lts-release</id>
+      <properties>
+        <changelog.url>https://jenkins-ci.org/changelog-stable</changelog.url>
+      </properties>
     </profile>
     <profile>
       <id>m2e</id>

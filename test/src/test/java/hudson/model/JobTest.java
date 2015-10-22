@@ -2,6 +2,7 @@
  * The MIT License
  * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2015 Christopher Simons
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +26,33 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.TextPage;
 
+import hudson.Functions;
 import hudson.util.TextFile;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.text.MessageFormat;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import jenkins.model.ProjectNamingStrategy;
 
-import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.recipes.LocalData;
+
+import static org.hamcrest.Matchers.endsWith;
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -286,4 +294,83 @@ public class JobTest {
         p.renameTo("different-name");
     }
 
+    @Issue("JENKINS-30502")
+    @Test
+    public void testRenameTrimsLeadingSpace() throws Exception {
+        tryRename("myJob1", " foo", "foo", false);
+    }
+
+    @Issue("JENKINS-30502")
+    @Test
+    public void testRenameTrimsTrailingSpace() throws Exception {
+        tryRename("myJob2", "foo ", "foo", false);
+    }
+
+    @Issue("JENKINS-30502")
+    @Test
+    public void testAllowTrimmingByUser() throws Exception {
+        assumeFalse("Unix-only test.", Functions.isWindows());
+        tryRename("myJob3 ", "myJob3", "myJob3", false);
+    }
+
+    @Issue("JENKINS-30502")
+    @Test
+    public void testRenameWithLeadingSpaceTrimsLeadingSpace() throws Exception {
+        assumeFalse("Unix-only test.", Functions.isWindows());
+        tryRename(" myJob4", " foo", "foo", false);
+    }
+
+    @Issue("JENKINS-30502")
+    @Test
+    public void testRenameWithLeadingSpaceTrimsTrailingSpace()
+            throws Exception {
+        assumeFalse("Unix-only test.", Functions.isWindows());
+        tryRename(" myJob5", "foo ", "foo", false);
+    }
+
+    @Issue("JENKINS-30502")
+    @Test
+    public void testRenameWithTrailingSpaceTrimsTrailingSpace()
+            throws Exception {
+        assumeFalse("Unix-only test.", Functions.isWindows());
+        tryRename("myJob6 ", "foo ", "foo", false);
+    }
+
+    @Issue("JENKINS-30502")
+    @Test
+    public void testRenameWithTrailingSpaceTrimsLeadingSpace()
+            throws Exception {
+        assumeFalse("Unix-only test.", Functions.isWindows());
+        tryRename("myJob7 ", " foo", "foo", false);
+    }
+
+    @Issue("JENKINS-30502")
+    @Test
+    public void testDoNotAutoTrimExistingUntrimmedNames() throws Exception {
+        assumeFalse("Unix-only test.", Functions.isWindows());
+        tryRename("myJob8 ", "myJob8 ", null, true);
+    }
+
+    private void tryRename(String initialName, String submittedName,
+            String correctResult, boolean shouldSkipConfirm) throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+
+        FreeStyleProject job = j.createFreeStyleProject(initialName);
+        WebClient wc = j.createWebClient();
+        HtmlForm form = wc.getPage(job, "configure").getFormByName("config");
+        form.getInputByName("name").setValueAttribute(submittedName);
+        HtmlPage resultPage = j.submit(form);
+
+        String urlTemplate;
+        if (shouldSkipConfirm) {
+            urlTemplate = "/job/{0}/";
+        } else {
+            urlTemplate = "/job/{0}/rename?newName={1}";
+        }
+
+        String urlString = MessageFormat.format(
+                urlTemplate, initialName, correctResult).replace(" ", "%20");
+
+        assertThat(resultPage.getUrl().toString(), endsWith(urlString));
+    }
 }

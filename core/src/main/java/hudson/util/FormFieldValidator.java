@@ -350,7 +350,7 @@ public abstract class FormFieldValidator {
      * Checks the file mask (specified in the 'value' query parameter) against
      * the current workspace.
      * @since 1.90.
-     * @deprecated as of 1.294. Use {@link FilePath#validateFileMask(String, boolean)} 
+     * @deprecated as of 1.294. Use {@link FilePath#validateFileMask(String, boolean, boolean)} 
      */
     @Deprecated
     public static class WorkspaceFileMask extends FormFieldValidator {

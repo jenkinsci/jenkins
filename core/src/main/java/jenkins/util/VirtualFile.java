@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -297,8 +298,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
         private boolean isIllegalSymlink() { // TODO JENKINS-26838
             try {
-                String myPath = f.getCanonicalPath();
-                String rootPath = root.getCanonicalPath();
+                String myPath = f.toPath().toRealPath(new LinkOption[0]).toString();
+                String rootPath = root.toPath().toRealPath(new LinkOption[0]).toString();
                 if (!myPath.equals(rootPath) && !myPath.startsWith(rootPath + File.separatorChar)) {
                     return true;
                 }

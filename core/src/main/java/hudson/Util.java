@@ -26,6 +26,7 @@ package hudson;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
+
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
@@ -33,6 +34,7 @@ import hudson.os.PosixAPI;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -40,14 +42,18 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+
 import jnr.posix.FileStat;
 import jnr.posix.POSIX;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -70,12 +76,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import hudson.util.jna.Kernel32Utils;
-
 import static hudson.util.jna.GNUCLibrary.LIBC;
+
 import java.security.DigestInputStream;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -1415,16 +1423,36 @@ public class Util {
     }
 
     /**
-     * Checks if the public method defined on the base type with the given arguments
-     * are overridden in the given derived type.
+     * Checks if the method defined on the base type with the given arguments
+     * is overridden in the given derived type.
      */
     public static boolean isOverridden(@Nonnull Class base, @Nonnull Class derived, @Nonnull String methodName, @Nonnull Class... types) {
+        return !getMethod(base, methodName, types).equals(getMethod(derived, methodName, types));
+    }
+
+    private static Method getMethod(@Nonnull Class clazz, @Nonnull String methodName, @Nonnull Class... types) {
+        Method res = null;
         try {
-            return !base.getMethod(methodName, types).equals(
-                    derived.getMethod(methodName,types));
+            res = clazz.getDeclaredMethod(methodName, types);
+            // private, static or final methods can not be overridden
+            if (res != null && (Modifier.isPrivate(res.getModifiers()) || Modifier.isFinal(res.getModifiers()) 
+                    || Modifier.isStatic(res.getModifiers()))) {
+                res = null;
+            }
         } catch (NoSuchMethodException e) {
+            // Method not found in clazz, let's search in superclasses
+            Class superclass = clazz.getSuperclass();
+            if (superclass != null) {
+                res = getMethod(superclass, methodName, types);
+            }
+        } catch (SecurityException e) {
             throw new AssertionError(e);
         }
+        if (res == null) {
+            throw new IllegalArgumentException(
+                    String.format("Method %s not found in %s (or it is private, final or static)", methodName, clazz.getName()));
+        }
+        return res;
     }
 
     /**

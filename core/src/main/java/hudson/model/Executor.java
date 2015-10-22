@@ -54,6 +54,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -62,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
+import java.util.Collection;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -505,6 +507,16 @@ public class Executor extends Thread implements ModelObject {
         } finally {
             lock.readLock().unlock();
         }
+    }
+    
+    /**
+     * Returns causes of interruption.
+     *
+     * @return Unmodifiable collection of causes of interruption.
+     * @since  1.617    
+     */
+    public @Nonnull Collection<CauseOfInterruption> getCausesOfInterruption() {
+        return Collections.unmodifiableCollection(causes);
     }
 
     /**

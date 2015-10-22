@@ -95,6 +95,7 @@ ${h.initPageVariables(context)}
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
     </j:if>
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
+    <link rel="mask-icon" href="${rootURL}/images/mask-icon.svg" color="black" />
 
     <!-- are we running as an unit test? -->
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
@@ -254,7 +255,9 @@ ${h.initPageVariables(context)}
           <div class="col-md-6" id="footer"></div>
           <div class="col-md-18">
             <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/></span>
-            <span class="rest_api"><a href="api/">REST API</a></span>
+            <j:if test="${!empty(it.api)}">
+               <span class="rest_api"><a href="api/">REST API</a></span>
+            </j:if>
             <span class="jenkins_ver"><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></span>
             <j:if test="${extensionsAvailable}">
             <j:forEach var="pd" items="${h.pageDecorators}">

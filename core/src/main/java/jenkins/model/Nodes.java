@@ -137,15 +137,49 @@ public class Nodes implements Saveable {
                     jenkins.trimLabels();
                 }
             });
-            // no need for a full save() so we just do the minimum
-            if (node instanceof EphemeralNode) {
-                Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
-            } else {
-                XmlFile xmlFile = new XmlFile(Jenkins.XSTREAM,
-                        new File(new File(getNodesDir(), node.getNodeName()), "config.xml"));
-                xmlFile.write(node);
-            }
+            persistNode(node);
         }
+    }
+
+    /**
+     * Actually persists a node on disk.
+     *
+     * @param node the node to be persisted.
+     * @throws IOException if the node could not be persisted.
+     */
+    private void persistNode(final @Nonnull Node node)  throws IOException {
+        // no need for a full save() so we just do the minimum
+        if (node instanceof EphemeralNode) {
+            Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
+        } else {
+            XmlFile xmlFile = new XmlFile(Jenkins.XSTREAM,
+                    new File(new File(getNodesDir(), node.getNodeName()), "config.xml"));
+            xmlFile.write(node);
+            SaveableListener.fireOnChange(this, xmlFile);
+        }
+    }
+
+    /**
+     * Updates an existing node on disk. If the node instance is not in the list of nodes, then this
+     * will be a no-op, even if there is another instance with the same {@link Node#getNodeName()}.
+     *
+     * @param node the node to be updated.
+     * @return {@code true}, if the node was updated. {@code false}, if the node was not in the list of nodes.
+     * @throws IOException if the node could not be persisted.
+     */
+    public boolean updateNode(final @Nonnull Node node) throws IOException {
+        if (node == nodes.get(node.getNodeName())) {
+            Queue.withLock(new Runnable() {
+                @Override
+                public void run() {
+                    jenkins.trimLabels();
+                }
+            });
+            persistNode(node);
+            jenkins.getQueue().scheduleMaintenance();
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -10,6 +10,7 @@ import hudson.tasks.Maven;
 import hudson.tasks.Shell;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
@@ -56,7 +57,7 @@ public class ProcessTreeKillerTest {
     @Issue("JENKINS-22641")
     public void processProperlyKilledUnix() throws Exception {
         ProcessTree.enabled = true;
-        if (Functions.isWindows()) return; // This test does not involve windows.
+        Assume.assumeFalse("This test does not involve windows", Functions.isWindows());
 
         FreeStyleProject sleepProject = j.createFreeStyleProject();
         FreeStyleProject processJob = j.createFreeStyleProject();
