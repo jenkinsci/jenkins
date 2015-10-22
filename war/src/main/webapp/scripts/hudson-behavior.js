@@ -2145,7 +2145,7 @@ function getElementOverflowParams(element) {
 
     // Force it to wrap.
     var original = element;
-    element = element.clodeNode();
+    element = element.cloneNode();
     Element.addClassName(element, "force-wrap");
     var wrappedClientWidth = element.clientWidth;
     var wrappedClientHeight = element.clientHeight;
