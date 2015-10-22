@@ -29,6 +29,7 @@ import hudson.model.Node;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
+import java.nio.file.AccessDeniedException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -77,15 +78,12 @@ public class DeleteNodeCommand extends CLICommand {
                     continue;
                 }
 
-                try {
-                    node.checkPermission(Computer.DELETE);
-                } catch (Exception e) {
-                    stderr.println(e.getMessage());
-                    errorOccurred = true;
-                    continue;
-                }
-
-                jenkins.removeNode(node);
+                node.toComputer().doDoDelete();
+            } catch (AccessDeniedException e) {
+                stderr.println(e.getMessage());
+                errorOccurred = true;
+                //noinspection UnnecessaryContinue
+                continue;
             } catch (Exception e) {
                 final String errorMsg = String.format("Unexpected exception occurred during deletion of node '%s': %s",
                         node == null ? "(null)" : node.toComputer().getName(),
