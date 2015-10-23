@@ -268,9 +268,6 @@ public class RepeatableTest extends HudsonTestCase {
         public FruitDescriptor(Class<? extends Fruit> clazz) {
             super(clazz);
         }
-        public String getDisplayName() {
-            return clazz.getSimpleName();
-        }
     }
 
     public static class Apple extends Fruit {

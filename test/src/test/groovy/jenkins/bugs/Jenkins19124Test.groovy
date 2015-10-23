@@ -71,11 +71,6 @@ class Jenkins19124Test {
             super(Foo.class)
         }
 
-        @Override
-        String getDisplayName() {
-            return "---";
-        }
-
         FormValidation doCheckAlpha(@QueryParameter String value, @QueryParameter String bravo) {
             this.alpha = value;
             this.bravo = bravo;

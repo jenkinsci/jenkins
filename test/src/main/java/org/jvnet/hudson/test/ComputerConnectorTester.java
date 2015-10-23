@@ -57,10 +57,5 @@ public class ComputerConnectorTester extends AbstractDescribableImpl<ComputerCon
     }
     
     @Extension
-    public static class DescriptorImpl extends Descriptor<ComputerConnectorTester> {
-        @Override
-        public String getDisplayName() {
-            return "";
-        }
-    }
+    public static class DescriptorImpl extends Descriptor<ComputerConnectorTester> {}
 }

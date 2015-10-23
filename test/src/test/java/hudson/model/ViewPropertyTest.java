@@ -43,7 +43,7 @@ public class ViewPropertyTest extends HudsonTestCase {
 
         // make sure it renders as optionalBlock
         HtmlForm f = createWebClient().getPage(foo, "configure").getFormByName("viewConfig");
-        ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Debug Property']")).click();
+        ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='ViewPropertyImpl']")).click();
         submit(f);
         ViewPropertyImpl vp = foo.getProperties().get(ViewPropertyImpl.class);
         assertEquals("Duke",vp.name);
@@ -65,12 +65,7 @@ public class ViewPropertyTest extends HudsonTestCase {
         }
 
         @TestExtension
-        public static class DescriptorImpl extends ViewPropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return "Debug Property";
-            }
-        }
+        public static class DescriptorImpl extends ViewPropertyDescriptor {}
     }
 
     public void testInvisibleProperty() throws Exception {
@@ -98,11 +93,6 @@ public class ViewPropertyTest extends HudsonTestCase {
         }
 
         @TestExtension
-        public static class DescriptorImpl extends ViewPropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return null;
-            }
-        }
+        public static class DescriptorImpl extends ViewPropertyDescriptor {}
     }
 }

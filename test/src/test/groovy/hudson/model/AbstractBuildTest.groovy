@@ -28,13 +28,16 @@ import java.io.IOException;
 import com.gargoylesoftware.htmlunit.Page
 
 import hudson.Launcher;
+import hudson.model.Descriptor;
 import hudson.slaves.EnvironmentVariablesNodeProperty
 import hudson.slaves.EnvironmentVariablesNodeProperty.Entry
+import hudson.tasks.Builder
 
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder
 import org.jvnet.hudson.test.GroovyJenkinsRule
 import org.jvnet.hudson.test.FakeChangeLogSCM
 import org.jvnet.hudson.test.FailureBuilder
+import org.jvnet.hudson.test.TestExtension
 import org.jvnet.hudson.test.UnstableBuilder
 
 import static org.junit.Assert.*
@@ -140,7 +143,7 @@ public class AbstractBuildTest {
         assertEquals(null, b1.getNextBuild());
     }
 
-    @Test void doNotInteruptBuildAbruptlyWhenExceptionThrownFromBuildStep() {
+    @Test void doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep() {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new ThrowBuilder());
         def build = p.scheduleBuild2(0).get();
@@ -148,7 +151,7 @@ public class AbstractBuildTest {
 
         def log = build.log;
         assertThat(log, containsString("Finished: FAILURE"));
-        assertThat(log, containsString("Build step 'Bogus' marked build as failure"));
+        assertThat(log, containsString("Build step 'ThrowBuilder' marked build as failure"));
     }
 
     @Test void fixEmptyDisplayName() {
@@ -175,9 +178,11 @@ public class AbstractBuildTest {
         assertEquals("A non-blank display name with whitespace should be trimmed.", "bar", p.getDisplayName());
     }
 
-    private static class ThrowBuilder extends org.jvnet.hudson.test.TestBuilder {
+    private static class ThrowBuilder extends Builder {
         @Override public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             throw new NullPointerException();
         }
+        @TestExtension("doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep")
+        public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 }

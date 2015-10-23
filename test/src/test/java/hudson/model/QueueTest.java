@@ -658,11 +658,6 @@ public class QueueTest {
                      }
             };
         }
-
-            @Override
-            public String getDisplayName() {
-                return "simulate-error";
-            }
         };
         FreeStyleProject projectError = (FreeStyleProject) r.jenkins.createProject(descriptor, "throw-error");
         project1.setAssignedLabel(r.jenkins.getSelfLabel());
@@ -894,11 +889,6 @@ public class QueueTest {
         }
 
         @TestExtension("shouldBeAbleToBlockFlyWeightTaskOnLastMinute")
-        public static class DescriptorImpl extends NodePropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return "Some Property";
-            }
-        }
+        public static class DescriptorImpl extends NodePropertyDescriptor {}
     }
 }

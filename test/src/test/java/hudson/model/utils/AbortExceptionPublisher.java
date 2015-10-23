@@ -28,8 +28,6 @@ public class AbortExceptionPublisher extends Recorder {
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         @Override
-        public String getDisplayName() { return "ThrowAbortExceptionRecorder"; }
-        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) { return true; }
     }
 }

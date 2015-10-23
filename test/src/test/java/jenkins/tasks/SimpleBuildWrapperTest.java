@@ -87,9 +87,6 @@ public class SimpleBuildWrapperTest {
             context.env("PATH+STUFF", workspace.child("bin").getRemote());
         }
         @TestExtension("envOverride") public static class DescriptorImpl extends BuildWrapperDescriptor {
-            @Override public String getDisplayName() {
-                return "WrapperWithEnvOverride";
-            }
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }
@@ -123,9 +120,6 @@ public class SimpleBuildWrapperTest {
             context.env("PATH+EXTRA", "${EXTRA}/bin");
         }
         @TestExtension("envOverrideExpand") public static class DescriptorImpl extends BuildWrapperDescriptor {
-            @Override public String getDisplayName() {
-                return "WrapperWithEnvOverrideExpand";
-            }
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }
@@ -167,9 +161,6 @@ public class SimpleBuildWrapperTest {
             }
         }
         @TestExtension("disposer") public static class DescriptorImpl extends BuildWrapperDescriptor {
-            @Override public String getDisplayName() {
-                return "WrapperWithDisposer";
-            }
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }
@@ -205,9 +196,6 @@ public class SimpleBuildWrapperTest {
             }
         }
         @TestExtension("loggerDecorator") public static class DescriptorImpl extends BuildWrapperDescriptor {
-            @Override public String getDisplayName() {
-                return "WrapperWithLogger";
-            }
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }

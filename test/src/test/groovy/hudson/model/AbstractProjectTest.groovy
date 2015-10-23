@@ -193,11 +193,7 @@ public class AbstractProjectTest extends HudsonTestCase {
                 return true;
             }
             @Override public SCMDescriptor<?> getDescriptor() {
-                return new SCMDescriptor<SCM>(null) {
-                    @Override public String getDisplayName() {
-                        return "";
-                    }
-                };
+                return new SCMDescriptor<SCM>(null) {};
             }
         };
         Thread t = new Thread() {
@@ -625,11 +621,6 @@ public class AbstractProjectTest extends HudsonTestCase {
 
             public boolean isApplicable(hudson.model.Item item) {
                 return false;
-            }
-
-            @Override
-            String getDisplayName() {
-                return "test";
             }
         }
     }

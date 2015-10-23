@@ -79,10 +79,6 @@ public class HelpLinkTest {
             public String getHelpFile() {
                 return "no-such-file/exists";
             }
-
-            public String getDisplayName() {
-                return "I don't have the help file";
-            }
         }
 
         public BuildStepMonitor getRequiredMonitorService() {

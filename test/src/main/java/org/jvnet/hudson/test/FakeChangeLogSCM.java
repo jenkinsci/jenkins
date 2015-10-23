@@ -77,11 +77,7 @@ public class FakeChangeLogSCM extends NullSCM {
     }
 
     @Override public SCMDescriptor<?> getDescriptor() {
-        return new SCMDescriptor<SCM>(null) {
-            @Override public String getDisplayName() {
-                return "";
-            }
-        };
+        return new SCMDescriptor<SCM>(null) {};
     }
 
     public static class ChangelogAction extends InvisibleAction {

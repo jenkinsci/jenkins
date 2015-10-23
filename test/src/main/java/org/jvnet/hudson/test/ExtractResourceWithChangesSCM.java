@@ -142,11 +142,7 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
     private Object writeReplace() { return new Object(); }
 
     @Override public SCMDescriptor<?> getDescriptor() {
-        return new SCMDescriptor<ExtractResourceWithChangesSCM>(ExtractResourceWithChangesSCM.class, null) {
-            @Override public String getDisplayName() {
-                return "ExtractResourceWithChangesSCM";
-            }
-        };
+        return new SCMDescriptor<ExtractResourceWithChangesSCM>(ExtractResourceWithChangesSCM.class, null) {};
     }
 
 }

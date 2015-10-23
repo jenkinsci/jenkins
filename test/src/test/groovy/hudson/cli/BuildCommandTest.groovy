@@ -292,12 +292,6 @@ public class BuildCommandTest {
         }
         
         @Extension
-        public static class DescriptorImpl extends ParameterDescriptor {
-
-            @Override
-            public String getDisplayName() {
-                return "Parameter with the default NULL value"; 
-            }   
-        }
+        public static class DescriptorImpl extends ParameterDescriptor {}
     }
 }

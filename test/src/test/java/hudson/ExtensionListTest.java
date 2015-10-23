@@ -90,11 +90,7 @@ public class ExtensionListTest {
 //
 //
 
-    public static abstract class FishDescriptor extends Descriptor<Fish> {
-        public String getDisplayName() {
-            return clazz.getName();
-        }
-    }
+    public static abstract class FishDescriptor extends Descriptor<Fish> {}
 
     public static abstract class Fish implements Describable<Fish> {
         public Descriptor<Fish> getDescriptor() {

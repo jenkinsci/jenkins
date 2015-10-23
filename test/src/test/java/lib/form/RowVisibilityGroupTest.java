@@ -115,11 +115,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
     }
 
     @TestExtension
-    public static final class DescriptorImpl extends Descriptor<RowVisibilityGroupTest> {
-        public String getDisplayName() {
-            return null;
-        }
-    }
+    public static final class DescriptorImpl extends Descriptor<RowVisibilityGroupTest> {}
 
     public static class Nested {
         public String textbox2;
@@ -147,12 +143,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         }
 
         @TestExtension
-        public static class DescriptorImpl extends Descriptor<Drink> {
-            @Override
-            public String getDisplayName() {
-                return "Beer";
-            }
-        }
+        public static class DescriptorImpl extends Descriptor<Drink> {}
     }
 
     public static class Coke extends Drink {
@@ -162,11 +153,6 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         }
 
         @TestExtension
-        public static class DescriptorImpl extends Descriptor<Drink> {
-            @Override
-            public String getDisplayName() {
-                return "Coke";
-            }
-        }
+        public static class DescriptorImpl extends Descriptor<Drink> {}
     }
 }

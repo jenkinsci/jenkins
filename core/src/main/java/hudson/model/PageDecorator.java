@@ -97,14 +97,6 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
     }
 
     /**
-     * Unless this object has additional web presence, display name is not used at all.
-     * So default to "".
-     */
-    public String getDisplayName() {
-        return "";
-    }
-
-    /**
      * Obtains the URL of this object, excluding the context path.
      *
      * <p>

@@ -42,9 +42,6 @@ public class UnstableBuilder extends MockBuilder {
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<Builder> {
-        public String getDisplayName() {
-            return "Make build unstable";
-        }
         public UnstableBuilder newInstance(StaplerRequest req, JSONObject data) {
             return new UnstableBuilder();
         }

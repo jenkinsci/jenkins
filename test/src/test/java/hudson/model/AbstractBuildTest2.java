@@ -71,12 +71,6 @@ public class AbstractBuildTest2 {
         }
         
         @TestExtension("reportErrorShouldNotFailForNonPublisherClass")
-        public static class DescriptorImpl extends JobPropertyDescriptor {
-
-            @Override
-            public String getDisplayName() {
-                return "Always throws exception in perform()";
-            }  
-        }
+        public static class DescriptorImpl extends JobPropertyDescriptor {}
     }
 }
