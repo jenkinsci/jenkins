@@ -27,7 +27,9 @@ THE SOFTWARE.
   <l:layout title="${it.displayName} Config" norefresh="true">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <div class="behavior-loading">${%LOADING}</div>
+      <div class="behavior-loading">${%LOADING}
+        <div class="progress-bar"><span class="unknown"></span></div>
+      </div>
       <f:form method="post" action="configSubmit" name="config">
         <f:entry title="${%DisplayName}" help="/help/run-config/displayName.html">
           <f:textbox name="displayName" value="${it.hasCustomDisplayName()?it.displayName:''}"/>
