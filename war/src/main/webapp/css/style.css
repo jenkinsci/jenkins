@@ -1611,7 +1611,7 @@ TEXTAREA.rich-editor {
 
 /* ========================= progress bar ========================= */
 
-.progress-bar {
+.progress-bar, table.progress-bar {
   border-collapse: collapse;
   border: 1px solid #3465a4;
   height: 6px;
@@ -1635,10 +1635,10 @@ TEXTAREA.rich-editor {
   border: 1px solid #cc0000;
 }
 
-.progress-bar.red tr.unknown {
+.progress-bar.red .unknown {
     background-image:url(../images/progress-unknown-red.gif);
 }
-.progress-bar.red td.progress-bar-done {
+.progress-bar.red .progress-bar-done {
   background-color: #cc0000;
 }
 
