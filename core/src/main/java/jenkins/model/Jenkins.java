@@ -3670,7 +3670,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * If the user chose the default JDK, make sure we got 'java' in PATH.
      */
     public FormValidation doDefaultJDKCheck(StaplerRequest request, @QueryParameter String value) {
-        if(!value.equals(JDK.DEFAULT_NAME))
+        if(!JDK.isDefaultName(value))
             // assume the user configured named ones properly in system config ---
             // or else system config should have reported form field validation errors.
             return FormValidation.ok();

@@ -358,7 +358,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 jdkTool = jdkTool.forNode(node, listener);
             }
             jdkTool.buildEnvVars(env);
-        } else if (jdk != null && !jdk.equals(JDK.DEFAULT_NAME)) {
+        } else if (!JDK.isDefaultName(jdk)) {
             listener.getLogger().println("No JDK named ‘" + jdk + "’ found");
         }
 
