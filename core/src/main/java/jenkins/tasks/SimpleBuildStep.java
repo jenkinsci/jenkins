@@ -112,8 +112,10 @@ public interface SimpleBuildStep extends BuildStep {
             return Job.class;
         }
 
-        @Override public Collection<? extends Action> createFor(Job j) {
-            List<Action> actions = new LinkedList<Action>();
+        @Nonnull
+        @Override
+        public Collection<? extends Action> createFor(@Nonnull Job j) {
+            List<Action> actions = new LinkedList<>();
             Run r = j.getLastSuccessfulBuild();
             if (r != null) {
                 for (LastBuildAction a : r.getActions(LastBuildAction.class)) {
