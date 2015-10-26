@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.635</version>
+  <version>1.636-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -59,7 +59,7 @@ THE SOFTWARE.
     <connection>scm:git:git://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins.git</developerConnection>
     <url>https://github.com/jenkinsci/jenkins</url>
-    <tag>jenkins-1.635</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
