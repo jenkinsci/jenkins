@@ -39,7 +39,7 @@ import java.lang.annotation.Target;
 import java.net.URL;
 
 /**
- * Installs the specified plugin before launching Hudson. 
+ * Installs the specified plugins before launching Jenkins.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -50,9 +50,9 @@ import java.net.URL;
 @Retention(RUNTIME)
 public @interface WithPlugin {
     /**
-     * Name of the plugin.
+     * Whitespace separated list of plugin names.
      *
-     * For now, this has to be one of the plugins statically available in resources
+     * For now, this has to be one or more of the plugins statically available in resources
      * "/plugins/NAME". TODO: support retrieval through Maven repository.
      * TODO: load the HPI file from $M2_REPO or $USER_HOME/.m2 by naming e.g. org.jvnet.hudson.plugins:monitoring:hpi:1.34.0
      * (used in conjunction with the depepdency in POM to ensure it's available)
@@ -70,8 +70,10 @@ public @interface WithPlugin {
 
         @Override
         public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
-            URL res = getClass().getClassLoader().getResource("plugins/" + a.value());
-            FileUtils.copyURLToFile(res,new File(home,"plugins/"+a.value()));
+            for (String plugin : a.value().split("\\s+")) {
+                URL res = getClass().getClassLoader().getResource("plugins/" + plugin);
+                FileUtils.copyURLToFile(res, new File(home, "plugins/" + plugin));
+            }
         }
     }
 
@@ -86,8 +88,10 @@ public @interface WithPlugin {
 
         @Override
         public void decorateHome(JenkinsRule jenkinsRule, File home) throws Exception {
-            URL res = getClass().getClassLoader().getResource("plugins/" + a.value());
-            FileUtils.copyURLToFile(res,new File(home,"plugins/"+a.value()));
+            for (String plugin : a.value().split("\\s+")) {
+                URL res = getClass().getClassLoader().getResource("plugins/" + plugin);
+                FileUtils.copyURLToFile(res, new File(home, "plugins/" + plugin));
+            }
         }
     }
 }
