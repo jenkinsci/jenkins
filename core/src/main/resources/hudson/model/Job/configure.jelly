@@ -45,17 +45,7 @@ THE SOFTWARE.
           <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
 
-        <j:if test="${it.supportsLogRotator()}">
-          <!-- log rotator -->
-          <f:optionalBlock name="logrotate"
-            help="/help/project-config/log-rotation.html"
-            title="${%Discard Old Builds}" checked="${it.buildDiscarder!=null}" inline="true">
-            <f:dropdownDescriptorSelector field="buildDiscarder" title="${%Strategy}"/>
-          </f:optionalBlock>
-        </j:if>
-
-        <!-- job property configurations. This should have been <f:descriptorList> -->
-        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it.getClass())}" forceRowSet="true" />
+        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true"/>
 
         <!-- additional entries from derived classes -->
         <st:include page="configure-entries.jelly" />

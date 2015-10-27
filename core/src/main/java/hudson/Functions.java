@@ -851,6 +851,10 @@ public class Functions {
         return JobPropertyDescriptor.getPropertyDescriptors(clazz);
     }
 
+    public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Job job) {
+        return DescriptorVisibilityFilter.apply(job, JobPropertyDescriptor.getPropertyDescriptors(job.getClass()));
+    }
+
     public static List<Descriptor<BuildWrapper>> getBuildWrapperDescriptors(AbstractProject<?,?> project) {
         return BuildWrappers.getFor(project);
     }
