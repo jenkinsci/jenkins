@@ -50,7 +50,7 @@ import java.net.URL;
 @Retention(RUNTIME)
 public @interface WithPlugin {
     /**
-     * Whitespace separated list of plugin names.
+     * Comma separated list of plugin names.
      *
      * For now, this has to be one or more of the plugins statically available in resources
      * "/plugins/NAME". TODO: support retrieval through Maven repository.
@@ -70,7 +70,7 @@ public @interface WithPlugin {
 
         @Override
         public void decorateHome(HudsonTestCase testCase, File home) throws Exception {
-            for (String plugin : a.value().split("\\s+")) {
+            for (String plugin : a.value().split("\\s*,\\s*")) {
                 URL res = getClass().getClassLoader().getResource("plugins/" + plugin);
                 FileUtils.copyURLToFile(res, new File(home, "plugins/" + plugin));
             }
@@ -88,7 +88,7 @@ public @interface WithPlugin {
 
         @Override
         public void decorateHome(JenkinsRule jenkinsRule, File home) throws Exception {
-            for (String plugin : a.value().split("\\s+")) {
+            for (String plugin : a.value().split("\\s*,\\s*")) {
                 URL res = getClass().getClassLoader().getResource("plugins/" + plugin);
                 FileUtils.copyURLToFile(res, new File(home, "plugins/" + plugin));
             }
