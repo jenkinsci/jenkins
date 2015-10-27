@@ -138,7 +138,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         return Jenkins.getInstance().getQueue().schedule2(asJob(), quietPeriod, queueActions).getItem();
     }
 
-    private List<ParameterValue> getDefaultParametersValues() {
+    public List<ParameterValue> getDefaultParametersValues() {
         ParametersDefinitionProperty paramDefProp = asJob().getProperty(ParametersDefinitionProperty.class);
         ArrayList<ParameterValue> defValues = new ArrayList<ParameterValue>();
 
