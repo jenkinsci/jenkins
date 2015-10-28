@@ -91,7 +91,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         String handshakeSecret = handshake.getRequestProperty("Secret-Key");
         // Verify that the slave secret matches the handshake secret.
         if (!computer.getJnlpMac().equals(handshakeSecret)) {
-            LOGGER.log(Level.WARNING, "An attempt was made to connect as {0} from {1} with an incorrect secret", new Object[]{nodeName, handshake.getSocket().getRemoteSocketAddress()});
+            LOGGER.log(Level.WARNING, "An attempt was made to connect as {0} from {1} with an incorrect secret", new Object[]{nodeName, handshake.getSocket()!=null?handshake.getSocket().getRemoteSocketAddress():null});
             return false;
         } else {
             return true;
