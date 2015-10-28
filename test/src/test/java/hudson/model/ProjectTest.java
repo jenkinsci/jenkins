@@ -175,9 +175,9 @@ public class ProjectTest {
     public void testGetAssignedLabelString() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
         Slave slave = j.createOnlineSlave();
-        assertNull("Project should not have any label.", p.getAssignedLabelString());
+        assertEquals("Project should have jenkins master label.", j.jenkins.getSelfLabel().name, p.getAssignedLabelString());
         p.setAssignedLabel(j.jenkins.getSelfLabel());
-        assertNull("Project should return null, because assigned label is Jenkins.", p.getAssignedLabelString());
+        assertEquals("Project should have jenkins master label after set explicitly", j.jenkins.getSelfLabel().name, p.getAssignedLabelString());
         p.setAssignedLabel(slave.getSelfLabel());
         assertEquals("Project should return name of slave.", slave.getSelfLabel().name, p.getAssignedLabelString());
     }
