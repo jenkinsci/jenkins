@@ -142,10 +142,14 @@ public abstract class ItemGroupMixIn {
         TopLevelItem result;
 
         String requestContentType = req.getContentType();
-        if(requestContentType==null)
+        String mode = req.getParameter("mode");
+        if (requestContentType == null
+                && !(mode != null && mode.equals("copy")))
             throw new Failure("No Content-Type header set");
 
-        boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
+        boolean isXmlSubmission = requestContentType != null
+            && (requestContentType.startsWith("application/xml")
+                    || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
         if(name==null)
@@ -158,7 +162,6 @@ public abstract class ItemGroupMixIn {
                 throw new Failure(Messages.Hudson_JobAlreadyExists(name));
         }
 
-        String mode = req.getParameter("mode");
         if(mode!=null && mode.equals("copy")) {
             String from = req.getParameter("from");
 
