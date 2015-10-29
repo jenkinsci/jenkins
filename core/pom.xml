@@ -640,6 +640,7 @@ THE SOFTWARE.
           <execution>
             <goals>
               <goal>generate-taglib-interface</goal>
+              <goal>record-core-location</goal>
             </goals>
           </execution>
         </executions>
