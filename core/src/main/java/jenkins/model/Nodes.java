@@ -26,11 +26,7 @@ package jenkins.model;
 import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.model.Computer;
-import hudson.model.ItemGroupMixIn;
-import hudson.model.Node;
-import hudson.model.Queue;
-import hudson.model.Saveable;
+import hudson.model.*;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
@@ -207,23 +203,15 @@ public class Nodes implements Saveable {
      * @throws IOException if the list of nodes could not be persisted.
      */
     public void removeNode(final @Nonnull Node node) throws IOException {
-        if (node == nodes.get(node.getNodeName())) {
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    Computer c = node.toComputer();
-                    if (c != null) {
-                        c.recordTermination();
-                        c.disconnect(OfflineCause.create(hudson.model.Messages._Hudson_NodeBeingRemoved()));
-                    }
-                    if (node == nodes.remove(node.getNodeName())) {
-                        jenkins.updateComputerList();
-                        jenkins.trimLabels();
-                    }
-                }
-            });
+        final String nodeName = node.getNodeName();
+        if (node == nodes.get(nodeName)) {
+            //remove from nodes list
+            if (node == nodes.remove(nodeName)) {
+                jenkins.getComputerMap().remove(node);
+                jenkins.trimLabels();
+            }
             // no need for a full save() so we just do the minimum
-            Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
+            Util.deleteRecursive(new File(getNodesDir(), nodeName));
         }
     }
 
