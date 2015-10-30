@@ -178,6 +178,19 @@ public interface PermalinkProjectAction extends Action {
                 return !run.isBuilding() && run.getResult()!=Result.SUCCESS;
             }
         };
+        public static final Permalink LAST_COMPLETED_BUILD = new Permalink() {
+            public String getDisplayName() {
+                return Messages.Permalink_LastCompletedBuild();
+            }
+
+            public String getId() {
+                return "lastCompletedBuild";
+            }
+
+            public Run<?,?> resolve(Job<?,?> job) {
+                return job.getLastCompletedBuild();
+            }
+        };
 
         static {
             BUILTIN.add(LAST_BUILD);
@@ -186,6 +199,7 @@ public interface PermalinkProjectAction extends Action {
             BUILTIN.add(LAST_FAILED_BUILD);
             BUILTIN.add(LAST_UNSTABLE_BUILD);
             BUILTIN.add(LAST_UNSUCCESSFUL_BUILD);
+            BUILTIN.add(LAST_COMPLETED_BUILD);
         }
     }
 }
