@@ -429,12 +429,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the configured build discarder for this job, via {@link BuildDiscarderProperty}, or null if none.
      */
-    public BuildDiscarder getBuildDiscarder() {
+    public synchronized BuildDiscarder getBuildDiscarder() {
         BuildDiscarderProperty prop = getProperty(BuildDiscarderProperty.class);
         return prop != null ? prop.getStrategy() : /* settings compatibility */ logRotator;
     }
 
-    public void setBuildDiscarder(BuildDiscarder bd) throws IOException {
+    public synchronized void setBuildDiscarder(BuildDiscarder bd) throws IOException {
         BulkChange bc = new BulkChange(this);
         try {
             removeProperty(BuildDiscarderProperty.class);
