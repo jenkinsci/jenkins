@@ -30,6 +30,7 @@ package hudson.model;
 import hudson.security.AccessControlled;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
+import jenkins.model.FeatureSwitchConfiguration;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
@@ -40,6 +41,8 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 
 import jenkins.model.Configuration;
+
+import static jenkins.model.FeatureSwitchConfiguration.Feature;
 
 public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
 
@@ -118,7 +121,10 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             c.setNode(n); // reuse
         } else {
             // we always need Computer for the master as a fallback in case there's no other Computer.
-            if(n.getNumExecutors()>0 || n==Jenkins.getInstance()) {
+            // if the node is not accepting tasks, delay computer creation to allow idle computer die out,
+            // can be turned off by disable the Feature.DEFER_EXECUTOR_CREATION on configure page
+            if((n.getNumExecutors()>0 && Feature.DEFER_EXECUTOR_CREATION.isOffOr(n.isAcceptingTasks()))
+                    || n==Jenkins.getInstance()) {
                 computers.put(n, c = n.createComputer());
                 if (!n.isHoldOffLaunchUntilSave() && automaticSlaveLaunch) {
                     RetentionStrategy retentionStrategy = c.getRetentionStrategy();
@@ -132,7 +138,9 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 }
             }
         }
-        used.add(c);
+        if(c!=null){
+            used.add(c);
+        }
     }
 
     /*package*/ void removeComputer(final Computer computer) {

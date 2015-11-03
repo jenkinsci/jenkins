@@ -724,6 +724,26 @@ public class SlaveComputer extends Computer {
     }
 
     /**
+     * Close channel if there is any
+     * Will log a warning message if computer was removed before node
+     */
+    @Override
+    protected void onRemoved() {
+        if (this.channel != null) {
+            closeChannel();
+        }
+        Node node = super.getNode();
+        if (node != null) {
+            if (node.isAcceptingTasks()) {
+                //normally node should be removed first
+                logger.log(Level.WARNING, "Computer {0} is removed while node still exits", nodeName);
+            } else {
+                logger.log(Level.INFO, "Node {0} become orphan, will disappear from 'Build Executor Status' section", nodeName);
+            }
+        }
+    }
+
+    /**
      * Grabs a {@link ComputerLauncher} out of {@link Node} to keep it in this {@link Computer}.
      * The returned launcher will be set to {@link #launcher} and used to carry out the actual launch operation.
      *

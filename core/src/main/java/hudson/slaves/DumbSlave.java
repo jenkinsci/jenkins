@@ -43,6 +43,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  */
 public final class DumbSlave extends Slave {
+    private boolean acceptingTasks=true;
     /**
      * @deprecated as of 1.286.
      *      Use {@link #DumbSlave(String, String, String, String, Node.Mode, String, ComputerLauncher, RetentionStrategy, List)}
@@ -71,5 +72,22 @@ public final class DumbSlave extends Slave {
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isAcceptingTasks() {
+        return acceptingTasks;
+    }
+
+    /**
+     * Whether or not to suspend task scheduling for the slave
+     * This value will be used by {@link #isAcceptingTasks()}.
+     * @param acceptingTasks
+     */
+    public void setAcceptingTasks(boolean acceptingTasks) {
+        this.acceptingTasks = acceptingTasks;
     }
 }

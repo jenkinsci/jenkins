@@ -63,6 +63,22 @@ public class ComputerTest {
         assertTrue("Slave log should be kept", keep.toComputer().getLogFile().exists());
     }
 
+    @Test
+    public void idleComputerCanBeRemoved() throws Exception{
+        DumbSlave idleNode = j.createOnlineSlave(Jenkins.getInstance().getLabelAtom("nodeNotTakingTask"));
+        //try terminate idle executors
+        File logFile=idleNode.toComputer().getLogFile();
+        assertFalse(idleNode.toComputer().getExecutors().isEmpty());
+        idleNode.setAcceptingTasks(false);
+        idleNode.toComputer().kill();
+        assertNull("Computer should be removed once all idle executors are killed", idleNode.toComputer());
+        assertFalse("Slave log should be cleaned", logFile.exists());
+        Jenkins.getInstance().updateComputerList(true);
+        assertNull("No computer created for node which is not accepting task", idleNode.toComputer());
+        Jenkins.getInstance().removeNode(idleNode);
+        assertNull(Jenkins.getInstance().getNode(idleNode.getNodeName()));
+    }
+
     /**
      * Verify we can't rename a node over an existing node.
      */

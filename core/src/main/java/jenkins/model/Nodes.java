@@ -55,6 +55,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static jenkins.model.FeatureSwitchConfiguration.Feature;
+
 /**
  * Manages all the nodes for Jenkins.
  *
@@ -216,7 +218,9 @@ public class Nodes implements Saveable {
                         c.disconnect(OfflineCause.create(hudson.model.Messages._Hudson_NodeBeingRemoved()));
                     }
                     if (node == nodes.remove(node.getNodeName())) {
-                        jenkins.updateComputerList();
+                        if(Feature.DEFER_EXECUTOR_CREATION.isOffOr(c!=null)){
+                            jenkins.updateComputerList();
+                        }
                         jenkins.trimLabels();
                     }
                 }

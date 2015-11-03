@@ -64,6 +64,7 @@ import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import hudson.util.Futures;
 import hudson.util.NamingThreadFactory;
+import jenkins.model.FeatureSwitchConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
@@ -117,6 +118,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static javax.servlet.http.HttpServletResponse.*;
+import static jenkins.model.FeatureSwitchConfiguration.Feature;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -1018,7 +1020,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             public void run() {
                 synchronized (Computer.this) {
                     executors.remove(e);
-                    addNewExecutorIfNecessary();
+                    if (Feature.DEFER_EXECUTOR_CREATION.isOffOr(isAcceptingTasks())) {
+                        addNewExecutorIfNecessary();
+                    }
                     if (!isAlive()) {
                         AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
                         if (ciBase != null) { // TODO confirm safe to assume non-null and use getInstance()
