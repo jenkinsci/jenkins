@@ -52,30 +52,22 @@ public class PluginAutomaticTestBuilder {
      *      testOutputDirectory (String) : target/test-classes.
      */
     public static TestSuite build(Map<String,?> params) throws Exception {
-        // automatic Jelly tests
-        if (params.containsKey("outputDirectory") // shouldn't happen, but be defensive
-        ||  notSkipTests("JellyTest")) { // TODO this is probably obsolete given -Dmaven-hpi-plugin.disabledTestInjection
+        TestSuite master = new TestSuite();
+        if (params.containsKey("outputDirectory")) { // shouldn't happen, but be defensive
             File outputDirectory = new File((String)params.get("outputDirectory"));
-            TestSuite suite = JellyTestSuiteBuilder.build(outputDirectory,toBoolean(params.get("requirePI")));
-            suite.addTest(new OtherTests("testCliSanity", params));
-            suite.addTest(new OtherTests("testPluginActive", params));
-            return suite;
-        } else {
-            return new TestSuite();
+            TestSuite inJenkins = JellyTestSuiteBuilder.build(outputDirectory,toBoolean(params.get("requirePI")));
+            inJenkins.addTest(new OtherTests("testCliSanity", params));
+            inJenkins.addTest(new OtherTests("testPluginActive", params));
+            master.addTest(inJenkins);
+            master.addTest(new PropertiesTestSuite(outputDirectory));
         }
+        return master;
     }
 
     private static boolean toBoolean(Object requirePI) {
         if (requirePI==null)    return false;
         if (requirePI instanceof Boolean)   return (Boolean)requirePI;
         return Boolean.parseBoolean(requirePI.toString());
-    }
-
-    /**
-     * Provides an escape hatch for plugin developers to skip auto-generated tests.
-     */
-    private static boolean notSkipTests(String propertyName) {
-        return !Boolean.getBoolean("hpiTest.skip"+propertyName);
     }
 
     public static class OtherTests extends TestCase {
