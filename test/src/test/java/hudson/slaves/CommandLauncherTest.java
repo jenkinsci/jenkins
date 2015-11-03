@@ -47,6 +47,7 @@ public class CommandLauncherTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
+    @RandomlyFails("EOFException as in commandSucceedsWithoutChannel")
     public void commandFails() throws Exception {
         assumeTrue(!Functions.isWindows());
         DumbSlave slave = createSlave("false");
