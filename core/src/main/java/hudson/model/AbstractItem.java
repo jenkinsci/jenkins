@@ -699,8 +699,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
 
-    /* (non-Javadoc)
-     * @see hudson.model.AbstractModelObject#getSearchName()
+    /**
+     * {@inheritDoc}
      */
     @Override
     public String getSearchName() {
