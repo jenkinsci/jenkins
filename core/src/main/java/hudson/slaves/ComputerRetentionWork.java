@@ -55,6 +55,7 @@ public class ComputerRetentionWork extends PeriodicWork {
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
+    @Override
     protected void doRun() {
         final long startRun = System.currentTimeMillis();
         for (final Computer c : Jenkins.getInstance().getComputers()) {
