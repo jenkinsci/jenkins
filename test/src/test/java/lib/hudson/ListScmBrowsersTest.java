@@ -2,6 +2,7 @@ package lib.hudson;
 
 import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
@@ -41,7 +42,7 @@ public class ListScmBrowsersTest {
 
     private void check(Item p) throws IOException, SAXException {
         HtmlPage page = j.createWebClient().getPage(p, "configure");
-        List<HtmlSelect> selects = page.selectNodes("//select");
+        List<HtmlSelect> selects = DomNodeUtil.selectNodes(page, "//select");
         assertTrue(selects.size()>0);
         for (HtmlSelect select : selects) {
             Set<String> title = new HashSet<String>();

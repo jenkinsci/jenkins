@@ -30,6 +30,7 @@ import java.net.URL;
 
 import javax.annotation.Nonnull;
 
+import com.gargoylesoftware.htmlunit.WebRequest;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,7 +40,6 @@ import org.jvnet.hudson.test.MockFolder;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
 public class DirectlyModifiableViewTest {
@@ -186,8 +186,8 @@ public class DirectlyModifiableViewTest {
 
     private Page doPost(View view, String path) throws Exception {
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
-        WebRequestSettings req = new WebRequestSettings(
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebRequest req = new WebRequest(
                 new URL(j.jenkins.getRootUrl() + view.getUrl() + path),
                 HttpMethod.POST
         );
