@@ -614,7 +614,7 @@ public class QueueTest extends HudsonTestCase {
 
         WebClient webClient = new WebClient();
         webClient.login("bob", "bob");
-        XmlPage p = webClient.goToXml("/queue/api/xml");
+        XmlPage p = webClient.goToXml("queue/api/xml");
 
         //bob has permission on the project and will be able to see it in the queue together with information such as the URL and the name.
         for (DomNode element: p.getFirstChild().getFirstChild().getChildNodes()){
@@ -626,13 +626,13 @@ public class QueueTest extends HudsonTestCase {
         }
         WebClient webClient2 = new WebClient();
         webClient2.login("alice");
-        XmlPage p2 = webClient2.goToXml("/queue/api/xml");
+        XmlPage p2 = webClient2.goToXml("queue/api/xml");
         //alice does not have permission on the project and will not see it in the queue.
         assertEquals("<queue></queue>", p2.getContent());
 
         WebClient webClient3 = new WebClient();
         webClient3.login("james");
-        XmlPage p3 = webClient3.goToXml("/queue/api/xml");
+        XmlPage p3 = webClient3.goToXml("queue/api/xml");
         //james has DISCOVER permission on the project and will only be able to see the task name.
         assertEquals("<queue><discoverableItem><task><name>project</name></task></discoverableItem></queue>",
                 p3.getContent());
