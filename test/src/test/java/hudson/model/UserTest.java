@@ -25,6 +25,7 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -51,11 +52,12 @@ import org.acegisecurity.context.SecurityContextHolder;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -452,6 +454,7 @@ public class UserTest {
         }
         catch(FailingHttpStatusCodeException e){
             //ok exception should be thrown
+            Assert.assertEquals(400, e.getStatusCode());
         }
         assertTrue("User should not delete himself from memory.", User.getAll().contains(user));
         assertTrue("User should not delete his persistent data.", user.getConfigFile().exists());
