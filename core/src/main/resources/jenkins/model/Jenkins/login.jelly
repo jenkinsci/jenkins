@@ -35,7 +35,7 @@ THE SOFTWARE.
           <table>
             <tr>
               <td>${%User}:</td>
-              <td><input type="text" name="j_username" id="j_username" /></td>
+              <td><input type="text" name="j_username" id="j_username" autocorrect="off" autocapitalize="off" /></td>
             </tr>
             <tr>
               <td>${%Password}:</td>

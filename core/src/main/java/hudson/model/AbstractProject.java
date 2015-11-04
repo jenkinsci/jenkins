@@ -325,13 +325,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         buildMixIn.onLoad(parent, name);
         builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
-        if (isBuildable()) {
-            for (Trigger t : triggers()) {
-                try {
-                    t.start(this, Items.currentlyUpdatingByXml());
-                } catch (Throwable e) {
-                    LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
-                }
+        for (Trigger t : triggers()) {
+            try {
+                t.start(this, Items.currentlyUpdatingByXml());
+            } catch (Throwable e) {
+                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
             }
         }
         if(scm==null)
@@ -360,7 +358,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 jdkTool = jdkTool.forNode(node, listener);
             }
             jdkTool.buildEnvVars(env);
-        } else if (jdk != null && !jdk.equals(JDK.DEFAULT_NAME)) {
+        } else if (!JDK.isDefaultName(jdk)) {
             listener.getLogger().println("No JDK named ‘" + jdk + "’ found");
         }
 
@@ -1874,10 +1872,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (Trigger t : triggers())
             t.stop();
         triggers.replaceBy(buildDescribable(req, Trigger.for_(this)));
-        if (isBuildable()) {
-            for (Trigger t : triggers())
-                t.start(this, true);
-        }
+        for (Trigger t : triggers())
+            t.start(this,true);
     }
 
     /**

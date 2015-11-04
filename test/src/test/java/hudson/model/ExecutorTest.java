@@ -9,6 +9,7 @@ import hudson.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
+import hudson.tasks.Builder;
 import hudson.util.OneShotEvent;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -17,11 +18,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestBuilder;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -139,7 +139,7 @@ public class ExecutorTest {
         String log = b.getLog();
         assertEquals(b.getResult(), Result.FAILURE);
         assertThat(log, containsString("Finished: FAILURE"));
-        assertThat(log, containsString("Build step 'Bogus' marked build as failure"));
+        assertThat(log, containsString("Build step 'BlockingBuilder' marked build as failure"));
         assertThat(log, containsString("Slave went offline during the build"));
         assertThat(log, containsString("Disconnected by Johnny : Taking offline to break your buil"));
     }
@@ -156,7 +156,7 @@ public class ExecutorTest {
         return r;
     }
 
-    private static final class BlockingBuilder extends TestBuilder {
+    private static final class BlockingBuilder extends Builder {
         private final OneShotEvent e;
 
         private BlockingBuilder(OneShotEvent e) {
@@ -175,5 +175,7 @@ public class ExecutorTest {
                 Thread.sleep(100);
             }
         }
+        @TestExtension("disconnectCause")
+        public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 }

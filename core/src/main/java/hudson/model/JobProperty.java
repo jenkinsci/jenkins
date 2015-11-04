@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import jenkins.model.Jenkins;
+import jenkins.model.OptionalJobProperty;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -62,6 +63,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  * can add actions to the new build. The {@link #perform(AbstractBuild, Launcher, BuildListener)}
  * and {@link #prebuild(AbstractBuild, BuildListener)} are invoked after those
  * of {@link Publisher}s.
+ *
+ * <p>Consider extending {@link OptionalJobProperty} instead.
  *
  * @param <J>
  *      When you restrict your job property to be only applicable to a certain

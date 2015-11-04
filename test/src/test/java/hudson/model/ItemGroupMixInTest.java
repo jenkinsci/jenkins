@@ -132,11 +132,6 @@ public class ItemGroupMixInTest {
       public boolean isApplicable(AbstractProject<?, ?> item) {
         return true;
       }
-
-      @Override
-      public String getDisplayName() {
-        return null;
-      }
     }
   }
 
@@ -152,11 +147,6 @@ public class ItemGroupMixInTest {
       @Override
       public boolean isApplicable(Class jobType) {
         return false;
-      }
-
-      @Override
-      public String getDisplayName() {
-        return null;
       }
     }
   }
@@ -189,11 +179,6 @@ public class ItemGroupMixInTest {
       @Override
       public boolean isApplicable(Class jobType) {
         return false;
-      }
-
-      @Override
-      public String getDisplayName() {
-        return null;
       }
     }
   }

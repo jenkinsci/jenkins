@@ -147,7 +147,6 @@ import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.EphemeralNode;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeList;
 import hudson.slaves.NodeProperty;
@@ -289,7 +288,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -1752,8 +1750,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Updates an existing {@link Node} on disk.
+     * Saves an existing {@link Node} on disk, called by {@link Node#save()}. This method is preferred in those cases
+     * where you need to determine atomically that the node being saved is actually in the list of nodes.
+     *
+     * @param n the node to be updated.
+     * @return {@code true}, if the node was updated. {@code false}, if the node was not in the list of nodes.
+     * @throws IOException if the node could not be persisted.
      * @see Nodes#updateNode
+     * @since 1.634
      */
     public boolean updateNode(Node n) throws IOException {
         return nodes.updateNode(n);
@@ -1803,10 +1807,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final class DescriptorImpl extends NodeDescriptor {
         @Extension
         public static final DescriptorImpl INSTANCE = new DescriptorImpl();
-
-        public String getDisplayName() {
-            return "";
-        }
 
         @Override
         public boolean isInstantiable() {
@@ -3670,7 +3670,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * If the user chose the default JDK, make sure we got 'java' in PATH.
      */
     public FormValidation doDefaultJDKCheck(StaplerRequest request, @QueryParameter String value) {
-        if(!value.equals(JDK.DEFAULT_NAME))
+        if(!JDK.isDefaultName(value))
             // assume the user configured named ones properly in system config ---
             // or else system config should have reported form field validation errors.
             return FormValidation.ok();

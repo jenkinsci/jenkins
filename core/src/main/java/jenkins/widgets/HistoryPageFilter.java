@@ -227,18 +227,20 @@ public class HistoryPageFilter<T> {
     }
 
     private void addQueueItem(Queue.Item item) {
-        updateNewestOldest(item.getId());
-        queueItems.add(new HistoryPageEntry(item));
+        HistoryPageEntry entry = new HistoryPageEntry(item);
+        queueItems.add(entry);
+        updateNewestOldest(entry.getEntryId());
     }
 
     private void addRun(Run run) {
-        updateNewestOldest(run.getQueueId());
-        runs.add(new HistoryPageEntry(run));
+        HistoryPageEntry entry = new HistoryPageEntry(run);
+        runs.add(entry);
+        updateNewestOldest(entry.getEntryId());
     }
 
-    private void updateNewestOldest(long queueId) {
-        newestOnPage = Math.max(newestOnPage, queueId);
-        oldestOnPage = Math.min(oldestOnPage, queueId);
+    private void updateNewestOldest(long entryId) {
+        newestOnPage = Math.max(newestOnPage, entryId);
+        oldestOnPage = Math.min(oldestOnPage, entryId);
     }
 
     private boolean add(T entry) {

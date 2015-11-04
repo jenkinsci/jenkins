@@ -89,11 +89,6 @@ public class JobPropertyTest {
             public boolean isApplicable(Class<? extends Job> jobType) {
                 return false;
             }
-
-            @Override
-            public String getDisplayName() {
-                return "Fake job property";
-            }
         }
     }
 
@@ -120,10 +115,7 @@ public class JobPropertyTest {
         }
 
         @TestExtension("configRoundtrip")
-        public static class DescriptorImpl extends JobPropertyDescriptor {
-            @Override
-            public String getDisplayName() { return null; }
-        }
+        public static class DescriptorImpl extends JobPropertyDescriptor {}
     }
 
     @Test
@@ -147,9 +139,6 @@ public class JobPropertyTest {
         }
 
         @TestExtension("invisibleProperty")
-        public static class DescriptorImpl extends JobPropertyDescriptor {
-            @Override
-            public String getDisplayName() { return null; }
-        }
+        public static class DescriptorImpl extends JobPropertyDescriptor {}
     }
 }

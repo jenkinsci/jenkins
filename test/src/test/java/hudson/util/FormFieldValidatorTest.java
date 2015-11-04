@@ -63,10 +63,6 @@ public class FormFieldValidatorTest {
             public void doCheckXyz() {
                 throw new Error("doCheckXyz is broken");
             }
-
-            public String getDisplayName() {
-                return "I have broken form field validation";
-            }
         }
 
         public BuildStepMonitor getRequiredMonitorService() {

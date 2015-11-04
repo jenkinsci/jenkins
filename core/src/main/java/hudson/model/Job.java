@@ -26,6 +26,7 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.BulkChange;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -104,6 +105,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import static javax.servlet.http.HttpServletResponse.*;
+import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -147,6 +149,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     private transient volatile boolean holdOffBuildUntilUserSave;
 
+    /** @deprecated Replaced by {@link BuildDiscarderProperty} */
     private volatile BuildDiscarder logRotator;
 
     /**
@@ -424,15 +427,24 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Returns the configured build discarder for this job, or null if none.
+     * Returns the configured build discarder for this job, via {@link BuildDiscarderProperty}, or null if none.
      */
-    public BuildDiscarder getBuildDiscarder() {
-        return logRotator;
+    public synchronized BuildDiscarder getBuildDiscarder() {
+        BuildDiscarderProperty prop = getProperty(BuildDiscarderProperty.class);
+        return prop != null ? prop.getStrategy() : /* settings compatibility */ logRotator;
     }
 
-    public void setBuildDiscarder(BuildDiscarder bd) throws IOException {
-        this.logRotator = bd;
-        save();
+    public synchronized void setBuildDiscarder(BuildDiscarder bd) throws IOException {
+        BulkChange bc = new BulkChange(this);
+        try {
+            removeProperty(BuildDiscarderProperty.class);
+            if (bd != null) {
+                addProperty(new BuildDiscarderProperty(bd));
+            }
+            bc.commit();
+        } finally {
+            bc.abort();
+        }
     }
 
     /**
@@ -444,9 +456,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Deprecated
     public LogRotator getLogRotator() {
-        if (logRotator instanceof LogRotator)
-            return (LogRotator) logRotator;
-        return null;
+        BuildDiscarder buildDiscarder = getBuildDiscarder();
+        return buildDiscarder instanceof LogRotator ? (LogRotator) buildDiscarder : null;
     }
 
     /**
@@ -1185,11 +1196,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         try {
             setDisplayName(json.optString("displayNameOrNull"));
 
-            if (json.optBoolean("logrotate"))
-                logRotator = req.bindJSON(BuildDiscarder.class, json.optJSONObject("buildDiscarder"));
-            else
-                logRotator = null;
-
             DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
             JSONObject jsonProperties = json.optJSONObject("properties");
             if (jsonProperties != null) {
@@ -1210,7 +1216,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             String newName = req.getParameter("name");
             final ProjectNamingStrategy namingStrategy = Jenkins.getInstance().getProjectNamingStrategy();
-            if (newName != null && !newName.equals(name)) {
+            if (validRename(name, newName)) {
+                newName = newName.trim();
                 // check this error early to avoid HTTP response splitting.
                 Jenkins.checkGoodName(newName);
                 namingStrategy.checkName(newName);
@@ -1229,6 +1236,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             Logger.getLogger(Job.class.getName()).log(Level.WARNING, "failed to parse " + json, e);
             sendError(e, req, rsp);
         }
+    }
+
+    private boolean validRename(String oldName, String newName) {
+        if (newName == null) {
+            return false;
+        }
+        boolean noChange = oldName.equals(newName);
+        boolean spaceAdded = oldName.equals(newName.trim());
+        return !noChange && !spaceAdded;
     }
 
     /**

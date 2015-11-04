@@ -70,7 +70,7 @@ public class HistoryPageFilterTest {
         itemList.addAll(newQueueItems(3, 4));
 
         // want to make sure the list items are ordered by id in descending order
-        Assert.assertEquals(1, HistoryPageEntry.getEntryId(itemList.get(0)));
+        Assert.assertEquals(HistoryPageEntry.getEntryId(1), HistoryPageEntry.getEntryId(itemList.get(0)));
         historyPageFilter.add(itemList);
         Assert.assertEquals(4, HistoryPageEntry.getEntryId(itemList.get(0)));
 
@@ -82,9 +82,9 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(4, historyPageFilter.queueItems.get(0).getEntryId());
         Assert.assertEquals(4, historyPageFilter.newestOnPage);
         Assert.assertEquals(3, historyPageFilter.queueItems.get(1).getEntryId());
-        Assert.assertEquals(2, historyPageFilter.runs.get(0).getEntryId());
-        Assert.assertEquals(1, historyPageFilter.runs.get(1).getEntryId());
-        Assert.assertEquals(1, historyPageFilter.oldestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(1), historyPageFilter.runs.get(1).getEntryId());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(1), historyPageFilter.oldestOnPage);
     }
 
     /**
@@ -107,7 +107,7 @@ public class HistoryPageFilterTest {
 
         Assert.assertEquals(12, historyPageFilter.queueItems.get(0).getEntryId());
         Assert.assertEquals(12, historyPageFilter.newestOnPage);
-        Assert.assertEquals(10, historyPageFilter.runs.get(0).getEntryId());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.get(0).getEntryId());
     }
 
     /**
@@ -126,8 +126,8 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(true, historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
-        Assert.assertEquals(10, historyPageFilter.newestOnPage);
-        Assert.assertEquals(6, historyPageFilter.oldestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(6), historyPageFilter.oldestOnPage);
     }
 
     /**
@@ -165,8 +165,8 @@ public class HistoryPageFilterTest {
         // Should only be 3 runs on the page (oldest 3)
         Assert.assertEquals(3, historyPageFilter.runs.size());
 
-        Assert.assertEquals(3, historyPageFilter.newestOnPage);
-        Assert.assertEquals(1, historyPageFilter.oldestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(3), historyPageFilter.newestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(1), historyPageFilter.oldestOnPage);
     }
 
     /**
@@ -184,8 +184,8 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(true, historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
-        Assert.assertEquals(7, historyPageFilter.newestOnPage);
-        Assert.assertEquals(3, historyPageFilter.oldestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(7), historyPageFilter.newestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(3), historyPageFilter.oldestOnPage);
     }
 
     /**
@@ -220,8 +220,8 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(false, historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
-        Assert.assertEquals(5, historyPageFilter.newestOnPage);
-        Assert.assertEquals(1, historyPageFilter.oldestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(5), historyPageFilter.newestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(1), historyPageFilter.oldestOnPage);
     }
 
     /**
@@ -239,8 +239,8 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(true, historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
-        Assert.assertEquals(8, historyPageFilter.newestOnPage);
-        Assert.assertEquals(4, historyPageFilter.oldestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(8), historyPageFilter.newestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(4), historyPageFilter.oldestOnPage);
     }
 
     /**
@@ -260,8 +260,8 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(true, historyPageFilter.hasDownPage);
         Assert.assertEquals(5, historyPageFilter.runs.size());
 
-        Assert.assertEquals(10, historyPageFilter.newestOnPage);
-        Assert.assertEquals(6, historyPageFilter.oldestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(6), historyPageFilter.oldestOnPage);
     }
 
     private List<ModelObject> newQueueItems(long startId, long endId) {
@@ -283,9 +283,9 @@ public class HistoryPageFilterTest {
     private HistoryPageFilter<ModelObject> newPage(int maxEntries, Long newerThan, Long olderThan) {
         HistoryPageFilter<ModelObject> pageFilter = new HistoryPageFilter<ModelObject>(maxEntries);
         if (newerThan != null) {
-            pageFilter.setNewerThan(newerThan);
+            pageFilter.setNewerThan(HistoryPageEntry.getEntryId(newerThan));
         } else if (olderThan != null) {
-            pageFilter.setOlderThan(olderThan);
+            pageFilter.setOlderThan(HistoryPageEntry.getEntryId(olderThan));
         }
         return pageFilter;
     }
@@ -317,6 +317,11 @@ public class HistoryPageFilterTest {
         @Override
         public long getQueueId() {
             return queueId;
+        }
+
+        @Override
+        public int getNumber() {
+            return (int) queueId;
         }
     }
 }

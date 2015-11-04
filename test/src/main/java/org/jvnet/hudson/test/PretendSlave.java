@@ -53,9 +53,5 @@ public class PretendSlave extends Slave {
     }
 
     @Extension
-    public static final class DescriptorImpl extends SlaveDescriptor {
-        public String getDisplayName() {
-            return "Test mock up slave";
-        }
-    }
+    public static final class DescriptorImpl extends SlaveDescriptor {}
 }

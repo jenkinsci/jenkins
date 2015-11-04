@@ -41,10 +41,6 @@ public class MockBuilder extends Builder {
         public Builder newInstance(StaplerRequest req, JSONObject data) {
             throw new UnsupportedOperationException();
         }
-
-        public String getDisplayName() {
-            return "Force the build result";
-        }
     }
 }
 

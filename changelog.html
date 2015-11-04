@@ -58,6 +58,67 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v1.636>What's new in 1.636</a> (2015/11/01)</h3>
+<ul class=image>
+  <li class="rfe">
+    Add "lastCompletedBuild" job permalink.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26270">issue 26270</a>)
+</ul>
+<h3><a name=v1.635>What's new in 1.635</a> (2015/10/25)</h3>
+<ul class=image>
+  <li class="rfe">
+    Make Node implement Saveable.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31055">issue 31055</a>)
+  <li class="bug">
+    Revert trigger optimizations made in 1.621 by <a href="https://github.com/jenkinsci/jenkins/pull/1617">PR 1617</a>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30745">issue 30745</a>)
+  <li class="bug">
+    Delegate CLI's delete-node command to the overridable <code>Computer.doDoDelete()</code> method.
+    Fixes the issue in OpenStack and JClouds plugins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31098">issue 31098</a>, regression in 1.618)
+  <li class="bug">
+    Prevent autocorrect of username on mobile devices in login forms.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1531">PR 1531</a>)
+  <li class="rfe">
+    Describe the built-in JDK as &quot;(System)&quot;.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-755">issue 755</a>)
+  <li class="bug">
+    Update JNA library to 4.2.1 in order to integrate fixes for linux-ppc64 and linux-arm platforms.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-15792">issue 15792</a>)
+</ul>
+<h3><a name=v1.634>What's new in 1.634</a> (2015/10/18)</h3>
+<ul class=image>
+  <li class="major bug">
+    Fix order of builds in new builds history widget introduced in 1.633.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30899">issue 30899</a>)
+  <li class="major bug">
+    Bytecode Compatibility Transformer would fail to transform some classes resulting in <code>ClassNotFoundException</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30820">issue 30820</a>)
+  <li class="bug">
+    Prevent <code>ClassCastException</code> in <code>AbstractBuild::reportError()</code> if the build step is not Publisher.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30730">issue 30730</a>)
+  <li class="bug">
+    Trim job names during the rename operation (it is impossible to delete or rename jobs with trailing spaces).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30502">issue 30502</a>)
+  <li class="rfe">
+    Add &quot;graphBg&quot; and &quot;plothBg&quot; background color options to plot URLs
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1769">PR 1769</a>)
+  <li class="rfe"> 
+    API changes: Add get method for causes of interruption in <code>hudson.model.Executor</code>
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1712">PR 1712</a>)
+  <li class="rfe"> 
+    Allow case insensitive file patterns in Artifacts Archiving.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-5253">issue 5253</a>)
+  <li class="bug"> 
+    Prevent <code>NullPointerException</code> while estimating duration of Queue executable items.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30456">issue 30456</a>)
+  <li class="bug"> 
+    Fix the resolution of Windows symbolic links in <code>SecretRewriter</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30456">issue 30456</a>)
+  <li class="rfe"> 
+    Let a combobox display its drop-down when focused, so users can see candidates without entering a letter.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26278">issue 26278</a>)
+</ul>
 <h3><a name=v1.633>What's new in 1.633</a> (2015/10/11)</h3>
 <ul class=image>
   <li class="rfe">

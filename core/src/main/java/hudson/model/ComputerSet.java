@@ -380,11 +380,6 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     @Extension
     public static class DescriptorImpl extends Descriptor<ComputerSet> {
-        @Override
-        public String getDisplayName() {
-            return "";
-        }
-
         /**
          * Auto-completion for the "copy from" field in the new job page.
          */

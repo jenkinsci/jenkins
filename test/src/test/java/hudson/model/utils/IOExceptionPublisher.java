@@ -28,8 +28,6 @@ public class IOExceptionPublisher extends Recorder {
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         @Override
-        public String getDisplayName() { return "Throw IOException Publisher"; }
-        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) { return true; }
     }
 }

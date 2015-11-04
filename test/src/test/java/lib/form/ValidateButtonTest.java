@@ -58,10 +58,6 @@ public class ValidateButtonTest extends HudsonTestCase implements Describable<Va
     public static final class DescriptorImpl extends Descriptor<ValidateButtonTest> {
         private Exception test1Outcome;
 
-        public String getDisplayName() {
-            return null;
-        }
-
         public void doValidateTest1(@QueryParameter("a") String a, @QueryParameter("b") boolean b,
                                     @QueryParameter("c") boolean c, @QueryParameter("d") String d,
                                     @QueryParameter("e") String e) {
