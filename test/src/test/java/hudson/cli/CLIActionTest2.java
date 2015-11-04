@@ -25,7 +25,7 @@ package hudson.cli;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import java.net.URL;
 import java.util.UUID;
@@ -56,13 +56,13 @@ public class CLIActionTest2 {
         
         // The behavior changed due to SECURITY-192. index page is no longer accessible to anonymous,
         // so we check the access by emulating the CLI connection post request
-        WebRequestSettings settings = new WebRequestSettings(new URL(j.getURL(), "cli"));
-        settings.setHttpMethod(HttpMethod.POST);
-        settings.setAdditionalHeader("Session", UUID.randomUUID().toString());
-        settings.setAdditionalHeader("Side", "download"); // We try to download something to init the duplex channel
-        settings = wc.addCrumb(settings);
+        WebRequest req = new WebRequest(new URL(j.getURL(), "cli"));
+        req.setHttpMethod(HttpMethod.POST);
+        req.setAdditionalHeader("Session", UUID.randomUUID().toString());
+        req.setAdditionalHeader("Side", "download"); // We try to download something to init the duplex channel
+        req = wc.addCrumb(req);
         
-        Page page = wc.getPage(settings);
+        Page page = wc.getPage(req);
         WebResponse webResponse = page.getWebResponse();
         assertEquals("We expect that the proper POST request from CLI gets processed successfully", 
                 200, webResponse.getStatusCode());
