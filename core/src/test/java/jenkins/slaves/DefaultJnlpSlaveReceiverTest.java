@@ -56,6 +56,8 @@ public class DefaultJnlpSlaveReceiverTest {
         when(mockComputer.getChannel()).thenReturn(null);
         when(mockChannel.getProperty(any(String.class))).thenReturn("some cookie");
         when(mockHandshake.jnlpConnect(mockComputer)).thenReturn(mockChannel);
+        when(mockHandshake.getRequestProperty("Secret-Key")).thenReturn("mock-secret");
+        when(mockComputer.getJnlpMac()).thenReturn("mock-secret");
 
         assertTrue(receiver.handle("node", mockHandshake));
         verify(mockHandshake).success(any(Properties.class));
@@ -77,6 +79,8 @@ public class DefaultJnlpSlaveReceiverTest {
         when(mockChannel.getProperty(any(String.class))).thenReturn("some cookie");
         when(mockComputer.disconnect(any(ConnectionFromCurrentPeer.class))).thenReturn(mockFuture);
         when(mockHandshake.jnlpConnect(mockComputer)).thenReturn(mockChannel);
+        when(mockHandshake.getRequestProperty("Secret-Key")).thenReturn("mock-secret");
+        when(mockComputer.getJnlpMac()).thenReturn("mock-secret");
 
         assertTrue(receiver.handle("node", mockHandshake));
         verify(mockFuture).get(15, TimeUnit.SECONDS);
