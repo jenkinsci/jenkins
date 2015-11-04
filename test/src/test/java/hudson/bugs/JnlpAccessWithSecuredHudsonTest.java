@@ -26,13 +26,17 @@ package hudson.bugs;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.cli.util.ScriptLoader;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
+import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
 import hudson.remoting.Which;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.DumbSlave;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DOMReader;
@@ -41,6 +45,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
+import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
@@ -112,6 +117,16 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
             for (int i = 0; i < /* one minute */600; i++) {
                 if (slave.getComputer().isOnline()) {
                     System.err.println("JNLP slave successfully connected");
+                    Channel channel = slave.getComputer().getChannel();
+                    assertFalse("SECURITY-206", channel.isRemoteClassLoadingAllowed());
+                    jenkins.getExtensionList(AdminWhitelistRule.class).get(AdminWhitelistRule.class).setMasterKillSwitch(false);
+                    final File f = new File(jenkins.getRootDir(), "secrets/master.key"); // DefaultConfidentialStore
+                    assertTrue(f.exists());
+                    try {
+                        fail("SECURITY-206: " + channel.call(new Attack(f.getAbsolutePath())));
+                    } catch (SecurityException x) {
+                        System.out.println("expected: " + x);
+                    }
                     return;
                 }
                 Thread.sleep(100);
@@ -119,6 +134,17 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
             fail("JNLP slave agent failed to connect");
         } finally {
             p.destroy();
+        }
+    }
+
+    private static class Attack extends MasterToSlaveCallable<String,Exception> {
+        private final String path;
+        Attack(String path) {
+            this.path = path;
+        }
+        @Override
+        public String call() throws Exception {
+            return Channel.current().call(new ScriptLoader(path));
         }
     }
 
