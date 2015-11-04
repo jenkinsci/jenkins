@@ -35,9 +35,11 @@ import org.kohsuke.stapler.MetaClassLoader;
 import org.kohsuke.stapler.jelly.JellyClassLoaderTearOff;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -48,29 +50,37 @@ import java.util.jar.JarFile;
  * @author Kohsuke Kawaguchi
  */
 public class JellyTestSuiteBuilder {
+
+    static Map<URL,String> scan(File resources, String extension) throws IOException {
+        Map<URL,String> result = new HashMap<>();
+        if (resources.isDirectory()) {
+            for (File f : FileUtils.listFiles(resources, new String[] {extension}, true)) {
+                result.put(f.toURI().toURL(), f.getAbsolutePath().substring((resources.getAbsolutePath() + File.separator).length()));
+            }
+        } else if (resources.getName().endsWith(".jar")) {
+            String jarUrl = resources.toURI().toURL().toExternalForm();
+            JarFile jf = new JarFile(resources);
+            Enumeration<JarEntry> e = jf.entries();
+            while (e.hasMoreElements()) {
+                JarEntry ent = e.nextElement();
+                if (ent.getName().endsWith("." + extension)) {
+                    result.put(new URL("jar:" + jarUrl + "!/" + ent.getName()), ent.getName());
+                }
+            }
+            jf.close();
+        }
+        return result;
+    }
+
     /**
      * Given a jar file or a class file directory, recursively search all the Jelly files and build a {@link TestSuite}
      * that performs static syntax checks.
      */
     public static TestSuite build(File res, boolean requirePI) throws Exception {
         TestSuite ts = new JellyTestSuite();
-
         final JellyClassLoaderTearOff jct = new MetaClassLoader(JellyTestSuiteBuilder.class.getClassLoader()).loadTearOff(JellyClassLoaderTearOff.class);
-
-        if (res.isDirectory()) {
-            for (final File jelly : (Collection <File>)FileUtils.listFiles(res,new String[]{"jelly"},true))
-                ts.addTest(new JellyCheck(jelly.toURI().toURL(), jelly.getAbsolutePath().substring((res.getAbsolutePath() + File.separator).length()), jct, requirePI));
-        }
-        if (res.getName().endsWith(".jar")) {
-            String jarUrl = res.toURI().toURL().toExternalForm();
-            JarFile jf = new JarFile(res);
-            Enumeration<JarEntry> e = jf.entries();
-            while (e.hasMoreElements()) {
-                JarEntry ent =  e.nextElement();
-                if (ent.getName().endsWith(".jelly"))
-                    ts.addTest(new JellyCheck(new URL("jar:"+jarUrl+"!/"+ent.getName()), ent.getName(), jct, requirePI));
-            }
-            jf.close();
+        for (Map.Entry<URL,String> entry : scan(res, "jelly").entrySet()) {
+            ts.addTest(new JellyCheck(entry.getKey(), entry.getValue(), jct, requirePI));
         }
         return ts;
     }
