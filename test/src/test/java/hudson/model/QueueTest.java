@@ -937,10 +937,14 @@ public class QueueTest {
 
         //bob has permission on the project and will be able to see it in the queue together with information such as the URL and the name.
         for (DomNode element: p.getFirstChild().getFirstChild().getChildNodes()){
-            if(element.getNodeName().equals("task")){
-                assertEquals(((DomElement)element).getElementsByTagName("name").size(),1);
-                assertEquals(((DomElement) element).getElementsByTagName("name").item(0).getFirstChild().toString(), "project");
-                assertEquals(((DomElement)element).getElementsByTagName("url").size(),1);
+            if (element.getNodeName().equals("task")) {
+                for (DomNode child: ((DomElement) element).getChildNodes()) {
+                    if (child.getNodeName().equals("name")) {
+                        assertEquals(child.asText(), "project");
+                    } else if (child.getNodeName().equals("url")) {
+                        assertNotNull(child.asText());
+                    }
+                }
             }
         }
         webClient = r.createWebClient();
