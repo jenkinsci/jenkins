@@ -186,7 +186,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Displays {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final String toString() {
         return toURI().toString();
