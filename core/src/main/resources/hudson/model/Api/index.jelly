@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 	<l:layout title="Remote API">
 		<l:main-panel>
-      <h1>Remote API</h1>
+      <h1>REST API</h1>
 
       <p>
         Many objects of Jenkins provide the remote access API. They are available
@@ -42,37 +42,60 @@ THE SOFTWARE.
 
           <p>
             You can also specify optional XPath to control the fragment you'd like to obtain (but see <a href="#tree">below</a>).
-            For example, <tt>../api/xml?xpath=/*/*[0]</tt>. If the XPath only matches a text node,
-            the result will be sent with <tt>text/plain</tt> MIME type to simplify
-            further processing.
-            
+            For example, <tt>../api/xml?xpath=/*/*[0]</tt>.
+          </p>
+          <p>
             For XPath that matches multiple nodes, you need to also specify the "wrapper" query parameter
             to specify the name of the root XML element to be create so that the resulting XML becomes well-formed.
-         </p>
+          </p>
           <p>
             Similarly <tt>exclude</tt> query parameter can be used to exclude nodes
             that match the given XPath from the result. This is useful for
             trimming down the amount of data you fetch (but again see <a href="#tree">below</a>). This query parameter can be specified
             multiple times.
           </p>
+          <p>
+            XPath filtering is powerful, and you can have it only return a very small data, but note that
+            the server still has to build a full DOM of the raw data, which could cause a large memory spike.
+            To avoid overloading the server, consider using the <tt>tree</tt> parameter, or use the <tt>xpath</tt> parameter
+            in conjunction with the <tt>tree</tt> parameter. When used together, the result of the <tt>tree</tt> parameter
+            filtering is built into DOM, then the XPath is applied to compute the final return value. In this way,
+            you can often substantially reduce the size of DOM built in memory.
+          </p>
         </dd>
 
-        <dt><a href="json">JSON API</a></dt>
+        <dt><a href="json?pretty=true">JSON API</a></dt>
         <dd>
-          Access the same data as JSON for JavaScript-based access. Supports
-          <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSONP</a> through
-          the optional <tt>jsonp=<i>callbackname</i></tt> query parameter.
+          Access the same data as JSON for JavaScript-based access. <tt>tree</tt> may be used.
         </dd>
 
-        <dt><a href="python">Python API</a></dt>
+        <dt><a href="python?pretty=true">Python API</a></dt>
         <dd>
-          Access the same data as Python for Python clients. This can be parsed into Python
-          object as <tt>eval(urllib.urlopen("...").read())</tt> and the resulting object
-          tree is identical to that of JSON.
+         <p>
+           Access the same data as Python for Python clients. This can be parsed into Python
+           object as <tt>eval(urllib.urlopen("...").read())</tt> and the resulting object
+           tree is identical to that of JSON.
 
-          However, when you do this, beware of the security implication. If you are connecting
-          to a non-trusted Jenkins, the server can send you malicious Python programs. 
+           However, when you do this, beware of the security implication. If you are connecting
+           to a non-trusted Jenkins, the server can send you malicious Python programs. 
+         </p>
+         <p>
+           In Python 2.6 or later you can safely parse this output using 
+           <tt>ast.literal_eval(urllib.urlopen("...").read())</tt>
+         </p>
         </dd>
+
+        <!--
+        <dt><a href="ruby?pretty=true">Ruby API</a></dt>
+        <dd>
+         <p>
+           Access the same data as Ruby literals that can be <tt>eval</tt>ed.
+
+           However, when you do this, beware of the security implication. If you are connecting
+           to a non-trusted Jenkins, the server can send you malicious Python programs.
+         </p>
+        </dd>
+        -->
       </dl>
 
       <p>
@@ -82,26 +105,48 @@ THE SOFTWARE.
 
       <h2>Controlling the amount of data you fetch</h2>
       <p>
-        In all formats, the <tt>depth</tt> query parameter can be used to control the amount of data
-        you'll receive. The default is <tt>depth=0</tt>, but by increasing this value you can get
-        a lot of data by single remote API invocation (the downside is bigger bandwidth requirement.)
-        Compare <a href="xml">depth=0</a> and <a href="xml?depth=1">depth=1</a> and see what the difference
-        is for yourself. Also note that data created by a smaller depth value is always a subset of
-        the data created by a bigger depth value.
-      </p>
-      <p>
-        <a name="tree">A newer alternative is the <tt>tree</tt> query parameter.</a> This works with any format, e.g. JSON;
-        is more efficient than using <tt>depth</tt> with <tt>exclude</tt> (since information
-        does not need to be generated on the server and then discarded); and may be easier to use,
-        since you need only know what elements you are looking for, rather than what you are <em>not</em> looking
-        for (which is anyway an open-ended list when plugins can contribute API elements).
-        The value should be a list of property names to include, with subproperties inside square braces.
+        <a name="tree" />
+        The <tt>tree</tt> query parameter allows you to explicitly specify and retrieve only
+        the information you are looking for, by using an XPath-ish path expression.
+
+        The value should be a list of property names to include, with sub-properties inside square braces.
         Try <a href="xml?tree=jobs[name],views[name,jobs[name]]">tree=jobs[name],views[name,jobs[name]]</a>
         to see just a list of jobs (only giving the name) and views (giving the name and jobs they contain).
         <strong>Note</strong>: for array-type properties (such as <tt>jobs</tt> in this example),
         the name must be given in the original plural, not in the singular as the element would appear in XML (<tt>&amp;lt;job&amp;gt;</tt>).
         This will be more natural for e.g. <a href="json?tree=jobs[name]">json?tree=jobs[name]</a> anyway:
         the JSON writer does not do plural-to-singular mangling because arrays are represented explicitly.
+      </p>
+      <p>
+        For array-type properties, a range specifier is supported. For example, <tt>tree=jobs[name]{0,10}</tt> would
+        retrieve the name of the first 10 jobs. The range specifier has the following variants:
+      </p>
+      <ul>
+        <li>
+          <b>{M,N}</b>: From the M-th element (inclusive) to the N-th element (exclusive).
+        </li>
+        <li>
+          <b>{M,}</b>: From the M-th element (inclusive) to the end.
+        </li>
+        <li>
+          <b>{,N}</b>: From the first element (inclusive) to the N-th element (exclusive). The same as {0,N}.
+        </li>
+        <li>
+          <b>{N}</b>: Just retrieve the N-th element. The same as {N,N+1}.
+        </li>
+      </ul>
+
+      <p>
+        Another way to retrieve more data is to use the <tt>depth=N</tt> query parameter .
+        This retrieves all the data up to the specified depth.
+        Compare <a href="xml">depth=0</a> and <a href="xml?depth=1">depth=1</a> and see what the difference
+        is for yourself. Also note that data created by a smaller depth value is always a subset of
+        the data created by a bigger depth value.
+      </p>
+      <p>
+        Because of the size of the data, the <tt>depth</tt> parameter should really be only used to explore
+        what data Jenkins can return. Once you identify the data you want to retrieve, you can then come up with
+        the <tt>tree</tt> parameter to exactly specify the data you need.
       </p>
 
       <st:include it="${it.bean}" page="_api.jelly" optional="true" />

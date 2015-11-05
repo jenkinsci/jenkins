@@ -18,8 +18,7 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * Acts as a reverse proxy to https://hudson.dev.java.net/ , so that during a test
- * we can avoid hitting java.net.
+ * Acts as a reverse proxy, so that during a test we can avoid hitting updates.jenkins-ci.org.
  *
  * <p>
  * The contents are cached locally.

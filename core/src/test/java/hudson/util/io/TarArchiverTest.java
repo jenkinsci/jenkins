@@ -26,23 +26,29 @@ package hudson.util.io;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
+import hudson.Util;
+import hudson.model.TaskListener;
+import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
-import junit.framework.TestCase;
-import org.jvnet.hudson.test.Bug;
-
 import java.io.File;
 import java.io.FileOutputStream;
+import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
 
-/**
- * @author Kohsuke Kawaguchi
- */
-public class TarArchiverTest extends TestCase {
+public class TarArchiverTest {
+
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+
     /**
      * Makes sure that permissions are properly stored in the tar file.
      */
-    @Bug(9397)
-    public void testPermission() throws Exception {
-        if (Functions.isWindows())  return; // can't test on Windows
+    @Issue("JENKINS-9397")
+    @Test public void permission() throws Exception {
+        assumeTrue(!Functions.isWindows());
 
         File tar = File.createTempFile("test","tar");
         File zip = File.createTempFile("test","zip");
@@ -70,7 +76,7 @@ public class TarArchiverTest extends TestCase {
             e.mkdirs();
 
             // extract via the tar command
-            assertEquals(0, new LocalLauncher(new StreamTaskListener(System.out)).launch().cmds("tar", "xvf", tar.getAbsolutePath()).pwd(e).join());
+            assertEquals(0, new LocalLauncher(new StreamTaskListener(System.out)).launch().cmds("tar", "xvpf", tar.getAbsolutePath()).pwd(e).join());
 
             assertEquals(0100755,e.child("a.txt").mode());
             assertEquals(dirMode,e.child("subdir").mode());
@@ -91,4 +97,13 @@ public class TarArchiverTest extends TestCase {
             dir.deleteRecursive();
         }
     }
+
+    @Issue("JENKINS-14922")
+    @Test public void brokenSymlinks() throws Exception {
+        assumeTrue(!Functions.isWindows());
+        File dir = tmp.getRoot();
+        Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
+        new FilePath(dir).tar(new NullStream(), "**");
+    }
+
 }

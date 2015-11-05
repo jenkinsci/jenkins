@@ -23,6 +23,12 @@
  */
 package hudson.model.queue;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -32,20 +38,26 @@ import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.JobOffer;
 import hudson.model.Queue.Task;
 import hudson.model.Queue.WaitingItem;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import static java.util.Arrays.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LoadPredictorTest extends HudsonTestCase {
+public class LoadPredictorTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     @TestExtension
     public static class LoadPredictorImpl extends LoadPredictor {
         @Override
@@ -62,11 +74,11 @@ public class LoadPredictorTest extends HudsonTestCase {
      * - a future load of size 1 is predicted
      * - hence the consideration of the current task at hand shall fail, as it'll collide with the estimated future load.
      */
+    @Test
     public void test1() throws Exception {
         Task t = mock(Task.class);
         when(t.getEstimatedDuration()).thenReturn(10000L);
         when(t.getSubTasks()).thenReturn((Collection) asList(t));
-
 
         Computer c = createMockComputer(1);
 
@@ -90,11 +102,11 @@ public class LoadPredictorTest extends HudsonTestCase {
      * - a future load of size 1 is predicted but it'll start after the currently building something is completed.
      * - hence the currently available executor should be considered available (unlike in test1)
      */
+    @Test
     public void test2() throws Exception {
         Task t = mock(Task.class);
         when(t.getEstimatedDuration()).thenReturn(10000L);
         when(t.getSubTasks()).thenReturn((Collection) asList(t));
-
 
         Computer c = createMockComputer(2);
         Executor e = c.getExecutors().get(0);
@@ -137,7 +149,7 @@ public class LoadPredictorTest extends HudsonTestCase {
         f.set(c, executors);
 
         when(c.getExecutors()).thenReturn(executors);
-        
+
         return c;
     }
 }

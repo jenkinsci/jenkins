@@ -28,6 +28,7 @@ import jenkins.model.Jenkins;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.args4j.CmdLineException;
 
 import java.io.IOException;
@@ -39,17 +40,27 @@ import java.io.IOException;
  */
 public abstract class CommandDuringBuild extends CLICommand {
     /**
-     * This method makes sense only when called from within the build kicked by Hudson.
-     * We use the environment variables that Hudson sets to determine the build that is being run.
+     * This method makes sense only when called from within the build kicked by Jenkins.
+     * We use the environment variables that Jenkins sets to determine the build that is being run.
      */
     protected Run getCurrentlyBuilding() throws CmdLineException {
+        Run r = optCurrentlyBuilding();
+        if (r==null)
+            throw new CmdLineException("This CLI command works only when invoked from inside a build");
+        return r;
+    }
+
+    /**
+     * If the command is currently running inside a build, return it. Otherwise null.
+     */
+    protected Run optCurrentlyBuilding() throws CmdLineException {
         try {
             CLICommand c = CLICommand.getCurrent();
             if (c==null)    throw new IllegalStateException("Not executing a CLI command");
-            String[] envs = c.channel.call(new GetCharacteristicEnvironmentVariables());
+            String[] envs = c.checkChannel().call(new GetCharacteristicEnvironmentVariables());
 
             if (envs[0]==null || envs[1]==null)
-                throw new CmdLineException("This CLI command works only when invoked from inside a build");
+                return null;
 
             Job j = Jenkins.getInstance().getItemByFullName(envs[0],Job.class);
             if (j==null)    throw new CmdLineException("No such job: "+envs[0]);
@@ -57,6 +68,9 @@ public abstract class CommandDuringBuild extends CLICommand {
             try {
                 Run r = j.getBuildByNumber(Integer.parseInt(envs[1]));
                 if (r==null)    throw new CmdLineException("No such build #"+envs[1]+" in "+envs[0]);
+                if (!r.isBuilding()) {
+                    throw new CmdLineException(r + " is not currently being built");
+                }
                 return r;
             } catch (NumberFormatException e) {
                 throw new CmdLineException("Invalid build number: "+envs[1]);
@@ -71,7 +85,7 @@ public abstract class CommandDuringBuild extends CLICommand {
     /**
      * Gets the environment variables that points to the build being executed.
      */
-    private static final class GetCharacteristicEnvironmentVariables implements Callable<String[],IOException> {
+    private static final class GetCharacteristicEnvironmentVariables extends MasterToSlaveCallable<String[],IOException> {
         public String[] call() throws IOException {
             return new String[] {
                 System.getenv("JOB_NAME"),

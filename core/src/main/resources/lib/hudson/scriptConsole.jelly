@@ -27,40 +27,40 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout norefresh="true">
+  <l:layout norefresh="true" permission="${h.RUN_SCRIPTS}">
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <h1>${%Script Console}</h1>
+      <h1><img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
 
-      <p>
-        ${%description}
-      </p>
-      <!-- this is where the example goes -->
-      <d:invokeBody />
+      <j:choose>
+        <j:when test="${it.channel != null}">
+          <p>
+            ${%description}
+          </p>
+          <!-- this is where the example goes -->
+          <d:invokeBody />
+          <p>
+            ${%description2}
+          </p>
 
-      <form action="script" method="post">
-        <textarea id="script" name="script" style="width:100%; height:10em">${request.getParameter('script')}</textarea>
-        <div align="right">
-          <f:submit  value="${%Run}"/>
-        </div>
-        <script>
-          $('script').focus();
-        </script>
-      </form>
-      <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.clike.clike"/>
-      <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
-      <script>
-        var w = CodeMirror.fromTextArea(document.getElementById("script"),{
-          mode:"text/x-groovy",
-          lineNumbers: true
-        }).getWrapperElement();
-        w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
-      </script>
-      <j:if test="${output!=null}">
-        <h2>${%Result}</h2>
-        <pre><st:out value="${output}"/></pre>
-      </j:if>
+          <form action="script" method="post">
+            <textarea id="script" name="script" class="script">${request.getParameter('script')}</textarea>
+            <div align="right">
+              <f:submit  value="${%Run}"/>
+            </div>
+          </form>
+          <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
+          <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
+          <j:if test="${output!=null}">
+            <h2>${%Result}</h2>
+            <pre><st:out value="${output}"/></pre>
+          </j:if>
+        </j:when>
+        <j:otherwise>
+          ${%It is not possible to run scripts when slave is offline.}
+        </j:otherwise>
+      </j:choose>
     </l:main-panel>
   </l:layout>
 </j:jelly>

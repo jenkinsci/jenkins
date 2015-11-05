@@ -23,6 +23,10 @@
  */
 package hudson.triggers;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.util.OneShotEvent;
@@ -36,32 +40,35 @@ import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.model.Cause.UserCause;
 import hudson.scm.NullSCM;
-import hudson.scm.PollingResult;
-import hudson.scm.PollingResult.Change;
-import hudson.scm.RepositoryBrowser;
-import hudson.scm.SCMDescriptor;
-import hudson.scm.SCMRevisionState;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.SCMTrigger.BuildAction;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.SingleFileSCM;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.List;
+
 /**
  * @author Alan Harder
  */
-public class SCMTriggerTest extends HudsonTestCase {
+public class SCMTriggerTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * Make sure that SCMTrigger doesn't trigger another build when a build has just started,
      * but not yet completed its SCM update.
      */
-    @Bug(2671)
-    public void testSimultaneousPollAndBuild() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+    @Test
+    @Issue("JENKINS-2671")
+    public void simultaneousPollAndBuild() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
 
         // used to coordinate polling and check out
         final OneShotEvent checkoutStarted = new OneShotEvent();
@@ -99,11 +106,12 @@ public class SCMTriggerTest extends HudsonTestCase {
     /**
      * Make sure that only one polling result shows up per build.
      */
-    @Bug(7649)
-    public void testMultiplePollingOneBuildAction() throws Exception {
+    @Test
+    @Issue("JENKINS-7649")
+    public void multiplePollingOneBuildAction() throws Exception {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         p.getBuildersList().add(new TestBuilder() {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -124,9 +132,9 @@ public class SCMTriggerTest extends HudsonTestCase {
         // Schedule a new build, and trigger it many ways while it sits in queue
         Future<FreeStyleBuild> fb = p.scheduleBuild2(0, new UserCause());
         assertNotNull(fb);
-        assertFalse(p.scheduleBuild(new SCMTriggerCause("First poll")));
-        assertFalse(p.scheduleBuild(new SCMTriggerCause("Second poll")));
-        assertFalse(p.scheduleBuild(new SCMTriggerCause("Third poll")));
+        assertTrue(p.scheduleBuild(new SCMTriggerCause("First poll")));
+        assertTrue(p.scheduleBuild(new SCMTriggerCause("Second poll")));
+        assertTrue(p.scheduleBuild(new SCMTriggerCause("Third poll")));
 
         // Wait for 2nd build to finish
         buildShouldComplete.signal();
@@ -137,4 +145,3 @@ public class SCMTriggerTest extends HudsonTestCase {
         assertFalse("There should only be one BuildAction.", ba.size()!=1);
     }
 }
-

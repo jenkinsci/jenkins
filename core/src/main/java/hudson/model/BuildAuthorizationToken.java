@@ -31,7 +31,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.security.ApiTokenProperty;
 import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Authorization token to allow projects to trigger themselves under the secured environment.
@@ -39,9 +42,10 @@ import org.acegisecurity.AccessDeniedException;
  * @author Kohsuke Kawaguchi
  * @see BuildableItem
  * @deprecated 2008-07-20
- *      Use {@link ACL} and {@link AbstractProject#BUILD}. This code is only here
+ *      Use {@link ACL} and {@link Item#BUILD}. This code is only here
  *      for the backward compatibility.
  */
+@Deprecated
 public final class BuildAuthorizationToken {
     private final String token;
 
@@ -59,7 +63,12 @@ public final class BuildAuthorizationToken {
         return null;
     }
 
-    public static void checkPermission(AbstractProject project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+    @Deprecated public static void checkPermission(AbstractProject<?,?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Job<?,?> j = project;
+        checkPermission(j, token, req, rsp);
+    }
+
+    public static void checkPermission(Job<?,?> project, BuildAuthorizationToken token, StaplerRequest req, StaplerResponse rsp) throws IOException {
         if (!Jenkins.getInstance().isUseSecurity())
             return;    // everyone is authorized
 
@@ -72,7 +81,19 @@ public final class BuildAuthorizationToken {
                 throw new AccessDeniedException(Messages.BuildAuthorizationToken_InvalidTokenProvided());
         }
 
-        project.checkPermission(AbstractProject.BUILD);
+        project.checkPermission(Item.BUILD);
+
+        if (req.getMethod().equals("POST")) {
+            return;
+        }
+
+        if (req.getAttribute(ApiTokenProperty.class.getName()) instanceof User) {
+            return;
+        }
+
+        rsp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        rsp.addHeader("Allow", "POST");
+        throw HttpResponses.forwardToView(project, "requirePOST.jelly");
     }
 
     public String getToken() {

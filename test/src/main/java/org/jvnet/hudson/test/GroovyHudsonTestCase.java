@@ -15,7 +15,9 @@ import java.io.IOException;
  * {@link HudsonTestCase} with more convenience methods for Groovy.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Use {@link GroovyJenkinsRule} instead.
  */
+@Deprecated
 public abstract class GroovyHudsonTestCase extends HudsonTestCase {
     /**
      * Executes the given closure on the server, in the context of an HTTP request.

@@ -67,9 +67,9 @@ public abstract class BuildVariableContributor implements ExtensionPoint {
     public abstract void buildVariablesFor(AbstractBuild build, Map<String,String> variables);
 
     /**
-     * Returns all the registered {@link EnvironmentContributor}s.
+     * Returns all the registered {@link BuildVariableContributor}s.
      */
     public static ExtensionList<BuildVariableContributor> all() {
-        return Jenkins.getInstance().getExtensionList(BuildVariableContributor.class);
+        return ExtensionList.lookup(BuildVariableContributor.class);
     }
 }

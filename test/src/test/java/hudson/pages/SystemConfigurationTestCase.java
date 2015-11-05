@@ -23,45 +23,48 @@
  */
 package hudson.pages;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.PageDecorator;
 import net.sf.json.JSONObject;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.Bug;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.StaplerRequest;
 
-public class SystemConfigurationTestCase extends HudsonTestCase {
+public class SystemConfigurationTestCase {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     private PageDecoratorImpl pageDecoratorImpl;
 
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() {
         if (pageDecoratorImpl != null) {
             PageDecorator.ALL.remove(pageDecoratorImpl);
         }
-        super.tearDown();
     }
-    
-    /**
-     * Asserts that bug#2289 is fixed.
-     */
-    @Bug(2289)
-    public void testPageDecoratorIsListedInPage() throws Exception {
+
+    @Test
+    @Issue("JENKINS-2289")
+    public void pageDecoratorIsListedInPage() throws Exception {
         pageDecoratorImpl = new PageDecoratorImpl();
         PageDecorator.ALL.add(pageDecoratorImpl);
-        
-        HtmlPage page = new WebClient().goTo("configure");
-        assertXPath(page,"//tr[@name='hudson-pages-SystemConfigurationTestCase$PageDecoratorImpl']");
+
+        HtmlPage page = j.createWebClient().goTo("configure");
+        j.assertXPath(page, "//tr[@name='hudson-pages-SystemConfigurationTestCase$PageDecoratorImpl']");
 
         HtmlForm form = page.getFormByName("config");
         form.getInputByName("_.decoratorId").setValueAttribute("this_is_a_profile");
-        submit(form);
+        j.submit(form);
         assertEquals("The decorator field was incorrect", "this_is_a_profile", pageDecoratorImpl.getDecoratorId());
     }
 
-    /**
-     * PageDecorator for bug#2289
-     */
     private static class PageDecoratorImpl extends PageDecorator {
         private String decoratorId;
 
@@ -75,7 +78,7 @@ public class SystemConfigurationTestCase extends HudsonTestCase {
         public String getDisplayName() {
             return "PageDecoratorImpl";
         }
-        
+
         public String getDecoratorId() {
             return decoratorId;
         }

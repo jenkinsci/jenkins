@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, Geoff Cummings
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,13 @@
  */
 package hudson.model;
 
-import java.util.Locale;
-
 import hudson.EnvVars;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
+
+import javax.annotation.CheckForNull;
+import java.util.Locale;
 
 public class RunParameterValue extends ParameterValue {
 
@@ -37,15 +38,26 @@ public class RunParameterValue extends ParameterValue {
     @DataBoundConstructor
     public RunParameterValue(String name, String runId, String description) {
         super(name, description);
-        this.runId = runId;
+        this.runId = check(runId);
     }
 
     public RunParameterValue(String name, String runId) {
         super(name, null);
-        this.runId = runId;
+        this.runId = check(runId);
     }
 
-    public Run getRun() {
+    private static String check(String runId) {
+        if (runId == null || runId.indexOf('#') == -1) {
+            throw new IllegalArgumentException(runId);
+        } else {
+            return runId;
+        }
+    }
+
+    /**
+     * Can be null if the {@link Run} that this was pointing to no longer exists.
+     */
+    public @CheckForNull Run getRun() {
         return Run.fromExternalizableId(runId);
     }
 
@@ -53,33 +65,68 @@ public class RunParameterValue extends ParameterValue {
         return runId;
     }
     
+    private String[] split() {
+        if (runId == null) {
+            return null;
+        }
+        String[] r = runId.split("#");
+        if (r.length != 2) {
+            return null;
+        }
+        return r;
+    }
+
     @Exported
     public String getJobName() {
-    	return runId.split("#")[0];
+        String[] r = split();
+    	return r == null ? null : r[0];
     }
     
     @Exported
     public String getNumber() {
-    	return runId.split("#")[1];
+        String[] r = split();
+    	return r == null ? null : r[1];
     }
-    
+
+    @Override
+    public Run getValue() {
+        return getRun();
+    }
 
     /**
      * Exposes the name/value as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        String value = Jenkins.getInstance().getRootUrl() + getRun().getUrl();
+    public void buildEnvironment(Run<?,?> build, EnvVars env) {
+        Run run = getRun();
+        
+        String value = (null == run) ? "UNKNOWN" : Jenkins.getInstance().getRootUrl() + run.getUrl();
         env.put(name, value);
-        env.put(name + ".jobName", getJobName());
-        env.put(name + ".number" , getNumber ());
+
+        env.put(name + ".jobName", getJobName());   // undocumented, left for backward compatibility
+        env.put(name + "_JOBNAME", getJobName());   // prefer this version
+
+        env.put(name + ".number" , getNumber ());   // same as above
+        env.put(name + "_NUMBER" , getNumber ());
+        
+        // if run is null, default to the standard '#1' display name format
+        env.put(name + "_NAME",  (null == run) ? "#" + getNumber() : run.getDisplayName());  // since 1.504
+
+        String buildResult = (null == run || null == run.getResult()) ? "UNKNOWN" : run.getResult().toString();
+        env.put(name + "_RESULT",  buildResult);  // since 1.517
+
         env.put(name.toUpperCase(Locale.ENGLISH),value); // backward compatibility pre 1.345
 
     }
     
     @Override
-    public String getShortDescription() {
+    public String toString() {
     	return "(RunParameterValue) " + getName() + "='" + getRunId() + "'";
+    }
+
+    @Override public String getShortDescription() {
+        Run run = getRun();
+        return name + "=" + ((null == run) ? getJobName() + " #" + getNumber() : run.getFullDisplayName());
     }
 
 }

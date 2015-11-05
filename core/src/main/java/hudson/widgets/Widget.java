@@ -24,6 +24,7 @@
 package hudson.widgets;
 
 import hudson.ExtensionPoint;
+import hudson.model.View;
 
 /**
  * Box to be rendered in the side panel.
@@ -32,6 +33,14 @@ import hudson.ExtensionPoint;
  * <ul>
  * <li><b>index.jelly</b> should display the widget. It should have:
  *   &lt;l:pane width="2" title="..."> ...body... &lt;/l:pane> structure.
+ *   In this view, "it" points to the {@link Widget} and "view" points to {@link View}
+ *   that's rendering the widget.
+ * </ul>
+ *
+ * TODO:
+ *  - make Widget describable & provide the UI to let admin configure widgets?
+ *    - backward compatibility implications?
+ *
  *
  * @author Kohsuke Kawaguchi
  * @since 1.146

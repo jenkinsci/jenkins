@@ -23,38 +23,53 @@
  */
 package hudson.console;
 
+import static org.junit.Assert.assertEquals;
 import hudson.MarkupText;
-import junit.framework.TestCase;
+
+import org.junit.Test;
+
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Alan Harder
  */
-public class UrlAnnotatorTest extends TestCase {
+public class UrlAnnotatorTest {
+
+    private ConsoleAnnotator<?> ca = new UrlAnnotator().newInstance(null);
+
+    @Test
     public void testAnnotate() {
-        ConsoleAnnotator ca = new UrlAnnotator().newInstance(null);
-        MarkupText text = new MarkupText("Hello <foo>http://foo/</foo> Bye");
-        ca.annotate(null, text);
-        assertEquals("Hello &lt;foo><a href='http://foo/'>http://foo/</a>&lt;/foo> Bye",
-                     text.toString(true));
-        text = new MarkupText("Hello [foo]http://foo/bar.txt[/foo] Bye");
-        ca.annotate(null, text);
+        assertEquals("Hello &lt;foo&gt;<a href='http://foo/'>http://foo/</a>&lt;/foo&gt; Bye",
+                     annotate("Hello <foo>http://foo/</foo> Bye"));
+
         assertEquals("Hello [foo]<a href='http://foo/bar.txt'>http://foo/bar.txt</a>[/foo] Bye",
-                     text.toString(true));
-        text = new MarkupText(
-                "Hello 'http://foo' or \"ftp://bar\" or <https://baz/> or (http://a.b.c/x.y) Bye");
-        ca.annotate(null, text);
+                     annotate("Hello [foo]http://foo/bar.txt[/foo] Bye"));
+
         assertEquals("Hello '<a href='http://foo'>http://foo</a>' or \"<a href='ftp://bar'>"
-                + "ftp://bar</a>\" or &lt;<a href='https://baz/'>https://baz/</a>> or (<a "
+                + "ftp://bar</a>\" or &lt;<a href='https://baz/'>https://baz/</a>&gt; or (<a "
                 + "href='http://a.b.c/x.y'>http://a.b.c/x.y</a>) Bye",
-                text.toString(true));
-        text = new MarkupText("Fake 'http://foo or \"ftp://bar or <https://baz/ or (http://a.b.c/x.y Bye");
-        ca.annotate(null, text);
+                annotate("Hello 'http://foo' or \"ftp://bar\" or <https://baz/> or (http://a.b.c/x.y) Bye"));
+
         assertEquals("Fake '<a href='http://foo'>http://foo</a> or \"<a href='ftp://bar'>"
                 + "ftp://bar</a> or &lt;<a href='https://baz/'>https://baz/</a> or (<a "
                 + "href='http://a.b.c/x.y'>http://a.b.c/x.y</a> Bye",
-                text.toString(true));
-        text = new MarkupText("Punctuation: http://foo/.");
+                annotate("Fake 'http://foo or \"ftp://bar or <https://baz/ or (http://a.b.c/x.y Bye"));
+
+        assertEquals("Punctuation: <a href='http://foo/'>http://foo/</a>.", annotate("Punctuation: http://foo/."));
+    }
+
+    @Test
+    @Issue("JENKINS-19866")
+    public void annotateFileScheme() {
+        assertEquals(
+                "Get this <a href='file://here/in/this/folder/'>file://here/in/this/folder/</a>.",
+                annotate("Get this file://here/in/this/folder/.")
+        );
+    }
+
+    private String annotate(String plain) {
+        MarkupText text = new MarkupText(plain);
         ca.annotate(null, text);
-        assertEquals("Punctuation: <a href='http://foo/'>http://foo/</a>.", text.toString(true));
+        return text.toString(true);
     }
 }

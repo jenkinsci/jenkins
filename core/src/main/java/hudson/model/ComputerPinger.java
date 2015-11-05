@@ -27,7 +27,7 @@ public abstract class ComputerPinger implements ExtensionPoint {
      * Get all registered instances.
      */
     public static ExtensionList<ComputerPinger> all() {
-        return Jenkins.getInstance().getExtensionList(ComputerPinger.class);
+        return ExtensionList.lookup(ComputerPinger.class);
     }
 
     /**

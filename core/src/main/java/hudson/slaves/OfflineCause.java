@@ -24,10 +24,17 @@
 
 package hudson.slaves;
 
+import jenkins.model.Jenkins;
+import hudson.Functions;
 import hudson.model.Computer;
+import hudson.model.User;
+
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
+
+import javax.annotation.Nonnull;
+import java.util.Date;
 
 /**
  * Represents a cause that puts a {@linkplain Computer#isOffline() computer offline}.
@@ -36,13 +43,34 @@ import org.kohsuke.stapler.export.Exported;
  * <p>
  * {@link OfflineCause} must have <tt>cause.jelly</tt> that renders a cause
  * into HTML. This is used to tell users why the node is put offline.
- * This view should render a block element like DIV. 
+ * This view should render a block element like DIV.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.320
  */
 @ExportedBean
 public abstract class OfflineCause {
+    protected final long timestamp = System.currentTimeMillis();
+
+    /**
+     * Timestamp in which the event happened.
+     *
+     * @since 1.612
+     */
+    @Exported
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    /**
+     * Same as {@link #getTimestamp()} but in a different type.
+     *
+     * @since 1.612
+     */
+    public final @Nonnull Date getTime() {
+        return new Date(timestamp);
+    }
+
     /**
      * {@link OfflineCause} that renders a static text,
      * but without any further UI.
@@ -50,7 +78,10 @@ public abstract class OfflineCause {
     public static class SimpleOfflineCause extends OfflineCause {
         public final Localizable description;
 
-        private SimpleOfflineCause(Localizable description) {
+        /**
+         * @since 1.571
+         */
+        protected SimpleOfflineCause(Localizable description) {
             this.description = description;
         }
 
@@ -79,6 +110,10 @@ public abstract class OfflineCause {
         public String getShortDescription() {
             return cause.toString();
         }
+
+        @Override public String toString() {
+            return Messages.OfflineCause_connection_was_broken_(Functions.printThrowable(cause));
+        }
     }
 
     /**
@@ -91,19 +126,33 @@ public abstract class OfflineCause {
         }
     }
 
-    public static class ByCLI extends OfflineCause {
+    /**
+     * Taken offline by user.
+     * @since 1.551
+     */
+    public static class UserCause extends SimpleOfflineCause {
+        private final User user;
+
+        public UserCause(User user, String message) {
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(
+                    user!=null ? user.getId() : Jenkins.ANONYMOUS.getName(),
+                    message != null ? " : " + message : ""
+            ));
+            this.user = user;
+        }
+
+        public User getUser() {
+            return user;
+        }
+    }
+
+    public static class ByCLI extends UserCause {
         @Exported
         public final String message;
 
         public ByCLI(String message) {
+            super(User.current(), message);
             this.message = message;
-        }
-
-        @Override
-        public String toString() {
-            if (message==null)
-                return Messages.OfflineCause_DisconnectedFromCLI();
-            return message;
         }
     }
 }

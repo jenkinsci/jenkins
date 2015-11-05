@@ -34,8 +34,7 @@ import java.util.Map;
  *
  * @author Kohsuke Kawaguchi
  */
-public class IncompatibleVMDetected extends ErrorObject {
-
+public class IncompatibleVMDetected extends BootFailure {
     public Map getSystemProperties() {
         return System.getProperties();
     }

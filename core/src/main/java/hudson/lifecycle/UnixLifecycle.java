@@ -52,6 +52,9 @@ public class UnixLifecycle extends Lifecycle {
     public UnixLifecycle() throws IOException {
         try {
             args = JavaVMArguments.current();
+
+            // if we are running as daemon, don't fork into background one more time during restart
+            args.remove("--daemon");
         } catch (UnsupportedOperationException e) {
             // can't restart
             failedToObtainArgs = e;
@@ -76,10 +79,9 @@ public class UnixLifecycle extends Lifecycle {
         }
 
         // exec to self
-        LIBC.execv(
-            Daemon.getCurrentExecutable(),
-            new StringArray(args.toArray(new String[args.size()])));
-        throw new IOException("Failed to exec "+LIBC.strerror(Native.getLastError()));
+        String exe = args.get(0);
+        LIBC.execvp(exe, new StringArray(args.toArray(new String[args.size()])));
+        throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
     }
 
     @Override

@@ -24,7 +24,11 @@
 
 package hudson;
 
+import hudson.model.Describable;
 import hudson.model.Descriptor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.ExtensionFilter;
 
 /**
  * Discovered {@link Extension} object with a bit of metadata for Hudson.
@@ -32,8 +36,11 @@ import hudson.model.Descriptor;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.356
+ * @see ExtensionFinder
+ * @see ExtensionFilter
  */
 public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> {
+    private static final Logger LOG = Logger.getLogger(ExtensionComponent.class.getName());
     private final T instance;
     private final double ordinal;
 
@@ -67,6 +74,15 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
     }
 
     /**
+     * Checks if this component is a {@link Descriptor} describing the given type
+     *
+     * For example, {@code component.isDescriptorOf(Builder.class)}
+     */
+    public boolean isDescriptorOf(Class<? extends Describable> c) {
+        return instance instanceof Descriptor && ((Descriptor)instance).isSubTypeOf(c);
+    }
+
+    /**
      * Sort {@link ExtensionComponent}s in the descending order of {@link #ordinal()}.
      */
     public int compareTo(ExtensionComponent<T> that) {
@@ -76,10 +92,15 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
         if (a<b)    return 1;
 
         // make the order bit more deterministic among extensions of the same ordinal
-        if (this.instance instanceof Descriptor) {
-            return Util.fixNull(((Descriptor)this.instance).getDisplayName()).compareTo(Util.fixNull(((Descriptor)that.instance).getDisplayName()));
-        } else {
-            return this.instance.getClass().getName().compareTo(that.instance.getClass().getName());
+        if (this.instance instanceof Descriptor && that.instance instanceof Descriptor) {
+            try {
+                return Util.fixNull(((Descriptor)this.instance).getDisplayName()).compareTo(Util.fixNull(((Descriptor)that.instance).getDisplayName()));
+            } catch (RuntimeException x) {
+                LOG.log(Level.WARNING, null, x);
+            } catch (LinkageError x) {
+                LOG.log(Level.WARNING, null, x);
+            }
         }
+        return this.instance.getClass().getName().compareTo(that.instance.getClass().getName());
     }
 }

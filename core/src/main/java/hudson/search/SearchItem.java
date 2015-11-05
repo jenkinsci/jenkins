@@ -48,15 +48,16 @@ public interface SearchItem {
      * @return
      *      URL like "foo" or "foo/bar". The path can end with '/'.
      *      The path that starts with '/' will be interpreted as the absolute path
-     *      (within the context path of Hudson.)
+     *      (within the context path of Jenkins.)
      */
     String getSearchUrl();
 
     /**
-     * Returns the {@link SearchIndex} to further search into this item.
+     * Returns the {@link SearchIndex} to further search sub items inside this item.
      *
      * @return
      *      {@link SearchIndex#EMPTY} if this is a leaf.
+     * @see SearchIndexBuilder
      */
     SearchIndex getSearchIndex();
 }

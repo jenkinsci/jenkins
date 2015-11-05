@@ -3,10 +3,13 @@ package hudson.security;
 import groovy.lang.Binding;
 import hudson.FilePath;
 import hudson.cli.CLICommand;
-import jenkins.model.Jenkins;
-import hudson.remoting.Callable;
-import hudson.tasks.MailAddressResolver;
 import hudson.util.spring.BeanBuilder;
+import java.io.Console;
+import java.io.IOException;
+import jenkins.model.Jenkins;
+import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.SecurityListener;
+import jenkins.security.MasterToSlaveCallable;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
@@ -16,13 +19,9 @@ import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.args4j.Option;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.io.Console;
-import java.io.IOException;
 
 /**
  * Partial implementation of {@link SecurityRealm} for username/password based authentication.
@@ -47,13 +46,14 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         builder.parse(Jenkins.getInstance().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding);
         WebApplicationContext context = builder.createApplicationContext();
         return new SecurityComponents(
-                findBean(AuthenticationManager.class, context),this);
+                findBean(AuthenticationManager.class, context),
+                new ImpersonatingUserDetailsService(this));
     }
 
     @Override
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {
-            @Option(name="--username",usage="User name to authenticate yourself to Hudson")
+            @Option(name="--username",usage="User name to authenticate yourself to Jenkins")
             public String userName;
 
             @Option(name="--password",usage="Password for authentication. Note that passing a password in arguments is insecure.")
@@ -78,7 +78,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
                 if (password==null)
                     throw new BadCredentialsException("No password specified");
 
-                UserDetails d = AbstractPasswordBasedSecurityRealm.this.authenticate(userName, password);
+                UserDetails d = doAuthenticate(userName, password);
                 return new UsernamePasswordAuthenticationToken(d, password, d.getAuthorities());
             }
         };
@@ -93,7 +93,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * return it as a {@link UserDetails} object. {@link org.acegisecurity.userdetails.User} is a convenient
      * implementation to use, but if your backend offers additional data, you may want to use your own subtype
      * so that the rest of Hudson can use those additional information (such as e-mail address --- see
-     * {@link MailAddressResolver}.)
+     * MailAddressResolver.)
      *
      * <p>
      * Properties like {@link UserDetails#getPassword()} make no sense, so just return an empty value from it.
@@ -108,6 +108,17 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * attempt.
      */
     protected abstract UserDetails authenticate(String username, String password) throws AuthenticationException;
+
+    private UserDetails doAuthenticate(String username, String password) throws AuthenticationException {
+        try {
+            UserDetails user = authenticate(username, password);
+            SecurityListener.fireAuthenticated(user);
+            return user;
+        } catch (AuthenticationException x) {
+            SecurityListener.fireFailedToAuthenticate(username);
+            throw x;
+        }
+    }
 
     /**
      * Retrieves information about an user by its name.
@@ -134,15 +145,14 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         }
 
         protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-            return AbstractPasswordBasedSecurityRealm.this.authenticate(username,authentication.getCredentials().toString());
+            return doAuthenticate(username,authentication.getCredentials().toString());
         }
     }
 
     /**
      * Asks for the password.
      */
-    private static class InteractivelyAskForPassword implements Callable<String,IOException> {
-        @IgnoreJRERequirement
+    private static class InteractivelyAskForPassword extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             Console console = System.console();
             if (console == null)    return null;    // no terminal

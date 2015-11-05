@@ -48,6 +48,6 @@ public abstract class TransientFingerprintFacetFactory implements ExtensionPoint
      * Returns all the registered {@link TransientFingerprintFacetFactory}s.
      */
     public static ExtensionList<TransientFingerprintFacetFactory> all() {
-        return Jenkins.getInstance().getExtensionList(TransientFingerprintFacetFactory.class);
+        return ExtensionList.lookup(TransientFingerprintFacetFactory.class);
     }
 }

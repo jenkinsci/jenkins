@@ -45,7 +45,6 @@ import java.util.Collections;
 
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Information about JDK installation.
@@ -53,6 +52,13 @@ import org.kohsuke.stapler.QueryParameter;
  * @author Kohsuke Kawaguchi
  */
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
+
+    /**
+     * Name of the “default JDK”, meaning no specific JDK selected.
+     * @since 1.577
+     */
+    public static final String DEFAULT_NAME = "(Default)";
+
     /**
      * @deprecated since 2009-02-25
      */
@@ -74,6 +80,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @deprecated as of 1.304
      *      Use {@link #getHome()}
      */
+    @Deprecated
     public String getJavaHome() {
         return getHome();
     }
@@ -100,12 +107,25 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     }
 
     /**
+     * @deprecated as of 1.460. Use {@link #buildEnvVars(EnvVars)}
+     */
+    @Deprecated
+    public void buildEnvVars(Map<String,String> env) {
+        String home = getHome();
+        if (home == null) {
+            return;
+        }
+        // see EnvVars javadoc for why this adds PATH.
+        env.put("PATH+JDK",home+"/bin");
+        env.put("JAVA_HOME", home);
+    }
+
+    /**
      * Sets PATH and JAVA_HOME from this JDK.
      */
-    public void buildEnvVars(Map<String,String> env) {
-        // see EnvVars javadoc for why this adss PATH.
-        env.put("PATH+JDK",getHome()+"/bin");
-        env.put("JAVA_HOME",getHome());
+    @Override
+    public void buildEnvVars(EnvVars env) {
+        buildEnvVars((Map)env);
     }
 
     public JDK forNode(Node node, TaskListener log) throws IOException, InterruptedException {
@@ -139,18 +159,15 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
         public String getDisplayName() {
-            return "JDK"; // XXX I18N
+            return "JDK"; // TODO I18N
         }
 
         public @Override JDK[] getInstallations() {
             return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
         }
 
-        // this isn't really synchronized well since the list is Hudson.jdks :(
-        public @Override synchronized void setInstallations(JDK... jdks) {
-            List<JDK> list = Jenkins.getInstance().getJDKs();
-            list.clear();
-            list.addAll(Arrays.asList(jdks));
+        public @Override void setInstallations(JDK... jdks) {
+            Jenkins.getInstance().setJDKs(Arrays.asList(jdks));
         }
 
         @Override
@@ -161,27 +178,19 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         /**
          * Checks if the JAVA_HOME is a valid JAVA_HOME path.
          */
-        public FormValidation doCheckHome(@QueryParameter File value) {
-            // this can be used to check the existence of a file on the server, so needs to be protected
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-
-            if(value.getPath().equals(""))
-                return FormValidation.ok();
-
-            if(!value.isDirectory())
-                return FormValidation.error(Messages.Hudson_NotADirectory(value));
-
+        @Override protected FormValidation checkHomeDirectory(File value) {
             File toolsJar = new File(value,"lib/tools.jar");
             File mac = new File(value,"lib/dt.jar");
-            if(!toolsJar.exists() && !mac.exists())
+
+            // JENKINS-25601: JDK 9+ no longer has tools.jar. Keep the existing dt.jar/tools.jar checks to be safe.
+            File javac = new File(value, "bin/javac");
+            File javacExe = new File(value, "bin/javac.exe");
+            if(!toolsJar.exists() && !mac.exists() && !javac.exists() && !javacExe.exists())
                 return FormValidation.error(Messages.Hudson_NotJDKDir(value));
 
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckName(@QueryParameter String value) {
-            return FormValidation.validateRequired(value);
-        }
     }
 
     public static class ConverterImpl extends ToolConverter {

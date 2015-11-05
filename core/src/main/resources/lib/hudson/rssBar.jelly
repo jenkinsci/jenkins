@@ -27,13 +27,19 @@ THE SOFTWARE.
   <div align="right" style="margin:1em">
     <a href="${rootURL}/legend">${%Legend}</a>
     <span style="padding-left:1em">
-      <a href="rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for all}</a>
+      <a href="rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+      <st:nbsp/>
+      <a href="rssAll">RSS ${%for all}</a>
     </span>
     <span style="padding-left:1em">
-      <a href="rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for failures}</a>
+      <a href="rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+      <st:nbsp/>
+      <a href="rssFailed">RSS ${%for failures}</a>
     </span>
     <span style="padding-left:1em">
-      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for just latest builds}</a>
+      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+      <st:nbsp/>
+      <a href="rssLatest">RSS ${%for just latest builds}</a>
     </span>
   </div>
 </j:jelly>

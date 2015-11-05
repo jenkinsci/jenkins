@@ -27,10 +27,11 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/user.png" alt="" height="48" width="48" />
+        <img src="${h.getUserAvatar(it,'48x48')}" alt="" height="48" width="48" />
         ${%title(it)}
       </h1>
-      <t:buildListTable builds="${it.builds}" jobBaseUrl="${rootURL}/" />
+      <!-- TODO consider adding a BuildTimelineWidget (cf. Job, View, Computer) -->
+      <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

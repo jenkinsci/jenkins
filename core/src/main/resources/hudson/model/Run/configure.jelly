@@ -33,15 +33,19 @@ THE SOFTWARE.
           <f:textbox name="displayName" value="${it.hasCustomDisplayName()?it.displayName:''}"/>
         </f:entry>
         <f:entry title="${%Description}" help="/help/run-config/description.html">
-          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
+          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
 
         <j:if test="${h.hasPermission(it,it.UPDATE)}">
-          <f:block>
+          <f:bottomButtonBar>
             <f:submit value="${%Save}" />
-          </f:block>
+            <f:apply />
+          </f:bottomButtonBar>
         </j:if>
       </f:form>
+      <j:if test="${h.hasPermission(it,it.UPDATE)}">
+        <st:adjunct includes="lib.form.confirm" />
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

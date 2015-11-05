@@ -29,21 +29,17 @@ import java.io.IOException;
  * {@link IOException} with linked exception.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Just use {@link IOException}, which since Java 6 supports a cause.
  */
+@Deprecated
 public class IOException2 extends IOException  {
-    private final Throwable cause;
 
     public IOException2(Throwable cause) {
-        super(cause.getMessage());
-        this.cause = cause;
+        super(cause);
     }
 
     public IOException2(String s, Throwable cause) {
-        super(s);
-        this.cause = cause;
+        super(s, cause);
     }
 
-    public Throwable getCause() {
-        return cause;
-    }
 }

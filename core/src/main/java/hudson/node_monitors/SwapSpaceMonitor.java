@@ -25,9 +25,10 @@ package hudson.node_monitors;
 
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.model.Computer;
 import jenkins.model.Jenkins;
-import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
@@ -41,7 +42,7 @@ import java.io.IOException;
  * Checks the swap space availability.
  *
  * @author Kohsuke Kawaguchi
- * @sine 1.233
+ * @since 1.233
  */
 public class SwapSpaceMonitor extends NodeMonitor {
     /**
@@ -51,14 +52,16 @@ public class SwapSpaceMonitor extends NodeMonitor {
         if(usage.availableSwapSpace==-1)
             return "N/A";
 
+       String humanReadableSpace = Functions.humanReadableByteSize(usage.availableSwapSpace);
+       
         long free = usage.availableSwapSpace;
         free/=1024L;   // convert to KB
         free/=1024L;   // convert to MB
         if(free>256 || usage.totalSwapSpace<usage.availableSwapSpace*5)
-            return free+"MB"; // if we have more than 256MB free or less than 80% filled up, it's OK
+            return humanReadableSpace; // if we have more than 256MB free or less than 80% filled up, it's OK
 
         // Otherwise considered dangerously low.
-        return Util.wrapToErrorSpan(free+"MB");
+        return Util.wrapToErrorSpan(humanReadableSpace);
     }
 
     public long toMB(MemoryUsage usage) {
@@ -78,9 +81,10 @@ public class SwapSpaceMonitor extends NodeMonitor {
     }
 
     @Extension
-    public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractNodeMonitorDescriptor<MemoryUsage>() {
-        protected MemoryUsage monitor(Computer c) throws IOException, InterruptedException {
-            return c.getChannel().call(new MonitorTask());
+    public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<MemoryUsage>() {
+        @Override
+        protected MonitorTask createCallable(Computer c) {
+            return new MonitorTask();
         }
 
         public String getDisplayName() {
@@ -96,21 +100,26 @@ public class SwapSpaceMonitor extends NodeMonitor {
     /**
      * Obtains the string that represents the architecture.
      */
-    private static class MonitorTask implements Callable<MemoryUsage,IOException> {
+    private static class MonitorTask extends MasterToSlaveCallable<MemoryUsage,IOException> {
         public MemoryUsage call() throws IOException {
             MemoryMonitor mm;
             try {
                 mm = MemoryMonitor.get();
             } catch (IOException e) {
-                if(!warned) {
-                    // report the problem just once, and avoid filling up the log with the same error. see HUDSON-2194.
-                    warned = true;
-                    throw e;
-                } else {
-                    return null;
-                }
+                return report(e);
+            } catch (LinkageError e) { // JENKINS-15796
+                return report(e);
             }
             return new MemoryUsage2(mm.monitor());
+        }
+
+        private <T extends Throwable> MemoryUsage report(T e) throws T {
+            if (!warned) {
+                warned = true;
+                throw e;
+            } else { // JENKINS-2194
+                return null;
+            }
         }
 
         private static final long serialVersionUID = 1L;
@@ -126,6 +135,8 @@ public class SwapSpaceMonitor extends NodeMonitor {
      */
     @ExportedBean
     public static class MemoryUsage2 extends MemoryUsage {
+        private static final long serialVersionUID = 2216994637932270352L;
+
         public MemoryUsage2(MemoryUsage mem) {
             super(mem.totalPhysicalMemory, mem.availablePhysicalMemory, mem.totalSwapSpace, mem.availableSwapSpace);
         }

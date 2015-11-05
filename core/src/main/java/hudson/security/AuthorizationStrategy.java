@@ -33,6 +33,7 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -67,18 +68,18 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * <p>
      * IOW, this ACL will have the ultimate say on the access control.
      */
-    public abstract ACL getRootACL();
+    public abstract @Nonnull ACL getRootACL();
 
     /**
      * @deprecated since 1.277
      *      Override {@link #getACL(Job)} instead.
      */
     @Deprecated
-    public ACL getACL(AbstractProject<?,?> project) {
+    public @Nonnull ACL getACL(@Nonnull AbstractProject<?,?> project) {
     	return getACL((Job)project);
     }
 
-    public ACL getACL(Job<?,?> project) {
+    public @Nonnull ACL getACL(@Nonnull Job<?,?> project) {
     	return getRootACL();
     }
 
@@ -87,12 +88,25 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * This can be used as a basis for more fine-grained access control.
      *
      * <p>
-     * The default implementation returns the ACL of the ViewGroup.
+     * The default implementation makes the view visible if any of the items are visible
+     * or the view is configurable.
      *
      * @since 1.220
      */
-    public ACL getACL(View item) {
-    	return item.getOwner().getACL();
+    public @Nonnull ACL getACL(final @Nonnull View item) {
+        return new ACL() {
+            @Override
+            public boolean hasPermission(Authentication a, Permission permission) {
+                ACL base = item.getOwner().getACL();
+
+                boolean hasPermission = base.hasPermission(a, permission);
+                if (!hasPermission && permission == View.READ) {
+                    return base.hasPermission(a,View.CONFIGURE) || !item.getItems().isEmpty();
+                }
+
+                return hasPermission;
+            }
+        };
     }
     
     /**
@@ -104,7 +118,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      *
      * @since 1.220
      */
-    public ACL getACL(AbstractItem item) {
+    public @Nonnull ACL getACL(@Nonnull AbstractItem item) {
         return getRootACL();
     }
 
@@ -117,7 +131,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      *
      * @since 1.221
      */
-    public ACL getACL(User user) {
+    public @Nonnull ACL getACL(@Nonnull User user) {
         return getRootACL();
     }
 
@@ -130,7 +144,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      *
      * @since 1.220
      */
-    public ACL getACL(Computer computer) {
+    public @Nonnull ACL getACL(@Nonnull Computer computer) {
         return getACL(computer.getNode());
     }
 
@@ -143,11 +157,11 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      *
      * @since 1.252
      */
-    public ACL getACL(Cloud cloud) {
+    public @Nonnull ACL getACL(@Nonnull Cloud cloud) {
         return getRootACL();
     }
 
-    public ACL getACL(Node node) {
+    public @Nonnull ACL getACL(@Nonnull Node node) {
         return getRootACL();
     }
 
@@ -165,12 +179,12 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * @return
      *      never null.
      */
-    public abstract Collection<String> getGroups();
+    public abstract @Nonnull Collection<String> getGroups();
 
     /**
      * Returns all the registered {@link AuthorizationStrategy} descriptors.
      */
-    public static DescriptorExtensionList<AuthorizationStrategy,Descriptor<AuthorizationStrategy>> all() {
+    public static @Nonnull DescriptorExtensionList<AuthorizationStrategy,Descriptor<AuthorizationStrategy>> all() {
         return Jenkins.getInstance().<AuthorizationStrategy,Descriptor<AuthorizationStrategy>>getDescriptorList(AuthorizationStrategy.class);
     }
 
@@ -180,6 +194,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * @deprecated since 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<AuthorizationStrategy> LIST = new DescriptorList<AuthorizationStrategy>(AuthorizationStrategy.class);
     
     /**
@@ -200,15 +215,17 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
         }
 
         @Override
-        public ACL getRootACL() {
+        public @Nonnull ACL getRootACL() {
             return UNSECURED_ACL;
         }
 
-        public Collection<String> getGroups() {
+        @Override
+        public @Nonnull Collection<String> getGroups() {
             return Collections.emptySet();
         }
 
         private static final ACL UNSECURED_ACL = new ACL() {
+            @Override
             public boolean hasPermission(Authentication a, Permission permission) {
                 return true;
             }
@@ -216,18 +233,14 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
 
         @Extension
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+            @Override
             public String getDisplayName() {
                 return Messages.AuthorizationStrategy_DisplayName();
             }
 
             @Override
-            public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public @Nonnull AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
                 return UNSECURED;
-            }
-
-            @Override
-            public String getHelpFile() {
-                return "/help/security/no-authorization.html";
             }
         }
     }

@@ -37,6 +37,10 @@ THE SOFTWARE.
       <param-name>default-encodings</param-name>
       <param-value>text/html=UTF-8</param-value>
     </init-param>
+    <init-param>
+      <param-name>diagnosticThreadName</param-name>
+      <param-value>false</param-value>
+    </init-param>
   </servlet>
 
   <servlet-mapping>
@@ -45,8 +49,16 @@ THE SOFTWARE.
   </servlet-mapping>
 
   <filter>
+    <filter-name>diagnostic-name-filter</filter-name>
+    <filter-class>org.kohsuke.stapler.DiagnosticThreadNameFilter</filter-class>
+  </filter>
+  <filter>
     <filter-name>encoding-filter</filter-name>
     <filter-class>hudson.util.CharacterEncodingFilter</filter-class>
+  </filter>
+  <filter>
+    <filter-name>compression-filter</filter-name>
+    <filter-class>org.kohsuke.stapler.compression.CompressionFilter</filter-class>
   </filter>
   <filter>
     <filter-name>authentication-filter</filter-name>
@@ -107,7 +119,15 @@ THE SOFTWARE.
   -->
   
   <filter-mapping>
+    <filter-name>diagnostic-name-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
     <filter-name>encoding-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>compression-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <filter-mapping>
@@ -128,7 +148,7 @@ THE SOFTWARE.
   </listener>
 
   <!--
-    HUDSON-1235 suggests containers interprt '*' as "all roles defined in web.xml"
+    HUDSON-1235 suggests containers interpret '*' as "all roles defined in web.xml"
     as opposed to "all roles defined in the security realm", so we need to list some
     common names in the hope that users will have at least one of those roles.
   -->
@@ -151,6 +171,14 @@ THE SOFTWARE.
     <auth-constraint>
       <role-name>*</role-name>
     </auth-constraint>
+  </security-constraint>
+  
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>other</web-resource-name>
+      <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <!-- no security constraint --> 
   </security-constraint>
 
   <login-config>
@@ -194,5 +222,13 @@ THE SOFTWARE.
     <extension>rar</extension>
     <mime-type>application/octet-stream</mime-type>
   </mime-mapping>
+  <mime-mapping>
+    <extension>webm</extension>
+    <mime-type>video/webm</mime-type>
+  </mime-mapping>
 
+  <error-page>
+    <exception-type>java.lang.Throwable</exception-type>
+    <location>/oops</location>
+  </error-page>
 </web-app>

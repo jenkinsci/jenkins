@@ -1,14 +1,10 @@
 package hudson.cli.handlers;
 
-import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
 import hudson.model.TopLevelItem;
 import org.kohsuke.MetaInfServices;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.OptionHandler;
-import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 
 /**
@@ -16,26 +12,18 @@ import org.kohsuke.args4j.spi.Setter;
  *
  * @author Kohsuke Kawaguchi
  */
-@MetaInfServices
-public class TopLevelItemOptionHandler extends OptionHandler<TopLevelItem> {
+@MetaInfServices(OptionHandler.class)
+public class TopLevelItemOptionHandler extends GenericItemOptionHandler<TopLevelItem> {
     public TopLevelItemOptionHandler(CmdLineParser parser, OptionDef option, Setter<TopLevelItem> setter) {
         super(parser, option, setter);
     }
 
-    @Override
-    public int parseArguments(Parameters params) throws CmdLineException {
-        Jenkins h = Jenkins.getInstance();
-        String src = params.getParameter(0);
-
-        TopLevelItem s = h.getItem(src);
-        if (s==null)
-            throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant "+ AbstractProject.findNearest(src)+"?");
-        setter.addValue(s);
-        return 1;
+    @Override protected Class<TopLevelItem> type() {
+        return TopLevelItem.class;
     }
 
     @Override
     public String getDefaultMetaVariable() {
-        return "JOB";
+        return "JOB"; // TODO or should we pick up default value, ITEM?
     }
 }

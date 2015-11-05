@@ -1,0 +1,10 @@
+#filter-box {
+    background: white url('search.gif') no-repeat 2px center;
+    padding-left: 20px;
+    width: 15em;
+}
+
+#filter-container {
+    margin: 1em;
+    text-align: right;
+}

@@ -23,16 +23,26 @@
  */
 package hudson;
 
-import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.util.CaseInsensitiveComparator;
+import hudson.util.CyclicGraphDetector;
+import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.VariableResolver;
+import jenkins.security.MasterToSlaveCallable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Arrays;
+import java.util.TreeSet;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * Environment variables.
@@ -52,7 +62,7 @@ import java.util.UUID;
  * case insensitive but case preserving.
  *
  * <p>
- * In Hudson, often we need to build up "environment variable overrides"
+ * In Jenkins, often we need to build up "environment variable overrides"
  * on master, then to execute the process on slaves. This causes a problem
  * when working with variables like <tt>PATH</tt>. So to make this work,
  * we introduce a special convention <tt>PATH+FOO</tt> &mdash; all entries
@@ -62,6 +72,7 @@ import java.util.UUID;
  * @author Kohsuke Kawaguchi
  */
 public class EnvVars extends TreeMap<String,String> {
+    private static Logger LOGGER = Logger.getLogger(EnvVars.class.getName());
     /**
      * If this {@link EnvVars} object represents the whole environment variable set,
      * not just a partial list used for overriding later, then we need to know
@@ -81,7 +92,7 @@ public class EnvVars extends TreeMap<String,String> {
         this();
         putAll(m);
 
-        // because of the backward compatibility, some parts of Hudson passes
+        // because of the backward compatibility, some parts of Jenkins passes
         // EnvVars as Map<String,String> so downcasting is safer.
         if (m instanceof EnvVars) {
             EnvVars lhs = (EnvVars) m;
@@ -149,6 +160,179 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     /**
+     * Calculates the order to override variables.
+     * 
+     * Sort variables with topological sort with their reference graph.
+     * 
+     * This is package accessible for testing purpose.
+     */
+    static class OverrideOrderCalculator {
+        /**
+         * Extract variables referred directly from a variable.
+         */
+        private static class TraceResolver implements VariableResolver<String> {
+            private final Comparator<? super String> comparator;
+            public Set<String> referredVariables;
+            
+            public TraceResolver(Comparator<? super String> comparator) {
+                this.comparator = comparator;
+                clear();
+            }
+            
+            public void clear() {
+                referredVariables = new TreeSet<String>(comparator);
+            }
+            
+            public String resolve(String name) {
+                referredVariables.add(name);
+                return "";
+            }
+        }
+        
+        private static class VariableReferenceSorter extends CyclicGraphDetector<String> {
+            // map from a variable to a set of variables that variable refers.
+            private final Map<String, Set<String>> refereeSetMap;
+            
+            public VariableReferenceSorter(Map<String, Set<String>> refereeSetMap) {
+                this.refereeSetMap = refereeSetMap;
+            }
+            
+            @Override
+            protected Iterable<? extends String> getEdges(String n) {
+                // return variables referred from the variable.
+                if (!refereeSetMap.containsKey(n)) {
+                    // there is a case a non-existing variable is referred...
+                    return Collections.emptySet();
+                }
+                return refereeSetMap.get(n);
+            }
+        };
+        
+        private final Comparator<? super String> comparator;
+        
+        private final EnvVars target;
+        private final Map<String,String> overrides;
+        
+        private Map<String, Set<String>> refereeSetMap;
+        private List<String> orderedVariableNames;
+        
+        public OverrideOrderCalculator(EnvVars target, Map<String,String> overrides) {
+            comparator = target.comparator();
+            this.target = target;
+            this.overrides = overrides;
+            scan();
+        }
+        
+        public List<String> getOrderedVariableNames() {
+            return orderedVariableNames;
+        }
+        
+        // Cut the reference to the variable in a cycle.
+        private void cutCycleAt(String referee, List<String> cycle) {
+            // cycle contains variables in referrer-to-referee order.
+            // This should not be negative, for the first and last one is same.
+            int refererIndex = cycle.lastIndexOf(referee) - 1;
+            
+            assert(refererIndex >= 0);
+            String referrer = cycle.get(refererIndex);
+            boolean removed = refereeSetMap.get(referrer).remove(referee);
+            assert(removed);
+            LOGGER.warning(String.format("Cyclic reference detected: %s", Util.join(cycle," -> ")));
+            LOGGER.warning(String.format("Cut the reference %s -> %s", referrer, referee));
+        }
+        
+        // Cut the variable reference in a cycle.
+        private void cutCycle(List<String> cycle) {
+            // if an existing variable is contained in that cycle,
+            // cut the cycle with that variable:
+            // existing:
+            //   PATH=/usr/bin
+            // overriding:
+            //   PATH1=/usr/local/bin:${PATH}
+            //   PATH=/opt/something/bin:${PATH1}
+            // then consider reference PATH1 -> PATH can be ignored.
+            for (String referee: cycle) {
+                if (target.containsKey(referee)) {
+                    cutCycleAt(referee, cycle);
+                    return;
+                }
+            }
+            
+            // if not, cut the reference to the first one.
+            cutCycleAt(cycle.get(0), cycle);
+        }
+        
+        /**
+         * Scan all variables and list all referring variables.
+         */
+        public void scan() {
+            refereeSetMap = new TreeMap<String, Set<String>>(comparator);
+            List<String> extendingVariableNames = new ArrayList<String>();
+            
+            TraceResolver resolver = new TraceResolver(comparator);
+            
+            for (Map.Entry<String, String> entry: overrides.entrySet()) {
+                if (entry.getKey().indexOf('+') > 0) {
+                    // XYZ+AAA variables should be always processed in last.
+                    extendingVariableNames.add(entry.getKey());
+                    continue;
+                }
+                resolver.clear();
+                Util.replaceMacro(entry.getValue(), resolver);
+                
+                // Variables directly referred from the current scanning variable.
+                Set<String> refereeSet = resolver.referredVariables;
+                // Ignore self reference.
+                refereeSet.remove(entry.getKey());
+                refereeSetMap.put(entry.getKey(), refereeSet);
+            }
+            
+            VariableReferenceSorter sorter;
+            while(true) {
+                sorter = new VariableReferenceSorter(refereeSetMap);
+                try {
+                    sorter.run(refereeSetMap.keySet());
+                } catch(CycleDetectedException e) {
+                    // cyclic reference found.
+                    // cut the cycle and retry.
+                    @SuppressWarnings("unchecked")
+                    List<String> cycle = e.cycle;
+                    cutCycle(cycle);
+                    continue;
+                }
+                break;
+            }
+            
+            // When A refers B, the last appearance of B always comes after
+            // the last appearance of A.
+            List<String> reversedDuplicatedOrder = new ArrayList<String>(sorter.getSorted());
+            Collections.reverse(reversedDuplicatedOrder);
+            
+            orderedVariableNames = new ArrayList<String>(overrides.size());
+            for(String key: reversedDuplicatedOrder) {
+                if(overrides.containsKey(key) && !orderedVariableNames.contains(key)) {
+                    orderedVariableNames.add(key);
+                }
+            }
+            Collections.reverse(orderedVariableNames);
+            orderedVariableNames.addAll(extendingVariableNames);
+        }
+    }
+    
+
+    /**
+     * Overrides all values in the map by the given map. Expressions in values will be expanded.
+     * See {@link #override(String, String)}.
+     * @return this
+     */
+    public EnvVars overrideExpandingAll(Map<String,String> all) {
+        for (String key : new OverrideOrderCalculator(this, all).getOrderedVariableNames()) {
+            override(key, expand(all.get(key)));
+        }
+        return this;
+    }
+
+    /**
      * Resolves environment variables against each other.
      */
 	public static void resolve(Map<String, String> env) {
@@ -157,10 +341,29 @@ public class EnvVars extends TreeMap<String,String> {
 		}
 	}
 
+    /**
+     * Convenience message
+     * @since 1.485
+     **/
+    public String get(String key, String defaultValue) {
+        String v = get(key);
+        if (v==null)    v=defaultValue;
+        return v;
+    }
+
     @Override
     public String put(String key, String value) {
         if (value==null)    throw new IllegalArgumentException("Null value not allowed as an environment variable: "+key);
         return super.put(key,value);
+    }
+
+    /**
+     * Add a key/value but only if the value is not-null. Otherwise no-op.
+     * @since 1.556
+     */
+    public void putIfNotNull(String key, String value) {
+        if (value!=null)
+            put(key,value);
     }
     
     /**
@@ -202,7 +405,7 @@ public class EnvVars extends TreeMap<String,String> {
         return channel.call(new GetEnvVars());
     }
 
-    private static final class GetEnvVars implements Callable<EnvVars,RuntimeException> {
+    private static final class GetEnvVars extends MasterToSlaveCallable<EnvVars,RuntimeException> {
         public EnvVars call() {
             return new EnvVars(EnvVars.masterEnvVars);
         }
@@ -214,7 +417,7 @@ public class EnvVars extends TreeMap<String,String> {
      *
      * <p>
      * Despite what the name might imply, this is the environment variable
-     * of the current JVM process. And therefore, it is Hudson master's environment
+     * of the current JVM process. And therefore, it is Jenkins master's environment
      * variables only when you access this from the master.
      *
      * <p>

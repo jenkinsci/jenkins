@@ -31,6 +31,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins;
 import hudson.Util;
+import jenkins.security.CryptoConfidentialKey;
 import org.kohsuke.stapler.Stapler;
 
 import javax.crypto.SecretKey;
@@ -44,8 +45,8 @@ import java.security.GeneralSecurityException;
  * Glorified {@link String} that uses encryption in the persisted form, to avoid accidental exposure of a secret.
  *
  * <p>
- * Note that since the cryptography relies on {@link jenkins.model.Jenkins#getSecretKey()}, this is not meant as a protection
- * against code running in the same VM, nor against an attacker who has local file system access. 
+ * This is not meant as a protection against code running in the same VM, nor against an attacker
+ * who has local file system access on Jenkins master.
  *
  * <p>
  * {@link Secret}s can correctly read-in plain text password, so this allows the existing
@@ -72,6 +73,7 @@ public final class Secret implements Serializable {
      *      Or if you really know what you are doing, use the {@link #getPlainText()} method.
      */
     @Override
+    @Deprecated
     public String toString() {
         return value;
     }
@@ -96,9 +98,14 @@ public final class Secret implements Serializable {
     }
 
     /**
-     * Turns {@link jenkins.model.Jenkins#getSecretKey()} into an AES key.
+     * Turns {@link Jenkins#getSecretKey()} into an AES key.
+     *
+     * @deprecated
+     * This is no longer the key we use to encrypt new information, but we still need this
+     * to be able to decrypt what's already persisted.
      */
-    private static SecretKey getKey() throws UnsupportedEncodingException, GeneralSecurityException {
+    @Deprecated
+    /*package*/ static SecretKey getLegacyKey() throws GeneralSecurityException {
         String secret = SECRET;
         if(secret==null)    return Jenkins.getInstance().getSecretKeyAsAES128();
         return Util.toAes128Key(secret);
@@ -111,8 +118,7 @@ public final class Secret implements Serializable {
      */
     public String getEncryptedValue() {
         try {
-            Cipher cipher = getCipher("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, getKey());
+            Cipher cipher = KEY.encrypt();
             // add the magic suffix which works like a check sum.
             return new String(Base64.encode(cipher.doFinal((value+MAGIC).getBytes("UTF-8"))));
         } catch (GeneralSecurityException e) {
@@ -129,12 +135,14 @@ public final class Secret implements Serializable {
     public static Secret decrypt(String data) {
         if(data==null)      return null;
         try {
+            byte[] in = Base64.decode(data.toCharArray());
+            Secret s = tryDecrypt(KEY.decrypt(), in);
+            if (s!=null)    return s;
+
+            // try our historical key for backward compatibility
             Cipher cipher = getCipher("AES");
-            cipher.init(Cipher.DECRYPT_MODE, getKey());
-            String plainText = new String(cipher.doFinal(Base64.decode(data.toCharArray())), "UTF-8");
-            if(plainText.endsWith(MAGIC))
-                return new Secret(plainText.substring(0,plainText.length()-MAGIC.length()));
-            return null;
+            cipher.init(Cipher.DECRYPT_MODE, getLegacyKey());
+            return tryDecrypt(cipher, in);
         } catch (GeneralSecurityException e) {
             return null;
         } catch (UnsupportedEncodingException e) {
@@ -144,8 +152,19 @@ public final class Secret implements Serializable {
         }
     }
 
+    /*package*/ static Secret tryDecrypt(Cipher cipher, byte[] in) throws UnsupportedEncodingException {
+        try {
+            String plainText = new String(cipher.doFinal(in), "UTF-8");
+            if(plainText.endsWith(MAGIC))
+                return new Secret(plainText.substring(0,plainText.length()-MAGIC.length()));
+            return null;
+        } catch (GeneralSecurityException e) {
+            return null; // if the key doesn't match with the bytes, it can result in BadPaddingException
+        }
+    }
+
     /**
-     * Workaround for HUDSON-6459 / https://glassfish.dev.java.net/issues/show_bug.cgi?id=11862 .
+     * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
      * This method uses specific provider selected via hudson.util.Secret.provider system property
      * to provide a workaround for the above bug where default provide gives an unusable instance.
      * (Glassfish Enterprise users should set value of this property to "SunJCE")
@@ -201,15 +220,20 @@ public final class Secret implements Serializable {
     private static final String MAGIC = "::::MAGIC::::";
 
     /**
-     * Workaround for HUDSON-6459 / https://glassfish.dev.java.net/issues/show_bug.cgi?id=11862 .
+     * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
      * @see #getCipher(String)
      */
     private static final String PROVIDER = System.getProperty(Secret.class.getName()+".provider");
 
     /**
-     * For testing only. Override the secret key so that we can test this class without {@link jenkins.model.Jenkins}.
+     * For testing only. Override the secret key so that we can test this class without {@link Jenkins}.
      */
     /*package*/ static String SECRET = null;
+
+    /**
+     * The key that encrypts the data on disk.
+     */
+    private static final CryptoConfidentialKey KEY = new CryptoConfidentialKey(Secret.class.getName());
 
     private static final long serialVersionUID = 1L;
 

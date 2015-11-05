@@ -23,18 +23,20 @@
  */
 package hudson.triggers;
 
+import antlr.ANTLRException;
+import hudson.Extension;
 import static hudson.Util.fixNull;
 import hudson.model.BuildableItem;
 import hudson.model.Cause;
 import hudson.model.Item;
 import hudson.scheduler.CronTabList;
+import hudson.scheduler.Hash;
 import hudson.util.FormValidation;
-import hudson.Extension;
-
+import java.text.DateFormat;
+import java.util.Calendar;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-
-import antlr.ANTLRException;
 
 /**
  * {@link Trigger} that runs a job periodically.
@@ -64,19 +66,29 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         }
 
         // backward compatibility
-        public FormValidation doCheck(@QueryParameter String value) {
-            return doCheckSpec(value);
+        public FormValidation doCheck(@QueryParameter String value, @AncestorInPath Item item) {
+            return doCheckSpec(value, item);
         }
         
         /**
          * Performs syntax check.
          */
-        public FormValidation doCheckSpec(@QueryParameter String value) {
+        public FormValidation doCheckSpec(@QueryParameter String value, @AncestorInPath Item item) {
             try {
-                String msg = CronTabList.create(fixNull(value)).checkSanity();
+                CronTabList ctl = CronTabList.create(fixNull(value), item != null ? Hash.from(item.getFullName()) : null);
+                String msg = ctl.checkSanity();
                 if(msg!=null)   return FormValidation.warning(msg);
-                return FormValidation.ok();
+                Calendar prev = ctl.previous();
+                Calendar next = ctl.next();
+                if (prev != null && next != null) {
+                    DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
+                    return FormValidation.ok(Messages.TimerTrigger_would_last_have_run_at_would_next_run_at(fmt.format(prev.getTime()), fmt.format(next.getTime())));
+                } else {
+                    return FormValidation.warning(Messages.TimerTrigger_no_schedules_so_will_never_run());
+                }
             } catch (ANTLRException e) {
+                if (value.trim().indexOf('\n')==-1 && value.contains("**"))
+                    return FormValidation.error(Messages.TimerTrigger_MissingWhitespace());
                 return FormValidation.error(e.getMessage());
             }
         }

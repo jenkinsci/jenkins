@@ -87,9 +87,9 @@ public abstract class Environment {
 	 *            The same {@link BuildListener} object given to the set up
 	 *            method.
 	 * @return true if the build can continue, false if there was an error and
-	 *         the build needs to be aborted.
+	 *         the build needs to be failed.
 	 * @throws IOException
-	 *             terminates the build abnormally. Hudson will handle the
+	 *             terminates the build abnormally. Jenkins will handle the
 	 *             exception and reports a nice error message.
 	 */
 	public boolean tearDown(AbstractBuild build, BuildListener listener)

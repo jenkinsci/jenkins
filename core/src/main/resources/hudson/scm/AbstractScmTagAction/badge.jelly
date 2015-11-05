@@ -23,11 +23,8 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:if test="${it.isTagged()}" xmlns:j="jelly:core">
-  <a href="${rootURL}/${it.build.url}tagBuild/">
-    <img width="16" height="16"
-      tooltip="${it.tooltip}"
-      alt="[tagged]"
-      src="${imagesURL}/16x16/save.png"/>
+<j:if xmlns:j="jelly:core" xmlns:l="/lib/layout" test="${it.isTagged()}">
+  <a href="${rootURL}/${it.run.url}tagBuild/">
+    <l:icon class="icon-save icon-sm" tooltip="${it.tooltip}"/>
   </a>
 </j:if>

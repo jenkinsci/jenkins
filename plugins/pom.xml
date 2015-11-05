@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.21</version>
+    <version>1.34</version>
+    <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.427-SNAPSHOT</version>
+  <version>1.626-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
@@ -21,6 +23,7 @@
     <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</connection>
     <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</developerConnection>
     <url>https://svn.jenkins-ci.org/trunk/hudson/plugins/</url>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
@@ -28,46 +31,29 @@
     <url>http://issues.jenkins-ci.org/</url>
   </issueManagement>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency><!-- if a plugin wants to depend on the maven plugin, choose the right version automatically -->
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>maven-plugin</artifactId>
-        <version>1.427-SNAPSHOT</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
+  </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.427-SNAPSHOT</version>
+      <version>1.626-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.427-SNAPSHOT</version>
+      <version>1.626-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.427-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>ui-samples-plugin</artifactId>
-      <version>1.427-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
+      <version>1.626-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <!--
@@ -86,16 +72,15 @@
       <version>2.4</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <!-- for JRE requirement check annotation -->
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>animal-sniffer-annotations</artifactId>
+      <version>1.9</version>
+      <scope>provided</scope>
+      <optional>true</optional><!-- no need to have this at runtime -->
+    </dependency>
   </dependencies>
-  <!--dependencyManagement>
-       <dependencies>
-       <dependency>
-       <groupId>org.jenkins-ci.main</groupId>
-       <artifactId>maven-plugin</artifactId>
-       <version>1.395</version>
-       </dependency>
-       </dependencies>
-       </dependencyManagement-->
 
   <build>
     <!--
@@ -103,22 +88,14 @@
       not to have version number in the .hpi file name.
     -->
     <finalName>${project.artifactId}</finalName>
-    <!--
-      I don't really understand how this works, but it makes Maven recognizes
-      <packaging>hpi</packaging> defined in maven-hpi-plugin.
-
-      <extensions>true</extensions> is apparently needed to have Maven read
-      the plugin's Plexus component file.
-    -->
-    <defaultGoal>package</defaultGoal>
     <plugins>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
-        <version>1.74</version>
         <extensions>true</extensions>
         <configuration>
           <showDeprecation>true</showDeprecation>
+          <contextPath>/jenkins</contextPath>
         </configuration>
       </plugin>
       <plugin>
@@ -178,7 +155,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <version>2.16</version>
         <configuration>
           <systemProperties>
             <property>
@@ -186,6 +163,8 @@
               <value>33849</value>
             </property>
           </systemProperties>
+          <reuseForks>true</reuseForks>
+          <forkCount>${concurrency}</forkCount>
         </configuration>
       </plugin>
       <plugin>
@@ -197,7 +176,7 @@
             <goals>
               <goal>process</goal>
             </goals>
-            <phase>compile</phase>
+            <phase>prepare-package</phase>
             <configuration>
               <!--requireCompleteLicenseInfo>true</requireCompleteLicenseInfo-->
               <generateLicenseXml>target/${project.artifactId}/WEB-INF/licenses.xml</generateLicenseXml>
@@ -244,16 +223,93 @@
           <artifactId>maven-eclipse-plugin</artifactId>
           <configuration>
             <buildOutputDirectory>target/eclipse-classes</buildOutputDirectory>
+            <additionalProjectnatures>
+              <!-- enable Groovy nature by default for DSLD support  -->
+              <projectnature>org.eclipse.jdt.groovy.core.groovyNature</projectnature>
+            </additionalProjectnatures>
+          </configuration>
+        </plugin>
+        <!--
+            This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.
+            the plugins mention here are the ones we do not have direct control over, but are used for a jenkins plugin - all other
+            will be changed to in there source to support eclipse soon (hpi, license, localizer, access-modifier). 
+            see also: http://wiki.eclipse.org/M2E_compatible_maven_plugins
+        -->
+        <plugin>
+            <groupId>org.eclipse.m2e</groupId>
+            <artifactId>lifecycle-mapping</artifactId>
+            <version>1.0.0</version>
+            <configuration>
+                <lifecycleMappingMetadata>
+                    <pluginExecutions>
+                        <pluginExecution>
+                            <pluginExecutionFilter>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-enforcer-plugin</artifactId>
+                                <versionRange>[1.0,)</versionRange>
+                                <goals>
+                                    <goal>display-info</goal>
+                                </goals>
+                            </pluginExecutionFilter>
+                            <action>
+                                <ignore />
+                            </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                            <pluginExecutionFilter>
+                                <groupId>org.codehaus.gmaven</groupId>
+                                <artifactId>gmaven-plugin</artifactId>
+                                <versionRange>[1.0,)</versionRange>
+                                <goals>
+                                    <goal>testCompile</goal>
+                                    <goal>generateTestStubs</goal>
+                                </goals>
+                            </pluginExecutionFilter>
+                            <action>
+                                <ignore />
+                            </action>
+                        </pluginExecution>
+                    </pluginExecutions>
+                </lifecycleMappingMetadata>
+            </configuration>
+        </plugin>        
+        <plugin>
+          <!-- make sure our code doesn't have 1.6 dependencies except where we know it -->
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.9</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>test</phase>
+            </execution>
+          </executions>
+          <configuration>
+            <!-- outside <execution> so that we can run 'animal-sniffer:check' from the top without breaking anything  -->
+            <signature>
+              <groupId>org.codehaus.mojo.signature</groupId>
+              <artifactId>java15</artifactId>
+              <version>1.0</version>
+            </signature>
           </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
+    <extensions>
+      <extension>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>wagon-gitsite</artifactId>
+        <version>0.3.5</version>
+      </extension>
+    </extensions>
   </build>
 
   <repositories>
     <repository>
-      <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/</url>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -265,8 +321,8 @@
 
   <pluginRepositories>
     <pluginRepository>
-      <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/</url>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -277,9 +333,27 @@
   </pluginRepositories>
 
   <distributionManagement>
+    <site>
+      <id>github-pages</id>
+      <url>gitsite:git@github.com/jenkinsci/maven-site.git:plugin-parent</url>
+    </site>
     <snapshotRepository>
       <id>maven.jenkins-ci.org</id>
       <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
+
+  <profiles>
+    <profile>
+      <id>all-tests</id>
+      <activation>
+        <property>
+          <name>!test</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+      </properties>
+    </profile>
+  </profiles>
 </project>

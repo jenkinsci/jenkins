@@ -23,8 +23,9 @@ public abstract class CyclicGraphDetector<N> {
     private final List<N> topologicalOrder = new ArrayList<N>();
 
     public void run(Iterable<? extends N> allNodes) throws CycleDetectedException {
-        for (N n : allNodes)
+        for (N n : allNodes){
             visit(n);
+        }
     }
 
     /**
@@ -62,8 +63,18 @@ public abstract class CyclicGraphDetector<N> {
     private void detectedCycle(N q) throws CycleDetectedException {
         int i = path.indexOf(q);
         path.push(q);
-        throw new CycleDetectedException(path.subList(i, path.size()));
+        reactOnCycle(q, path.subList(i, path.size()));
     }
+    
+    /**
+     * React on detected cycles - default implementation throws an exception.
+     * @param q
+     * @param cycle
+     * @throws CycleDetectedException
+     */
+    protected void reactOnCycle(N q, List<N> cycle) throws CycleDetectedException{
+        throw new CycleDetectedException(cycle);
+    }    
 
     public static final class CycleDetectedException extends Exception {
         public final List cycle;

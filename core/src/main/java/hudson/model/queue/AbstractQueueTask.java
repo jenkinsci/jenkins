@@ -26,12 +26,15 @@ package hudson.model.queue;
 
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
+import hudson.security.ACL;
+import org.acegisecurity.Authentication;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Abstract base class for {@link Queue.Task} to protect plugins
+ * Abstract base class for {@link hudson.model.Queue.Task} to protect plugins
  * from new additions to the interface.
  *
  * @author Kohsuke Kawaguchi
@@ -44,5 +47,32 @@ public abstract class AbstractQueueTask implements Queue.Task {
 
     public final Task getOwnerTask() {
         return this;
+    }
+
+    public boolean isConcurrentBuild() {
+        return false;
+    }
+
+    public CauseOfBlockage getCauseOfBlockage() {
+        return null;
+    }
+
+    public Object getSameNodeConstraint() {
+        return null;
+    }
+
+    /**
+     * This default implementation is the historical behaviour, but this is no longer desirable. Please override.
+     * See {@link Task#getDefaultAuthentication()} for the contract.
+     */
+    @Nonnull
+    public Authentication getDefaultAuthentication() {
+        return ACL.SYSTEM;
+    }
+
+    @Nonnull
+    @Override
+    public Authentication getDefaultAuthentication(Queue.Item item) {
+        return getDefaultAuthentication();
     }
 }

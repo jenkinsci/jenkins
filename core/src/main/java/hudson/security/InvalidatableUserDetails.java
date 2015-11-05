@@ -28,6 +28,7 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.userdetails.UserDetails;
 
 import javax.servlet.http.HttpSession;
+import jenkins.security.NonSerializableSecurityContext;
 
 /**
  * {@link UserDetails} that can mark {@link Authentication} invalid.
@@ -46,13 +47,14 @@ import javax.servlet.http.HttpSession;
  * dropped before the rest of Acegi sees it.
  *
  * <p>
- * See https://hudson.dev.java.net/issues/show_bug.cgi?id=1482
+ * See JENKINS-1482
  * 
  * @author Kohsuke Kawaguchi
  * @deprecated
  *      Starting 1.285, Hudson stops persisting {@link Authentication} altogether
- *      (see {@link NotSerilizableSecurityContext}), so there's no need to use this mechanism.
+ *      (see {@link NonSerializableSecurityContext}), so there's no need to use this mechanism.
  */
+@Deprecated
 public interface InvalidatableUserDetails extends UserDetails {
     boolean isInvalid();
 }

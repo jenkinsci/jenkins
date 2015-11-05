@@ -1,0 +1,89 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Manufacture Francaise des Pneumatiques
+Michelin, Romain Seguy, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+  <st:documentation>
+    Generates the bar that shows breadcrumbs, along with its associated dynamic behaviours.
+    This tag is used by l:layout and not expected to be used by anyone else,
+    but it's written as separate tag for better readability of code.
+
+    To render additional breadcrumb items (for example to provide in-page navigations),
+    use the &lt;l:breadcrumb> tag.
+  </st:documentation>
+
+  <tr id="top-nav">
+    <td id="left-top-nav" colspan="2">
+      <st:adjunct includes="lib.layout.breadcrumbs" />
+      <div class="top-sticker noedge">
+        <div class="top-sticker-inner">
+          <div id="right-top-nav">
+            <j:if test="${norefresh==null or norefresh==false}">
+              <div id="right-top-nav">
+                <div class="smallfont">
+                  <j:choose>
+                    <j:when test="${h.isAutoRefresh(request)}">
+                      <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
+                    </j:when>
+                    <j:otherwise>
+                      <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
+                    </j:otherwise>
+                  </j:choose>
+                </div>
+              </div>
+            </j:if>
+          </div>
+          <ul id="breadcrumbs">
+            <j:forEach var="anc" items="${request.ancestors}">
+              <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
+                <li class="item">
+                  <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null} inside">
+                    ${anc.object.displayName}
+                  </a>
+                </li>
+                <j:choose>
+                  <j:when test="${h.isModelWithChildren(anc.object)}">
+                    <li class="children" href="${anc.url}/">
+                      <!-- shows '>' for rendering children -->
+                    </li>
+                  </j:when>
+                  <j:otherwise>
+                    <li class="separator">
+                    </li>
+                  </j:otherwise>
+                </j:choose>
+              </j:if>
+            </j:forEach>
+
+            <!-- render additional breadcrumb items -->
+            <d:invokeBody />
+          </ul>
+
+          <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
+        </div>
+      </div>
+    </td>
+  </tr>
+</j:jelly>

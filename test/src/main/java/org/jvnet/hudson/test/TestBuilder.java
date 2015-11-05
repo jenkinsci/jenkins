@@ -23,6 +23,8 @@
  */
 package org.jvnet.hudson.test;
 
+import hudson.model.AbstractProject;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.model.Descriptor;
 import hudson.model.AbstractBuild;
@@ -45,7 +47,18 @@ public abstract class TestBuilder extends Builder {
     public abstract boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException;
 
     public Descriptor<Builder> getDescriptor() {
-        throw new UnsupportedOperationException();
+        // throw new UnsupportedOperationException();
+        return new BuildStepDescriptor<Builder>() {
+            @Override
+            public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+                return true;
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "Bogus";
+            }
+        };
     }
 
     private Object writeReplace() { return new Object(); }

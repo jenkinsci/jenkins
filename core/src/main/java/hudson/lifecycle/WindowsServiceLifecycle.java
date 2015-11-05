@@ -50,15 +50,15 @@ import java.util.logging.Logger;
  */
 public class WindowsServiceLifecycle extends Lifecycle {
     public WindowsServiceLifecycle() {
-        updateHudsonExeIfNeeded();
+        updateJenkinsExeIfNeeded();
     }
 
     /**
-     * If <tt>hudson.exe</tt> is old compared to our copy,
+     * If <tt>jenkins.exe</tt> is old compared to our copy,
      * schedule an overwrite (except that since it's currently running,
-     * we can only do it when Hudson restarts next time.)
+     * we can only do it when Jenkins restarts next time.)
      */
-    private void updateHudsonExeIfNeeded() {
+    private void updateJenkinsExeIfNeeded() {
         try {
             File rootDir = Jenkins.getInstance().getRootDir();
 
@@ -83,7 +83,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to replace hudson.exe",e);
+            LOGGER.log(Level.SEVERE, "Failed to replace jenkins.exe",e);
         }
     }
 
@@ -111,8 +111,11 @@ public class WindowsServiceLifecycle extends Lifecycle {
         File copyFiles = new File(rootDir,baseName+".copies");
 
         FileWriter w = new FileWriter(copyFiles, true);
-        w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
-        w.close();
+        try {
+            w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
+        } finally {
+            w.close();
+        }
     }
 
     @Override
@@ -123,10 +126,14 @@ public class WindowsServiceLifecycle extends Lifecycle {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StreamTaskListener task = new StreamTaskListener(baos);
         task.getLogger().println("Restarting a service");
-        File executable = new File(home, "hudson.exe");
+        String exe = System.getenv("WINSW_EXECUTABLE");
+        File executable;
+        if (exe!=null)   executable = new File(exe);
+        else            executable = new File(home, "hudson.exe");
         if (!executable.exists())   executable = new File(home, "jenkins.exe");
 
-        int r = new LocalLauncher(task).launch().cmds(executable, "restart")
+        // use restart! to run hudson/jenkins.exe restart in a separate process, so it doesn't kill itself
+        int r = new LocalLauncher(task).launch().cmds(executable, "restart!")
                 .stdout(task).pwd(home).join();
         if(r!=0)
             throw new IOException(baos.toString());

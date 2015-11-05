@@ -42,9 +42,15 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        int i=0;
+        try {
+            i = Integer.parseInt(json.getString("quietPeriod"));
+        } catch (NumberFormatException e) {
+            // fall through
+        }
         try {
             // for compatibility reasons, this value is stored in Jenkins
-            Jenkins.getInstance().setQuietPeriod(json.getInt("quietPeriod"));
+            Jenkins.getInstance().setQuietPeriod(i);
             return true;
         } catch (IOException e) {
             throw new FormException(e,"quietPeriod");

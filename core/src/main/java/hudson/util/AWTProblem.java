@@ -23,13 +23,18 @@
  */
 package hudson.util;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 /**
  * @author Kohsuke Kawaguchi
  */
-public class AWTProblem extends ErrorObject {
+public class AWTProblem extends BootFailure {
+    @Restricted(NoExternalUse.class) @Deprecated
     public final Throwable cause;
 
     public AWTProblem(Throwable cause) {
+        super(cause);
         this.cause = cause;
     }
 }

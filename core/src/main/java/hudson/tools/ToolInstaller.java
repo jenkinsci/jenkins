@@ -32,6 +32,8 @@ import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+
+import java.io.File;
 import java.io.IOException;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -102,7 +104,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
      * @param tool the tool being installed
      * @param node the computer on which to install the tool
      * @return {@link ToolInstallation#getHome} if specified, else a path within the local
-     *         Hudson work area named according to {@link ToolInstallation#getName}
+     *         Jenkins work area named according to {@link ToolInstallation#getName}
      * @since 1.310
      */
     protected final FilePath preferredLocation(ToolInstallation tool, Node node) {
@@ -111,14 +113,17 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
         }
         String home = Util.fixEmptyAndTrim(tool.getHome());
         if (home == null) {
-            // XXX should this somehow uniquify paths among ToolInstallation.all()?
-            home = tool.getName().replaceAll("[^A-Za-z0-9_.-]+", "_");
+            home = sanitize(tool.getDescriptor().getId()) + File.separatorChar + sanitize(tool.getName());
         }
         FilePath root = node.getRootPath();
         if (root == null) {
             throw new IllegalArgumentException("Node " + node.getDisplayName() + " seems to be offline");
         }
         return root.child("tools").child(home);
+    }
+
+    private String sanitize(String s) {
+        return s != null ? s.replaceAll("[^A-Za-z0-9_.-]+", "_") : null;
     }
 
     public ToolInstallerDescriptor<?> getDescriptor() {

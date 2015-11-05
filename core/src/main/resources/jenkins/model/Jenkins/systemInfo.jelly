@@ -61,6 +61,8 @@ THE SOFTWARE.
             </j:otherwise>
           </j:choose>
         </table>
+        <h1>${%Thread Dumps}</h1>
+        <p>${%threadDump_blurb('threadDump')}</p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -29,6 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
     <st:include page="sidepanel.jelly" />
+    <f:breadcrumb-config-outline />
     <l:main-panel>
       <div class="behavior-loading">${%LOADING}</div>
       <f:form method="post" action="configSubmit" name="config">
@@ -41,15 +42,15 @@ THE SOFTWARE.
           </f:entry>
         </j:if>
         <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
-          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
+          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
 
         <j:if test="${it.supportsLogRotator()}">
           <!-- log rotator -->
           <f:optionalBlock name="logrotate"
             help="/help/project-config/log-rotation.html"
-            title="${%Discard Old Builds}" checked="${it.logRotator!=null}">
-            <st:include page="/hudson/tasks/LogRotator/config.jelly"/>
+            title="${%Discard Old Builds}" checked="${it.buildDiscarder!=null}" inline="true">
+            <f:dropdownDescriptorSelector field="buildDiscarder" title="${%Strategy}"/>
           </f:optionalBlock>
         </j:if>
 
@@ -60,12 +61,16 @@ THE SOFTWARE.
         <st:include page="configure-entries.jelly" />
 
         <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-          <f:block>
+          <f:bottomButtonBar>
             <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-            <f:submit value="${%Save}" />
-          </f:block>
+            <f:submit value="${%Save}"/>
+            <f:apply />
+          </f:bottomButtonBar>
         </j:if>
       </f:form>
+      <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+        <st:adjunct includes="lib.form.confirm" />
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

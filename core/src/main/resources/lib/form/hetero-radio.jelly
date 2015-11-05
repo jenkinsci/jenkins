@@ -40,17 +40,16 @@ THE SOFTWARE.
   <table style="width:100%">
     <j:set var="currentInstance" value="${instance[field]}" />
     <j:set var="currentDescriptor" value="${currentInstance.descriptor}" />
+    <j:set var="uniqueId" value="${h.generateId()}" />
     <j:forEach var="d" items="${descriptors}" varStatus="loop">
-      <f:radioBlock name="${field}" help="${d.helpFile}" value="${loop.index}"
+      <f:radioBlock name="${uniqueId}.${field}" help="${d.helpFile}" value="${loop.index}"
         title="${d.displayName}" checked="${currentDescriptor==d}">
         <j:set var="descriptor" value="${d}" />
         <j:set var="instance" value="${currentDescriptor==d?currentInstance:null}" />
         <st:include from="${d}" page="${d.configPage}" optional="true" />
-
-        <f:invisibleEntry><!-- this tells Stapler which block is for which class -->
-          <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
-        </f:invisibleEntry>
+        <f:class-entry descriptor="${d}" />
       </f:radioBlock>
     </j:forEach>
   </table>
+  <!-- TODO consider customizedFields -->
 </j:jelly>

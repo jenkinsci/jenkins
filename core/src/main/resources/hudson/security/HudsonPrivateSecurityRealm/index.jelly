@@ -39,13 +39,13 @@ THE SOFTWARE.
         </tr>
         <j:forEach var="user" items="${it.allUsers}">
           <tr>
-            <td><a href="${user.url}/"><img src="${imagesURL}/32x32/user.png" alt="" height="32" width="32"/></a></td>
+            <td><a href="${user.url}/" class="model-link inside"><img src="${h.getUserAvatar(user,'32x32')}" alt="" height="32" width="32"/></a></td>
             <td><a href="${user.url}/">${user.id}</a></td>
             <td><a href="${user.url}/">${user}</a></td>
             <td>
-              <a href="${user.url}/configure"><img src="${imagesURL}/32x32/setting.png" alt="Setting" height="32" width="32"/></a>
+              <a href="${user.url}/configure"><l:icon class="icon-setting icon-lg"/></a>
               <j:if test="${user.canDelete()}">
-                <a href="${user.url}/delete"><img src="${imagesURL}/24x24/edit-delete.png" alt="Delete" height="24" width="24"/></a>
+                <a href="${user.url}/delete"><l:icon class="icon-edit-delete icon-md"/></a>
               </j:if>
             </td>
           </tr>

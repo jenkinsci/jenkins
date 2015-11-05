@@ -31,63 +31,74 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly"/>
   <l:main-panel>
     <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager" />
-    <table id="pluginsAdv" class="pane bigtable" style="margin-top:0; border-top:none">
-      <tr style="border-top:none">
-        <td>
-          <h1>${%HTTP Proxy Configuration}</h1>
-          <f:form method="post" action="proxyConfigure">
-            <f:block>
-              <f:entry title="${%Server}" help="/help/update-center/proxy-server.html">
-                <f:textbox name="proxy.server" value="${app.proxy.name}" />
-              </f:entry>
-              <f:entry title="${%Port}" help="/help/update-center/proxy-port.html">
-                <f:textbox name="proxy.port" value="${app.proxy.port}" />
-              </f:entry>
-            </f:block>
-            <f:entry title="${%User name}" help="/help/update-center/proxy-username.html">
-              <f:textbox name="proxy.userName" value="${app.proxy.userName}" />
-            </f:entry>
-            <f:entry title="${%Password}">
-              <f:password name="proxy.password" value="${app.proxy.encryptedPassword}" />
-            </f:entry>
-            <f:block>
-              <f:submit value="${%Submit}" />
-            </f:block>
-          </f:form>
+    <div class="pane-frame">
+      <table id="pluginsAdv" class="pane" style="margin-top:0; border-top:none">
+        <tr style="border-top:none; white-space: normal">
+          <td>
+            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
+              <h1>${%HTTP Proxy Configuration}</h1>
+              <f:form method="post" action="proxyConfigure" name="proxyConfigure">
+                <j:scope>
+                  <j:set var="instance" value="${app.proxy}"/>
+                  <j:set var="descriptor" value="${it.proxyDescriptor}"/>
+                  <st:include from="${descriptor}" page="${descriptor.configPage}" />
+                </j:scope>
+                <f:block>
+                  <f:submit value="${%Submit}" />
+                </f:block>
+              </f:form>
+            </l:hasPermission>
 
-          <h1>${%Upload Plugin}</h1>
-          <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
-            <f:block>
-              <div style="margin-bottom: 1em;">
-               ${%uploadtext}
-              </div>
-            </f:block>
-            <f:block>
-              <!-- @size is for other browsers, @style is for IE -->
-              ${%File}: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
-            </f:block>
-            <f:block>
-              <f:submit value="${%Upload}" />
-            </f:block>
-          </f:form>
-
-          <h1>${%Update Site}</h1>
-          <f:form method="post" action="siteConfigure">
-            <f:entry title="${%URL}" >
-              <f:textbox name="site" value="${app.updateCenter.getSite('default').url}" />
-            </f:entry>
-            <f:block>
-              <f:submit value="${%Submit}" />
-            </f:block>
-          </f:form>
-        </td>
-      </tr>
-    </table>
+            <l:hasPermission permission="${app.pluginManager.UPLOAD_PLUGINS}">
+              <h1>${%Upload Plugin}</h1>
+              <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
+                <f:block>
+                  <div style="margin-bottom: 1em;">
+                    ${%uploadtext}
+                  </div>
+                </f:block>
+                <f:block>
+                  <!-- @size is for other browsers, @style is for IE -->
+                  ${%File}: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
+                </f:block>
+                <f:block>
+                  <f:submit value="${%Upload}" />
+                </f:block>
+              </f:form>
+            </l:hasPermission>
+            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
+              <h1>${%Update Site}</h1>
+              <f:form method="post" action="siteConfigure" name="siteConfigure">
+                <f:entry title="${%URL}" >
+                  <f:textbox name="site" value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}" />
+                </f:entry>
+                <f:block>
+                  <f:submit value="${%Submit}" />
+                </f:block>
+              </f:form>
+              <j:set var="hasNonDefault" value="${false}"/>
+              <j:forEach var="site" items="${app.updateCenter.sites}">
+                <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
+                  <j:set var="hasNonDefault" value="${true}"/>
+                </j:if>
+              </j:forEach>
+              <j:if test="${hasNonDefault}">
+                <h2>${%Other Sites}</h2>
+                <ul>
+                  <j:forEach var="site" items="${app.updateCenter.sites}">
+                    <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
+                      <li>${site.url}</li>
+                    </j:if>
+                  </j:forEach>
+                </ul>
+              </j:if>
+            </l:hasPermission>
+          </td>
+        </tr>
+      </table>
+    </div>
     <div align="right" style="margin-top:1em">
-      <form method="post" action="checkUpdates">
-        ${%lastUpdated(app.updateCenter.lastUpdatedString)}
-        <f:submit value="${%Check now}" />
-      </form>
+      <st:include page="check.jelly"/>
     </div>
   </l:main-panel>
 </l:layout>

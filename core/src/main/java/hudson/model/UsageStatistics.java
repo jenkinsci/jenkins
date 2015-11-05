@@ -28,6 +28,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.util.IOUtils;
 import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
 
@@ -59,7 +60,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -121,30 +122,32 @@ public class UsageStatistics extends PageDecorator {
      * Gets the encrypted usage stat data to be sent to the Hudson server.
      */
     public String getStatData() throws IOException {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstance();
 
         JSONObject o = new JSONObject();
         o.put("stat",1);
-        o.put("install", Util.getDigestOf(h.getSecretKey()));
+        o.put("install", j.getLegacyInstanceId());
+        o.put("servletContainer", j.servletContext.getServerInfo());
         o.put("version", Jenkins.VERSION);
 
         List<JSONObject> nodes = new ArrayList<JSONObject>();
-        for( Computer c : h.getComputers() ) {
+        for( Computer c : j.getComputers() ) {
             JSONObject  n = new JSONObject();
-            if(c.getNode()==h) {
+            if(c.getNode()==j) {
                 n.put("master",true);
                 n.put("jvm-vendor", System.getProperty("java.vm.vendor"));
+                n.put("jvm-name", System.getProperty("java.vm.name"));
                 n.put("jvm-version", System.getProperty("java.version"));
             }
             n.put("executors",c.getNumExecutors());
-            DescriptorImpl descriptor = h.getDescriptorByType(DescriptorImpl.class);
+            DescriptorImpl descriptor = j.getDescriptorByType(DescriptorImpl.class);
             n.put("os", descriptor.get(c));
             nodes.add(n);
         }
         o.put("nodes",nodes);
 
         List<JSONObject> plugins = new ArrayList<JSONObject>();
-        for( PluginWrapper pw : h.getPluginManager().getPlugins() ) {
+        for( PluginWrapper pw : j.getPluginManager().getPlugins() ) {
             if(!pw.isActive())  continue;   // treat disabled plugins as if they are uninstalled
             JSONObject p = new JSONObject();
             p.put("name",pw.getShortName());
@@ -154,7 +157,7 @@ public class UsageStatistics extends PageDecorator {
         o.put("plugins",plugins);
 
         JSONObject jobs = new JSONObject();
-        List<TopLevelItem> items = h.getItems();
+        List<TopLevelItem> items = j.getAllItems(TopLevelItem.class);
         for (TopLevelItemDescriptor d : Items.all()) {
             int cnt=0;
             for (TopLevelItem item : items) {
@@ -170,8 +173,11 @@ public class UsageStatistics extends PageDecorator {
 
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
             OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getKey(),"AES")), "UTF-8");
-            o.write(w);
-            w.close();
+            try {
+                o.write(w);
+            } finally {
+                IOUtils.closeQuietly(w);
+            }
 
             return new String(Base64.encode(baos.toByteArray()));
         } catch (GeneralSecurityException e) {
@@ -191,10 +197,10 @@ public class UsageStatistics extends PageDecorator {
     }
 
     /**
-     * Assymetric cipher is slow and in case of Sun RSA implementation it can only encyrypt the first block.
+     * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encyrypt the first block.
      *
      * So first create a symmetric key, then place this key in the beginning of the stream by encrypting it
-     * with the assymetric cipher. The rest of the stream will be encrypted by a symmetric cipher.
+     * with the asymmetric cipher. The rest of the stream will be encrypted by a symmetric cipher.
      */
     public static final class CombinedCipherOutputStream extends FilterOutputStream {
         public CombinedCipherOutputStream(OutputStream out, Cipher asym, String algorithm) throws IOException, GeneralSecurityException {

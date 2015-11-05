@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -21,29 +22,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.427-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>1.626-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
   <packaging>war</packaging>
 
   <name>Jenkins war</name>
-  <description>
-    Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and
-    some HTML files.
-  </description>
+  <description>Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and some HTML files.</description>
 
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
-    <contextPath>/</contextPath><!-- context path during test -->
+    <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
   </properties>
 
@@ -51,10 +47,9 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.20</version>
+      <version>1.30</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
@@ -71,14 +66,18 @@ THE SOFTWARE.
           <groupId>javax.servlet</groupId>
           <artifactId>jsp-api</artifactId>
         </exclusion>
+        <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
+        <exclusion>
+          <artifactId>metainf-services</artifactId>
+          <groupId>org.kohsuke.metainf-services</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
-    <!-- TO REMOVE when maven-plugin won't be anymore a bundle plugin -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
+      <version>${maven-plugin.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -99,22 +98,74 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>0.9.10-jenkins-26</version>
+      <version>2.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>1.1</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>slave-installer</artifactId>
+      <version>1.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>windows-slave-installer</artifactId>
+      <version>1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>launchd-slave-installer</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>upstart-slave-installer</artifactId>
       <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>systemd-slave-installer</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>sshd</artifactId>
+      <version>1.6</version>
+    </dependency>
+    <dependency>
+      <!--
+        We bundle slf4j binding since we got some components (sshd for example)
+        that uses slf4j.
+
+        The problem with not shipping any binding in the war is that if the
+        servlet container does use slf4j in itself, then we got a classloader
+        constraint violation (see JENKINS-12334) as we try to load StaticLoggerBinder
+        which resides in the binding jar (this jar would be from container implementation,
+        which relies on slf4j api in the container, when we have our own slf4j API jar
+        statically depending on the binding jar.)
+
+        We also get tickets like JENKINS-12650 for not reporting logs at all
+        (although this is a non-fatal problem.)
+
+        The downside of adding a jar is that we can potentially get "multiple binding jar"
+        warning like http://www.slf4j.org/codes.html, but that's at least non-fatal.
+      -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
     </dependency>
 
     <!-- offline profiler API when we need it -->
-    <!--dependency>
+
+    <!--dependency
       <groupId>com.yourkit.api</groupId>
       <artifactId>yjp</artifactId>
       <version>dontcare</version>
@@ -217,19 +268,109 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <version>0.17</version>
+                  <version>1.9</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>credentials</artifactId>
+                  <version>1.18</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ssh-credentials</artifactId>
+                  <version>1.10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>subversion</artifactId>
-                  <version>1.28</version>
+                  <version>1.54</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <groupId>org.jvnet.hudson.plugins</groupId>
+                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>cvs</artifactId>
+                  <version>2.11</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ant</artifactId>
                   <version>1.2</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>javadoc</artifactId>
+                  <version>1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>translation</artifactId>
+                  <version>1.10</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>external-monitor-job</artifactId>
+                  <version>1.4</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>ldap</artifactId>
+                  <version>1.11</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>pam-auth</artifactId>
+                  <version>1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>mailer</artifactId>
+                  <version>1.11</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>matrix-auth</artifactId>
+                  <version>1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>windows-slaves</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>antisamy-markup-formatter</artifactId>
+                  <version>1.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>matrix-project</artifactId>
+                  <version>${matrix-project.version}</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>script-security</artifactId>
+                  <version>1.13</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>junit</artifactId>
+                  <version>1.2-beta-4</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
@@ -271,6 +412,8 @@ THE SOFTWARE.
         <!-- version specified in grandparent pom -->
         <configuration>
           <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
+          <generateLicenseHtml>${project.build.outputDirectory}/META-INF/licenses.html</generateLicenseHtml>
+          <attach>true</attach>
           <inlineScript>
             filter {
                 // add Winstone since we are bundling it.
@@ -288,13 +431,12 @@ THE SOFTWARE.
         <artifactId>maven-jenkins-dev-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <contextPath>${contextPath}</contextPath>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <reload>manual</reload>
           <connectors>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+            <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
                 <port>${port}</port>
             </connector>
           </connectors>
@@ -308,12 +450,12 @@ THE SOFTWARE.
             -->
             <additionalClassesDirectory>../core/target/classes</additionalClassesDirectory>
           </additionalClassesDirectories>
-          <userRealms>
-            <userRealm implementation="org.mortbay.jetty.security.HashUserRealm">
+          <loginServices>
+            <loginService implementation="org.eclipse.jetty.security.HashLoginService">
               <name>default</name>
               <config>${basedir}/src/realm.properties</config>
-            </userRealm>
-          </userRealms>
+            </loginService>
+          </loginServices>
           <systemProperties>
             <systemProperty>
               <name>JENKINS_HOME</name>
@@ -339,16 +481,13 @@ THE SOFTWARE.
               <name>stapler.resourcePath</name>
               <value>
                   ../core/src/main/resources;
-                  ../ui-samples-plugin/src/main/resources;
-                  ../maven-plugin/src/main/resources
               </value>
             </systemProperty>
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
-              <value>
-                  ${basedir}/../maven-plugin/target/test-classes/the.hpl,
-                  ${basedir}/../ui-samples-plugin/target/test-classes/the.hpl
+              <value><!-- run "mvn install" once will generate the.hpl -->
+                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
               </value>
             </systemProperty>
             <systemProperty>
@@ -366,37 +505,16 @@ THE SOFTWARE.
               <value>true</value>
             </systemProperty>
           </systemProperties>
+          <webApp>
+            <contextPath>${contextPath}</contextPath>
+            <configurationDiscovered>false</configurationDiscovered>
+          </webApp>
         </configuration>
       </plugin>
     </plugins>
   </build>
 
   <profiles>
-    <profile>
-      <!-- profile for creating Jenkins IPS package -->
-      <id>ips</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jvnet.updatecenter2</groupId>
-            <artifactId>maven-makepkgs-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>package</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <python>python2.5</python>
-              <proto>../ips/proto.py</proto>
-              <attach>false</attach>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <!-- sign war -->
       <id>sign</id>
@@ -419,6 +537,43 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <!-- profile for running Grunt and optimize static resources -->
+      <id>grunt</id>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>install</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>npm</executable>
+                                <arguments>
+                                    <argument>install</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>grunt</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>grunt</executable>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
     </profile>
   </profiles>
 </project>

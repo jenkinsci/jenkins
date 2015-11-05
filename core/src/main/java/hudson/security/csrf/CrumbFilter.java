@@ -5,10 +5,12 @@
  */
 package hudson.security.csrf;
 
+import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -34,7 +36,7 @@ public class CrumbFilter implements Filter {
      */
     public CrumbIssuer getCrumbIssuer() {
         Jenkins h = Jenkins.getInstance();
-        if(h==null)     return null;    // before Hudson is initialized?
+        if(h==null)     return null;    // before Jenkins is initialized?
         return h.getCrumbIssuer();
     }
 
@@ -49,10 +51,17 @@ public class CrumbFilter implements Filter {
         }
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
-        String crumbSalt = crumbIssuer.getDescriptor().getCrumbSalt();
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         if ("POST".equals(httpRequest.getMethod())) {
+            for (CrumbExclusion e : CrumbExclusion.all()) {
+                if (e.process(httpRequest,httpResponse,chain))
+                    return;
+            }
+
+            String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
+            String crumbSalt = crumbIssuer.getDescriptor().getCrumbSalt();
+
             String crumb = httpRequest.getHeader(crumbFieldName);
             boolean valid = false;
             if (crumb == null) {
@@ -69,16 +78,14 @@ public class CrumbFilter implements Filter {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
                     valid = true;
                 } else {
-                    LOGGER.warning("Found invalid crumb " + crumb +
-                            ".  Will check remaining parameters for a valid one...");
+                    LOGGER.log(Level.WARNING, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
                 }
             }
             // Multipart requests need to be handled by each handler.
             if (valid || isMultipart(httpRequest)) {
                 chain.doFilter(request, response);
             } else {
-                LOGGER.warning("No valid crumb was included in request for " + httpRequest.getRequestURI() + ".  Returning " + HttpServletResponse.SC_FORBIDDEN + ".");
-                HttpServletResponse httpResponse = (HttpServletResponse) response;
+                LOGGER.log(Level.WARNING, "No valid crumb was included in request for {0}. Returning {1}.", new Object[] {httpRequest.getRequestURI(), HttpServletResponse.SC_FORBIDDEN});
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {
@@ -91,23 +98,7 @@ public class CrumbFilter implements Filter {
             return false;
         }
 
-        String contentType = request.getContentType();
-        if (contentType == null) {
-            return false;
-        }
-
-        String[] parts = contentType.split(";");
-        if (parts.length == 0) {
-            return false;
-        }
-
-        for (int i = 0; i < parts.length; i++) {
-            if ("multipart/form-data".equals(parts[i])) {
-                return true;
-            }
-        }
-
-        return false;
+        return MultipartFormDataParser.isMultiPartForm(request.getContentType());
     }
 
     /**

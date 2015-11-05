@@ -40,11 +40,13 @@ import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
- * Formalization of a tool installed in nodes used for builds
- * (examples include things like JDKs, Ants, Mavens, and Groovys)
+ * Formalization of a tool installed in nodes used for builds.
+ * (Examples include things like JDKs, Ants, Mavens, and Groovys.)
  *
  * <p>
  * You can define such a concept in your plugin entirely on your own, without extending from
@@ -63,6 +65,9 @@ import jenkins.model.Jenkins;
  * Implementations of this class are strongly encouraged to also implement {@link NodeSpecific}
  * (by using {@link #translateFor(Node, TaskListener)}) and
  * {@link EnvironmentSpecific} (by using {@link EnvVars#expand(String)}.)
+ * Callers such as build steps can then use {@link #translate(AbstractBuild,TaskListener)}
+ * and cast to the desired {@link ToolInstallation} subtype, or just call
+ * {@link NodeSpecific#forNode} and {@link EnvironmentSpecific#forEnvironment} directly.
  *
  * <p>
  * To contribute an extension point, put {@link Extension} on your {@link ToolDescriptor} class.
@@ -85,6 +90,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * @deprecated
      *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
      */
+    @Deprecated
     public ToolInstallation(String name, String home) {
         this.name = name;
         this.home = home;
@@ -121,14 +127,64 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * 
      * The path can be in Unix format as well as in Windows format.
      * Must be absolute.
+     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on master)
      */
-    public String getHome() {
+    public @CheckForNull String getHome() {
         return home;
+    }
+
+    /**
+     * Expose any environment variables that this tool installation wants the build to see.
+     *
+     * <p>
+     * To add entry to PATH, do {@code envVars.put("PATH+XYZ",path)} where 'XYZ' is something unique.
+     * Variable names of the form 'A+B' is interpreted as adding the value to the existing PATH.
+     *
+     * @since 1.460
+     */
+    public void buildEnvVars(EnvVars env) {
     }
 
     public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
         assert properties!=null;
         return properties;
+    }
+
+    /**
+     * Performs a necessary variable/environment/context expansion.
+     *
+     * @param node
+     *      Node that this tool is used in.
+     * @param envs
+     *      Set of environment variables to expand any references.
+     * @param listener
+     *      Any lengthy operation (such as auto-installation) will report its progress here.
+     * @return
+     *      {@link ToolInstallation} object that is fully specialized.
+     * @see NodeSpecific
+     * @see EnvironmentSpecific
+     * @since 1.460
+     */
+    public ToolInstallation translate(@Nonnull Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+        ToolInstallation t = this;
+        if (t instanceof NodeSpecific) {
+            NodeSpecific n = (NodeSpecific) t;
+            t = (ToolInstallation)n.forNode(node,listener);
+        }
+        if (t instanceof EnvironmentSpecific) {
+            EnvironmentSpecific e = (EnvironmentSpecific) t;
+            t = (ToolInstallation)e.forEnvironment(envs);
+        }
+        return t;
+    }
+
+    /**
+     * Convenient version of {@link #translate(Node, EnvVars, TaskListener)} that just takes a build object in progress.
+     * @since 1.460
+     */
+    public ToolInstallation translate(AbstractBuild<?,?> buildInProgress, TaskListener listener) throws IOException, InterruptedException {
+        assert buildInProgress.isBuilding();
+        return translate(buildInProgress.getBuiltOn(),buildInProgress.getEnvironment(listener),listener);
     }
 
     /**
@@ -153,12 +209,16 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     /**
      * Invoked by XStream when this object is read into memory.
      */
-    private Object readResolve() {
+    protected Object readResolve() {
         if(properties==null)
             properties = new DescribableList<ToolProperty<?>,ToolPropertyDescriptor>(Saveable.NOOP);
         for (ToolProperty<?> p : properties)
             _setTool(p, this);
         return this;
+    }
+
+    @Override public String toString() {
+        return getClass().getSimpleName() + "[" + name + "]";
     }
 
     /**

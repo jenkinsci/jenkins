@@ -48,11 +48,16 @@ public class BooleanParameterValue extends ParameterValue {
         this.value = value;
     }
 
+    @Override
+    public Boolean getValue() {
+        return value;
+    }
+
     /**
      * Exposes the name/value as an environment variable.
      */
     @Override
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+    public void buildEnvironment(Run<?,?> build, EnvVars env) {
         env.put(name,Boolean.toString(value));
         env.put(name.toUpperCase(Locale.ENGLISH),Boolean.toString(value)); // backward compatibility pre 1.345
     }
@@ -90,4 +95,9 @@ public class BooleanParameterValue extends ParameterValue {
     public String toString() {
     	return "(BooleanParameterValue) " + getName() + "='" + value + "'";
     }
+
+    @Override public String getShortDescription() {
+        return name + '=' + value;
+    }
+
 }

@@ -23,18 +23,23 @@
  */
 package hudson.slaves;
 
-import hudson.model.Computer;
-import jenkins.model.Jenkins;
-import hudson.model.TaskListener;
-import hudson.model.Node;
-import hudson.ExtensionPoint;
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.FilePath;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.model.TaskListener;
+import org.jenkinsci.remoting.CallableDecorator;
 import hudson.remoting.Channel;
-import hudson.AbortException;
+import hudson.remoting.ChannelBuilder;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Receives notifications about status changes of {@link Computer}s.
@@ -43,6 +48,7 @@ import java.io.IOException;
  * @since 1.246
  */
 public abstract class ComputerListener implements ExtensionPoint {
+
     /**
      * Called before a {@link ComputerLauncher} is asked to launch a connection with {@link Computer}.
      *
@@ -126,6 +132,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      * @deprecated as of 1.292
      *      Use {@link #onOnline(Computer, TaskListener)}
      */
+    @Deprecated
     public void onOnline(Computer c) {}
 
     /**
@@ -161,11 +168,43 @@ public abstract class ComputerListener implements ExtensionPoint {
 
     /**
      * Called right after a {@link Computer} went offline.
+     *
+     * @deprecated since 1.571. Use {@link #onOffline(Computer, OfflineCause)} instead.
      */
+    @Deprecated
     public void onOffline(Computer c) {}
 
     /**
+     * Called right after a {@link Computer} went offline.
+     *
+     * @since 1.571
+     */
+    public void onOffline(@Nonnull Computer c, @CheckForNull OfflineCause cause) {
+        onOffline(c);
+    }
+
+    /**
+     * Indicates that the computer was marked as temporarily online by the administrator.
+     * This is the reverse operation of {@link #onTemporarilyOffline(Computer, OfflineCause)}
+     *
+     * @since 1.452
+     */
+    public void onTemporarilyOnline(Computer c) {}
+    /**
+     * Indicates that the computer was marked as temporarily offline by the administrator.
+     * This is the reverse operation of {@link #onTemporarilyOnline(Computer)}
+     *
+     * @since 1.452
+     */
+    public void onTemporarilyOffline(Computer c, OfflineCause cause) {}
+
+    /**
      * Called when configuration of the node was changed, a node is added/removed, etc.
+     *
+     * <p>
+     * This callback is to signal when there's any change to the list of slaves registered to the system,
+     * including addition, removal, changing of the setting, and so on.
+     *
      * @since 1.377
      */
     public void onConfigurationChange() {}
@@ -176,6 +215,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      * @deprecated as of 1.286
      *      put {@link Extension} on your class to have it auto-registered.
      */
+    @Deprecated
     public final void register() {
         all().add(this);
     }
@@ -194,6 +234,6 @@ public abstract class ComputerListener implements ExtensionPoint {
      * All the registered {@link ComputerListener}s.
      */
     public static ExtensionList<ComputerListener> all() {
-        return Jenkins.getInstance().getExtensionList(ComputerListener.class);
+        return ExtensionList.lookup(ComputerListener.class);
     }
 }

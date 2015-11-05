@@ -17,6 +17,12 @@ build
 # vim
 *~
 
+# OS X
+.DS_Store
+
+# mvn versions:set
+pom.xml.versionsBackup
+
 war/images/16x16
 war/images/24x24
 war/images/32x32
@@ -35,4 +41,8 @@ debian/configure-stamp
 jenkins_*.build
 jenkins_*.changes
 *.deb
+*.pkg
+*.zip
 push-build.sh
+war/node_modules/
+.java-version

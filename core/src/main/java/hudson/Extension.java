@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.YesNoMaybe;
 import net.java.sezpoz.Indexable;
 
 import java.lang.annotation.Documented;
@@ -31,6 +32,7 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static jenkins.YesNoMaybe.MAYBE;
 
 /**
  * Marks a field, a method, or a class for automatic discovery, so that Hudson can locate
@@ -60,7 +62,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.286
- * @see <a href="https://sezpoz.dev.java.net/nonav/">SezPoz</a>
+ * @see <a href="http://sezpoz.java.net/">SezPoz</a>
  * @see ExtensionFinder
  * @see ExtensionList
  */
@@ -84,4 +86,26 @@ public @interface Extension {
      * @since 1.358
      */
     boolean optional() default false;
+
+    /**
+     * Marks whether this extension works with dynamic loading of a plugin.
+     *
+     * <p>
+     * "Yes" indicates an explicit sign-off from the developer indicating this component supports that.
+     * Similarly, "No" indicates that this extension is known not to support it, which forces Jenkins
+     * not to offer dynamic loading as an option.
+     *
+     * <p>
+     * The "MayBe" value indicates that there's no such explicit sign-off. So the dynamic loading may or may not
+     * work.
+     *
+     * <p>
+     * If your plugin contains any extension that has dynamic loadability set to NO, then Jenkins
+     * will prompt the user to restart Jenkins to have the plugin take effect. If every component
+     * is marked as YES, then Jenkins will simply dynamic load the plugin without asking the user.
+     * Otherwise, Jenkins will ask the user if he wants to restart, or go ahead and dynamically deploy.
+     *
+     * @since 1.442
+     */
+    YesNoMaybe dynamicLoadable() default MAYBE;
 }

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -61,6 +62,9 @@ import java.util.List;
 public abstract class ViewGroupMixIn {
     private final ViewGroup owner;
 
+    /**
+     * Returns all the views. This list must be concurrently iterable.
+     */
     protected abstract List<View> views();
     protected abstract String primaryView();
     protected abstract void primaryView(String newName);
@@ -86,7 +90,7 @@ public abstract class ViewGroupMixIn {
         owner.save();
     }
 
-    public synchronized View getView(String name) {
+    public View getView(String name) {
         for (View v : views()) {
             if(v.getViewName().equals(name))
                 return v;
@@ -104,8 +108,13 @@ public abstract class ViewGroupMixIn {
      * Gets the read-only list of all {@link View}s.
      */
     @Exported
-    public synchronized Collection<View> getViews() {
-        List<View> copy = new ArrayList<View>(views());
+    public Collection<View> getViews() {
+        List<View> orig = views();
+        List<View> copy = new ArrayList<View>(orig.size());
+        for (View v : orig) {
+            if (v.hasPermission(View.READ))
+                copy.add(v);
+        }
         Collections.sort(copy, View.SORTER);
         return copy;
     }

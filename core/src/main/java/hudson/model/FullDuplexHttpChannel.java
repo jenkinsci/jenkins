@@ -28,6 +28,8 @@ import hudson.remoting.PingThread;
 import hudson.remoting.Channel.Mode;
 import hudson.util.ChunkedOutputStream;
 import hudson.util.ChunkedInputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -36,6 +38,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -77,9 +82,14 @@ abstract public class FullDuplexHttpChannel {
         out.write("Starting HTTP duplex channel".getBytes());
         out.flush();
 
-        // wait until we have the other channel
-        while(upload==null)
-            wait();
+        {// wait until we have the other channel
+            long end = System.currentTimeMillis() + CONNECTION_TIMEOUT;
+            while (upload == null && System.currentTimeMillis()<end)
+                wait(1000);
+
+            if (upload==null)
+                throw new IOException("HTTP full-duplex channel timeout: "+uuid);
+        }
 
         try {
             channel = new Channel("HTTP full-duplex channel " + uuid,
@@ -88,8 +98,8 @@ abstract public class FullDuplexHttpChannel {
             // so that we can detect dead clients, periodically send something
             PingThread ping = new PingThread(channel) {
                 @Override
-                protected void onDead() {
-                    LOGGER.info("Duplex-HTTP session " + uuid + " is terminated");
+                protected void onDead(Throwable diagnosis) {
+                    LOGGER.log(Level.INFO,"Duplex-HTTP session " + uuid + " is terminated",diagnosis);
                     // this will cause the channel to abort and subsequently clean up
                     try {
                         upload.close();
@@ -97,6 +107,11 @@ abstract public class FullDuplexHttpChannel {
                         // this can never happen
                         throw new AssertionError(e);
                     }
+                }
+
+                @Override
+                protected void onDead() {
+                    onDead(null);
                 }
             };
             ping.start();
@@ -138,5 +153,12 @@ abstract public class FullDuplexHttpChannel {
     /**
      * Set to true if the servlet container doesn't support chunked encoding.
      */
+    @Restricted(NoExternalUse.class)
     public static boolean DIY_CHUNKING = Boolean.getBoolean("hudson.diyChunking");
+
+    /**
+     * Controls the time out of waiting for the 2nd HTTP request to arrive.
+     */
+    @Restricted(NoExternalUse.class)
+    public static long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 }

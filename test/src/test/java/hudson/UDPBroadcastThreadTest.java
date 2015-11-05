@@ -1,6 +1,5 @@
 package hudson;
 
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -12,39 +11,63 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.io.StringReader;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class UDPBroadcastThreadTest extends HudsonTestCase {
+public class UDPBroadcastThreadTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
     /**
      * Old unicast based clients should still be able to receive some reply,
      * as we haven't changed the port.
      */
-    public void testLegacy() throws Exception {
+    @Test public void legacy() throws Exception {
         DatagramSocket s = new DatagramSocket();
         sendQueryTo(s, InetAddress.getLocalHost());
-        s.setSoTimeout(5000); // to prevent test hang
-        receiveAndVerify(s);
+        s.setSoTimeout(15000); // to prevent test hang
+        try {
+            receiveAndVerify(s);
+        } catch (SocketTimeoutException x) {
+            Assume.assumeFalse(UDPBroadcastThread.udpHandlingProblem);
+            throw x;
+        }
     }
 
     /**
      * Multicast based clients should be able to receive multiple replies.
      */
-    public void testMulticast() throws Exception {
-        UDPBroadcastThread second = new UDPBroadcastThread(hudson);
+    @Test public void multicast() throws Exception {
+        UDPBroadcastThread second = new UDPBroadcastThread(j.jenkins);
         second.start();
+
+        UDPBroadcastThread third = new UDPBroadcastThread(j.jenkins);
+        third.start();
+
         second.ready.block();
+        third.ready.block();
 
         try {
             DatagramSocket s = new DatagramSocket();
             sendQueryTo(s, UDPBroadcastThread.MULTICAST);
-            s.setSoTimeout(5000); // to prevent test hang
+            s.setSoTimeout(15000); // to prevent test hang
 
             // we should at least get two replies since we run two broadcasts
-            receiveAndVerify(s);
-            receiveAndVerify(s);
+            try {
+                receiveAndVerify(s);
+                receiveAndVerify(s);
+            } catch (SocketTimeoutException x) {
+                Assume.assumeFalse(UDPBroadcastThread.udpHandlingProblem);
+                throw x;
+            }
         } finally {
+            third.interrupt();
             second.interrupt();
         }
     }

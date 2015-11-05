@@ -25,10 +25,11 @@ THE SOFTWARE.
 <!-- tell user that there's no workspace yet -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:statusCode value="404"/>
   <l:layout>
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/error.png" alt="" height="48" width="48"/>${%Error: no workspace}</h1>
+      <h1><l:icon class="icon-error icon-xlg"/>${%Error: no workspace}</h1>
       <j:choose>
         <j:when test="${it.lastBuild==null}">
           <p>
@@ -47,13 +48,18 @@ THE SOFTWARE.
               ${%The slave this project has run on for the last time was removed.}
             </li>
             <li>
-              ${%li3(it.workspace.local)}
+              ${%li3(it.workspace)}
+            </li>
+            <li>
+              ${%The workspace was wiped out and no build has been done since then.}
             </li>
           </ol>
         </j:otherwise>
       </j:choose>
       <p>
-        ${%text(rootURL,it.url)}
+      <j:if test="${!it.isDisabled()}">
+        ${%text}
+      </j:if>
       </p>
     </l:main-panel>
   </l:layout>

@@ -31,8 +31,17 @@ THE SOFTWARE.
     <f:entry title="${%Excludes}" field="excludes">
       <f:textbox />
     </f:entry>
-    <f:entry title="" field="latestOnly" >
-      <f:checkbox title="${%lastBuildOnly}"/>
+    <f:entry field="allowEmptyArchive" >
+      <f:checkbox title="${%allowEmptyArchive}"/>
     </f:entry>
+    <f:entry field="onlyIfSuccessful" >
+      <f:checkbox title="${%onlyIfSuccessful}"/>
+    </f:entry>
+    <f:entry field="fingerprint">
+      <f:checkbox title="${%Fingerprint all archived artifacts}"/>
+    </f:entry>
+        <f:entry field="defaultExcludes" >
+          <f:checkbox title="${%defaultExcludes}" default="true"/>
+        </f:entry>
   </f:advanced>
 </j:jelly>

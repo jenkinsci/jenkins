@@ -28,7 +28,7 @@ THE SOFTWARE.
   Side panel for the project view.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <l:header title="${it.name}">
     <st:include page="rssHeader.jelly" />
     <link rel="alternate" title="Jenkins:${it.name} (changelog)" href="rssChangelog" type="application/rss+xml" />
@@ -37,34 +37,21 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
-      <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
-      <l:task icon="images/24x24/search.png"  href="${url}/" title="${%Status}" />
-      <l:task icon="images/24x24/notepad.png" href="${url}/changes" title="${%Changes}" />
+      <j:choose>
+        <j:when test="${it.parent==app}">
+          <l:task contextMenu="false" href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
+        </j:when>
+        <j:otherwise>
+          <l:task contextMenu="false" href="${rootURL}/${it.parent.url}" icon="icon-up icon-md" title="${%Up}"/>
+        </j:otherwise>
+      </j:choose>
+      <l:task contextMenu="false" href="${url}/" icon="icon-search icon-md" title="${%Status}"/>
+      <l:task href="${url}/changes" icon="icon-notepad icon-md" title="${%Changes}"/>
       <l:task icon="images/24x24/folder.png"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">
-        <l:task icon="images/24x24/folder-delete.png"  href="${url}/wipeOutWorkspace" title="${%Wipe Out Workspace}" permission="${h.isWipeOutPermissionEnabled() ? it.WIPEOUT : it.BUILD}" />
+        <l:task confirmationMessage="${%wipe.out.confirm}" href="${url}/doWipeOutWorkspace" icon="icon-folder-delete icon-md" permission="${h.isWipeOutPermissionEnabled() ? it.WIPEOUT : it.BUILD}" post="true" requiresConfirmation="true" title="${%Wipe Out Workspace}"/>
       </l:task>
       <j:if test="${it.configurable}">
-        <j:if test="${it.buildable}">
-          <l:task icon="images/24x24/clock.png" href="${url}/build?delay=0sec" title="${it.buildNowText}"
-                  onclick="${it.parameterized?null:'return build(this)'}" permission="${it.BUILD}" />
-          <script>
-            function build(a) {
-              new Ajax.Request(a.href);
-              
-              hoverNotification('${%Build scheduled}',a.parentNode);
-              return false;
-            }
-          </script>
-        </j:if>
-        <l:task icon="images/24x24/edit-delete.png" href="${url}/delete" title="${%delete(it.pronoun)}" permission="${it.DELETE}" />
-        <j:choose>
-            <j:when test="${h.hasPermission(it,it.CONFIGURE)}">
-                <l:task icon="images/24x24/setting.png" href="${url}/configure" title="${%Configure}" />
-            </j:when>
-            <j:when test="${h.hasPermission(it,it.EXTENDED_READ)}">
-                <l:task icon="images/24x24/setting.png" href="${url}/configure" title="${%View Configuration}" />
-            </j:when>
-        </j:choose>
+        <p:configurable/>
       </j:if>
       <st:include page="actions.jelly" />
     </l:tasks>

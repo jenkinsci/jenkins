@@ -140,6 +140,11 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                         }
                     }
                     r = bounds.getBounds2D();
+                    // add margins in all directions
+                    r.add(r.getMaxX() + r.getWidth()/2, r.getCenterY());
+                    r.add(r.getMinX() - r.getWidth()/2, r.getCenterY());
+                    r.add(r.getCenterX(), r.getMinY() - r.getHeight()/2);
+                    r.add(r.getCenterX(), r.getMaxX() + r.getHeight()/2);
                 }
 
                 categoryIndex++;

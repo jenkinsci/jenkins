@@ -1,0 +1,7 @@
+A.section-anchor {
+    position: relative;
+    top: -2em;
+    visibility: hidden;
+    display: inline-block;
+    width: 0px;
+}

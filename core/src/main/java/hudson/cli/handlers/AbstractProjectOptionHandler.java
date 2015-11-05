@@ -24,41 +24,26 @@
 package hudson.cli.handlers;
 
 import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.OptionHandler;
-import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 import org.kohsuke.MetaInfServices;
+import org.kohsuke.args4j.spi.OptionHandler;
 
 /**
  * Refer to {@link AbstractProject} by its name.
  *
  * @author Kohsuke Kawaguchi
  */
-@MetaInfServices
-public class AbstractProjectOptionHandler extends OptionHandler<AbstractProject> {
+@MetaInfServices(OptionHandler.class)
+@SuppressWarnings("rawtypes")
+public class AbstractProjectOptionHandler extends GenericItemOptionHandler<AbstractProject> {
     public AbstractProjectOptionHandler(CmdLineParser parser, OptionDef option, Setter<AbstractProject> setter) {
         super(parser, option, setter);
     }
 
-    @Override
-    public int parseArguments(Parameters params) throws CmdLineException {
-        Jenkins h = Jenkins.getInstance();
-        String src = params.getParameter(0);
-
-        AbstractProject s = h.getItemByFullName(src,AbstractProject.class);
-        if (s==null) {
-            AbstractProject nearest = AbstractProject.findNearest(src);
-            if (nearest!=null)
-                throw new CmdLineException(owner, "No such job '"+src+"' perhaps you meant "+ nearest +"?");
-            else
-                throw new CmdLineException(owner, "No such job '"+src+"'");
-        }
-        setter.addValue(s);
-        return 1;
+    @Override protected Class<AbstractProject> type() {
+        return AbstractProject.class;
     }
 
     @Override

@@ -27,6 +27,6 @@ THE SOFTWARE.
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
 	<f:entry title="${it.name}" description="${it.description}">
-		<a href="${rootURL}/${it.run.url}">${it.run}</a>
+		<a href="${rootURL}/${it.run.url}" class="model-link inside">${it.run.fullDisplayName}</a>
 	</f:entry>
 </j:jelly>

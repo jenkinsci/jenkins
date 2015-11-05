@@ -47,9 +47,9 @@ public abstract class SubTaskContributor implements ExtensionPoint {
     }
 
     /**
-     * All registered {@link MemberExecutionUnitContributor} instances.
+     * All registered {@link SubTaskContributor} instances.
      */
     public static ExtensionList<SubTaskContributor> all() {
-        return Jenkins.getInstance().getExtensionList(SubTaskContributor.class);
+        return ExtensionList.lookup(SubTaskContributor.class);
     }
 }

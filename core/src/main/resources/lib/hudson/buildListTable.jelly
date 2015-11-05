@@ -29,12 +29,40 @@ THE SOFTWARE.
     <st:attribute name="builds" use="required">
       A collection of builds to be displayed.
     </st:attribute>
-    <st:attribute name="jobBaseUrl" use="required">
-      The base URL of all job/build links. Normally ${rootURL}/
-    </st:attribute>
   </st:documentation>
 
   <t:setIconSize/>
+  <script>
+      function displayBuilds(data) {
+          var p = $$('projectStatus');
+          for (var x = 0; data.length > x; x++) {
+              var e = data[x];
+              var tr = new Element('tr');
+              tr.insert(new Element('td', {data: e.iconColorOrdinal}).
+                  insert(new Element('a', {href: '${rootURL}/' + e.url}).
+                      insert(new Element('img', {src: '${imagesURL}/${iconSize}/' + e.buildStatusUrl, alt: e.iconColorDescription, 'class': 'icon${iconSize}'}))));
+              tr.insert(new Element('td').
+                  insert(new Element('a', {href: '${rootURL}/' + e.parentUrl, 'class': 'model-link'}).
+                      update(e.parentFullDisplayName)).
+                  insert('\u00A0').
+                  insert(new Element('a', {href: '${rootURL}/' + e.url, 'class': 'model-link inside'}).
+                      update(e.displayName.escapeHTML())));
+              tr.insert(new Element('td', {data: e.timestampString2, tooltip: '${%Click to center timeline on event}', onclick: 'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' + e.timestampString2 + '"))'}).
+                  update(e.timestampString.escapeHTML()));
+              tr.insert(new Element('td', {style: e.buildStatusSummaryWorse ? 'color: red' : ''}).
+                  update(e.buildStatusSummaryMessage.escapeHTML()));
+              tr.insert(new Element('td').
+                  insert(new Element('a', {href: '${rootURL}/' + e.url + 'console'}).
+                      insert(new Element('img', {src: '${imagesURL}/${subIconSize}/terminal.png', alt: '${%Console output}', border: 0}))));
+              p.insert(tr);
+              Behaviour.applySubtree(tr);
+          }
+          ts_refresh(p);
+      }
+  </script>
+  <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
+  ${handler.setBuilds(attrs.builds)}
+  <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
   <table class="sortable pane bigtable" id="projectStatus">
     <tr>
       <th><st:nbsp/></th>
@@ -43,33 +71,6 @@ THE SOFTWARE.
       <th>${%Status}</th>
       <th><st:nbsp/></th>
     </tr>
-    <!-- TODO: support gradual expansion of the list -->
-    <j:forEach var="b" items="${h.subList(attrs.builds,50)}">
-      <tr>
-        <td data="${b.iconColor.ordinal()}">
-          <a href="${jobBaseUrl}${b.url}">
-            <img src="${imagesURL}/${iconSize}/${b.buildStatusUrl}"
-                 alt="${b.iconColor.description}" class="icon${iconSize}"/>
-          </a>
-        </td>
-        <td>
-          <a href="${jobBaseUrl}${b.parent.url}">${b.parent.fullDisplayName}</a>
-          <st:nbsp/>
-          <a href="${jobBaseUrl}${b.url}">${b.displayName}</a>
-        </td>
-        <td data="${b.timestampString2}">
-          ${b.timestampString}
-        </td>
-        <td>
-          <t:buildStatusSummary build="${b}" />
-        </td>
-        <td>
-          <a href="${jobBaseUrl}${b.url}console">
-            <img src="${imagesURL}/${subIconSize}/terminal.png" title="${%Console output}" alt="${%Console output}" border="0" />
-          </a>
-        </td>
-      </tr>
-    </j:forEach>
   </table>
   <t:rssBar-with-iconSize/>
 </j:jelly>

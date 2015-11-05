@@ -27,7 +27,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/user.png" alt="" height="48" width="48" />
+        <img src="${h.getUserAvatar(it,'48x48')}" alt="" height="48" width="48" />
         ${it.fullName}
       </h1>
       <t:editableDescription permission="${app.ADMINISTER}" />
@@ -38,6 +38,15 @@ THE SOFTWARE.
       <j:forEach var="p" items="${it.allProperties}">
         <st:include page="summary.jelly" from="${p}" optional="true" it="${p}" />
       </j:forEach>
+      <j:set var="authorities" value="${it.authorities}"/>
+      <j:if test="${!authorities.isEmpty()}">
+        <div>${%Groups}:</div>
+        <ul>
+          <j:forEach var="a" items="${authorities}">
+            <li>${a}</li>
+          </j:forEach>
+        </ul>
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

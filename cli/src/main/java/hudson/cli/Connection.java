@@ -23,13 +23,17 @@
  */
 package hudson.cli;
 
-import hudson.remoting.SocketInputStream;
-import hudson.remoting.SocketOutputStream;
+import hudson.remoting.SocketChannelStream;
 import org.apache.commons.codec.binary.Base64;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyAgreement;
+import javax.crypto.SecretKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -44,7 +48,6 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.interfaces.DSAPublicKey;
@@ -59,7 +62,7 @@ public class Connection {
     public final DataOutputStream dout;
 
     public Connection(Socket socket) throws IOException {
-        this(new SocketInputStream(socket),new SocketOutputStream(socket));
+        this(SocketChannelStream.in(socket),SocketChannelStream.out(socket));
     }
 
     public Connection(InputStream in, OutputStream out) {
@@ -113,8 +116,23 @@ public class Connection {
     }
 
     public X509EncodedKeySpec readKey() throws IOException {
-        byte[] otherHalf = Base64.decodeBase64(readUTF());
+        byte[] otherHalf = Base64.decodeBase64(readUTF()); // for historical reasons, we don't use readByteArray()
         return new X509EncodedKeySpec(otherHalf);
+    }
+
+    public void writeByteArray(byte[] data) throws IOException {
+        dout.writeInt(data.length);
+        dout.write(data);
+    }
+
+    public byte[] readByteArray() throws IOException {
+        int bufSize = din.readInt();
+        if (bufSize < 0) {
+            throw new IOException("DataInputStream unexpectedly returned negative integer");
+        }
+        byte[] buf = new byte[bufSize];
+        din.readFully(buf);
+        return buf;
     }
 
     /**
@@ -125,12 +143,15 @@ public class Connection {
      * each other.
      */
     public KeyAgreement diffieHellman(boolean side) throws IOException, GeneralSecurityException {
+        return diffieHellman(side,512);
+    }
+    public KeyAgreement diffieHellman(boolean side, int keySize) throws IOException, GeneralSecurityException {
         KeyPair keyPair;
         PublicKey otherHalf;
 
         if (side) {
             AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DH");
-            paramGen.init(512);
+            paramGen.init(keySize);
 
             KeyPairGenerator dh = KeyPairGenerator.getInstance("DH");
             dh.initialize(paramGen.generateParameters().getParameterSpec(DHParameterSpec.class));
@@ -155,6 +176,38 @@ public class Connection {
         ka.doPhase(otherHalf, true);
 
         return ka;
+    }
+
+    /**
+     * Upgrades a connection with transport encryption by the specified symmetric cipher.
+     *
+     * @return
+     *      A new {@link Connection} object that includes the transport encryption.
+     */
+    public Connection encryptConnection(SecretKey sessionKey, String algorithm) throws IOException, GeneralSecurityException {
+        Cipher cout = Cipher.getInstance(algorithm);
+        cout.init(Cipher.ENCRYPT_MODE, sessionKey, new IvParameterSpec(sessionKey.getEncoded()));
+        CipherOutputStream o = new CipherOutputStream(out, cout);
+
+        Cipher cin = Cipher.getInstance(algorithm);
+        cin.init(Cipher.DECRYPT_MODE, sessionKey, new IvParameterSpec(sessionKey.getEncoded()));
+        CipherInputStream i = new CipherInputStream(in, cin);
+
+        return new Connection(i,o);
+    }
+
+    /**
+     * Given a byte array that contains arbitrary number of bytes, digests or expands those bits into the specified
+     * number of bytes without loss of entropy.
+     *
+     * Cryptographic utility code.
+     */
+    public static byte[] fold(byte[] bytes, int size) {
+        byte[] r = new byte[size];
+        for (int i=Math.max(bytes.length,size)-1; i>=0; i-- ) {
+            r[i%r.length] ^= bytes[i%bytes.length];
+        }
+        return r;
     }
 
     private String detectKeyAlgorithm(KeyPair kp) {

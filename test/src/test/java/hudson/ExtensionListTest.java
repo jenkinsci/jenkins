@@ -1,7 +1,12 @@
 package hudson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import jenkins.model.Jenkins;
-import org.jvnet.hudson.test.HudsonTestCase;
 import hudson.model.Descriptor;
 import hudson.model.Describable;
 import hudson.util.DescriptorList;
@@ -9,10 +14,19 @@ import hudson.util.DescriptorList;
 import java.util.List;
 import java.util.Collection;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.WithoutJenkins;
+
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ExtensionListTest extends HudsonTestCase {
+public class ExtensionListTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
 //
 //
 // non-Descriptor extension point
@@ -31,14 +45,24 @@ public class ExtensionListTest extends HudsonTestCase {
     }
 
 
-    public void testAutoDiscovery() throws Exception {
-        ExtensionList<Animal> list = hudson.getExtensionList(Animal.class);
+    @Test
+    public void autoDiscovery() throws Exception {
+        ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
         assertEquals(2,list.size());
         assertNotNull(list.get(Dog.class));
         assertNotNull(list.get(Cat.class));
     }
 
-    public void testExtensionListView() throws Exception {
+    @Test
+    @WithoutJenkins
+    public void nullJenkinsInstance() throws Exception {
+        ExtensionList<Animal> list = ExtensionList.lookup(Animal.class);
+        assertEquals(0, list.size());
+        assertFalse(list.iterator().hasNext());
+    }
+
+    @Test
+    public void extensionListView() throws Exception {
         // this is how legacy list like UserNameResolver.LIST gets created.
         List<Animal> LIST = ExtensionListView.createList(Animal.class);
 
@@ -95,20 +119,22 @@ public class ExtensionListTest extends HudsonTestCase {
     /**
      * Verifies that the automated {@link Descriptor} lookup works.
      */
-    public void testDescriptorLookup() throws Exception {
+    @Test
+    public void descriptorLookup() throws Exception {
         Descriptor<Fish> d = new Sishamo().getDescriptor();
 
-        DescriptorExtensionList<Fish,Descriptor<Fish>> list = hudson.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
+        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
         assertSame(d,list.get(Sishamo.DescriptorImpl.class));
 
-        assertSame(d,hudson.getDescriptor(Sishamo.class));
+        assertSame(d, j.jenkins.getDescriptor(Sishamo.class));
     }
 
-    public void testFishDiscovery() throws Exception {
+    @Test
+    public void fishDiscovery() throws Exception {
         // imagine that this is a static instance, like it is in many LIST static field in Hudson.
         DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);
 
-        DescriptorExtensionList<Fish,Descriptor<Fish>> list = hudson.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
+        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
         assertEquals(2,list.size());
         assertNotNull(list.get(Tai.DescriptorImpl.class));
         assertNotNull(list.get(Saba.DescriptorImpl.class));
@@ -132,7 +158,8 @@ public class ExtensionListTest extends HudsonTestCase {
         assertNotNull(LIST.findByName(Saba.class.getName()));
     }
 
-    public void testLegacyDescriptorList() throws Exception {
+    @Test
+    public void legacyDescriptorList() throws Exception {
         // created in a legacy fashion without any tie to ExtensionList
         DescriptorList<Fish> LIST = new DescriptorList<Fish>();
 
@@ -174,8 +201,9 @@ public class ExtensionListTest extends HudsonTestCase {
     /**
      * Makes sure sorting of the components work as expected.
      */
-    public void testOrdinals() {
-        ExtensionList<Car> list = hudson.getExtensionList(Car.class);
+    @Test
+    public void ordinals() {
+        ExtensionList<Car> list = j.jenkins.getExtensionList(Car.class);
         assertEquals("honda",list.get(0).name);
         assertEquals("mazda",list.get(1).name);
         assertEquals("toyota",list.get(2).name);

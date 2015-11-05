@@ -30,9 +30,10 @@ import hudson.remoting.Channel;
 import hudson.util.DescriptorList;
 import hudson.util.StreamTaskListener;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.tools.ant.util.DeweyDecimal;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
@@ -92,6 +93,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #launch(SlaveComputer, TaskListener)}
      */
+    @Deprecated
     public void launch(SlaveComputer computer, StreamTaskListener listener) throws IOException , InterruptedException {
         throw new UnsupportedOperationException(getClass()+" must implement the launch method");
     }
@@ -116,6 +118,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #afterDisconnect(SlaveComputer, TaskListener)}
      */
+    @Deprecated
     public void afterDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
 
@@ -142,6 +145,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #beforeDisconnect(SlaveComputer, TaskListener)} 
      */
+    @Deprecated
     public void beforeDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
 
@@ -158,5 +162,42 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      *      Use {@link Extension} for registration, and use
      *      {@link jenkins.model.Jenkins#getDescriptorList(Class)} for read access.
      */
+    @Deprecated
     public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>(ComputerLauncher.class);
+
+    /**
+     * Given the output of "java -version" in <code>r</code>, determine if this
+     * version of Java is supported, or throw {@link IOException}.
+     *
+     * @param logger
+     *            where to log the output
+     * @param javaCommand
+     *            the command executed, used for logging
+     * @param r
+     *            the output of "java -version"
+     */
+    protected static void checkJavaVersion(final PrintStream logger, String javaCommand,
+                                    final BufferedReader r)
+            throws IOException {
+        String line;
+        Pattern p = Pattern.compile("(?i)(?:java|openjdk) version \"([0-9.]+).*\"");
+        while (null != (line = r.readLine())) {
+            Matcher m = p.matcher(line);
+            if (m.matches()) {
+                final String versionStr = m.group(1);
+                logger.println(Messages.ComputerLauncher_JavaVersionResult(javaCommand, versionStr));
+                try {
+                    if (new DeweyDecimal(versionStr).isLessThan(new DeweyDecimal("1.6"))) {
+                        throw new IOException(Messages
+                                .ComputerLauncher_NoJavaFound(line));
+                    }
+                } catch (NumberFormatException x) {
+                    throw new IOException(Messages.ComputerLauncher_NoJavaFound(line));
+                }
+                return;
+            }
+        }
+        logger.println(Messages.ComputerLauncher_UknownJavaVersion(javaCommand));
+        throw new IOException(Messages.ComputerLauncher_UknownJavaVersion(javaCommand));
+    }
 }

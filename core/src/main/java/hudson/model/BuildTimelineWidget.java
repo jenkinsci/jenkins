@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.Date;
 
 /**
- * UI widget for showing the SMILE timeline control.
+ * UI widget for showing the SIMILE timeline control.
  *
  * <p>
  * Return this from your "getTimeline" method.
@@ -45,13 +45,15 @@ public class BuildTimelineWidget {
     protected final RunList<?> builds;
 
     public BuildTimelineWidget(RunList<?> builds) {
-        this.builds = builds;
+        this.builds = builds.limit(20); // TODO instead render lazily
     }
 
+    @Deprecated
     public Run<?, ?> getFirstBuild() {
         return builds.getFirstBuild();
     }
 
+    @Deprecated
     public Run<?, ?> getLastBuild() {
         return builds.getLastBuild();
     }

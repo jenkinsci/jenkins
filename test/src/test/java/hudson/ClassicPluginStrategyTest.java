@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Alan Harder
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,8 +24,9 @@
  */
 package hudson;
 
-import hudson.PluginWrapper;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.LenientRunnable;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.net.URL;
@@ -49,14 +50,13 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
     public void testDependencyClassLoader() throws Exception {
         // Test data has: foo3 depends on foo2,foo1; foo2 depends on foo1
         // (thus findResources from foo3 can find foo1 resources via 2 dependency paths)
-        PluginWrapper p = hudson.getPluginManager().getPlugin("foo3");
-        String res = p.getIndexPage().toString();
-        assertTrue(res + "should be foo3", res.contains("/foo3/"));
+        PluginWrapper p = jenkins.getPluginManager().getPlugin("foo3");
+        String res;
 
         // In the current impl, the dependencies are the parent ClassLoader so resources
         // are found there before checking the plugin itself.  Adjust the expected results
         // below if this is ever changed to check the plugin first.
-        Enumeration<URL> en = p.classLoader.getResources("index.jelly");
+        Enumeration<URL> en = p.classLoader.getResources("test-resource");
         for (int i = 0; en.hasMoreElements(); i++) {
             res = en.nextElement().toString();
             if (i < 2)
@@ -65,8 +65,42 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
             else
                 assertTrue("In current impl, " + res + "should be foo3", res.contains("/foo3/"));
         }
-        res = p.classLoader.getResource("index.jelly").toString();
+        res = p.classLoader.getResource("test-resource").toString();
         assertTrue("In current impl, " + res + " should be foo1 or foo2",
                    res.contains("/foo1/") || res.contains("/foo2/"));
+    }
+
+    /**
+     * Test finding resources via DependencyClassLoader.
+     * Check transitive dependency exclude disabled plugins
+     */
+    @LocalData
+    @Issue("JENKINS-18654")
+    public void testDisabledDependencyClassLoader() throws Exception {
+        PluginWrapper p = jenkins.getPluginManager().getPlugin("foo4");
+
+        Enumeration<URL> en = p.classLoader.getResources("test-resource");
+        for (int i = 0; en.hasMoreElements(); i++) {
+            String res = en.nextElement().toString();
+            if (i == 0)
+                assertTrue("expected foo4, found "+res , res.contains("/foo4/"));
+            else
+                fail("disabled dependency should not be included");
+        }
+    }
+
+    /**
+     * Test finding resources under masking.
+     * "foo1" plugin contains attribute of Mask-Classes: org.apache.http.
+     */
+    @LocalData
+    @Issue("JENKINS-27289")
+    public void testMaskResourceClassLoader() throws Exception {
+        PluginWrapper pw = jenkins.getPluginManager().getPlugin("foo1");
+        Class<?> clazz = pw.classLoader.loadClass("org.apache.http.impl.io.SocketInputBuffer");
+        ClassLoader cl = clazz.getClassLoader();
+        URL url = cl.getResource("org/apache/http/impl/io/SocketInputBuffer.class");
+        assertNotNull(url);
+        assertTrue("expected to find the class from foo1 plugin", url.toString().contains("plugins/foo1"));
     }
 }

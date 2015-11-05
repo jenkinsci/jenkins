@@ -29,6 +29,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 
 import java.io.IOException;
+import javax.annotation.CheckForNull;
 
 /**
  * Partial implementation of {@link Computer} to be used in conjunction with
@@ -42,19 +43,23 @@ public class AbstractCloudComputer<T extends AbstractCloudSlave> extends SlaveCo
         super(slave);
     }
 
+    @CheckForNull
     @Override
     public T getNode() {
         return (T) super.getNode();
     }
 
     /**
-     * When the slave is deleted, free the node.
+     * When the slave is deleted, free the node right away.
      */
     @Override
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
         try {
-            getNode().terminate();
+            T node = getNode();
+            if (node != null) { // No need to terminate nodes again
+                node.terminate();
+            }
             return new HttpRedirect("..");
         } catch (InterruptedException e) {
             return HttpResponses.error(500,e);

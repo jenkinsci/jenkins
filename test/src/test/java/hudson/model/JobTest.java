@@ -30,27 +30,39 @@ import com.gargoylesoftware.htmlunit.TextPage;
 
 import hudson.util.TextFile;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+
+import jenkins.model.ProjectNamingStrategy;
+
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.FailureBuilder;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class JobTest extends HudsonTestCase {
+public class JobTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @SuppressWarnings("unchecked")
-    public void testJobPropertySummaryIsShownInMainPage() throws Exception {
-        AbstractProject project = createFreeStyleProject();
+    @Test public void jobPropertySummaryIsShownInMainPage() throws Exception {
+        AbstractProject project = j.createFreeStyleProject();
         project.addProperty(new JobPropertyImpl("NeedleInPage"));
                 
-        HtmlPage page = new WebClient().getPage(project);
+        HtmlPage page = j.createWebClient().getPage(project);
         WebAssert.assertTextPresent(page, "NeedleInPage");
     }
 
-    public void testBuildNumberSynchronization() throws Exception {
-        AbstractProject project = createFreeStyleProject();
+    @Test public void buildNumberSynchronization() throws Exception {
+        AbstractProject project = j.createFreeStyleProject();
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch stopLatch = new CountDownLatch(2);
         BuildNumberSyncTester test1 = new BuildNumberSyncTester(project, startLatch, stopLatch, true);
@@ -163,16 +175,10 @@ public class JobTest extends HudsonTestCase {
     }
 
     @LocalData
-    public void testReadPermission() throws Exception {
-        WebClient wc = new WebClient();
-        try {
-            HtmlPage page = wc.goTo("job/testJob/");
-            fail("getJob bypassed Item.READ permission: " + page.getTitleText());
-        } catch (FailingHttpStatusCodeException expected) { }
-        try {
-            HtmlPage page = wc.goTo("jobCaseInsensitive/testJob/");
-            fail("getJobCaseInsensitive bypassed Item.READ permission: " + page.getTitleText());
-        } catch (FailingHttpStatusCodeException expected) { }
+    @Test public void readPermission() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.assertFails("job/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
+        wc.assertFails("jobCaseInsensitive/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.login("joe");  // Has Item.READ permission
         // Verify we can access both URLs:
         wc.goTo("job/testJob/");
@@ -180,18 +186,13 @@ public class JobTest extends HudsonTestCase {
     }
 
     @LocalData
-    public void testConfigDotXmlPermission() throws Exception {
-        hudson.setCrumbIssuer(null);
-        WebClient wc = new WebClient();
+    @Test public void configDotXmlPermission() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        JenkinsRule.WebClient wc = j.createWebClient();
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
         try {
-            try {
-                wc.goTo("job/testJob/config.xml", "text/plain");
-                fail("doConfigDotXml bypassed EXTENDED_READ permission");
-            } catch (FailingHttpStatusCodeException expected) {
-                assertEquals("403 for no permission", 403, expected.getStatusCode());
-            }
+            wc.assertFails("job/testJob/config.xml", HttpURLConnection.HTTP_FORBIDDEN);
             wc.login("alice");  // Has CONFIGURE and EXTENDED_READ permission
             tryConfigDotXml(wc, 500, "Both perms; should get 500");
             wc.login("bob");  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
@@ -203,7 +204,7 @@ public class JobTest extends HudsonTestCase {
         }
     }
 
-    private static void tryConfigDotXml(WebClient wc, int status, String msg) throws Exception {
+    private static void tryConfigDotXml(JenkinsRule.WebClient wc, int status, String msg) throws Exception {
         // Verify we can GET the config.xml:
         wc.goTo("job/testJob/config.xml", "application/xml");
         // This page is a simple form to POST to /job/testJob/config.xml
@@ -218,25 +219,70 @@ public class JobTest extends HudsonTestCase {
         wc.goTo("logout");
     }
 
-    @LocalData @Bug(6371)
-    public void testGetArtifactsUpTo() throws Exception {
+    @LocalData @Issue("JENKINS-6371")
+    @Test public void getArtifactsUpTo() throws Exception {
         // There was a bug where intermediate directories were counted,
         // so too few artifacts were returned.
-        Run r = hudson.getItemByFullName("testJob", Job.class).getLastCompletedBuild();
+        Run r = j.jenkins.getItemByFullName("testJob", Job.class).getLastCompletedBuild();
         assertEquals(3, r.getArtifacts().size());
         assertEquals(3, r.getArtifactsUpTo(3).size());
         assertEquals(2, r.getArtifactsUpTo(2).size());
         assertEquals(1, r.getArtifactsUpTo(1).size());
     }
 
-    @Bug(10182)
-    public void testEmptyDescriptionReturnsEmptyPage() throws Exception {
+    @Issue("JENKINS-10182")
+    @Test public void emptyDescriptionReturnsEmptyPage() throws Exception {
         // A NPE was thrown if a job had a null (empty) description.
-        WebClient wc = createWebClient();
-        FreeStyleProject project = createFreeStyleProject("project");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        FreeStyleProject project = j.createFreeStyleProject("project");
         project.setDescription("description");
         assertEquals("description", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
         project.setDescription(null);
         assertEquals("", ((TextPage) wc.goTo("job/project/description", "text/plain")).getContent());
     }
+    
+    @Test public void projectNamingStrategy() throws Exception {
+        j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
+        final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
+        assertNotNull("no project created", p);
+        try {
+            j.createFreeStyleProject("project");
+            fail("should not get here, the project name is not allowed, therefore the creation must fail!");
+        } catch (Failure e) {
+            // OK, expected
+        }finally{
+            // set it back to the default naming strategy, otherwise all other tests would fail to create jobs!
+            j.jenkins.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
+        }
+        j.createFreeStyleProject("project");
+    }
+
+    @Issue("JENKINS-16023")
+    @Test public void getLastFailedBuild() throws Exception {
+        final FreeStyleProject p = j.createFreeStyleProject();
+        RunLoadCounter.prepare(p);
+        p.getBuildersList().add(new FailureBuilder());
+        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        p.getBuildersList().remove(FailureBuilder.class);
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(6, p.getLastSuccessfulBuild().getNumber());
+        assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, new Callable<Integer>() {
+            @Override public Integer call() throws Exception {
+                return p.getLastFailedBuild().getNumber();
+            }
+        }).intValue());
+    }
+
+    @Issue("JENKINS-19764")
+    @Test public void testRenameWithCustomBuildsDirWithSubdir() throws Exception {
+        j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
+        final FreeStyleProject p = j.createFreeStyleProject();
+        p.scheduleBuild2(0).get();
+        p.renameTo("different-name");
+    }
+
 }

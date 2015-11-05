@@ -31,6 +31,7 @@ import hudson.model.BuildListener;
 import hudson.model.ComputerSet;
 import hudson.model.Environment;
 import hudson.model.Node;
+import hudson.model.TaskListener;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 
@@ -67,6 +68,11 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     public Environment setUp(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws IOException, InterruptedException {
     	return Environment.create(envVars);
+    }
+
+    @Override
+    public void buildEnvVars(EnvVars env, TaskListener listener) throws IOException, InterruptedException {
+        env.putAll(envVars);
     }
 
     @Extension

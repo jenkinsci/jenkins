@@ -24,9 +24,18 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[]
+  <st:documentation> <![CDATA[
     Data-bound only version of <f:repeatable> that assumes the type pointed by the property is data-bound as well.
-  ]]>
+    The nested property type must be Describable and it needs to have config.jelly.
+
+    Unless that nested config.jelly already adds a delete button (deprecated), you should normally put the following inside this tag:
+
+      	<f:entry title="">
+          <div align="right">
+            <f:repeatableDeleteButton />
+          </div>
+        </f:entry>
+    ]]>
 
     <st:attribute name="field">
       Used for the data binding.
@@ -52,9 +61,10 @@ THE SOFTWARE.
   </st:documentation>
 
 
-  <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}">
+  <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}">
     <table style="width:100%">
       <st:include page="config.jelly" class="${descriptor.clazz}" />
+      <d:invokeBody/>
     </table>
   </f:repeatable>
 </j:jelly>

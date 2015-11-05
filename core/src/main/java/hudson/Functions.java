@@ -28,11 +28,35 @@ package hudson;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
-import hudson.model.*;
+import hudson.init.InitMilestone;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.DescriptorVisibilityFilter;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.Items;
+import hudson.model.JDK;
+import hudson.model.Job;
+import hudson.model.JobPropertyDescriptor;
+import hudson.model.ModelObject;
+import hudson.model.Node;
+import hudson.model.PageDecorator;
+import hudson.model.PaneStatusProperties;
+import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
+import hudson.model.Run;
+import hudson.model.TopLevelItem;
+import hudson.model.User;
+import hudson.model.View;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import hudson.search.SearchableModelObject;
 import hudson.security.AccessControlled;
 import hudson.security.AuthorizationStrategy;
+import hudson.security.GlobalSecurityConfiguration;
 import hudson.security.Permission;
 import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
@@ -47,36 +71,15 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
+import hudson.util.FormValidation.CheckMethod;
 import hudson.util.Iterators;
-import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
-import jenkins.model.GlobalConfiguration;
-import jenkins.model.Jenkins;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.apache.commons.jelly.JellyContext;
-import org.apache.commons.jelly.JellyTagException;
-import org.apache.commons.jelly.Script;
-import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.jexl.parser.ASTSizeFunction;
-import org.apache.commons.jexl.util.Introspector;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
-import org.jvnet.tiger_types.Types;
-import org.kohsuke.stapler.Ancestor;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
 
-import javax.management.modelmbean.DescriptorSupport;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -87,11 +90,14 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -99,6 +105,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -106,12 +113,48 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.GlobalConfigurationCategory.Unclassified;
+import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ModelObjectWithContextMenu;
+
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.jelly.JellyTagException;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.jexl.parser.ASTSizeFunction;
+import org.apache.commons.jexl.util.Introspector;
 import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.IconSet;
+import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
+
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import hudson.util.RunList;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.CheckForNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Utility functions used in views.
@@ -122,26 +165,35 @@ import org.apache.commons.lang.StringUtils;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public class Functions {
-    private static volatile int globalIota = 0;
-    private int iota;
+    private static final AtomicLong iota = new AtomicLong();
 
     public Functions() {
-        iota = globalIota;
-        // concurrent requests can use the same ID --- we are just trying to
-        // prevent the same user from seeing the same ID repeatedly.
-        globalIota+=1000;
     }
 
     /**
      * Generates an unique ID.
      */
     public String generateId() {
-        return "id"+iota++;
+        return "id" + iota.getAndIncrement();
     }
 
     public static boolean isModel(Object o) {
         return o instanceof ModelObject;
+    }
+
+    public static boolean isModelWithContextMenu(Object o) {
+        return o instanceof ModelObjectWithContextMenu;
+    }
+
+    public static boolean isModelWithChildren(Object o) {
+        return o instanceof ModelObjectWithChildren;
+    }
+    
+    @Deprecated
+    public static boolean isMatrixProject(Object o) {
+        return o != null && o.getClass().getName().equals("hudson.matrix.MatrixProject");
     }
 
     public static String xsDate(Calendar cal) {
@@ -150,6 +202,51 @@ public class Functions {
 
     public static String rfc822Date(Calendar cal) {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+    }
+
+    /**
+     * During Jenkins start-up, before {@link InitMilestone#PLUGINS_STARTED} the extensions lists will be empty
+     * and they are not guaranteed to be fully populated until after {@link InitMilestone#EXTENSIONS_AUGMENTED}.
+     * If you attempt to access the extensions list from a UI thread while the extensions are being loaded you will
+     * hit a big honking great monitor lock that will block until the effective extension list has been determined
+     * (as if a plugin fails to start, all of the failed plugin's extensions and any dependent plugins' extensions
+     * will have to be evicted from the list of extensions. In practical terms this only affects the
+     * "Jenkins is loading" screen, but as that screen uses the generic layouts we provide this utility method
+     * so that the generic layouts can avoid iterating extension lists while Jenkins is starting up.
+     *
+     * @return {@code true} if the extensions lists have been populated.
+     * @since 1.607
+     */
+    public static boolean isExtensionsAvailable() {
+        final Jenkins jenkins = Jenkins.getInstance();
+        return jenkins != null && jenkins.getInitLevel().compareTo(InitMilestone.EXTENSIONS_AUGMENTED) >= 0;
+    }
+
+    public static void initPageVariables(JellyContext context) {
+        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        String rootURL = currentRequest.getContextPath();
+
+        Functions h = new Functions();
+        context.setVariable("h", h);
+
+
+        // The path starts with a "/" character but does not end with a "/" character.
+        context.setVariable("rootURL", rootURL);
+
+        /*
+            load static resources from the path dedicated to a specific version.
+            This "/static/VERSION/abc/def.ghi" path is interpreted by stapler to be
+            the same thing as "/abc/def.ghi", but this avoids the stale cache
+            problem when the user upgrades to new Jenkins. Stapler also sets a long
+            future expiration dates for such static resources.
+
+            see https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML
+         */
+        context.setVariable("resURL",rootURL+getResourcePath());
+        context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
+
+        context.setVariable("userAgent", currentRequest.getHeader("User-Agent"));
+        IconSet.initPageVariables(context);
     }
 
     /**
@@ -182,7 +279,7 @@ public class Functions {
      * like "-5", "+/-0", "+3".
      */
     public static String getDiffString(int i) {
-        if(i==0)    return "\u00B10";   // +/-0
+        if(i==0)    return "±0";
         String s = Integer.toString(i);
         if(i>0)     return "+"+s;
         else        return s;
@@ -333,7 +430,7 @@ public class Functions {
         return Node.Mode.values();
     }
 
-    public static String getProjectListString(List<Project> projects) {
+    public static String getProjectListString(List<AbstractProject> projects) {
         return Items.toNameList(projects);
     }
 
@@ -342,6 +439,7 @@ public class Functions {
      *      JEXL now supports the real ternary operator "x?y:z", so this work around
      *      is no longer necessary.
      */
+    @Deprecated
     public static Object ifThenElse(boolean cond, Object thenValue, Object elseValue) {
         return cond ? thenValue : elseValue;
     }
@@ -370,6 +468,52 @@ public class Functions {
         return formatter.format(r);
     }
 
+    @Restricted(NoExternalUse.class)
+    public static String[] printLogRecordHtml(LogRecord r, LogRecord prior) {
+        String[] oldParts = prior == null ? new String[4] : logRecordPreformat(prior);
+        String[] newParts = logRecordPreformat(r);
+        for (int i = 0; i < /* not 4 */3; i++) {
+            newParts[i] = "<span class='" + (newParts[i].equals(oldParts[i]) ? "logrecord-metadata-old" : "logrecord-metadata-new") + "'>" + newParts[i] + "</span>";
+        }
+        newParts[3] = Util.xmlEscape(newParts[3]);
+        return newParts;
+    }
+    /**
+     * Partially formats a log record.
+     * @return date, source, level, message+thrown
+     * @see SimpleFormatter#format(LogRecord)
+     */
+    private static String[] logRecordPreformat(LogRecord r) {
+        String source;
+        if (r.getSourceClassName() == null) {
+            source = r.getLoggerName();
+        } else {
+            if (r.getSourceMethodName() == null) {
+                source = r.getSourceClassName();
+            } else {
+                source = r.getSourceClassName() + " " + r.getSourceMethodName();
+            }
+        }
+        String message = new SimpleFormatter().formatMessage(r) + "\n";
+        Throwable x = r.getThrown();
+        return new String[] {
+            String.format("%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp", new Date(r.getMillis())),
+            source,
+            r.getLevel().getLocalizedName(),
+            x == null ? message : message + printThrowable(x) + "\n"
+        };
+    }
+
+    /**
+     * Reverses a collection so that it can be easily walked in reverse order.
+     * @since 1.525
+     */
+    public static <T> Iterable<T> reverse(Collection<T> collection) {
+        List<T> list = new ArrayList<T>(collection);
+        Collections.reverse(list);
+        return list;
+    }
+
     public static Cookie getCookie(HttpServletRequest req,String name) {
         Cookie[] cookies = req.getCookies();
         if(cookies!=null) {
@@ -386,6 +530,15 @@ public class Functions {
         Cookie c = getCookie(req, name);
         if(c==null || c.getValue()==null) return defaultValue;
         return c.getValue();
+    }
+
+    private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
+    @Restricted(NoExternalUse.class)
+    public static String validateIconSize(String iconSize) throws SecurityException {
+        if (!ICON_SIZE.matcher(iconSize).matches()) {
+            throw new SecurityException("invalid iconSize");
+        }
+        return iconSize;
     }
 
     /**
@@ -411,6 +564,20 @@ public class Functions {
             return map.tailMap(Integer.parseInt(to));
 
         return map.subMap(Integer.parseInt(to),Integer.parseInt(from)-1);
+    }
+
+    /**
+     * Creates a sub map by using the given range (upper end inclusive).
+     */
+    @Restricted(NoExternalUse.class)
+    public static <V> SortedMap<Integer,V> filterExcludingFrom(SortedMap<Integer,V> map, String from, String to) {
+        if(from==null && to==null)      return map;
+        if(to==null)
+            return map.headMap(Integer.parseInt(from));
+        if(from==null)
+            return map.tailMap(Integer.parseInt(to));
+
+        return map.subMap(Integer.parseInt(to),Integer.parseInt(from));
     }
 
     private static final SimpleFormatter formatter = new SimpleFormatter();
@@ -460,6 +627,10 @@ public class Functions {
         return false;
     }
 
+    public static boolean isCollapsed(String paneId) {
+    	return PaneStatusProperties.forCurrentUser().isCollapsed(paneId);
+    }
+    
     /**
      * Finds the given object in the ancestor list and returns its URL.
      * This is used to determine the "current" URL assigned to the given object,
@@ -646,7 +817,7 @@ public class Functions {
         StringBuilder buf = new StringBuilder();
         buf.append(req.getScheme()).append("://");
         buf.append(req.getServerName());
-        if(req.getLocalPort()!=80)
+        if(! (req.getScheme().equals("http") && req.getLocalPort()==80 || req.getScheme().equals("https") && req.getLocalPort()==443))
             buf.append(':').append(req.getLocalPort());
         buf.append(req.getContextPath()).append('/');
         return buf.toString();
@@ -730,6 +901,22 @@ public class Functions {
     }
 
     /**
+     * Returns those node properties which can be configured as global node properties.
+     *
+     * @since 1.520
+     */
+    public static List<NodePropertyDescriptor> getGlobalNodePropertyDescriptors() {
+        List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+        Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+        for (NodePropertyDescriptor npd : list) {
+            if (npd.isApplicableAsGlobal()) {
+                result.add(npd);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
      * so that descriptors of similar types come nearby.
      *
@@ -741,40 +928,26 @@ public class Functions {
      * Perhaps it is better to introduce another annotation element? But then,
      * extensions shouldn't normally concern themselves about ordering too much, and the only reason
      * we needed this for {@link GlobalConfiguration}s are for backward compatibility.
+     *
+     * @param predicate
+     *      Filter the descriptors based on {@link GlobalConfigurationCategory}
+     * @since 1.494
      */
-    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
-        class Tag implements Comparable<Tag> {
-            double ordinal;
-            String hierarchy;
-            Descriptor d;
-
-            Tag(double ordinal, Descriptor d) {
-                this.ordinal = ordinal;
-                this.d = d;
-                this.hierarchy = buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString();
-            }
-
-            private StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
-                Class sc = c.getSuperclass();
-                if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
-                return buf.append(c.getName());
-            }
-
-            public int compareTo(Tag that) {
-                int r = Double.compare(this.ordinal, that.ordinal);
-                if (r!=0)   return -r; // descending for ordinal
-                return this.hierarchy.compareTo(that.hierarchy);
-            }
-        }
-
-        ExtensionList<Descriptor> exts = Jenkins.getInstance().getExtensionList(Descriptor.class);
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<GlobalConfigurationCategory> predicate) {
+        ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
         List<Tag> r = new ArrayList<Tag>(exts.size());
 
         for (ExtensionComponent<Descriptor> c : exts.getComponents()) {
             Descriptor d = c.getInstance();
             if (d.getGlobalConfigPage()==null)  continue;
 
-            r.add(new Tag(d instanceof GlobalConfiguration ? c.ordinal() : 0, d));
+            if (d instanceof GlobalConfiguration) {
+                if (predicate.apply(((GlobalConfiguration)d).getCategory()))
+                    r.add(new Tag(c.ordinal(), d));
+            } else {
+                if (predicate.apply(GlobalConfigurationCategory.get(Unclassified.class)))
+                    r.add(new Tag(0, d));
+            }
         }
         Collections.sort(r);
 
@@ -784,14 +957,64 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(Jenkins.getInstance(),answer);
     }
 
+    /**
+     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but with a constant truth predicate, to include all descriptors.
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
+        return getSortedDescriptorsForGlobalConfig(Predicates.<GlobalConfigurationCategory>alwaysTrue());
+    }
 
+    /**
+     * @deprecated This is rather meaningless.
+     */
+    @Deprecated
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigNoSecurity() {
+        return getSortedDescriptorsForGlobalConfig(Predicates.not(GlobalSecurityConfiguration.FILTER));
+    }
+
+    /**
+     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but for unclassified descriptors only.
+     * @since 1.506
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassified() {
+        return getSortedDescriptorsForGlobalConfig(new Predicate<GlobalConfigurationCategory>() {
+            public boolean apply(GlobalConfigurationCategory cat) {
+                return cat instanceof GlobalConfigurationCategory.Unclassified;
+            }
+        });
+    }
+    
+    private static class Tag implements Comparable<Tag> {
+        double ordinal;
+        String hierarchy;
+        Descriptor d;
+
+        Tag(double ordinal, Descriptor d) {
+            this.ordinal = ordinal;
+            this.d = d;
+            this.hierarchy = buildSuperclassHierarchy(d.clazz, new StringBuilder()).toString();
+        }
+
+        private StringBuilder buildSuperclassHierarchy(Class c, StringBuilder buf) {
+            Class sc = c.getSuperclass();
+            if (sc!=null)   buildSuperclassHierarchy(sc,buf).append(':');
+            return buf.append(c.getName());
+        }
+
+        public int compareTo(Tag that) {
+            int r = Double.compare(this.ordinal, that.ordinal);
+            if (r!=0)   return -r; // descending for ordinal
+            return this.hierarchy.compareTo(that.hierarchy);
+        }
+    }
     /**
      * Computes the path to the icon of the given action
      * from the context path.
      */
     public static String getIconFilePath(Action a) {
         String name = a.getIconFileName();
-        if(name.startsWith("/"))
+        if (name==null)     return null;
+        if (name.startsWith("/"))
             return name.substring(1);
         else
             return "images/24x24/"+name;
@@ -821,7 +1044,9 @@ public class Functions {
         }
 
         String path = ancestors.get(p);
-        if(path!=null)  return path;
+        if(path!=null) {
+            return normalizeURI(path + '/');
+        }
 
         Item i=p;
         String url = "";
@@ -829,23 +1054,115 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance()) {
+            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
                 assert i instanceof TopLevelItem;
-                if(view!=null && view.contains((TopLevelItem)i)) {
-                    // if p and the current page belongs to the same view, then return a relative path
-                    return ancestors.get(view)+'/'+url;
+                if (view != null) {
+                    // assume p and the current page belong to the same view, so return a relative path
+                    // (even if they did not, View.getItem does not by default verify ownership)
+                    return normalizeURI(ancestors.get(view)+'/'+url);
                 } else {
                     // otherwise return a path from the root Hudson
-                    return request.getContextPath()+'/'+p.getUrl();
+                    return normalizeURI(request.getContextPath()+'/'+p.getUrl());
                 }
             }
 
             path = ancestors.get(ig);
-            if(path!=null)  return path+'/'+url;
+            if(path!=null) {
+                return normalizeURI(path+'/'+url);
+            }
 
             assert ig instanceof Item; // if not, ig must have been the Hudson instance
             i = (Item) ig;
         }
+    }
+    
+    private static String normalizeURI(String uri) {
+        return URI.create(uri).normalize().toString();
+    }
+    
+    /**
+     * Gets all the {@link TopLevelItem}s recursively in the {@link ItemGroup} tree.
+     * 
+     * @since 1.512
+     */
+    public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
+      return Items.getAllItems(root, TopLevelItem.class);
+    }
+    
+    /**
+     * Gets the relative name or display name to the given item from the specified group.
+     *
+     * @since 1.515
+     * @param p the Item we want the relative display name
+     * @param g the ItemGroup used as point of reference for the item
+     * @param useDisplayName if true, returns a display name, otherwise returns a name
+     * @return
+     *      String like "foo » bar"
+     */
+    public static String getRelativeNameFrom(Item p, ItemGroup g, boolean useDisplayName) {
+        if (p == null) return null;
+        if (g == null) return useDisplayName ? p.getFullDisplayName() : p.getFullName();
+        String separationString = useDisplayName ? " » " : "/";
+        
+        // first list up all the parents
+        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
+        int depth=0;
+        while (g!=null) {
+            parents.put(g, depth++);
+            if (g instanceof Item)
+                g = ((Item)g).getParent();
+            else
+                g = null;
+        }
+
+        StringBuilder buf = new StringBuilder();
+        Item i=p;
+        while (true) {
+            if (buf.length()>0) buf.insert(0,separationString);
+            buf.insert(0,useDisplayName ? i.getDisplayName() : i.getName());
+            ItemGroup gr = i.getParent();
+
+            Integer d = parents.get(gr);
+            if (d!=null) {
+                for (int j=d; j>0; j--) {
+                    buf.insert(0,separationString);
+                    buf.insert(0,"..");
+                }
+                return buf.toString();
+            }
+
+            if (gr instanceof Item)
+                i = (Item)gr;
+            else
+                return null;
+        }
+    }
+    
+    /**
+     * Gets the name to the given item relative to given group.
+     *
+     * @since 1.515
+     * @param p the Item we want the relative display name
+     * @param g the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "foo/bar"
+     */
+    public static String getRelativeNameFrom(Item p, ItemGroup g) {
+        return getRelativeNameFrom(p, g, false);
+    }    
+    
+    
+    /**
+     * Gets the relative display name to the given item from the specified group.
+     *
+     * @since 1.512
+     * @param p the Item we want the relative display name
+     * @param g the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "Foo » Bar"
+     */
+    public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
+        return getRelativeNameFrom(p, g, true);
     }
 
     public static Map<Thread,StackTraceElement[]> dumpAllThreads() {
@@ -854,7 +1171,6 @@ public class Functions {
         return sorted;
     }
 
-    @IgnoreJRERequirement
     public static ThreadInfo[] getThreadInfos() {
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
         return mbean.dumpAllThreads(mbean.isObjectMonitorUsageSupported(),mbean.isSynchronizerUsageSupported());
@@ -875,8 +1191,10 @@ public class Functions {
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
             int threadsLen = tg.enumerate(threads, true);
-            for (int i = 0; i < threadsLen; i++)
-                map.put(threads[i].getId(), threads[i].getThreadGroup().getName());
+            for (int i = 0; i < threadsLen; i++) {
+                ThreadGroup group = threads[i].getThreadGroup();
+                map.put(threads[i].getId(), group != null ? group.getName() : null);
+            }
         }
 
         protected int compare(long idA, long idB) {
@@ -916,20 +1234,14 @@ public class Functions {
     }
 
     /**
-     * Are we running on JRE6 or above?
+     * @deprecated Now always true.
      */
-    @IgnoreJRERequirement
+    @Deprecated
     public static boolean isMustangOrAbove() {
-        try {
-            System.console();
-            return true;
-        } catch(LinkageError e) {
-            return false;
-        }
+        return true;
     }
 
     // ThreadInfo.toString() truncates the stack trace by first 8, so needed my own version
-    @IgnoreJRERequirement
     public static String dumpThreadInfo(ThreadInfo ti, ThreadGroupMap map) {
         String grp = map.getThreadGroup(ti);
         StringBuilder sb = new StringBuilder("\"" + ti.getThreadName() + "\"" +
@@ -953,21 +1265,21 @@ public class Functions {
         StackTraceElement[] stackTrace = ti.getStackTrace();
         for (int i=0; i < stackTrace.length; i++) {
             StackTraceElement ste = stackTrace[i];
-            sb.append("\tat " + ste.toString());
+            sb.append("\tat ").append(ste);
             sb.append('\n');
             if (i == 0 && ti.getLockInfo() != null) {
                 Thread.State ts = ti.getThreadState();
                 switch (ts) {
                     case BLOCKED:
-                        sb.append("\t-  blocked on " + ti.getLockInfo());
+                        sb.append("\t-  blocked on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     case WAITING:
-                        sb.append("\t-  waiting on " + ti.getLockInfo());
+                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     case TIMED_WAITING:
-                        sb.append("\t-  waiting on " + ti.getLockInfo());
+                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
                         break;
                     default:
@@ -976,7 +1288,7 @@ public class Functions {
 
             for (MonitorInfo mi : ti.getLockedMonitors()) {
                 if (mi.getLockedStackDepth() == i) {
-                    sb.append("\t-  locked " + mi);
+                    sb.append("\t-  locked ").append(mi);
                     sb.append('\n');
                 }
             }
@@ -987,7 +1299,7 @@ public class Functions {
            sb.append("\n\tNumber of locked synchronizers = " + locks.length);
            sb.append('\n');
            for (LockInfo li : locks) {
-               sb.append("\t- " + li);
+               sb.append("\t- ").append(li);
                sb.append('\n');
            }
        }
@@ -1073,7 +1385,7 @@ public class Functions {
     /**
      * If the value exists, return that value. Otherwise return the default value.
      * <p>
-     * Starting 1.294, JEXL supports the elvis operator "x?:y" that supercedes this.
+     * Starting 1.294, JEXL supports the elvis operator "x?:y" that supersedes this.
      *
      * @since 1.150
      */
@@ -1081,7 +1393,17 @@ public class Functions {
         return value!=null ? value : defaultValue;
     }
 
-    public static String printThrowable(Throwable t) {
+    /**
+     * Gets info about the specified {@link Throwable}.
+     * @param t Input {@link Throwable}
+     * @return If {@link Throwable} is not null, a summary info with the 
+     *      stacktrace will be returned. Otherwise, the method returns a default
+     *      &quot;No exception details&quot; string.
+     */
+    public static String printThrowable(@CheckForNull Throwable t) {
+        if (t == null) {
+            return Messages.Functions_NoExceptionDetails();
+        }
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
         return sw.toString();
@@ -1103,15 +1425,23 @@ public class Functions {
     public static String toCCStatus(Item i) {
         if (i instanceof Job) {
             Job j = (Job) i;
-            switch (j.getIconColor().noAnime()) {
+            switch (j.getIconColor()) {
             case ABORTED:
+            case ABORTED_ANIME:
             case RED:
+            case RED_ANIME:
             case YELLOW:
+            case YELLOW_ANIME:
                 return "Failure";
             case BLUE:
+            case BLUE_ANIME:
                 return "Success";
             case DISABLED:
+            case DISABLED_ANIME:
             case GREY:
+            case GREY_ANIME:
+            case NOTBUILT:
+            case NOTBUILT_ANIME:
                 return "Unknown";
             }
         }
@@ -1152,7 +1482,8 @@ public class Functions {
     }
 
     /**
-     * Returns a sub-list if the given list is bigger than the specified 'maxSize'
+     * Returns a sub-list if the given list is bigger than the specified {@code maxSize}.
+     * <strong>Warning:</strong> do not call this with a {@link RunList}, or you will break lazy loading!
      */
     public static <T> List<T> subList(List<T> base, int maxSize) {
         if(maxSize<base.size())
@@ -1162,19 +1493,43 @@ public class Functions {
     }
 
     /**
+     * Combine path components via '/' while handling leading/trailing '/' to avoid duplicates.
+     */
+    public static String joinPath(String... components) {
+        StringBuilder buf = new StringBuilder();
+        for (String s : components) {
+            if (s.length()==0)  continue;
+
+            if (buf.length()>0) {
+                if (buf.charAt(buf.length()-1)!='/')
+                    buf.append('/');
+                if (s.charAt(0)=='/')   s=s.substring(1);
+            }
+            buf.append(s);
+        }
+        return buf.toString();
+    }
+
+    /**
      * Computes the hyperlink to actions, to handle the situation when the {@link Action#getUrlName()}
      * returns absolute URL.
      */
     public static String getActionUrl(String itUrl,Action action) {
         String urlName = action.getUrlName();
         if(urlName==null)   return null;    // to avoid NPE and fail to render the whole page
-        if(SCHEME.matcher(urlName).matches())
-            return urlName; // absolute URL
+        try {
+            if (new URI(urlName).isAbsolute()) {
+                return urlName;
+            }
+        } catch (URISyntaxException x) {
+            Logger.getLogger(Functions.class.getName()).log(Level.WARNING, "Failed to parse URL for {0}: {1}", new Object[] {action, x});
+            return null;
+        }
         if(urlName.startsWith("/"))
-            return Stapler.getCurrentRequest().getContextPath()+urlName;
+            return joinPath(Stapler.getCurrentRequest().getContextPath(),urlName);
         else
             // relative URL name
-            return Stapler.getCurrentRequest().getContextPath()+'/'+itUrl+urlName;
+            return joinPath(Stapler.getCurrentRequest().getContextPath()+'/'+itUrl,urlName);
     }
 
     /**
@@ -1226,7 +1581,11 @@ public class Functions {
 
     /**
      * Determines the form validation check URL. See textbox.jelly
+     *
+     * @deprecated
+     *      Use {@link #calcCheckUrl}
      */
+    @Deprecated
     public String getCheckUrl(String userDefined, Object descriptor, String field) {
         if(userDefined!=null || field==null)   return userDefined;
         if (descriptor instanceof Descriptor) {
@@ -1234,6 +1593,21 @@ public class Functions {
             return d.getCheckUrl(field);
         }
         return null;
+    }
+
+    /**
+     * Determines the parameters that client-side needs for a form validation check. See prepareDatabinding.jelly
+     * @since 1.528
+     */
+    public void calcCheckUrl(Map attributes, String userDefined, Object descriptor, String field) {
+        if(userDefined!=null || field==null)   return;
+
+        if (descriptor instanceof Descriptor) {
+            Descriptor d = (Descriptor) descriptor;
+            CheckMethod m = d.getCheckMethod(field);
+            attributes.put("checkUrl",m.toStemUrl());
+            attributes.put("checkDependsOn",m.getDependsOn());
+        }
     }
 
     /**
@@ -1318,16 +1692,16 @@ public class Functions {
         for (ConsoleAnnotatorFactory f : ConsoleAnnotatorFactory.all()) {
             String path = cp + "/extensionList/" + ConsoleAnnotatorFactory.class.getName() + "/" + f.getClass().getName();
             if (f.hasScript())
-                buf.append("<script src='"+path+"/script.js'></script>");
+                buf.append("<script src='").append(path).append("/script.js'></script>");
             if (f.hasStylesheet())
-                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
+                buf.append("<link rel='stylesheet' type='text/css' href='").append(path).append("/style.css' />");
         }
         for (ConsoleAnnotationDescriptor d : ConsoleAnnotationDescriptor.all()) {
             String path = cp+"/descriptor/"+d.clazz.getName();
             if (d.hasScript())
-                buf.append("<script src='"+path+"/script.js'></script>");
+                buf.append("<script src='").append(path).append("/script.js'></script>");
             if (d.hasStylesheet())
-                buf.append("<link rel='stylesheet' type='text/css' href='"+path+"/style.css' />");
+                buf.append("<link rel='stylesheet' type='text/css' href='").append(path).append("/style.css' />");
         }
         return buf.toString();
     }
@@ -1355,6 +1729,9 @@ public class Functions {
     public String getPasswordValue(Object o) {
         if (o==null)    return null;
         if (o instanceof Secret)    return ((Secret)o).getEncryptedValue();
+        if (getIsUnitTest()) {
+            throw new SecurityException("attempted to render plaintext ‘" + o + "’ in password field; use a getter of type Secret instead");
+        }
         return o.toString();
     }
 
@@ -1362,8 +1739,6 @@ public class Functions {
         return DescriptorVisibilityFilter.apply(context,descriptors);
     }
     
-    private static final Pattern SCHEME = Pattern.compile("[a-z]+://.+");
-
     /**
      * Returns true if we are running unit tests.
      */
@@ -1444,6 +1819,104 @@ public class Functions {
             }
         });
         return all;
+    }
+
+    /**
+     * Returns an avatar image URL for the specified user and preferred image size
+     * @param user the user
+     * @param avatarSize the preferred size of the avatar image
+     * @return a URL string
+     * @since 1.433
+     */
+    public static String getAvatar(User user, String avatarSize) {
+        return UserAvatarResolver.resolve(user, avatarSize);
+    }
+
+    /**
+     * @deprecated as of 1.451
+     *      Use {@link #getAvatar}
+     */
+    @Deprecated
+    public String getUserAvatar(User user, String avatarSize) {
+        return getAvatar(user,avatarSize);
+    }
+    
+    
+    /**
+     * Returns human readable information about file size
+     * 
+     * @param size file size in bytes
+     * @return file size in appropriate unit
+     */
+    public static String humanReadableByteSize(long size){
+        String measure = "B";
+        if(size < 1024){
+            return size + " " + measure;
+        }
+        Double number = new Double(size);
+        if(number>=1024){
+            number = number/1024;
+            measure = "KB";
+            if(number>=1024){
+                number = number/1024;
+                measure = "MB";
+                if(number>=1024){
+                    number=number/1024;
+                    measure = "GB";
+                }
+            }
+        }
+        DecimalFormat format = new DecimalFormat("#0.00");
+        return format.format(number) + " " + measure;
+    }
+
+    /**
+     * Get a string that can be safely broken to several lines when necessary.
+     *
+     * This implementation inserts &lt;wbr> tags into string. It allows browsers
+     * to wrap line before any sequence of punctuation characters or anywhere
+     * in the middle of prolonged sequences of word characters.
+     *
+     * @since 1.517
+     */
+    public static String breakableString(final String plain) {
+        if (plain == null) {
+            return null;
+        }
+        return plain.replaceAll("([\\p{Punct}&&[^;]]+\\w)", "<wbr>$1")
+                .replaceAll("([^\\p{Punct}\\s-]{20})(?=[^\\p{Punct}\\s-]{10})", "$1<wbr>")
+        ;
+    }
+
+    /**
+     * Advertises the minimum set of HTTP headers that assist programmatic
+     * discovery of Jenkins.
+     */
+    public static void advertiseHeaders(HttpServletResponse rsp) {
+        Jenkins j = Jenkins.getInstance();
+        if (j!=null) {
+            rsp.setHeader("X-Hudson","1.395");
+            rsp.setHeader("X-Jenkins", Jenkins.VERSION);
+            rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
+
+            TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
+            if (tal !=null) {
+                int p = TcpSlaveAgentListener.CLI_PORT !=null ? TcpSlaveAgentListener.CLI_PORT : tal.getPort();
+                rsp.setIntHeader("X-Hudson-CLI-Port", p);
+                rsp.setIntHeader("X-Jenkins-CLI-Port", p);
+                rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
+                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
+            }
+        }
+    }
+
+    @Restricted(NoExternalUse.class) // for actions.jelly and ContextMenu.add
+    public static boolean isContextMenuVisible(Action a) {
+        if (a instanceof ModelObjectWithContextMenu.ContextMenuVisibility) {
+            return ((ModelObjectWithContextMenu.ContextMenuVisibility) a).isVisible();
+        } else {
+            return true;
+        }
     }
 
 }

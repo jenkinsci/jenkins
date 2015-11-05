@@ -26,18 +26,14 @@ package hudson.security;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.ui.AccessDeniedHandler;
-import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.WebApp;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Vector;
 
 /**
  * Handles {@link AccessDeniedException} happened during request processing.
@@ -46,31 +42,18 @@ import java.util.Vector;
  * @author Kohsuke Kawaguchi
  */
 public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
-    public void handle(ServletRequest request, ServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+    public void handle(ServletRequest request, ServletResponse response, AccessDeniedException cause) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;
 
         rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        req.setAttribute("exception",accessDeniedException);
-        Stapler stapler = new Stapler();
-        stapler.init(new ServletConfig() {
-            public String getServletName() {
-                return "Stapler";
-            }
+        req.setAttribute("exception",cause);
 
-            public ServletContext getServletContext() {
-                return Jenkins.getInstance().servletContext;
-            }
+        if (cause instanceof AccessDeniedException2) {
+            ((AccessDeniedException2)cause).reportAsHeaders(rsp);
+        }
 
-            public String getInitParameter(String name) {
-                return null;
-            }
-
-            public Enumeration getInitParameterNames() {
-                return new Vector().elements();
-            }
-        });
-
-        stapler.invoke(req,rsp, Jenkins.getInstance(),"/accessDenied");
+        WebApp.get(Jenkins.getInstance().servletContext).getSomeStapler()
+                .invoke(req,rsp, Jenkins.getInstance(), "/accessDenied");
     }
 }

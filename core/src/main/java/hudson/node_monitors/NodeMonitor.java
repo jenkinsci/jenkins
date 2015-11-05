@@ -36,6 +36,7 @@ import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
 
 import java.util.List;
+import javax.annotation.CheckForNull;
 
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -75,7 +76,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      *      null to not render a column. The convention is to use capitalization like "Foo Bar Zot".
      */
     @Exported
-    public String getColumnCaption() {
+    public @CheckForNull String getColumnCaption() {
         return getDescriptor().getDisplayName();
     }
 
@@ -83,6 +84,9 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return (AbstractNodeMonitorDescriptor<?>) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
+    /**
+     * Obtains the monitoring result currently available, or null if no data is available.
+     */
     public Object data(Computer c) {
         return getDescriptor().get(c);
     }
@@ -135,6 +139,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      * @deprecated as of 1.286.
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<NodeMonitor>(NodeMonitor.class);
 
     /**

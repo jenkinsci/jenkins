@@ -30,7 +30,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <tr class="${job.disabled?'disabledJob':null}">
+  <tr id="job_${job.name}" class="${job.disabled?'disabledJob':null} job-status-${job.iconColor.iconName}">
     <j:forEach var="col" items="${columnExtensions}">
       <st:include page="column.jelly" it="${col}"/>
     </j:forEach>

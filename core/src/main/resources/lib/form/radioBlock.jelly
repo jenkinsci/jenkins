@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
+  <st:documentation>on
     Radio button with a label that hides additional controls.
     When checked, those additional controls are displayed. This is useful
     for presenting mutually exclusive options, where each option comes
@@ -43,28 +43,31 @@ THE SOFTWARE.
     <st:attribute name="checked" use="required" type="boolean">
       Should this control be initially checked or not?
     </st:attribute>
+    <st:attribute name="inline">
+      if present, the folded section will not be grouped into a separate JSON object upon submission.
+    </st:attribute>
     <st:attribute name="help">
       If specified, the (?) help icon will be rendered on the right,
       for in place help text. See &lt;f:entry> for the details.
     </st:attribute>
   </st:documentation>
 
-	<tr class="radio-block-start" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+  <st:adjunct includes="lib.form.radioBlock.radioBlock"/>
+
+	<tr class="radio-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
 	  <td colspan="3">
-	    <input type="radio" name="${name}" value="${value}"
+      <label>
+	      <input type="radio" name="${name}" value="${value}"
              class="radio-block-control" checked="${checked?'true':null}" />
-      <label class="attach-previous">${title}</label>
+        ${title}
+      </label>
     </td>
-    <j:if test="${attrs.help!=null}">
-      <td>
-        <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
-      </td>
-    </j:if>
+    <f:helpLink url="${help}" featureName="${title}" />
 	</tr>
   <j:if test="${attrs.help!=null}">
     <f:helpArea />
   </j:if>
 	<d:invokeBody />
 	<!-- end marker -->
-	<tr class="radio-block-end" style="display:none" />
+	<tr class="${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none" />
 </j:jelly>

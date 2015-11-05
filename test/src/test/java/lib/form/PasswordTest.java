@@ -46,7 +46,7 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
     }
 
     public DescriptorImpl getDescriptor() {
-        return hudson.getDescriptorByType(DescriptorImpl.class);
+        return jenkins.getDescriptorByType(DescriptorImpl.class);
     }
 
     @Extension

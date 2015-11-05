@@ -110,7 +110,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
     }
 
     public DescriptorImpl getDescriptor() {
-        return hudson.getDescriptorByType(DescriptorImpl.class);
+        return jenkins.getDescriptorByType(DescriptorImpl.class);
     }
 
     @TestExtension
@@ -133,7 +133,6 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         public String textbox1;
         public Nested inner;
 
-        @DataBoundConstructor
         protected Drink(String textbox1, Nested inner) {
             this.textbox1 = textbox1;
             this.inner = inner;

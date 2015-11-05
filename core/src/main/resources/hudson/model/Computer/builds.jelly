@@ -28,14 +28,14 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/notepad.png" alt="" height="48" width="48"/>
+        <l:icon class="icon-notepad icon-xlg"/>
         ${%title(it.displayName)}
       </h1>
 
       <st:include page="control.jelly" it="${it.timeline}" />
       <div style="height:2em"/><!-- spacer -->
 
-      <t:buildListTable builds="${it.builds}" jobBaseUrl="${rootURL}/" />
+      <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

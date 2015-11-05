@@ -1,8 +1,0 @@
-<project>
-  <target name="foo" depends="bar">
-    <echo>abc</echo>
-  </target>
-  <target name="bar">
-    <echo>def</echo>
-  </target>
-</project>

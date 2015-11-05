@@ -26,20 +26,19 @@ package org.jvnet.hudson.test;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.InvisibleAction;
-import hudson.model.JobProperty;
 import hudson.model.User;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,6 +76,14 @@ public class FakeChangeLogSCM extends NullSCM {
         return new FakeChangeLogParser();
     }
 
+    @Override public SCMDescriptor<?> getDescriptor() {
+        return new SCMDescriptor<SCM>(null) {
+            @Override public String getDisplayName() {
+                return "";
+            }
+        };
+    }
+
     public static class ChangelogAction extends InvisibleAction {
         private final List<EntryImpl> entries;
 
@@ -86,6 +93,7 @@ public class FakeChangeLogSCM extends NullSCM {
     }
 
     public static class FakeChangeLogParser extends ChangeLogParser {
+        @SuppressWarnings("rawtypes")
         @Override
         public FakeChangeLogSet parse(AbstractBuild build, File changelogFile) throws IOException, SAXException {
             return new FakeChangeLogSet(build, build.getAction(ChangelogAction.class).entries);

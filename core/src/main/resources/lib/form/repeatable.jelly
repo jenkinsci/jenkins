@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[]
+  <st:documentation> <![CDATA[
     Repeatable blocks used to present UI where the user can configure multiple entries
     of the same kind (see the Java installations configuration in the system config.)
 
@@ -103,6 +103,7 @@ THE SOFTWARE.
   </st:documentation>
 
 
+  <st:adjunct includes="lib.form.repeatable.repeatable"/>
   <!--
     If bi-directional binding, fill in the rest of attributes automatically
   -->
@@ -113,7 +114,7 @@ THE SOFTWARE.
       <j:set var="items" value="${instance[name] ?: attrs.default}"/>
 
       <!-- and expose update descriptor to the body of this tag -->
-      <j:set var="descriptor" value="${descriptor.getPropertyType(instance,field).itemTypeDescriptor}" />
+      <j:set var="descriptor" value="${descriptor.getPropertyType(instance,field).itemTypeDescriptorOrDie}" />
     </j:when>
     <j:otherwise>
       <j:set var="name" value="${attrs.name?:attrs.var}"/>

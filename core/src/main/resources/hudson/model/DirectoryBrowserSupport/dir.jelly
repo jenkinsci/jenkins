@@ -28,18 +28,18 @@ THE SOFTWARE.
   <l:layout title="${it.title} : ${path}">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
     <l:main-panel>
+      <h1><l:breakable value="${it.title}"/></h1>
       <div class="dirTree">
       <!-- parent path -->
         <div class="parentPath">
           <form action="${backPath}" method="get">
-            <a href="${topPath}"><img src="${imagesURL}/48x48/${icon}" class="rootIcon" alt="" height="48" width="48"/></a>
+            <a href="${topPath}"><l:icon class="${icons.toNormalizedIconNameClass(icon)} icon-xlg" /></a>
             <j:forEach var="p" items="${parentPath}">
               <a href="${p.href}">${p.title}</a>
               /
             </j:forEach>
             <input type="text" name="pattern" value="${pattern}" />
-            <img src="${imagesURL}/16x16/go-next.png" style="vertical-align:middle; cursor:pointer" alt="[submit]"
-                onclick="this.parentNode.submit()" height="16" width="16"/>
+            <l:icon class="icon-go-next icon-sm" onclick="this.parentNode.submit()" style="vertical-align:middle; cursor:pointer"/>
           </form>
         </div>
         <j:choose>
@@ -52,7 +52,7 @@ THE SOFTWARE.
                 <j:set var="x" value="${f.get(f.size()-1)}"/>
                 <tr>
                   <td>
-                    <img src="${imagesURL}/16x16/${x.iconName}" alt="" height="16" width="16"/>
+                    <l:icon class="${x.iconClassName} icon-sm"/>
                   </td>
                   <td>
                     <j:forEach var="t" items="${f}" varStatus="st">
@@ -71,14 +71,16 @@ THE SOFTWARE.
                   </td>
                   <j:if test="${!x.folder}">
                     <td class="fileSize">
-                      ${x.getSize()}
+                      ${h.humanReadableByteSize(x.getSize())}
                     </td>
                     <td>
                       <j:if test="${x.readable}">
-                        <a href="${x.href}/*fingerprint*/">
-                          <img src="${imagesURL}/16x16/fingerprint.png" alt="fingerprint" height="16" width="16" />
-                        </a>
-                        <st:nbsp/>
+                        <j:if test="${app.fingerprintMap.ready}">
+                          <a href="${x.href}/*fingerprint*/">
+                            <l:icon class="icon-fingerprint icon-sm"/>
+                          </a>
+                          <st:nbsp/>
+                        </j:if>
                         <a href="${x.href}/*view*/">${%view}</a>
                       </j:if>                      
                     </td>
@@ -89,7 +91,7 @@ THE SOFTWARE.
                 <td style="text-align:right;" colspan="3">
                   <div style="margin-top: 1em;">
                     <a href="${backPath}${pattern!=''?pattern+'/':''}*zip*/${dir.name}.zip">
-                      <img src="${imagesURL}/16x16/package.png" height="16" width="16"/>
+                      <l:icon class="icon-package icon-sm"/>
                       (${%all files in zip})
                     </a>
                   </div>

@@ -47,7 +47,7 @@ public abstract class LabelFinder implements ExtensionPoint {
      * Returns all the registered {@link LabelFinder}s.
      */
     public static ExtensionList<LabelFinder> all() {
-        return Jenkins.getInstance().getExtensionList(LabelFinder.class);
+        return ExtensionList.lookup(LabelFinder.class);
     }
 
     /**

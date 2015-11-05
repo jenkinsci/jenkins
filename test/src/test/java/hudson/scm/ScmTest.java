@@ -23,24 +23,43 @@
  */
 package hudson.scm;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import hudson.model.Result;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ScmTest extends HudsonTestCase {
+public class ScmTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     /**
      * Makes sure that {@link SCM#processWorkspaceBeforeDeletion(AbstractProject, FilePath, Node)} is called
      * before a project deletion.
      */
-    @Bug(2271)
-    public void testProjectDeletionAndCallback() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+    @Test
+    @Issue("JENKINS-2271")
+    public void projectDeletionAndCallback() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
         final boolean[] callback = new boolean[1];
         p.setScm(new NullSCM() {
             public boolean processWorkspaceBeforeDeletion(AbstractProject<?, ?> project, FilePath workspace, Node node) {
@@ -55,5 +74,27 @@ public class ScmTest extends HudsonTestCase {
         p.scheduleBuild2(0).get();
         p.delete();
         assertTrue(callback[0]);
+    }
+
+    @Test
+    @Issue("JENKINS-4605")
+    public void abortDuringCheckoutMarksBuildAsAborted() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new NullSCM() {
+            @Override
+            public boolean checkout(AbstractBuild<?, ?> build,
+                    Launcher launcher, FilePath remoteDir,
+                    BuildListener listener, File changeLogFile)
+                    throws IOException, InterruptedException {
+                throw new InterruptedException();
+            }
+
+            private Object writeReplace() { // don't really care about save
+                return new NullSCM();
+            }
+        });
+
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        assertEquals(Result.ABORTED, build.getResult());
     }
 }

@@ -30,13 +30,13 @@ THE SOFTWARE.
     </l:header>
     <l:side-panel>
       <l:tasks>
-        <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
+        <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
         <t:actions/>
       </l:tasks>
     </l:side-panel>
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>
+        <l:icon class="icon-fingerprint icon-xlg"/>
         ${it.fileName}
       </h1>
       <div class="md5sum">
@@ -73,7 +73,7 @@ THE SOFTWARE.
                 <td class="fingerprint-summary-header">
                   <j:choose>
                     <j:when test="${job!=null}">
-                      <a href="${rootURL}/${job.url}">${j}</a>
+                      <a href="${rootURL}/${job.url}" class="model-link inside">${j}</a>
                     </j:when>
                     <j:otherwise>
                       ${j}

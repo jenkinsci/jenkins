@@ -60,19 +60,27 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     protected transient WeakReference<AnnotatedLargeText> log;
 
     /**
-     * Gets the permission object that represents the permission to perform this task.
+     * Gets the permission object that represents the permission (against {@link #getACL}) to perform this task.
+     * Generally your implementation of {@link #getIconFileName} should return null if {@code !getACL().hasPermission(getPermission())}.
      */
     protected abstract Permission getPermission();
 
     /**
-     * Gets the {@link ACL} against which the permissions are checked.
+     * Gets the {@link ACL} against which {@link #getPermission} is checked.
      */
     protected abstract ACL getACL();
+
+    /**
+     * @inheritDoc
+     * @see #getPermission
+     */
+    @Override public abstract String getIconFileName();
 
     /**
      * @deprecated as of 1.350
      *      Use {@link #obtainLog()}, which returns the same object in a more type-safe signature.
      */
+    @Deprecated
     public LargeText getLog() {
         return obtainLog();
     }

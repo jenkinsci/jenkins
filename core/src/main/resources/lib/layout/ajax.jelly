@@ -34,19 +34,25 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form" xmlns:p="/lib/hudson/project">
+  <st:documentation>
+    Sets up the same 'global' variables that the l:layout tag does for content loaded by AJAX scripts.
+
+    <st:attribute name="contentType">
+      Content-type of the response page. This will be ignored if this tag is encountered while
+      evaluating a page that has called l:layout tag.
+    </st:attribute>
+  </st:documentation>
   <j:choose>
     <j:when test="${rootURL!=null}">
-      <!-- no envelope needed, since this is called during full HTML rendering. -->
+      <!-- no envelope needed, since this is called during full HTML rendering. Don't overwrite content-type either -->
       <d:invokeBody/>
     </j:when>
     <j:otherwise>
       <!-- called to generate partial HTML. set up HTML headers and etc -->
       <!-- copied from layout.jelly -->
-      <st:contentType value="text/html;charset=UTF-8" />
-      <j:set var="rootURL" value="${request.contextPath}" />
+      <st:contentType value="${attrs.contentType?:'text/html;charset=UTF-8'}" />
       <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-      <j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
-      <j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
+      ${h.initPageVariables(context)}
       <j:set var="ajax" value="true"/>
       
       <d:invokeBody/>

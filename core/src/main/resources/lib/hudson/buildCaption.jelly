@@ -27,24 +27,24 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<h1>
+	<h1 class="build-caption page-headline">
 	  <j:if test="${it.building}">
-	    <div style="float:right">
+	    <div class="build-caption-progress-container" style="float:right">
 	      <table class="middle-align"><tr>
 	        <td>
 	          ${%Progress}:
-	        </td><td>
+	        </td><td class="build-caption-progress-bar">
 	          <t:buildProgressBar build="${it}"/>
 	        </td><td>
             <j:if test="${it.parent.hasAbortPermission()}">
-              <a href="stop"><img src="${imagesURL}/16x16/stop.png" alt="[${%cancel}]" height="16" width="16" /></a>
+              <l:stopButton href="stop" alt="[${%cancel}]"/>
             </j:if>
 	        </td>
 	      </tr></table>
 	    </div>
 	  </j:if>
 	  
-	  <img src="buildStatus" width="48" height="48" alt="${it.iconColor.description}" tooltip="${it.iconColor.description}" />
+	  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
 	  <d:invokeBody />
 	</h1>
 </j:jelly>

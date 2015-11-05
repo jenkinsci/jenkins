@@ -29,47 +29,48 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:set var="link" value="${it.baseUrl}/${build.number}/" />
   <j:set var="transitive" value="${(it.firstTransientBuildKey!=null and (it.adapter.compare(build,it.firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
-  <tr class="build-row no-wrap ${transitive}">
-    <td>
-      <a href="${link}console"><img width="16" height="16" src="${imagesURL}/16x16/${build.buildStatusUrl}" alt="${build.iconColor.description} &gt; ${%Console Output}" tooltip="${build.iconColor.description} &gt; ${%Console Output}" /></a><st:nbsp/>
-      ${build.displayName}
-    </td>
-    <td style="padding-right:0">
-      <a class="tip" href="${link}">
-        <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>
-      </a>
-    </td>
-    <td class="middle-align">
-      <j:set var="badges" value="${build.badgeActions}"/>
-      <j:if test="${!empty(badges)}">
-        <st:nbsp/>
-        <j:forEach var="badge" items="${badges}">
-          <st:include it="${badge}" page="badge.jelly" />
-        </j:forEach>
+  <tr class="build-row ${transitive} single-line">
+    <td class="build-row-cell">
+      <div class="pane build-name">
+        <div class="build-icon">
+          <a class="build-status-link" href="${link}console"><l:icon alt="${build.iconColor.description} &gt; ${%Console Output}" class="${build.buildStatusIconClassName} icon-sm" tooltip="${build.iconColor.description} &gt; ${%Console Output}"/></a>
+        </div>
+        <a class="tip model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
+      </div>
+      <div class="pane build-details" time="${build.timestamp.time.time}">
+        <a class="tip model-link inside build-link" href="${link}" update-parent-class=".build-row">
+          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" />
+        </a>
+        <j:if test="${build.building}">
+          <j:set target="${it}" property="nextBuildNumberToFetch" value="${build.number}"/>
+          <t:buildProgressBar build="${build}"/>
+        </j:if>
+      </div>
+      <div class="pane build-controls">
+        <div class="middle-align build-badge">
+          <j:set var="badges" value="${build.badgeActions}"/>
+          <j:if test="${!empty(badges)}">
+            <st:nbsp/>
+            <j:forEach var="badge" items="${badges}">
+              <st:include it="${badge}" page="badge.jelly" />
+            </j:forEach>
+          </j:if>
+        </div>
+        <j:if test="${build.building}">
+          <div class="build-stop">
+            <!-- Check ABORT permission for Project, Admin permission otherwise -->
+            <j:if test="${empty(it.owner.ABORT) ? h.hasPermission(app.ADMINISTER) : it.owner.hasPermission(it.owner.ABORT)}">
+              <l:stopButton href="${link}stop" alt="[cancel]"/>
+            </j:if>
+          </div>
+        </j:if>
+      </div>
+      <j:if test="${!empty build.description}">
+        <div class="pane desc indent-multiline">
+          <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
+        </div>
       </j:if>
+      <div class="left-bar" />
     </td>
   </tr>
-  <j:if test="${build.building}">
-    <j:set target="${it}" property="nextBuildNumberToFetch" value="${build.number}"/>
-    <tr class="transitive"><td></td><td colspan="2" style="padding:0">
-      <table class="middle-align">
-        <tr><td>
-          <t:buildProgressBar build="${build}"/>
-        </td><td style="padding:0">
-          <!-- Check ABORT permission for Project, Admin permission otherwise -->
-          <j:if test="${empty(it.owner.ABORT) ? h.hasPermission(app.ADMINISTER) : it.owner.hasPermission(it.owner.ABORT)}">
-            <a href="${link}stop"><img src="${imagesURL}/16x16/stop.png" alt="[cancel]" height="16" width="16"/></a>
-          </j:if>
-        </td></tr>
-      </table>
-    </td></tr>
-  </j:if>
-  <j:if test="${!empty build.description}">
-    <tr class="${transitive}">
-      <td></td>
-      <td colspan="2" class="desc">
-        <j:out value="${build.truncatedDescription}"/>
-      </td>
-    </tr>
-  </j:if>
 </j:jelly>

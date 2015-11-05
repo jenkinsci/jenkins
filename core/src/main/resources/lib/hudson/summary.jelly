@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt
+Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,11 @@ THE SOFTWARE.
     Displays a link with a large icon. Used in the project top page.
 
     <st:attribute name="icon" use="required">
-      link to the icon image. relative paths will be resolved against images/48x48,
-      and absolute paths (that start with '/') will be resolved against the context root of Hudson
+      The icon class name e.g. 'icon-folder'.
+
+      On older versions of Jenkins, this attribute value used to be a link to the raw icon image, where relative
+      paths were resolved against images/48x48 and absolute paths (that start with '/') were resolved against
+      the context root of Hudson.
     </st:attribute>
     <st:attribute name="href">
       where the summary icon links to.
@@ -45,15 +48,63 @@ THE SOFTWARE.
     <j:if test="${attrs.icon!=null}">
       <tr>
         <td>
-          <a href="${attrs.href}">
-            <img src="${icon.startsWith('/') ? rootURL+icon : imagesURL+'/48x48/'+icon}"
-                 alt="" width="48" height="48" style="margin-right:1em" />
-          </a>
+          <!--
+            Backward compatibility.  Ugly but needed for now.
+
+            'icon' can be an icon class name (e.g. 'icon-folder'), but can also be an icon file name
+            (without path e.g. 'folder.png'), or can be a full path and name (e.g. to an icon in a
+            plugin - '/plugin/images/48x48/xxxx.png').  So, first we see can we derive an icon
+            from the 'icon' value, which will work if it's just something like 'folder.png'.  Failing
+            that, we try deriving it by URL (assuming it's a full icon path).  If all that fails,
+            we just fall back to the old method by passing a 'src' attribute to the <icon> tag.
+          -->
+          <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icon + ' icon-xlg')}"/>
+          <j:if test="${iconMetadata == null}">
+            <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
+            <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(icon) + ' icon-xlg')}"/>
+          </j:if>
+          <j:if test="${iconMetadata == null}">
+            <j:set var="iconMetadata" value="${icons.getIconByUrl(icon)}"/>
+          </j:if>
+
+          <j:choose>
+            <j:when test="${attrs.href!=null}">
+              <a href="${attrs.href}">
+                <j:choose>
+                  <j:when test="${iconMetadata != null}">
+                    <l:icon class="${iconMetadata.classSpec}"/>
+                  </j:when>
+                  <j:otherwise>
+                    <l:icon src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
+                            alt="" style="width: 48px; height: 48px; margin-right:1em;" />
+                  </j:otherwise>
+                </j:choose>
+              </a>
+            </j:when>
+            <j:otherwise>
+              <j:choose>
+                <j:when test="${iconMetadata != null}">
+                  <l:icon class="${iconMetadata.classSpec}"/>
+                </j:when>
+                <j:otherwise>
+                  <l:icon src="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"
+                          alt="" style="width: 48px; height: 48px; margin-right:1em;" />
+                </j:otherwise>
+              </j:choose>
+            </j:otherwise>
+          </j:choose>
         </td>
         <td style="vertical-align:middle">
-          <a href="${attrs.iconOnly==null ? attrs.href : null}">
-            <d:invokeBody />
-          </a>
+          <j:choose>
+            <j:when test="${attrs.href!=null &amp;&amp; !attrs.iconOnly}">
+              <a href="${attrs.href}">
+                <d:invokeBody />
+              </a>
+            </j:when>
+            <j:otherwise>
+              <d:invokeBody />
+            </j:otherwise>
+          </j:choose>
         </td>
       </tr>
     </j:if>

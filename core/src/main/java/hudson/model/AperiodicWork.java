@@ -25,13 +25,17 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
 
 import java.util.Random;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 
 /**
@@ -74,22 +78,35 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
      * By default it chooses the value randomly between 0 and {@link #getRecurrencePeriod()}
      */
     public long getInitialDelay() {
-        return Math.abs(new Random().nextLong())%getRecurrencePeriod();
+        long l = RANDOM.nextLong();
+        // Math.abs(Long.MIN_VALUE)==Long.MIN_VALUE!
+        if (l==Long.MIN_VALUE)
+            l++;
+        return Math.abs(l)%getRecurrencePeriod();
     }
 
     @Override
     public final void doRun() throws Exception{
     	doAperiodicRun();
-    	Trigger.timer.schedule(getNewInstance(), getRecurrencePeriod());
+        Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
     }
-    
+
+    @Initializer(after= JOB_LOADED)
+    public static void init() {
+        // start all AperidocWorks
+        for (AperiodicWork p : AperiodicWork.all()) {
+            Timer.get().schedule(p, p.getInitialDelay(), TimeUnit.MILLISECONDS);
+        }
+    }
+
     protected abstract void doAperiodicRun();
     
     /**
      * Returns all the registered {@link AperiodicWork}s.
      */
     public static ExtensionList<AperiodicWork> all() {
-        return Jenkins.getInstance().getExtensionList(AperiodicWork.class);
+        return ExtensionList.lookup(AperiodicWork.class);
     }
 
+    private static final Random RANDOM = new Random();
 }

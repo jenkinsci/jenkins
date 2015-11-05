@@ -31,11 +31,21 @@ THE SOFTWARE.
         <t:buildCaption>
           ${%Build Artifacts}
         </t:buildCaption>
-        <ul>
+        <table class="fileList">
           <j:forEach var="f" items="${it.artifacts}">
-            <li><a href="artifact/${f.href}">${f.displayPath}</a></li>
+            <tr>
+              <td>
+                <l:icon class="icon-text icon-sm"/>
+              </td>
+              <td>
+                <a href="artifact/${f.href}">${f.displayPath}</a>
+              </td>
+              <td class="fileSize">
+                ${f.length}
+              </td>
+            </tr>
           </j:forEach>
-        </ul>
+        </table>
       </l:main-panel>
     </l:layout>
   </j:if>

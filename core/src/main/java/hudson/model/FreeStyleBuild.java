@@ -23,9 +23,6 @@
  */
 package hudson.model;
 
-import hudson.slaves.WorkspaceList;
-import hudson.slaves.WorkspaceList.Lease;
-
 import java.io.IOException;
 import java.io.File;
 
@@ -43,6 +40,6 @@ public class FreeStyleBuild extends Build<FreeStyleProject,FreeStyleBuild> {
 
     @Override
     public void run() {
-        run(new RunnerImpl());
+        execute(new BuildExecution());
     }
 }

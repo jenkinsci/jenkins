@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
+ * Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +24,19 @@
  */
 package hudson.model;
 
+import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.io.StreamException;
+import com.thoughtworks.xstream.io.xml.XppDriver;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
-import hudson.matrix.Layouter.Column;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Node.Mode;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
+import hudson.model.listeners.ItemListener;
+import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -40,22 +45,47 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
+import hudson.tasks.UserAvatarResolver;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
+import hudson.util.FormApply;
 import hudson.util.RunList;
+import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithChildren;
+import jenkins.util.ProgressiveRendering;
+import jenkins.util.xml.XMLUtils;
+
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.tools.ant.filters.StringInputStream;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -65,10 +95,18 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.model.Jenkins.*;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.xml.sax.SAXException;
 
 /**
  * Encapsulates the rendering of the list of {@link TopLevelItem}s
@@ -78,7 +116,7 @@ import static jenkins.model.Jenkins.*;
  * This is an extension point in Hudson, allowing different kind of
  * rendering to be added as plugins.
  *
- * <h2>Note for implementors</h2>
+ * <h2>Note for implementers</h2>
  * <ul>
  * <li>
  * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
@@ -91,7 +129,8 @@ import static jenkins.model.Jenkins.*;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren {
+
     /**
      * Container of this view. Set right after the construction
      * and never change thereafter.
@@ -140,6 +179,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
+
+    /**
+     * Gets all the items recursively contained in this collection in a read-only view.
+     * <p>
+     * The default implementation recursively adds the items of all contained Views
+     * in case this view implements {@link ViewGroup}, which should be enough for most cases.
+     *
+     * @since 1.520
+     */
+    public Collection<TopLevelItem> getAllItems() {
+
+        if (this instanceof ViewGroup) {
+            final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
+
+            for(View view: ((ViewGroup) this).getViews()) {
+                items.addAll(view.getAllItems());
+            }
+            return Collections.unmodifiableCollection(items);
+        } else {
+            return getItems();
+        }
+    }
 
     /**
      * Gets the {@link TopLevelItem} of the given name.
@@ -195,18 +256,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public ItemGroup<? extends TopLevelItem> getOwnerItemGroup() {
         try {
-            return _getOwnerItemGroup();
+            return owner.getItemGroup();
         } catch (AbstractMethodError e) {
-            return Hudson.getInstance();
+            return Jenkins.getInstance();
         }
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private ItemGroup<? extends TopLevelItem> _getOwnerItemGroup() {
-        return owner.getItemGroup();
     }
 
     public View getOwnerPrimaryView() {
@@ -225,7 +278,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             return _getOwnerViewActions();
         } catch (AbstractMethodError e) {
-            return Hudson.getInstance().getActions();
+            return Jenkins.getInstance().getActions();
         }
     }
 
@@ -240,7 +293,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-
+    
     /**
      * Gets the view properties configured for this view.
      * @since 1.406
@@ -251,15 +304,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // see JENKINS-9431
         //
         // until we have that, putting this logic here.
-        synchronized (this) {
+        synchronized (PropertyList.class) {
             if (properties == null) {
                 properties = new PropertyList(this);
             } else {
                 properties.setOwner(this);
             }
+            return properties;
         }
-
-        return properties;
     }
 
     /**
@@ -316,6 +368,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     /**
+     * Enables or disables automatic refreshes of the view.
+     * By default, automatic refreshes are enabled.
+     * @since 1.557
+     */
+    public boolean isAutomaticRefreshEnabled() {
+        return true;
+    }
+    
+    /**
      * If true, only show relevant executors
      */
     public boolean isFilterExecutors() {
@@ -362,53 +423,66 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     public List<Computer> getComputers() {
-    	Computer[] computers = Jenkins.getInstance().getComputers();
-    	
-    	if (!isFilterExecutors()) {
-    		return Arrays.asList(computers);
-    	}
-    	
-    	List<Computer> result = new ArrayList<Computer>();
-    	
-    	boolean roam = false;
-    	HashSet<Label> labels = new HashSet<Label>();
-    	for (Item item: getItems()) {
-    		if (item instanceof AbstractProject<?,?>) {
-    			AbstractProject<?,?> p = (AbstractProject<?, ?>) item;
-    			Label l = p.getAssignedLabel();
-    			if (l != null) {
-    				labels.add(l);
-    			} else {
-    				roam = true;
-    			}
-    		}
-    	}
-    	
-    	for (Computer c: computers) {
-    		Node n = c.getNode();
-    		if (n != null) {
-    			if (roam && n.getMode() == Mode.NORMAL || !Collections.disjoint(n.getAssignedLabels(), labels)) {
-    				result.add(c);
-    			}
-    		}
-    	}
-    	
-    	return result;
+        Computer[] computers = Jenkins.getInstance().getComputers();
+
+        if (!isFilterExecutors()) {
+            return Arrays.asList(computers);
+        }
+
+        List<Computer> result = new ArrayList<Computer>();
+
+        HashSet<Label> labels = new HashSet<Label>();
+        for (Item item : getItems()) {
+            if (item instanceof AbstractProject<?, ?>) {
+                labels.addAll(((AbstractProject<?, ?>) item).getRelevantLabels());
+            }
+        }
+
+        for (Computer c : computers) {
+            if (isRelevant(labels, c)) result.add(c);
+        }
+
+        return result;
     }
-    
+
+    private boolean isRelevant(Collection<Label> labels, Computer computer) {
+        Node node = computer.getNode();
+        if (node == null) return false;
+        if (labels.contains(null) && node.getMode() == Mode.NORMAL) return true;
+
+        for (Label l : labels)
+            if (l != null && l.contains(node))
+                return true;
+        return false;
+    }
+
+    private List<Queue.Item> filterQueue(List<Queue.Item> base) {
+        if (!isFilterQueue()) {
+            return base;
+        }
+
+        Collection<TopLevelItem> items = getItems();
+        List<Queue.Item> result = new ArrayList<Queue.Item>();
+        for (Queue.Item qi : base) {
+            if (items.contains(qi.task)) {
+                result.add(qi);
+            } else
+            if (qi.task instanceof AbstractProject<?, ?>) {
+                AbstractProject<?,?> project = (AbstractProject<?, ?>) qi.task;
+                if (items.contains(project.getRootProject())) {
+                    result.add(qi);
+                }
+            }
+        }
+        return result;
+    }
+
     public List<Queue.Item> getQueueItems() {
-    	if (!isFilterQueue()) {
-    		return Arrays.asList(Jenkins.getInstance().getQueue().getItems());
-    	}
-    	
-    	Collection<TopLevelItem> items = getItems(); 
-    	List<Queue.Item> result = new ArrayList<Queue.Item>();
-    	for (Queue.Item qi: Jenkins.getInstance().getQueue().getItems()) {
-    		if (items.contains(qi.task)) {
-    			result.add(qi);
-    		}
-    	}
-    	return result;
+        return filterQueue(Arrays.asList(Jenkins.getInstance().getQueue().getItems()));
+    }
+
+    public List<Queue.Item> getApproximateQueueItemsQuickly() {
+        return filterQueue(Jenkins.getInstance().getQueue().getApproximateItemsQuickly());
     }
 
     /**
@@ -429,6 +503,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return (owner!=null ? owner.getUrl() : "") + "view/" + Util.rawEncode(getViewName()) + '/';
     }
 
+    @Override public String toString() {
+        return super.toString() + "[" + getViewUrl() + "]";
+    }
+
     public String getSearchUrl() {
         return getUrl();
     }
@@ -447,17 +525,24 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	result.addAll(getOwnerViewActions());
     	synchronized (this) {
     		if (transientActions == null) {
-    			transientActions = TransientViewActionFactory.createAllFor(this); 
+                updateTransientActions();
     		}
     		result.addAll(transientActions);
     	}
     	return result;
     }
     
+    public synchronized void updateTransientActions() {
+        transientActions = TransientViewActionFactory.createAllFor(this); 
+    }
+    
     public Object getDynamic(String token) {
-        for (Action a : getActions())
+        for (Action a : getActions()) {
+            String url = a.getUrlName();
+            if (url==null)  continue;
             if(a.getUrlName().equals(token))
                 return a;
+        }
         return null;
     }
 
@@ -498,21 +583,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getACL().hasPermission(p);
     }
 
-    /**
-     * Called when a job name is changed or deleted.
-     *
-     * <p>
-     * If this view contains this job, it should update the view membership so that
-     * the renamed job will remain in the view, and the deleted job is removed.
-     *
-     * @param item
-     *      The item whose name is being changed.
-     * @param oldName
-     *      Old name of the item. Always non-null.
-     * @param newName
-     *      New name of the item, if the item is renamed. Or null, if the item is removed.
-     */
-    public abstract void onJobRenamed(Item item, String oldName, String newName);
+    /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
+    @Deprecated
+    public void onJobRenamed(Item item, String oldName, String newName) {}
 
     @ExportedBean(defaultVisibility=2)
     public static final class UserInfo implements Comparable<UserInfo> {
@@ -525,6 +598,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
          * Which project did this user commit? Can be null.
          */
         private AbstractProject project;
+
+        /** @see UserAvatarResolver */
+        String avatar;
 
         UserInfo(User user, AbstractProject p, Calendar lastChange) {
             this.user = user;
@@ -577,16 +653,25 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Does this {@link View} has any associated user information recorded?
+     * @deprecated Potentially very expensive call; do not use from Jelly views.
      */
-    public final boolean hasPeople() {
+    @Deprecated
+    public boolean hasPeople() {
         return People.isApplicable(getItems());
     }
 
     /**
      * Gets the users that show up in the changelog of this job collection.
      */
-    public final People getPeople() {
+    public People getPeople() {
         return new People(this);
+    }
+
+    /**
+     * @since 1.484
+     */
+    public AsynchPeople getAsynchPeople() {
+        return new AsynchPeople(this);
     }
 
     @ExportedBean
@@ -594,7 +679,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         @Exported
         public final List<UserInfo> users;
 
-        public final Object parent;
+        public final ModelObject parent;
 
         public People(Jenkins parent) {
             this.parent = parent;
@@ -651,6 +736,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return new Api(this);
         }
 
+        /**
+         * @deprecated Potentially very expensive call; do not use from Jelly views.
+         */
+        @Deprecated
         public static boolean isApplicable(Collection<? extends Item> items) {
             for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
@@ -670,19 +759,178 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
     }
 
+    /**
+     * Variant of {@link People} which can be displayed progressively, since it may be slow.
+     * @since 1.484
+     */
+    public static final class AsynchPeople extends ProgressiveRendering { // JENKINS-15206
 
+        private final Collection<TopLevelItem> items;
+        private final User unknown;
+        private final Map<User,UserInfo> users = new HashMap<User,UserInfo>();
+        private final Set<User> modified = new HashSet<User>();
+        private final String iconSize;
+        public final ModelObject parent;
+
+        /** @see Jenkins#getAsynchPeople */
+        public AsynchPeople(Jenkins parent) {
+            this.parent = parent;
+            items = parent.getItems();
+            unknown = User.getUnknown();
+        }
+
+        /** @see View#getAsynchPeople */
+        public AsynchPeople(View parent) {
+            this.parent = parent;
+            items = parent.getItems();
+            unknown = null;
+        }
+
+        {
+            StaplerRequest req = Stapler.getCurrentRequest();
+            iconSize = req != null ? Functions.validateIconSize(Functions.getCookie(req, "iconSize", "32x32")) : "32x32";
+        }
+
+        @Override protected void compute() throws Exception {
+            int itemCount = 0;
+            for (Item item : items) {
+                for (Job<?,?> job : item.getAllJobs()) {
+                    if (job instanceof AbstractProject) {
+                        AbstractProject<?,?> p = (AbstractProject) job;
+                        RunList<? extends AbstractBuild<?,?>> builds = p.getBuilds();
+                        int buildCount = 0;
+                        for (AbstractBuild<?,?> build : builds) {
+                            if (canceled()) {
+                                return;
+                            }
+                            for (ChangeLogSet.Entry entry : build.getChangeSet()) {
+                                User user = entry.getAuthor();
+                                UserInfo info = users.get(user);
+                                if (info == null) {
+                                    UserInfo userInfo = new UserInfo(user, p, build.getTimestamp());
+                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
+                                    synchronized (this) {
+                                        users.put(user, userInfo);
+                                        modified.add(user);
+                                    }
+                                } else if (info.getLastChange().before(build.getTimestamp())) {
+                                    synchronized (this) {
+                                        info.project = p;
+                                        info.lastChange = build.getTimestamp();
+                                        modified.add(user);
+                                    }
+                                }
+                            }
+                            // TODO consider also adding the user of the UserCause when applicable
+                            buildCount++;
+                            // TODO this defeats lazy-loading. Should rather do a breadth-first search, as in hudson.plugins.view.dashboard.builds.LatestBuilds
+                            // (though currently there is no quick implementation of RunMap.size() ~ idOnDisk.size(), which would be needed for proper progress)
+                            progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
+                        }
+                    }
+                }
+                itemCount++;
+                progress(1.0 * itemCount / (items.size() + /* handling User.getAll */1));
+            }
+            if (unknown != null) {
+                if (canceled()) {
+                    return;
+                }
+                for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
+                    if (canceled()) {
+                        return;
+                    }
+                    if (u == unknown) {
+                        continue;
+                    }
+                    if (!users.containsKey(u)) {
+                        UserInfo userInfo = new UserInfo(u, null, null);
+                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
+                        synchronized (this) {
+                            users.put(u, userInfo);
+                            modified.add(u);
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override protected synchronized JSON data() {
+            JSONArray r = new JSONArray();
+            for (User u : modified) {
+                UserInfo i = users.get(u);
+                JSONObject entry = new JSONObject().
+                        accumulate("id", u.getId()).
+                        accumulate("fullName", u.getFullName()).
+                        accumulate("url", u.getUrl()).
+                        accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/" + iconSize + "/user.png").
+                        accumulate("timeSortKey", i.getTimeSortKey()).
+                        accumulate("lastChangeTimeString", i.getLastChangeTimeString());
+                AbstractProject<?,?> p = i.getProject();
+                if (p != null) {
+                    entry.accumulate("projectUrl", p.getUrl()).accumulate("projectFullDisplayName", p.getFullDisplayName());
+                }
+                r.add(entry);
+            }
+            modified.clear();
+            return r;
+        }
+
+        public Api getApi() {
+            return new Api(new People());
+        }
+
+        /** JENKINS-16397 workaround */
+        @Restricted(NoExternalUse.class)
+        @ExportedBean
+        public final class People {
+
+            private View.People people;
+
+            @Exported public synchronized List<UserInfo> getUsers() {
+                if (people == null) {
+                    people = parent instanceof Jenkins ? new View.People((Jenkins) parent) : new View.People((View) parent);
+                }
+                return people.users;
+            }
+        }
+
+    }
+
+    void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
+        for(TopLevelItem item : items) {
+            
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine((String.format("Adding url=%s,displayName=%s",
+                            item.getSearchUrl(), item.getDisplayName())));
+            }
+            sib.add(item.getSearchUrl(), item.getDisplayName());
+        }        
+    }
+    
     @Override
     public SearchIndexBuilder makeSearchIndex() {
-        return super.makeSearchIndex()
-            .add(new CollectionSearchIndex() {// for jobs in the view
+        SearchIndexBuilder sib = super.makeSearchIndex();
+        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
                 protected TopLevelItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }
+                protected Collection<TopLevelItem> all() { return getItems(); }                
+                @Override
+                protected String getName(TopLevelItem o) {
+                    // return the name instead of the display for suggestion searching
+                    return o.getName();
+                }
             });
+        
+        // add the display name for each item in the search index
+        addDisplayNamesToSearchIndex(sib, getItems());
+
+        return sib;
     }
 
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
@@ -696,6 +944,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
+    @RequirePOST
     public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
@@ -707,13 +956,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         rename(req.getParameter("name"));
 
-        JSONObject json = req.getSubmittedForm();
-
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
+        updateTransientActions();  
 
         save();
 
-        rsp.sendRedirect2("../"+name);
+        FormApply.success("../" + Util.rawEncode(name)).generateResponse(req,rsp,this);
     }
 
     /**
@@ -726,8 +974,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Deletes this view.
      */
+    @RequirePOST
     public synchronized void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        requirePOST();
         checkPermission(DELETE);
 
         owner.deleteView(this);
@@ -783,10 +1031,94 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * Accepts <tt>config.xml</tt> submission, as well as serve it.
+     */
+    @WebMethod(name = "config.xml")
+    public HttpResponse doConfigDotXml(StaplerRequest req) throws IOException {
+        if (req.getMethod().equals("GET")) {
+            // read
+            checkPermission(READ);
+            return new HttpResponse() {
+                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                    rsp.setContentType("application/xml");
+                    View.this.writeXml(rsp.getOutputStream());
+                }
+            };
+        }
+        if (req.getMethod().equals("POST")) {
+            // submission
+            updateByXml(new StreamSource(req.getReader()));
+            return HttpResponses.ok();
+        }
+
+        // huh?
+        return HttpResponses.error(SC_BAD_REQUEST, "Unexpected request method " + req.getMethod());
+    }
+
+    /**
+     * @since 1.538
+     */
+    public void writeXml(OutputStream out) throws IOException {
+        // pity we don't have a handy way to clone Jenkins.XSTREAM to temp add the omit Field
+        XStream2 xStream2 = new XStream2();
+        xStream2.omitField(View.class, "owner");
+        xStream2.toXMLUTF8(View.this,  out);
+    }
+
+    /**
+     * Updates the View with the new XML definition.
+     * @param source source of the Item's new definition.
+     *               The source should be either a <code>StreamSource</code> or <code>SAXSource</code>, other sources
+     *               may not be handled.
+     */
+    public void updateByXml(Source source) throws IOException {
+        checkPermission(CONFIGURE);
+        StringWriter out = new StringWriter();
+        try {
+            // this allows us to use UTF-8 for storing data,
+            // plus it checks any well-formedness issue in the submitted
+            // data
+            XMLUtils.safeTransform(source, new StreamResult(out));
+            out.close();
+        } catch (TransformerException e) {
+            throw new IOException("Failed to persist configuration.xml", e);
+        } catch (SAXException e) {
+            throw new IOException("Failed to persist configuration.xml", e);
+        }
+
+        // try to reflect the changes by reloading
+        InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")));
+        try {
+            // Do not allow overwriting view name as it might collide with another
+            // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
+            String oldname = name;
+            Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
+            name = oldname;
+        } catch (StreamException e) {
+            throw new IOException("Unable to read",e);
+        } catch(ConversionException e) {
+            throw new IOException("Unable to read",e);
+        } catch(Error e) {// mostly reflection errors
+            throw new IOException("Unable to read",e);
+        } finally {
+            in.close();
+        }
+        save();
+    }
+
+    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ContextMenu m = new ContextMenu();
+        for (TopLevelItem i : getItems())
+            m.add(i.getShortUrl(),i.getDisplayName());
+        return m;
+    }
+
+    /**
      * A list of available view types.
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<View> LIST = new DescriptorList<View>(View.class);
 
     /**
@@ -817,6 +1149,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._View_CreatePermission_Description(), Permission.CREATE, PermissionScope.ITEM_GROUP);
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._View_DeletePermission_Description(), Permission.DELETE, PermissionScope.ITEM_GROUP);
     public static final Permission CONFIGURE = new Permission(PERMISSIONS,"Configure", Messages._View_ConfigurePermission_Description(), Permission.CONFIGURE, PermissionScope.ITEM_GROUP);
+    public static final Permission READ = new Permission(PERMISSIONS,"Read", Messages._View_ReadPermission_Description(), Permission.READ, PermissionScope.ITEM_GROUP);
 
     // to simplify access from Jelly
     public static Permission getItemCreatePermission() {
@@ -825,23 +1158,85 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
+        String requestContentType = req.getContentType();
+        if(requestContentType==null)
+            throw new Failure("No Content-Type header set");
+
+        boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
+
         String name = req.getParameter("name");
         checkGoodName(name);
         if(owner.getView(name)!=null)
-            throw new FormException(Messages.Hudson_ViewAlreadyExists(name),"name");
+            throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
         String mode = req.getParameter("mode");
-        if (mode==null || mode.length()==0)
-            throw new FormException(Messages.View_MissingMode(),"mode");
+        if (mode==null || mode.length()==0) {
+            if(isXmlSubmission) {
+                View v = createViewFromXML(name, req.getInputStream());
+                v.owner = owner;
+                rsp.setStatus(HttpServletResponse.SC_OK);
+                return v;
+            } else
+                throw new Failure(Messages.View_MissingMode());
+        }
 
-        // create a view
-        View v = all().findByName(mode).newInstance(req,req.getSubmittedForm());
+        View v;
+        if (mode!=null && mode.equals("copy")) {
+            v = copy(req, owner, name);
+        } else {
+            ViewDescriptor descriptor = all().findByName(mode);
+            if (descriptor == null) {
+                throw new Failure("No view type ‘" + mode + "’ is known");
+            }
+
+            // create a view
+            v = descriptor.newInstance(req,req.getSubmittedForm());
+        }
         v.owner = owner;
 
         // redirect to the config screen
         rsp.sendRedirect2(req.getContextPath()+'/'+v.getUrl()+v.getPostConstructLandingPage());
 
         return v;
+    }
+
+    private static View copy(StaplerRequest req, ViewGroup owner, String name) throws IOException {
+        View v;
+        String from = req.getParameter("from");
+        View src = src = owner.getView(from);
+
+        if(src==null) {
+            if(Util.fixEmpty(from)==null)
+                throw new Failure("Specify which view to copy");
+            else
+                throw new Failure("No such view: "+from);
+        }
+        String xml = Jenkins.XSTREAM.toXML(src);
+        v = createViewFromXML(name, new StringInputStream(xml));
+        return v;
+    }
+
+    /**
+     * Instantiate View subtype from XML stream.
+     *
+     * @param name Alternative name to use or <tt>null</tt> to keep the one in xml.
+     */
+    public static View createViewFromXML(String name, InputStream xml) throws IOException {
+        InputStream in = new BufferedInputStream(xml);
+        try {
+            View v = (View) Jenkins.XSTREAM.fromXML(in);
+            if (name != null) v.name = name;
+            checkGoodName(v.name);
+            return v;
+        } catch(StreamException e) {
+            throw new IOException("Unable to read",e);
+        } catch(ConversionException e) {
+            throw new IOException("Unable to read",e);
+        } catch(Error e) {// mostly reflection errors
+            throw new IOException("Unable to read",e);
+        } finally {
+            in.close();
+        }
     }
 
     public static class PropertyList extends DescribableList<ViewProperty,ViewPropertyDescriptor> {
@@ -868,4 +1263,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * It might be useful to override this.
      */
     public static final Message<View> NEW_PRONOUN = new Message<View>();
+
+    private final static Logger LOGGER = Logger.getLogger(View.class.getName());
 }

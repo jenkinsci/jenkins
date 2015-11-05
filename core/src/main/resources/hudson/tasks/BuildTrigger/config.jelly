@@ -26,21 +26,21 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:entry title="${%Projects to build}">
 	  <f:textbox name="buildTrigger.childProjects" value="${instance.childProjectsValue}"
-               checkUrl="'descriptorByName/BuildTrigger/check?value='+encodeURIComponent(this.value)"
+               checkUrl="'descriptorByName/hudson.tasks.BuildTrigger/check?value='+encodeURIComponent(this.value)"
                autoCompleteDelimChar=","
                field="childProjects"/>
 	</f:entry>
-  <j:if test="${descriptor.showEvenIfUnstableOption(targetType)}">
+  <j:if test="${descriptor.showEvenIfUnstableOption(targetType)}"> <!-- TODO JENKINS-16444 this will always be true when first adding step -->
   	<f:entry title="">
-      <f:radio name="threshold" checked="${instance.threshold==null || instance.threshold.toString()=='SUCCESS'}"
-              title="${%Trigger only if build succeeds}" value="SUCCESS"/>
+      <f:radio name="BuildTrigger.threshold" checked="${instance.threshold==null || instance.threshold.toString()=='SUCCESS'}"
+              title="${%Trigger only if build is stable}" value="SUCCESS"/>
     </f:entry>
     <f:entry title="">
-      <f:radio name="threshold" checked="${instance.threshold.toString()=='UNSTABLE'}"
+      <f:radio name="BuildTrigger.threshold" checked="${instance.threshold.toString()=='UNSTABLE'}"
               title="${%Trigger even if the build is unstable}" value="UNSTABLE"/>
     </f:entry>
     <f:entry title="">
-      <f:radio name="threshold" checked="${instance.threshold.toString()=='FAILURE'}"
+      <f:radio name="BuildTrigger.threshold" checked="${instance.threshold.toString()=='FAILURE'}"
               title="${%Trigger even if the build fails}" value="FAILURE"/>
     </f:entry>
   </j:if>

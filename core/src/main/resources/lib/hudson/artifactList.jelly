@@ -47,15 +47,30 @@ THE SOFTWARE.
         <j:choose>
           <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
             <!-- if not too many, just list them -->
-            <ul>
+            <table class="fileList">
               <j:forEach var="f" items="${artifacts}">
-                <li>
-                  <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
-                  <st:nbsp/>
-                  <a href="${baseURL}artifact/${f.href}/*fingerprint*/"><img src="${imagesURL}/16x16/fingerprint.png" alt="[fingerprint]" height="16" width="16" /></a>
-                </li>
+                <tr>
+                  <td>
+                    <l:icon class="icon-text icon-sm"/>
+                  </td>
+                  <td>
+                    <a href="${baseURL}artifact/${f.href}">${f.displayPath}</a>
+                  </td>
+                  <td class="fileSize">
+                    ${h.humanReadableByteSize(f.getFileSize())}
+                  </td>
+                  <td>
+                    <j:if test="${app.fingerprintMap.ready}">
+                      <a href="${baseURL}artifact/${f.href}/*fingerprint*/">
+                        <l:icon class="icon-fingerprint icon-sm"/>
+                      </a>
+                      <st:nbsp/>
+                    </j:if>
+                    <a href="${baseURL}artifact/${f.href}/*view*/">${%view}</a>
+                  </td>
+                </tr>
               </j:forEach>
-            </ul>
+            </table>
           </j:when>
           <j:when test="${size(artifacts) le build.TREE_CUTOFF}">
               <!-- otherwise (unless way too many) use a tree view -->
@@ -63,6 +78,12 @@ THE SOFTWARE.
               <link rel="stylesheet" href="${resURL}/scripts/yui/treeview/assets/skins/sam/treeview.css" type="text/css"/>
               <link rel="stylesheet" href="${resURL}/scripts/yui/fonts/fonts-min.css" type="text/css"/>
               <style type="text/css">#artifact-tree td { vertical-align:middle; }</style>
+              <br/>
+              <small>
+                <a href="javascript: YAHOO.widget.TreeView.getNode('artifact-tree',1).tree.expandAll()">${%Expand all}</a>
+                <st:nbsp/>
+                <a href="javascript: YAHOO.widget.TreeView.getNode('artifact-tree',1).tree.collapseAll();">${%Collapse all}</a>
+              </small>
               <div id="artifact-tree"></div>
               <script language="javascript">// &lt;![CDATA[
                 YAHOO.util.Event.onContentReady('artifact-tree', function () {

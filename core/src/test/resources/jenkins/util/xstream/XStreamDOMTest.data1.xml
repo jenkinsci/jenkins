@@ -1,0 +1,10 @@
+<foo>
+  <bar>
+    <test1 key="value">text!</test1>
+  </bar>
+  <zot>
+    <test2 key="value">
+      <test1 key="value">text!</test1>
+    </test2>
+  </zot>
+</foo>

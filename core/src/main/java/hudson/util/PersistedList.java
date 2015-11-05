@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -34,6 +35,7 @@ import hudson.model.Describable;
 import hudson.model.Saveable;
 
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -45,7 +47,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @since 1.MULTISOURCE
  */
-public class PersistedList<T> implements Iterable<T> {
+public class PersistedList<T> extends AbstractList<T> {
     protected final CopyOnWriteList<T> data = new CopyOnWriteList<T>();
     protected Saveable owner = Saveable.NOOP;
 
@@ -64,14 +66,18 @@ public class PersistedList<T> implements Iterable<T> {
         this.owner = owner;
     }
 
-    public void add(T item) throws IOException {
+    @WithBridgeMethods(void.class)
+    public boolean add(T item) {
         data.add(item);
-        onModified();
+        _onModified();
+        return true;
     }
 
-    public void addAll(Collection<? extends T> items) throws IOException {
+    @WithBridgeMethods(void.class)
+    public boolean addAll(Collection<? extends T> items) {
         data.addAll(items);
-        onModified();
+        _onModified();
+        return true;
     }
 
     public void replaceBy(Collection<? extends T> col) throws IOException {
@@ -118,9 +124,24 @@ public class PersistedList<T> implements Iterable<T> {
         }
     }
 
-    public boolean remove(T o) throws IOException {
-        boolean b = data.remove(o);
-        if (b)  onModified();
+    /**
+     * A convenience method to replace a single item.
+     *
+     * This method shouldn't be used when you are replacing a lot of stuff
+     * as copy-on-write semantics make this rather slow.
+     */
+    public void replace(T from, T to) throws IOException {
+        List<T> copy = new ArrayList<T>(data.getView());
+        for (int i=0; i<copy.size(); i++) {
+            if (copy.get(i).equals(from))
+                copy.set(i,to);
+        }
+        data.replaceBy(copy);
+    }
+
+    public boolean remove(Object o) {
+        boolean b = data.remove((T)o);
+        if (b)  _onModified();
         return b;
     }
 
@@ -153,6 +174,17 @@ public class PersistedList<T> implements Iterable<T> {
     }
 
     /**
+     * Version of {@link #onModified()} that throws an unchecked exception for compliance with {@link List}.
+     */
+    private void _onModified() {
+        try {
+            onModified();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Returns the snapshot view of instances as list.
      */
     public List<T> toList() {
@@ -162,7 +194,7 @@ public class PersistedList<T> implements Iterable<T> {
     /**
      * Gets all the {@link Describable}s in an array.
      */
-    public T[] toArray(T[] array) {
+    public <T> T[] toArray(T[] array) {
         return data.toArray(array);
     }
 
@@ -176,6 +208,10 @@ public class PersistedList<T> implements Iterable<T> {
 
     public boolean contains(Object item) {
         return data.contains(item);
+    }
+
+    @Override public String toString() {
+        return toList().toString();
     }
 
     /**

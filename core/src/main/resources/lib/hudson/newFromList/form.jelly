@@ -22,16 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Overall form that should be placed inside <l:main-panel>
-
-  Attributes:
-    @descriptors : collection of Descriptors
-    @nameTitle   : title of the name text field
-    @copyTitle   : title of the copy option
-    @copyNames   : options of names to choose from as the copy source. null to hide "copy" option
-    @checkUrl    : form field validation url
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <st:documentation>
@@ -46,6 +36,13 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="nameTitle" use="required">
       Caption of the text box to receive the name of the newly created item. Something like "Job name"
+    </st:attribute>
+    <st:attribute name="copyTitle">
+      Caption of the radio button that allows the user to copy from something that already exists.
+    </st:attribute>
+    <st:attribute name="showCopyOption">
+      If true, an extra radio button will appear that allows the user to copy from something that already exists.
+      See @copyTitle.
     </st:attribute>
     <st:attribute name="checkUrl" use="required">
       relative URL that point to the check method that validates the new name.
@@ -92,7 +89,7 @@ THE SOFTWARE.
       </s:entry>
     </j:if>
 
-    <s:block>
+    <s:bottomButtonBar>
       <!--
         when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
         So always force non-empty array
@@ -100,7 +97,7 @@ THE SOFTWARE.
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
       <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
-    </s:block>
+    </s:bottomButtonBar>
   </s:form>
   <script><![CDATA[
     var okButton = makeButton($('ok'),null);

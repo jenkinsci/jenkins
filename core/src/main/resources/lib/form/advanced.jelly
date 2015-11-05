@@ -42,13 +42,34 @@ THE SOFTWARE.
 
 	<tr><td/><td/>
 	  <td>
+      <st:adjunct includes="lib.form.advanced.advanced"/>
+
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
-	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advancedButton" />
+              <j:set var="id" value="${h.generateId()}"/>
+              <span style="display: none" id="${id}">
+                <l:icon class="icon-notepad icon-md" style="vertical-align: baseline" tooltip="${%customizedFields}"/>
+              </span>
+              <st:nbsp />
+	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->
 	    </div>
+            <j:new var="customizedFields" className="java.util.TreeSet"/>
 	    <table class="advancedBody"><tbody>
 	    <!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->
 	      <d:invokeBody/>
 	    </tbody></table>
+            <j:if test="${!customizedFields.isEmpty()}">
+              <script>
+                  {
+                      var span = $$('${id}');
+                      if (span != null) {
+                          span.style.display = '';
+                      } else if (console &amp;&amp; console.log) {
+                          console.log('no element ${id} for ${customizedFields}');
+                      }
+                  }
+              </script>
+            </j:if>
 	  </td>
+	  <td/>
 	</tr>
 </j:jelly>

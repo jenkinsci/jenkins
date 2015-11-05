@@ -23,16 +23,22 @@
  */
 package hudson.security;
 
+import hudson.Functions;
+import jenkins.model.Jenkins;
+import hudson.TcpSlaveAgentListener;
+
+import com.google.common.base.Strings;
 import org.acegisecurity.AuthenticationException;
+import org.acegisecurity.InsufficientAuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -56,7 +62,7 @@ import java.text.MessageFormat;
  */
 public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilterEntryPoint {
     @Override
-    public void commence(ServletRequest request, ServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(ServletRequest request, ServletResponse response, AuthenticationException reason) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rsp = (HttpServletResponse) response;
 
@@ -70,16 +76,29 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             rsp.sendError(SC_FORBIDDEN);
         } else {
             // give the opportunity to include the target URL
+            String uriFrom = req.getRequestURI();
+            if(!Strings.isNullOrEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
             String loginForm = req.getContextPath()+getLoginFormUrl();
-            loginForm = MessageFormat.format(loginForm, URLEncoder.encode(req.getRequestURI(),"UTF-8"));
+            loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
             req.setAttribute("loginForm", loginForm);
 
             rsp.setStatus(SC_FORBIDDEN);
             rsp.setContentType("text/html;charset=UTF-8");
+
+            Functions.advertiseHeaders(rsp);
+
+            AccessDeniedException2 cause = null;
+            // report the diagnosis information if possible
+            if (reason instanceof InsufficientAuthenticationException) {
+                if (reason.getCause() instanceof AccessDeniedException2) {
+                    cause = (AccessDeniedException2) reason.getCause();
+                    cause.reportAsHeaders(rsp);
+                }
+            }
+
             PrintWriter out;
             try {
-                ServletOutputStream sout = rsp.getOutputStream();
-                out = new PrintWriter(new OutputStreamWriter(sout));
+                out = new PrintWriter(new OutputStreamWriter(rsp.getOutputStream()));
             } catch (IllegalStateException e) {
                 out = rsp.getWriter();
             }
@@ -88,14 +107,22 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
                 "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
                 "<script>window.location.replace('%1$s');</script>" +
                 "</head>" +
-                "<body style='background-color:white; color:white;'>" +
-                "Authentication required</body></html>", loginForm
-            );
+                "<body style='background-color:white; color:white;'>\n" +
+                "\n\n"+
+                "Authentication required\n"+
+                "<!--\n",loginForm);
+
+            if (cause!=null)
+                cause.report(out);
+
+            out.printf(
+                "-->\n\n"+
+                "</body></html>");
             // Turn Off "Show Friendly HTTP Error Messages" Feature on the Server Side.
             // See http://support.microsoft.com/kb/294807
             for (int i=0; i < 10; i++)
                 out.print("                              ");
-            out.flush();
+            out.close();
         }
     }
 }

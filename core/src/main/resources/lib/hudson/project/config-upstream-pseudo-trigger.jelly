@@ -23,23 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  Present the pseudo "upstream project trigger". Used inside <p:config-trigger>
-
-  "it" is assumed to be a Project object.
+  Deprecated; empty. See ReverseBuildTrigger.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <!-- pseudo-trigger to list upstream projects. -->
-  <j:set var="up" value="${it.buildTriggerUpstreamProjects}" />
-  <f:optionalBlock name="pseudoUpstreamTrigger"
-                   help="/help/project-config/upstream.html"
-                   title="${%Build after other projects are built}" 
-                   checked="${!empty(up)}">
-    <f:entry title="${%Projects names}"
-             description="${%Multiple projects can be specified like 'abc, def'}">
-      <f:textbox name="upstreamProjects" value="${h.getProjectListString(up)}"
-        checkUrl="'descriptorByName/BuildTrigger/check?value='+encodeURIComponent(this.value)"
-        autoCompleteField="upstreamProjects"/>
-    </f:entry>
-  </f:optionalBlock>
-</j:jelly>
+<j:jelly xmlns:j="jelly:core"/>

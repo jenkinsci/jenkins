@@ -26,95 +26,42 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.Node;
-import hudson.model.TaskListener;
-import hudson.tasks.CommandInterpreter;
-import hudson.util.FormValidation;
-import java.io.IOException;
+import hudson.util.LineEndingConversion;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
+import java.io.ObjectStreamException;
 
 /**
  * Installs a tool by running an arbitrary shell command.
  * @since 1.305
  */
-public class CommandInstaller extends ToolInstaller {
-
-    /**
-     * Command to execute, similar to {@link CommandInterpreter#command}.
-     */
-    private final String command;
-
-    /**
-     * Resulting tool home directory.
-     */
-    private final String toolHome;
+public class CommandInstaller extends AbstractCommandInstaller {
 
     @DataBoundConstructor
     public CommandInstaller(String label, String command, String toolHome) {
-        super(label);
-        this.command = fixCrLf(command);
-        this.toolHome = toolHome;
+        super(label, LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Unix), toolHome);
     }
 
-    /**
-     * Fix CR/LF and always make it Unix style.
-     */
-    private static String fixCrLf(String s) {
-        // eliminate CR
-        int idx;
-        while((idx=s.indexOf("\r\n"))!=-1)
-            s = s.substring(0,idx)+s.substring(idx+1);
-        return s;
-    }
-    
-    public String getCommand() {
-        return command;
+    @Override
+    public String getCommandFileExtension() {
+        return ".sh";
     }
 
-    public String getToolHome() {
-        return toolHome;
+    @Override
+    public String[] getCommandCall(FilePath script) {
+        String[] cmd = {"sh", "-e", script.getRemote()};
+        return cmd;
     }
 
-    public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
-        FilePath dir = preferredLocation(tool, node);
-        // XXX support Windows batch scripts, Unix scripts with interpreter line, etc. (see CommandInterpreter subclasses)
-        FilePath script = dir.createTextTempFile("hudson", ".sh", command);
-        try {
-            String[] cmd = {"sh", "-e", script.getRemote()};
-            int r = node.createLauncher(log).launch().cmds(cmd).stdout(log).pwd(dir).join();
-            if (r != 0) {
-                throw new IOException("Command returned status " + r);
-            }
-        } finally {
-            script.delete();
-        }
-        return dir.child(toolHome);
+    private Object readResolve() throws ObjectStreamException {
+        return new CommandInstaller(getLabel(), getCommand(), getToolHome());
     }
 
     @Extension
-    public static class DescriptorImpl extends ToolInstallerDescriptor<CommandInstaller> {
+    public static class DescriptorImpl extends Descriptor<CommandInstaller> {
 
+        @Override
         public String getDisplayName() {
             return Messages.CommandInstaller_DescriptorImpl_displayName();
         }
-
-        public FormValidation doCheckCommand(@QueryParameter String value) {
-            if (value.length() > 0) {
-                return FormValidation.ok();
-            } else {
-                return FormValidation.error(Messages.CommandInstaller_no_command());
-            }
-        }
-
-        public FormValidation doCheckToolHome(@QueryParameter String value) {
-            if (value.length() > 0) {
-                return FormValidation.ok();
-            } else {
-                return FormValidation.error(Messages.CommandInstaller_no_toolHome());
-            }
-        }
-
     }
-
 }

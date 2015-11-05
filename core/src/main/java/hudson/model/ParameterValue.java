@@ -125,14 +125,30 @@ public abstract class ParameterValue implements Serializable {
      * @param build
      *      The build for which this parameter is being used. Never null.
      * @deprecated as of 1.344
-     *      Use {@link #buildEnvVars(AbstractBuild, EnvVars)} instead.
+     *      Use {@link #buildEnvironment(Run, EnvVars)} instead.
      */
+    @Deprecated
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String,String> env) {
-        if (env instanceof EnvVars && Util.isOverridden(ParameterValue.class,getClass(),"buildEnvVars", AbstractBuild.class,EnvVars.class))
-            // if the subtype already derives buildEnvVars(AbstractBuild,Map), then delegate to it
-            buildEnvVars(build,(EnvVars)env);
-
+        if (env instanceof EnvVars) {
+            if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
+                // if the subtype already derives buildEnvironment, then delegate to it
+                buildEnvironment(build, (EnvVars) env);
+            } else if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvVars", AbstractBuild.class, EnvVars.class)) {
+                buildEnvVars(build, (EnvVars) env);
+            }
+        }
         // otherwise no-op by default
+    }
+
+    /** @deprecated Use {@link #buildEnvironment(Run, EnvVars)} instead. */
+    @Deprecated
+    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
+        if (Util.isOverridden(ParameterValue.class, getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
+            buildEnvironment(build, env);
+        } else {
+            // for backward compatibility
+            buildEnvVars(build,(Map<String,String>)env);
+        }
     }
 
     /**
@@ -151,10 +167,13 @@ public abstract class ParameterValue implements Serializable {
      *      never null.
      * @param build
      *      The build for which this parameter is being used. Never null.
+     * @since 1.556
      */
-    public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        // for backward compatibility
-        buildEnvVars(build,(Map<String,String>)env);
+    public void buildEnvironment(Run<?,?> build, EnvVars env) {
+        if (build instanceof AbstractBuild) {
+            buildEnvVars((AbstractBuild) build, env);
+        }
+        // else do not know how to do it
     }
 
     /**
@@ -193,6 +212,8 @@ public abstract class ParameterValue implements Serializable {
         return VariableResolver.NONE;
     }
 
+    // TODO should there be a Run overload of this?
+
     /**
      * Accessing {@link ParameterDefinition} is not a good idea.
      *
@@ -202,6 +223,7 @@ public abstract class ParameterValue implements Serializable {
      *    instead copy them in {@link ParameterDefinition#createValue(StaplerRequest, JSONObject)}
      *    into {@link ParameterValue}.
      */
+    @Deprecated
     public ParameterDefinition getDefinition() {
         throw new UnsupportedOperationException();
     }
@@ -259,6 +281,26 @@ public abstract class ParameterValue implements Serializable {
     }
 
     /**
+     * Returns the most natural Java object that represents the actual value, like
+     * boolean, string, etc.
+     *
+     * If there's nothing that really fits the bill, the callee can return {@code this}.
+     * @since 1.568
+     */
+    public Object getValue() {
+        return null;
+    }
+
+    /**
+     * Controls where the build (that this parameter is submitted to) will happen.
+     *
+     * @return
+     *      null to run the build where it normally runs. If non-null, this will
+     *      override {@link AbstractProject#getAssignedLabel()}. If a build is
+     *      submitted with multiple parameters, the first one that returns non-null
+     *      from this method will win, and all others won't be consulted.
+     *
+     *
      * @since 1.414
      */
     public Label getAssignedLabel(SubTask task) {

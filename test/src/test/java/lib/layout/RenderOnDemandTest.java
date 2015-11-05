@@ -46,4 +46,49 @@ public class RenderOnDemandTest extends HudsonTestCase {
         ScriptResult r = p.executeJavaScript("var r=document.getElementsBySelector('DIV.a'); r[0].innerHTML+r[1].innerHTML+r[2].innerHTML");
         assertEquals("AlphaBravoCharlie",r.getJavaScriptResult().toString());
     }
+
+    /*
+    public void testMemoryConsumption() throws Exception {
+        createWebClient().goTo("self/testBehaviour"); // prime caches
+        int total = 0;
+        for (MemoryAssert.HistogramElement element : MemoryAssert.increasedMemory(new Callable<Void>() {
+            @Override public Void call() throws Exception {
+                createWebClient().goTo("self/testBehaviour");
+                return null;
+            }
+        }, new Filter() {
+            @Override public boolean accept(Object obj, Object referredFrom, Field reference) {
+                return !obj.getClass().getName().contains("htmlunit");
+            }
+        })) {
+            total += element.byteSize;
+            System.out.println(element.className + " ×" + element.instanceCount + ": " + element.byteSize);
+        }
+        System.out.println("total: " + total);
+    }
+    */
+
+    /**
+     * Makes sure that scripts get evaluated.
+     */
+    public void testScript() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testScript");
+        assertNull(p.getElementById("loaded"));
+
+        p.getElementById("button").click();
+        // all AJAX calls complete before the above method returns
+
+        assertNotNull(p.getElementById("loaded"));
+        ScriptResult r = p.executeJavaScript("x");
+        assertEquals("xxx",r.getJavaScriptResult().toString());
+
+        r = p.executeJavaScript("y");
+        assertEquals("yyy",r.getJavaScriptResult().toString());
+
+        // if you want to test this in the browser
+        /*
+        System.out.println("Try http://localhost:"+localPort+"/self/testScript");
+        interactiveBreak();
+        */
+    }
 }

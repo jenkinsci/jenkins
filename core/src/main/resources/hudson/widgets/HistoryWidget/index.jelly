@@ -31,11 +31,27 @@ THE SOFTWARE.
       <j:arg value="hudson.model.Job"/>
     </j:invoke>
     <j:if test="${jobClass.isAssignableFrom(it.owner.class)}">
-      <div style="float:right">(<a href="${it.baseUrl}/buildTimeTrend">${%trend}</a>)</div>
-      <t:buildHealth job="${it.owner}" iconSize="16x16" link="${it.baseUrl}/lastBuild"/>
+      <div style="float:right"><a href="${it.baseUrl}/buildTimeTrend">${%trend}</a></div>
+      <t:buildHealth job="${it.owner}" iconSizeClass="icon-sm" link="${it.baseUrl}/lastBuild"/>
     </j:if>
   </j:parse>
-  <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" id="buildHistory">
+
+  <j:parse var="paneFooter">
+    <!--
+      RSS link
+    -->
+    <span class="build-rss-links">
+        <a class="build-rss-all-icon" href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+        <st:nbsp/>
+        <a class="build-rss-all-link" href="${it.baseUrl}/rssAll">RSS ${%for all}</a>
+        <st:nbsp/>
+        <a class="build-rss-failed-icon" href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+        <st:nbsp/>
+        <a class="build-rss-failed-link" href="${it.baseUrl}/rssFailed">RSS ${%for failures}</a>
+    </span>
+  </j:parse>
+
+  <l:pane width="3" title="${h.runScript(paneTitle)}${it.displayName}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="stripped">
 
     <!-- build history -->
     <st:include page="entries.jelly" />
@@ -72,6 +88,7 @@ THE SOFTWARE.
                   newhist.headers = hist.headers
 
                   replace(hist, newhist);
+                  fireBuildHistoryChanged();
                 }
             });
             }
@@ -83,16 +100,6 @@ THE SOFTWARE.
         </td>
       </tr>
     </j:if>
-    <!--
-      RSS link
-    -->
-    <tr class="build-row">
-      <td colspan="3" align="right">
-        <a href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for all}</a>
-        <st:nbsp/>
-        <a href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/> RSS ${%for failures}</a>
-      </td>
-    </tr>
   </l:pane>
   <script defer="true">
     updateBuildHistory("${it.baseUrl}/buildHistory/ajax",${it.nextBuildNumberToFetch});

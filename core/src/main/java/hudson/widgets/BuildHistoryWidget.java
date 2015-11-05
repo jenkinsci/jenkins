@@ -27,8 +27,7 @@ import jenkins.model.Jenkins;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -60,8 +59,12 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
      * Returns the queue item if the owner is scheduled for execution in the queue, in REVERSE ORDER
      */
     public List<Item> getQueuedItems() {
-    	List<Item> list = new ArrayList<Item>(Jenkins.getInstance().getQueue().getItems(owner));
-    	Collections.reverse(list);
+        LinkedList<Item> list = new LinkedList<Item>();
+        for (Item item : Jenkins.getInstance().getQueue().getApproximateItemsQuickly()) {
+            if (item.task == owner) {
+                list.addFirst(item);
+            }
+        }
     	return list;
     }
 }

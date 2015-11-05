@@ -39,7 +39,7 @@ public interface ResourceActivity {
      *
      * <p>
      * If the activity doesn't lock any resources, just
-     * return {@code new ResourceList()}.
+     * return {@link ResourceList#EMPTY}.
      *
      * @return never null 
      */

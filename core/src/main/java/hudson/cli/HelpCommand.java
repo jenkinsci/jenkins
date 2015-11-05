@@ -29,6 +29,8 @@ import jenkins.model.Jenkins;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.kohsuke.args4j.Argument;
+
 /**
  * Show the list of all commands.
  *
@@ -36,18 +38,32 @@ import java.util.TreeMap;
  */
 @Extension
 public class HelpCommand extends CLICommand {
+
+    @Argument(metaVar="COMMAND", usage="Name of the command")
+    public String command;
+
     @Override
     public String getShortDescription() {
         return Messages.HelpCommand_ShortDescription();
     }
 
+    @Override
     protected int run() {
         if (!Jenkins.getInstance().hasPermission(Jenkins.READ)) {
             stderr.println("You must authenticate to access this Jenkins.\n"
                     + "Use --username/--password/--password-file parameters or login command.");
-            return 0;
+            return -1;
         }
 
+        if (command != null)
+            return showCommandDetails();
+
+        showAllCommands();
+
+        return 0;
+    }
+
+    private int showAllCommands() {
         Map<String,CLICommand> commands = new TreeMap<String,CLICommand>();
         for (CLICommand c : CLICommand.all())
             commands.put(c.getName(),c);
@@ -56,6 +72,19 @@ public class HelpCommand extends CLICommand {
             stderr.println("  "+c.getName());
             stderr.println("    "+c.getShortDescription());
         }
+
+        return 0;
+    }
+
+    private int showCommandDetails() {
+        CLICommand command = CLICommand.clone(this.command);
+        if (command == null) {
+            stderr.format("No such command %s. Awailable commands are: ", this.command);
+            showAllCommands();
+            return -1;
+        }
+
+        command.printUsage(stderr, command.getCmdLineParser());
         
         return 0;
     }

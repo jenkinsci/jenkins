@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<fingerprint>
+  <timestamp>2013-05-21 19:20:03.534 UTC</timestamp>
+  <original>
+    <name>stapler/org.kohsuke.stapler:stapler-jelly</name>
+    <number>123</number>
+  </original>
+  <md5sum>069484c9e963cc615c51278327da8eab</md5sum>
+  <fileName>org.kohsuke.stapler:stapler-jelly-1.207.jar</fileName>
+  <usages>
+    <entry>
+      <string>stuff/test:stuff</string>
+      <ranges>2-66,72-76,84-222,228,232-267</ranges>
+    </entry>
+    <entry>
+      <string>stuff</string>
+      <ranges>304-305,307-323,328-329</ranges>
+    </entry>
+  </usages>
+  <facets/>
+</fingerprint>

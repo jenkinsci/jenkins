@@ -23,16 +23,20 @@
  */
 package hudson.model;
 
+import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.Random;
-import java.util.Timer;
+
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 /**
  * Extension point to perform a periodic task in Hudson (through {@link Timer}.)
@@ -53,6 +57,10 @@ import java.util.Timer;
  * @see AsyncPeriodicWork
  */
 public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoint {
+
+    /** @deprecated Use your own logger, or send messages to the logger in {@link AsyncPeriodicWork#execute}. */
+    @SuppressWarnings("NonConstantLogger")
+    @Deprecated
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
     /**
@@ -75,18 +83,32 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      * By default it chooses the value randomly between 0 and {@link #getRecurrencePeriod()}
      */
     public long getInitialDelay() {
-        return Math.abs(new Random().nextLong())%getRecurrencePeriod();
+        long l = RANDOM.nextLong();
+        // Math.abs(Long.MIN_VALUE)==Long.MIN_VALUE!
+        if (l==Long.MIN_VALUE)
+            l++;
+        return Math.abs(l)%getRecurrencePeriod();
     }
 
     /**
      * Returns all the registered {@link PeriodicWork}s.
      */
     public static ExtensionList<PeriodicWork> all() {
-        return Jenkins.getInstance().getExtensionList(PeriodicWork.class);
+        return ExtensionList.lookup(PeriodicWork.class);
+    }
+
+    @Initializer(after= JOB_LOADED)
+    public static void init() {
+        // start all PeriodicWorks
+        for (PeriodicWork p : PeriodicWork.all()) {
+            Timer.get().scheduleAtFixedRate(p, p.getInitialDelay(), p.getRecurrencePeriod(), TimeUnit.MILLISECONDS);
+        }
     }
 
     // time constants
     protected static final long MIN = 1000*60;
     protected static final long HOUR =60*MIN;
     protected static final long DAY = 24*HOUR;
+
+    private static final Random RANDOM = new Random();
 }

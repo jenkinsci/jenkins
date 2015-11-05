@@ -6,17 +6,28 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 
 /**
- * Convenient base class for extensions that contributes to the system configuration page but nothing else.
+ * Convenient base class for extensions that contributes to the system configuration page but nothing
+ * else, or to manage the global configuration of a plugin implementing several extension points.
  *
  * <p>
- * All {@link Descriptor}s are capable of contributing fragment to the system config page, so
- * this extension point is is really only for those who don't want to contribute anything else.
- * If you are implementing other extension points and that would like to expose some global configuration,
- * you can do so with <tt>global.groovy</tt> from your {@link Descriptor} instance.
+ * All {@link Descriptor}s are capable of contributing fragment to the system config page. If you are
+ * implementing other extension points that need to expose some global configuration, you can do so
+ * with <tt>global.groovy</tt> or <tt>global.jelly</tt> from your {@link Descriptor} instance. However
+ * each <tt>global.*</tt> file will appear as its own section in the global configuration page.
+ * 
+ * <p>
+ * An option to present a single section for your plugin in the Jenkins global configuration page is
+ * to use this class to manage the configuration for your plugin and its extension points. To access
+ * properties defined in your GlobalConfiguration subclass, here are two possibilities:
+ * <ul><li>@{@link javax.inject.Inject} into your other {@link hudson.Extension}s (so this does <i>not</i> work
+ * for classes not annotated with {@link hudson.Extension})</li>
+ * <li>access it via a call to <code>GlobalConfiguration.all().get(&lt;your GlobalConfiguration subclass&gt;.class)
+ * </code></li></ul>
  *
  * <h2>Views</h2>
  * <p>
- * Subtypes of this class should define <tt>config.groovy</tt> that gets pulled into the system configuration page.
+ * Subtypes of this class should define a <tt>config.groovy</tt> file or <tt>config.jelly</tt> file
+ * that gets pulled into the system configuration page.
  * 
  *
  * @author Kohsuke Kawaguchi
@@ -29,6 +40,15 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
 
     public final Descriptor<GlobalConfiguration> getDescriptor() {
         return this;
+    }
+
+    /**
+     * Every {@link GlobalConfiguration} belongs to a specific category.
+     *
+     * @return never null, always the same value for a given instance of {@link GlobalConfiguration}.
+     */
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
     }
 
     /**
@@ -48,6 +68,7 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
      * Returns all the registered {@link GlobalConfiguration} descriptors.
      */
     public static ExtensionList<GlobalConfiguration> all() {
-        return Jenkins.getInstance().getDescriptorList(GlobalConfiguration.class);
+        return Jenkins.getInstance().<GlobalConfiguration,GlobalConfiguration>getDescriptorList(GlobalConfiguration.class);
+        // pointless type parameters help work around bugs in javac in earlier versions http://codepad.org/m1bbFRrH
     }
 }

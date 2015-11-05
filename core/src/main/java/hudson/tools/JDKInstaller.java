@@ -23,16 +23,12 @@
  */
 package hudson.tools;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.ProcStarter;
+import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
@@ -42,10 +38,18 @@ import hudson.remoting.Callable;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
-import hudson.util.IOException2;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import org.apache.commons.httpclient.Cookie;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -69,6 +73,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static hudson.tools.JDKInstaller.Preference.*;
 
@@ -79,6 +85,13 @@ import static hudson.tools.JDKInstaller.Preference.*;
  * @since 1.305
  */
 public class JDKInstaller extends ToolInstaller {
+
+    static {
+        // this socket factory will not attempt to bind to the client interface
+        Protocol.registerProtocol("http", new Protocol("http", new hudson.util.NoClientBindProtocolSocketFactory(), 80));
+        Protocol.registerProtocol("https", new Protocol("https", new hudson.util.NoClientBindSSLProtocolSocketFactory(), 443));
+    }
+
     /**
      * The release ID that Sun assigns to each JDK, such as "jdk-6u13-oth-JPR@CDS-CDS_Developer"
      *
@@ -158,6 +171,7 @@ public class JDKInstaller extends ToolInstaller {
         PrintStream out = log.getLogger();
 
         out.println("Installing "+ jdkBundle);
+        FilePath parent = new FilePath(launcher.getChannel(), expectedLocation).getParent();
         switch (p) {
         case LINUX:
         case SOLARIS:
@@ -166,8 +180,11 @@ public class JDKInstaller extends ToolInstaller {
             byte[] header = new byte[2];
             {
                 DataInputStream in = new DataInputStream(fs.read(jdkBundle));
-                in.readFully(header);
-                in.close();
+                try {
+                    in.readFully(header);
+                } finally {
+                    IOUtils.closeQuietly(in);
+                }
             }
 
             ProcStarter starter;
@@ -218,15 +235,36 @@ public class JDKInstaller extends ToolInstaller {
                 - http://java.sun.com/j2se/1.5.0/sdksilent.html
                 - http://java.sun.com/j2se/1.4.2/docs/guide/plugin/developer_guide/silent.html
              */
-            String logFile = jdkBundle+".install.log";
+
+            expectedLocation = expectedLocation.trim();
+            if (expectedLocation.endsWith("\\")) {
+                // Prevent a trailing slash from escaping quotes
+                expectedLocation = expectedLocation.substring(0, expectedLocation.length() - 1);
+            }
+            String logFile = parent.createTempFile("install", "log").getRemote();
+
 
             ArgumentListBuilder args = new ArgumentListBuilder();
-            args.add(jdkBundle);
-            args.add("/s");
-            // according to http://community.acresso.com/showthread.php?t=83301, \" is the trick to quote values with whitespaces.
-            // Oh Windows, oh windows, why do you have to be so difficult?
-            args.add("/v/qn REBOOT=Suppress INSTALLDIR=\\\""+ expectedLocation +"\\\" /L \\\""+logFile+"\\\"");
+            assert (new File(expectedLocation).exists()) : expectedLocation
+                    + " must exist, otherwise /L will cause the installer to fail with error 1622";
+            if (isJava15() || isJava14()) {
+                // Installer uses InstallShield.
+                args.add("CMD.EXE", "/C");
 
+                // see http://docs.oracle.com/javase/1.5.0/docs/guide/deployment/deployment-guide/silent.html
+                // CMD.EXE /C must be followed by a single parameter (do not split it!)
+                args.add(jdkBundle + " /s /v\"/qn REBOOT=ReallySuppress INSTALLDIR=\\\""
+                        + expectedLocation + "\\\" /L \\\"" + logFile + "\\\"\"");
+            } else {
+                // Installed uses Windows Installer (MSI)
+                args.add(jdkBundle, "/s");
+
+                // Create a private JRE by omitting "PublicjreFeature"
+                // @see http://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#jdk-silent-installation
+                args.add("ADDLOCAL=\"ToolsFeature\"",
+                        "REBOOT=ReallySuppress", "INSTALLDIR=" + expectedLocation,
+                        "/L",  logFile);
+            }
             int r = launcher.launch().cmds(args).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
             if (r != 0) {
@@ -244,17 +282,80 @@ public class JDKInstaller extends ToolInstaller {
             fs.delete(logFile);
 
             break;
+
+        case OSX:
+            // Mount the DMG distribution bundle
+            FilePath dmg = parent.createTempDir("jdk", "dmg");
+            exit = launcher.launch()
+                    .cmds("hdiutil", "attach", "-puppetstrings", "-mountpoint", dmg.getRemote(), jdkBundle)
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            // expand the installation PKG
+            FilePath[] list = dmg.list("*.pkg");
+            if (list.length != 1) {
+                log.getLogger().println("JDK dmg bundle does not contain expected pkg installer");
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+            }
+            String installer = list[0].getRemote();
+
+            FilePath pkg = parent.createTempDir("jdk", "pkg");
+            pkg.deleteRecursive(); // pkgutil fails if target directory exists
+            exit = launcher.launch()
+                    .cmds("pkgutil", "--expand", installer, pkg.getRemote())
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            exit = launcher.launch()
+                    .cmds("umount", dmg.getRemote())
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            // We only want the actual JDK sub-package, which "Payload" is actually a tar.gz archive
+            list = pkg.list("jdk*.pkg/Payload");
+            if (list.length != 1) {
+                log.getLogger().println("JDK pkg installer does not contain expected JDK Payload archive");
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+            }
+            String payload = list[0].getRemote();
+            exit = launcher.launch()
+                    .pwd(parent).cmds("tar", "xzf", payload)
+                    .stdout(log)
+                    .join();
+            if (exit != 0)
+                throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
+
+            parent.child("Contents/Home").moveAllChildrenTo(new FilePath(launcher.getChannel(), expectedLocation));
+            parent.child("Contents").deleteRecursive();
+
+            pkg.deleteRecursive();
+            dmg.deleteRecursive();
+            break;
         }
+    }
+
+    private boolean isJava15() {
+        return id.contains("-1.5");
+    }
+
+    private boolean isJava14() {
+        return id.contains("-1.4");
     }
 
     /**
      * Abstraction of the file system to perform JDK installation.
-     * Consider {@link FilePathFileSystem} as the canonical documentation of the contract.
+     * Consider {@link JDKInstaller.FilePathFileSystem} as the canonical documentation of the contract.
      */
     public interface FileSystem {
         void delete(String file) throws IOException, InterruptedException;
         void chmod(String file,int mode) throws IOException, InterruptedException;
-        InputStream read(String file) throws IOException;
+        InputStream read(String file) throws IOException, InterruptedException;
         /**
          * List sub-directories of the given directory and just return the file name portion.
          */
@@ -277,7 +378,7 @@ public class JDKInstaller extends ToolInstaller {
             $(file).chmod(mode);
         }
 
-        public InputStream read(String file) throws IOException {
+        public InputStream read(String file) throws IOException, InterruptedException {
             return $(file).read();
         }
 
@@ -309,7 +410,7 @@ public class JDKInstaller extends ToolInstaller {
      */
     public URL locate(TaskListener log, Platform platform, CPU cpu) throws IOException {
         File cache = getLocalCacheFile(platform, cpu);
-        if (cache.exists()) return cache.toURL();
+        if (cache.exists() && cache.length()>1*1024*1024) return cache.toURL(); // if the file is too small, don't trust it. In the past, the download site served error message in 200 status code
 
         log.getLogger().println("Installing JDK "+id);
         JDKFamilyList families = JDKList.all().get(JDKList.class).toList();
@@ -342,77 +443,107 @@ public class JDKInstaller extends ToolInstaller {
         LOGGER.fine("Platform choice:"+primary);
 
         log.getLogger().println("Downloading JDK from "+primary.filepath);
-        URL src = new URL(primary.filepath);
 
-        WebClient wc = new WebClient();
-        wc.setJavaScriptEnabled(false);
-        wc.setCssEnabled(false);
-        Page page = wc.getPage(src);
-        int authCount=0;
-        int totalPageCount=0;
-        while (page instanceof HtmlPage) {
-            // some times we are redirected to the SSO login page.
-            HtmlPage html = (HtmlPage) page;
-            URL loginUrl = page.getWebResponse().getUrl();
-            if (!loginUrl.getHost().equals("login.oracle.com"))
-                throw new IOException("Expected to see a login page but instead saw "+loginUrl);
-
-            String u = getDescriptor().getUsername();
-            Secret p = getDescriptor().getPassword();
-            if (u==null || p==null) {
-                log.hyperlink(getCredentialPageUrl(),"Oracle now requires Oracle account to download previous versions of JDK. Please specify your Oracle account username/password.\n");
-                throw new AbortException("Unable to install JDK unless a valid username/password is provided.");
-            }
-
-            if (totalPageCount++>16) // looping too much
-                throw new IOException("Unable to find the login form in "+html.asXml());
-
-            try {
-                // JavaScript check page. Just submit and move on
-                HtmlForm loginForm = html.getFormByName("myForm");
-                page = loginForm.submit(null);
-                continue;
-            } catch (ElementNotFoundException e) {
-                // fall through
-            }
-
-            try {
-                // real authentication page
-                if (authCount++ > 3) {
-                    log.hyperlink(getCredentialPageUrl(),"Your Oracle account doesn't appear valid. Please specify a valid username/password\n");
-                    throw new AbortException("Unable to install JDK unless a valid username/password is provided.");
-                }
-                HtmlForm loginForm = html.getFormByName("LoginForm");
-                loginForm.getInputByName("ssousername").setValueAttribute(u);
-                loginForm.getInputByName("password").setValueAttribute(p.getPlainText());
-                page = loginForm.submit(null);
-                continue;
-            } catch (ElementNotFoundException e) {
-                // fall through
-            }
-
-            throw new IOException("Unable to find the login form in "+html.asXml());
+        HttpClient hc = new HttpClient();
+        hc.getParams().setParameter("http.useragent","Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)");
+        Jenkins j = Jenkins.getInstance();
+        ProxyConfiguration jpc = j!=null ? j.proxy : null;
+        if(jpc != null) {
+            hc.getHostConfiguration().setProxy(jpc.name, jpc.port);
+            if(jpc.getUserName() != null)
+                hc.getState().setProxyCredentials(AuthScope.ANY,new UsernamePasswordCredentials(jpc.getUserName(),jpc.getPassword()));
         }
 
-        // TODO: there's awful inefficiency in htmlunit where it loads the whole binary into one big byte array.
-        // needs to modify it to use temporary file or something
+        int authCount=0, totalPageCount=0;  // counters for avoiding infinite loop
 
-        // download to a temporary file and rename it in to handle concurrency and failure correctly,
-        File tmp = new File(cache.getPath()+".tmp");
-        tmp.getParentFile().mkdirs();
+        HttpMethodBase m = new GetMethod(primary.filepath);
+        hc.getState().addCookie(new Cookie(".oracle.com","gpw_e24",".", "/", -1, false));
+        hc.getState().addCookie(new Cookie(".oracle.com","oraclelicense","accept-securebackup-cookie", "/", -1, false));
         try {
-            FileOutputStream out = new FileOutputStream(tmp);
-            try {
-                IOUtils.copy(page.getWebResponse().getContentAsStream(), out);
-            } finally {
-                out.close();
-            }
+            while (true) {
+                if (totalPageCount++>16) // looping too much
+                    throw new IOException("Unable to find the login form");
 
-            tmp.renameTo(cache);
-            return cache.toURL();
+                LOGGER.fine("Requesting " + m.getURI());
+                int r = hc.executeMethod(m);
+                if (r/100==3) {
+                    // redirect?
+                    String loc = m.getResponseHeader("Location").getValue();
+                    m.releaseConnection();
+                    m = new GetMethod(loc);
+                    continue;
+                }
+                if (r!=200)
+                    throw new IOException("Failed to request " + m.getURI() +" exit code="+r);
+
+                if (m.getURI().getHost().equals("login.oracle.com")) {
+                    LOGGER.fine("Appears to be a login page");
+                    String resp = IOUtils.toString(m.getResponseBodyAsStream(), m.getResponseCharSet());
+                    m.releaseConnection();
+                    Matcher pm = Pattern.compile("<form .*?action=\"([^\"]*)\" .*?</form>", Pattern.DOTALL).matcher(resp);
+                    if (!pm.find())
+                        throw new IllegalStateException("Unable to find a form in the response:\n"+resp);
+
+                    String form = pm.group();
+                    PostMethod post = new PostMethod(
+                            new URL(new URL(m.getURI().getURI()),pm.group(1)).toExternalForm());
+
+                    String u = getDescriptor().getUsername();
+                    Secret p = getDescriptor().getPassword();
+                    if (u==null || p==null) {
+                        log.hyperlink(getCredentialPageUrl(),"Oracle now requires Oracle account to download previous versions of JDK. Please specify your Oracle account username/password.\n");
+                        throw new AbortException("Unable to install JDK unless a valid Oracle account username/password is provided in the system configuration.");
+                    }
+
+                    for (String fragment : form.split("<input")) {
+                        String n = extractAttribute(fragment,"name");
+                        String v = extractAttribute(fragment,"value");
+                        if (n==null || v==null)     continue;
+                        if (n.equals("ssousername"))
+                            v = u;
+                        if (n.equals("password")) {
+                            v = p.getPlainText();
+                            if (authCount++ > 3) {
+                                log.hyperlink(getCredentialPageUrl(),"Your Oracle account doesn't appear valid. Please specify a valid username/password\n");
+                                throw new AbortException("Unable to install JDK unless a valid username/password is provided.");
+                            }
+                        }
+                        post.addParameter(n, v);
+                    }
+
+                    m = post;
+                } else {
+                    log.getLogger().println("Downloading " + m.getResponseContentLength() + "bytes");
+
+                    // download to a temporary file and rename it in to handle concurrency and failure correctly,
+                    File tmp = new File(cache.getPath()+".tmp");
+                    try {
+                        tmp.getParentFile().mkdirs();
+                        FileOutputStream out = new FileOutputStream(tmp);
+                        try {
+                            IOUtils.copy(m.getResponseBodyAsStream(), out);
+                        } finally {
+                            out.close();
+                        }
+
+                        tmp.renameTo(cache);
+                        return cache.toURL();
+                    } finally {
+                        tmp.delete();
+                    }
+                }
+            }
         } finally {
-            tmp.delete();
+            m.releaseConnection();
         }
+    }
+
+    private static String extractAttribute(String s, String name) {
+        String h = name + "=\"";
+        int si = s.indexOf(h);
+        if (si<0)   return null;
+        int ei = s.indexOf('\"',si+h.length());
+        return s.substring(si+h.length(),ei);
     }
 
     private String getCredentialPageUrl() {
@@ -427,7 +558,7 @@ public class JDKInstaller extends ToolInstaller {
      * Supported platform.
      */
     public enum Platform {
-        LINUX("jdk.sh"), SOLARIS("jdk.sh"), WINDOWS("jdk.exe");
+        LINUX("jdk.sh"), SOLARIS("jdk.sh"), WINDOWS("jdk.exe"), OSX("jdk.dmg");
 
         /**
          * Choose the file name suitable for the downloaded JDK bundle.
@@ -446,11 +577,7 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the platform of the given node.
          */
         public static Platform of(Node n) throws IOException,InterruptedException,DetectionFailedException {
-            return n.getChannel().call(new Callable<Platform,DetectionFailedException>() {
-                public Platform call() throws DetectionFailedException {
-                    return current();
-                }
-            });
+            return n.getChannel().call(new GetCurrentPlatform());
         }
 
         public static Platform current() throws DetectionFailedException {
@@ -458,8 +585,17 @@ public class JDKInstaller extends ToolInstaller {
             if(arch.contains("linux"))  return LINUX;
             if(arch.contains("windows"))   return WINDOWS;
             if(arch.contains("sun") || arch.contains("solaris"))    return SOLARIS;
+            if(arch.contains("mac")) return OSX;
             throw new DetectionFailedException("Unknown CPU name: "+arch);
         }
+
+        static class GetCurrentPlatform extends MasterToSlaveCallable<Platform,DetectionFailedException> {
+            private static final long serialVersionUID = 1L;
+            public Platform call() throws DetectionFailedException {
+                return current();
+            }
+        }
+
     }
 
     /**
@@ -498,11 +634,7 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the CPU of the given node.
          */
         public static CPU of(Node n) throws IOException,InterruptedException, DetectionFailedException {
-            return n.getChannel().call(new Callable<CPU,DetectionFailedException>() {
-                public CPU call() throws DetectionFailedException {
-                    return current();
-                }
-            });
+            return n.getChannel().call(new GetCurrentCPU());
         }
 
         /**
@@ -518,6 +650,14 @@ public class JDKInstaller extends ToolInstaller {
             if(arch.contains("86"))    return i386;
             throw new DetectionFailedException("Unknown CPU architecture: "+arch);
         }
+
+        static class GetCurrentCPU extends MasterToSlaveCallable<CPU,DetectionFailedException> {
+            private static final long serialVersionUID = 1L;
+            public CPU call() throws DetectionFailedException {
+                return current();
+            }
+        }
+
     }
 
     /**
@@ -634,7 +774,7 @@ public class JDKInstaller extends ToolInstaller {
             if (value) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense()); 
+                return FormValidation.error(Messages.JDKInstaller_DescriptorImpl_doCheckAcceptLicense());
             }
         }
 

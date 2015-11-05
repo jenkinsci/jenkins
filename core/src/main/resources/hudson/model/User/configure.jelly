@@ -31,11 +31,12 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
-        <f:entry title="${%Your name}" help="/help/user/fullName.html">
-          <f:textbox name="fullName" value="${it.fullName}" />
+        <j:set var="instance" value="${it}"/>
+        <f:entry title="${%Full name}" help="/help/user/fullName.html">
+          <f:textbox field="fullName"/>
         </f:entry>
         <f:entry title="${%Description}" help="/help/user/description.html">
-          <f:textarea name="description" value="${it.description}"/>
+          <f:textarea field="description"/>
         </f:entry>
 
         <!-- user property configurations -->
@@ -54,10 +55,12 @@ THE SOFTWARE.
           </j:if>
         </j:forEach>
 
-        <f:block>
+        <f:bottomButtonBar>
           <f:submit value="${%Save}" />
-        </f:block>
+          <f:apply />
+        </f:bottomButtonBar>
       </f:form>
+      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

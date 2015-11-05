@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,17 +23,21 @@
  */
 package hudson.model;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
- * Represents things that {@link Queue.Executable} uses while running.
+ * Represents things that {@link hudson.model.Queue.Executable} uses while running.
  *
  * <p>
  * This is used in {@link Queue} to support basic mutual exclusion/locks. If two
- * {@link Queue.Task}s require the same {@link Resource}, they will not
+ * {@link hudson.model.Queue.Task}s require the same {@link Resource}, they will not
  * be run at the same time.
  *
  * <p>
  * Resources are compared by using their {@link #displayName names}, and
- * need not have the "same object" semantics. 
+ * need not have the "same object" semantics.
  *
  * @since 1.121
  */
@@ -42,7 +46,7 @@ public final class Resource {
      * Human-readable name of this resource.
      * Used for rendering HTML.
      */
-    public final String displayName;
+    public final @Nonnull String displayName;
 
     /**
      * Parent resource.
@@ -52,30 +56,30 @@ public final class Resource {
      * so acquiring the parent resource always imply acquiring all
      * the child resources.
      */
-    public final Resource parent;
+    public final @CheckForNull Resource parent;
 
     /**
      * Maximum number of concurrent write.
      */
     public final int numConcurrentWrite;
 
-    public Resource(Resource parent, String displayName) {
+    public Resource(@CheckForNull Resource parent, @Nonnull String displayName) {
         this(parent,displayName,1);
     }
 
     /**
      * @since 1.155
      */
-    public Resource(Resource parent, String displayName, int numConcurrentWrite) {
+    public Resource(@CheckForNull Resource parent, @Nonnull String displayName, int numConcurrentWrite) {
         if(numConcurrentWrite<1)
             throw new IllegalArgumentException();
-        
+
         this.parent = parent;
         this.displayName = displayName;
         this.numConcurrentWrite = numConcurrentWrite;
     }
 
-    public Resource(String displayName) {
+    public Resource(@Nonnull String displayName) {
         this(null,displayName);
     }
 

@@ -23,6 +23,8 @@
  */
 package hudson.model.queue;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Executor;
@@ -30,7 +32,9 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
@@ -40,9 +44,13 @@ import java.util.Collections;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class WideExecutionTest extends HudsonTestCase {
+public class WideExecutionTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     @TestExtension
-    public static class Contributer extends SubTaskContributor {
+    public static class Contributor extends SubTaskContributor {
         public Collection<? extends SubTask> forProject(final AbstractProject<?, ?> p) {
             return Collections.singleton(new AbstractSubTask() {
                 private final AbstractSubTask outer = this;
@@ -79,9 +87,10 @@ public class WideExecutionTest extends HudsonTestCase {
         }
     }
 
-    public void testRun() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
-        FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertTrue(b.getDescription().equals("I was here"));
+    @Test
+    public void run() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals("I was here", b.getDescription());
     }
 }

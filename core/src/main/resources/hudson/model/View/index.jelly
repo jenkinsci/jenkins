@@ -24,14 +24,17 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <l:layout title="${it.class.name=='hudson.model.AllView' ? '%Dashboard' : it.viewName}">
+    <l:layout title="${it.class.name=='hudson.model.AllView' ? '%Dashboard' : it.viewName}${not empty it.ownerItemGroup.fullDisplayName?' ['+it.ownerItemGroup.fullDisplayName+']':''}" norefresh="${!it.automaticRefreshEnabled}">
       <j:set var="view" value="${it}"/> <!-- expose view to the scripts we include from owner -->
         <st:include page="sidepanel.jelly" />
         <l:main-panel>
           <st:include page="view-index-top.jelly" it="${it.owner}" optional="true">
             <!-- allow the owner to take over the top section, but we also need the default to be backward compatible -->
             <div id="view-message">
-                <t:editableDescription permission="${app.ADMINISTER}"/>
+                <div id="systemmessage">
+                  <j:out value="${app.systemMessage!=null ? app.markupFormatter.translate(app.systemMessage) : ''}" />
+                </div>
+              <t:editableDescription permission="${it.CONFIGURE}"/>
             </div>
           </st:include>
           
@@ -40,7 +43,7 @@ THE SOFTWARE.
         </l:main-panel>
         <l:header>
             <!-- for screen resolution detection -->
-            <l:yui module="cookie" suffix="-beta" />
+            <l:yui module="cookie" />
             <script>
               YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height);
             </script>

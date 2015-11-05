@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <numExecutors>2</numExecutors>
+  <mode>NORMAL</mode>
+  <useSecurity>true</useSecurity>
+  <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy"/>
+  <securityRealm class="hudson.security.HudsonPrivateSecurityRealm">
+    <disableSignup>true</disableSignup>
+    <enableCaptcha>false</enableCaptcha>
+  </securityRealm>
+  <jdks/>
+  <slaves/>
+  <quietPeriod>5</quietPeriod>
+  <slaveAgentPort>0</slaveAgentPort>
+  <secretKey>ed2e66995bec739c0ec71c260bd75be6918ff28b0f1b33d67e205297629a6264</secretKey>
+</hudson>

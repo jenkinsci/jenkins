@@ -23,23 +23,39 @@
  */
 package hudson;
 
-import jenkins.model.Jenkins;
+import com.google.common.collect.Lists;
+import com.thoughtworks.xstream.XStream;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
+import hudson.util.FormValidation;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.XStream2;
-
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.net.Authenticator;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
-
-import com.thoughtworks.xstream.XStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
+import jenkins.model.Jenkins;
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.jvnet.robust_http_client.RetryableHttpStream;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * HTTP proxy configuration.
@@ -52,10 +68,10 @@ import com.thoughtworks.xstream.XStream;
  * (as described in the Java 6 tech note 
  * <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/http-auth.html">
  * Http Authentication</a>).
- * 
+ *
  * @see jenkins.model.Jenkins#proxy
  */
-public final class ProxyConfiguration implements Saveable {
+public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
     public final String name;
     public final int port;
 
@@ -65,8 +81,12 @@ public final class ProxyConfiguration implements Saveable {
     private final String userName;
 
     /**
-     * null
+     * List of host names that shouldn't use proxy, as typed by users.
+     *
+     * @see #getNoProxyHostPatterns()
      */
+    public final String noProxyHost;
+
     @Deprecated
     private String password;
 
@@ -74,16 +94,29 @@ public final class ProxyConfiguration implements Saveable {
      * encrypted password
      */
     private Secret secretPassword;
+    
+    private String testUrl;
 
     public ProxyConfiguration(String name, int port) {
         this(name,port,null,null);
     }
 
     public ProxyConfiguration(String name, int port, String userName, String password) {
-        this.name = name;
+        this(name,port,userName,password,null);
+    }
+
+    public ProxyConfiguration(String name, int port, String userName, String password, String noProxyHost) {
+        this(name,port,userName,password,noProxyHost,null);
+    }
+
+    @DataBoundConstructor
+    public ProxyConfiguration(String name, int port, String userName, String password, String noProxyHost, String testUrl) {
+        this.name = Util.fixEmptyAndTrim(name);
         this.port = port;
-        this.userName = userName;
+        this.userName = Util.fixEmptyAndTrim(userName);
         this.secretPassword = Secret.fromString(password);
+        this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
+        this.testUrl =Util.fixEmptyAndTrim(testUrl);
     }
 
     public String getUserName() {
@@ -103,7 +136,51 @@ public final class ProxyConfiguration implements Saveable {
         return (secretPassword == null) ? null : secretPassword.getEncryptedValue();
     }
 
+    public String getTestUrl() {
+        return testUrl;
+    }
+
+    /**
+     * Returns the list of properly formatted no proxy host names.
+     */
+    public List<Pattern> getNoProxyHostPatterns() {
+        return getNoProxyHostPatterns(noProxyHost);
+    }
+
+    /**
+     * Returns the list of properly formatted no proxy host names.
+     */
+    public static List<Pattern> getNoProxyHostPatterns(String noProxyHost) {
+        if (noProxyHost==null)  return Collections.emptyList();
+
+        List<Pattern> r = Lists.newArrayList();
+        for (String s : noProxyHost.split("[ \t\n,|]+")) {
+            if (s.length()==0)  continue;
+            r.add(Pattern.compile(s.replace(".", "\\.").replace("*", ".*")));
+        }
+        return r;
+    }
+
+    /**
+     * @deprecated
+     *      Use {@link #createProxy(String)}
+     */
+    @Deprecated
     public Proxy createProxy() {
+        return createProxy(null);
+    }
+
+    public Proxy createProxy(String host) {
+        return createProxy(host, name, port, noProxyHost);
+    }
+
+    public static Proxy createProxy(String host, String name, int port, String noProxyHost) {
+        if (host!=null && noProxyHost!=null) {
+            for (Pattern p : getNoProxyHostPatterns(noProxyHost)) {
+                if (p.matcher(host).matches())
+                    return Proxy.NO_PROXY;
+            }
+        }
         return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(name,port));
     }
 
@@ -143,9 +220,9 @@ public final class ProxyConfiguration implements Saveable {
         if(p==null)
             return url.openConnection();
 
-        URLConnection con = url.openConnection(p.createProxy());
+        URLConnection con = url.openConnection(p.createProxy(url.getHost()));
         if(p.getUserName()!=null) {
-        	// Add an authenticator which provides the credentials for proxy authentication
+            // Add an authenticator which provides the credentials for proxy authentication
             Authenticator.setDefault(new Authenticator() {
                 @Override
                 public PasswordAuthentication getPasswordAuthentication() {
@@ -162,10 +239,99 @@ public final class ProxyConfiguration implements Saveable {
 
         return con;
     }
+    
+    public static InputStream getInputStream(URL url) throws IOException {
+        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
+        final ProxyConfiguration p = (h != null) ? h.proxy : null;
+        if (p == null) 
+            return new RetryableHttpStream(url);
+
+        InputStream is = new RetryableHttpStream(url, p.createProxy(url.getHost()));
+        if (p.getUserName() != null) {
+            // Add an authenticator which provides the credentials for proxy authentication
+            Authenticator.setDefault(new Authenticator() {
+
+                @Override
+                public PasswordAuthentication getPasswordAuthentication() {
+                    if (getRequestorType() != RequestorType.PROXY) {
+                        return null;
+                    }
+                    return new PasswordAuthentication(p.getUserName(), p.getPassword().toCharArray());
+                }
+            });
+        }
+
+        return is;
+    }
 
     private static final XStream XSTREAM = new XStream2();
 
+    private static final long serialVersionUID = 1L;
+
     static {
         XSTREAM.alias("proxy", ProxyConfiguration.class);
+    }
+
+    @Extension
+    public static class DescriptorImpl extends Descriptor<ProxyConfiguration> {
+        @Override
+        public String getDisplayName() {
+            return "Proxy Configuration";
+        }
+
+        public FormValidation doCheckPort(@QueryParameter String value) {
+            value = Util.fixEmptyAndTrim(value);
+            if (value == null) {
+                return FormValidation.ok();
+            }
+            int port;
+            try {
+                port = Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                return FormValidation.error(Messages.PluginManager_PortNotANumber());
+            }
+            if (port < 0 || port > 65535) {
+                return FormValidation.error(Messages.PluginManager_PortNotInRange(0, 65535));
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doValidateProxy(
+                @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
+                @QueryParameter("userName") String userName, @QueryParameter("password") String password,
+                @QueryParameter("noProxyHost") String noProxyHost) {
+
+            if (Util.fixEmptyAndTrim(testUrl) == null) {
+                return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
+            }
+            
+            GetMethod method = null;
+            try {
+                method = new GetMethod(testUrl);
+                method.getParams().setParameter("http.socket.timeout", new Integer(30 * 1000));
+                
+                HttpClient client = new HttpClient();
+                if (Util.fixEmptyAndTrim(name) != null) {
+                    client.getHostConfiguration().setProxy(name, port);
+                    Credentials credentials = 
+                            new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
+                    AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
+                    client.getState().setProxyCredentials(scope, credentials);
+                }
+                
+                int code = client.executeMethod(method);
+                if (code != HttpURLConnection.HTTP_OK) {
+                    return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, code));
+                }
+            } catch (IOException e) {
+                return FormValidation.error(e, Messages.ProxyConfiguration_FailedToConnectViaProxy(testUrl));
+            } finally {
+                if (method != null) {
+                    method.releaseConnection();
+                }
+            }
+            
+            return FormValidation.ok(Messages.ProxyConfiguration_Success());
+        }
     }
 }

@@ -32,6 +32,7 @@ THE SOFTWARE.
     <table><!-- throw away table tag to group rows together -->
       <j:set var="depth" value="${request.getParameter('depth')}" />
       <j:set var="indenter" value="${it.createFixedIndenter(depth)}" />
+      <!-- TODO set itemGroup? -->
       <j:forEach var="v" items="${it.views}">
         <t:projectViewNested />
       </j:forEach>

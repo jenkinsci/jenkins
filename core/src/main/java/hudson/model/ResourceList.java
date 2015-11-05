@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 /**
  * List of {@link Resource}s that an activity needs.
@@ -45,6 +46,9 @@ import java.util.Map.Entry;
  * @since 1.121
  */
 public final class ResourceList {
+
+    private static final Logger LOGGER = Logger.getLogger(ResourceList.class.getName());
+
     /**
      * All resources (R/W.)
      */
@@ -128,8 +132,10 @@ public final class ResourceList {
                     v += r.getValue();
                 else // Otherwise set it to a very large value, since it's read/write conflict
                     v = MAX_INT;
-                if(r.getKey().isCollidingWith(l,unbox(v)))
+                if(r.getKey().isCollidingWith(l,unbox(v))) {
+                    LOGGER.info("Collision with " + r + " and " + l);
                     return r.getKey();
+                }
             }
         }
         return null;

@@ -27,10 +27,14 @@ THE SOFTWARE.
   <st:documentation>
     Displays a link to a node.
     <st:attribute name="value" use="required" type="Node"/>
+    <st:attribute name="valueStr" use="optional" type="String"/>
   </st:documentation>
   <j:choose>
     <j:when test="${value!=null and value!=app}">
-      <a href="${rootURL}/computer/${value.nodeName}">${value.nodeName}</a>
+      <a href="${rootURL}/computer/${value.nodeName}" class="model-link inside">${value.nodeName}</a>
+    </j:when>
+    <j:when test="${valueStr != null and valueStr != ''}">
+      ${valueStr}
     </j:when>
     <j:otherwise>
       ${%master}

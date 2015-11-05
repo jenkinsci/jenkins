@@ -39,23 +39,25 @@ THE SOFTWARE.
       If unspecified, inferred from the type of the field.
     </st:attribute>
     <st:attribute name="default">
-      If specified, this will be chosen as the default value in case the current selection is null.
+      If specified, this will be chosen as the default value in case the current selection is null. The default can be an specific instance or a descriptor e.g. 
+      ${descriptor.defaultSettingsProvider} or ${descriptor.defaultSettingsProvider.descriptor}. In the later case, the from input fields will be empty.
     </st:attribute>
   </st:documentation>
-
+  <f:prepareDatabinding /> 
   <j:set target="${attrs}" property="descriptors" value="${attrs.descriptors ?: descriptor.getPropertyType(instance,attrs.field).getApplicableDescriptors()}" />
 
   <f:dropdownList name="${attrs.field}" title="${attrs.title}" help="${descriptor.getHelpFile(attrs.field)}">
     <d:invokeBody />
 
     <j:set var="current" value="${instance[attrs.field]}"/>
+    <j:set var="current" value="${current!=null ? current : (default.descriptor!=null ? default : null)}"/>
     <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
         selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}"
         lazy="descriptor">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
-          <st:include from="${descriptor}" page="${descriptor.configPage}" />
+          <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </l:ajax>
       </f:dropdownListBlock>
     </j:forEach>

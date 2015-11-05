@@ -36,11 +36,14 @@ THE SOFTWARE.
         <include>**/*</include>
       </includes>
       <excludes>
-        <exclude>*.build</exclude>
-        <exclude>*.changes</exclude>
-        <exclude>*.pkg</exclude>
-        <exclude>*.zip</exclude>
-        <exclude>*.log</exclude>
+        <exclude>**/*.build</exclude>
+        <exclude>**/*.changes</exclude>
+        <exclude>**/*.pkg</exclude>
+        <exclude>**/*.rpm</exclude>
+        <exclude>**/*.deb</exclude>
+        <exclude>**/*.war</exclude>
+        <exclude>**/*.zip</exclude>
+        <exclude>**/*.log</exclude>
         <exclude>.repository</exclude>
         <exclude>.repository/**/*</exclude>
         <exclude>**/target</exclude>

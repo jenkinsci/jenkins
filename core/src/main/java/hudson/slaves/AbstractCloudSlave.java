@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.model.Computer;
 import hudson.model.Descriptor.FormException;
 import jenkins.model.Jenkins;
 import hudson.model.Slave;
@@ -37,7 +38,7 @@ import java.util.logging.Logger;
 
 /**
  * Partial implementation of {@link Slave} to be used by {@link AbstractCloudImpl}.
- *
+ * You may want to implement {@link EphemeralNode} too.
  * @author Kohsuke Kawaguchi
  * @since 1.382
  */
@@ -57,6 +58,10 @@ public abstract class AbstractCloudSlave extends Slave {
      * Releases and removes this slave.
      */
     public void terminate() throws InterruptedException, IOException {
+        final Computer computer = toComputer();
+        if (computer != null) {
+            computer.recordTermination();
+        }
         try {
             // TODO: send the output to somewhere real
             _terminate(new StreamTaskListener(System.out, Charset.defaultCharset()));

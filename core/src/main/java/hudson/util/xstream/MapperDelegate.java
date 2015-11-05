@@ -59,34 +59,6 @@ public class MapperDelegate extends MapperWrapper {
         return delegate.defaultImplementationOf(type);
     }
 
-    /**
-     * @deprecated since 1.2, use aliasForAttribute instead.
-     */
-    public String attributeForClassDefiningField() {
-        return delegate.attributeForClassDefiningField();
-    }
-
-    /**
-     * @deprecated since 1.2, use aliasForAttribute instead.
-     */
-    public String attributeForImplementationClass() {
-        return delegate.attributeForImplementationClass();
-    }
-
-    /**
-     * @deprecated since 1.2, use aliasForAttribute instead.
-     */
-    public String attributeForReadResolveField() {
-        return delegate.attributeForReadResolveField();
-    }
-
-    /**
-     * @deprecated since 1.2, use aliasForAttribute instead.
-     */
-    public String attributeForEnumType() {
-        return delegate.attributeForEnumType();
-    }
-
     public String aliasForAttribute(String attribute) {
         return delegate.aliasForAttribute(attribute);
     }
@@ -118,6 +90,7 @@ public class MapperDelegate extends MapperWrapper {
     /**
      * @deprecated since 1.3, use {@link #getConverterFromItemType(String, Class, Class)}
      */
+    @Deprecated
     public SingleValueConverter getConverterFromItemType(String fieldName, Class type) {
         return delegate.getConverterFromItemType(fieldName, type);
     }
@@ -125,6 +98,7 @@ public class MapperDelegate extends MapperWrapper {
     /**
      * @deprecated since 1.3, use {@link #getConverterFromItemType(String, Class, Class)}
      */
+    @Deprecated
     public SingleValueConverter getConverterFromItemType(Class type) {
         return delegate.getConverterFromItemType(type);
     }
@@ -132,6 +106,7 @@ public class MapperDelegate extends MapperWrapper {
     /**
      * @deprecated since 1.3, use {@link #getConverterFromAttribute(Class, String, Class)}
      */
+    @Deprecated
     public SingleValueConverter getConverterFromAttribute(String name) {
         return delegate.getConverterFromAttribute(name);
     }
@@ -151,6 +126,7 @@ public class MapperDelegate extends MapperWrapper {
     /**
      * @deprecated since 1.3, use combination of {@link #serializedMember(Class, String)} and {@link #getConverterFromItemType(String, Class, Class)}
      */
+    @Deprecated
     public String aliasForAttribute(Class definedIn, String fieldName) {
     	return delegate.aliasForAttribute(definedIn, fieldName);
     }
@@ -158,6 +134,7 @@ public class MapperDelegate extends MapperWrapper {
     /**
      * @deprecated since 1.3, use combination of {@link #realMember(Class, String)} and {@link #getConverterFromItemType(String, Class, Class)}
      */
+    @Deprecated
     public String attributeForAlias(Class definedIn, String alias) {
     	return delegate.attributeForAlias(definedIn, alias);
     }
@@ -165,6 +142,7 @@ public class MapperDelegate extends MapperWrapper {
     /**
      * @deprecated since 1.3.1, use {@link #getConverterFromAttribute(Class, String, Class)}
      */
+    @Deprecated
     public SingleValueConverter getConverterFromAttribute(Class type, String attribute) {
     	return delegate.getConverterFromAttribute(type, attribute);
     }

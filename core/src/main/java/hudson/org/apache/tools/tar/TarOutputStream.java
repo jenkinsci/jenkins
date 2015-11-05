@@ -315,7 +315,7 @@ public class TarOutputStream extends FilterOutputStream {
 
                 wOffset += numToWrite;
                 this.assemLen += numToWrite;
-                numToWrite -= numToWrite;
+                numToWrite = 0;
             }
         }
 

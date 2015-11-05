@@ -1,0 +1,38 @@
+updateCenter.post(
+{"connectionCheckUrl":"http://www.google.com/", // has to be here because updateDirectly sniffs only very limited formats
+    "core": {
+        "buildDate": "Dec 31, 1969",
+        "name": "core",
+        "url": "jenkins.war",
+        "version": "23"
+    },
+    "id": "default",
+    "plugins": {
+        "tasks": {
+            "buildDate": "Dec 17, 2008",
+            "dependencies": [],
+            "developers": [{"name": "lokadm"}],
+            "excerpt": "   This plug-in scans for open tasks in a specified set of files in the project modules   and visualizes the results.  ",
+            "name": "tasks",
+            "requiredCore": "1.264",
+            "sha1": "wtzlciUKiMcg90H5CTYkGX6+r8Y=",
+            "title": "Jenkins Task Scanner Plug-in",
+            "url": "tasks.jpi",
+            "version": "2.23"
+        },
+        "dummy": {
+            "buildDate": "Dec 17, 2008",
+            "dependencies": [],
+            "developers": [],
+            "excerpt": "…",
+            "name": "dummy",
+            "requiredCore": "1.100",
+            "sha1": "wtzlcjUKiMcg90H5CTYkGX6+r8Y=",
+            "title": "Dummy",
+            "url": "http://nowhere.net/dummy.hpi",
+            "version": "1.0"
+        }
+    },
+    "updateCenterVersion": 1
+}
+);

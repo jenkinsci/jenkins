@@ -33,18 +33,30 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <l:isAdmin>
-        <h1>${it.oSDescription} slave, version ${it.slaveVersion}</h1>
-        <h1>${%System Properties}</h1>
-        <t:propertyTable items="${it.systemProperties}" />
-        <h1>${%Environment Variables}</h1>
-        <t:propertyTable items="${it.envVars}" />
-        <h1>${%Thread Dump}</h1>
-        <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
-          <h2>${t.key}</h2>
-          <pre>${t.value}</pre>
-        </j:forEach>
-      </l:isAdmin>
+
+      <h1>
+        <img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/>
+        ${it.caption} ${%System Information}
+        <j:if test="${!empty(it.node.nodeDescription)}">
+          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
+        </j:if>
+      </h1>
+
+      <l:hasPermission permission="${it.CONNECT}">
+        <j:choose>
+          <j:when test="${it.channel != null}">
+            <h2>${it.oSDescription} slave, version ${it.slaveVersion}</h2>
+
+            <j:forEach var="instance" items="${it.systemInfoExtensions}">
+              <h1>${instance.displayName}</h1>
+              <st:include page="systemInfo" from="${instance}"/>
+            </j:forEach>
+          </j:when>
+          <j:otherwise>
+            ${%System Information is unavailable when slave is offline.}
+          </j:otherwise>
+        </j:choose>
+      </l:hasPermission>
     </l:main-panel>
   </l:layout>
 </j:jelly>

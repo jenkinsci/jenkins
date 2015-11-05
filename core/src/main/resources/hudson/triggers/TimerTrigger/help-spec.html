@@ -5,23 +5,23 @@
   <table>
     <tr>
       <td>MINUTE</td>
-      <td>Minutes within the hour (0-59)</td>
+      <td>Minutes within the hour (0–59)</td>
     </tr>
     <tr>
       <td>HOUR</td>
-      <td>The hour of the day (0-23)</td>
+      <td>The hour of the day (0–23)</td>
     </tr>
     <tr>
       <td>DOM</td>
-      <td>The day of the month (1-31)</td>
+      <td>The day of the month (1–31)</td>
     </tr>
     <tr>
       <td>MONTH</td>
-      <td>The month (1-12)</td>
+      <td>The month (1–12)</td>
     </tr>
     <tr>
       <td>DOW</td>
-      <td>The day of the week (0-7) where 0 and 7 are Sunday.</td>
+      <td>The day of the week (0–7) where 0 and 7 are Sunday.</td>
     </tr>
   </table>
   <p>
@@ -29,29 +29,53 @@
     available. In the order of precedence,
   </p>
   <ul>
-    <li>'*' can be used to specify all valid values.</li>
-    <li>'M-N' can be used to specify a range, such as "1-5"</li>
-    <li>'M-N/X' or '*/X' can be used to specify skips of X's value through the range,
-        such as "*/15" in the MINUTE field for "0,15,30,45" and "1-6/2" for "1,3,5"</li>
-    <li>'A,B,...,Z' can be used to specify multiple values, such as "0,30" or "1,3,5"</li>
+    <li><code>*</code> specifies all valid values</li>
+    <li><code>M-N</code> specifies a range of values</li>
+    <li><code>M-N/X</code> or <code>*/X</code> steps by intervals of X through the specified range or whole valid range</li>
+    <li><code>A,B,...,Z</code> enumerates multiple values</li>
   </ul>
   <p>
-    Empty lines and lines that start with '#' will be ignored as comments.
+    To allow periodically scheduled tasks to produce even load on the system,
+    the symbol <code>H</code> (for “hash”) should be used wherever possible.
+    For example, using <code>0 0 * * *</code> for a dozen daily jobs
+    will cause a large spike at midnight.
+    In contrast, using <code>H H * * *</code> would still execute each job once a day,
+    but not all at the same time, better using limited resources.
   </p><p>
-    In addition, '@yearly', '@annually', '@monthly', '@weekly', '@daily', '@midnight',
-    and '@hourly' are supported.
+    The <code>H</code> symbol can be used with a range. For example, <code>H H(0-7) * * *</code>
+    means some time between 12:00 AM (midnight) to 7:59 AM.
+    You can also use step intervals with <code>H</code>, with or without ranges.
+  </p><p>
+    The <code>H</code> symbol can be thought of as a random value over a range,
+    but it actually is a hash of the job name, not a random function, so that
+    the value remains stable for any given project.
   </p>
-  <table>
-    <tr>
-      <td>Examples</td>
-      <td>
+  <p>
+      Beware that for the day of month field, short cycles such as <code>*/3</code> or <code>H/3</code> will not work consistently near the end of most months, due to variable month lengths.
+      For example, <code>*/3</code> will run on the 1st, 4th, …31st days of a long month, then again the next day of the next month.
+      Hashes are always chosen in the 1-28 range, so <code>H/3</code> will produce a gap between runs of between 3 and 6 days at the end of a month.
+      (Longer cycles will also have inconsistent lengths but the effect may be relatively less noticeable.)
+  </p>
+  <p>
+    Empty lines and lines that start with <code>#</code> will be ignored as comments.
+  </p><p>
+    In addition, <code>@yearly</code>, <code>@annually</code>, <code>@monthly</code>,
+    <code>@weekly</code>, <code>@daily</code>, <code>@midnight</code>,
+    and <code>@hourly</code> are supported as convenient aliases.
+    These use the hash system for automatic balancing.
+    For example, <code>@hourly</code> is the same as <code>H * * * *</code> and could mean at any time during the hour.
+    <code>@midnight</code> actually means some time between 12:00 AM and 2:59 AM.
+  </p><p>
+    Examples:
+  </p>
 <pre>
-# every minute
-* * * * *
-# every 5 mins past the hour 
-5 * * * *
+# every fifteen minutes (perhaps at :07, :22, :37, :52)
+H/15 * * * *
+# every ten minutes in the first half of every hour (three times, perhaps at :04, :14, :24)
+H(0-29)/10 * * * *
+# once every two hours every weekday (perhaps at 10:38 AM, 12:38 PM, 2:38 PM, 4:38 PM)
+H 9-16/2 * * 1-5
+# once a day on the 1st and 15th of every month except December
+H H 1,15 1-11 *
 </pre>
-      </td>
-    </tr>
-  </table>
 </div>

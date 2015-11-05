@@ -30,14 +30,14 @@ THE SOFTWARE.
 		<l:main-panel>
       <j:set var="msg" value="${it.whyKeepLog}"/>
       <j:if test="${msg!=null}">
-		    <b>${%Warning}</b>: ${%cannotMsg(msg)}
-		  </j:if>		  
-		  <j:if test="${msg==null}">
+		    <p class="warning">${%Warning}: ${msg}</p>
+		  </j:if>
+
 		    <form method="post" action="doDelete">
 		      ${%Are you sure about deleting the build?}
 		      <f:submit value="${%Yes}" />
 		    </form>
-		  </j:if>
+
 		</l:main-panel>
 	</l:layout>
 </j:jelly>

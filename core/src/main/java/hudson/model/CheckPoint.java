@@ -26,8 +26,8 @@ package hudson.model;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Recorder;
 import hudson.tasks.Builder;
-import hudson.tasks.junit.JUnitResultArchiver;
 import hudson.scm.SCM;
+import javax.annotation.Nonnull;
 
 /**
  * Provides a mechanism for synchronizing build executions in the face of concurrent builds.
@@ -52,9 +52,11 @@ import hudson.scm.SCM;
  * This class defines a few well-known check point instances. plugins can define
  * their additional check points for their own use.
  *
+ * <p>Note that not all job types support checkpoints.
+ *
  * <h2>Example</h2>
  * <p>
- * {@link JUnitResultArchiver} provides a good example of how a {@link Recorder} can
+ * {@code JUnitResultArchiver} provides a good example of how a {@link Recorder} can
  * depend on its earlier result.
  *
  * @author Kohsuke Kawaguchi
@@ -124,9 +126,9 @@ public final class CheckPoint {
      *
      * <ol>
      * <li>Build #1, #2, and #3 happens around the same time
-     * <li>Build #3 waits for check point {@link JUnitResultArchiver}
+     * <li>Build #3 waits for check point {@code JUnitResultArchiver}
      * <li>Build #2 aborts before getting to that check point
-     * <li>Build #1 finally checks in {@link JUnitResultArchiver}
+     * <li>Build #1 finally checks in {@code JUnitResultArchiver}
      * </ol>
      *
      * <p>
@@ -141,7 +143,18 @@ public final class CheckPoint {
      *      If the build (represented by the calling executor thread) is aborted while it's waiting.  
      */
     public void block() throws InterruptedException {
-        Run.waitForCheckpoint(this);
+        Run.waitForCheckpoint(this, null, null);
+    }
+
+    /**
+     * Like {@link #block()} but allows for richer logging.
+     * @param listener an optional listener to which
+     * @param waiter a description of what component is requesting the wait, such as {@link Descriptor#getDisplayName}
+     * @throws InterruptedException if the build is aborted while waiting
+     * @since 1.528
+     */
+    public void block(@Nonnull BuildListener listener, @Nonnull String waiter) throws InterruptedException {
+        Run.waitForCheckpoint(this, listener, waiter);
     }
 
     /**

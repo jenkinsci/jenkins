@@ -29,10 +29,13 @@ THE SOFTWARE.
     Renders a list of jobs and their key information.
 
     <st:attribute name="jobs" use="required" trim="Collection">
-      Items to disable.
+      Items to show.
+    </st:attribute>
+    <st:attribute name="useFullName" use="optional" type="boolean">
+      May be interpreted by columns to display the full name of a job.
     </st:attribute>
     <st:attribute name="jobBaseUrl" type="String">
-      The base URL of all job links. Normally ${rootURL}/
+      Deprecated. Using this attribute has no effect.
     </st:attribute>
     <st:attribute name="showViewTabs" use="optional" type="boolean">
       If the caller rendered a view tabes, set this attribute so that CSS is adjusted accordingly.
@@ -46,6 +49,9 @@ THE SOFTWARE.
     <st:attribute name="columnExtensions" type="Collection&lt;hudson.views.ListViewColumn>">
       List view columns to render. If omitted, the default ones from ListView.getDefaultColumns() are used.
     </st:attribute>
+    <st:attribute name="itemGroup" use="optional" type="hudson.model.ItemGroup">
+      The containing group, for purposes of name calculation.
+    </st:attribute>
   </st:documentation>
 
   <t:setIconSize/>
@@ -57,28 +63,33 @@ THE SOFTWARE.
 
     <j:if test="${!empty(jobs) or !empty(attrs.views)}">
       <!-- the caller can inject a tab bar here -->
-      <d:invokeBody/>
+      <div id="projectstatus-tabBar">
+        <d:invokeBody/>
+      </div>
       <!-- project list -->
-      <table id="projectstatus" class="sortable pane bigtable"
-             style="${showViewTabs!=null?'margin-top:0px; border-top: none;':null}">
-        <tr style="border-top: 0px;">
-          <j:forEach var="col" items="${columnExtensions}">
-             <st:include page="columnHeader.jelly" it="${col}" />
+      <div class="pane-frame">
+        <table id="projectstatus" class="sortable pane bigtable stripped-odd">
+          <tr class="header">
+            <j:forEach var="col" items="${columnExtensions}">
+              <st:include page="columnHeader.jelly" it="${col}" />
+            </j:forEach>
+            <th>
+              <st:nbsp/>
+            </th>
+          </tr>
+
+          <j:forEach var="v" items="${attrs.views}">
+            <t:projectViewNested />
           </j:forEach>
-          <th>
-            <st:nbsp/>
-          </th>
-        </tr>
-
-        <j:forEach var="v" items="${attrs.views}">
-          <t:projectViewNested />
-        </j:forEach>
-
-        <j:forEach var="job" items="${jobs}">
-          <t:projectViewRow />
-        </j:forEach>
-      </table>
-      <t:iconSize><t:rssBar/></t:iconSize>
+          <j:forEach var="job" items="${jobs}">
+            <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
+            <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
+          </j:forEach>
+        </table>
+      </div>
+      <div>
+        <t:iconSize><t:rssBar/></t:iconSize>
+      </div>
     </j:if>
   </div>
 </j:jelly>

@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package hudson.tools;
+
+import static org.junit.Assert.assertEquals;
 
 import hudson.Functions;
 import hudson.model.*;
@@ -40,9 +41,13 @@ import hudson.maven.MavenModuleSet;
 import java.io.IOException;
 
 import jenkins.model.Jenkins;
-import junit.framework.Assert;
 
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 
@@ -54,18 +59,21 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * and that the priority is maintained: parameters > slave node properties >
  * master node properties
  */
-public class ToolLocationNodePropertyTest extends HudsonTestCase {
+public class ToolLocationNodePropertyTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     private DumbSlave slave;
     private FreeStyleProject project;
 
-    public void testFormRoundTrip() throws Exception {
-
-        MavenInstallation.DescriptorImpl mavenDescriptor = hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class);
-        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", NO_PROPERTIES));
-        AntInstallation.DescriptorImpl antDescriptor = hudson.getDescriptorByType(AntInstallation.DescriptorImpl.class);
-        antDescriptor.setInstallations(new AntInstallation("ant", "XXX", NO_PROPERTIES));
-        JDK.DescriptorImpl jdkDescriptor = hudson.getDescriptorByType(JDK.DescriptorImpl.class);
+    @Test
+    public void formRoundTrip() throws Exception {
+        MavenInstallation.DescriptorImpl mavenDescriptor = j.jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class);
+        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", j.NO_PROPERTIES));
+        AntInstallation.DescriptorImpl antDescriptor = j.jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class);
+        antDescriptor.setInstallations(new AntInstallation("ant", "XXX", j.NO_PROPERTIES));
+        JDK.DescriptorImpl jdkDescriptor = j.jenkins.getDescriptorByType(JDK.DescriptorImpl.class);
         jdkDescriptor.setInstallations(new JDK("jdk", "XXX"));
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
@@ -74,49 +82,50 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
                 new ToolLocationNodeProperty.ToolLocation(antDescriptor, "ant", "zotfoo"));
         slave.getNodeProperties().add(property);
 
-        WebClient webClient = new WebClient();
+        WebClient webClient = j.createWebClient();
         HtmlPage page = webClient.getPage(slave, "configure");
         HtmlForm form = page.getFormByName("config");
-        submit(form);
+        j.submit(form);
 
-        Assert.assertEquals(1, slave.getNodeProperties().toList().size());
+        assertEquals(1, slave.getNodeProperties().toList().size());
 
         ToolLocationNodeProperty prop = slave.getNodeProperties().get(ToolLocationNodeProperty.class);
-        Assert.assertEquals(3, prop.getLocations().size());
+        assertEquals(3, prop.getLocations().size());
 
         ToolLocationNodeProperty.ToolLocation location = prop.getLocations().get(0);
-        Assert.assertEquals(jdkDescriptor, location.getType());
-        Assert.assertEquals("jdk", location.getName());
-        Assert.assertEquals("foobar", location.getHome());
+        assertEquals(jdkDescriptor, location.getType());
+        assertEquals("jdk", location.getName());
+        assertEquals("foobar", location.getHome());
 
         location = prop.getLocations().get(1);
-        Assert.assertEquals(mavenDescriptor, location.getType());
-        Assert.assertEquals("maven", location.getName());
-        Assert.assertEquals("barzot", location.getHome());
+        assertEquals(mavenDescriptor, location.getType());
+        assertEquals("maven", location.getName());
+        assertEquals("barzot", location.getHome());
 
         location = prop.getLocations().get(2);
-        Assert.assertEquals(antDescriptor, location.getType());
-        Assert.assertEquals("ant", location.getName());
-        Assert.assertEquals("zotfoo", location.getHome());
+        assertEquals(antDescriptor, location.getType());
+        assertEquals("ant", location.getName());
+        assertEquals("zotfoo", location.getHome());
     }
 
-    public void testMaven() throws Exception {
-        MavenInstallation maven = configureDefaultMaven();
+    @Test
+    public void maven() throws Exception {
+        MavenInstallation maven = j.configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
+        Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", j.NO_PROPERTIES));
 
         project.getBuildersList().add(new Maven("--version", "maven"));
         configureDumpEnvBuilder();
 
         Build build = project.scheduleBuild2(0).get();
-        assertBuildStatus(Result.FAILURE, build);
+        j.assertBuildStatus(Result.FAILURE, build);
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
+                new ToolLocationNodeProperty.ToolLocation(j.jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
         slave.getNodeProperties().add(property);
 
         build = project.scheduleBuild2(0).get();
-        assertBuildStatus(Result.SUCCESS, build);
+        j.assertBuildStatus(Result.SUCCESS, build);
     }
 
     private void configureDumpEnvBuilder() throws IOException {
@@ -126,8 +135,9 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
             project.getBuildersList().add(new Shell("export"));
     }
 
-    public void testAnt() throws Exception {
-        Ant.AntInstallation ant = configureDefaultAnt();
+    @Test
+    public void ant() throws Exception {
+        Ant.AntInstallation ant = j.configureDefaultAnt();
         String antPath = ant.getHome();
         Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(new AntInstallation("ant", "THIS IS WRONG"));
 
@@ -136,56 +146,54 @@ public class ToolLocationNodePropertyTest extends HudsonTestCase {
         configureDumpEnvBuilder();
 
         Build build = project.scheduleBuild2(0).get();
-        assertBuildStatus(Result.FAILURE, build);
+        j.assertBuildStatus(Result.FAILURE, build);
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(hudson.getDescriptorByType(AntInstallation.DescriptorImpl.class), "ant", antPath));
+                new ToolLocationNodeProperty.ToolLocation(j.jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class), "ant", antPath));
         slave.getNodeProperties().add(property);
 
         build = project.scheduleBuild2(0).get();
         System.out.println(build.getLog());
-        assertBuildStatus(Result.SUCCESS, build);
+        j.assertBuildStatus(Result.SUCCESS, build);
     }
 
-    public void testNativeMaven() throws Exception {
-        MavenInstallation maven = configureDefaultMaven();
+    @Test
+    public void nativeMaven() throws Exception {
+        MavenInstallation maven = j.configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", NO_PROPERTIES));
+        Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", j.NO_PROPERTIES));
 
-        MavenModuleSet project = createMavenProject();
+        MavenModuleSet project = j.createMavenProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 "/simple-projects.zip")));
         project.setAssignedLabel(slave.getSelfLabel());
-        project.setJDK(hudson.getJDK("default"));
+        project.setJDK(j.jenkins.getJDK("default"));
 
         project.setMaven("maven");
         project.setGoals("clean");
 
         Run build = project.scheduleBuild2(0).get();
-        assertBuildStatus(Result.FAILURE, build);
+        j.assertBuildStatus(Result.FAILURE, build);
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(hudson.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
+                new ToolLocationNodeProperty.ToolLocation(j.jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
         slave.getNodeProperties().add(property);
 
         build = project.scheduleBuild2(0).get();
         System.out.println(build.getLog());
-        assertBuildStatus(Result.SUCCESS, build);
-
+        j.assertBuildStatus(Result.SUCCESS, build);
     }
 
-    // //////////////////////// setup //////////////////////////////////////////
-
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         EnvVars env = new EnvVars();
         // we don't want Maven, Ant, etc. to be discovered in the path for this test to work,
         // but on Unix these tools rely on other basic Unix tools (like env) for its operation,
         // so empty path breaks the test.
         env.put("PATH", "/bin:/usr/bin");
         env.put("M2_HOME", "empty");
-        slave = createSlave(new LabelAtom("slave"), env);
-        project = createFreeStyleProject();
+        slave = j.createSlave(new LabelAtom("slave"), env);
+        project = j.createFreeStyleProject();
         project.setAssignedLabel(slave.getSelfLabel());
     }
 }

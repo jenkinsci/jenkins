@@ -28,7 +28,6 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
-import hudson.tasks.JavadocArchiver;
 import hudson.model.AbstractProject;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
@@ -62,6 +61,7 @@ import org.kohsuke.stapler.Stapler;
  * @deprecated as of 1.294
  *      Use {@link FormValidation} as a return value in your check method.
  */
+@Deprecated
 public abstract class FormFieldValidator {
     public static final Permission CHECK = Jenkins.ADMINISTER;
 
@@ -93,6 +93,7 @@ public abstract class FormFieldValidator {
      *      Use {@link #FormFieldValidator(Permission)} and remove {@link StaplerRequest} and {@link StaplerResponse}
      *      from your "doCheck..." method parameter
      */
+    @Deprecated
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, Permission permission) {
         this(request,response, Jenkins.getInstance(),permission);
     }
@@ -110,6 +111,7 @@ public abstract class FormFieldValidator {
      *      Use {@link #FormFieldValidator(AccessControlled,Permission)} and remove {@link StaplerRequest} and {@link StaplerResponse}
      *      from your "doCheck..." method parameter
      */
+    @Deprecated
     protected FormFieldValidator(StaplerRequest request, StaplerResponse response, AccessControlled subject, Permission permission) {
         this.request = request;
         this.response = response;
@@ -240,6 +242,7 @@ public abstract class FormFieldValidator {
      * @deprecated as of 1.294
      *      Use {@link FormValidation.URLCheck}
      */
+    @Deprecated
     public static abstract class URLCheck extends FormFieldValidator {
 
         public URLCheck(StaplerRequest request, StaplerResponse response) {
@@ -255,7 +258,7 @@ public abstract class FormFieldValidator {
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = ProxyConfiguration.open(url);
-            if (con == null) { // XXX is this even permitted by URL.openConnection?
+            if (con == null) { // TODO is this even permitted by URL.openConnection?
                 throw new IOException(url.toExternalForm());
             }
             return new BufferedReader(
@@ -349,6 +352,7 @@ public abstract class FormFieldValidator {
      * @since 1.90.
      * @deprecated as of 1.294. Use {@link FilePath#validateFileMask(String, boolean)} 
      */
+    @Deprecated
     public static class WorkspaceFileMask extends FormFieldValidator {
         private final boolean errorIfNotExist;
 
@@ -379,11 +383,11 @@ public abstract class FormFieldValidator {
                     return;
                 }
 
-                String msg = ws.validateAntFileMask(value);
+                String msg = ws.validateAntFileMask(value, FilePath.VALIDATE_ANT_FILE_MASK_BOUND);
                 if(errorIfNotExist)     error(msg);
                 else                    warning(msg);
             } catch (InterruptedException e) {
-                ok(); // coundn't check
+                ok(Messages.FormFieldValidator_did_not_manage_to_validate_may_be_too_sl(value));
             }
         }
 
@@ -400,8 +404,9 @@ public abstract class FormFieldValidator {
      * the current workspace.
      * @since 1.116
      * @deprecated as of 1.294. Use {@link FilePath#validateRelativeDirectory(String, boolean)}
-     *      (see {@link JavadocArchiver.DescriptorImpl#doCheck(AbstractProject, String)}
+     *      (see javadoc plugin for the example)
      */
+    @Deprecated
     public static class WorkspaceDirectory extends WorkspaceFilePath {
         public WorkspaceDirectory(StaplerRequest request, StaplerResponse response, boolean errorIfNotExist) {
             super(request, response, errorIfNotExist, false);
@@ -418,6 +423,7 @@ public abstract class FormFieldValidator {
      * @since 1.160
      * @deprecated as of 1.294. Use {@link FilePath#validateRelativePath(String, boolean, boolean)}
      */
+    @Deprecated
     public static class WorkspaceFilePath extends FormFieldValidator {
         private final boolean errorIfNotExist;
         private final boolean expectingFile;
@@ -501,6 +507,7 @@ public abstract class FormFieldValidator {
      * @since 1.124
      * @deprecated as of 1.294. Use {@link FormValidation#validateExecutable(String)}
      */
+    @Deprecated
     public static class Executable extends FormFieldValidator {
 
         public Executable(StaplerRequest request, StaplerResponse response) {
@@ -587,6 +594,7 @@ public abstract class FormFieldValidator {
      * @deprecated as of 1.305
      *      Use {@link FormValidation#validateBase64(String, boolean, boolean, String)} instead.
      */
+    @Deprecated
     public static class Base64 extends FormFieldValidator {
         private final boolean allowWhitespace;
         private final boolean allowEmpty;
@@ -633,6 +641,7 @@ public abstract class FormFieldValidator {
      * @deprecated as of 1.294
      *      Use {@link FormValidation#validateNonNegativeInteger(String)}
      */
+    @Deprecated
     public static class NonNegativeInteger extends FormFieldValidator {
         public NonNegativeInteger() {
             super(null);

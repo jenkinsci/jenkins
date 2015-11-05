@@ -28,7 +28,7 @@ THE SOFTWARE.
         Meant to be used from config.jelly of ToolInstaller subypes. 
     </st:documentation>
     <f:entry title="${%Label}" field="label" help="/help/tools/help-label.html">
-        <!-- XXX could use Hudson.getLabels and make a combo box -->
+        <!-- TODO could use Hudson.getLabels and make a combo box -->
         <f:textbox/>
     </f:entry>
 </j:jelly>

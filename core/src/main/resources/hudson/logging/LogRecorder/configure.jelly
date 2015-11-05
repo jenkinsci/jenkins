@@ -43,19 +43,19 @@ THE SOFTWARE.
         <f:repeatable var="instance" items="${it.targets}" name="targets">
           <table width="100%">
             <tr>
-              <td>
+              <th style="white-space:nowrap;">
                 ${%Logger}
+              </th>
+              <td width="60%">
+                <f:textbox field="name" autoCompleteUrl="autoCompleteLoggerName" />
               </td>
-              <td width="100%">
-                <f:textbox field="name"/>
-              </td>
-              <td style="white-space:nowrap;">
+              <th style="white-space:nowrap;">
                 ${%Log level}
-              </td>
+              </th>
               <td>
                 <select name="level">
                   <j:forEach var="lv" items="${it.LEVELS}">
-                    <f:option selected="${instance.level==lv}">${lv.toString().toLowerCase()}</f:option>
+                    <f:option value="${lv.name}" selected="${instance.level==lv}">${lv.localizedName}</f:option>
                   </j:forEach>
                 </select>
               </td>
@@ -71,6 +71,7 @@ THE SOFTWARE.
         <f:submit value="${%Save}" />
       </f:block>
     </f:form>
+    <st:adjunct includes="lib.form.confirm" />
   </l:main-panel>
 </l:layout>
 </j:jelly>

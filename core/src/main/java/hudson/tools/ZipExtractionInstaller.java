@@ -26,16 +26,14 @@ package hudson.tools;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
+import jenkins.MasterToSlaveFileCallable;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.Functions;
-import hudson.os.PosixAPI;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
-import hudson.util.jna.GNUCLibrary;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +43,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Installs a tool into the Hudson working area by downloading and unpacking a ZIP file.
@@ -119,27 +116,16 @@ public class ZipExtractionInstaller extends ToolInstaller {
      * Sets execute permission on all files, since unzip etc. might not do this.
      * Hackish, is there a better way?
      */
-    static class ChmodRecAPlusX implements FileCallable<Void> {
+    static class ChmodRecAPlusX extends MasterToSlaveFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         public Void invoke(File d, VirtualChannel channel) throws IOException {
             if(!Functions.isWindows())
                 process(d);
             return null;
         }
-        @IgnoreJRERequirement
         private void process(File f) {
             if (f.isFile()) {
-                if(Functions.isMustangOrAbove())
-                    f.setExecutable(true, false);
-                else {
-                    try {
-                        GNUCLibrary.LIBC.chmod(f.getAbsolutePath(),0755);
-                    } catch (LinkageError e) {
-                        // if JNA is unavailable, fall back.
-                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                        PosixAPI.get().chmod(f.getAbsolutePath(),0755);
-                    }
-                }
+                f.setExecutable(true, false);
             } else {
                 File[] kids = f.listFiles();
                 if (kids != null) {

@@ -36,10 +36,10 @@ THE SOFTWARE.
   -->
   <st:statusCode value="405" />
   <l:layout title="${it.displayName}" norefresh="true">
-    <st:include page="sidepanel.jelly" it="${it.project}" />
+    <st:include page="sidepanel.jelly" it="${it.job}"/>
     <l:main-panel>
       <div class="behavior-loading">${%LOADING}</div>
-      <h1>${it.owner.pronoun} ${it.owner.displayName}</h1>
+      <h1>${it.job.pronoun} ${it.job.displayName}</h1>
       <p>${%description}</p>
       <j:set var="delay" value="${request.getParameter('delay')}" />
       <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
@@ -51,6 +51,17 @@ THE SOFTWARE.
           </tbody>
         </j:forEach>
         <f:block>
+          <!--
+            When used from the UI, use 303 redirect and send back to the job top page.
+            When neither of those options are given, we'll report "201 Created".
+
+            We can't use XHR for submitting this as there might be file parameters,
+            and submitting to IFRAME won't work either because 201 can't have HTML response.
+
+            So I think all we can do is this somewhat clunky workaround.
+           -->
+          <input type="hidden" name="statusCode" value="303" />
+          <input type="hidden" name="redirectTo" value="." />
           <f:submit value="${%Build}" />
         </f:block>
       </f:form>

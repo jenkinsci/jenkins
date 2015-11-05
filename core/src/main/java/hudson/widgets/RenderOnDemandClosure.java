@@ -25,19 +25,17 @@ package hudson.widgets;
 
 import hudson.Util;
 import hudson.model.Descriptor;
-import hudson.model.DescriptorByNameOwner;
-import hudson.util.IOException2;
 import hudson.util.PackedMap;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
-import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.framework.adjunct.AdjunctsInPage;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
+import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -45,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,6 +60,8 @@ public class RenderOnDemandClosure {
     private final Map<String,Object> variables;
     private final String currentDescriptorByNameUrl;
 
+    private final String[] adjuncts;
+
     public RenderOnDemandClosure(JellyContext context, String attributesToCapture) {
         List<Script> bodyStack = new ArrayList<Script>();
         for (JellyContext c = context; c!=null; c=c.getParent()) {
@@ -72,12 +73,19 @@ public class RenderOnDemandClosure {
 
         Map<String,Object> variables = new HashMap<String, Object>();
         for (String v : Util.fixNull(attributesToCapture).split(","))
-            variables.put(v,context.getVariable(v));
+            variables.put(v.intern(),context.getVariable(v));
 
         // capture the current base of context for descriptors
         currentDescriptorByNameUrl = Descriptor.getCurrentDescriptorByNameUrl();
 
         this.variables = PackedMap.of(variables);
+
+        Set<String> _adjuncts = AdjunctsInPage.get().getIncluded();
+        this.adjuncts = new String[_adjuncts.size()];
+        int i = 0;
+        for (String adjunct : _adjuncts) {
+            this.adjuncts[i++] = adjunct.intern();
+        }
     }
 
     /**
@@ -96,6 +104,13 @@ public class RenderOnDemandClosure {
                                 context = new JellyContext(context);
                                 context.setVariable("org.apache.commons.jelly.body",bodyStack[i]);
                             }
+                            try {
+                                AdjunctsInPage.get().assumeIncluded(adjuncts);
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
+                            } catch (SAXException e) {
+                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
+                            }
                             return context;
                         }
 
@@ -108,7 +123,7 @@ public class RenderOnDemandClosure {
                     }.invokeScript(req,rsp,bodyStack[0],null);
                 } catch (JellyTagException e) {
                     LOGGER.log(Level.WARNING, "Failed to evaluate the template closure", e);
-                    throw new IOException2("Failed to evaluate the template closure",e);
+                    throw new IOException("Failed to evaluate the template closure",e);
                 }
             }
         };

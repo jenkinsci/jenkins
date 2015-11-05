@@ -1,18 +1,8 @@
 package jenkins.security;
 
-import hudson.model.User;
-import hudson.util.Scrambler;
-import org.acegisecurity.context.SecurityContextHolder;
-
 import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * {@link Filter} that performs HTTP basic authentication based on API token.
@@ -23,44 +13,13 @@ import java.io.IOException;
  * interfere with the other.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated as of 1.576
+ *      Use {@link BasicHeaderProcessor}
  */
-public class ApiTokenFilter implements Filter {
-    public void init(FilterConfig filterConfig) throws ServletException {
-    }
-
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse rsp = (HttpServletResponse) response;
-        String authorization = req.getHeader("Authorization");
-
-        if (authorization!=null) {
-            // authenticate the user
-            String uidpassword = Scrambler.descramble(authorization.substring(6));
-            int idx = uidpassword.indexOf(':');
-            if (idx >= 0) {
-                String username = uidpassword.substring(0, idx);
-                String password = uidpassword.substring(idx+1);
-
-                // attempt to authenticate as API token
-                User u = User.get(username);
-                ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-                if (t!=null && t.matchesPassword(password)) {
-                    // even if we fail to match the password, we aren't rejecting it.
-                    // as the user might be passing in a real password.
-                    SecurityContextHolder.getContext().setAuthentication(u.impersonate());
-                    try {
-                        chain.doFilter(request,response);
-                        return;
-                    } finally {
-                        SecurityContextHolder.clearContext();
-                    }
-                }
-            }
-        }
-
-        chain.doFilter(request,response);
-    }
-
-    public void destroy() {
+@Deprecated
+public class ApiTokenFilter extends BasicHeaderProcessor {
+    @Override
+    protected List<? extends BasicHeaderAuthenticator> all() {
+        return Collections.singletonList(new BasicHeaderApiTokenAuthenticator());
     }
 }

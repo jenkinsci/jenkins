@@ -53,5 +53,5 @@ public interface InvocationInterceptor {
      * But the implementation may choose to skip calling the 'delegate' object, alter arguments,
      * and alter the return value. 
      */
-    public Object invoke(Object proxy, Method method, Object[] args, InvocationHandler delegate) throws Throwable;
+    Object invoke(Object proxy, Method method, Object[] args, InvocationHandler delegate) throws Throwable;
 }

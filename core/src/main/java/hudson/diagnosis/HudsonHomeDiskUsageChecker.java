@@ -26,7 +26,6 @@ package hudson.diagnosis;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
 
 import java.util.logging.Logger;
 
@@ -42,9 +41,7 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
         return HOUR;
     }
 
-    @IgnoreJRERequirement
     protected void doRun() {
-        try {
             long free = Jenkins.getInstance().getRootDir().getUsableSpace();
             long total = Jenkins.getInstance().getRootDir().getTotalSpace();
             if(free<=0 || total<=0) {
@@ -61,11 +58,6 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
             // it's AND and not OR so that small Hudson home won't get a warning,
             // and similarly, if you have a 1TB disk, you don't get a warning when you still have 100GB to go.
             HudsonHomeDiskUsageMonitor.get().activated = (total/free>10 && free< FREE_SPACE_THRESHOLD);
-        } catch (LinkageError _) {
-            // pre Mustang
-            LOGGER.info("Not on JDK6. Cannot monitor JENKINS_HOME disk usage");
-            cancel();
-        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(HudsonHomeDiskUsageChecker.class.getName());

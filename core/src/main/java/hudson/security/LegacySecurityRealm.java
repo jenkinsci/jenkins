@@ -97,9 +97,5 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         public String getDisplayName() {
             return Messages.LegacySecurityRealm_Displayname();
         }
-
-        public String getHelpFile() {
-            return "/help/security/container-realm.html";
-        }
     };
 }

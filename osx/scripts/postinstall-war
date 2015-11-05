@@ -1,7 +1,0 @@
-#!/bin/bash
-
-JENKINS_APP="/Applications/Jenkins"
-
-# Fix Jenkins Permissions
-chown -R root:wheel ${JENKINS_APP}
-chmod -R 755 ${JENKINS_APP}

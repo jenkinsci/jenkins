@@ -30,6 +30,8 @@ import com.sun.jna.Native;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.ptr.IntByReference;
+import hudson.os.PosixAPI;
+import jnr.posix.POSIX;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 
 /**
@@ -38,7 +40,7 @@ import org.jvnet.libpam.impl.CLibrary.passwd;
  * <p>
  * Not available on all platforms (such as Linux/PPC, IBM mainframe, etc.), so the caller should recover gracefully
  * in case of {@link LinkageError}. See HUDSON-4820.
- *
+ * <p>Consider deprecating all methods present also in {@link POSIX} (as obtained by {@link PosixAPI#jnr}).
  * @author Kohsuke Kawaguchi
  */
 public interface GNUCLibrary extends Library {
@@ -53,7 +55,8 @@ public interface GNUCLibrary extends Library {
     int chdir(String dir);
     int getdtablesize();
 
-    int execv(String file, StringArray args);
+    int execv(String path, StringArray args);
+    int execvp(String file, StringArray args);
     int setenv(String name, String value,int replace);
     int unsetenv(String name);
     void perror(String msg);
@@ -65,12 +68,16 @@ public interface GNUCLibrary extends Library {
     int fcntl(int fd, int command, int flags);
 
     // obtained from Linux. Needs to be checked if these values are portable.
-    static final int F_GETFD = 1;
-    static final int F_SETFD = 2;
-    static final int FD_CLOEXEC = 1;
+    int F_GETFD = 1;
+    int F_SETFD = 2;
+    int FD_CLOEXEC = 1;
 
     int chown(String fileName, int uid, int gid);
     int chmod(String fileName, int i);
+
+    int dup(int old);
+    int dup2(int old, int _new);
+    int close(int fd);
 
     // see http://www.gnu.org/s/libc/manual/html_node/Renaming-Files.html
     int rename(String oldname, String newname);
@@ -102,5 +109,5 @@ public interface GNUCLibrary extends Library {
      */
     int readlink(String filename, Memory buffer, NativeLong size);
 
-    public static final GNUCLibrary LIBC = (GNUCLibrary) Native.loadLibrary("c",GNUCLibrary.class);
+    GNUCLibrary LIBC = (GNUCLibrary) Native.loadLibrary("c",GNUCLibrary.class);
 }

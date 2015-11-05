@@ -1,7 +1,10 @@
 package hudson.util.io;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import hudson.FilePath;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +13,10 @@ import java.io.PrintWriter;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ReopenableRotatingFileOutputStreamTest extends TestCase {
-    public void testRotation() throws IOException {
+public class ReopenableRotatingFileOutputStreamTest {
+
+    @Test
+    public void rotation() throws IOException, InterruptedException {
         File base = File.createTempFile("test", "log");
         ReopenableRotatingFileOutputStream os = new ReopenableRotatingFileOutputStream(base,3);
         PrintWriter w = new PrintWriter(os,true);
@@ -20,6 +25,7 @@ public class ReopenableRotatingFileOutputStreamTest extends TestCase {
             os.rewind();
         }
         w.println("Content5");
+        w.close();
 
         assertEquals("Content5", new FilePath(base).readToString().trim());
         assertEquals("Content4", new FilePath(new File(base.getPath() + ".1")).readToString().trim());

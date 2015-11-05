@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  *
@@ -106,6 +107,7 @@ public class TreeView extends View implements ViewGroup {
 //        return jobNames.contains(item.getName());
     }
 
+    @RequirePOST
     public TopLevelItem doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
         if (ig instanceof ModifiableItemGroup) {
@@ -119,14 +121,7 @@ public class TreeView extends View implements ViewGroup {
         return null;
     }
 
-    @Override
-    public synchronized void onJobRenamed(Item item, String oldName, String newName) {
-        if(jobNames.remove(oldName) && newName!=null)
-            jobNames.add(newName);
-        // forward to children
-        for (View v : views)
-            v.onJobRenamed(item,oldName,newName);
-    }
+    // TODO listen for changes that might affect jobNames
 
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
     }
@@ -190,4 +185,5 @@ public class TreeView extends View implements ViewGroup {
     public List<Action> getViewActions() {
         return owner.getViewActions();
     }
+
 }

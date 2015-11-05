@@ -24,9 +24,20 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <st:structuredMessageFormat key="description">
-    <st:structuredMessageArgument>
-      <a href="${rootURL}/label/${it.label.name}">${it.label.name}</a>
-    </st:structuredMessageArgument>
-  </st:structuredMessageFormat>
+  <j:choose>
+    <j:when test="${it.label.isEmpty()}">
+      <st:structuredMessageFormat key="description_no_nodes">
+        <st:structuredMessageArgument>
+          <a href="${rootURL}/label/${it.label.name}" class="model-link">${it.label.name}</a>
+        </st:structuredMessageArgument>
+      </st:structuredMessageFormat>
+    </j:when>
+    <j:otherwise>
+      <st:structuredMessageFormat key="description">
+        <st:structuredMessageArgument>
+          <a href="${rootURL}/label/${it.label.name}" class="model-link">${it.label.name}</a>
+        </st:structuredMessageArgument>
+      </st:structuredMessageFormat>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

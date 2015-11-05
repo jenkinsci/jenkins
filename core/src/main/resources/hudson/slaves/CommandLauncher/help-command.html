@@ -2,7 +2,7 @@
   Command to be used to launch a slave agent program, which controls the slave
   computer and communicates with the master. Jenkins assumes that
   the executed program launches the <tt>slave.jar</tt> program on the correct
-    slave machine.
+  slave machine.
 
   <p>
   A copy of <tt>slave.jar</tt> can be downloaded from <a href="${rootURL}/jnlpJars/slave.jar"><tt>here</tt></a>.
@@ -14,7 +14,7 @@
   However, it is often a good idea to write a small shell script, like the following, on a slave
   so that you can control the location of Java and/or slave.jar, as well as set up any
   environment variables specific to this slave node, such as PATH.
-  
+
 <pre>
 #!/bin/sh
 exec java -jar ~/bin/slave.jar
@@ -26,7 +26,7 @@ exec java -jar ~/bin/slave.jar
   "java -jar ~/bin/slave.jar" eventually.
 
   <p>
-  In a larger deployment, It is also worth considering to load <tt>slave.jar</tt> from
+  In a larger deployment, it is also worth considering to load <tt>slave.jar</tt> from
   a NFS-mounted common location, so that you don't have to update this file every time
   you update Jenkins.
 

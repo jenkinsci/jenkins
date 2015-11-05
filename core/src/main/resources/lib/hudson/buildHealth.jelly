@@ -24,14 +24,16 @@ THE SOFTWARE.
 
 <!--
   <%@ attribute name="job" required="true" type="hudson.model.Job" %>
-  <%@ attribute name="iconSize" required="true" type="java.lang.String" %>
+  <%@ attribute name="iconSizeClass" type="java.lang.String" %>
+  <%@ attribute name="iconSize" type="java.lang.String" %>
   <%@ attribute name="td" required="false" type="java.lang.String" %>
   <%@ attribute name="link" required="false" type="java.lang.String" %>
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <j:set var="buildHealth" value="${job.buildHealth}"/>
     <j:set var="healthReports" value="${job.buildHealthReports}"/>
+    <j:new var="emptyHealthReport" className="hudson.model.HealthReport"/>
+    <j:set var="buildHealth" value="${empty(healthReports) ? emptyHealthReport : healthReports[0]}"/>
     <j:if test="${td}"><j:set var="useTdElement" value="x"/></j:if>
     <x:element name="${useTdElement!=null?'td':'div'}">
         <x:attribute name="data">${buildHealth.score}</x:attribute>
@@ -40,16 +42,25 @@ THE SOFTWARE.
         </x:attribute>
         <x:attribute name="onmouseout">this.className='healthReport';return true;</x:attribute>
         <j:if test="${buildHealth!=null}">
+            <j:if test="${iconSizeClass == null}">
+              <j:choose>
+                <j:when  test="${iconSize == null}">
+                  <j:set var="iconSizeClass" value="icon-sm"/>
+                </j:when>
+                <j:otherwise>
+                  <j:set var="iconSizeClass" value="${icons.toNormalizedIconSizeClass(iconSize)}"/>
+                </j:otherwise>
+              </j:choose>
+            </j:if>
             <j:choose>
               <j:when  test="${!empty(healthReports)}">
-                <a href="${empty(link)?'#':link}" style="${attrs.style}">
-                    <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                         alt="${buildHealth.score}%" class="icon${iconSize}"/>
+                <a class="build-health-link" href="${empty(link)?'#':link}" 
+                    style="${attrs.style}">
+                    <l:icon class="${buildHealth.iconClassName} ${iconSizeClass}" alt="${buildHealth.score}%"/>
                 </a>
               </j:when>
               <j:otherwise>
-                 <img src="${rootURL}${buildHealth.getIconUrl(iconSize)}"
-                      alt="${buildHealth.score}%" class="icon${iconSize}"/>
+                 <l:icon class="${buildHealth.iconClassName} ${iconSizeClass}" alt="${buildHealth.score}%" />
                </j:otherwise>
              </j:choose>  
         </j:if>
@@ -64,11 +75,10 @@ THE SOFTWARE.
                         </tr>
                     </thead>
                     <tbody>
-                        <j:forEach var="rpt" items="${job.buildHealthReports}">
+                        <j:forEach var="rpt" items="${healthReports}">
                             <tr>
                                 <td align="left">
-                                    <img src="${rootURL}${rpt.getIconUrl('16x16')}" alt=""
-                                         title=""/>
+                                    <l:icon class="${rpt.iconClassName} icon-sm" />
                                 </td>
                                 <td>${rpt.localizableDescription}</td>
                                 <td align="right">${rpt.score}</td>

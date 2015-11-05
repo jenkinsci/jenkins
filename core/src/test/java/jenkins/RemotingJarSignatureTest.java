@@ -1,16 +1,17 @@
 package jenkins;
 
+import static org.junit.Assert.fail;
+
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
-import hudson.util.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import org.apache.commons.io.IOUtils;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -38,11 +39,12 @@ public class RemotingJarSignatureTest {
             if (name.equals("META-INF/MANIFEST.MF")) continue;
             if (name.startsWith("META-INF/") && name.endsWith(".SF")) continue;
             if (name.startsWith("META-INF/") && name.endsWith(".RSA")) continue;
+            if (name.startsWith("META-INF/") && name.endsWith(".DSA")) continue;
 
             // make sure bits are signed
             IOUtils.copy(myJar.getInputStream(entry), new NullOutputStream());
             if (entry.getCodeSigners()==null) {
-                Assert.fail("No signature for " + name);
+                fail("No signature for " + name);
             }
         }
     }

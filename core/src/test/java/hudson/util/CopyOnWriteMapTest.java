@@ -25,13 +25,15 @@ package hudson.util;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * @author Mike Dillon, Alan Harder
  */
-public class CopyOnWriteMapTest extends TestCase {
+public class CopyOnWriteMapTest {
     public static final class HashData {
         CopyOnWriteMap.Hash<String,String> map1 = new CopyOnWriteMap.Hash<String,String>();
         HashMap<String,String> map2 = new HashMap<String,String>();
@@ -40,7 +42,7 @@ public class CopyOnWriteMapTest extends TestCase {
     /**
      * Verify that serialization form of CopyOnWriteMap.Hash and HashMap are the same.
      */
-    public void testHashSerialization() throws Exception {
+    @Test public void hashSerialization() throws Exception {
         HashData td = new HashData();
         XStream2 xs = new XStream2();
 
@@ -82,13 +84,13 @@ public class CopyOnWriteMapTest extends TestCase {
      * Verify that an empty CopyOnWriteMap.Tree can be serialized,
      * and that serialization form is the same as a standard TreeMap.
      */
-    public void testTreeSerialization() throws Exception {
+    @Test public void treeSerialization() throws Exception {
         TreeData td = new TreeData();
         XStream2 xs = new XStream2();
 
         String out = xs.toXML(td);
         assertEquals("empty maps", "<hudson.util.CopyOnWriteMapTest_-TreeData>"
-                + "<map1><no-comparator/></map1><map2><no-comparator/></map2>"
+                + "<map1/><map2/>"
                 + "</hudson.util.CopyOnWriteMapTest_-TreeData>",
                 out.replaceAll("\\s+", ""));
         TreeData td2 = (TreeData)xs.fromXML(out);
@@ -111,4 +113,18 @@ public class CopyOnWriteMapTest extends TestCase {
         assertEquals("bar1", td2.map1.get("foo1"));
         assertEquals("bar2", td2.map2.get("foo2"));
     }
+
+    @Test public void equalsHashCodeToString() throws Exception {
+        Map<String,Integer> m1 = new TreeMap<String,Integer>();
+        Map<String,Integer> m2 = new CopyOnWriteMap.Tree<String,Integer>();
+        m1.put("foo", 5);
+        m1.put("bar", 7);
+        m2.put("foo", 5);
+        m2.put("bar", 7);
+        assertEquals(m1.hashCode(), m2.hashCode());
+        assertTrue(m2.equals(m1));
+        assertTrue(m1.equals(m2));
+        assertEquals(m1.toString(), m2.toString());
+    }
+
 }

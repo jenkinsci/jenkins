@@ -44,7 +44,7 @@ import java.util.ArrayList;
 /** StringTokenizer with Quoting support.
  *
  * This class is a copy of the java.util.StringTokenizer API and
- * the behaviour is the same, except that single and doulbe quoted
+ * the behaviour is the same, except that single and double quoted
  * string values are recognized.
  * Delimiters within quotes are not considered delimiters.
  * Quotes can be escaped with '\'.
@@ -60,7 +60,7 @@ public class QuotedStringTokenizer
     private String _delim = __delim;
     private boolean _returnQuotes=false;
     private boolean _returnDelimiters=false;
-    private StringBuffer _token;
+    private StringBuilder _token;
     private boolean _hasToken=false;
     private int _i=0;
     private int _lastStart=0;
@@ -104,7 +104,7 @@ public class QuotedStringTokenizer
             _delim.indexOf('"')>=0)
             throw new Error("Can't use quotes as delimiters: "+_delim);
 
-        _token=new StringBuffer(_string.length()>1024?512:_string.length()/2);
+        _token=new StringBuilder(_string.length()>1024?512:_string.length()/2);
     }
 
     /* ------------------------------------------------------------ */
@@ -328,7 +328,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     /** Quote a string.
      * The string is quoted only if quoting is required due to
-     * embeded delimiters, quote characters or the
+     * embedded delimiters, quote characters or the
      * empty string.
      * @param s The string to quote.
      * @return quoted string
@@ -358,7 +358,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     /** Quote a string.
      * The string is quoted only if quoting is required due to
-     * embeded delimiters, quote characters or the
+     * embedded delimiters, quote characters or the
      * empty string.
      * @param s The string to quote.
      * @return quoted string

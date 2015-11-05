@@ -26,6 +26,7 @@ package hudson.node_monitors;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import hudson.Extension;
+import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -38,9 +39,10 @@ import java.io.IOException;
  */
 public class ArchitectureMonitor extends NodeMonitor {
     @Extension
-    public static final class DescriptorImpl extends AbstractNodeMonitorDescriptor<String> {
-        protected String monitor(Computer c) throws IOException, InterruptedException {
-            return c.getChannel().call(new GetArchTask());
+    public static final class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<String> {
+        @Override
+        protected Callable<String, IOException> createCallable(Computer c) {
+            return new GetArchTask();
         }
 
         public String getDisplayName() {
@@ -55,7 +57,7 @@ public class ArchitectureMonitor extends NodeMonitor {
     /**
      * Obtains the string that represents the architecture.
      */
-    private static class GetArchTask implements Callable<String,RuntimeException> {
+    private static class GetArchTask extends MasterToSlaveCallable<String,IOException> {
         public String call() {
             String os = System.getProperty("os.name");
             String arch = System.getProperty("os.arch");

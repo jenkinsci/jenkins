@@ -1,0 +1,20 @@
+<div>
+  The settings element in the <code>settings.xml</code> file contains elements used
+  to define values which configure Maven execution in various ways, like the <code>pom.xml</code>,
+  but should not be bundled to any specific project, or distributed to an audience.
+  These include values such as the local repository location, alternate remote repository servers,
+  and authentication information.
+  <br>
+  There are two locations where a <code>settings.xml</code> file per default may live:
+
+  <ul>
+    <li>The Maven install - default: <code>$M2_HOME/conf/settings.xml</code></li>
+    <li>A user's install  - default: <code>${user.home}/.m2/settings.xml</code></li>
+  </ul>
+
+  The former settings.xml are also called global settings, the latter settings.xml are
+  referred to as user settings. If both files exists, their contents gets merged,
+  with the user-specific settings.xml being dominant.
+  <p>
+  see also: <a href="http://maven.apache.org/settings.html"><code>settings.xml</code> reference</a>
+</div>

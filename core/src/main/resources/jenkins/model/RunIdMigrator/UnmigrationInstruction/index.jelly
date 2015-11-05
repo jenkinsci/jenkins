@@ -1,0 +1,47 @@
+<!--
+The MIT License
+
+Copyright (c) 2014, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="Jenkins">
+    <l:header />
+    <l:main-panel>
+      <p>
+        To reverse the effect of <a href="http://jenkins-ci.org/issue/24380">JENKINS-24380</a> fix, run the following command
+        on the server. See <a href="https://wiki.jenkins-ci.org/display/JENKINS/JENKINS-24380+Migration">Wiki page</a>
+        for more details:
+      </p>
+      <table style="width:100%">
+        <tr>
+          <td style="line-height:2em; width:80%">
+            <input type="text" value="${it.command}" style="width:100%"/>
+          </td>
+          <td style="line-height:2em">
+            <l:copyButton message="${%Copied}" text="${it.command}"/>
+          </td>
+        </tr>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

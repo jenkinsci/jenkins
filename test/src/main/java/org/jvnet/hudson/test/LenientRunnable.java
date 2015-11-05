@@ -29,5 +29,5 @@ package org.jvnet.hudson.test;
  * @author Kohsuke Kawaguchi
  */
 public interface LenientRunnable {
-    public void run() throws Exception;
+    void run() throws Exception;
 }

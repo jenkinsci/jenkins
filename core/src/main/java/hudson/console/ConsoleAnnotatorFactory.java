@@ -127,6 +127,6 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      * All the registered instances.
      */
     public static ExtensionList<ConsoleAnnotatorFactory> all() {
-        return Jenkins.getInstance().getExtensionList(ConsoleAnnotatorFactory.class);
+        return ExtensionList.lookup(ConsoleAnnotatorFactory.class);
     }
 }

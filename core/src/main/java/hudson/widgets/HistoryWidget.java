@@ -26,6 +26,8 @@ package hudson.widgets;
 import hudson.Functions;
 import hudson.model.ModelObject;
 import hudson.model.Run;
+import hudson.util.Iterators;
+
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -132,8 +134,10 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
                 trimmed = itr.hasNext(); // if we don't have enough items in the base list, setting this to false will optimize the next getRenderList() invocation.
                 return updateFirstTransientBuildKey(lst);
             }
-        } else
-            return updateFirstTransientBuildKey(baseList);
+        } else {
+            // to prevent baseList's concrete type from getting picked up by <j:forEach> in view
+            return updateFirstTransientBuildKey(Iterators.wrap(baseList));
+        }
     }
 
     public boolean isTrimmed() {
@@ -191,7 +195,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         req.getView(this,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 
-    private static final int THRESHOLD = 30;
+    private static final int THRESHOLD = Integer.getInteger(HistoryWidget.class.getName()+".threshold",30);
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;

@@ -34,8 +34,7 @@ import java.util.regex.Pattern;
  *
  * <p>
  * This class is used to put mark up on plain text.
- * See <a href="https://hudson.dev.java.net/source/browse/hudson/hudson/main/core/src/test/java/hudson/MarkupTextTest.java?view=markup">
- * the test code</a> for a typical usage and its result.
+ * See {@code MarkupTextTest} for a typical usage and its result.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.70
@@ -284,6 +283,7 @@ public class MarkupText extends AbstractMarkupText {
      *      Use {@link #toString(boolean)} to be explicit about the escape mode.
      */
     @Override
+    @Deprecated
     public String toString() {
         return toString(false);
     }

@@ -23,39 +23,36 @@
  */
 package hudson.triggers;
 
+import hudson.model.AperiodicWork;
+import hudson.model.PeriodicWork;
+import hudson.security.ACL;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.util.Timer;
+import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import hudson.security.ACL;
-
 /**
- * {@link Timer} wrapper so that a fatal error in {@link TimerTask}
- * won't terminate the timer.
+ * Wrapper so that a fatal error in {@link TimerTask} will not terminate the timer.
  *
  * <p>
- * {@link Trigger#timer} is a shared timer instance that can be used inside Hudson to
- * schedule a recurring work.
- *
+ * {@link Timer#get} is a shared timer instance that can be used inside Jenkins to schedule recurring work.
+ * But the usual usage is automatic via {@link PeriodicWork} or {@link AperiodicWork}.
  * @author Kohsuke Kawaguchi
  * @since 1.124
- * @see Trigger#timer
  */
 public abstract class SafeTimerTask extends TimerTask {
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.
-        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-
+        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
         try {
             doRun();
         } catch(Throwable t) {
             LOGGER.log(Level.SEVERE, "Timer task "+this+" failed",t);
         } finally {
-            SecurityContextHolder.clearContext();
+            SecurityContextHolder.setContext(oldContext);
         }
     }
 

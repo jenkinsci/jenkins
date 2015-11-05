@@ -43,6 +43,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <f:prepareDatabinding/>
+  <st:adjunct includes="lib.form.select.select"/>
 
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
@@ -55,4 +56,5 @@ THE SOFTWARE.
       <option value="${value}">${value}</option>
     </j:if>
   </m:select>
+  <!-- TODO consider customizedFields -->
 </j:jelly>

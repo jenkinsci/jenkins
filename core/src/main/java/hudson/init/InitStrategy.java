@@ -6,19 +6,24 @@ import org.jvnet.hudson.reactor.Task;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.PluginManager;
+import hudson.util.DirScanner;
+import hudson.util.FileVisitor;
 import hudson.util.Service;
 
 /**
- * Strategy pattern of the various key decision making during the Hudson initialization.
+ * Strategy pattern of the various key decision making during the Jenkins initialization.
  *
  * <p>
- * Because the act of initializing plugins is a part of the Hudson initialization,
+ * Because the act of initializing plugins is a part of the Jenkins initialization,
  * this extension point cannot be implemented in a plugin. You need to place your jar
  * inside {@code WEB-INF/lib} instead.
  *
@@ -29,48 +34,75 @@ import hudson.util.Service;
  */
 public class InitStrategy {
     /**
-     * Returns the list of *.hpi and *.hpl to expand and load.
+     * Returns the list of *.jpi, *.hpi and *.hpl to expand and load.
      *
      * <p>
-     * Normally we look at {@code $JENKINS_HOME/plugins/*.hpi} and *.hpl.
+     * Normally we look at {@code $JENKINS_HOME/plugins/*.jpi} and *.hpi and *.hpl.
      *
      * @return
      *      never null but can be empty. The list can contain different versions of the same plugin,
-     *      and when that happens, Hudson will ignore all but the first one in the list.
+     *      and when that happens, Jenkins will ignore all but the first one in the list.
      */
     public List<File> listPluginArchives(PluginManager pm) throws IOException {
-        File[] hpi = pm.rootDir.listFiles(new FilterByExtension(".hpi")); // plugin jar file
-        File[] hpl = pm.rootDir.listFiles(new FilterByExtension(".hpl")); // linked plugin. for debugging.
-        if (hpi==null || hpl==null)
-            throw new IOException("Hudson is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
-
         List<File> r = new ArrayList<File>();
 
         // the ordering makes sure that during the debugging we get proper precedence among duplicates.
-        // for example, while doing "mvn hpi:run" on a plugin that's bundled with Hudson, we want to the
-        // *.hpl file to override the bundled hpi file.
+        // for example, while doing "mvn jpi:run" or "mvn hpi:run" on a plugin that's bundled with Jenkins, we want to the
+        // *.jpl file to override the bundled jpi/hpi file.
         getBundledPluginsFromProperty(r);
-        r.addAll(Arrays.asList(hpl));
-        r.addAll(Arrays.asList(hpi));
+        Iterator<File> it = r.iterator();
+        while (it.hasNext()) {
+            File f = it.next();
+            if (new File(pm.rootDir, f.getName().replace(".hpi", ".jpi") + ".pinned").isFile()) {
+                // Cf. PluginManager.copyBundledPlugin, which is not called in this case.
+                LOGGER.log(Level.INFO, "ignoring {0} since this plugin is pinned", f);
+                it.remove();
+            }
+        }
+
+        // similarly, we prefer *.jpi over *.hpi
+        listPluginFiles(pm, ".jpl", r); // linked plugin. for debugging.
+        listPluginFiles(pm, ".hpl", r); // linked plugin. for debugging. (for backward compatibility)
+        listPluginFiles(pm, ".jpi", r); // plugin jar file
+        listPluginFiles(pm, ".hpi", r); // plugin jar file (for backward compatibility)
 
         return r;
     }
+    
+    private void listPluginFiles(PluginManager pm, String extension, Collection<File> all) throws IOException {
+        File[] files = pm.rootDir.listFiles(new FilterByExtension(extension));
+        if (files==null)
+            throw new IOException("Jenkins is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
+
+        all.addAll(Arrays.asList(files));
+    }
 
     /**
-     * Lists up additional bundled plugins from the system property.
-     *
+     * Lists up additional bundled plugins from the system property {@code hudson.bundled.plugins}.
+     * Since 1.480 glob syntax is supported.
      * For use in the "mvn hudson-dev:run".
      * TODO: maven-hpi-plugin should inject its own InitStrategy instead of having this in the core.
      */
-    protected void getBundledPluginsFromProperty(List<File> r) {
+    protected void getBundledPluginsFromProperty(final List<File> r) {
         String hplProperty = System.getProperty("hudson.bundled.plugins");
         if (hplProperty != null) {
             for (String hplLocation : hplProperty.split(",")) {
                 File hpl = new File(hplLocation.trim());
-                if (hpl.exists())
+                if (hpl.exists()) {
                     r.add(hpl);
-                else
+                } else if (hpl.getName().contains("*")) {
+                    try {
+                        new DirScanner.Glob(hpl.getName(), null).scan(hpl.getParentFile(), new FileVisitor() {
+                            @Override public void visit(File f, String relativePath) throws IOException {
+                                r.add(f);
+                            }
+                        });
+                    } catch (IOException x) {
+                        LOGGER.log(Level.WARNING, "could not expand " + hplLocation, x);
+                    }
+                } else {
                     LOGGER.warning("bundled plugin " + hplLocation + " does not exist");
+                }
             }
         }
     }
@@ -101,15 +133,18 @@ public class InitStrategy {
     private static final Logger LOGGER = Logger.getLogger(InitStrategy.class.getName());
 
     private static class FilterByExtension implements FilenameFilter {
-        private final String extension;
+        private final List<String> extensions;
 
-        public FilterByExtension(String extension) {
-            this.extension = extension;
+        public FilterByExtension(String... extensions) {
+            this.extensions = Arrays.asList(extensions);
         }
 
         public boolean accept(File dir, String name) {
-            return name.endsWith(extension)        // plugin jar file
-                || name.endsWith(".hpl");       // linked plugin. for debugging.
+            for (String extension : extensions) {
+                if (name.endsWith(extension))
+                    return true;
+            }
+            return false;
         }
     }
 }

@@ -49,7 +49,7 @@ THE SOFTWARE.
   <input id="${attrs.id}" autocomplete="off" class="combobox ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
          name="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field]}"
-         checkUrl="${attrs.checkUrl}" />
+         checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" />
   <div class="combobox-values">
     <j:if test="${items!=null}">
       <j:forEach var="v" items="${items}">
@@ -58,4 +58,5 @@ THE SOFTWARE.
     </j:if>
     <d:invokeBody />
   </div>
+  <!-- TODO consider customizedFields -->
 </j:jelly>

@@ -26,12 +26,18 @@ package hudson.tools;
 
 import hudson.model.Descriptor;
 import hudson.util.DescribableList;
-
-import java.util.Collections;
-import java.util.List;
+import hudson.util.FormValidation;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.List;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -51,7 +57,19 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      *      can be empty but never null.
      */
     public T[] getInstallations() {
-        return installations.clone();
+        if (installations != null)
+            return installations.clone();
+
+        Type bt = Types.getBaseClass(getClass(), ToolDescriptor.class);
+        if (bt instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) bt;
+            // this 't' is the closest approximation of T of Descriptor<T>.
+            Class t = Types.erasure(pt.getActualTypeArguments()[0]);
+            return (T[])Array.newInstance(t,0);
+        } else {
+            // can't infer the type. fallacbk
+            return (T[])new Object[0];
+        }
     }
 
     /**
@@ -101,6 +119,43 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         setInstallations(req.bindJSONToList(clazz, json.get("tool")).toArray((T[]) Array.newInstance(clazz, 0)));
         return true;
+    }
+
+    /**
+     * Checks if the home directory is valid.
+     * @since 1.563
+     */
+    public FormValidation doCheckHome(@QueryParameter File value) {
+        // this can be used to check the existence of a file on the server, so needs to be protected
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+
+        if (value.getPath().isEmpty()) {
+            return FormValidation.ok();
+        }
+
+        if (!value.isDirectory()) {
+            return FormValidation.warning(Messages.ToolDescriptor_NotADirectory(value));
+        }
+
+        return checkHomeDirectory(value);
+    }
+
+    /**
+     * May be overridden to provide tool-specific validation of a tool home directory.
+     * @param home a possible value for {@link ToolInstallation#getHome}, known to already exist on the master
+     * @return by default, {@link FormValidation#ok()}
+     * @since 1.563
+     */
+    protected FormValidation checkHomeDirectory(File home) {
+        return FormValidation.ok();
+    }
+
+    /**
+     * Checks if the tool name is valid.
+     * @since 1.563
+     */
+    public FormValidation doCheckName(@QueryParameter String value) {
+        return FormValidation.validateRequired(value);
     }
 
 }

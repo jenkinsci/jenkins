@@ -26,7 +26,6 @@ package hudson.model;
 
 import hudson.security.AccessControlled;
 import hudson.views.ViewsTabBar;
-import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -136,5 +135,6 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      * @see Actionable#getActions()
      * @since 1.417
      */
-    public List<Action> getViewActions();
+    List<Action> getViewActions();
+    
 }

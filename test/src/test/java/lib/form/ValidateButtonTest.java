@@ -47,7 +47,7 @@ public class ValidateButtonTest extends HudsonTestCase implements Describable<Va
     }
 
     public DescriptorImpl getDescriptor() {
-        return hudson.getDescriptorByType(DescriptorImpl.class);
+        return jenkins.getDescriptorByType(DescriptorImpl.class);
     }
 
     @Extension

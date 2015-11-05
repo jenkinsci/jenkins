@@ -23,14 +23,18 @@
  */
 package hudson.model;
 
+import jenkins.model.RunAction2;
+
 /**
- * Optional interface for {@link Action}s that add themselves to {@link Run}.
- *
- * @author Kohsuke Kawaguchi
+ * @deprecated Use {@link RunAction2} instead: {@link #onLoad} does not work well with lazy loading if you are trying to persist the owner; and {@link #onBuildComplete} was never called.
  */
+@Deprecated
 public interface RunAction extends Action {
     /**
      * Called after the build is loaded and the object is added to the build list.
+     * 
+     * Because {@link RunAction}s are persisted with {@link Run}, the implementation
+     * can keep a reference to {@link Run} in a field (which is set via {@link #onAttached(Run)})
      */
     void onLoad();
 

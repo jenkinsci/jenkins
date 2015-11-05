@@ -29,5 +29,5 @@ THE SOFTWARE.
     <j:arg value="${if (request.session.attribute('from')!=null) request.session.getAttribute('from');  else if (request.getParameter('from')!=null) request.getParameter('from'); else if (request.requestURI=='/loginError' || request.requestURI=='/login') '/'; else request.requestURI;}"/>
     <j:arg value="UTF-8"/>
   </j:invokeStatic>
-  <a style="color:inherit" href="${rootURL}/${app.securityRealm.loginUrl}?from=${from}"><b>${%login}</b></a>
+  <a href="${rootURL}/${app.securityRealm.loginUrl}?from=${from}"><b>${%login}</b></a>
 </j:jelly>

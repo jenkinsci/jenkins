@@ -71,6 +71,9 @@ THE SOFTWARE.
             <input class="setting-input" type="text"
                    name="${name}" value="${value}"
                    id="textarea.${name}" />
+            <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">
+              <j:mute>${customizedFields.add(name)}</j:mute>
+            </j:if>
           </td><td width="1">
             <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${name}')"
                 tooltip="${%tooltip}"/>

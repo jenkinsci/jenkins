@@ -49,7 +49,7 @@ public interface HudsonHomeLoader {
     /**
      * Allocates a new empty directory, meaning this will emulate the fresh Hudson installation.
      */
-    public static final HudsonHomeLoader NEW = new HudsonHomeLoader() {
+    HudsonHomeLoader NEW = new HudsonHomeLoader() {
         public File allocate() throws IOException {
             return TestEnvironment.get().temporaryDirectoryAllocator.allocate();
         }
@@ -58,7 +58,7 @@ public interface HudsonHomeLoader {
     /**
      * Allocates a new directory by copying from an existing directory, or unzipping from a zip file.
      */
-    public static final class CopyExisting implements HudsonHomeLoader {
+    final class CopyExisting implements HudsonHomeLoader {
         private final URL source;
 
         /**
@@ -104,7 +104,7 @@ public interface HudsonHomeLoader {
     /**
      * Allocates a new directory by copying from a test resource
      */
-    public static final class Local implements HudsonHomeLoader {
+    final class Local implements HudsonHomeLoader {
         private final Method testMethod;
 
         public Local(Method testMethod) {

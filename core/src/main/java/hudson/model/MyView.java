@@ -37,6 +37,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.model.Descriptor.FormException;
 import hudson.Extension;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link View} that only contains projects for which the current user has access to.
@@ -57,9 +58,10 @@ public class MyView extends View {
 
     @Override
     public boolean contains(TopLevelItem item) {
-        return item.hasPermission(Job.CONFIGURE);
+        return item.hasPermission(Item.CONFIGURE);
     }
 
+    @RequirePOST
     @Override
     public TopLevelItem doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
@@ -74,7 +76,7 @@ public class MyView extends View {
     public Collection<TopLevelItem> getItems() {
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : getOwnerItemGroup().getItems()) {
-            if (item.hasPermission(Job.CONFIGURE)) {
+            if (item.hasPermission(Item.CONFIGURE)) {
                 items.add(item);
             }
         }
@@ -84,11 +86,6 @@ public class MyView extends View {
     @Override
     public String getPostConstructLandingPage() {
         return ""; // there's no configuration page
-    }
-
-    @Override
-    public void onJobRenamed(Item item, String oldName, String newName) {
-        // noop
     }
 
     @Override

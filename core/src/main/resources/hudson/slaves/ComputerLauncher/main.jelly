@@ -31,19 +31,20 @@ THE SOFTWARE.
           ${%launchingDescription}
           <a href="log">${%See log for more details}</a>
         </p>
-        <l:isAdmin>
-          <form method="get" action="launchSlaveAgent">
+
+        <l:hasPermission permission="${it.CONNECT}">
+          <form method="post" action="launchSlaveAgent">
             <f:submit value="${%Relaunch slave agent}" />
           </form>
-        </l:isAdmin>
+        </l:hasPermission>
       </j:when>
 
       <j:otherwise>
-        <l:isAdmin>
-          <form method="get" action="launchSlaveAgent">
+        <l:hasPermission permission="${it.CONNECT}">
+          <form method="post" action="launchSlaveAgent">
             <f:submit value="${%Launch slave agent}" />
           </form>
-        </l:isAdmin>
+        </l:hasPermission>
       </j:otherwise>
     </j:choose>
   </j:if>

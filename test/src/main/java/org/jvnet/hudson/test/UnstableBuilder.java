@@ -23,29 +23,21 @@
  */
 package org.jvnet.hudson.test;
 
-import hudson.Launcher;
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.IOException;
-
 /**
  * Mock {@link Builder} that always cause a build to fail.
  *
  * @author Kohsuke Kawaguchi
  */
-public class UnstableBuilder extends Builder {
-    
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        listener.getLogger().println("Simulating an unstable build");
-        build.setResult(Result.UNSTABLE);
-        return true;
+public class UnstableBuilder extends MockBuilder {
+    public UnstableBuilder() {
+        super(Result.UNSTABLE);
     }
 
     @Extension

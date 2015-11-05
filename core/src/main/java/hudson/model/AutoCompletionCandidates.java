@@ -25,6 +25,7 @@
 package hudson.model;
 
 import hudson.search.Search;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.CheckForNull;
 
 /**
  * Data representation of the auto-completion candidates.
@@ -70,5 +72,93 @@ public class AutoCompletionCandidates implements HttpResponse {
             r.suggestions.add(new hudson.search.Search.Item(value));
         }
         rsp.serveExposedBean(req,r, Flavor.JSON);
+    }
+
+    /**
+     * Auto-completes possible job names.
+     *
+     * @param type
+     *      Limit the auto-completion to the subtype of this type.
+     * @param value
+     *      The value the user has typed in. Matched as a prefix.
+     * @param self
+     *      The contextual item for which the auto-completion is provided to.
+     *      For example, if you are configuring a job, this is the job being configured.
+     * @param container
+     *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
+     * @since 1.489
+     */
+    public static <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, @CheckForNull Item self, ItemGroup container) {
+        if (self==container)
+            container = self.getParent();
+        return ofJobNames(type, value, container);
+    }
+
+
+    /**
+     * Auto-completes possible job names.
+     *
+     * @param type
+     *      Limit the auto-completion to the subtype of this type.
+     * @param value
+     *      The value the user has typed in. Matched as a prefix.
+     * @param container
+     *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
+     * @since 1.553
+     */
+    public static  <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, ItemGroup container) {
+        final AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+        class Visitor extends ItemVisitor {
+            String prefix;
+
+            Visitor(String prefix) {
+                this.prefix = prefix;
+            }
+
+            @Override
+            public void onItem(Item i) {
+                String n = contextualNameOf(i);
+                if ((n.startsWith(value) || value.startsWith(n))
+                    // 'foobar' is a valid candidate if the current value is 'foo'.
+                    // Also, we need to visit 'foo' if the current value is 'foo/bar'
+                 && (value.length()>n.length() || !n.substring(value.length()).contains("/"))
+                    // but 'foobar/zot' isn't if the current value is 'foo'
+                    // we'll first show 'foobar' and then wait for the user to type '/' to show the rest
+                 && i.hasPermission(Item.READ)
+                    // and read permission required
+                ) {
+                    if (type.isInstance(i) && n.startsWith(value))
+                        candidates.add(n);
+
+                    // recurse
+                    String oldPrefix = prefix;
+                    prefix = n;
+                    super.onItem(i);
+                    prefix = oldPrefix;
+                }
+            }
+
+            private String contextualNameOf(Item i) {
+                if (prefix.endsWith("/") || prefix.length()==0)
+                    return prefix+i.getName();
+                else
+                    return prefix+'/'+i.getName();
+            }
+        }
+
+        if (container==null || container==Jenkins.getInstance()) {
+            new Visitor("").onItemGroup(Jenkins.getInstance());
+        } else {
+            new Visitor("").onItemGroup(container);
+            if (value.startsWith("/"))
+                new Visitor("/").onItemGroup(Jenkins.getInstance());
+
+            for ( String p="../"; value.startsWith(p); p+="../") {
+                container = ((Item)container).getParent();
+                new Visitor(p).onItemGroup(container);
+            }
+        }
+
+        return candidates;
     }
 }

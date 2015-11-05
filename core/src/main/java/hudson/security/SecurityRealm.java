@@ -30,6 +30,7 @@ import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
@@ -63,7 +64,6 @@ import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -147,6 +147,34 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * overriding {@link #createFilter(FilterConfig)}.
      */
     public abstract SecurityComponents createSecurityComponents();
+
+    /**
+     * Returns the {@link IdStrategy} that should be used for turning
+     * {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
+     * Mostly this should be {@link IdStrategy.CaseInsensitive} but there may be occasions when either
+     * {@link IdStrategy.CaseSensitive} or {@link IdStrategy.CaseSensitiveEmailAddress} are the correct approach.
+     *
+     * @return the {@link IdStrategy} that should be used for turning
+     *         {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
+     * @since 1.566
+     */
+    public IdStrategy getUserIdStrategy() {
+        return IdStrategy.CASE_INSENSITIVE;
+    }
+
+    /**
+     * Returns the {@link IdStrategy} that should be used for turning {@link hudson.security.GroupDetails#getName()}
+     * into an ID.
+     * Note: Mostly this should be the same as {@link #getUserIdStrategy()} but some security realms may have legitimate
+     * reasons for a different strategy.
+     *
+     * @return the {@link IdStrategy} that should be used for turning {@link hudson.security.GroupDetails#getName()}
+     *         into an ID.
+     * @since 1.566
+     */
+    public IdStrategy getGroupIdStrategy() {
+        return getUserIdStrategy();
+    }
 
     /**
      * Creates a {@link CliAuthenticator} object that authenticates an invocation of a CLI command.
@@ -318,6 +346,28 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
+     * If this {@link SecurityRealm} supports a look up of {@link GroupDetails} by their names, override this method
+     * to provide the look up.
+     * <p/>
+     * <p/>
+     * This information, when available, can be used by {@link AuthorizationStrategy}s to improve the UI and
+     * error diagnostics for the user.
+     *
+     * @param groupname    the name of the group to fetch
+     * @param fetchMembers if {@code true} then try and fetch the members of the group if it exists. Trying does not
+     *                     imply that the members will be fetched and {@link hudson.security.GroupDetails#getMembers()}
+     *                     may still return {@code null}
+     * @throws UserMayOrMayNotExistException if no conclusive result could be determined regarding the group existence.
+     * @throws UsernameNotFoundException     if the group does not exist.
+     * @throws DataAccessException           if the backing security realm could not be connected to.
+     * @since 1.549
+     */
+    public GroupDetails loadGroupByGroupname(String groupname, boolean fetchMembers)
+            throws UsernameNotFoundException, DataAccessException {
+        return loadGroupByGroupname(groupname);
+    }
+
+    /**
      * Starts the user registration process for a new user that has the given verified identity.
      *
      * <p>
@@ -372,7 +422,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * This method is intended to be used to pick up a Acegi object from
      * spring once the bean definition file is parsed.
      */
-    protected static <T> T findBean(Class<T> type, ApplicationContext context) {
+    public static <T> T findBean(Class<T> type, ApplicationContext context) {
         Map m = context.getBeansOfType(type);
         switch(m.size()) {
         case 0:
@@ -516,10 +566,21 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             this.rememberMe = rememberMe;
         }
 
+        @SuppressWarnings("deprecation")
         private static RememberMeServices createRememberMeService(UserDetailsService uds) {
             // create our default TokenBasedRememberMeServices, which depends on the availability of the secret key
             TokenBasedRememberMeServices2 rms = new TokenBasedRememberMeServices2();
             rms.setUserDetailsService(uds);
+            /*
+                TokenBasedRememberMeServices needs to be used in conjunction with RememberMeAuthenticationProvider,
+                and both needs to use the same key (this is a reflection of a poor design in AcgeiSecurity, if you ask me)
+                and various security plugins have its own groovy script that configures them.
+
+                So if we change this, it creates a painful situation for those plugins by forcing them to choose
+                to work with earlier version of Jenkins or newer version of Jenkins, and not both.
+
+                So we keep this here.
+             */
             rms.setKey(Jenkins.getInstance().getSecretKey());
             rms.setParameter("remember_me"); // this is the form field name in login.jelly
             return rms;
@@ -532,6 +593,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<SecurityRealm> LIST = new DescriptorList<SecurityRealm>(SecurityRealm.class);
 
     /**

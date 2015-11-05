@@ -32,6 +32,8 @@ import hudson.util.DescriptorList;
 
 import java.io.Serializable;
 import java.io.IOException;
+import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -44,12 +46,12 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Defines a parameter for a build.
  *
  * <p>
- * In Hudson, a user can configure a job to require parameters for a build.
+ * In Jenkins, a user can configure a job to require parameters for a build.
  * For example, imagine a test job that takes the bits to be tested as a parameter.
  *
  * <p>
  * The actual meaning and the purpose of parameters are entirely up to users, so
- * what the concrete parameter implmentation is pluggable. Write subclasses
+ * what the concrete parameter implementation is pluggable. Write subclasses
  * in a plugin and put {@link Extension} on the descriptor to register them.
  *
  * <p>
@@ -80,8 +82,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <h2>Assocaited Views</h2>
  * <h4>config.jelly</h4>
  * <p>
- * {@link ParameterDefinition} class uses <tt>config.jelly</tt> to provide contribute a form
- * fragment in the job configuration screen. Values entered there is fed back to
+ * {@link ParameterDefinition} class uses <tt>config.jelly</tt> to contribute a form
+ * fragment in the job configuration screen. Values entered there are fed back to
  * {@link ParameterDescriptor#newInstance(StaplerRequest, JSONObject)} to create {@link ParameterDefinition}s.
  *
  * <h4>index.jelly</h4>
@@ -138,6 +140,19 @@ public abstract class ParameterDefinition implements
     }
 
     /**
+     * return parameter description, applying the configured MarkupFormatter for jenkins instance.
+     * @since 1.521
+     */
+    public String getFormattedDescription() {
+        try {
+            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+        } catch (IOException e) {
+            LOGGER.warning("failed to translate description using configured markup formatter");
+            return "";
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     public ParameterDescriptor getDescriptor() {
@@ -151,6 +166,7 @@ public abstract class ParameterDefinition implements
      * This method is invoked when the user fills in the parameter values in the HTML form
      * and submits it to the server.
      */
+    @CheckForNull
     public abstract ParameterValue createValue(StaplerRequest req, JSONObject jo);
     
     /**
@@ -165,7 +181,11 @@ public abstract class ParameterDefinition implements
      * <p>
      * If a {@link ParameterDefinition} can't really support this mode of creating a value,
      * you may just always return null.
+     *
+     * @throws IllegalStateException
+     *      If the parameter is deemed required but was missing in the submission.
      */
+    @CheckForNull
     public abstract ParameterValue createValue(StaplerRequest req);
 
 
@@ -173,7 +193,7 @@ public abstract class ParameterDefinition implements
      * Create a parameter value from the string given in the CLI.
      *
      * @param command
-     *      This is the command that got the parameter. You can use its {@link CLICommand#channel}
+     *      This is the command that got the parameter. You can use its {@link CLICommand#checkChannel()}
      *      for interacting with the CLI JVM.
      * @throws AbortException
      *      If the CLI processing should be aborted. Hudson will report the error message
@@ -183,6 +203,7 @@ public abstract class ParameterDefinition implements
      *      the command exits with an error code.
      * @since 1.334
      */
+    @CheckForNull
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
         throw new AbortException("CLI parameter submission is not supported for the "+getClass()+" type. Please file a bug report for this");
     }
@@ -193,6 +214,7 @@ public abstract class ParameterDefinition implements
      * @return default parameter value or null if no defaults are available
      * @since 1.253
      */
+    @CheckForNull
     @Exported
     public ParameterValue getDefaultParameterValue() {
         return null;
@@ -210,6 +232,7 @@ public abstract class ParameterDefinition implements
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<ParameterDefinition> LIST = new DescriptorList<ParameterDefinition>(ParameterDefinition.class);
 
     public abstract static class ParameterDescriptor extends
@@ -238,4 +261,6 @@ public abstract class ParameterDefinition implements
             return "Parameter";
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(ParameterDefinition.class.getName());
 }

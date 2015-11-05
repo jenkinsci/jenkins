@@ -29,6 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout norefresh="true" permission="${it.ADMINISTER}" title="${%Configure System}">
   <st:include page="sidepanel.jelly" />
+  <f:breadcrumb-config-outline />
   <l:main-panel>
     <div class="behavior-loading">${%LOADING}</div>
     <f:form method="post" name="config" action="configSubmit">
@@ -48,21 +49,23 @@ THE SOFTWARE.
       </f:advanced>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
         <f:textarea name="system_message" value="${it.systemMessage}"
-                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
+                    codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
       </f:entry>
 
       <!-- global configuration from everyone -->
-      <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfig()}">
+      <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfigUnclassified()}">
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
         <f:rowSet name="${descriptor.jsonSafeClassName}">
           <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
         </f:rowSet>
       </j:forEach>
 
-      <f:block>
+      <f:bottomButtonBar>
         <f:submit value="${%Save}" />
-      </f:block>
+        <f:apply />
+      </f:bottomButtonBar>
     </f:form>
+    <st:adjunct includes="lib.form.confirm" />
   </l:main-panel>
 </l:layout>
 </j:jelly>

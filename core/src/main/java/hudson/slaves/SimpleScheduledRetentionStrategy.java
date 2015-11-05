@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,11 +28,13 @@ import hudson.Extension;
 import static hudson.Util.fixNull;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
+import hudson.model.Queue;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormValidation;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.util.Calendar;
@@ -43,7 +45,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.INFO;
 
 /**
- * {@link RetentionStrategy} that controls the slave based on a schedule. 
+ * {@link RetentionStrategy} that controls the slave based on a schedule.
  *
  * @author Stephen Connolly
  * @since 1.275
@@ -162,6 +164,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return isOnlineScheduled();
     }
 
+    @GuardedBy("hudson.model.Queue.lock")
     public synchronized long check(final SlaveComputer c) {
         boolean shouldBeOnline = isOnlineScheduled();
         LOGGER.log(Level.FINE, "Checking computer {0} against schedule. online = {1}, shouldBeOnline = {2}",
@@ -198,15 +201,34 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                             new Object[]{c.getName()});
                     return 1;
                 } else if (c.isIdle() && c.isAcceptingTasks()) {
-                    LOGGER.log(INFO, "Disconnecting computer {0} as it has finished its scheduled uptime",
-                            new Object[]{c.getName()});
-                    c.disconnect(OfflineCause.create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
+                    Queue.withLock(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (c.isIdle()) {
+                                LOGGER.log(INFO, "Disconnecting computer {0} as it has finished its scheduled uptime",
+                                        new Object[]{c.getName()});
+                                c.disconnect(OfflineCause
+                                        .create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
+                            } else {
+                                c.setAcceptingTasks(false);
+                            }
+                        }
+                    });
                 } else if (c.isIdle() && !c.isAcceptingTasks()) {
-                    LOGGER.log(INFO, "Disconnecting computer {0} as it has finished all jobs running when "
-                            + "it completed its scheduled uptime", new Object[]{c.getName()});
-                    c.disconnect(OfflineCause.create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
+                    Queue.withLock(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (c.isIdle()) {
+                                LOGGER.log(INFO, "Disconnecting computer {0} as it has finished all jobs running when "
+                                        + "it completed its scheduled uptime", new Object[]{c.getName()});
+                                c.disconnect(OfflineCause
+                                        .create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
+                            }
+                        }
+                    });
                 }
             } else {
+                // no need to get the queue lock as the user has selected the break builds option!
                 LOGGER.log(INFO, "Disconnecting computer {0} as it has finished its scheduled uptime",
                         new Object[]{c.getName()});
                 c.disconnect(OfflineCause.create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));

@@ -36,7 +36,7 @@ THE SOFTWARE.
             <br/> ${%configWasSaved}
           </j:if>
         </j:when>
-        <j:when test="${app.getItem(newName)!=null and !it.name.equalsIgnoreCase(newName)}">
+        <j:when test="${it.parent.getItem(newName)!=null and !it.name.equalsIgnoreCase(newName)}">
           ${%newNameInUse(newName)}
           <j:if test="${request.referer.endsWith('/configure')}">
             <br/> ${%configWasSaved}
@@ -47,8 +47,6 @@ THE SOFTWARE.
             ${%description(it.name, newName)}
             <input type="hidden" name="newName" value="${newName}" />
             <f:submit value="${%Yes}" />
-            <input type="button" value="${%No}"
-                   onclick="javascript:history.back()" class="yui-button" />
           </form>
         </j:otherwise>
       </j:choose>

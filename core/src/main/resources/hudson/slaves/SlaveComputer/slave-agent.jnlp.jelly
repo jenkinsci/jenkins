@@ -31,7 +31,7 @@ THE SOFTWARE.
   <!--
     See http://www.dallaway.com/acad/webstart/ for obtaining the certificate.
   -->
-  <l:isAdminOrTest test="true">
+
     <!-- See http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/syntax.html for the syntax -->
     <jnlp spec="1.0+"
         codebase="${rootURL}computer/${h.encode(it.node.nodeName)}/">
@@ -50,10 +50,10 @@ THE SOFTWARE.
         <j:set var="port" value="${request.getParameter('debugPort')}"/>
         <j:choose>
           <j:when test="${port!=null}">
-            <j2se version="1.5+" java-vm-args="${it.launcher.vmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=${port}" />
+            <j2se version="1.7+" java-vm-args="${it.launcher.vmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=${port}" />
           </j:when>
           <j:otherwise>
-            <j2se version="1.5+" java-vm-args="${it.launcher.vmargs}"/>
+            <j2se version="1.7+" java-vm-args="${it.launcher.vmargs}"/>
           </j:otherwise>
         </j:choose>
         <jar href="${rootURL}jnlpJars/remoting.jar"/>
@@ -61,7 +61,7 @@ THE SOFTWARE.
       </resources>
 
       <application-desc main-class="hudson.remoting.jnlp.Main">
-        <argument>${app.secretKey}</argument>
+        <argument>${it.jnlpMac}</argument>
         <argument>${it.node.nodeName}</argument>
         <j:if test="${it.launcher.tunnel!=null}">
           <argument>-tunnel</argument>
@@ -87,5 +87,4 @@ THE SOFTWARE.
         </j:if>
       </application-desc>
     </jnlp>
-  </l:isAdminOrTest>
 </j:jelly>

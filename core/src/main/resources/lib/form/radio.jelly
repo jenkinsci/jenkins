@@ -29,6 +29,7 @@ THE SOFTWARE.
     
     Note that safari doesn't support onchange.
 
+    Beware that the name attribute should be uniquified among all radio blocks on the page, such as by prefixing it with "G0025." or whatever gensym.
     <st:attribute name="name" />
     <st:attribute name="checked" />
     <st:attribute name="value" />

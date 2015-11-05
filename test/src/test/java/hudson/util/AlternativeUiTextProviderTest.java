@@ -25,19 +25,30 @@ package hudson.util;
 
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import org.jvnet.hudson.test.HudsonTestCase;
+import jenkins.model.ParameterizedJobMixIn;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
-/**
- * @author Kohsuke Kawaguchi
- */
-public class AlternativeUiTextProviderTest extends HudsonTestCase {
+public class AlternativeUiTextProviderTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     @TestExtension
     public static class Impl extends AlternativeUiTextProvider {
+        static boolean oldschool;
+        @SuppressWarnings("deprecation")
         @Override public <T> String getText(Message<T> text, T context) {
-            if (text==AbstractProject.BUILD_NOW_TEXT)
-                return "XYZ:"+AbstractProject.BUILD_NOW_TEXT.cast(context).getDisplayName();
+            if (oldschool && text == ParameterizedJobMixIn.BUILD_NOW_TEXT) {
+                return "oldschool:" + ParameterizedJobMixIn.BUILD_NOW_TEXT.cast(context).getDisplayName();
+            }
+            if (!oldschool && text == AbstractProject.BUILD_NOW_TEXT) {
+                return "newschool:" + AbstractProject.BUILD_NOW_TEXT.cast(context).getDisplayName();
+            }
             return null;
         }
     }
@@ -45,9 +56,11 @@ public class AlternativeUiTextProviderTest extends HudsonTestCase {
     /**
      * Makes sure that {@link AlternativeUiTextProvider} actually works at some basic level.
      */
-    public void testBasics() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("aaa");
-        assertTrue(createWebClient().getPage(p).asText().contains("XYZ:aaa"));
+    @Test
+    public void basics() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("aaa");
+        assertThat(j.createWebClient().getPage(p).asText(), containsString("newschool:aaa"));
+        Impl.oldschool = true;
+        assertThat(j.createWebClient().getPage(p).asText(), containsString("oldschool:aaa"));
     }
 }
-

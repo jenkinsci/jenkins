@@ -22,22 +22,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
   <f:section title="${descriptor.displayName}">
-    <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
-      <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
-                    add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}">
-        <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
-        <table width="100%">
-          <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
-          <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
-          <f:entry title="">
-            <div align="right">
-              <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
+    <d:taglib uri="local">
+      <d:tag name="section">
+        <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
+          <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
+                        add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}">
+            <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
+            <table width="100%">
+              <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
+              <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
+              <f:entry title="">
+                <div align="right">
+                  <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
+                </div>
+              </f:entry>
+            </table>
+          </f:repeatable>
+        </f:entry>
+      </d:tag>
+    </d:taglib>
+    <j:choose>
+      <j:when test="${size(descriptor.installations)==0}">
+        <local:section/>
+      </j:when>
+      <j:otherwise>
+        <tr> <!-- f:advanced does not work well here because of placement in third column -->
+          <td colspan="3">
+            <st:adjunct includes="lib.form.advanced.advanced"/>
+            <div class="advancedLink" style="text-align:left">
+              <input type="button" value="${%title(descriptor.displayName)}..." class="advanced-button advancedButton"/>
             </div>
-          </f:entry>
-        </table>
-      </f:repeatable>
-    </f:entry>
+            <table class="advancedBody">
+              <tbody>
+                <local:section/>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </j:otherwise>
+    </j:choose>
   </f:section>
 </j:jelly>

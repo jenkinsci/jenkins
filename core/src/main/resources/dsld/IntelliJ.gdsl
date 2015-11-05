@@ -1,0 +1,92 @@
+package dsld
+
+import com.intellij.openapi.module.*;
+import com.intellij.openapi.roots.*;
+
+def ctx = context(scope:scriptScope()) // TODO: make this more restrictive
+
+// TODO: how to complete "it", "descriptor", "instance", and other interesting variables?
+// TODO: do view pages need packages?
+contributor(ctx) {
+
+    property name:"app", type:"hudson.model.Hudson"
+
+    def ct = classType
+    if (ct!=null && ct.getClass().name.endsWith(".GroovyScriptClass")) {
+        // if we are completing Groovy script
+
+        def roots = new HashSet/*<VirtualFile>*/()
+        ModuleManager.getInstance(ct.project).modules.each { m ->
+            roots.addAll(ModuleRootManager.getInstance(m).sourceRoots)
+        }
+
+        // figure out the path that this file is in
+        def contentPaths = []
+        for (def f=ct.containingFile.virtualFile; f!=null && !roots.contains(f); f=f.parent) {
+            contentPaths << f.name
+        }
+        if (contentPaths.size()>0) {
+            // directory portion matches the FQCN
+            def fqcn = contentPaths.reverse()[0..<contentPaths.size()-1].join('.')
+
+            property name:"my", type:fqcn // but this is still shadowed by JellyBuilder.getMy
+            property name:"instance", type:fqcn
+            property name:"descriptor", type:fqcn+".DescriptorImpl"
+        }
+    }
+
+    // normally, built-in delegateTo function would do, except in this case
+    // we'd like to avoid binding getMy.
+    for ( String t : ["org.kohsuke.stapler.jelly.groovy.JellyBuilder","org.kohsuke.stapler.jelly.groovy.StaplerClosureScript"]) {
+        def c = findClass(t);
+        c.allMethods.findAll { !it.isConstructor() && it.name!="getMy" }.each { add it; }
+        c.allFields.each { add it; }
+    }
+}
+
+/*
+    Adding methods that's not defined in Java works, but trying to define a method of the same name
+    as Java doesn't. See http://youtrack.jetbrains.com/issue/IDEA-108355
+
+    One work around that appears to work is to add a dummy 2nd parameter.
+
+    Also see http://youtrack.jetbrains.com/issue/IDEA-108375
+*/
+
+// experiment
+contributor(context(ctype:"lib.FormTagLib")) {
+    def named = [
+            parameter(name: 'param1', type: String, doc: 'My doc'),
+            parameter(name: 'param2', type: Integer),
+    ]
+    method name: "textbox3", type: void, params:[args:named, c:Closure]
+}
+
+// Record of past experiments
+/*
+try to infer "it" from the class name of Groovy page
+
+PsiElement.getProject()
+ModuleManager.getInstance(project).getModules()
+Module -> ModuleRootModel -> .getSourceRoots()
+
+classType=Script Class:manag_ : class org.jetbrains.plugins.groovy.lang.psi.impl.synthetic.GroovyScriptClass
+place=Reference expression : class org.jetbrains.plugins.groovy.lang.psi.impl.statements.expressions.GrReferenceExpressionImpl
+psiType=PsiType:manag_ : class com.intellij.psi.impl.source.PsiImmediateClassType
+
+System.out.println("classType=${classType} : ${classType.getClass()}")
+System.out.println("qualifiedName="+ct.qualifiedName)
+System.out.println("containingFile="+ct.containingFile)
+System.out.println("containingFile.name="+ct.containingFile.name)
+System.out.println("scope=${ct.scope}:${ct.scope.getClass()}")
+System.out.println("scope.package=${ct.scope.getPackageName()}")
+
+if (0) {
+    // file system reference goes all the way to '/' in the POSIX file system
+    def f = ct.containingFile
+    while (f!=null) {
+        System.out.println("  name="+f.name)
+        f=f.parent
+    }
+}
+*/

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hudson.model.ListView>
+  <name>ViewFromXML</name>
+  <filterExecutors>true</filterExecutors>
+  <filterQueue>false</filterQueue>
+  <properties class="hudson.model.View$PropertyList"/>
+  <jobNames>
+    <comparator class="hudson.util.CaseInsensitiveComparator"/>
+    <string>core_selenium-test</string>
+    <string>jenkins_lts_branch</string>
+    <string>jenkins_main_maven-3.1.0</string>
+    <string>jenkins_main_trunk</string>
+    <string>jenkins_pom</string>
+    <string>jenkins_rc_branch</string>
+    <string>jenkins_ui-changes_branch</string>
+    <string>remoting</string>
+    <string>selenium-tests</string>
+  </jobNames>
+  <jobFilters/>
+  <columns>
+    <hudson.views.StatusColumn/>
+    <hudson.views.WeatherColumn/>
+    <hudson.views.JobColumn/>
+    <hudson.views.LastSuccessColumn/>
+    <hudson.views.LastFailureColumn/>
+    <hudson.views.LastDurationColumn/>
+    <org.jenkins.ci.plugins.column.console.LastBuildColumn plugin="console-column-plugin@1.5"/>
+    <hudson.views.BuildButtonColumn/>
+  </columns>
+  <recurse>false</recurse>
+</hudson.model.ListView>

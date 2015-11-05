@@ -31,6 +31,9 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import hudson.Util;
+import jenkins.security.SecurityListener;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
 
@@ -49,6 +52,9 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 
         if (targetUrl == null)
             return getDefaultTargetUrl();
+
+        if (Util.isAbsoluteUri(targetUrl))
+            return "."; // avoid open redirect
 
         // URL returned from determineTargetUrl() is resolved against the context path,
         // whereas the "from" URL is resolved against the top of the website, so adjust this.
@@ -72,6 +78,19 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 		return excMap.getProperty(failedClassName, getAuthenticationFailureUrl());
     }
 
+    @Override
+    protected void onSuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException {
+        super.onSuccessfulAuthentication(request,response,authResult);
+        // make sure we have a session to store this successful authentication, given that we no longer
+        // let HttpSessionContextIntegrationFilter2 to create sessions.
+        // HttpSessionContextIntegrationFilter stores the updated SecurityContext object into this session later
+        // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
+        // doFilter method.
+        request.getSession().invalidate();
+        request.getSession();
+        SecurityListener.fireLoggedIn(authResult.getName());
+    }
+
     /**
      * Leave the information about login failure.
      *
@@ -81,7 +100,11 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
     @Override
     protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
         super.onUnsuccessfulAuthentication(request, response, failed);
-        LOGGER.log(Level.INFO, "Login attempt failed", failed);
+        LOGGER.log(Level.FINE, "Login attempt failed", failed);
+        Authentication auth = failed.getAuthentication();
+        if (auth != null) {
+            SecurityListener.fireFailedToLogIn(auth.getName());
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(AuthenticationProcessingFilter2.class.getName());

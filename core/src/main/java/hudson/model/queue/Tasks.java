@@ -23,10 +23,16 @@
  */
 package hudson.model.queue;
 
+import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
+import hudson.security.ACL;
+import org.acegisecurity.Authentication;
 
 import java.util.Collection;
 import java.util.Collections;
+import javax.annotation.Nonnull;
+import jenkins.security.QueueItemAuthenticator;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
 
 /**
  * Convenience methods around {@link Task} and {@link SubTask}.
@@ -36,51 +42,82 @@ import java.util.Collections;
  */
 public class Tasks {
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private static Collection<? extends SubTask> _getSubTasksOf(Task task) {
-        return task.getSubTasks();
-    }
-
     public static Collection<? extends SubTask> getSubTasksOf(Task task) {
         try {
-            return _getSubTasksOf(task);
+            return task.getSubTasks();
         } catch (AbstractMethodError e) {
             return Collections.singleton(task);
         }
     }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private static Object _getSameNodeConstraintOf(SubTask t) {
-        return t.getSameNodeConstraint();
-    }
-
     public static Object getSameNodeConstraintOf(SubTask t) {
         try {
-            return _getSameNodeConstraintOf(t);
+            return t.getSameNodeConstraint();
         } catch (AbstractMethodError e) {
             return null;
         }
     }
 
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    public static Task _getOwnerTaskOf(SubTask t) {
-        return t.getOwnerTask();
-    }
-
-    public static Task getOwnerTaskOf(SubTask t) {
+    public static @Nonnull Task getOwnerTaskOf(@Nonnull SubTask t) {
         try {
-            return _getOwnerTaskOf(t);
+            return t.getOwnerTask();
         } catch (AbstractMethodError e) {
             return (Task)t;
         }
     }
+
+    /**
+     * Helper method to safely invoke {@link Task#getDefaultAuthentication()} on classes that may come
+     * from plugins compiled against an earlier version of Jenkins.
+     *
+     * @param t the task
+     * @return {@link Task#getDefaultAuthentication()}, or {@link ACL#SYSTEM}
+     * @since 1.520
+     */
+    @Nonnull
+    public static Authentication getDefaultAuthenticationOf(Task t) {
+        try {
+            return t.getDefaultAuthentication();
+        } catch (AbstractMethodError e) {
+            return ACL.SYSTEM;
+        }
+    }
+
+    /**
+     * Helper method to safely invoke {@link Task#getDefaultAuthentication(Item)} on classes that may come
+     * from plugins compiled against an earlier version of Jenkins.
+     *
+     * @param t    the task
+     * @param item the item
+     * @return {@link Task#getDefaultAuthentication(hudson.model.Queue.Item)},
+     * or {@link Task#getDefaultAuthentication()}, or {@link ACL#SYSTEM}
+     * @since 1.592
+     */
+    @Nonnull
+    public static Authentication getDefaultAuthenticationOf(Task t, Item item) {
+        try {
+            return t.getDefaultAuthentication(item);
+        } catch (AbstractMethodError e) {
+            return getDefaultAuthenticationOf(t);
+        }
+    }
+
+    /**
+     * Finds what authentication a task is likely to be run under when scheduled.
+     * The actual authentication after scheduling ({@link hudson.model.Queue.Item#authenticate}) might differ,
+     * in case some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Item)} takes (for example) actions into consideration.
+     * @param t a task
+     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Task)}; else {@link #getDefaultAuthenticationOf}
+     * @since 1.560
+     */
+    public static @Nonnull Authentication getAuthenticationOf(@Nonnull Task t) {
+        for (QueueItemAuthenticator qia : QueueItemAuthenticatorConfiguration.get().getAuthenticators()) {
+            Authentication a = qia.authenticate(t);
+            if (a != null) {
+                return a;
+            }
+        }
+        return getDefaultAuthenticationOf(t);
+    }
+
 }

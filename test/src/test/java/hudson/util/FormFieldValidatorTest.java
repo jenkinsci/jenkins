@@ -23,27 +23,36 @@
  */
 package hudson.util;
 
+import static org.junit.Assert.fail;
+
 import hudson.model.FreeStyleProject;
-import hudson.tasks.Builder;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormFieldValidatorTest.BrokenFormValidatorBuilder.DescriptorImpl;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class FormFieldValidatorTest extends HudsonTestCase {
-    @Bug(2771)
-    @WithPlugin("tasks.hpi")
-    public void test2771() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
-        new WebClient().getPage(p,"configure");
+public class FormFieldValidatorTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    @Issue("JENKINS-2771")
+    @WithPlugin("tasks.jpi")
+    public void configure() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        j.createWebClient().getPage(p, "configure");
     }
 
-    public static class BrokenFormValidatorBuilder extends Builder {
+    public static class BrokenFormValidatorBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
             public boolean isApplicable(Class jobType) {
                 return true;
@@ -57,18 +66,24 @@ public class FormFieldValidatorTest extends HudsonTestCase {
                 return "I have broken form field validation";
             }
         }
+
+        public BuildStepMonitor getRequiredMonitorService() {
+            return BuildStepMonitor.BUILD;
+        }
     }
 
     /**
      * Make sure that the validation methods are really called by testing a negative case.
      */
-    @Bug(3382)
-    public void testNegative() throws Exception {
+    @Test
+    @Issue("JENKINS-3382")
+    public void negative() throws Exception {
         DescriptorImpl d = new DescriptorImpl();
         Publisher.all().add(d);
         try {
-            FreeStyleProject p = createFreeStyleProject();
-            new WebClient().getPage(p,"configure");
+            FreeStyleProject p = j.createFreeStyleProject();
+            p.getPublishersList().add(new BrokenFormValidatorBuilder());
+            j.createWebClient().getPage(p, "configure");
             fail("should have failed");
         } catch(AssertionError e) {
             if(e.getMessage().contains("doCheckXyz is broken"))
@@ -79,5 +94,4 @@ public class FormFieldValidatorTest extends HudsonTestCase {
             Publisher.all().remove(d);
         }
     }
-
 }

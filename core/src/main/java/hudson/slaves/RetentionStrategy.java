@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,10 +28,15 @@ import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.*;
+import hudson.model.Queue.*;
 import hudson.util.DescriptorList;
+import java.util.Collections;
+import java.util.HashMap;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.concurrent.GuardedBy;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,6 +56,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
      *         rechecked earlier or later that this!
      */
+    @GuardedBy("hudson.model.Queue.lock")
     public abstract long check(T c);
 
     /**
@@ -65,6 +71,20 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
     }
 
     /**
+     * Returns {@code true} if the computer is accepting tasks. Needed to allow retention strategies programmatic
+     * suspension of task scheduling that in preparation for going offline. Called by
+     * {@link hudson.model.Computer#isAcceptingTasks()}
+     *
+     * @param c the computer.
+     * @return {@code true} if the computer is accepting tasks
+     * @see hudson.model.Computer#isAcceptingTasks()
+     * @since 1.586
+     */
+    public boolean isAcceptingTasks(T c) {
+        return true;
+    }
+
+    /**
      * Called when a new {@link Computer} object is introduced (such as when Hudson started, or when
      * a new slave is added.)
      *
@@ -74,8 +94,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *
      * @since 1.275
      */
-    public void start(T c) {
-        check(c);
+    public void start(final T c) {
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                check(c);
+            }
+        });
     }
 
     /**
@@ -90,12 +115,14 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>((Class)RetentionStrategy.class);
 
     /**
      * Dummy instance that doesn't do any attempt to retention.
      */
     public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
+        @GuardedBy("hudson.model.Queue.lock")
         public long check(Computer c) {
             return 60;
         }
@@ -135,6 +162,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public Always() {
         }
 
+        @GuardedBy("hudson.model.Queue.lock")
         public long check(SlaveComputer c) {
             if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())
                 c.tryReconnect();
@@ -190,10 +218,49 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return idleDelay;
         }
 
-        public synchronized long check(SlaveComputer c) {
-            if (c.isOffline()) {
-                final long demandMilliseconds = System.currentTimeMillis() - c.getDemandStartMilliseconds();
-                if (demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/ && c.isLaunchSupported()) {
+        @Override
+        @GuardedBy("hudson.model.Queue.lock")
+        public long check(final SlaveComputer c) {
+            if (c.isOffline() && c.isLaunchSupported()) {
+                final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
+                for (Computer o : Jenkins.getInstance().getComputers()) {
+                    if ((o.isOnline() || o.isConnecting()) && o.isPartiallyIdle() && o.isAcceptingTasks()) {
+                        final int idleExecutors = o.countIdle();
+                        if (idleExecutors>0)
+                            availableComputers.put(o, idleExecutors);
+                    }
+                }
+
+                boolean needComputer = false;
+                long demandMilliseconds = 0;
+                for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
+                    // can any of the currently idle executors take this task?
+                    // assume the answer is no until we can find such an executor
+                    boolean needExecutor = true;
+                    for (Computer o : Collections.unmodifiableSet(availableComputers.keySet())) {
+                        Node otherNode = o.getNode();
+                        if (otherNode != null && otherNode.canTake(item) == null) {
+                            needExecutor = false;
+                            final int availableExecutors = availableComputers.remove(o);
+                            if (availableExecutors > 1) {
+                                availableComputers.put(o, availableExecutors - 1);
+                            } else {
+                                availableComputers.remove(o);
+                            }
+                            break;
+                        }
+                    }
+
+                    // this 'item' cannot be built by any of the existing idle nodes, but it can be built by 'c'
+                    Node checkedNode = c.getNode();
+                    if (needExecutor && checkedNode != null && checkedNode.canTake(item) == null) {
+                        demandMilliseconds = System.currentTimeMillis() - item.buildableStartMilliseconds;
+                        needComputer = demandMilliseconds > inDemandDelay * 1000 * 60 /*MINS->MILLIS*/;
+                        break;
+                    }
+                }
+
+                if (needComputer) {
                     // we've been in demand for long enough
                     logger.log(Level.INFO, "Launching computer {0} as it has been in demand for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(demandMilliseconds)});
@@ -206,6 +273,9 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
                     c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
+                } else {
+                    // no point revisiting until we can be confident we will be idle
+                    return TimeUnit.MILLISECONDS.toMinutes(TimeUnit.MINUTES.toMillis(idleDelay) - idleMilliseconds);
                 }
             }
             return 1;
@@ -213,6 +283,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
         @Extension
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            @Override
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Demand_displayName();
             }

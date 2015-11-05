@@ -23,24 +23,23 @@
  */
 package hudson.util;
 
-import hudson.Functions;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Model object used to display the generic error when Hudson start up fails fatally during initialization.
+ * Model object used to display the generic error when Jenkins start up fails fatally during initialization.
  *
  * <p>
  * <tt>index.jelly</tt> would display a nice friendly error page.
  *
  * @author Kohsuke Kawaguchi
  */
-public class HudsonFailedToLoad extends ErrorObject {
+public class HudsonFailedToLoad extends BootFailure {
+    @Restricted(NoExternalUse.class) @Deprecated
     public final Throwable exception;
 
     public HudsonFailedToLoad(Throwable exception) {
+        super(exception);
         this.exception = exception;
-    }
-
-    public String getStackTrace() {
-        return Functions.printThrowable(exception);
     }
 }

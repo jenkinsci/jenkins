@@ -30,10 +30,10 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.png" href=".." title="${%Back to Loggers}" />
-      <l:task icon="images/24x24/notepad.png" href="." title="${%Log records}" />
-      <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" />
-      <l:task icon="images/24x24/edit-delete.png" href="delete" title="${%Delete}" />
+      <l:task href=".." icon="icon-up icon-md" title="${%Back to Loggers}"/>
+      <l:task href="." icon="icon-notepad icon-md" title="${%Log records}"/>
+      <l:task href="configure" icon="icon-setting icon-md" title="${%Configure}"/>
+      <l:task href="delete" icon="icon-edit-delete icon-md" title="${%Delete}"/>
     </l:tasks>
   </l:side-panel>
 </j:jelly>

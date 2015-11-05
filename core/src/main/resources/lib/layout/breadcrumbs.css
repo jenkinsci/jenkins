@@ -1,0 +1,92 @@
+#left-top-nav {
+  text-align: left;
+  color: #222;
+}
+
+#right-top-nav {
+    float: right;
+    margin-right: 1em;
+    height: 2em;
+    line-height: 2em;
+}
+
+#left-top-nav a {
+  color: black;
+}
+
+#top-nav .a {
+  color: white;
+}
+
+#breadcrumbs {
+    list-style-type: none;
+    padding: 0 0 0 8px;
+    margin: 0;
+    height: 2em;
+    border-bottom: 1px solid #d3d7cf;
+}
+
+#breadcrumbs LI {
+    float:left;
+    line-height:2em;
+    height: 2em;
+    color:#555753;
+}
+
+#breadcrumbs LI A {
+    display: block;
+    padding-left: 0.75em;
+    line-height: 2em;
+}
+
+#breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
+  background-color: #e0e4dc;
+}
+
+#breadcrumbs LI A:link, #breadcrumbs LI A:visited {
+    text-decoration:none;
+    color:#555753;
+}
+
+#breadcrumbs LI A:hover, #crumbs LI A:focus {
+    color:#3465a4;
+}
+
+#breadcrumbs LI.children, #breadcrumbs LI.separator {/* '>' separator between two items */
+    width: 16px;
+    background-image: url(menu_right_arrow2.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+#breadcrumbs LI.children {
+    cursor: pointer;
+}
+
+#breadcrumbs LI.children:hover {
+    background-image: url(menu_right_arrow.png);
+}
+
+#breadcrumbs LI.separator:last-child {/* separators are for in-between only */
+    display: none;
+}
+
+#menuSelector {/* used for showing 'v' on the right of the anchor */
+  background-color:transparent;
+  background-image: url(menu_down_arrow.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  width: 15px;
+  height:16px;
+  position: absolute;
+  visibility: hidden;
+  cursor: pointer;
+  z-index: 2000;
+}
+#menuSelector.inverse {
+  background-image: url(menu_down_arrow2.png);
+}
+
+A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
+  padding-right: 16px;
+}

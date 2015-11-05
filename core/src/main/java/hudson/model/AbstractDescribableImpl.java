@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Extension;
 import jenkins.model.Jenkins;
 
 /**
@@ -31,7 +32,13 @@ import jenkins.model.Jenkins;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractDescribableImpl<T extends AbstractDescribableImpl<T>> implements Describable<T> {
+
+    /**
+     * By default looks for a nested class (conventionally named {@code DescriptorImpl}) implementing {@link Descriptor} and marked with {@link Extension}.
+     * <p>{@inheritDoc}
+     */
     public Descriptor<T> getDescriptor() {
         return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
+
 }

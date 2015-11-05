@@ -32,37 +32,34 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
-    <st:include page="sidepanel.jelly"/>
-    <l:main-panel>
-      <script type="text/javascript">// &lt;![CDATA[
-        function showhideCategories(hdr,on) {
-          var table = hdr.parentNode.parentNode.parentNode,
-              newDisplay = on ? '' : 'none',
-              nameList = new Array(), name;
-          for (var i = 1; i &lt; table.rows.length; i++) {
-            if (on || table.rows[i].cells.length == 1)
-              table.rows[i].style.display = newDisplay;
-             else {
-              // Hide duplicate rows for a plugin when not viewing by-category
-              name = table.rows[i].cells[1].getAttribute('data');
-              if (nameList[name] == 1) table.rows[i].style.display = 'none';
-              nameList[name] = 1;
+    <l:header>
+      <script type="text/javascript">
+      <![CDATA[
+        function flip(item) {
+          var nodes = document.getElementsByName(item.name);
+          for (var i = 0; i < nodes.length; ++i) {
+            if(nodes[i].nodeName == "INPUT") {
+              nodes[i].checked = item.checked;
             }
           }
         }
-        function showhideCategory(col) {
-          var row = col.parentNode.nextSibling;
-          var newDisplay = row &amp;&amp; row.style.display == 'none' ? '' : 'none';
-          for (; row &amp;&amp; row.cells.length &gt; 1; row = row.nextSibling)
-            row.style.display = newDisplay;
-        }
-      // ]]&gt;
+        ]]>
       </script>
+    </l:header>
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
+      <st:adjunct includes="hudson.PluginManager._table"/>
       <form method="post" action="install">
+        <div id="filter-container">
+          ${%Filter}:
+          <input type="text" id="filter-box"/>
+        </div>
+
         <j:set var="isUpdates" value="${attrs.page=='updates'}" />
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
-        <table id="plugins" class="sortable pane bigtable">
-            <tr style="border-top: 0px;">
+        <div class="pane-frame">
+          <table id="plugins" class="sortable pane bigtable stripped-odd">
+            <tr>
               <th initialSortDir="${isUpdates?null:'down'}"
                   tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
                   width="32" onclick="showhideCategories(this,1)">${%Install}</th>
@@ -79,7 +76,7 @@ THE SOFTWARE.
                     <j:set var="thisCat" value="${p.category}" />
                     <j:set var="p" value="${p.plugin}" />
                     <j:if test="${thisCat != lastCat}">
-                      <tr>
+                      <tr class="plugin-category" name="${thisCat}">
                         <td class="pane" colspan="4" onclick="showhideCategory(this)">${thisCat}</td>
                       </tr>
                     </j:if>
@@ -87,12 +84,12 @@ THE SOFTWARE.
                   </j:if>
                   <j:set var="installJob" value="${isUpdates ? app.updateCenter.getJob(p) : null}" />
                   <j:set var="installedOk"
-                     value="${installJob.status.success and installJob.plugin.version==p.version}" />
-                  <tr class="${installJob!=null ? 'already-upgraded' : null}">
+                         value="${installJob.status.success and installJob.plugin.version==p.version}" />
+                  <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin" name="${p.displayName}">
                     <td class="pane" align="center" data="${thisCat}_">
                       <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
                              checked="${installedOk ? 'checked' : null}"
-                             disabled="${installedOk ? 'disabled' : null}" />
+                             disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"/>
                     </td>
                     <td class="pane" data="${h.xmlEscape(p.displayName)}">
                       <div>
@@ -107,10 +104,16 @@ THE SOFTWARE.
                       <j:if test="${p.isForNewerHudson()}">
                         <div class="compatWarning">${%coreWarning(p.requiredCore)}</div>
                       </j:if>
+                      <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion()}">
+                        <div class="compatWarning">${%depCompatWarning}</div>
+                      </j:if>
+                      <j:if test="${p.isNeededDependenciesForNewerJenkins()}">
+                        <div class="compatWarning">${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}</div>
+                      </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <j:if test="${isUpdates}">
-                      <td>
+                      <td class="pane">
                         <j:choose><j:when test="${p.installed.active}">
                           <st:out value="${p.installed.version}" />
                         </j:when><j:otherwise>
@@ -133,11 +136,19 @@ THE SOFTWARE.
                 </tr>
               </j:otherwise>
             </j:choose>
-        </table>
+          </table>
+        </div>
 
         <j:if test="${!empty(list)}">
-          <div style="margin-top:1em">
-            <f:submit value="${%Install}" />
+          <div id="bottom-sticker" >
+            <div class="bottom-sticker-inner">
+              <j:if test="${!isUpdates}">
+                <f:submit value="${%Install without restart}" name="dynamicLoad" />
+                <span style="margin-left:2em;"></span>
+              </j:if>
+              <f:submit value="${%Download now and install after restart}" />
+              <st:include page="check.jelly"/>
+            </div>
           </div>
         </j:if>
         <d:invokeBody />

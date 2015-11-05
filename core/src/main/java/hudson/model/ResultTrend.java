@@ -61,7 +61,7 @@ public enum ResultTrend {
     STILL_FAILING(Messages._ResultTrend_StillFailing()),
     /**
      * Previous build (if there is one) was {@link Result#SUCCESS} or {@link Result#UNSTABLE}
-     * and current build is {@link Result#UNSTABLE}.
+     * and current build is {@link Result#FAILURE}.
      */
     FAILURE(Messages._ResultTrend_Failure()),
     /**
@@ -96,11 +96,24 @@ public enum ResultTrend {
     /**
      * Returns the result trend of a build.
      * 
-     * @param build the current build
+     * @param build the build
      * @return the result trend
      */
     public static ResultTrend getResultTrend(AbstractBuild<?, ?> build) {
-        Result result = build.getResult();
+        return getResultTrend((Run<?,?>)build);
+    }
+
+    /**
+     * Returns the result trend of a run.
+     * 
+     * @param run the run
+     * @return the result trend
+     * 
+     * @since 1.441
+     */
+    public static ResultTrend getResultTrend(Run<?, ?> run) {
+        
+        Result result = run.getResult();
         
         if (result == Result.ABORTED) {
             return ABORTED;
@@ -109,14 +122,14 @@ public enum ResultTrend {
         }
         
         if (result == Result.SUCCESS) {
-            if (isFix(build)) {
+            if (isFix(run)) {
                 return FIXED;
             } else {
                 return SUCCESS;
             }
         }
         
-        AbstractBuild<?, ?> previousBuild = getPreviousNonAbortedBuild(build);
+        Run<?, ?> previousBuild = getPreviousNonAbortedBuild(run);
         if (result == Result.UNSTABLE) {
             if (previousBuild == null) {
                 return UNSTABLE;
@@ -138,15 +151,15 @@ public enum ResultTrend {
             }
         }
         
-        throw new IllegalArgumentException("Unknown result: '" + result + "' for build: " + build);
+        throw new IllegalArgumentException("Unknown result: '" + result + "' for build: " + run);
     }
     
     /**
      * Returns the previous 'not aborted' build (i.e. ignores ABORTED and NOT_BUILT builds)
      * or null.
     */
-    private static AbstractBuild<?, ?> getPreviousNonAbortedBuild(AbstractBuild<?, ?> build) {
-        AbstractBuild<?, ?> previousBuild = build.getPreviousBuild();
+    private static Run<?, ?> getPreviousNonAbortedBuild(Run<?, ?> build) {
+        Run<?, ?> previousBuild = build.getPreviousBuild();
         while (previousBuild != null) {
             if (previousBuild.getResult() == null 
                 || previousBuild.getResult() == Result.ABORTED
@@ -166,12 +179,12 @@ public enum ResultTrend {
      * 'failed' and/or 'unstable' builds.
      * Ignores 'aborted' and 'not built' builds.
      */
-    private static boolean isFix(AbstractBuild<?, ?> build) {
+    private static boolean isFix(Run<?, ?> build) {
         if (build.getResult() != Result.SUCCESS) {
             return false;
         }
         
-        AbstractBuild<?, ?> previousBuild = getPreviousNonAbortedBuild(build);
+        Run<?, ?> previousBuild = getPreviousNonAbortedBuild(build);
         if (previousBuild != null) {
             return previousBuild.getResult().isWorseThan(Result.SUCCESS);
         }

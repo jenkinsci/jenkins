@@ -25,6 +25,9 @@ package hudson.util.jna;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
+import com.sun.jna.Union;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -51,7 +54,7 @@ typedef struct _SHELLEXECUTEINFO {
 } SHELLEXECUTEINFO, *LPSHELLEXECUTEINFO;
  * </pre>
  * @author Kohsuke Kawaguchi
- * @see MSDN: http://msdn.microsoft.com/en-us/library/bb759784(v=VS.85).aspx
+ * @see <a href="http://msdn.microsoft.com/en-us/library/bb759784(v=VS.85).aspx">MSDN: SHELLEXECUTEINFO</a>
  */
 public class SHELLEXECUTEINFO extends Structure {
     public int cbSize = size();
@@ -67,10 +70,40 @@ public class SHELLEXECUTEINFO extends Structure {
     public String lpClass;
     public Pointer hkeyClass;
     public int dwHotKey;
-    public Pointer hIcon;
+    public DUMMYUNIONNAME_union DUMMYUNIONNAME;
     public Pointer hProcess;
 
     public static final int SEE_MASK_NOCLOSEPROCESS = 0x40;
     public static final int SW_HIDE = 0;
     public static final int SW_SHOW = 0;
+
+    @Override
+    protected List getFieldOrder() {
+        return Arrays.asList("cbSize", "fMask", "hwnd", "lpVerb",
+                "lpFile", "lpParameters", "lpDirectory", "nShow", "hInstApp",
+                "lpIDList", "lpClass", "hkeyClass", "dwHotKey", "DUMMYUNIONNAME",
+                "hProcess");
+    }
+
+    public static class DUMMYUNIONNAME_union extends Union {
+        public Pointer hIcon;
+        public Pointer hMonitor;
+
+        public DUMMYUNIONNAME_union() {
+            super();
+        }
+
+        public DUMMYUNIONNAME_union(Pointer hIcon_or_hMonitor) {
+            super();
+            this.hMonitor = this.hIcon = hIcon_or_hMonitor;
+            setType(Pointer.class);
+        }
+
+        public static class ByReference extends DUMMYUNIONNAME_union implements Structure.ByReference {
+            
+        };
+        public static class ByValue extends DUMMYUNIONNAME_union implements Structure.ByValue {
+            
+        };
+    };
 }

@@ -24,12 +24,12 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -45,11 +45,8 @@ import java.util.regex.Pattern;
 @Extension
 public final class FingerprintCleanupThread extends AsyncPeriodicWork {
 
-    private static FingerprintCleanupThread theInstance;
-
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
-        theInstance = this;
     }
 
     public long getRecurrencePeriod() {
@@ -57,10 +54,14 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     public static void invoke() {
-        theInstance.run();
+        getInstance().run();
     }
 
-    protected void execute(TaskListener listener) {
+    private static FingerprintCleanupThread getInstance() {
+        return ExtensionList.lookup(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
+    }
+
+    public void execute(TaskListener listener) {
         int numFiles = 0;
 
         File root = new File(Jenkins.getInstance().getRootDir(),"fingerprints");
@@ -71,7 +72,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
                 for(File file2 : files2) {
                     File[] files3 = file2.listFiles(FINGERPRINTFILE_FILTER);
                     for(File file3 : files3) {
-                        if(check(file3))
+                        if(check(file3, listener))
                             numFiles++;
                     }
                     deleteIfEmpty(file2);
@@ -80,7 +81,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
             }
         }
 
-        logger.log(Level.INFO, "Cleaned up "+numFiles+" records");
+        listener.getLogger().println("Cleaned up "+numFiles+" records");
     }
 
     /**
@@ -96,17 +97,24 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
     /**
      * Examines the file and returns true if a file was deleted.
      */
-    private boolean check(File fingerprintFile) {
+    private boolean check(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = Fingerprint.load(fingerprintFile);
-            if(!fp.isAlive()) {
+            if (fp == null || !fp.isAlive()) {
+                listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 fingerprintFile.delete();
                 return true;
+            } else {
+                // get the fingerprint in the official map so have the changes visible to Jenkins
+                // otherwise the mutation made in FingerprintMap can override our trimming.
+                listener.getLogger().println("possibly trimming " + fingerprintFile);
+                fp = Jenkins.getInstance()._getFingerprint(fp.getHashString());
+                return fp.trim();
             }
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to process "+fingerprintFile, e);
+            e.printStackTrace(listener.error("Failed to process " + fingerprintFile));
+            return false;
         }
-        return false;
     }
 
     private static final FileFilter LENGTH2DIR_FILTER = new FileFilter() {

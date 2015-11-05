@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.search.SearchFactory;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
@@ -34,6 +35,7 @@ import hudson.search.SearchableModelObject;
 import hudson.search.Search;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchIndex;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * {@link ModelObject} with some convenience methods.
@@ -45,6 +47,7 @@ public abstract class AbstractModelObject implements SearchableModelObject {
      * Displays the error in a page.
      */
     protected final void sendError(Exception e, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+        req.setAttribute("exception", e);
         sendError(e.getMessage(),req,rsp);
     }
 
@@ -74,7 +77,11 @@ public abstract class AbstractModelObject implements SearchableModelObject {
 
     /**
      * Convenience method to verify that the current request is a POST request.
+     * 
+     * @deprecated 
+     *      Use {@link RequirePOST} on your method.
      */
+    @Deprecated
     protected final void requirePOST() throws ServletException {
         StaplerRequest req = Stapler.getCurrentRequest();
         if (req==null)  return; // invoked outside the context of servlet
@@ -95,6 +102,11 @@ public abstract class AbstractModelObject implements SearchableModelObject {
     }
 
     public Search getSearch() {
+        for (SearchFactory sf : SearchFactory.all()) {
+            Search s = sf.createFor(this);
+            if (s!=null)
+                return s;
+        }
         return new Search();
     }
 

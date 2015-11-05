@@ -26,12 +26,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-	<f:entry title="${it.name}" description="${it.description}">
-		<div name="parameter" description="${it.description}">
+	<f:entry title="${it.name}" description="${it.formattedDescription}">
+		<div name="parameter">
 			<input type="hidden" name="name" value="${it.name}" />
             <select name="value">
               <j:forEach var="value" items="${it.choices}">
-                <f:option selected="${it.value==value}">${value}</f:option>
+                <f:option selected="${it.defaultParameterValue.value==value}">${value}</f:option>
               </j:forEach>
             </select>
 		</div>

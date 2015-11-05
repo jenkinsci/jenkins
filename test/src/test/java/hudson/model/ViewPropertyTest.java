@@ -38,7 +38,7 @@ import org.kohsuke.stapler.StaplerRequest;
 public class ViewPropertyTest extends HudsonTestCase {
     public void testRoundtrip() throws Exception {
         ListView foo = new ListView("foo");
-        hudson.addView(foo);
+        jenkins.addView(foo);
 
         // make sure it renders as optionalBlock
         HtmlForm f = createWebClient().getPage(foo, "configure").getFormByName("viewConfig");
@@ -74,7 +74,7 @@ public class ViewPropertyTest extends HudsonTestCase {
 
     public void testInvisibleProperty() throws Exception {
         ListView foo = new ListView("foo");
-        hudson.addView(foo);
+        jenkins.addView(foo);
 
         // test the rendering (or the lack thereof) of an invisible property
         configRoundtrip(foo);

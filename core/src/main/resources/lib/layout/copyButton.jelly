@@ -1,0 +1,54 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Manufacture Francaise des Pneumatiques
+Michelin, Romain Seguy, CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+  <st:documentation>
+    Creates a small button that lets the user copies a text into clipboard
+
+    <st:attribute name="tooltip">
+      Tooltip of the button. Currently this doesn't work as reliably as we'd like.
+      More ZeroClipboard hacking is likely necessary.
+    </st:attribute>
+    <st:attribute name="text" use="required">
+      Text to be copied into the clipboard.
+    </st:attribute>
+    <st:attribute name="message" use="required">
+      Confirmation message to be shown once the text is copied.
+      This is required as in some browsers, button doesn't properly provide feedback to user actions
+      due to the nature of the hack needed to make copy work.
+    </st:attribute>
+    <st:attribute name="container">
+      Specify the CSS selector (like ".foo") that points to the ancestor block element that has "positive:relative".
+      According to ZeroClipboard documentation, having such container would improve the accuracy of invisible flash
+      overlay.
+    </st:attribute>
+  </st:documentation>
+
+  <span class="copy-button" tooltip="${attrs.tooltip}" text="${attrs.text}" message="${attrs.message}" container="${attrs.container}">
+    <input type="button"/>
+  </span>
+  <st:adjunct includes="lib.layout.copyButton.copyButton"/>
+</j:jelly>

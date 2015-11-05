@@ -23,13 +23,14 @@
  */
 package hudson;
 
-import hudson.matrix.MatrixBuild;
+import hudson.FilePath.TarCompression;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
+import hudson.util.io.ArchiverFactory;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.RunListener;
 import hudson.scm.SCM;
@@ -123,7 +124,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      *
      * <p>
      * This method can prepare the underlying file system in preparation
-     * for the later {@link #snapshot(AbstractBuild, FilePath, TaskListener)}.
+     * for the later {@link FileSystemProvisioner.Default#snapshot(AbstractBuild, FilePath, TaskListener)}.
      *
      * TODO : the method needs to be able to see the snapshot would
      * be later needed. In fact, perhaps we should only call this method
@@ -155,7 +156,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      * <p>
      * The state of the build when this method is invoked depends on
      * the project type. Most would call this at the end of the build,
-     * but for example {@link MatrixBuild} would call this after
+     * but for example {@code MatrixBuild} would call this after
      * SCM check out so that the state of the fresh workspace
      * can be then propagated to elsewhere.
      *
@@ -166,7 +167,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      *
      * @param ws
      *      New workspace should be prepared in this location. This is the same value as
-     *      {@code build.getProject().getWorkspace()} but passed separately for convenience.
+     *      {@code build.getWorkspace()} but passed separately for convenience.
      * @param glob
      *      Ant-style file glob for files to include in the snapshot. May not be pertinent for all
      *      implementations.
@@ -203,6 +204,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
         /**
          * @deprecated as of 1.350
          */
+        @Deprecated
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, TaskListener listener) throws IOException, InterruptedException {
             return snapshot(build, ws, "**/*", listener);
         }
@@ -211,10 +213,10 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
          * Creates a tar ball.
          */
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
-            File wss = new File(build.getRootDir(),"workspace.zip");
+            File wss = new File(build.getRootDir(),"workspace.tgz");
             OutputStream os = new BufferedOutputStream(new FileOutputStream(wss));
             try {
-                ws.zip(os,glob);
+                ws.archive(ArchiverFactory.TARGZ,os,glob);
             } finally {
                 os.close();
             }
@@ -223,15 +225,20 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
 
         public static final class WorkspaceSnapshotImpl extends WorkspaceSnapshot {
             public void restoreTo(AbstractBuild<?,?> owner, FilePath dst, TaskListener listener) throws IOException, InterruptedException {
-                File wss = new File(owner.getRootDir(),"workspace.zip");
-                new FilePath(wss).unzip(dst);
+                File zip = new File(owner.getRootDir(),"workspace.zip");
+                if (zip.exists()) {// we used to keep it in zip
+                    new FilePath(zip).unzip(dst);
+                } else {// but since 1.456 we do tgz
+                    File tgz = new File(owner.getRootDir(),"workspace.tgz");
+                    new FilePath(tgz).untar(dst, TarCompression.GZIP);
+                }
             }
         }
 
         @Extension
         public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
             public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
-                // the default provisioner doens't do anything special,
+                // the default provisioner does not do anything special,
                 // so allow other types to manage it
                 return false;
             }

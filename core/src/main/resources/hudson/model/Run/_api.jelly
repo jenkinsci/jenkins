@@ -40,4 +40,21 @@ THE SOFTWARE.
       in which the date is formatted.
     </dd>
   </dl>
+
+  <h2>Accessing Progressive Console Output</h2>
+  <p>
+    You can retrieve in-progress console output by making repeated GET requests with a parameter.
+    You'll basically send GET request to
+    <a href="../logText/progressiveText?start=0">this URL</a> (or <a href="../logText/progressiveHtml?start=0">this URL</a> if you
+    want HTML that can be put into &amp;lt;pre> tag.)
+    The <tt>start</tt> parameter controls the byte offset of where you start.
+  </p><p>
+    The response will contain a chunk of the console output, as well as the <tt>X-Text-Size</tt> header that represents
+    the bytes offset (of the raw log file).
+    This is the number you want to use as the <tt>start</tt> parameter for the next call.
+  </p><p>
+    If the response also contains the <tt>X-More-Data: true</tt> header, the server is indicating that the build
+    is in progress, and you need to repeat the request after some delay. The Jenkins UI waits 5 seconds before making
+    the next call. When this header is not present, you know that you've retrieved all the data and the build is complete.
+  </p>
 </j:jelly>

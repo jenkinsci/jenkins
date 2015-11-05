@@ -23,9 +23,13 @@
  */
 package hudson.markup;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.security.AuthorizationStrategy.Unsecured;
 import hudson.security.HudsonPrivateSecurityRealm;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -35,14 +39,19 @@ import java.io.Writer;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class MarkupFormatterTest extends HudsonTestCase {
-    public void testConfigRoundtrip() throws Exception {
-        hudson.setSecurityRealm(new HudsonPrivateSecurityRealm(false));
-        hudson.setAuthorizationStrategy(new Unsecured());
-        hudson.setMarkupFormatter(new DummyMarkupImpl("hello"));
-        configRoundtrip();
+public class MarkupFormatterTest {
 
-        assertEquals("hello", ((DummyMarkupImpl)hudson.getMarkupFormatter()).prefix);
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void configRoundtrip() throws Exception {
+        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false));
+        j.jenkins.setAuthorizationStrategy(new Unsecured());
+        j.jenkins.setMarkupFormatter(new DummyMarkupImpl("hello"));
+        j.configRoundtrip();
+
+        assertEquals("hello", ((DummyMarkupImpl) j.jenkins.getMarkupFormatter()).prefix);
     }
 
     public static class DummyMarkupImpl extends MarkupFormatter {

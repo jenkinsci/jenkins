@@ -31,7 +31,7 @@ THE SOFTWARE.
       A Map object that gets rendered as a table.
     </st:attribute>
   </st:documentation>
-  <table class="pane sortable">
+  <table class="pane sortable bigtable">
     <tr>
       <th class="pane-header" initialSortDir="down">${%Name}</th>
       <th class="pane-header">${%Value}</th>
@@ -39,7 +39,7 @@ THE SOFTWARE.
     <j:forEach var="e" items="${items}">
       <tr>
         <td class="pane"><st:out value="${e.key}"/></td>
-        <td class="pane"><st:out value="${e.value}"/></td>
+        <td class="pane" style="white-space: normal"><l:breakable value="${e.value}"/></td>
       </tr>
     </j:forEach>
   </table>

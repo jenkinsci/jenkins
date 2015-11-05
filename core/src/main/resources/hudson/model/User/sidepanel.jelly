@@ -1,7 +1,8 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, id:cactusman
+Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts,
+id:cactusman, Vincent Latombe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +31,15 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.png" href="${rootURL}/people/" title="${%People}" />
-      <l:task icon="images/24x24/search.png" href="${rootURL}/${it.url}/" title="${%Status}" />
-      <l:task icon="images/24x24/notepad.png" href="${rootURL}/${it.url}/builds" title="${%Builds}" />
-      <l:task icon="images/24x24/notepad.png" href="${rootURL}/${it.url}/my-views/" title="${%My Views}" />
-      <l:task icon="images/24x24/setting.png" href="${rootURL}/${it.url}/configure" title="${%Configure}" permission="${app.ADMINISTER}" />
+      <l:task contextMenu="false" href="${rootURL}/asynchPeople/" icon="icon-up icon-md" title="${%People}"/>
+      <l:task contextMenu="false" href="${rootURL}/${it.url}/" icon="icon-search icon-md" title="${%Status}"/>
+      <l:task href="${rootURL}/${it.url}/builds" icon="icon-notepad icon-md" title="${%Builds}"/>
+      <l:task href="${rootURL}/${it.url}/configure" icon="icon-setting icon-md" permission="${app.ADMINISTER}" title="${%Configure}"/>
+      <t:actions actions="${it.propertyActions}"/>
+      <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.canDelete()}">
-        <l:task icon="images/24x24/edit-delete.png" href="${rootURL}/${it.url}/delete" title="${%Delete}" />
+        <l:task href="${rootURL}/${it.url}/delete" icon="icon-edit-delete icon-md" title="${%Delete}"/>
       </j:if>
-      <!--  TODO add all UserProperties that are also actions -->
     </l:tasks>
   </l:side-panel>
 </j:jelly>

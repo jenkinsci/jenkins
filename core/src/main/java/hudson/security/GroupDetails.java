@@ -25,6 +25,8 @@ package hudson.security;
 
 import org.acegisecurity.userdetails.UserDetails;
 
+import java.util.Set;
+
 /**
  * Represents the details of a group.
  *
@@ -50,5 +52,22 @@ public abstract class GroupDetails {
      */
     public String getDisplayName() {
         return getName();
+    }
+
+    /**
+     * Returns the members of the group, or {@code null} if the members were not retrieved. The results of this method
+     * are not live, they represent the membership at the time the {@link GroupDetails} was instantiated. As fetching
+     * the membership of a group can be an expensive operation, it is preferential to use the
+     * {@link SecurityRealm#loadGroupByGroupname(String, boolean)} method to retrieve {@link GroupDetails} in those
+     * cases where you want to try and retrieve the members of the group, though even that method does not guarantee
+     * to retrieve the members of a group as the backing {@link SecurityRealm} implementation may not support such
+     * a query.
+     *
+     * @return the members of the group at the point in time when the {@link GroupDetails} were retrieved, or
+     * {@code null} if the members were not retrieved.
+     * @since 1.549
+     */
+    public Set<String> getMembers() {
+        return null;
     }
 }

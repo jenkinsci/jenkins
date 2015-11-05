@@ -33,10 +33,10 @@ THE SOFTWARE.
   </f:entry>
 
   <f:entry title="${%# of executors}" field="numExecutors">
-    <f:textbox />
+    <f:number clazz="positive-number" min="1" step="1" default="1"/>
   </f:entry>
 
-  <f:entry title="${%Remote FS root}" field="remoteFS">
+  <f:entry title="${%Remote root directory}" field="remoteFS">
     <f:textbox />
   </f:entry>
 
@@ -56,9 +56,7 @@ THE SOFTWARE.
         <j:set var="descriptor" value="${d}"/>
         <j:set var="instance"
                value="${it.launcher.descriptor==d ? it.launcher : null}"/>
-        <f:invisibleEntry>
-          <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
-        </f:invisibleEntry>
+        <f:class-entry descriptor="${d}" />
         <st:include from="${d}" page="${d.configPage}" optional="true"/>
       </f:dropdownListBlock>
     </j:forEach>
@@ -76,9 +74,7 @@ THE SOFTWARE.
             <j:set var="descriptor" value="${d}"/>
             <j:set var="instance"
                    value="${it.retentionStrategy.descriptor==d ? it.retentionStrategy : null}"/>
-            <tr><td>
-              <input type="hidden" name="stapler-class" value="${d.clazz.name}" />
-            </td></tr>
+            <f:class-entry descriptor="${d}" />
             <st:include from="${d}" page="${d.configPage}" optional="true"/>
           </f:dropdownListBlock>
         </j:if>

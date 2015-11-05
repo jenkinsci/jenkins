@@ -37,7 +37,7 @@ import org.acegisecurity.GrantedAuthority;
 public class WhoAmICommand extends CLICommand {
     @Override
     public String getShortDescription() {
-        return "Reports your credential and permissions";
+        return Messages.WhoAmICommand_ShortDescription();
     }
 
     protected int run() {

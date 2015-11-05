@@ -22,17 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Side panel for the build view.
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:forEach var="action" items="${it.actions}">
-    <!-- allow the action to take over the rendering, but otherwise fall back to the default -->
+  <st:documentation>
+    Shows a list of tasks.
+
+    <st:attribute name="actions">
+      List of actions. Defaults to "it.allActions ?: it.actions"
+    </st:attribute>
+  </st:documentation>
+  <j:forEach var="action" items="${attrs.actions ?: it.allActions ?: it.actions}">
+    <!--
+      allow the action to take over the rendering, but otherwise fall back to the default
+      the action object itself is available in the 'action' variable
+    -->
     <st:include page="action.jelly" from="${action}" optional="true">
-      <j:if test="${action.iconFileName!=null}">
-        <l:task icon="${h.getIconFilePath(action)}" title="${action.displayName}"
-                href="${h.getActionUrl(it.url,action)}" />
+      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName + ' icon-md' : action.iconFileName}"/>
+      <j:if test="${icon!=null}">
+        <l:task icon="${icon}" title="${action.displayName}"
+                href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}"/>
       </j:if>
     </st:include>
   </j:forEach>

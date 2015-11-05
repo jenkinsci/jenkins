@@ -1,0 +1,13 @@
+#!/bin/sh -e
+# convert an svg file to a png file
+# Usage: cat some.svg | svg2png ...options... > some.png
+#
+# option: -w width -h height
+
+tmpA=/tmp/svg2pngA$$
+tmpB=/tmp/svg2pngB$$
+
+cat > $tmpA
+inkscape -z -e "$tmpB" "$@" "$tmpA" 1>&2
+cat $tmpB
+rm $tmpA $tmpB

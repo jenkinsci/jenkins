@@ -34,6 +34,7 @@ import hudson.model.BuildListener;
 import hudson.model.Environment;
 import hudson.model.JobProperty;
 import hudson.model.Run;
+import hudson.model.Run.RunnerAbortedException;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import hudson.scm.SCM;
@@ -45,6 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Receives notifications about builds.
@@ -83,15 +87,22 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      The listener for this build. This can be used to produce log messages, for example,
      *      which becomes a part of the "console output" of this build. But when this method runs,
      *      the build is considered completed, so its status cannot be changed anymore.
+     * @throws RuntimeException
+     *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
+     *      from breaking all the builds.
      */
-    public void onCompleted(R r, TaskListener listener) {}
+    public void onCompleted(R r, @Nonnull TaskListener listener) {}
 
     /**
-     * Called after a build is moved to the {@link Run.State#COMPLETED} state.
+     * Called after a build is moved to the {@link hudson.model.Run.State#COMPLETED} state.
      *
      * <p>
      * At this point, all the records related to a build is written down to the disk. As such,
      * {@link TaskListener} is no longer available. This happens later than {@link #onCompleted(Run, TaskListener)}.
+     *
+     * @throws RuntimeException
+     *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
+     *      from breaking all the builds.
      */
     public void onFinalized(R r) {}
 
@@ -104,6 +115,9 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * @param listener
      *      The listener for this build. This can be used to produce log messages, for example,
      *      which becomes a part of the "console output" of this build.
+     * @throws RuntimeException
+     *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
+     *      from breaking all the builds.
      */
     public void onStarted(R r, TaskListener listener) {}
 
@@ -131,9 +145,12 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * @throws IOException
      *      terminates the build abnormally. Hudson will handle the exception
      *      and reports a nice error message.
-     * @since 1.409
+     * @throws RunnerAbortedException
+     *      If a fatal error is detected and the callee handled it gracefully, throw this exception
+     *      to suppress a stack trace by the receiver.
+     * @since 1.410
      */
-    public Environment setUpEnvironment( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+    public Environment setUpEnvironment( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException, RunnerAbortedException {
     	return new Environment() {};
     }
 
@@ -141,6 +158,9 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Called right before a build is going to be deleted.
      *
      * @param r The build.
+     * @throws RuntimeException
+     *      Any exception/error thrown from this method will be swallowed to prevent broken listeners
+     *      from breaking all the builds.
      */
     public void onDeleted(R r) {}
 
@@ -151,6 +171,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * @deprecated as of 1.281
      *      Put {@link Extension} on your class to get it auto-registered.
      */
+    @Deprecated
     public void register() {
         all().add(this);
     }
@@ -167,15 +188,20 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * @deprecated as of 1.281
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final CopyOnWriteList<RunListener> LISTENERS = ExtensionListView.createCopyOnWriteList(RunListener.class);
 
     /**
      * Fires the {@link #onCompleted(Run, TaskListener)} event.
      */
-    public static void fireCompleted(Run r, TaskListener listener) {
+    public static void fireCompleted(Run r, @Nonnull TaskListener listener) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onCompleted(r,listener);
+                try {
+                    l.onCompleted(r,listener);
+                } catch (Throwable e) {
+                    report(e);
+                }
         }
     }
 
@@ -185,7 +211,11 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     public static void fireStarted(Run r, TaskListener listener) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onStarted(r,listener);
+                try {
+                    l.onStarted(r,listener);
+                } catch (Throwable e) {
+                    report(e);
+                }
         }
     }
 
@@ -193,26 +223,43 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onFinalized(Run)} event.
      */
     public static void fireFinalized(Run r) {
+        if (Jenkins.getInstance() == null) {
+            return;
+        }
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onFinalized(r);
+                try {
+                    l.onFinalized(r);
+                } catch (Throwable e) {
+                    report(e);
+                }
         }
     }
 
     /**
-     * Fires the {@link #onFinalized(Run)} event.
+     * Fires the {@link #onDeleted} event.
      */
     public static void fireDeleted(Run r) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
-                l.onDeleted(r);
+                try {
+                    l.onDeleted(r);
+                } catch (Throwable e) {
+                    report(e);
+                }
         }
     }
 
     /**
-     * Returns all the registered {@link RunListener} descriptors.
+     * Returns all the registered {@link RunListener}s.
      */
     public static ExtensionList<RunListener> all() {
-        return Jenkins.getInstance().getExtensionList(RunListener.class);
+        return ExtensionList.lookup(RunListener.class);
     }
+
+    private static void report(Throwable e) {
+        LOGGER.log(Level.WARNING, "RunListener failed",e);
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(RunListener.class.getName());
 }

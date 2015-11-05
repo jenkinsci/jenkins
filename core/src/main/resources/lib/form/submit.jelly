@@ -37,5 +37,5 @@ THE SOFTWARE.
       The text of the submit button. Something like "submit", "OK", etc.
     </s:attribute>
   </s:documentation>
-  <input type="submit" name="${attrs.name ?: 'Submit'}" value="${attrs.value}" class="submit-button" />
+  <input type="submit" name="${attrs.name ?: 'Submit'}" value="${attrs.value}" class="submit-button primary" />
 </j:jelly>

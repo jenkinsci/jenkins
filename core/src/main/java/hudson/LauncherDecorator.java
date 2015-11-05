@@ -45,6 +45,6 @@ public abstract class LauncherDecorator implements ExtensionPoint {
      * Returns all the registered {@link LauncherDecorator}s.
      */
     public static ExtensionList<LauncherDecorator> all() {
-        return Jenkins.getInstance().getExtensionList(LauncherDecorator.class);
+        return ExtensionList.lookup(LauncherDecorator.class);
     }
 }

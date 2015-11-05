@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -62,6 +63,29 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     }
 
     /**
+     * {@link TopLevelItemDescriptor}s often may want to limit the scope within which they can be created.
+     * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
+     *
+     * @since TODO
+     */
+    public boolean isApplicableIn(ItemGroup parent) {
+        return true;
+    }
+
+    /**
+     * Checks if this top level item is applicable within the specified item group.
+     * <p>
+     * This is just a convenience function.
+     * @since TODO
+     */
+    public final void checkApplicableIn(ItemGroup parent) {
+        if (!isApplicableIn(parent)) {
+            throw new AccessDeniedException(
+                    Messages.TopLevelItemDescriptor_NotApplicableIn(getDisplayName(), parent.getFullDisplayName()));
+        }
+    }
+
+    /**
      * Tests if the given instance belongs to this descriptor, in the sense
      * that this descriptor can produce items like the given one.
      *
@@ -69,6 +93,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * {@link TopLevelItemDescriptor}s that act like a wizard and produces different
      * object types than {@link #clazz} can override this method to augment
      * instance-descriptor relationship.
+     * @since 1.410
      */
     public boolean testInstance(TopLevelItem i) {
         return clazz.isInstance(i);
@@ -100,6 +125,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * @deprecated as of 1.390
      *      Use {@link #newInstance(ItemGroup, String)}
      */
+    @Deprecated
     public TopLevelItem newInstance(String name) {
         return newInstance(Jenkins.getInstance(), name);
     }

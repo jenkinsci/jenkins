@@ -23,8 +23,15 @@
  */
 package hudson.model;
 
-import jenkins.model.Jenkins;
+import hudson.views.ListViewColumn;
+import hudson.views.ListViewColumnDescriptor;
+import hudson.views.ViewJobFilter;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.AncestorInPath;
+
+import java.util.List;
 
 /**
  * {@link Descriptor} for {@link View}.
@@ -65,27 +72,22 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     /**
      * Auto-completion for the "copy from" field in the new job page.
      */
-    public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value) {
-        final AutoCompletionCandidates r = new AutoCompletionCandidates();
+    @Restricted(DoNotUse.class)
+    public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup container) {
+        return AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
+    }
 
-        new ItemVisitor() {
-            @Override
-            public void onItemGroup(ItemGroup<?> group) {
-                // only dig deep when the path matches what's typed.
-                // for example, if 'foo/bar' is typed, we want to show 'foo/barcode'
-                if (value.startsWith(group.getFullName()))
-                    super.onItemGroup(group);
-            }
+    /**
+     * Possible {@link ListViewColumnDescriptor}s that can be used with this view.
+     */
+    public List<Descriptor<ListViewColumn>> getColumnsDescriptors() {
+        return ListViewColumn.all();
+    }
 
-            @Override
-            public void onItem(Item i) {
-                if (i.getFullName().startsWith(value)) {
-                    r.add((i.getFullName()));
-                    super.onItem(i);
-                }
-            }
-        }.onItemGroup(Jenkins.getInstance());
-
-        return r;
+    /**
+     * Possible {@link ViewJobFilter} types that can be used with this view.
+     */
+    public List<Descriptor<ViewJobFilter>> getJobFiltersDescriptors() {
+        return ViewJobFilter.all();
     }
 }

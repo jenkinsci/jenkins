@@ -30,7 +30,6 @@ import hudson.model.BuildListener;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +57,7 @@ public class ExtractResourceSCM extends NullSCM {
 
     /**
      * with this constructor your zip can contains a folder
-     * more usefull to create a project test zip foo.zip foo
+     * more useful to create a project test zip foo.zip foo
      * @param zip
      * @param parentFolder
      */
@@ -70,7 +69,7 @@ public class ExtractResourceSCM extends NullSCM {
     }
 
     @Override
-    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
     	if (workspace.exists()) {
             listener.getLogger().println("Deleting existing workspace " + workspace.getRemote());
     		workspace.deleteRecursive();

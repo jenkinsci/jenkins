@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 .yui-overlay,
 .yui-panel-container {
@@ -99,10 +99,9 @@ PLEASE NOTE:
        leverage the provided "hide-scrollbars" and "show-scrollbars" classes to 
        write custom style rules to guard against this bug.
 
-** For more information on this issue, see:
-
+** For more information on this issue, see: 
    + https://bugzilla.mozilla.org/show_bug.cgi?id=187435
-   + SourceForge bug #1723530
+   + YUILibrary bug #1723530
 
 */
 
@@ -233,6 +232,9 @@ PLEASE NOTE:
     background:url(close12_1.gif) no-repeat;
     cursor:pointer;
     visibility:inherit;
+    text-indent:-10000em;
+    overflow:hidden;
+    text-decoration:none;
 }
 
 .yui-panel .ft {
@@ -302,17 +304,6 @@ PLEASE NOTE:
     font-weight:bold;
 }
 
-.button-group button:hover, 
-.button-group button.hover {
-    border:2px solid #90A029;
-    background-color:#EBF09E;
-    border-top-color:#FFF;
-    border-left-color:#FFF;
-}
-
-.button-group button:active {
-    border:2px solid #E4E4E4;
-    background-color:#BBB;
-    border-top-color:#333;
-    border-left-color:#333;
+.yui-override-padding {
+    padding:0 !important;
 }

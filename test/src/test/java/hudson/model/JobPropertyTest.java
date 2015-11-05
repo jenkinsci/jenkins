@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,43 +23,55 @@
  */
 package hudson.model;
 
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
 import hudson.model.Descriptor.FormException;
 import net.sf.json.JSONObject;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-public class JobPropertyTest extends HudsonTestCase {
+public class JobPropertyTest {
 
-    /**
-     * Asserts that rfe#2398 is fixed.
-     */
-    @Bug(2398)
-    public void testJobPropertySummaryIsShownInMavenModuleSetIndexPage() throws Exception {
-        assertJobPropertySummaryIsShownInIndexPage(MavenModuleSet.DESCRIPTOR);
-    }
-    public void testJobPropertySummaryIsShownInMatrixProjectIndexPage() throws Exception {
-        assertJobPropertySummaryIsShownInIndexPage(MatrixProject.DESCRIPTOR);
-    }
-    public void testJobPropertySummaryIsShownInFreeStyleProjectIndexPage() throws Exception {
-        assertJobPropertySummaryIsShownInIndexPage(FreeStyleProject.DESCRIPTOR);
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    @Issue("JENKINS-2398")
+    public void jobPropertySummaryIsShownInMavenModuleSetIndexPage() throws Exception {
+        assertJobPropertySummaryIsShownInIndexPage(MavenModuleSet.class);
     }
 
-    private void assertJobPropertySummaryIsShownInIndexPage(TopLevelItemDescriptor type) throws Exception {
+    @Test
+    @Issue("JENKINS-2398")
+    public void jobPropertySummaryIsShownInMatrixProjectIndexPage() throws Exception {
+        assertJobPropertySummaryIsShownInIndexPage(MatrixProject.class);
+    }
+
+    @Test
+    @Issue("JENKINS-2398")
+    public void jobPropertySummaryIsShownInFreeStyleProjectIndexPage() throws Exception {
+        assertJobPropertySummaryIsShownInIndexPage(FreeStyleProject.class);
+    }
+
+    private void assertJobPropertySummaryIsShownInIndexPage(Class<? extends TopLevelItem> type) throws Exception {
         JobPropertyImpl jp = new JobPropertyImpl("NeedleInPage");
-        Job<?,?> project = (Job<?, ?>) hudson.createProject(type, "job-test-case");
+        Job<?,?> project = (Job<?, ?>) j.jenkins.createProject(type, "job-test-case");
         project.addProperty(jp);
-        
-        HtmlPage page = new WebClient().goTo("job/job-test-case");
+
+        HtmlPage page = j.createWebClient().goTo("job/job-test-case");
         WebAssert.assertTextPresent(page, "NeedleInPage");
     }
-    
+
     public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
         private final String propertyString;
         public JobPropertyImpl(String propertyString) {
@@ -88,14 +100,15 @@ public class JobPropertyTest extends HudsonTestCase {
     /**
      * Make sure that the UI rendering works as designed.
      */
-    public void testConfigRoundtrip() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+    @Test
+    public void configRoundtrip() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
         JobPropertyWithConfigImpl before = new JobPropertyWithConfigImpl("Duke");
         p.addProperty(before);
-        configRoundtrip((Item)p);
+        j.configRoundtrip((Item)p);
         JobPropertyWithConfigImpl after = p.getProperty(JobPropertyWithConfigImpl.class);
         assertNotSame(after,before);
-        assertEqualDataBoundBeans(before, after);
+        j.assertEqualDataBoundBeans(before, after);
     }
 
     public static class JobPropertyWithConfigImpl extends JobProperty<Job<?,?>> {
@@ -106,20 +119,19 @@ public class JobPropertyTest extends HudsonTestCase {
             this.name = name;
         }
 
-        @TestExtension("testConfigRoundtrip")
+        @TestExtension("configRoundtrip")
         public static class DescriptorImpl extends JobPropertyDescriptor {
             @Override
             public String getDisplayName() { return null; }
         }
     }
 
-
-
-    public void testInvisibleProperty() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+    @Test
+    public void invisibleProperty() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
         InvisibleImpl before = new InvisibleImpl();
         p.addProperty(before);
-        configRoundtrip((Item)p);
+        j.configRoundtrip((Item)p);
         InvisibleImpl after = p.getProperty(InvisibleImpl.class);
         assertSame(after,before);
     }
@@ -134,7 +146,7 @@ public class JobPropertyTest extends HudsonTestCase {
             return this;
         }
 
-        @TestExtension("testInvisibleProperty")
+        @TestExtension("invisibleProperty")
         public static class DescriptorImpl extends JobPropertyDescriptor {
             @Override
             public String getDisplayName() { return null; }

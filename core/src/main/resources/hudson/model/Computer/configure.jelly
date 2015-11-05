@@ -42,10 +42,11 @@ THE SOFTWARE.
         <!-- main body of the configuration -->
         <st:include it="${instance}" page="configure-entries.jelly" />
 
-        <f:block>
+        <f:bottomButtonBar>
           <f:submit value="${%Save}"/>
-        </f:block>
+        </f:bottomButtonBar>
       </f:form>
+      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

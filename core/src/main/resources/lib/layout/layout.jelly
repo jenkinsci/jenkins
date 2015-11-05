@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
   <st:documentation>
     Outer-most tag for a normal (non-AJAX) HTML rendering.
     This is used with nested &lt;header>, &lt;side-panel>, and &lt;main-panel>
@@ -34,7 +34,7 @@ THE SOFTWARE.
       Title of the HTML page. Rendered into &lt;title> tag.
     </st:attribute>
     <st:attribute name="norefresh">
-      If non-null, auto refresh is disabled on this page.
+      If non-null and not "false", auto refresh is disabled on this page.
       This is necessary for pages that include forms.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
@@ -53,53 +53,54 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
   </st:documentation>
-<st:header name="Expires" value="0" />
-<st:header name="X-Hudson-Theme" value="default" />
+<st:setHeader name="Expires" value="0" />
+<st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
+<st:setHeader name="X-Hudson-Theme" value="default" />
 <st:contentType value="text/html;charset=UTF-8" />
-<!-- The path starts with a "/" character but does not end with a "/" character. -->
-<j:set var="rootURL" value="${request.contextPath}" />
-<j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-<j:set var="_" value="${request.getSession()}"/><!-- depending on what tags are used, we can later end up discovering that we needed a session, but it's too late because the headers are already committed. so ensure we always have a session -->
-<j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null)}"/>
+
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+${h.initPageVariables(context)}
 <!--
-  load static resources from the path dedicated to a specific version.
-  This "/static/VERSION/abc/def.ghi" path is interpreted by stapler to be
-  the same thing as "/abc/def.ghi", but this avoids the stale cache
-  problem when the user upgrades to new Jenkins. Stapler also sets a long
-  future expiration dates for such static resources.
+  depending on what tags are used, we can later end up discovering that we needed a session,
+  but it's too late because the headers are already committed. so ensure we always have a session.
+  this also allows us to configure HttpSessionContextIntegrationFilter not to create sessions,
+  which I suspect can end up creating sessions for wrong resource types (such as static resources.)
 -->
-<j:set var="resURL"  value="${rootURL}${h.resourcePath}" />
-<j:set var="imagesURL"  value="${rootURL}${h.resourcePath}/images" />
+<j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
+<j:set var="_" value="${request.getSession()}"/>
+<j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null and !attrs.norefresh.equals(false))}"/>
+  <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
-    <st:header name="X-Hudson" value="1.395"/>
-    <st:header name="X-Jenkins" value="${servletContext.getAttribute('version')}"/>
-    <j:if test="${app.tcpSlaveAgentListener!=null}">
-      <!-- advertise the CLI TCP port -->
-      <st:header name="X-Hudson-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
-      <st:header name="X-Jenkins-CLI-Port" value="${app.tcpSlaveAgentListener.port}"/>
+    ${h.advertiseHeaders(response)}
+    <j:if test="${extensionsAvailable}">
+      <j:forEach var="pd" items="${h.pageDecorators}">
+        <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+      </j:forEach>
     </j:if>
-    <j:forEach var="pd" items="${h.pageDecorators}">
-      <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
-    </j:forEach>
   </j:if>
-  <html>
-  <head>
+<x:doctype name="html" />
+<html>
+  <head resURL="${resURL}">
     ${h.checkPermission(it,permission)}
+
+    <j:if test="${isMSIE}">
+      <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    </j:if>
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
-      <link rel="stylesheet" href="${rootURL}${attrs.css}" type="text/css" />
+      <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
     </j:if>
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
 
     <!-- are we running as an unit test? -->
-    <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}";</script>
+    <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
-    <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
     <!-- we include our own prototype.js, so don't let stapler pull in another. -->
     <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"
@@ -117,18 +118,23 @@ THE SOFTWARE.
     <l:yui module="dragdrop" />
     <l:yui module="container" />
     <l:yui module="connection" />
+    <l:yui module="datasource" />
     <l:yui module="autocomplete" />
     <l:yui module="menu" />
-    <l:yui module="element" suffix="-beta" />
+    <l:yui module="element" />
     <l:yui module="button" />
+    <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
+    <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
-    <script>
-        crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
-    </script>
-    
+    <j:if test="${extensionsAvailable}">
+      <script>
+          crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
+      </script>
+    </j:if>
+
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
     <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
@@ -136,136 +142,130 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
+    <l:hasPermission permission="${app.READ}">
+      <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
+    </l:hasPermission>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
-    <j:forEach var="pd" items="${h.pageDecorators}">
-      <st:include it="${pd}" page="header.jelly" optional="true" />
-    </j:forEach>
+    <j:if test="${extensionsAvailable}">
+      <j:forEach var="pd" items="${h.pageDecorators}">
+        <st:include it="${pd}" page="header.jelly" optional="true" />
+      </j:forEach>
+    </j:if>
+
+    <j:if test="${isMSIE}">
+      <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
+    </j:if>
+
   </head>
-  <body class="yui-skin-sam">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
-    <table id="header" cellpadding="0" cellspacing="0" width="100%" border="0">
-      <tr>
-        <td id="top-panel" colspan="2">
-          <table cellpadding="0" cellspacing="0" width="100%" border="0">
-            <tr><td style="font-weight:bold; font-size: 2em;">
-              <a href="${rootURL}/"><img src="${imagesURL}/title.png" alt="title" /></a>
-            </td><td style="vertical-align: middle; text-align: right; padding-right: 1em;">
-
-              <!-- search box -->
-              <j:set var="searchURL" value="${h.searchURL}"/>
-              <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search">
-                <!-- this div determines the minimum width -->
-                <div id="search-box-minWidth"/>
-                <!-- this div is used to calculate the width of the text box -->
-                <div id="search-box-sizer"/>
-                <div id="searchform">
-                  <input name="q" value="${%search}" id="search-box" class="has-default-text defaulted" />
-                  <st:nbsp />
-                  <a href="${%searchBox.url}"><img src="${imagesURL}/16x16/help.png" alt="help for search" height="16" width="16" /></a>
-                  <div id="search-box-completion" />
-                  <script>createSearchBox("${searchURL}");</script>
-                </div>
-              </form>
-            </td><td id="login-field"><span>
-              <!-- login field -->
-              <j:if test="${app.useSecurity}">
-                <st:nbsp/>
+    <div id="page-head">
+      <div id="header">
+        <div class="logo">
+          <a id="jenkins-home-link" href="${rootURL}/">
+            <img id="jenkins-head-icon" src="${imagesURL}/headshot.png" alt="title" />
+            <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="title" width="139" height="34" />
+          </a>
+        </div>
+        <div class="login">
+          <!-- login field -->
+          <j:if test="${app.useSecurity}">
+            <st:nbsp/>
+            <j:choose>
+              <j:when test="${!h.isAnonymous()}">
+                <j:invokeStatic var="user" className="hudson.model.User" method="current" />
                 <j:choose>
-                  <j:when test="${!h.isAnonymous()}">
-                    <span style="white-space:nowrap">
-                      <a href="${rootURL}/user/${app.authentication.name}"><b>${app.authentication.name}</b></a>
-                      <j:if test="${app.securityRealm.canLogOut()}">
-                        |
-                        <a href="${rootURL}/logout"><b>${%logout}</b></a>
-                      </j:if>
-                    </span>
+                  <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
+                    <j:set var="userName" value="${user.id}"/>
                   </j:when>
                   <j:otherwise>
-                    <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+                    <j:set var="userName" value="${user.fullName}"/>
                   </j:otherwise>
                 </j:choose>
-              </j:if>
-            </span></td></tr>
-          </table>
-        </td>
-      </tr>
-
-      <tr id="top-nav">
-        <td id="left-top-nav">
-          <j:forEach var="anc" items="${request.ancestors}">
-            <j:if test="${h.isModel(anc.object)}">
-              <j:if test="${anc.prev.url!=anc.url}">
-                <j:if test="${anc.prev!=null}">
-                  <j:whitespace> &#187; </j:whitespace>
-                </j:if>
-                <a href="${anc.url}/">
-                  ${anc.object.displayName}
-                </a>
-              </j:if>
-            </j:if>
-          </j:forEach>
-        </td>
-        <td id="right-top-nav">
-          <j:if test="${attrs.norefresh==null}">
-            <span class="smallfont">
-              <j:choose>
-                <j:when test="${h.isAutoRefresh(request)}">
-                  <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
-                </j:when>
-                <j:otherwise>
-                  <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
-                </j:otherwise>
-              </j:choose>
-            </span>
+                <span style="white-space:nowrap">
+                  <a href="${rootURL}/user/${user.id}" class="model-link inside inverse"><b>${userName}</b></a>
+                  <j:if test="${app.securityRealm.canLogOut()}">
+                    |
+                    <a href="${rootURL}/logout"><b>${%logout}</b></a>
+                  </j:if>
+                </span>
+              </j:when>
+              <j:otherwise>
+                <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+              </j:otherwise>
+            </j:choose>
           </j:if>
-        </td>
-      </tr>
-    </table>
-    <table id="main-table" width="100%" height="70%" border="0"
-        style="background-image: url(${imagesURL}/jenkins.png);
-               background-repeat: no-repeat; background-position: bottom left;">
-      <tr>
-        <td id="side-panel" width="20%">
-          <div style="margin-left: 20px; margin-right: 20px; border-top: 1px solid #bbb"></div>
-          <div id="navigation">
-            <j:set var="mode" value="side-panel" />
-            <d:invokeBody />
+        </div>
+        <div class="searchbox hidden-xs">
+          <!-- search box -->
+          <j:set var="searchURL" value="${h.searchURL}"/>
+          <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search">
+            <!-- this div determines the minimum width -->
+            <div id="search-box-minWidth"/>
+            <!-- this div is used to calculate the width of the text box -->
+            <div id="search-box-sizer"/>
+            <div id="searchform">
+              <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" value="${request.getParameter('q')}" />
+              <st:nbsp />
+              <a href="${%searchBox.url}"><l:icon class="icon-help icon-sm" /></a>
+              <div id="search-box-completion" />
+              <script>createSearchBox("${searchURL}");</script>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div id="breadcrumbBar">
+        <l:breadcrumbBar>
+          <j:set var="mode" value="breadcrumbs" />
+          <d:invokeBody/>
+        </l:breadcrumbBar>
+      </div>
+    </div>
 
-            <!-- add YUI logger if debugging YUI -->
-            <j:if test="${h.yuiSuffix=='debug'}">
-              <div id="yui-logreader" style="margin-top:1em"/>
-              <script>
-                Behaviour.addLoadEvent(function(){
-                  var logReader = new YAHOO.widget.LogReader("yui-logreader");
-                  logReader.collapse();
-                });
-              </script>
+    <div id="page-body">
+      <div id="side-panel">
+        <j:set var="mode" value="side-panel" />
+        <d:invokeBody />
+  
+        <!-- add YUI logger if debugging YUI -->
+        <j:if test="${h.yuiSuffix=='debug'}">
+        <div id="yui-logreader" style="margin-top:1em"/>
+          <script>
+            Behaviour.addLoadEvent(function(){
+              var logReader = new YAHOO.widget.LogReader("yui-logreader");
+              logReader.collapse();
+            });
+          </script>
+        </j:if>
+      </div>
+      <div id="main-panel">
+         <j:set var="mode" value="main-panel" />
+         <d:invokeBody/>
+      </div>
+    </div>
+
+    <footer>
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-6" id="footer"></div>
+          <div class="col-md-18">
+            <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/></span>
+            <span class="rest_api"><a href="api/">REST API</a></span>
+            <span class="jenkins_ver"><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></span>
+            <j:if test="${extensionsAvailable}">
+            <j:forEach var="pd" items="${h.pageDecorators}">
+              <st:include it="${pd}" page="footer.jelly" optional="true" />
+            </j:forEach>
             </j:if>
           </div>
-        </td>
-        <td id="main-panel" width="80%" height="100%">
-          <j:set var="mode" value="main-panel" />
-          <d:invokeBody/>
-        </td>
-      </tr>
-    </table>
-    <table width="100%">
-      <tr><td id="footer">
-        <span style="padding-right:2em; color:gray">
-          ${%Page generated}:
-          <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
-        </span>
-        <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a>
-      </td></tr>
-    </table>
-    <j:forEach var="pd" items="${h.pageDecorators}">
-      <st:include it="${pd}" page="footer.jelly" optional="true" />
-    </j:forEach>
+        </div>
+      </div>
+    </footer>
+
   </body>
 </html>
 </j:jelly>

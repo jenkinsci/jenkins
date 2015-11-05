@@ -30,13 +30,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout>
-    <st:include it="${it.build}" page="sidepanel.jelly" />
+    <st:include it="${it.run}" page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>
-        <img src="${imagesURL}/48x48/fingerprint.png" alt="" height="48" width="48"/>
+        <l:icon class="icon-fingerprint icon-xlg"/>
         ${%Recorded Fingerprints}
       </h1>
-      <table class="fingerprint-in-build sortable">
+      <table class="fingerprint-in-build sortable bigtable">
         <tr>
           <th initialSortDir="down">${%File}</th>
           <th>${%Original owner}</th>
@@ -54,7 +54,7 @@ THE SOFTWARE.
                 <j:when test="${f.original==null}">
                   ${%outside Jenkins}
                 </j:when>
-                <j:when test="${f.original.run==it.build}">
+                <j:when test="${f.original.run==it.run}">
                   ${%this build}
                 </j:when>
                 <j:otherwise>
@@ -62,12 +62,12 @@ THE SOFTWARE.
                 </j:otherwise>
               </j:choose>
             </td>
-            <td>
+            <td data="${-f.timestamp.time}">
               ${f.timestampString} old
             </td>
             <td>
               <a href="${rootURL}/fingerprint/${f.hashString}/">
-                <img src="${imagesURL}/16x16/fingerprint.png" alt="" height="16" width="16"/> ${%more details}
+                <l:icon class="icon-fingerprint icon-sm"/> ${%more details}
               </a>
             </td>
           </tr>

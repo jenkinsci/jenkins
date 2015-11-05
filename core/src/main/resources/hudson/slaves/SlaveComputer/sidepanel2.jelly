@@ -24,11 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:isAdmin>
-    <l:task icon="images/24x24/clipboard.png" href="log" title="${%Log}" />
-    <l:task icon="images/24x24/computer.png" href="systemInfo" title="${%System Information}" />
-    <j:if test="${it.channel!=null}">
-      <l:task icon="images/24x24/edit-delete.png" href="disconnect" title="${%Disconnect}" />
-    </j:if>
-  </l:isAdmin>
+  <l:task icon="icon-clipboard icon-md" href="${rootURL}/${it.url}log" title="${%Log}" permission="${it.CONNECT}" />
+  <j:if test="${it.channel!=null}">
+    <l:task icon="icon-computer icon-md" href="${rootURL}/${it.url}systemInfo" title="${%System Information}" permission="${it.CONNECT}"/>
+    <l:task icon="icon-edit-delete icon-md" href="${rootURL}/${it.url}disconnect" title="${%Disconnect}" permission="${it.DISCONNECT}"/>
+  </j:if>
+
 </j:jelly>

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,9 +23,10 @@
  */
 package hudson.slaves;
 
+import static org.junit.Assert.assertEquals;
 
+import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
-import junit.framework.TestCase;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.Computer;
@@ -39,17 +40,21 @@ import hudson.util.DescribableList;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class NodeListTest extends TestCase {
+public class NodeListTest {
+
     static class DummyNode extends Node {
+        String nodeName = Long.toString(new Random().nextLong());
         public String getNodeName() {
-            throw new UnsupportedOperationException();
+            return nodeName;
         }
 
         public void setNodeName(String name) {
@@ -84,6 +89,10 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
+        public void setLabelString(String labelString) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
         public FilePath getWorkspaceFor(TopLevelItem item) {
             throw new UnsupportedOperationException();
         }
@@ -92,7 +101,8 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
-        public ClockDifference getClockDifference() throws IOException, InterruptedException {
+        @Override
+        public Callable<ClockDifference, IOException> getClockDifferenceCallable() {
             throw new UnsupportedOperationException();
         }
 
@@ -105,16 +115,16 @@ public class NodeListTest extends TestCase {
             throw new UnsupportedOperationException();
 		}
     }
+
     static class EphemeralNode extends DummyNode implements hudson.slaves.EphemeralNode {
         public Node asNode() {
             return this;
         }
     }
 
-    public void testSerialization() throws Exception {
-        NodeList nl = new NodeList();
-        nl.add(new DummyNode());
-        nl.add(new EphemeralNode());
+    @Test
+    public void serialization() throws Exception {
+        NodeList nl = new NodeList(new DummyNode(), new EphemeralNode());
 
         File tmp = File.createTempFile("test","test");
         try {
@@ -123,7 +133,7 @@ public class NodeListTest extends TestCase {
 
             String xml = FileUtils.readFileToString(tmp);
             System.out.println(xml);
-            assertEquals(4,xml.split("\n").length);
+            assertEquals(6,xml.split("\n").length);
 
             NodeList back = (NodeList)x.read();
 

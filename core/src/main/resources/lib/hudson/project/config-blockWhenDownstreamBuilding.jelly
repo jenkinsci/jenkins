@@ -28,5 +28,6 @@ THE SOFTWARE.
   <f:optionalBlock name="blockBuildWhenDownstreamBuilding"
 		   title="${%Block build when downstream project is building}"
 		   help="/help/project-config/block-downstream-building.html"
-		   checked="${it.blockBuildWhenDownstreamBuilding()}" />
+		   checked="${it.blockBuildWhenDownstreamBuilding()}"
+		   inline="true" />
 </j:jelly>

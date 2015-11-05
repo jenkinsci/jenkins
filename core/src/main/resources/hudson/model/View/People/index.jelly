@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright 2012 Jesse Glick.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,46 +22,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${%People} - ${it.parent.viewName}">
-    <st:include page="sidepanel.jelly" it="${it.parent}" />
-    <t:setIconSize/>
-    <l:main-panel>
-      <h1>
-        <img src="${imagesURL}/48x48/user.png" alt="" height="48" width="48"/>
-        ${%People}
-        <j:set var="viewType" value="${it.parent.class.simpleName}"/>
-        <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
-        <j:if test="${!isAll}"> - ${it.parent.displayName}</j:if>
-      </h1>
-      <table class="sortable pane bigtable" id="people">
-        <tr>
-          <th />
-          <th>${%User Id}</th>
-          <th>${%Name}</th>
-          <th initialSortDir="up">${%Last Active}</th>
-          <th>${%On}</th>
-        </tr>
-        <j:forEach var="p" items="${it.users}">
-          <tr>
-            <td><a href="${rootURL}/${p.user.url}/"><img src="${imagesURL}/${iconSize}/user.png"
-                 alt="" class="icon${iconSize}"/></a></td>
-            <td><a href="${rootURL}/${p.user.url}/">${p.user.id}</a></td>
-            <td><a href="${rootURL}/${p.user.url}/">${p.user}</a></td>
-            <td data="${p.timeSortKey}">${p.lastChangeTimeString}</td>
-            <td><a href="${rootURL}/${p.project.url}">${p.project.fullDisplayName}</a></td>
-          </tr>
-        </j:forEach>
-      </table>
-      <t:iconSize>
-        <j:if test="${!isAll}">
-          <div style="float:right">
-            <a href="${rootURL}/people/">${%All People}</a><st:nbsp/>
-          </div>
-        </j:if>
-      </t:iconSize>
-    </l:main-panel>
-  </l:layout>
+    <l:layout title="${%People}">
+        <st:include page="sidepanel.jelly" it="${it.parent}" />
+        <t:setIconSize/>
+        <l:main-panel>
+            <h1>${%People}</h1>
+            <p>
+                ${%Moved to asyncPeople}
+            </p>
+        </l:main-panel>
+    </l:layout>
 </j:jelly>

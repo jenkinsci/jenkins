@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link ExpressionFactory} so that security exception aborts the page rendering.
@@ -74,7 +76,8 @@ final class ExpressionFactory2 implements ExpressionFactory {
                 // let the security exception pass through
                 throw e;
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING,"Caught exception evaluating: " + expression + ". Reason: " + e, e);
+                StaplerRequest currentRequest = Stapler.getCurrentRequest();
+                LOGGER.log(Level.WARNING,"Caught exception evaluating: " + expression + " in " + (currentRequest != null ? currentRequest.getOriginalRequestURI() : "?") + ". Reason: " + e, e);
                 return null;
             } finally {
                 CURRENT_CONTEXT.set(null);

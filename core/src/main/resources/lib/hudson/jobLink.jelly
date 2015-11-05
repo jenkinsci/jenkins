@@ -31,6 +31,6 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-<img src="${imagesURL}/16x16/${job.buildStatusUrl}" alt="${job.iconColor.description}" height="16" width="16"/>
-<a href="${h.getRelativeLinkTo(job)}">${job.displayName}</a>
+<l:icon alt="${job.iconColor.description}" class="${job.buildStatusIconClassName} icon-sm"/>
+<a href="${h.getRelativeLinkTo(job)}" class="model-link"><l:breakable value="${job.fullDisplayName}"/></a>
 </j:jelly>

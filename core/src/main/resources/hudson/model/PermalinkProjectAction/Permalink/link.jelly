@@ -31,8 +31,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <j:set var="b" value="${it.resolve(job)}"/>
   <j:if test="${b!=null}">
-    <li>
-      <a href="${it.id}/">${%format(it.displayName,b.displayName,b.timestampString)}</a>
+    <li class="permalink-item">
+      <a class="permalink-link model-link inside tl-tr" href="${it.id}/">${%format(it.displayName,b.displayName,b.timestampString)}</a>
     </li>
   </j:if>
 </j:jelly>

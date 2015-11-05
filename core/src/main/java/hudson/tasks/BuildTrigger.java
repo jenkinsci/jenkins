@@ -26,16 +26,15 @@ package hudson.tasks;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.BuildListener;
 import hudson.model.Cause.UpstreamCause;
-import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
@@ -45,16 +44,9 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
-import hudson.security.AccessControlled;
-import hudson.tasks.BuildTrigger.DescriptorImpl.ItemListenerImpl;
+import hudson.model.queue.Tasks;
+import hudson.security.ACL;
 import hudson.util.FormValidation;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -65,6 +57,21 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.QueueItemAuthenticatorDescriptor;
+import jenkins.triggers.ReverseBuildTrigger;
+import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Triggers builds of other projects.
@@ -79,9 +86,11 @@ import java.util.logging.Logger;
  * This class, however, does provide the {@link #execute(AbstractBuild, BuildListener, BuildTrigger)}
  * method as a convenience method to invoke downstream builds.
  *
+ * <p>Its counterpart is {@link ReverseBuildTrigger}.
+ *
  * @author Kohsuke Kawaguchi
  */
-public class BuildTrigger extends Recorder implements DependecyDeclarer {
+public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     /**
      * Comma-separated list of other projects to be scheduled.
@@ -135,6 +144,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
      * @deprecated as of 1.406
      *      Use {@link #getChildProjects(ItemGroup)}
      */
+    @Deprecated
     public List<AbstractProject> getChildProjects() {
         return getChildProjects(Jenkins.getInstance());
     }
@@ -163,6 +173,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
      * @deprecated as of 1.406
      *      Use {@link #hasSame(AbstractProject, Collection)}
      */
+    @Deprecated
     public boolean hasSame(Collection<? extends AbstractProject> projects) {
         return hasSame(null,projects);
     }
@@ -191,6 +202,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
     public static boolean execute(AbstractBuild build, BuildListener listener) {
         PrintStream logger = listener.getLogger();
         // Check all downstream Project of the project, not just those defined by BuildTrigger
+        // TODO this may not yet be up to date if rebuildDependencyGraphAsync has been used; need a method to wait for the last call made before now to finish
         final DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
         List<Dependency> downstreamProjects = new ArrayList<Dependency>(
                 graph.getDownstreamDependencies(build.getProject()));
@@ -202,23 +214,53 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             }
         });
 
-        for (Dependency dep : downstreamProjects) {
-            AbstractProject p = dep.getDownstreamProject();
-            if (p.isDisabled()) {
-                logger.println(Messages.BuildTrigger_Disabled(p.getName()));
-                continue;
-            }
-            List<Action> buildActions = new ArrayList<Action>();
-            if (dep.shouldTriggerBuild(build, listener, buildActions)) {
-                // this is not completely accurate, as a new build might be triggered
-                // between these calls
-                String name = p.getName()+" #"+p.getNextBuildNumber();
-                if(p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build),
-                                   buildActions.toArray(new Action[buildActions.size()]))) {
-                    logger.println(Messages.BuildTrigger_Triggering(name));
-                } else {
-                    logger.println(Messages.BuildTrigger_InQueue(name));
+        Authentication auth = Jenkins.getAuthentication(); // from build
+        if (auth.equals(ACL.SYSTEM)) { // i.e., unspecified
+            if (QueueItemAuthenticatorDescriptor.all().isEmpty()) {
+                if (downstreamProjects.isEmpty()) {
+                    return true;
                 }
+                logger.println(Messages.BuildTrigger_warning_you_have_no_plugins_providing_ac());
+            } else if (QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
+                if (downstreamProjects.isEmpty()) {
+                    return true;
+                }
+                logger.println(Messages.BuildTrigger_warning_access_control_for_builds_in_glo());
+            } else {
+                // This warning must be printed even if downstreamProjects is empty.
+                // Otherwise you could effectively escalate DISCOVER to READ just by trying different project names and checking whether a warning was printed or not.
+                // If there were an API to determine whether any DependencyDeclarer’s in this project requested downstream project names,
+                // then we could suppress the warnings in case none did; but if any do, yet Items.fromNameList etc. ignore unknown projects,
+                // that has to be treated the same as if there really are downstream projects but the anonymous user cannot see them.
+                // For the above two cases, it is OK to suppress the warning when there are no downstream projects, since running as SYSTEM we would be able to see them anyway.
+                logger.println(Messages.BuildTrigger_warning_this_build_has_no_associated_aut());
+                auth = Jenkins.ANONYMOUS;
+            }
+        }
+
+        for (Dependency dep : downstreamProjects) {
+            List<Action> buildActions = new ArrayList<Action>();
+            SecurityContext orig = ACL.impersonate(auth);
+            try {
+                if (dep.shouldTriggerBuild(build, listener, buildActions)) {
+                    AbstractProject p = dep.getDownstreamProject();
+                    // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
+                    if (p.isDisabled()) {
+                        logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
+                        continue;
+                    }
+                    boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
+                    if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
+                        String name = ModelHyperlinkNote.encodeTo(p);
+                        if (scheduled) {
+                            logger.println(Messages.BuildTrigger_Triggering(name));
+                        } else {
+                            logger.println(Messages.BuildTrigger_InQueue(name));
+                        }
+                    } // otherwise upstream users should not know that it happened
+                }
+            } finally {
+                SecurityContextHolder.setContext(orig);
             }
         }
 
@@ -231,6 +273,15 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
                 @Override
                 public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                                   List<Action> actions) {
+                    AbstractProject downstream = getDownstreamProject();
+                    if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
+                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
+                        return false; // do not even issue a warning to build log
+                    }
+                    if (!downstream.hasPermission(Item.BUILD)) {
+                        listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
+                        return false;
+                    }
                     return build.getResult().isBetterOrEqualTo(threshold);
                 }
             });
@@ -241,11 +292,8 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
         return true;
     }
 
-    /**
-     * Called from {@link ItemListenerImpl} when a job is renamed.
-     *
-     * @return true if this {@link BuildTrigger} is changed and needs to be saved.
-     */
+    /** @deprecated Does not handle folder moves. */
+    @Deprecated
     public boolean onJobRenamed(String oldName, String newName) {
         // quick test
         if(!childProjects.contains(oldName))
@@ -295,7 +343,7 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
         }
 
         @Override
-        public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public BuildTrigger newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             String childProjectsString = formData.getString("childProjects").trim();
             if (childProjectsString.endsWith(",")) {
                 childProjectsString = childProjectsString.substring(0, childProjectsString.length() - 1).trim();
@@ -310,15 +358,15 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             return true;
         }
 
-        public boolean showEvenIfUnstableOption(Class<? extends AbstractProject> jobType) {
+        public boolean showEvenIfUnstableOption(@CheckForNull Class<? extends AbstractProject<?,?>> jobType) {
             // UGLY: for promotion process, this option doesn't make sense.
-            return !jobType.getName().contains("PromotionProcess");
+            return jobType == null || !jobType.getName().contains("PromotionProcess");
         }
 
         /**
          * Form validation method.
          */
-        public FormValidation doCheck(@AncestorInPath Item project, @QueryParameter String value ) {
+        public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) {
             // Require CONFIGURE permission on this project
             if(!project.hasPermission(Item.CONFIGURE))      return FormValidation.ok();
 
@@ -328,11 +376,21 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
                     Item item = Jenkins.getInstance().getItem(projectName,project,Item.class);
-                    if(item==null)
-                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName,
-                                AbstractProject.findNearest(projectName,project.getParent()).getRelativeNameFrom(project)));
+                    if (item == null) {
+                        AbstractProject nearest = AbstractProject.findNearest(projectName,project.getParent());
+                        String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
+                        return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName, alternative));
+                    }
                     if(!(item instanceof AbstractProject))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
+                    // check whether the supposed user is expected to be able to build
+                    Authentication auth = Tasks.getAuthenticationOf(project);
+                    if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
+                        auth = Jenkins.ANONYMOUS; // compare behavior in execute, above
+                    }
+                    if (!item.getACL().hasPermission(auth, Item.BUILD)) {
+                        return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
+                    }
                     hasProjects = true;
                 }
             }
@@ -343,33 +401,33 @@ public class BuildTrigger extends Recorder implements DependecyDeclarer {
             return FormValidation.ok();
         }
 
-        public AutoCompletionCandidates doAutoCompleteChildProjects(@QueryParameter String value) {
-            AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-            List<Job> jobs = Jenkins.getInstance().getItems(Job.class);
-            for (Job job: jobs) {
-                if (job.getFullName().startsWith(value)) {
-                    if (job.hasPermission(Item.READ)) {
-                        candidates.add(job.getFullName());
-                    }
-                }
-            }
-            return candidates;
+        public AutoCompletionCandidates doAutoCompleteChildProjects(@QueryParameter String value, @AncestorInPath Item self, @AncestorInPath ItemGroup container) {
+            return AutoCompletionCandidates.ofJobNames(Job.class,value,self,container);
         }
 
         @Extension
         public static class ItemListenerImpl extends ItemListener {
             @Override
-            public void onRenamed(Item item, String oldName, String newName) {
+            public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
+                ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                    @Override public void run() {
+                        locationChanged(item, oldFullName, newFullName);
+                    }
+                });
+            }
+            private void locationChanged(Item item, String oldFullName, String newFullName) {
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?
-                for( Project<?,?> p : Jenkins.getInstance().getProjects() ) {
+                for( Project<?,?> p : Jenkins.getInstance().getAllItems(Project.class) ) {
                     BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                     if(t!=null) {
-                        if(t.onJobRenamed(oldName,newName)) {
+                        String cp2 = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.childProjects, p.getParent());
+                        if (!cp2.equals(t.childProjects)) {
+                            t.childProjects = cp2;
                             try {
                                 p.save();
                             } catch (IOException e) {
-                                LOGGER.log(Level.WARNING, "Failed to persist project setting during rename from "+oldName+" to "+newName,e);
+                                LOGGER.log(Level.WARNING, "Failed to persist project setting during rename from "+oldFullName+" to "+newFullName,e);
                             }
                         }
                     }

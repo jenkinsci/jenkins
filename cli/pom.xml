@@ -3,16 +3,27 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.427-SNAPSHOT</version>
+    <artifactId>pom</artifactId>
+    <version>1.626-SNAPSHOT</version>
   </parent>
 
   <artifactId>cli</artifactId>
 
-  <name>Jenkins CLI</name>
+  <name>Jenkins cli</name>
+  <description>Command line interface for Jenkins</description>
 
   <dependencies>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
@@ -26,18 +37,17 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.10</version>
+      <version>1.23</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build212-hudson-5</version>
+      <version>build214-jenkins-1</version>
     </dependency>
   </dependencies>
 
@@ -58,6 +68,9 @@
                 <manifest>
                   <mainClass>hudson.cli.CLI</mainClass>
                 </manifest>
+                <manifestEntries>
+                  <Jenkins-CLI-Version>${build.version}</Jenkins-CLI-Version>
+                </manifestEntries>
               </archive>
             </configuration>
           </execution>
@@ -81,5 +94,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

@@ -28,16 +28,16 @@ import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
+import jenkins.security.MasterToSlaveCallable;
+import jenkins.slaves.PingFailureAnalyzer;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.*;
 
 /**
  * Establish a periodic ping to keep connections between {@link Slave slaves}
@@ -69,6 +69,10 @@ public class ChannelPinger extends ComputerListener {
 
     @Override
     public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener)  {
+        install(channel);
+    }
+
+    public void install(Channel channel) {
         if (pingInterval < 1) {
             LOGGER.fine("Slave ping is disabled");
             return;
@@ -76,9 +80,9 @@ public class ChannelPinger extends ComputerListener {
 
         try {
             channel.call(new SetUpRemotePing(pingInterval));
-            LOGGER.fine("Set up a remote ping for " + c.getName());
+            LOGGER.fine("Set up a remote ping for " + channel.getName());
         } catch (Exception e) {
-            LOGGER.severe("Failed to set up a ping for " + c.getName());
+            LOGGER.severe("Failed to set up a ping for " + channel.getName());
         }
 
         // set up ping from both directions, so that in case of a router dropping a connection,
@@ -86,7 +90,7 @@ public class ChannelPinger extends ComputerListener {
         setUpPingForChannel(channel, pingInterval);
     }
 
-    private static class SetUpRemotePing implements Callable<Void, IOException> {
+    private static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         private int pingInterval;
         public SetUpRemotePing(int pingInterval) {
@@ -102,25 +106,30 @@ public class ChannelPinger extends ComputerListener {
     private static void setUpPingForChannel(final Channel channel, int interval) {
         final AtomicBoolean isInClosed = new AtomicBoolean(false);
         final PingThread t = new PingThread(channel, interval * 60 * 1000) {
-            protected void onDead() {
+            protected void onDead(Throwable cause) {
                 try {
-                    if (isInClosed.get()) {
-                        LOGGER.fine("Ping failed after the channel is already partially closed");
+                    for (PingFailureAnalyzer pfa : PingFailureAnalyzer.all()) {
+                        pfa.onPingFailure(channel,cause);
                     }
-                    else {
-                        LOGGER.info("Ping failed. Terminating the channel.");
-                        channel.close();
+                    if (isInClosed.get()) {
+                        LOGGER.log(FINE,"Ping failed after the channel "+channel.getName()+" is already partially closed.",cause);
+                    } else {
+                        LOGGER.log(INFO,"Ping failed. Terminating the channel "+channel.getName()+".",cause);
+                        channel.close(cause);
                     }
                 } catch (IOException e) {
-                    LOGGER.log(SEVERE,"Failed to terminate the channel: ",e);
+                    LOGGER.log(SEVERE,"Failed to terminate the channel "+channel.getName(),e);
                 }
+            }
+            protected void onDead() {
+                onDead(null);
             }
         };
 
         channel.addListener(new Channel.Listener() {
             @Override
             public void onClosed(Channel channel, IOException cause) {
-                LOGGER.fine("Terminating ping thread for " + channel);
+                LOGGER.fine("Terminating ping thread for " + channel.getName());
                 isInClosed.set(true);
                 t.interrupt();  // make sure the ping thread is terminated
             }

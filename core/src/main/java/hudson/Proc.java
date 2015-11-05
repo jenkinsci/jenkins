@@ -28,7 +28,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.ExceptionCatchingThreadFactory;
-import hudson.util.IOException2;
+import hudson.util.NamingThreadFactory;
 import hudson.util.NullStream;
 import hudson.util.StreamCopyThread;
 import hudson.util.ProcessTree;
@@ -132,7 +132,7 @@ public abstract class Proc {
      */
     public abstract OutputStream getStdin();
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new DaemonThreadFactory()));
+    private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "Proc.executor")));
     
     /**
      * Like {@link #join} but can be given a maximum time to wait.
@@ -399,7 +399,7 @@ public abstract class Proc {
                     try {
                         byte[] buf = new byte[8192];
                         int len;
-                        while ((len = in.read(buf)) > 0) {
+                        while ((len = in.read(buf)) >= 0) {
                             out.write(buf, 0, len);
                             out.flush();
                         }
@@ -429,8 +429,9 @@ public abstract class Proc {
     /**
      * Remotely launched process via {@link Channel}.
      *
-     * @deprecated as of 1.399
+     * @deprecated as of 1.399. Replaced by {@link Launcher.RemoteLauncher.ProcImpl}
      */
+    @Deprecated
     public static final class RemoteProc extends Proc {
         private final Future<Integer> process;
 
@@ -454,7 +455,7 @@ public abstract class Proc {
             } catch (ExecutionException e) {
                 if(e.getCause() instanceof IOException)
                     throw (IOException)e.getCause();
-                throw new IOException2("Failed to join the process",e);
+                throw new IOException("Failed to join the process",e);
             } catch (CancellationException x) {
                 return -1;
             }

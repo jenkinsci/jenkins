@@ -27,7 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <l:layout title="${%about(app.VERSION)}" norefresh="true">
     <l:main-panel>
-      <h1>${%about(app.VERSION)}</h1>
+      <h1 version="${app.VERSION}">${%about(app.VERSION)}</h1>
       <p>
         ${%blurb}
       </p>
@@ -35,9 +35,34 @@ THE SOFTWARE.
       <p>
         ${%dependencies}
       </p>
-      <t:thirdPartyLicenses>
-        <st:include page="/META-INF/licenses.xml" optional="true" />
-      </t:thirdPartyLicenses>
+      <j:set var="uri" value="${it.licensesURL}"/>
+      <j:choose>
+          <j:when test="${uri != null}">
+              <t:thirdPartyLicenses>
+                  <j:include uri="${uri}"/>
+              </t:thirdPartyLicenses>
+          </j:when>
+          <j:otherwise>
+              <p>${%No information recorded}</p>
+          </j:otherwise>
+      </j:choose>
+      <p>${%plugin.dependencies}</p>
+      <ul>
+          <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- TODO sort -->
+              <li>
+                  <a href="${rootURL}/pluginManager/plugin/${p.shortName}/thirdPartyLicenses">
+                      <j:choose>
+                          <j:when test="${p.active}">
+                              ${p.displayName}
+                          </j:when>
+                          <j:otherwise>
+                              <strike>${p.displayName}</strike>
+                          </j:otherwise>
+                      </j:choose>
+                  </a>
+              </li>
+          </j:forEach>
+      </ul>
     </l:main-panel>
   </l:layout>
 </j:jelly>

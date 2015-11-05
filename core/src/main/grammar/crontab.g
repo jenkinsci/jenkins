@@ -47,31 +47,31 @@ throws ANTLRException
       (
         "yearly"
       {
-        table.set("0 0 1 1 *");
+        table.set("H H H H *",getHashForTokens());
       }
       | "annually"
       {
-        table.set("0 0 1 1 *");
+        table.set("H H H H *",getHashForTokens());
       }
       | "monthly"
       {
-        table.set("0 0 1 * *");
+        table.set("H H H * *",getHashForTokens());
       }
       | "weekly"
       {
-        table.set("0 0 * * 0");
+        table.set("H H * * H",getHashForTokens());
       }
       | "daily"
       {
-        table.set("0 0 * * *");
+        table.set("H H * * *",getHashForTokens());
       }
       | "midnight"
       {
-        table.set("0 0 * * *");
+        table.set("H H(0-2) * * *",getHashForTokens());
       }
       | "hourly"
       {
-        table.set("0 * * * *");
+        table.set("H * * * *",getHashForTokens());
       }
     )
   )
@@ -93,7 +93,7 @@ term [int field]
 returns [long bits=0]
 throws ANTLRException
 {
-  int d=1,s,e,t;
+  int d=NO_STEP,s,e,t;
 }
   : (token "-")=> s=token "-" e=token ( "/" d=token )?
   {
@@ -107,6 +107,14 @@ throws ANTLRException
   | "*" ("/" d=token )?
   {
     bits = doRange(d,field);
+  }
+  | ("H" "(")=> "H" "(" s=token "-" e=token ")" ( "/" d=token )?
+  {
+    bits = doHash(s,e,d,field);
+  }
+  | "H" ( "/" d=token )?
+  {
+    bits = doHash(d,field);
   }
   ;
 
@@ -143,6 +151,9 @@ STAR: '*';
 DIV:  '/';
 OR:   ',';
 AT:   '@';
+H:    'H';
+LPAREN: '(';
+RPAREN: ')';
 
 YEARLY: "yearly";
 ANNUALLY: "annually";

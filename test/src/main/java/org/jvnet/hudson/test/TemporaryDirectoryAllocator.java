@@ -24,7 +24,6 @@
 package org.jvnet.hudson.test;
 
 import hudson.FilePath;
-import hudson.util.IOException2;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +67,7 @@ public class TemporaryDirectoryAllocator {
             tmpDirectories.add(f);
             return f;
         } catch (IOException e) {
-            throw new IOException2("Failed to create a temporary directory in "+base,e);
+            throw new IOException("Failed to create a temporary directory in "+base,e);
         }
     }
 
@@ -84,7 +83,7 @@ public class TemporaryDirectoryAllocator {
                 x = e;
             }
         tmpDirectories.clear();
-        if (x!=null)    throw new IOException2("Failed to clean up temp dirs",x);
+        if (x!=null)    throw new IOException("Failed to clean up temp dirs",x);
     }
 
     /**

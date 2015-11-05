@@ -125,6 +125,8 @@ public class BeanBuilder extends GroovyObjectSupport {
      * Parses the bean definition groovy script by first exporting the given {@link Binding}. 
      */
     public void parse(InputStream script, Binding binding) {
+        if (script==null)
+            throw new IllegalArgumentException("No script is provided");
         setBinding(binding);
         CompilerConfiguration cc = new CompilerConfiguration();
         cc.setScriptBaseClass(ClosureScript.class.getName());
@@ -325,7 +327,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	public void loadBeans(Resource[] resources) throws IOException {
 		Closure beans = new Closure(this){
 			@Override
-			public Object call(Object[] args) {
+			public Object call(Object... args) {
 				return beans((Closure)args[0]);
 			}
 		};

@@ -43,12 +43,14 @@ THE SOFTWARE.
     <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
     <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
   </st:once>
+  <st:adjunct includes="lib.form.combobox.combobox"/>
 
   <f:prepareDatabinding/>
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
 
   <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary" ATTRIBUTES="${attrs}" EXCEPT="field items clazz"
-         autocomplete="off" class="combobox2 settings-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
+         autocomplete="off" class="combobox2 setting-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
          name="${attrs.name ?: '_.'+attrs.field}"
          value="${attrs.value ?: instance[attrs.field]}" />
+  <!-- TODO consider customizedFields -->
 </j:jelly>

@@ -29,7 +29,7 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${lfBuild!=null}">
         ${lfBuild.timestampString}
-        (<a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/">${lfBuild.displayName}</a>)
+        - <a href="${jobBaseUrl}${job.shortUrl}lastFailedBuild/" class="model-link inside">${lfBuild.displayName}</a>
       </j:when>
       <j:otherwise>
         ${%N/A}

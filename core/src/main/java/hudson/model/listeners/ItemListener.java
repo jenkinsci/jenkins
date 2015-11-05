@@ -23,11 +23,18 @@
  */
 package hudson.model.listeners;
 
+import com.google.common.base.Function;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.Items;
+import hudson.security.ACL;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.security.NotReallyRoleSensitiveCallable;
 
 /**
  * Receives notifications about CRUD operations of {@link Item}.
@@ -36,6 +43,9 @@ import hudson.model.Item;
  * @author Kohsuke Kawaguchi
  */
 public class ItemListener implements ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(ItemListener.class.getName());
+
     /**
      * Called after a new job is created and added to {@link jenkins.model.Jenkins},
      * before the initial configuration page is provided.
@@ -82,7 +92,7 @@ public class ItemListener implements ExtensionPoint {
 
     /**
      * Called after a job is renamed.
-     *
+     * Most implementers should rather use {@link #onLocationChanged}.
      * @param item
      *      The job being renamed.
      * @param oldName
@@ -95,11 +105,50 @@ public class ItemListener implements ExtensionPoint {
     }
 
     /**
+     * Called after an item’s fully-qualified location has changed.
+     * This might be because:
+     * <ul>
+     * <li>This item was renamed.
+     * <li>Some ancestor folder was renamed.
+     * <li>This item was moved between folders (or from a folder to Jenkins root or vice-versa).
+     * <li>Some ancestor folder was moved.
+     * </ul>
+     * Where applicable, {@link #onRenamed} will already have been called on this item or an ancestor.
+     * And where applicable, {@link #onLocationChanged} will already have been called on its ancestors.
+     * <p>This method should be used (instead of {@link #onRenamed}) by any code
+     * which seeks to keep (absolute) references to items up to date:
+     * if a persisted reference matches {@code oldFullName}, replace it with {@code newFullName}.
+     * @param item an item whose absolute position is now different
+     * @param oldFullName the former {@link Item#getFullName}
+     * @param newFullName the current {@link Item#getFullName}
+     * @see Items#computeRelativeNamesAfterRenaming
+     * @since 1.548
+     */
+    public void onLocationChanged(Item item, String oldFullName, String newFullName) {}
+
+    /**
+     * Called after a job has its configuration updated.
+     *
+     * @since 1.460
+     */
+    public void onUpdated(Item item) {
+    }
+
+    /**
+     * @since 1.446
+     *      Called at the begenning of the orderly shutdown sequence to
+     *      allow plugins to clean up stuff
+     */
+    public void onBeforeShutdown() {
+    }
+
+    /**
      * Registers this instance to Hudson and start getting notifications.
      *
      * @deprecated as of 1.286
      *      put {@link Extension} on your class to have it auto-registered.
      */
+    @Deprecated
     public void register() {
         all().add(this);
     }
@@ -108,16 +157,106 @@ public class ItemListener implements ExtensionPoint {
      * All the registered {@link ItemListener}s.
      */
     public static ExtensionList<ItemListener> all() {
-        return Jenkins.getInstance().getExtensionList(ItemListener.class);
+        return ExtensionList.lookup(ItemListener.class);
     }
 
-    public static void fireOnCopied(Item src, Item result) {
-        for (ItemListener l : all())
-            l.onCopied(src,result);
+    // TODO JENKINS-21224 generalize this to a method perhaps in ExtensionList and use consistently from all listeners
+    private static void forAll(final /* java.util.function.Consumer<ItemListener> */Function<ItemListener,Void> consumer) {
+        for (ItemListener l : all()) {
+            try {
+                consumer.apply(l);
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, "failed to send event to listener of " + l.getClass(), x);
+            }
+        }
     }
 
-    public static void fireOnCreated(Item item) {
-        for (ItemListener l : all())
-            l.onCreated(item);
+    public static void fireOnCopied(final Item src, final Item result) {
+        forAll(new Function<ItemListener,Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onCopied(src, result);
+                return null;
+            }
+        });
     }
+
+    public static void fireOnCreated(final Item item) {
+        forAll(new Function<ItemListener,Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onCreated(item);
+                return null;
+            }
+        });
+    }
+
+    public static void fireOnUpdated(final Item item) {
+        forAll(new Function<ItemListener,Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onUpdated(item);
+                return null;
+            }
+        });
+    }
+
+    /** @since 1.548 */
+    public static void fireOnDeleted(final Item item) {
+        forAll(new Function<ItemListener,Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onDeleted(item);
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Calls {@link #onRenamed} and {@link #onLocationChanged} as appropriate.
+     * @param rootItem the topmost item whose location has just changed
+     * @param oldFullName the previous {@link Item#getFullName}
+     * @since 1.548
+     */
+    public static void fireLocationChange(final Item rootItem, final String oldFullName) {
+        String prefix = rootItem.getParent().getFullName();
+        if (!prefix.isEmpty()) {
+            prefix += '/';
+        }
+        final String newFullName = rootItem.getFullName();
+        assert newFullName.startsWith(prefix);
+        int prefixS = prefix.length();
+        if (oldFullName.startsWith(prefix) && oldFullName.indexOf('/', prefixS) == -1) {
+            final String oldName = oldFullName.substring(prefixS);
+            final String newName = rootItem.getName();
+            assert newName.equals(newFullName.substring(prefixS));
+            forAll(new Function<ItemListener, Void>() {
+                @Override public Void apply(ItemListener l) {
+                    l.onRenamed(rootItem, oldName, newName);
+                    return null;
+                }
+            });
+        }
+        forAll(new Function<ItemListener, Void>() {
+            @Override public Void apply(ItemListener l) {
+                l.onLocationChanged(rootItem, oldFullName, newFullName);
+                return null;
+            }
+        });
+        if (rootItem instanceof ItemGroup) {
+            for (final Item child : ACL.impersonate(ACL.SYSTEM, new NotReallyRoleSensitiveCallable<List<Item>,RuntimeException>() {
+                @Override public List<Item> call() {
+                    return Items.getAllItems((ItemGroup) rootItem, Item.class);
+                }
+            })) {
+                final String childNew = child.getFullName();
+                assert childNew.startsWith(newFullName);
+                assert childNew.charAt(newFullName.length()) == '/';
+                final String childOld = oldFullName + childNew.substring(newFullName.length());
+                forAll(new Function<ItemListener, Void>() {
+                    @Override public Void apply(ItemListener l) {
+                        l.onLocationChanged(child, childOld, childNew);
+                        return null;
+                    }
+                });
+            }
+        }
+    }
+
 }

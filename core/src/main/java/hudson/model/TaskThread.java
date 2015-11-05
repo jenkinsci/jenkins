@@ -51,6 +51,7 @@ public abstract class TaskThread extends Thread {
      * @deprecated as of Hudson 1.350
      *      Use {@link #log}. It's the same object, in a better type.
      */
+    @Deprecated
     private final LargeText text;
 
     /**
@@ -80,6 +81,7 @@ public abstract class TaskThread extends Thread {
         this.owner = owner;
         this.text = this.log = output.text;
         this.listener = output.listener;
+        this.isRunning = true;
     }
 
     public Reader readAll() throws IOException {
@@ -160,16 +162,18 @@ public abstract class TaskThread extends Thread {
 
         /**
          * @deprecated as of Hudson 1.350
-         *      Use {@link #forMemory(TaskThread)} and pass in the calling {@link TaskAction}
+         *      Use {@link #forMemory(TaskAction)} and pass in the calling {@link TaskAction}
          */
+        @Deprecated
         public static ListenerAndText forMemory() {
             return forMemory(null);
         }
 
         /**
          * @deprecated as of Hudson 1.350
-         *      Use {@link #forFile(File, TaskThread)} and pass in the calling {@link TaskAction}
+         *      Use {@link #forFile(File, TaskAction)} and pass in the calling {@link TaskAction}
          */
+        @Deprecated
         public static ListenerAndText forFile(File f) throws IOException {
             return forFile(f,null);
         }

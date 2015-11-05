@@ -23,81 +23,60 @@
  */
 package hudson;
 
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.NativeLong;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
-import jenkins.model.Jenkins;
-import static hudson.util.jna.GNUCLibrary.LIBC;
-
-import hudson.util.IOException2;
+import hudson.os.PosixAPI;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import hudson.Proc.LocalProc;
-import hudson.os.PosixAPI;
+import hudson.util.jna.WinIOException;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.commons.io.IOUtils;
-import org.jruby.ext.posix.FileStat;
-import org.jruby.ext.posix.POSIX;
-import org.kohsuke.stapler.Stapler;
-import org.jvnet.animal_sniffer.IgnoreJRERequirement;
+import org.apache.tools.ant.types.FileSet;
+import jnr.posix.FileStat;
+import jnr.posix.POSIX;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
-import java.io.PrintStream;
-import java.io.InputStreamReader;
-import java.io.FileInputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.SimpleTimeZone;
-import java.util.StringTokenizer;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.nio.charset.Charset;
 
-import com.sun.jna.Native;
-import com.sun.jna.Memory;
-import com.sun.jna.NativeLong;
+import hudson.util.jna.Kernel32Utils;
+
+import static hudson.util.jna.GNUCLibrary.LIBC;
+import java.security.DigestInputStream;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -118,7 +97,8 @@ public class Util {
      * Creates a filtered sublist.
      * @since 1.176
      */
-    public static <T> List<T> filter( Iterable<?> base, Class<T> type ) {
+    @Nonnull
+    public static <T> List<T> filter( @Nonnull Iterable<?> base, @Nonnull Class<T> type ) {
         List<T> r = new ArrayList<T>();
         for (Object i : base) {
             if(type.isInstance(i))
@@ -130,14 +110,15 @@ public class Util {
     /**
      * Creates a filtered sublist.
      */
-    public static <T> List<T> filter( List<?> base, Class<T> type ) {
+    @Nonnull
+    public static <T> List<T> filter( @Nonnull List<?> base, @Nonnull Class<T> type ) {
         return filter((Iterable)base,type);
     }
 
     /**
-     * Pattern for capturing variables. Either $xyz or ${xyz}, while ignoring "$$"
+     * Pattern for capturing variables. Either $xyz, ${xyz} or ${a.b} but not $a.b, while ignoring "$$"
       */
-    private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_]+\\}|\\$)");
+    private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_.]+\\}|\\$)");
 
     /**
      * Replaces the occurrence of '$key' by <tt>properties.get('key')</tt>.
@@ -146,21 +127,23 @@ public class Util {
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
      *
      */
-    public static String replaceMacro(String s, Map<String,String> properties) {
+    @Nullable
+    public static String replaceMacro( @CheckForNull String s, @Nonnull Map<String,String> properties) {
         return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
     }
-    
+
     /**
      * Replaces the occurrence of '$key' by <tt>resolver.get('key')</tt>.
      *
      * <p>
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
      */
-    public static String replaceMacro(String s, VariableResolver<String> resolver) {
+    @Nullable
+    public static String replaceMacro(@CheckForNull String s, @Nonnull VariableResolver<String> resolver) {
     	if (s == null) {
     		return null;
     	}
-    	
+
         int idx=0;
         while(true) {
             Matcher m = VARIABLE.matcher(s);
@@ -189,11 +172,13 @@ public class Util {
     /**
      * Loads the contents of a file into a string.
      */
-    public static String loadFile(File logfile) throws IOException {
+    @Nonnull
+    public static String loadFile(@Nonnull File logfile) throws IOException {
         return loadFile(logfile, Charset.defaultCharset());
     }
 
-    public static String loadFile(File logfile,Charset charset) throws IOException {
+    @Nonnull
+    public static String loadFile(@Nonnull File logfile, @Nonnull Charset charset) throws IOException {
         if(!logfile.exists())
             return "";
 
@@ -219,7 +204,7 @@ public class Util {
      * @throws IOException
      *      if the operation fails.
      */
-    public static void deleteContentsRecursive(File file) throws IOException {
+    public static void deleteContentsRecursive(@Nonnull File file) throws IOException {
         File[] files = file.listFiles();
         if(files==null)
             return;     // the directory didn't exist in the first place
@@ -232,7 +217,7 @@ public class Util {
      * @param f a file to delete
      * @throws IOException if it exists but could not be successfully deleted
      */
-    public static void deleteFile(File f) throws IOException {
+    public static void deleteFile(@Nonnull File f) throws IOException {
         if (!f.delete()) {
             if(!f.exists())
                 // we are trying to delete a file that no longer exists, so this is not an error
@@ -258,6 +243,18 @@ public class Util {
 
             if(!f.delete() && f.exists()) {
                 // trouble-shooting.
+                try {
+                    Class.forName("java.nio.file.Files").getMethod("delete", Class.forName("java.nio.file.Path")).invoke(null, File.class.getMethod("toPath").invoke(f));
+                } catch (InvocationTargetException x) {
+                    Throwable x2 = x.getCause();
+                    if (x2 instanceof IOException) {
+                        // may have a specific exception message
+                        throw (IOException) x2;
+                    }
+                    // else suppress
+                } catch (Throwable x) {
+                    // linkage errors, etc.; suppress
+                }
                 // see http://www.nabble.com/Sometimes-can%27t-delete-files-from-hudson.scm.SubversionSCM%24CheckOutTask.invoke%28%29-tt17333292.html
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
@@ -271,8 +268,12 @@ public class Util {
     /**
      * Makes the given file writable by any means possible.
      */
-    @IgnoreJRERequirement
-    private static void makeWritable(File f) {
+    private static void makeWritable(@Nonnull File f) {
+        if (f.setWritable(true)) {
+            return;
+        }
+        // TODO do we still need to try anything else?
+
         // try chmod. this becomes no-op if this is not Unix.
         try {
             Chmod chmod = new Chmod();
@@ -284,15 +285,8 @@ public class Util {
             LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
         }
 
-        // also try JDK6-way of doing it.
-        try {
-            f.setWritable(true);
-        } catch (NoSuchMethodError e) {
-            // not JDK6
-        }
-
         try {// try libc chmod
-            POSIX posix = PosixAPI.get();
+            POSIX posix = PosixAPI.jnr();
             String path = f.getAbsolutePath();
             FileStat stat = posix.stat(path);
             posix.chmod(path, stat.mode()|0200); // u+w
@@ -302,7 +296,7 @@ public class Util {
 
     }
 
-    public static void deleteRecursive(File dir) throws IOException {
+    public static void deleteRecursive(@Nonnull File dir) throws IOException {
         if(!isSymlink(dir))
             deleteContentsRecursive(dir);
         try {
@@ -336,7 +330,20 @@ public class Util {
      * Checks if the given file represents a symlink.
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
-    public static boolean isSymlink(File file) throws IOException {
+    public static boolean isSymlink(@Nonnull File file) throws IOException {
+        Boolean r = isSymlinkJava7(file);
+        if (r != null) {
+            return r;
+        }
+        if (Functions.isWindows()) {
+            try {
+                return Kernel32Utils.isJunctionOrSymlink(file);
+            } catch (UnsupportedOperationException e) {
+                // fall through
+            } catch (LinkageError e) {
+                // fall through
+            }
+        }
         String name = file.getName();
         if (name.equals(".") || name.equals(".."))
             return false;
@@ -349,6 +356,42 @@ public class Util {
             fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
         }
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
+    }
+
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
+        try {
+            Object path = File.class.getMethod("toPath").invoke(file);
+            return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
+        } catch (NoSuchMethodException x) {
+            return null; // fine, Java 6
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+    }
+
+    /**
+     * A mostly accurate check of whether a path is a relative path or not. This is designed to take a path against
+     * an unknown operating system so may give invalid results.
+     *
+     * @param path the path.
+     * @return {@code true} if the path looks relative.
+     * @since 1.606
+     */
+    public static boolean isRelativePath(String path) {
+        if (path.startsWith("/"))
+            return false;
+        if (path.startsWith("\\\\") && path.length() > 3 && path.indexOf('\\', 3) != -1)
+            return false; // a UNC path which is the most absolute you can get on windows
+        if (path.length() >= 3 && ':' == path.charAt(1)) {
+            // never mind that the drive mappings can be changed between sessions, we just want to
+            // know if the 3rd character is a `\` (or a '/' is acceptable too)
+            char p = path.charAt(0);
+            if (('A' <= p && p <= 'Z') || ('a' <= p && p <= 'z')) {
+                return path.charAt(2) != '\\' && path.charAt(2) != '/';
+            }
+        }
+        return true;
     }
 
     /**
@@ -369,13 +412,14 @@ public class Util {
      * On Windows, error messages for IOException aren't very helpful.
      * This method generates additional user-friendly error message to the listener
      */
-    public static void displayIOException( IOException e, TaskListener listener ) {
+    public static void displayIOException(@Nonnull IOException e, @Nonnull TaskListener listener ) {
         String msg = getWin32ErrorMessage(e);
         if(msg!=null)
             listener.getLogger().println(msg);
     }
 
-    public static String getWin32ErrorMessage(IOException e) {
+    @CheckForNull
+    public static String getWin32ErrorMessage(@Nonnull IOException e) {
         return getWin32ErrorMessage((Throwable)e);
     }
 
@@ -385,6 +429,7 @@ public class Util {
      * @return
      *      null if there seems to be no error code or if the platform is not Win32.
      */
+    @CheckForNull
     public static String getWin32ErrorMessage(Throwable e) {
         String msg = e.getMessage();
         if(msg!=null) {
@@ -410,6 +455,7 @@ public class Util {
      * @return
      *      null if no such message is available.
      */
+    @CheckForNull
     public static String getWin32ErrorMessage(int n) {
         try {
             ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
@@ -423,6 +469,7 @@ public class Util {
     /**
      * Guesses the current host name.
      */
+    @Nonnull
     public static String getHostName() {
         try {
             return InetAddress.getLocalHost().getHostName();
@@ -431,21 +478,21 @@ public class Util {
         }
     }
 
-    public static void copyStream(InputStream in,OutputStream out) throws IOException {
+    public static void copyStream(@Nonnull InputStream in,@Nonnull OutputStream out) throws IOException {
         byte[] buf = new byte[8192];
         int len;
-        while((len=in.read(buf))>0)
+        while((len=in.read(buf))>=0)
             out.write(buf,0,len);
     }
 
-    public static void copyStream(Reader in, Writer out) throws IOException {
+    public static void copyStream(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
         char[] buf = new char[8192];
         int len;
         while((len=in.read(buf))>0)
             out.write(buf,0,len);
     }
 
-    public static void copyStreamAndClose(InputStream in,OutputStream out) throws IOException {
+    public static void copyStreamAndClose(@Nonnull InputStream in, @Nonnull OutputStream out) throws IOException {
         try {
             copyStream(in,out);
         } finally {
@@ -454,7 +501,7 @@ public class Util {
         }
     }
 
-    public static void copyStreamAndClose(Reader in,Writer out) throws IOException {
+    public static void copyStreamAndClose(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
         try {
             copyStream(in,out);
         } finally {
@@ -473,18 +520,21 @@ public class Util {
      * @since 1.145
      * @see QuotedStringTokenizer
      */
-    public static String[] tokenize(String s,String delimiter) {
+    @Nonnull
+    public static String[] tokenize(@Nonnull String s, @CheckForNull String delimiter) {
         return QuotedStringTokenizer.tokenize(s,delimiter);
     }
 
-    public static String[] tokenize(String s) {
+    @Nonnull
+    public static String[] tokenize(@Nonnull String s) {
         return tokenize(s," \t\n\r\f");
     }
 
     /**
      * Converts the map format of the environment variables to the K=V format in the array.
      */
-    public static String[] mapToEnv(Map<String,String> m) {
+    @Nonnull
+    public static String[] mapToEnv(@Nonnull Map<String,String> m) {
         String[] r = new String[m.size()];
         int idx=0;
 
@@ -494,7 +544,7 @@ public class Util {
         return r;
     }
 
-    public static int min(int x, int... values) {
+    public static int min(int x, @Nonnull int... values) {
         for (int i : values) {
             if(i<x)
                 x=i;
@@ -502,14 +552,35 @@ public class Util {
         return x;
     }
 
-    public static String nullify(String v) {
-        if(v!=null && v.length()==0)    v=null;
-        return v;
+    @CheckForNull
+    public static String nullify(@CheckForNull String v) {
+        return fixEmpty(v);
     }
 
-    public static String removeTrailingSlash(String s) {
+    @Nonnull
+    public static String removeTrailingSlash(@Nonnull String s) {
         if(s.endsWith("/")) return s.substring(0,s.length()-1);
         else                return s;
+    }
+
+
+    /**
+     * Ensure string ends with suffix
+     *
+     * @param subject Examined string
+     * @param suffix  Desired suffix
+     * @return Original subject in case it already ends with suffix, null in
+     *         case subject was null and subject + suffix otherwise.
+     * @since 1.505
+     */
+    @Nullable
+    public static String ensureEndsWith(@CheckForNull String subject, @CheckForNull String suffix) {
+
+        if (subject == null) return null;
+
+        if (subject.endsWith(suffix)) return subject;
+
+        return subject + suffix;
     }
 
     /**
@@ -519,26 +590,36 @@ public class Util {
      *      The stream will be closed by this method at the end of this method.
      * @return
      *      32-char wide string
+     * @see DigestUtils#md5Hex(InputStream)
      */
-    public static String getDigestOf(InputStream source) throws IOException {
+    @Nonnull
+    public static String getDigestOf(@Nonnull InputStream source) throws IOException {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
 
             byte[] buffer = new byte[1024];
             DigestInputStream in =new DigestInputStream(source,md5);
             try {
-                while(in.read(buffer)>0)
+                while(in.read(buffer)>=0)
                     ; // simply discard the input
             } finally {
                 in.close();
             }
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
-            throw new IOException2("MD5 not installed",e);    // impossible
+            throw new IOException("MD5 not installed",e);    // impossible
         }
+        /* JENKINS-18178: confuses Maven 2 runner
+        try {
+            return DigestUtils.md5Hex(source);
+        } finally {
+            source.close();
+        }
+        */
     }
 
-    public static String getDigestOf(String text) {
+    @Nonnull
+    public static String getDigestOf(@Nonnull String text) {
         try {
             return getDigestOf(new ByteArrayInputStream(text.getBytes("UTF-8")));
         } catch (IOException e) {
@@ -547,10 +628,28 @@ public class Util {
     }
 
     /**
+     * Computes the MD5 digest of a file.
+     * @param file a file
+     * @return a 32-character string
+     * @throws IOException in case reading fails
+     * @since 1.525
+     */
+    @Nonnull
+    public static String getDigestOf(@Nonnull File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        try {
+            return getDigestOf(new BufferedInputStream(is));
+        } finally {
+            is.close();
+        }
+    }
+
+    /**
      * Converts a string into 128-bit AES key.
      * @since 1.308
      */
-    public static SecretKey toAes128Key(String s) {
+    @Nonnull
+    public static SecretKey toAes128Key(@Nonnull String s) {
         try {
             // turn secretKey into 256 bit hash
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -566,7 +665,8 @@ public class Util {
         }
     }
 
-    public static String toHexString(byte[] data, int start, int len) {
+    @Nonnull
+    public static String toHexString(@Nonnull byte[] data, int start, int len) {
         StringBuilder buf = new StringBuilder();
         for( int i=0; i<len; i++ ) {
             int b = data[start+i]&0xFF;
@@ -576,11 +676,13 @@ public class Util {
         return buf.toString();
     }
 
-    public static String toHexString(byte[] bytes) {
+    @Nonnull
+    public static String toHexString(@Nonnull byte[] bytes) {
         return toHexString(bytes,0,bytes.length);
     }
 
-    public static byte[] fromHexString(String data) {
+    @Nonnull
+    public static byte[] fromHexString(@Nonnull String data) {
         byte[] r = new byte[data.length() / 2];
         for (int i = 0; i < data.length(); i += 2)
             r[i / 2] = (byte) Integer.parseInt(data.substring(i, i + 2), 16);
@@ -594,6 +696,7 @@ public class Util {
      * @param duration
      *      number of milliseconds.
      */
+    @Nonnull
     public static String getTimeSpanString(long duration) {
         // Break the duration up in to units.
         long years = duration / ONE_YEAR_MS;
@@ -640,10 +743,11 @@ public class Util {
      * So 13 minutes and 43 seconds returns just "13 minutes", but 3 minutes
      * and 43 seconds is "3 minutes 43 seconds".
      */
+    @Nonnull
     private static String makeTimeSpanString(long bigUnit,
-                                             String bigLabel,
+                                             @Nonnull String bigLabel,
                                              long smallUnit,
-                                             String smallLabel) {
+                                             @Nonnull String smallLabel) {
         String text = bigLabel;
         if (bigUnit < 10)
             text += ' ' + smallLabel;
@@ -655,6 +759,7 @@ public class Util {
      * Get a human readable string representing strings like "xxx days ago",
      * which should be used to point to the occurrence of an event in the past.
      */
+    @Nonnull
     public static String getPastTimeString(long duration) {
         return Messages.Util_pastTime(getTimeSpanString(duration));
     }
@@ -662,13 +767,15 @@ public class Util {
 
     /**
      * Combines number and unit, with a plural suffix if needed.
-     * 
-     * @deprecated 
-     *   Use individual localization methods instead. 
+     *
+     * @deprecated
+     *   Use individual localization methods instead.
      *   See {@link Messages#Util_year(Object)} for an example.
      *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
-    public static String combine(long n, String suffix) {
+    @Nonnull
+    @Deprecated
+    public static String combine(long n, @Nonnull String suffix) {
         String s = Long.toString(n)+' '+suffix;
         if(n!=1)
         	// Just adding an 's' won't work in most natural languages, even English has exception to the rule (e.g. copy/copies).
@@ -679,7 +786,8 @@ public class Util {
     /**
      * Create a sub-list by only picking up instances of the specified type.
      */
-    public static <T> List<T> createSubList( Collection<?> source, Class<T> type ) {
+    @Nonnull
+    public static <T> List<T> createSubList(@Nonnull Collection<?> source, @Nonnull Class<T> type ) {
         List<T> r = new ArrayList<T>();
         for (Object item : source) {
             if(type.isInstance(item))
@@ -697,7 +805,8 @@ public class Util {
      * {@link #rawEncode(String)} should generally be used instead, though be careful to pass only
      * a single path component to that method (it will encode /, but this method does not).
      */
-    public static String encode(String s) {
+    @Nonnull
+    public static String encode(@Nonnull String s) {
         try {
             boolean escaped = false;
 
@@ -747,14 +856,15 @@ public class Util {
 
     /**
      * Encode a single path component for use in an HTTP URL.
-     * Escapes all non-ASCII, general unsafe (space and "#%<>[\]^`{|}~)
-     * and HTTP special characters (/;:?) as specified in RFC1738.
-     * (so alphanumeric and !@$&*()-_=+',. are not encoded)
-     * Note that slash(/) is encoded, so the given string should be a
+     * Escapes all non-ASCII, general unsafe (space and {@code "#%<>[\]^`{|}~})
+     * and HTTP special characters ({@code /;:?}) as specified in RFC1738.
+     * (so alphanumeric and {@code !@$&*()-_=+',.} are not encoded)
+     * Note that slash ({@code /}) is encoded, so the given string should be a
      * single path component used in constructing a URL.
      * Method name inspired by PHP's rawurlencode.
      */
-    public static String rawEncode(String s) {
+    @Nonnull
+    public static String rawEncode(@Nonnull String s) {
         boolean escaped = false;
         StringBuilder out = null;
         CharsetEncoder enc = null;
@@ -803,7 +913,8 @@ public class Util {
     /**
      * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
-    public static String escape(String text) {
+    @Nonnull
+    public static String escape(@Nonnull String text) {
         if (text==null)     return null;
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
@@ -813,6 +924,9 @@ public class Util {
             else
             if(ch=='<')
                 buf.append("&lt;");
+            else
+            if(ch=='>')
+                buf.append("&gt;");
             else
             if(ch=='&')
                 buf.append("&amp;");
@@ -836,12 +950,16 @@ public class Util {
         return buf.toString();
     }
 
-    public static String xmlEscape(String text) {
+    @Nonnull
+    public static String xmlEscape(@Nonnull String text) {
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
             if(ch=='<')
                 buf.append("&lt;");
+            else
+            if(ch=='>')
+                buf.append("&gt;");
             else
             if(ch=='&')
                 buf.append("&amp;");
@@ -854,14 +972,14 @@ public class Util {
     /**
      * Creates an empty file.
      */
-    public static void touch(File file) throws IOException {
+    public static void touch(@Nonnull File file) throws IOException {
         new FileOutputStream(file).close();
     }
 
     /**
      * Copies a single file by using Ant.
      */
-    public static void copyFile(File src, File dst) throws BuildException {
+    public static void copyFile(@Nonnull File src, @Nonnull File dst) throws BuildException {
         Copy cp = new Copy();
         cp.setProject(new org.apache.tools.ant.Project());
         cp.setTofile(dst);
@@ -873,7 +991,8 @@ public class Util {
     /**
      * Convert null to "".
      */
-    public static String fixNull(String s) {
+    @Nonnull
+    public static String fixNull(@CheckForNull String s) {
         if(s==null)     return "";
         else            return s;
     }
@@ -881,7 +1000,8 @@ public class Util {
     /**
      * Convert empty string to null.
      */
-    public static String fixEmpty(String s) {
+    @CheckForNull
+    public static String fixEmpty(@CheckForNull String s) {
         if(s==null || s.length()==0)    return null;
         return s;
     }
@@ -891,31 +1011,37 @@ public class Util {
      *
      * @since 1.154
      */
-    public static String fixEmptyAndTrim(String s) {
+    @CheckForNull
+    public static String fixEmptyAndTrim(@CheckForNull String s) {
         if(s==null)    return null;
         return fixEmpty(s.trim());
     }
 
-    public static <T> List<T> fixNull(List<T> l) {
+    @Nonnull
+    public static <T> List<T> fixNull(@CheckForNull List<T> l) {
         return l!=null ? l : Collections.<T>emptyList();
     }
 
-    public static <T> Set<T> fixNull(Set<T> l) {
+    @Nonnull
+    public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
         return l!=null ? l : Collections.<T>emptySet();
     }
 
-    public static <T> Collection<T> fixNull(Collection<T> l) {
+    @Nonnull
+    public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
         return l!=null ? l : Collections.<T>emptySet();
     }
 
-    public static <T> Iterable<T> fixNull(Iterable<T> l) {
+    @Nonnull
+    public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
         return l!=null ? l : Collections.<T>emptySet();
     }
 
     /**
      * Cuts all the leading path portion and get just the file name.
      */
-    public static String getFileName(String filePath) {
+    @Nonnull
+    public static String getFileName(@Nonnull String filePath) {
         int idx = filePath.lastIndexOf('\\');
         if(idx>=0)
             return getFileName(filePath.substring(idx+1));
@@ -928,7 +1054,8 @@ public class Util {
     /**
      * Concatenate multiple strings by inserting a separator.
      */
-    public static String join(Collection<?> strings, String separator) {
+    @Nonnull
+    public static String join(@Nonnull Collection<?> strings, @Nonnull String separator) {
         StringBuilder buf = new StringBuilder();
         boolean first=true;
         for (Object s : strings) {
@@ -942,7 +1069,8 @@ public class Util {
     /**
      * Combines all the given collections into a single list.
      */
-    public static <T> List<T> join(Collection<? extends T>... items) {
+    @Nonnull
+    public static <T> List<T> join(@Nonnull Collection<? extends T>... items) {
         int size = 0;
         for (Collection<? extends T> item : items)
             size += item.size();
@@ -969,7 +1097,8 @@ public class Util {
      *      Can be null.
      * @since 1.172
      */
-    public static FileSet createFileSet(File baseDir, String includes, String excludes) {
+    @Nonnull
+    public static FileSet createFileSet(@Nonnull File baseDir, @Nonnull String includes, @CheckForNull String excludes) {
         FileSet fs = new FileSet();
         fs.setDir(baseDir);
         fs.setProject(new Project());
@@ -991,54 +1120,88 @@ public class Util {
         return fs;
     }
 
-    public static FileSet createFileSet(File baseDir, String includes) {
+    @Nonnull
+    public static FileSet createFileSet(@Nonnull File baseDir, @Nonnull String includes) {
         return createFileSet(baseDir,includes,null);
     }
 
     /**
-     * Creates a symlink to baseDir+targetPath at baseDir+symlinkPath.
+     * Creates a symlink to targetPath at baseDir+symlinkPath.
      * <p>
      * If there's a prior symlink at baseDir+symlinkPath, it will be overwritten.
      *
      * @param baseDir
      *      Base directory to resolve the 'symlinkPath' parameter.
      * @param targetPath
-     *      The file that the symlink should point to.
+     *      The file that the symlink should point to. Usually relative to the directory of the symlink but may instead be an absolute path.
      * @param symlinkPath
-     *      Where to create a symlink in.
+     *      Where to create a symlink in (relative to {@code baseDir})
      */
-    public static void createSymlink(File baseDir, String targetPath, String symlinkPath, TaskListener listener) throws InterruptedException {
-        if(Functions.isWindows() || NO_SYMLINK)   return;
-
+    public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
+            @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
-            String errmsg = "";
-            // if a file or a directory exists here, delete it first.
-            // try simple delete first (whether exists() or not, as it may be symlink pointing
-            // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
-            File symlinkFile = new File(baseDir, symlinkPath);
-            if (!symlinkFile.delete() && symlinkFile.exists())
-                // ignore a failure.
-                new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
+            if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
+                return;
+            }
+            if (NO_SYMLINK) {
+                return;
+            }
 
-            int r;
-            if (!SYMLINK_ESCAPEHATCH) {
-                try {
-                    r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
-                    if (r!=0) {
-                        r = Native.getLastError();
-                        errmsg = LIBC.strerror(r);
-                    }
-                } catch (LinkageError e) {
-                    // if JNA is unavailable, fall back.
-                    // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                    r = PosixAPI.get().symlink(targetPath,symlinkFile.getAbsolutePath());
+            File symlinkFile = new File(baseDir, symlinkPath);
+            if (Functions.isWindows()) {
+                if (symlinkFile.exists()) {
+                    symlinkFile.delete();
                 }
-            } else // escape hatch, until we know that the above works well.
-                r = new LocalProc(new String[]{
-                    "ln","-s", targetPath, symlinkPath},
-                    new String[0],listener.getLogger(), baseDir).join();
-            if(r!=0)
-                listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
+                File dst = new File(symlinkFile,"..\\"+targetPath);
+                try {
+                    Kernel32Utils.createSymbolicLink(symlinkFile,targetPath,dst.isDirectory());
+                } catch (WinIOException e) {
+                    if (e.getErrorCode()==1314) {/* ERROR_PRIVILEGE_NOT_HELD */
+                        warnWindowsSymlink();
+                        return;
+                    }
+                    throw e;
+                } catch (UnsatisfiedLinkError e) {
+                    // not available on this Windows
+                    return;
+                }
+            } else {
+                String errmsg = "";
+                // if a file or a directory exists here, delete it first.
+                // try simple delete first (whether exists() or not, as it may be symlink pointing
+                // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
+                if (!symlinkFile.delete() && symlinkFile.exists())
+                    // ignore a failure.
+                    new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
+
+                Integer r=null;
+                if (!SYMLINK_ESCAPEHATCH) {
+                    try {
+                        r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
+                        if (r!=0) {
+                            r = Native.getLastError();
+                            errmsg = LIBC.strerror(r);
+                        }
+                    } catch (LinkageError e) {
+                        // if JNA is unavailable, fall back.
+                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
+                        POSIX posix = PosixAPI.jnr();
+                        if (posix.isNative()) {
+                            // TODO should we rethrow PosixException as IOException here?
+                            r = posix.symlink(targetPath,symlinkFile.getAbsolutePath());
+                        }
+                    }
+                }
+                if (r==null) {
+                    // if all else fail, fall back to the most expensive approach of forking a process
+                    // TODO is this really necessary? JavaPOSIX should do this automatically
+                    r = new LocalProc(new String[]{
+                        "ln","-s", targetPath, symlinkPath},
+                        new String[0],listener.getLogger(), baseDir).join();
+                }
+                if (r!=0)
+                    listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
+            }
         } catch (IOException e) {
             PrintStream log = listener.getLogger();
             log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
@@ -1047,16 +1210,129 @@ public class Util {
         }
     }
 
+    private static boolean createSymlinkJava7(@Nonnull File baseDir, @Nonnull String targetPath, @Nonnull String symlinkPath) throws IOException {
+        try {
+            Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
+            Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
+            Class<?> filesC = Class.forName("java.nio.file.Files");
+            Class<?> pathC = Class.forName("java.nio.file.Path");
+            Class<?> fileAlreadyExistsExceptionC = Class.forName("java.nio.file.FileAlreadyExistsException");
+
+            Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
+            final int maxNumberOfTries = 4;
+            final int timeInMillis = 100;
+            for (int tryNumber = 1; tryNumber <= maxNumberOfTries; tryNumber++) {
+                filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+                try {
+                    filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+                    break;
+                }
+                catch (Exception x) {
+                    if (fileAlreadyExistsExceptionC.isInstance(x)) {
+                        if(tryNumber < maxNumberOfTries) {
+                            TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
+                            continue;
+                        }
+                        LOGGER.warning("symlink FileAlreadyExistsException thrown "+maxNumberOfTries+" times => cannot createSymbolicLink");
+                    }
+                    throw x;
+                }
+            }
+            return true;
+        } catch (NoSuchMethodException x) {
+            return false; // fine, Java 6
+        } catch (InvocationTargetException x) {
+            Throwable x2 = x.getCause();
+            if (x2 instanceof UnsupportedOperationException) {
+                return true; // no symlinks on this platform
+            }
+            if (Functions.isWindows() && String.valueOf(x2).contains("java.nio.file.FileSystemException")) {
+                warnWindowsSymlink();
+                return true;
+            }
+            if (x2 instanceof IOException) {
+                throw (IOException) x2;
+            }
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+    }
+
+    private static final AtomicBoolean warnedSymlinks = new AtomicBoolean();
+    private static void warnWindowsSymlink() {
+        if (warnedSymlinks.compareAndSet(false, true)) {
+            LOGGER.warning("Symbolic links enabled on this platform but disabled for this user; run as administrator or use Local Security Policy > Security Settings > Local Policies > User Rights Assignment > Create symbolic links");
+        }
+    }
+
+    /**
+     * @deprecated as of 1.456
+     *      Use {@link #resolveSymlink(File)}
+     */
+    @Deprecated
+    public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
+        return resolveSymlink(link);
+    }
+
+    /**
+     * Resolves a symlink to the {@link File} that points to.
+     *
+     * @return null
+     *      if the specified file is not a symlink.
+     */
+    @CheckForNull
+    public static File resolveSymlinkToFile(@Nonnull File link) throws InterruptedException, IOException {
+        String target = resolveSymlink(link);
+        if (target==null)   return null;
+
+        File f = new File(target);
+        if (f.isAbsolute()) return f;   // absolute symlink
+        return new File(link.getParentFile(),target);   // relative symlink
+    }
+
     /**
      * Resolves symlink, if the given file is a symlink. Otherwise return null.
      * <p>
      * If the resolution fails, report an error.
      *
-     * @param listener
-     *      If we rely on an external command to resolve symlink, this is it.
-     *      (TODO: try readlink(1) available on some platforms)
+     * @return
+     *      null if the given file is not a symlink.
+     *      If the symlink is absolute, the returned string is an absolute path.
+     *      If the symlink is relative, the returned string is that relative representation.
+     *      The relative path is meant to be resolved from the location of the symlink.
      */
-    public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
+    @CheckForNull
+    public static String resolveSymlink(@Nonnull File link) throws InterruptedException, IOException {
+        try { // Java 7
+            Object path = File.class.getMethod("toPath").invoke(link);
+            return Class.forName("java.nio.file.Files").getMethod("readSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path).toString();
+        } catch (NoSuchMethodException x) {
+            // fine, Java 6; fall through
+        } catch (InvocationTargetException x) {
+            Throwable x2 = x.getCause();
+            if (x2 instanceof UnsupportedOperationException) {
+                return null; // no symlinks on this platform
+            }
+            try {
+                if (Class.forName("java.nio.file.NotLinkException").isInstance(x2)) {
+                    return null;
+                }
+            } catch (ClassNotFoundException x3) {
+                assert false : x3; // should be Java 7+ here
+            }
+            if (x2.getClass().getName().equals("java.nio.file.FileSystemException")) {
+                // Thrown ("Incorrect function.") on JDK 7u21 in Windows 2012 when called on a non-symlink, rather than NotLinkException, contrary to documentation. Maybe only when not on NTFS?
+                return null;
+            }
+            if (x2 instanceof IOException) {
+                throw (IOException) x2;
+            }
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        }
+
         if(Functions.isWindows())     return null;
 
         String filename = link.getAbsolutePath();
@@ -1082,7 +1358,7 @@ public class Util {
         } catch (LinkageError e) {
             // if JNA is unavailable, fall back.
             // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-            return PosixAPI.get().readlink(filename);
+            return PosixAPI.jnr().readlink(filename);
         }
     }
 
@@ -1096,7 +1372,7 @@ public class Util {
      * @deprecated since 2008-05-13. This method is broken (see ISSUE#1666). It should probably
      * be removed but I'm not sure if it is considered part of the public API
      * that needs to be maintained for backwards compatibility.
-     * Use {@link #encode(String)} instead. 
+     * Use {@link #encode(String)} instead.
      */
     @Deprecated
     public static String encodeRFC2396(String url) {
@@ -1112,13 +1388,12 @@ public class Util {
      * Wraps with the error icon and the CSS class to render error message.
      * @since 1.173
      */
-    public static String wrapToErrorSpan(String s) {
-        s = "<span class=error><img src='"+
-            Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+
-            "/images/none.gif' height=16 width=1>"+s+"</span>";
+    @Nonnull
+    public static String wrapToErrorSpan(@Nonnull String s) {
+        s = "<span class=error style='display:inline-block'>"+s+"</span>";
         return s;
     }
-    
+
     /**
      * Returns the parsed string if parsed successful; otherwise returns the default number.
      * If the string is null, empty or a ParseException is thrown then the defaultNumber
@@ -1127,7 +1402,8 @@ public class Util {
      * @param defaultNumber number to return if the string can not be parsed
      * @return returns the parsed string; otherwise the default number
      */
-    public static Number tryParseNumber(String numberStr, Number defaultNumber) {
+    @CheckForNull
+    public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
         if ((numberStr == null) || (numberStr.length() == 0)) {
             return defaultNumber;
         }
@@ -1142,8 +1418,7 @@ public class Util {
      * Checks if the public method defined on the base type with the given arguments
      * are overridden in the given derived type.
      */
-    public static boolean isOverridden(Class base, Class derived, String methodName, Class... types) {
-        // the rewriteHudsonWar method isn't overridden.
+    public static boolean isOverridden(@Nonnull Class base, @Nonnull Class derived, @Nonnull String methodName, @Nonnull Class... types) {
         try {
             return !base.getMethod(methodName, types).equals(
                     derived.getMethod(methodName,types));
@@ -1158,7 +1433,8 @@ public class Util {
      * @param ext
      *      For example, ".zip"
      */
-    public static File changeExtension(File dst, String ext) {
+    @Nonnull
+    public static File changeExtension(@Nonnull File dst, @Nonnull String ext) {
         String p = dst.getPath();
         int pos = p.lastIndexOf('.');
         if (pos<0)  return new File(p+ext);
@@ -1167,26 +1443,46 @@ public class Util {
 
     /**
      * Null-safe String intern method.
+     * @return A canonical representation for the string object. Null for null input strings
      */
-    public static String intern(String s) {
+    @Nullable
+    public static String intern(@CheckForNull String s) {
         return s==null ? s : s.intern();
+    }
+
+    /**
+     * Return true if the systemId denotes an absolute URI .
+     *
+     * The same algorithm can be seen in {@link URI}, but
+     * implementing this by ourselves allow it to be more lenient about
+     * escaping of URI.
+     */
+    public static boolean isAbsoluteUri(@Nonnull String uri) {
+        int idx = uri.indexOf(':');
+        if (idx<0)  return false;   // no ':'. can't be absolute
+
+        // #, ?, and / must not be before ':'
+        return idx<_indexOf(uri, '#') && idx<_indexOf(uri,'?') && idx<_indexOf(uri,'/');
+    }
+
+    /**
+     * Works like {@link String#indexOf(int)} but 'not found' is returned as s.length(), not -1.
+     * This enables more straight-forward comparison.
+     */
+    private static int _indexOf(@Nonnull String s, char ch) {
+        int idx = s.indexOf(ch);
+        if (idx<0)  return s.length();
+        return idx;
     }
 
     /**
      * Loads a key/value pair string as {@link Properties}
      * @since 1.392
      */
-    @IgnoreJRERequirement
-    public static Properties loadProperties(String properties) throws IOException {
+    @Nonnull
+    public static Properties loadProperties(@Nonnull String properties) throws IOException {
         Properties p = new Properties();
-        try {
-            p.load(new StringReader(properties));
-        } catch (NoSuchMethodError e) {
-            // load(Reader) method is only available on JDK6.
-            // this fall back version doesn't work correctly with non-ASCII characters,
-            // but there's no other easy ways out it seems.
-            p.load(new ByteArrayInputStream(properties.getBytes()));
-        }
+        p.load(new StringReader(properties));
         return p;
     }
 

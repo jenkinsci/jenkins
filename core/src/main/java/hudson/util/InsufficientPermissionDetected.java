@@ -23,7 +23,8 @@
  */
 package hudson.util;
 
-import hudson.Functions;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Model object used to display the error top page if
@@ -34,14 +35,12 @@ import hudson.Functions;
  *
  * @author Kohsuke Kawaguchi
  */
-public class InsufficientPermissionDetected extends ErrorObject {
+public class InsufficientPermissionDetected extends BootFailure {
+    @Restricted(NoExternalUse.class) @Deprecated
     public final SecurityException exception;
 
     public InsufficientPermissionDetected(SecurityException e) {
+        super(e);
         this.exception = e;
-    }
-
-    public String getExceptionTrace() {
-        return Functions.printThrowable(exception);
     }
 }

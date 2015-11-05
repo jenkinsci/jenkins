@@ -1,6 +1,12 @@
-If you want simply to have the jenkins.war as fast as possible (without test execution), just use :
-mvn clean install -pl war -am -DskipTests
-the war will be in war/target/jenkins.war (you can play with it)
-You can deactivate test-harness execution with -Dskip-test-harness
-Have Fun !!
+If you want simply to have the jenkins.war as fast as possible (without test
+execution), run:
 
+    mvn clean install -pl war -am -DskipTests
+
+The WAR file will be in war/target/jenkins.war (you can play with it)
+You can deactivate test-harness execution with -Dskip-test-harness
+
+For more information on building Jenkins, visit
+https://wiki.jenkins-ci.org/display/JENKINS/Building+Jenkins
+
+Have Fun !!

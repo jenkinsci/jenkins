@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import com.google.common.collect.Maps;
+import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.model.Queue.Task;
 import hudson.model.queue.MappingWorksheet;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
@@ -32,14 +35,20 @@ import hudson.util.ConsistentHash.Hash;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Strategy that decides which {@link Task} gets run on which {@link Executor}.
  *
+ * <p>
+ * Even though this is marked as {@link ExtensionPoint}, you do not register
+ * your implementation with @{@link Extension}. Instead, call {@link Queue#setLoadBalancer(LoadBalancer)}
+ * to install your implementation.
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.301
  */
-public abstract class LoadBalancer /*implements ExtensionPoint*/ {
+public abstract class LoadBalancer implements ExtensionPoint {
     /**
      * Chooses the executor(s) to carry out the build for the given task.
      *
@@ -77,8 +86,14 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
                         return node.getName();
                     }
                 });
-                for (ExecutorChunk ec : ws.works(i).applicableExecutorChunks())
-                    hash.add(ec,ec.size()*100);
+
+                // Build a Map to pass in rather than repeatedly calling hash.add() because each call does lots of expensive work
+                List<ExecutorChunk> chunks = ws.works(i).applicableExecutorChunks();
+                Map<ExecutorChunk, Integer> toAdd = Maps.newHashMapWithExpectedSize(chunks.size());
+                for (ExecutorChunk ec : chunks) {
+                    toAdd.put(ec, ec.size()*100);
+                }
+                hash.addAll(toAdd);
 
                 hashes.add(hash);
             }
@@ -121,6 +136,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
      * @deprecated as of 1.377
      *      The only implementation in the core now is the one based on consistent hash.
      */
+    @Deprecated
     public static final LoadBalancer DEFAULT = CONSISTENT_HASH;
 
 
@@ -133,7 +149,7 @@ public abstract class LoadBalancer /*implements ExtensionPoint*/ {
         return new LoadBalancer() {
             @Override
             public Mapping map(Task task, MappingWorksheet worksheet) {
-                if (Queue.ifBlockedByHudsonShutdown(task)) {
+                if (Queue.isBlockedByShutdown(task)) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.
                     return null;

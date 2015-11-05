@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import jenkins.model.PeepholePermalink;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -41,6 +43,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @see JobProperty
  */
 public interface PermalinkProjectAction extends Action {
+
     /**
      * Gets the permalinks defined for this project.
      *
@@ -57,7 +60,7 @@ public interface PermalinkProjectAction extends Action {
     /**
      * Permalink as a strategy pattern.
      */
-    public static abstract class Permalink {
+    abstract class Permalink {
         /**
          * String to be displayed in the UI, such as "Last successful build".
          * The convention is to upper case the first letter.
@@ -86,94 +89,103 @@ public interface PermalinkProjectAction extends Action {
         public abstract Run<?,?> resolve(Job<?,?> job);
 
         /**
-         * List of {@link Permalink}s that are built into Hudson.
+         * List of {@link Permalink}s that are built into Jenkins.
          */
         public static final List<Permalink> BUILTIN = new CopyOnWriteArrayList<Permalink>();
 
+        public static final Permalink LAST_BUILD = new Permalink() {
+            public String getDisplayName() {
+                return Messages.Permalink_LastBuild();
+            }
+
+            public String getId() {
+                return "lastBuild";
+            }
+
+            public Run<?,?> resolve(Job<?,?> job) {
+                return job.getLastBuild();
+            }
+        };
+        public static final Permalink LAST_STABLE_BUILD = new PeepholePermalink() {
+            public String getDisplayName() {
+                return Messages.Permalink_LastStableBuild();
+            }
+
+            public String getId() {
+                return "lastStableBuild";
+            }
+
+            @Override
+            public boolean apply(Run<?, ?> run) {
+                return !run.isBuilding() && run.getResult()==Result.SUCCESS;
+            }
+        };
+        public static final Permalink LAST_SUCCESSFUL_BUILD = new PeepholePermalink() {
+            public String getDisplayName() {
+                return Messages.Permalink_LastSuccessfulBuild();
+            }
+
+            public String getId() {
+                return "lastSuccessfulBuild";
+            }
+
+            @Override
+            public boolean apply(Run<?, ?> run) {
+                return !run.isBuilding() && run.getResult().isBetterOrEqualTo(Result.UNSTABLE);
+            }
+        };
+        public static final Permalink LAST_FAILED_BUILD = new PeepholePermalink() {
+            public String getDisplayName() {
+                return Messages.Permalink_LastFailedBuild();
+            }
+
+            public String getId() {
+                return "lastFailedBuild";
+            }
+
+            @Override
+            public boolean apply(Run<?, ?> run) {
+                return !run.isBuilding() && run.getResult()==Result.FAILURE;
+            }
+        };
+
+        public static final Permalink LAST_UNSTABLE_BUILD = new PeepholePermalink() {
+            public String getDisplayName() {
+                return Messages.Permalink_LastUnstableBuild();
+            }
+
+            public String getId() {
+                return "lastUnstableBuild";
+            }
+
+            @Override
+            public boolean apply(Run<?, ?> run) {
+                return !run.isBuilding() && run.getResult()==Result.UNSTABLE;
+            }
+        };
+
+        public static final Permalink LAST_UNSUCCESSFUL_BUILD = new PeepholePermalink() {
+            public String getDisplayName() {
+                return Messages.Permalink_LastUnsuccessfulBuild();
+            }
+
+            public String getId() {
+                return "lastUnsuccessfulBuild";
+            }
+
+            @Override
+            public boolean apply(Run<?, ?> run) {
+                return !run.isBuilding() && run.getResult()!=Result.SUCCESS;
+            }
+        };
+
         static {
-            BUILTIN.add(new Permalink() {
-                public String getDisplayName() {
-                    return Messages.Permalink_LastBuild();
-                }
-
-                public String getId() {
-                    return "lastBuild";
-                }
-
-                public Run<?,?> resolve(Job<?,?> job) {
-                    return job.getLastBuild();
-                }
-            });
-
-            BUILTIN.add(new Permalink() {
-                public String getDisplayName() {
-                    return Messages.Permalink_LastStableBuild();
-                }
-
-                public String getId() {
-                    return "lastStableBuild";
-                }
-
-                public Run<?,?> resolve(Job<?,?> job) {
-                    return job.getLastStableBuild();
-                }
-            });
-
-            BUILTIN.add(new Permalink() {
-                public String getDisplayName() {
-                    return Messages.Permalink_LastSuccessfulBuild();
-                }
-
-                public String getId() {
-                    return "lastSuccessfulBuild";
-                }
-
-                public Run<?,?> resolve(Job<?,?> job) {
-                    return job.getLastSuccessfulBuild();
-                }
-            });
-
-            BUILTIN.add(new Permalink() {
-                public String getDisplayName() {
-                    return Messages.Permalink_LastFailedBuild();
-                }
-
-                public String getId() {
-                    return "lastFailedBuild";
-                }
-
-                public Run<?,?> resolve(Job<?,?> job) {
-                    return job.getLastFailedBuild();
-                }
-            });
-
-            BUILTIN.add(new Permalink() {
-                public String getDisplayName() {
-                    return Messages.Permalink_LastUnstableBuild();
-                }
-
-                public String getId() {
-                    return "lastUnstableBuild";
-                }
-
-                public Run<?,?> resolve(Job<?,?> job) {
-                    return job.getLastUnstableBuild();
-                }
-            });
-
-            BUILTIN.add(new Permalink() {
-                public String getDisplayName() {
-                    return Messages.Permalink_LastUnsuccessfulBuild();
-                }
-
-                public String getId() {
-                    return "lastUnsuccessfulBuild";
-                }
-
-                public Run<?,?> resolve(Job<?,?> job) {
-                    return job.getLastUnsuccessfulBuild();
-                }
-            });
+            BUILTIN.add(LAST_BUILD);
+            BUILTIN.add(LAST_STABLE_BUILD);
+            BUILTIN.add(LAST_SUCCESSFUL_BUILD);
+            BUILTIN.add(LAST_FAILED_BUILD);
+            BUILTIN.add(LAST_UNSTABLE_BUILD);
+            BUILTIN.add(LAST_UNSUCCESSFUL_BUILD);
         }
     }
 }

@@ -27,9 +27,9 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task icon="images/24x24/up.png" href="${rootURL}/" title="${%Back to Dashboard}" />
-      <l:task icon="images/24x24/setting.png" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" />
-      <l:task icon="images/24x24/new-user.png" href="addUser" title="${%Create User}" permission="${app.ADMINISTER}"/>
+      <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
+      <l:task href="${rootURL}/manage" icon="icon-setting icon-md" permission="${app.ADMINISTER}" title="${%Manage Jenkins}"/>
+      <l:task href="addUser" icon="icon-new-user icon-md" permission="${app.ADMINISTER}" title="${%Create User}"/>
     </l:tasks>
   </l:side-panel>
 </j:jelly>

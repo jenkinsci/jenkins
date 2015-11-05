@@ -23,6 +23,7 @@
  */
 package hudson.model.queue;
 
+import hudson.model.AbstractProject;
 import hudson.model.Executor;
 import hudson.model.Label;
 import hudson.model.Node;
@@ -30,7 +31,9 @@ import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceActivity;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
+import javax.annotation.CheckForNull;
 
 /**
  * A component of {@link Task} that represents a computation carried out by a single {@link Executor}.
@@ -69,13 +72,16 @@ public interface SubTask extends ResourceActivity {
 
     /**
      * Creates {@link Executable}, which performs the actual execution of the task.
+     * @return {@link Executable} to be launched or null if the executable cannot be
+     * created (e.g. {@link AbstractProject} is disabled)
+     * @exception IOException {@link Executable} cannot be created
      */
-    Executable createExecutable() throws IOException;
+    @CheckForNull Executable createExecutable() throws IOException;
 
     /**
      * Gets the {@link Task} that this subtask belongs to.
      */
-    Task getOwnerTask();
+    @Nonnull Task getOwnerTask();
 
     /**
      * If a subset of {@link SubTask}s of a {@link Task} needs to be collocated with other {@link SubTask}s,

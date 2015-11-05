@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout norefresh="true" title="${%Edit View}">
+  <l:layout norefresh="true" title="${%Edit View}" permission="${it.CONFIGURE}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <!-- to make the form field binding work -->
@@ -39,7 +39,7 @@ THE SOFTWARE.
           <f:textbox name="name" value="${it.viewName}" />
         </f:entry>
         <f:entry title="${%Description}" help="/help/view-config/description.html">
-          <f:textarea name="description" field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}"/>
+          <f:textarea name="description" field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
         <f:entry title="${%Filter build queue}" help="/help/view-config/filter-queue.html">
         	<f:checkbox name="filterQueue" field="filterQueue"/>
@@ -54,10 +54,12 @@ THE SOFTWARE.
         <!-- view property configurations -->
         <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
 
-        <f:block>
-          <f:submit value="OK" />
-        </f:block>
+        <f:bottomButtonBar>
+          <f:submit value="${%OK}" />
+          <f:apply />
+        </f:bottomButtonBar>
       </f:form>
+      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

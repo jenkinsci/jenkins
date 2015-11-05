@@ -1,0 +1,62 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Configures aspects of the master as a build node.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout norefresh="true" permission="${it.CONFIGURE}" title="${it.displayName}">
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
+      <f:form method="post" action="configSubmit" name="config">
+        <j:set var="instance" value="${it.node}" />
+        <j:set var="descriptor" value="${instance.descriptor}" />
+
+        <!-- Currently not editable
+        <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
+          <f:textbox field="nodeDescription" />
+        </f:entry>
+        -->
+
+        <f:entry title="${%# of executors}" field="numExecutors">
+          <f:number clazz="positive-number" min="0" step="1"/>
+        </f:entry>
+
+        <f:entry title="${%Labels}" field="labelString">
+          <f:textbox />
+        </f:entry>
+
+        <f:slave-mode name="master.mode" node="${it.node}"/>
+
+        <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
+
+        <f:block>
+          <f:submit value="${%Save}"/>
+        </f:block>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

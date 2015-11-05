@@ -24,6 +24,8 @@
 package org.jvnet.hudson.test.recipes;
 
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRecipe;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.METHOD;
@@ -40,6 +42,7 @@ import java.util.Locale;
  */
 @Documented
 @Recipe(PresetData.RunnerImpl.class)
+@JenkinsRecipe(PresetData.RuleRunnerImpl.class)
 @Target(METHOD)
 @Retention(RUNTIME)
 public @interface PresetData {
@@ -48,7 +51,7 @@ public @interface PresetData {
      */
     DataSet value();
 
-    public enum DataSet {
+    enum DataSet {
         /**
          * Secured Hudson that has no anonymous read access.
          * Any logged in user can do anything.
@@ -59,11 +62,18 @@ public @interface PresetData {
          * and any logged in user has a full access.
          */
         ANONYMOUS_READONLY,
+
+        SECURED_ACEGI,
     }
 
-    public class RunnerImpl extends Recipe.Runner<PresetData> {
+    class RunnerImpl extends Recipe.Runner<PresetData> {
         public void setup(HudsonTestCase testCase, PresetData recipe) {
             testCase.withPresetData(recipe.value().name().toLowerCase(Locale.ENGLISH).replace('_','-'));
+        }
+    }
+    class RuleRunnerImpl extends JenkinsRecipe.Runner<PresetData> {
+        public void setup(JenkinsRule jenkinsRule, PresetData recipe) {
+            jenkinsRule.withPresetData(recipe.value().name().toLowerCase(Locale.ENGLISH).replace('_','-'));
         }
     }
 }

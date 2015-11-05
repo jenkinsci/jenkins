@@ -30,6 +30,7 @@ import jenkins.model.Jenkins;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import jenkins.model.TransientActionFactory;
 
 /**
  * Extension point for inserting transient {@link hudson.model.Action}s to {@link hudson.model.Computer}s.
@@ -39,6 +40,7 @@ import java.util.List;
  * @author Stephen Connolly
  * @since 1.405
  * @see hudson.model.Action
+ * @see TransientActionFactory
  */
 public abstract class TransientComputerActionFactory implements ExtensionPoint {
     /**
@@ -55,12 +57,12 @@ public abstract class TransientComputerActionFactory implements ExtensionPoint {
      * Returns all the registered {@link TransientComputerActionFactory}s.
      */
     public static ExtensionList<TransientComputerActionFactory> all() {
-        return Jenkins.getInstance().getExtensionList(TransientComputerActionFactory.class);
+        return ExtensionList.lookup(TransientComputerActionFactory.class);
     }
 
 
     /**
-     * Creates {@link Action)s for a node, using all registered {@link TransientComputerActionFactory }s.
+     * Creates {@link Action}s for a node, using all registered {@link TransientComputerActionFactory}s.
      */
 	public static List<Action> createAllFor(Computer target) {
 		List<Action> result = new ArrayList<Action>();

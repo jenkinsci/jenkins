@@ -1,0 +1,25 @@
+<div>
+    Wenn angewählt, wird Jenkins Builds parallel planen und ausführen (vorausgesetzt, es existieren
+    ausreichend viele Build-Prozessoren und Build-Aufträge). Dies ist nützlich bei Build- und Testjobs, die
+    lange dauern: Wird öfter gebaut, so beinhaltet ein Build weniger Änderungen. Gleichzeitig verringert sich
+    die Gesamtzeit, da ein Build nun nicht mehr so lange auf das Ende des vorausgehenden Builds warten muss.
+    Parallele Ausführung ist oft auch in Kombination mit parametrisierten Builds nützlich, die
+    unabhängig voneinander gebaut werden können.
+
+    <p>
+    Für bestimmte Arten von Jobs kann eine parallele Ausführung mehrerer Builds problematisch sein,
+    z.B. wenn der Build exklusiven Zugriff auf eine bestimmte Ressource, etwa eine Datenbank, voraussetzt
+    oder für Jobs, bei denen Jenkins als cron-Ersatz eingesetzt wird.
+
+    <p>
+    Wenn Sie einen angepassten Arbeitsbereich verwenden und diese Option aktivieren, werden alle Ihre
+    Builds gleichzeitig im selben Arbeitsbereich ausgeführt. Ohne weitere Vorkehrungen von Ihrer Seite
+    werden Ihre Builds dann voraussichtlich miteinander kollidieren. Ist die Option deaktiviert, benutzt Jenkins
+    für Builds jeweils einen eigenen, isolierten Arbeitsbereich - sogar wenn sie auf demselben Knoten ausgeführt werden.
+
+    <p>
+    Falls Jenkins unterschiedliche Arbeitsbereiche einsetzt, hängt Jenkins "@<I>num</I>" an den
+    Verzeichnisnamen des Arbeitsbereiches, z.B. "@2".  Der Separator "@" kann konfiguriert werden indem das System Property
+    "hudson.slaves.WorkspaceList" auf die gewünschte Separatorzeichenkette auf der Kommandozeile von Jenkins gesetzt wird.
+    Z.B. durch "-Dhudson.slaves.WorkspaceList=-" wird der Bindestrich als Separator verwendet.
+</div>

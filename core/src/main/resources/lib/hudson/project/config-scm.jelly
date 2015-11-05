@@ -37,4 +37,12 @@ THE SOFTWARE.
       </f:radioBlock>
     </j:forEach>
   </f:section>
+
+  <j:set var="descriptors" value="${descriptor.getApplicableSCMCheckoutStrategyDescriptors(instance)}"/>
+	<j:if test="${descriptors.size() gt 1}">
+    <f:section title="${%Advanced Source Code Management}">
+			<f:dropdownDescriptorSelector title="${%SCM Checkout Strategy}" field="scmCheckoutStrategy"
+              descriptors="${descriptors}" />
+    </f:section>
+  </j:if>
 </j:jelly>

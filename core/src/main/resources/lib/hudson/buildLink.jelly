@@ -42,13 +42,12 @@ THE SOFTWARE.
 	    <j:set var="r" value="${job.getBuildByNumber(number)}" />
 	    <j:choose>
 	      <j:when test="${r==null}">
-	        <a href="${rootURL}/${job.url}">${jobName}</a>
+	        <a href="${rootURL}/${job.url}" class="model-link">${jobName}</a>
           #<!-- -->${number}
 	      </j:when>
 	      <j:otherwise>
-	        <a href="${attrs.href ?: rootURL+'/'+r.url}">
-	          <img src="${imagesURL}/16x16/${r.buildStatusUrl}"
-                 alt="${r.iconColor.description}" height="16" width="16"/>${jobName_}#<!-- -->${number}</a>
+	        <a href="${attrs.href ?: rootURL+'/'+r.url}" class="model-link">
+	          <l:icon alt="${r.iconColor.description}" class="${r.buildStatusIconClassName} icon-sm"/>${jobName_}#<!-- -->${number}</a>
 	      </j:otherwise>
 	    </j:choose>
 	  </j:otherwise>

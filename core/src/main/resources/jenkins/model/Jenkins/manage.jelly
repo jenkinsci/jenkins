@@ -31,9 +31,22 @@ THE SOFTWARE.
   <d:taglib uri="local">
     <!-- table to show a map -->
     <d:tag name="feature">
+      <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"/>
+      ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,iconUrl,title,requiresConfirmation,requiresConfirmation) : null}
+      <!-- TODO summary.jelly should be modified to accept requiresConfirmation so the icon link can be included -->
+      <j:set var="_href" value="${href}"/>
       <t:summary icon="${icon}"
-                 href="${href}" iconOnly="true">
-        <div class="link"><a href="${href}">${title}</a></div>
+                 href="${requiresConfirmation ? null : href}" iconOnly="true">
+        <div class="link">
+          <j:choose>
+            <j:when test="${requiresConfirmation}">
+              <l:confirmationLink href="${_href}" post="true" message="${%are.you.sure(title)}">${title}</l:confirmationLink>
+            </j:when>
+            <j:otherwise>
+              <f:link href="${_href}" post="${post}">${title}</f:link>
+            </j:otherwise>
+          </j:choose>
+        </div>
         <div style="color:gray; text-decoration:none;">
           <d:invokeBody />
         </div>
@@ -41,13 +54,15 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <st:include page="sidepanel.jelly" />
+  <j:if test="${taskTags==null}">
+    <st:include page="sidepanel.jelly" />
+  </j:if>
   <l:main-panel>
     <h1>${%Manage Jenkins}</h1>
     <j:if test="${it.checkURIEncodingEnabled}">
       <script>
         var url='checkURIEncoding';
-        var params='value=\u57f7\u4e8b';
+        var params= {value : '\u57f7\u4e8b'};
         var checkAjax=new Ajax.Updater(
           'message', url,
           {
@@ -67,56 +82,17 @@ THE SOFTWARE.
     <st:include page="downgrade.jelly" />
 
     <table style="padding-left: 2em;" id="management-links">
-      <local:feature icon="setting.png"          href="configure"    title="${%Configure System}">
-        ${%Configure global settings and paths.}
-      </local:feature>
-      <local:feature icon="refresh.png"          href="reload"       title="${%Reload Configuration from Disk}">
-        ${%Discard all the loaded data in memory and reload everything from file system.}
-        ${%Useful when you modified config files directly on disk.}
-      </local:feature>
-      <local:feature icon="plugin.png"        href="pluginManager/" title="${%Manage Plugins}">
-        ${%Add, remove, disable or enable plugins that can extend the functionality of Jenkins.}
-        <j:if test="${it.updateCenter.hasUpdates()}">
-          <span style="color:red; font-weight:bold">(${%updates available})</span>
-        </j:if>
-      </local:feature>
-      <local:feature icon="computer.png"     href="systemInfo"  title="${%System Information}">
-        ${%Displays various environmental information to assist trouble-shooting.}
-      </local:feature>
-      <local:feature icon="clipboard.png"    href="log"         title="${%System Log}">
-        ${%SystemLogText}
-      </local:feature>
-      <local:feature icon="monitor.png"    href="load-statistics"         title="${%Load Statistics}">
-        ${%LoadStatisticsText}
-      </local:feature>
-      <local:feature icon="terminal.png"    href="cli"         title="${%Jenkins CLI}">
-        ${%JenkinsCliText}
-      </local:feature>
-      <local:feature icon="notepad.png"      href="script"      title="${%Script Console}">
-        ${%Executes arbitrary script for administration/trouble-shooting/diagnostics.}
-      </local:feature>
-      <local:feature icon="network.png"      href="computer/"   title="${%Manage Nodes}">
-        ${%Add, remove, control and monitor the various nodes that Jenkins runs jobs on.}
-      </local:feature>
-      <!-- TODO: replace all the hard-coded ones with the standard extension point -->
       <j:forEach var="m" items="${it.managementLinks}">
-        <j:if test="${m.iconFileName!=null}">
-          <local:feature icon="${m.iconFileName}"      href="${m.urlName}"   title="${m.displayName}">
-            <j:out value="${m.description}"/>
-          </local:feature>
-        </j:if>
+        <l:hasPermission permission="${m.requiredPermission}">
+          <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}"/>
+          <j:if test="${icon!=null}">
+            <local:feature icon="${icon}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}" post="${m.requiresPOST}">
+              <j:out value="${m.description}"/>
+              <st:include it="${m}" page="info.jelly" optional="true"/>
+            </local:feature>
+          </j:if>
+        </l:hasPermission>
       </j:forEach>
-
-      <j:choose>
-        <j:when test="${it.quietingDown}">
-          <local:feature icon="system-log-out.png"   href="cancelQuietDown" title="${%Cancel Shutdown}"/>
-        </j:when>
-        <j:otherwise>
-          <local:feature icon="system-log-out.png"   href="quietDown" title="${%Prepare for Shutdown}">
-            ${%Stops executing new builds, so that the system can be eventually shut down safely.}
-          </local:feature>
-        </j:otherwise>
-      </j:choose>
     </table>
   </l:main-panel>
 </l:layout>

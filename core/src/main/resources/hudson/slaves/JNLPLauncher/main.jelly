@@ -28,11 +28,11 @@ THE SOFTWARE.
     <j:when test="${app.slaveAgentPort==-1}">
       <div class="error">
         ${%slaveAgentPort.disabled}
-        <l:isAdmin><a href="${rootURL}/configure">${%configure.link.text}</a>.</l:isAdmin>
+        <l:isAdmin><a href="${rootURL}/configureSecurity">${%configure.link.text}</a>.</l:isAdmin>
       </div>
     </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
-      <l:isAdmin><!-- TODO: we need a permission to launch a slave -->
+      <j:if test="${h.hasPermission(it, it.CONNECT)}">
         <p>
           ${%Connect slave to Jenkins one of these ways:}
         </p>
@@ -45,18 +45,31 @@ THE SOFTWARE.
               ${%Launch agent from browser on slave}
             </p>
           </li>
-          <li>
-            <p>
-              ${%Run from slave command line:}
-            </p>
-            <pre>javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
-          </li>
-          <li>
-            <p>
-              ${%Or if the slave is headless:}
-            </p>
-            <pre>java -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
-          </li>
+          <j:choose>
+            <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
+              <li>
+                <p>
+                  ${%Run from slave command line:}
+                </p>
+                <pre>javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
+              </li>
+              <li>
+                <p>
+                  ${%Or if the slave is headless:}
+                </p>
+                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
+              </li>
+            </j:when>
+            <j:otherwise>
+              <li>
+                <p>
+                  ${%Run from slave command line:}
+                </p>
+                <!-- TODO conceal secret w/ JS if possible -->
+                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac}</pre>
+              </li>
+            </j:otherwise>
+          </j:choose>
         </ul>
         <!--
         <p>
@@ -65,7 +78,7 @@ THE SOFTWARE.
           </a>
         </p>
         -->
-      </l:isAdmin>
+      </j:if>
     </j:when>
     <j:otherwise>
       <p>

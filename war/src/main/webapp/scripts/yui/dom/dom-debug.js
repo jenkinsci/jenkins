@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.5.1
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
 */
 /**
  * The dom module provides helper methods for manipulating Dom elements.
@@ -11,140 +11,82 @@ version: 2.5.1
  */
 
 (function() {
-    var Y = YAHOO.util,     // internal shorthand
-        getStyle,           // for load time browser branching
-        setStyle,           // ditto
+    // for use with generateId (global to save state if Dom is overwritten)
+    YAHOO.env._id_counter = YAHOO.env._id_counter || 0;
+
+    // internal shorthand
+    var Y = YAHOO.util,
+        lang = YAHOO.lang,
+        UA = YAHOO.env.ua,
+        trim = YAHOO.lang.trim,
         propertyCache = {}, // for faster hyphen converts
-        reClassNameCache = {},          // cache regexes for className
-        document = window.document;     // cache for faster lookups
-    
-    YAHOO.env._id_counter = YAHOO.env._id_counter || 0;     // for use with generateId (global to save state if Dom is overwritten)
+        reCache = {}, // cache className regexes
+        RE_TABLE = /^t(?:able|d|h)$/i, // for _calcBorders
+        RE_COLOR = /color$/i,
 
+        // DOM aliases 
+        document = window.document,     
+        documentElement = document.documentElement,
+
+        // string constants
+        OWNER_DOCUMENT = 'ownerDocument',
+        DEFAULT_VIEW = 'defaultView',
+        DOCUMENT_ELEMENT = 'documentElement',
+        COMPAT_MODE = 'compatMode',
+        OFFSET_LEFT = 'offsetLeft',
+        OFFSET_TOP = 'offsetTop',
+        OFFSET_PARENT = 'offsetParent',
+        PARENT_NODE = 'parentNode',
+        NODE_TYPE = 'nodeType',
+        TAG_NAME = 'tagName',
+        SCROLL_LEFT = 'scrollLeft',
+        SCROLL_TOP = 'scrollTop',
+        GET_BOUNDING_CLIENT_RECT = 'getBoundingClientRect',
+        GET_COMPUTED_STYLE = 'getComputedStyle',
+        CURRENT_STYLE = 'currentStyle',
+        CSS1_COMPAT = 'CSS1Compat',
+        _BACK_COMPAT = 'BackCompat',
+        _CLASS = 'class', // underscore due to reserved word
+        CLASS_NAME = 'className',
+        EMPTY = '',
+        SPACE = ' ',
+        C_START = '(?:^|\\s)',
+        C_END = '(?= |$)',
+        G = 'g',
+        POSITION = 'position',
+        FIXED = 'fixed',
+        RELATIVE = 'relative',
+        LEFT = 'left',
+        TOP = 'top',
+        MEDIUM = 'medium',
+        BORDER_LEFT_WIDTH = 'borderLeftWidth',
+        BORDER_TOP_WIDTH = 'borderTopWidth',
+    
     // brower detection
-    var isOpera = YAHOO.env.ua.opera,
-        isSafari = YAHOO.env.ua.webkit, 
-        isGecko = YAHOO.env.ua.gecko,
-        isIE = YAHOO.env.ua.ie; 
+        isOpera = UA.opera,
+        isSafari = UA.webkit, 
+        isGecko = UA.gecko, 
+        isIE = UA.ie; 
     
-    // regex cache
-    var patterns = {
-        HYPHEN: /(-[a-z])/i, // to normalize get/setStyle
-        ROOT_TAG: /^body|html$/i, // body for quirks mode, html for standards,
-        OP_SCROLL:/^(?:inline|table-row)$/i
-    };
-
-    var toCamel = function(property) {
-        if ( !patterns.HYPHEN.test(property) ) {
-            return property; // no hyphens
-        }
-        
-        if (propertyCache[property]) { // already converted
-            return propertyCache[property];
-        }
-       
-        var converted = property;
- 
-        while( patterns.HYPHEN.exec(converted) ) {
-            converted = converted.replace(RegExp.$1,
-                    RegExp.$1.substr(1).toUpperCase());
-        }
-        
-        propertyCache[property] = converted;
-        return converted;
-        //return property.replace(/-([a-z])/gi, function(m0, m1) {return m1.toUpperCase()}) // cant use function as 2nd arg yet due to safari bug
-    };
-    
-    var getClassRegEx = function(className) {
-        var re = reClassNameCache[className];
-        if (!re) {
-            re = new RegExp('(?:^|\\s+)' + className + '(?:\\s+|$)');
-            reClassNameCache[className] = re;
-        }
-        return re;
-    };
-
-    // branching at load instead of runtime
-    if (document.defaultView && document.defaultView.getComputedStyle) { // W3C DOM method
-        getStyle = function(el, property) {
-            var value = null;
-            
-            if (property == 'float') { // fix reserved word
-                property = 'cssFloat';
-            }
-
-            var computed = el.ownerDocument.defaultView.getComputedStyle(el, '');
-            if (computed) { // test computed before touching for safari
-                value = computed[toCamel(property)];
-            }
-            
-            return el.style[property] || value;
-        };
-    } else if (document.documentElement.currentStyle && isIE) { // IE method
-        getStyle = function(el, property) {                         
-            switch( toCamel(property) ) {
-                case 'opacity' :// IE opacity uses filter
-                    var val = 100;
-                    try { // will error if no DXImageTransform
-                        val = el.filters['DXImageTransform.Microsoft.Alpha'].opacity;
-
-                    } catch(e) {
-                        try { // make sure its in the document
-                            val = el.filters('alpha').opacity;
-                        } catch(e) {
-                            YAHOO.log('getStyle: IE filter failed',
-                                    'error', 'Dom');
-                        }
-                    }
-                    return val / 100;
-                case 'float': // fix reserved word
-                    property = 'styleFloat'; // fall through
-                default: 
-                    // test currentStyle before touching
-                    var value = el.currentStyle ? el.currentStyle[property] : null;
-                    return ( el.style[property] || value );
-            }
-        };
-    } else { // default to inline only
-        getStyle = function(el, property) { return el.style[property]; };
-    }
-    
-    if (isIE) {
-        setStyle = function(el, property, val) {
-            switch (property) {
-                case 'opacity':
-                    if ( YAHOO.lang.isString(el.style.filter) ) { // in case not appended
-                        el.style.filter = 'alpha(opacity=' + val * 100 + ')';
-                        
-                        if (!el.currentStyle || !el.currentStyle.hasLayout) {
-                            el.style.zoom = 1; // when no layout or cant tell
-                        }
-                    }
-                    break;
-                case 'float':
-                    property = 'styleFloat';
-                default:
-                el.style[property] = val;
-            }
-        };
-    } else {
-        setStyle = function(el, property, val) {
-            if (property == 'float') {
-                property = 'cssFloat';
-            }
-            el.style[property] = val;
-        };
-    }
-
-    var testElement = function(node, method) {
-        return node && node.nodeType == 1 && ( !method || method(node) );
-    };
-
     /**
      * Provides helper methods for DOM elements.
      * @namespace YAHOO.util
      * @class Dom
+     * @requires yahoo, event
      */
-    YAHOO.util.Dom = {
+    Y.Dom = {
+        CUSTOM_ATTRIBUTES: (!documentElement.hasAttribute) ? { // IE < 8
+            'for': 'htmlFor',
+            'class': CLASS_NAME
+        } : { // w3c
+            'htmlFor': 'for',
+            'className': _CLASS
+        },
+
+        DOT_ATTRIBUTES: {
+            checked: true 
+        },
+
         /**
          * Returns an HTMLElement reference.
          * @method get
@@ -152,26 +94,51 @@ version: 2.5.1
          * @return {HTMLElement | Array} A DOM reference to an HTML element or an array of HTMLElements.
          */
         get: function(el) {
-            if (el && (el.nodeType || el.item)) { // Node, or NodeList
-                return el;
-            }
+            var id, nodes, c, i, len, attr, ret = null;
 
-            if (YAHOO.lang.isString(el) || !el) { // id or null
-                return document.getElementById(el);
-            }
-            
-            if (el.length !== undefined) { // array-like 
-                var c = [];
-                for (var i = 0, len = el.length; i < len; ++i) {
-                    c[c.length] = Y.Dom.get(el[i]);
+            if (el) {
+                if (typeof el == 'string' || typeof el == 'number') { // id
+                    id = el + '';
+                    el = document.getElementById(el);
+                    attr = (el) ? el.attributes : null;
+                    if (el && attr && attr.id && attr.id.value === id) { // IE: avoid false match on "name" attribute
+                        return el;
+                    } else if (el && document.all) { // filter by name
+                        el = null;
+                        nodes = document.all[id];
+                        if (nodes && nodes.length) {
+                            for (i = 0, len = nodes.length; i < len; ++i) {
+                                if (nodes[i].id === id) {
+                                    return nodes[i];
+                                }
+                            }
+                        }
+                    }
+                } else if (Y.Element && el instanceof Y.Element) {
+                    el = el.get('element');
+                } else if (!el.nodeType && 'length' in el) { // array-like 
+                    c = [];
+                    for (i = 0, len = el.length; i < len; ++i) {
+                        c[c.length] = Y.Dom.get(el[i]);
+                    }
+                    
+                    el = c;
                 }
-                
-                return c;
+
+                ret = el;
             }
 
-            return el; // some other object, just pass it back
+            return ret;
         },
     
+        getComputedStyle: function(el, property) {
+            if (window[GET_COMPUTED_STYLE]) {
+                return el[OWNER_DOCUMENT][DEFAULT_VIEW][GET_COMPUTED_STYLE](el, null)[property];
+            } else if (el[CURRENT_STYLE]) {
+                return Y.Dom.IE_ComputedStyle.get(el, property);
+            }
+        },
+
         /**
          * Normalizes currentStyle and ComputedStyle.
          * @method getStyle
@@ -180,14 +147,57 @@ version: 2.5.1
          * @return {String | Array} The current value of the style property for the element(s).
          */
         getStyle: function(el, property) {
-            property = toCamel(property);
-            
-            var f = function(element) {
-                return getStyle(element, property);
-            };
-            
-            return Y.Dom.batch(el, f, Y.Dom, true);
+            return Y.Dom.batch(el, Y.Dom._getStyle, property);
         },
+
+        // branching at load instead of runtime
+        _getStyle: function() {
+            if (window[GET_COMPUTED_STYLE]) { // W3C DOM method
+                return function(el, property) {
+                    property = (property === 'float') ? property = 'cssFloat' :
+                            Y.Dom._toCamel(property);
+
+                    var value = el.style[property],
+                        computed;
+                    
+                    if (!value) {
+                        computed = el[OWNER_DOCUMENT][DEFAULT_VIEW][GET_COMPUTED_STYLE](el, null);
+                        if (computed) { // test computed before touching for safari
+                            value = computed[property];
+                        }
+                    }
+                    
+                    return value;
+                };
+            } else if (documentElement[CURRENT_STYLE]) {
+                return function(el, property) {                         
+                    var value;
+
+                    switch(property) {
+                        case 'opacity' :// IE opacity uses filter
+                            value = 100;
+                            try { // will error if no DXImageTransform
+                                value = el.filters['DXImageTransform.Microsoft.Alpha'].opacity;
+
+                            } catch(e) {
+                                try { // make sure its in the document
+                                    value = el.filters('alpha').opacity;
+                                } catch(err) {
+                                    YAHOO.log('getStyle: IE filter failed',
+                                            'error', 'Dom');
+                                }
+                            }
+                            return value / 100;
+                        case 'float': // fix reserved word
+                            property = 'styleFloat'; // fall through
+                        default: 
+                            property = Y.Dom._toCamel(property);
+                            value = el[CURRENT_STYLE] ? el[CURRENT_STYLE][property] : null;
+                            return ( el.style[property] || value );
+                    }
+                };
+            }
+        }(),
     
         /**
          * Wrapper for setting style properties of HTMLElements.  Normalizes "opacity" across modern browsers.
@@ -197,37 +207,103 @@ version: 2.5.1
          * @param {String} val The value to apply to the given property.
          */
         setStyle: function(el, property, val) {
-            property = toCamel(property);
-            
-            var f = function(element) {
-                setStyle(element, property, val);
-                YAHOO.log('setStyle setting ' + property + ' to ' + val, 'info', 'Dom');
-                
-            };
-            
-            Y.Dom.batch(el, f, Y.Dom, true);
+            Y.Dom.batch(el, Y.Dom._setStyle, { prop: property, val: val });
         },
+
+        _setStyle: function() {
+            if (!window.getComputedStyle && document.documentElement.currentStyle) {
+                return function(el, args) {
+                    var property = Y.Dom._toCamel(args.prop),
+                        val = args.val;
+
+                    if (el) {
+                        switch (property) {
+                            case 'opacity':
+                                // remove filter if unsetting or full opacity
+                                if (val === '' || val === null || val === 1) {
+                                    el.style.removeAttribute('filter');
+                                } else if ( lang.isString(el.style.filter) ) { // in case not appended
+                                    el.style.filter = 'alpha(opacity=' + val * 100 + ')';
+                                    
+                                    if (!el[CURRENT_STYLE] || !el[CURRENT_STYLE].hasLayout) {
+                                        el.style.zoom = 1; // when no layout or cant tell
+                                    }
+                                }
+                                break;
+                            case 'float':
+                                property = 'styleFloat';
+                            default:
+                            el.style[property] = val;
+                        }
+                    } else {
+                        YAHOO.log('element ' + el + ' is undefined', 'error', 'Dom');
+                    }
+                };
+            } else {
+                return function(el, args) {
+                    var property = Y.Dom._toCamel(args.prop),
+                        val = args.val;
+                    if (el) {
+                        if (property == 'float') {
+                            property = 'cssFloat';
+                        }
+                        el.style[property] = val;
+                    } else {
+                        YAHOO.log('element ' + el + ' is undefined', 'error', 'Dom');
+                    }
+                };
+            }
+
+        }(),
         
         /**
-         * Gets the current position of an element based on page coordinates.  Element must be part of the DOM tree to have page coordinates (display:none or elements not appended return false).
+         * Gets the current position of an element based on page coordinates. 
+         * Element must be part of the DOM tree to have page coordinates (display:none or elements not appended return false).
          * @method getXY
-         * @param {String | HTMLElement | Array} el Accepts a string to use as an ID, an actual DOM reference, or an Array of IDs and/or HTMLElements
+         * @param {String | HTMLElement | Array} el Accepts a string to use as an ID, an actual DOM
+         * reference, or an Array of IDs and/or HTMLElements
          * @return {Array} The XY position of the element(s)
          */
         getXY: function(el) {
-            var f = function(el) {
-                // has to be part of document to have pageXY
-                if ( (el.parentNode === null || el.offsetParent === null ||
-                        this.getStyle(el, 'display') == 'none') && el != el.ownerDocument.body) {
-                    YAHOO.log('getXY failed: element not available', 'error', 'Dom');
-                    return false;
+            return Y.Dom.batch(el, Y.Dom._getXY);
+        },
+
+        _canPosition: function(el) {
+            return ( Y.Dom._getStyle(el, 'display') !== 'none' && Y.Dom._inDoc(el) );
+        },
+
+        _getXY: function(node) {
+            var scrollLeft, scrollTop, box, doc,
+                clientTop, clientLeft,
+                round = Math.round, // TODO: round?
+                xy = false;
+
+            if (Y.Dom._canPosition(node)) {
+                box = node[GET_BOUNDING_CLIENT_RECT]();
+                doc = node[OWNER_DOCUMENT];
+                scrollLeft = Y.Dom.getDocumentScrollLeft(doc);
+                scrollTop = Y.Dom.getDocumentScrollTop(doc);
+                xy = [box[LEFT], box[TOP]];
+
+                // remove IE default documentElement offset (border)
+                if (clientTop || clientLeft) {
+                    xy[0] -= clientLeft;
+                    xy[1] -= clientTop;
                 }
-                
-                YAHOO.log('getXY returning ' + getXY(el), 'info', 'Dom');
-                return getXY(el);
-            };
-            
-            return Y.Dom.batch(el, f, Y.Dom, true);
+
+                if ((scrollTop || scrollLeft)) {
+                    xy[0] += scrollLeft;
+                    xy[1] += scrollTop;
+                }
+
+                // gecko may return sub-pixel (non-int) values
+                xy[0] = round(xy[0]);
+                xy[1] = round(xy[1]);
+            } else {
+                YAHOO.log('getXY failed: element not positionable (either not in a document or not displayed)', 'error', 'Dom');
+            }
+
+            return xy;
         },
         
         /**
@@ -267,48 +343,61 @@ version: 2.5.1
          * @param {Boolean} noRetry By default we try and set the position a second time if the first fails
          */
         setXY: function(el, pos, noRetry) {
-            var f = function(el) {
-                var style_pos = this.getStyle(el, 'position');
-                if (style_pos == 'static') { // default to relative
-                    this.setStyle(el, 'position', 'relative');
-                    style_pos = 'relative';
-                }
+            Y.Dom.batch(el, Y.Dom._setXY, { pos: pos, noRetry: noRetry });
+        },
 
-                var pageXY = this.getXY(el);
-                if (pageXY === false) { // has to be part of doc to have pageXY
-                    YAHOO.log('setXY failed: element not available', 'error', 'Dom');
-                    return false; 
-                }
-                
-                var delta = [ // assuming pixels; if not we will have to retry
-                    parseInt( this.getStyle(el, 'left'), 10 ),
-                    parseInt( this.getStyle(el, 'top'), 10 )
-                ];
-            
-                if ( isNaN(delta[0]) ) {// in case of 'auto'
-                    delta[0] = (style_pos == 'relative') ? 0 : el.offsetLeft;
-                } 
-                if ( isNaN(delta[1]) ) { // in case of 'auto'
-                    delta[1] = (style_pos == 'relative') ? 0 : el.offsetTop;
-                } 
-        
-                if (pos[0] !== null) { el.style.left = pos[0] - pageXY[0] + delta[0] + 'px'; }
-                if (pos[1] !== null) { el.style.top = pos[1] - pageXY[1] + delta[1] + 'px'; }
-              
-                if (!noRetry) {
-                    var newXY = this.getXY(el);
+        _setXY: function(node, args) {
+            var pos = Y.Dom._getStyle(node, POSITION),
+                setStyle = Y.Dom.setStyle,
+                xy = args.pos,
+                noRetry = args.noRetry,
 
-                    // if retry is true, try one more time if we miss 
-                   if ( (pos[0] !== null && newXY[0] != pos[0]) || 
-                        (pos[1] !== null && newXY[1] != pos[1]) ) {
-                       this.setXY(el, pos, true);
-                   }
-                }        
+                delta = [ // assuming pixels; if not we will have to retry
+                    parseInt( Y.Dom.getComputedStyle(node, LEFT), 10 ),
+                    parseInt( Y.Dom.getComputedStyle(node, TOP), 10 )
+                ],
+
+                currentXY,
+                newXY;
         
-                YAHOO.log('setXY setting position to ' + pos, 'info', 'Dom');
-            };
+            currentXY = Y.Dom._getXY(node);
+
+            if (!xy || currentXY === false) { // has to be part of doc to have xy
+                YAHOO.log('xy failed: node not available', 'error', 'Node');
+                return false; 
+            }
             
-            Y.Dom.batch(el, f, Y.Dom, true);
+            if (pos == 'static') { // default to relative
+                pos = RELATIVE;
+                setStyle(node, POSITION, pos);
+            }
+
+            if ( isNaN(delta[0]) ) {// in case of 'auto'
+                delta[0] = (pos == RELATIVE) ? 0 : node[OFFSET_LEFT];
+            } 
+            if ( isNaN(delta[1]) ) { // in case of 'auto'
+                delta[1] = (pos == RELATIVE) ? 0 : node[OFFSET_TOP];
+            } 
+
+            if (xy[0] !== null) { // from setX
+                setStyle(node, LEFT, xy[0] - currentXY[0] + delta[0] + 'px');
+            }
+
+            if (xy[1] !== null) { // from setY
+                setStyle(node, TOP, xy[1] - currentXY[1] + delta[1] + 'px');
+            }
+          
+            if (!noRetry) {
+                newXY = Y.Dom._getXY(node);
+
+                // if retry is true, try one more time if we miss 
+               if ( (xy[0] !== null && newXY[0] != xy[0]) || 
+                    (xy[1] !== null && newXY[1] != xy[1]) ) {
+                   Y.Dom._setXY(node, { pos: xy, noRetry: true });
+               }
+            }        
+
+            YAHOO.log('setXY setting position to ' + xy, 'info', 'Node');
         },
         
         /**
@@ -342,14 +431,14 @@ version: 2.5.1
          */
         getRegion: function(el) {
             var f = function(el) {
-                if ( (el.parentNode === null || el.offsetParent === null ||
-                        this.getStyle(el, 'display') == 'none') && el != el.ownerDocument.body) {
-                    YAHOO.log('getRegion failed: element not available', 'error', 'Dom');
-                    return false;
+                var region = false;
+                if ( Y.Dom._canPosition(el) ) {
+                    region = Y.Region.getRegion(el);
+                    YAHOO.log('getRegion returning ' + region, 'info', 'Dom');
+                } else {
+                    YAHOO.log('getRegion failed: element not positionable (either not in a document or not displayed)', 'error', 'Dom');
                 }
 
-                var region = Y.Region.getRegion(el);
-                YAHOO.log('getRegion returning ' + region, 'info', 'Dom');
                 return region;
             };
             
@@ -377,16 +466,23 @@ version: 2.5.1
         },
 
         /**
-         * Returns a array of HTMLElements with the given class.
+         * Returns an array of HTMLElements with the given class.
          * For optimized performance, include a tag and/or root node when possible.
+         * Note: This method operates against a live collection, so modifying the 
+         * collection in the callback (removing/appending nodes, etc.) will have
+         * side effects.  Instead you should iterate the returned nodes array,
+         * as you would with the native "getElementsByTagName" method. 
          * @method getElementsByClassName
          * @param {String} className The class name to match against
          * @param {String} tag (optional) The tag name of the elements being collected
-         * @param {String | HTMLElement} root (optional) The HTMLElement or an ID to use as the starting point 
+         * @param {String | HTMLElement} root (optional) The HTMLElement or an ID to use as the starting point.
+         * This element is not included in the className scan.
          * @param {Function} apply (optional) A function to apply to each element when found 
+         * @param {Any} o (optional) An optional arg that is passed to the supplied method
+         * @param {Boolean} overrides (optional) Whether or not to override the scope of "method" with "o"
          * @return {Array} An array of elements that have the given class name
          */
-        getElementsByClassName: function(className, tag, root, apply) {
+        getElementsByClassName: function(className, tag, root, apply, o, overrides) {
             tag = tag || '*';
             root = (root) ? Y.Dom.get(root) : null || document; 
             if (!root) {
@@ -395,17 +491,18 @@ version: 2.5.1
 
             var nodes = [],
                 elements = root.getElementsByTagName(tag),
-                re = getClassRegEx(className);
+                hasClass = Y.Dom.hasClass;
 
             for (var i = 0, len = elements.length; i < len; ++i) {
-                if ( re.test(elements[i].className) ) {
+                if ( hasClass(elements[i], className) ) {
                     nodes[nodes.length] = elements[i];
-                    if (apply) {
-                        apply.call(elements[i], elements[i]);
-                    }
                 }
             }
             
+            if (apply) {
+                Y.Dom.batch(nodes, apply, o, overrides);
+            }
+
             return nodes;
         },
 
@@ -413,18 +510,35 @@ version: 2.5.1
          * Determines whether an HTMLElement has the given className.
          * @method hasClass
          * @param {String | HTMLElement | Array} el The element or collection to test
-         * @param {String} className the class name to search for
+         * @param {String | RegExp} className the class name to search for, or a regular
+         * expression to match against
          * @return {Boolean | Array} A boolean value or array of boolean values
          */
         hasClass: function(el, className) {
-            var re = getClassRegEx(className);
+            return Y.Dom.batch(el, Y.Dom._hasClass, className);
+        },
 
-            var f = function(el) {
-                YAHOO.log('hasClass returning ' + re.test(el.className), 'info', 'Dom');
-                return re.test(el.className);
-            };
+        _hasClass: function(el, className) {
+            var ret = false,
+                current;
             
-            return Y.Dom.batch(el, f, Y.Dom, true);
+            if (el && className) {
+                current = Y.Dom._getAttribute(el, CLASS_NAME) || EMPTY;
+                if (current) { // convert line breaks, tabs and other delims to spaces
+                    current = current.replace(/\s+/g, SPACE);
+                }
+
+                if (className.exec) {
+                    ret = className.test(current);
+                } else {
+                    ret = className && (SPACE + current + SPACE).
+                        indexOf(SPACE + className + SPACE) > -1;
+                }
+            } else {
+                YAHOO.log('hasClass called with invalid arguments', 'warn', 'Dom');
+            }
+
+            return ret;
         },
     
         /**
@@ -435,18 +549,24 @@ version: 2.5.1
          * @return {Boolean | Array} A pass/fail boolean or array of booleans
          */
         addClass: function(el, className) {
-            var f = function(el) {
-                if (this.hasClass(el, className)) {
-                    return false; // already present
+            return Y.Dom.batch(el, Y.Dom._addClass, className);
+        },
+
+        _addClass: function(el, className) {
+            var ret = false,
+                current;
+
+            if (el && className) {
+                current = Y.Dom._getAttribute(el, CLASS_NAME) || EMPTY;
+                if ( !Y.Dom._hasClass(el, className) ) {
+                    Y.Dom.setAttribute(el, CLASS_NAME, trim(current + SPACE + className));
+                    ret = true;
                 }
-                
-                YAHOO.log('addClass adding ' + className, 'info', 'Dom');
-                
-                el.className = YAHOO.lang.trim([el.className, className].join(' '));
-                return true;
-            };
-            
-            return Y.Dom.batch(el, f, Y.Dom, true);
+            } else {
+                YAHOO.log('addClass called with invalid arguments', 'warn', 'Dom');
+            }
+
+            return ret;
         },
     
         /**
@@ -457,26 +577,36 @@ version: 2.5.1
          * @return {Boolean | Array} A pass/fail boolean or array of booleans
          */
         removeClass: function(el, className) {
-            var re = getClassRegEx(className);
-            
-            var f = function(el) {
-                if (!className || !this.hasClass(el, className)) {
-                    return false; // not present
-                }                 
+            return Y.Dom.batch(el, Y.Dom._removeClass, className);
+        },
+        
+        _removeClass: function(el, className) {
+            var ret = false,
+                current,
+                newClass,
+                attr;
 
-                YAHOO.log('removeClass removing ' + className, 'info', 'Dom');
-                
-                var c = el.className;
-                el.className = c.replace(re, ' ');
-                if ( this.hasClass(el, className) ) { // in case of multiple adjacent
-                    this.removeClass(el, className);
+            if (el && className) {
+                current = Y.Dom._getAttribute(el, CLASS_NAME) || EMPTY;
+                Y.Dom.setAttribute(el, CLASS_NAME, current.replace(Y.Dom._getClassRegex(className), EMPTY));
+
+                newClass = Y.Dom._getAttribute(el, CLASS_NAME);
+                if (current !== newClass) { // else nothing changed
+                    Y.Dom.setAttribute(el, CLASS_NAME, trim(newClass)); // trim after comparing to current class
+                    ret = true;
+
+                    if (Y.Dom._getAttribute(el, CLASS_NAME) === '') { // remove class attribute if empty
+                        attr = (el.hasAttribute && el.hasAttribute(_CLASS)) ? _CLASS : CLASS_NAME;
+                        YAHOO.log('removeClass removing empty class attribute', 'info', 'Dom');
+                        el.removeAttribute(attr);
+                    }
                 }
 
-                el.className = YAHOO.lang.trim(el.className); // remove any trailing spaces
-                return true;
-            };
-            
-            return Y.Dom.batch(el, f, Y.Dom, true);
+            } else {
+                YAHOO.log('removeClass called with invalid arguments', 'warn', 'Dom');
+            }
+
+            return ret;
         },
         
         /**
@@ -489,31 +619,41 @@ version: 2.5.1
          * @return {Boolean | Array} A pass/fail boolean or array of booleans
          */
         replaceClass: function(el, oldClassName, newClassName) {
-            if (!newClassName || oldClassName === newClassName) { // avoid infinite loop
-                return false;
+            return Y.Dom.batch(el, Y.Dom._replaceClass, { from: oldClassName, to: newClassName });
+        },
+
+        _replaceClass: function(el, classObj) {
+            var className,
+                from,
+                to,
+                ret = false,
+                current;
+
+            if (el && classObj) {
+                from = classObj.from;
+                to = classObj.to;
+
+                if (!to) {
+                    ret = false;
+                }  else if (!from) { // just add if no "from"
+                    ret = Y.Dom._addClass(el, classObj.to);
+                } else if (from !== to) { // else nothing to replace
+                    // May need to lead with DBLSPACE?
+                    current = Y.Dom._getAttribute(el, CLASS_NAME) || EMPTY;
+                    className = (SPACE + current.replace(Y.Dom._getClassRegex(from), SPACE + to).
+                            replace(/\s+/g, SPACE)). // normalize white space
+                            split(Y.Dom._getClassRegex(to));
+
+                    // insert to into what would have been the first occurrence slot
+                    className.splice(1, 0, SPACE + to);
+                    Y.Dom.setAttribute(el, CLASS_NAME, trim(className.join(EMPTY)));
+                    ret = true;
+                }
+            } else {
+                YAHOO.log('replaceClass called with invalid arguments', 'warn', 'Dom');
             }
-            
-            var re = getClassRegEx(oldClassName);
 
-            var f = function(el) {
-                YAHOO.log('replaceClass replacing ' + oldClassName + ' with ' + newClassName, 'info', 'Dom');
-            
-                if ( !this.hasClass(el, oldClassName) ) {
-                    this.addClass(el, newClassName); // just add it if nothing to replace
-                    return true; // NOTE: return
-                }
-            
-                el.className = el.className.replace(re, ' ' + newClassName + ' ');
-
-                if ( this.hasClass(el, oldClassName) ) { // in case of multiple adjacent
-                    this.replaceClass(el, oldClassName, newClassName);
-                }
-
-                el.className = YAHOO.lang.trim(el.className); // remove any trailing spaces
-                return true;
-            };
-            
-            return Y.Dom.batch(el, f, Y.Dom, true);
+            return ret;
         },
         
         /**
@@ -530,12 +670,16 @@ version: 2.5.1
                 if (el && el.id) { // do not override existing ID
                     YAHOO.log('generateId returning existing id ' + el.id, 'info', 'Dom');
                     return el.id;
-                } 
+                }
 
                 var id = prefix + YAHOO.env._id_counter++;
                 YAHOO.log('generateId generating ' + id, 'info', 'Dom');
 
                 if (el) {
+                    if (el[OWNER_DOCUMENT] && el[OWNER_DOCUMENT].getElementById(id)) { // in case one already exists
+                        // use failed id plus prefix to help ensure uniqueness
+                        return Y.Dom.generateId(el, id + prefix);
+                    }
                     el.id = id;
                 }
                 
@@ -557,72 +701,103 @@ version: 2.5.1
             haystack = Y.Dom.get(haystack);
             needle = Y.Dom.get(needle);
             
-            if (!haystack || !needle) {
-                return false;
-            }
+            var ret = false;
 
-            if (haystack.contains && needle.nodeType && !isSafari) { // safari contains is broken
-                YAHOO.log('isAncestor returning ' + haystack.contains(needle), 'info', 'Dom');
-                return haystack.contains(needle);
+            if ( (haystack && needle) && (haystack[NODE_TYPE] && needle[NODE_TYPE]) ) {
+                if (haystack.contains && haystack !== needle) { // contains returns true when equal
+                    ret = haystack.contains(needle);
+                }
+                else if (haystack.compareDocumentPosition) { // gecko
+                    ret = !!(haystack.compareDocumentPosition(needle) & 16);
+                }
+            } else {
+                YAHOO.log('isAncestor failed; invalid input: ' + haystack + ',' + needle, 'error', 'Dom');
             }
-            else if ( haystack.compareDocumentPosition && needle.nodeType ) {
-                YAHOO.log('isAncestor returning ' + !!(haystack.compareDocumentPosition(needle) & 16), 'info', 'Dom');
-                return !!(haystack.compareDocumentPosition(needle) & 16);
-            } else if (needle.nodeType) {
-                // fallback to crawling up (safari)
-                return !!this.getAncestorBy(needle, function(el) {
-                    return el == haystack; 
-                }); 
-            }
-            YAHOO.log('isAncestor failed; most likely needle is not an HTMLElement', 'error', 'Dom');
-            return false;
+            YAHOO.log('isAncestor(' + haystack + ',' + needle + ' returning ' + ret, 'info', 'Dom');
+            return ret;
         },
         
         /**
          * Determines whether an HTMLElement is present in the current document.
          * @method inDocument         
          * @param {String | HTMLElement} el The element to search for
+         * @param {Object} doc An optional document to search, defaults to element's owner document 
          * @return {Boolean} Whether or not the element is present in the current document
          */
-        inDocument: function(el) {
-            return this.isAncestor(document.documentElement, el);
+        inDocument: function(el, doc) {
+            return Y.Dom._inDoc(Y.Dom.get(el), doc);
+        },
+
+        _inDoc: function(el, doc) {
+            var ret = false;
+            if (el && el[TAG_NAME]) {
+                doc = doc || el[OWNER_DOCUMENT]; 
+                ret = Y.Dom.isAncestor(doc[DOCUMENT_ELEMENT], el);
+            } else {
+                YAHOO.log('inDocument failed: invalid input', 'error', 'Dom');
+            }
+            return ret;
         },
         
         /**
-         * Returns a array of HTMLElements that pass the test applied by supplied boolean method.
+         * Returns an array of HTMLElements that pass the test applied by supplied boolean method.
          * For optimized performance, include a tag and/or root node when possible.
+         * Note: This method operates against a live collection, so modifying the 
+         * collection in the callback (removing/appending nodes, etc.) will have
+         * side effects.  Instead you should iterate the returned nodes array,
+         * as you would with the native "getElementsByTagName" method. 
          * @method getElementsBy
          * @param {Function} method - A boolean method for testing elements which receives the element as its only argument.
          * @param {String} tag (optional) The tag name of the elements being collected
          * @param {String | HTMLElement} root (optional) The HTMLElement or an ID to use as the starting point 
          * @param {Function} apply (optional) A function to apply to each element when found 
+         * @param {Any} o (optional) An optional arg that is passed to the supplied method
+         * @param {Boolean} overrides (optional) Whether or not to override the scope of "method" with "o"
          * @return {Array} Array of HTMLElements
          */
-        getElementsBy: function(method, tag, root, apply) {
+        getElementsBy: function(method, tag, root, apply, o, overrides, firstOnly) {
             tag = tag || '*';
             root = (root) ? Y.Dom.get(root) : null || document; 
 
-            if (!root) {
-                return [];
-            }
-
-            var nodes = [],
-                elements = root.getElementsByTagName(tag);
+                var ret = (firstOnly) ? null : [],
+                    elements;
             
-            for (var i = 0, len = elements.length; i < len; ++i) {
-                if ( method(elements[i]) ) {
-                    nodes[nodes.length] = elements[i];
-                    if (apply) {
-                        apply(elements[i]);
+            // in case Dom.get() returns null
+            if (root) {
+                elements = root.getElementsByTagName(tag);
+                for (var i = 0, len = elements.length; i < len; ++i) {
+                    if ( method(elements[i]) ) {
+                        if (firstOnly) {
+                            ret = elements[i]; 
+                            break;
+                        } else {
+                            ret[ret.length] = elements[i];
+                        }
                     }
+                }
+
+                if (apply) {
+                    Y.Dom.batch(ret, apply, o, overrides);
                 }
             }
 
-            YAHOO.log('getElementsBy returning ' + nodes, 'info', 'Dom');
+            YAHOO.log('getElementsBy returning ' + ret, 'info', 'Dom');
             
-            return nodes;
+            return ret;
         },
         
+        /**
+         * Returns the first HTMLElement that passes the test applied by the supplied boolean method.
+         * @method getElementBy
+         * @param {Function} method - A boolean method for testing elements which receives the element as its only argument.
+         * @param {String} tag (optional) The tag name of the elements being collected
+         * @param {String | HTMLElement} root (optional) The HTMLElement or an ID to use as the starting point 
+         * @return {HTMLElement}
+         */
+        getElementBy: function(method, tag, root) {
+            return Y.Dom.getElementsBy(method, tag, root, null, null, null, true); 
+        },
+
         /**
          * Runs the supplied method against each item in the Collection/Array.
          * The method is called with the element(s) as the first arg, and the optional param as the second ( method(el, o) ).
@@ -630,28 +805,26 @@ version: 2.5.1
          * @param {String | HTMLElement | Array} el (optional) An element or array of elements to apply the method to
          * @param {Function} method The method to apply to the element(s)
          * @param {Any} o (optional) An optional arg that is passed to the supplied method
-         * @param {Boolean} override (optional) Whether or not to override the scope of "method" with "o"
+         * @param {Boolean} overrides (optional) Whether or not to override the scope of "method" with "o"
          * @return {Any | Array} The return value(s) from the supplied method
          */
-        batch: function(el, method, o, override) {
-            el = (el && (el.tagName || el.item)) ? el : Y.Dom.get(el); // skip get() when possible
+        batch: function(el, method, o, overrides) {
+            var collection = [],
+                scope = (overrides) ? o : null;
+                
+            el = (el && (el[TAG_NAME] || el.item)) ? el : Y.Dom.get(el); // skip get() when possible
+            if (el && method) {
+                if (el[TAG_NAME] || el.length === undefined) { // element or not array-like 
+                    return method.call(scope, el, o);
+                } 
 
-            if (!el || !method) {
-                YAHOO.log('batch failed: invalid arguments', 'error', 'Dom');
+                for (var i = 0; i < el.length; ++i) {
+                    collection[collection.length] = method.call(scope || el[i], el[i], o);
+                }
+            } else {
+                YAHOO.log('batch called with invalid arguments', 'warn', 'Dom');
                 return false;
             } 
-            var scope = (override) ? o : window;
-            
-            if (el.tagName || el.length === undefined) { // element or not array-like 
-                return method.call(scope, el, o);
-            } 
-
-            var collection = [];
-            
-            for (var i = 0, len = el.length; i < len; ++i) {
-                collection[collection.length] = method.call(scope, el[i], o);
-            }
-            
             return collection;
         },
         
@@ -661,9 +834,9 @@ version: 2.5.1
          * @return {Int} The height of the actual document (which includes the body and its margin).
          */
         getDocumentHeight: function() {
-            var scrollHeight = (document.compatMode != 'CSS1Compat') ? document.body.scrollHeight : document.documentElement.scrollHeight;
+            var scrollHeight = (document[COMPAT_MODE] != CSS1_COMPAT || isSafari) ? document.body.scrollHeight : documentElement.scrollHeight,
+                h = Math.max(scrollHeight, Y.Dom.getViewportHeight());
 
-            var h = Math.max(scrollHeight, Y.Dom.getViewportHeight());
             YAHOO.log('getDocumentHeight returning ' + h, 'info', 'Dom');
             return h;
         },
@@ -674,8 +847,8 @@ version: 2.5.1
          * @return {Int} The width of the actual document (which includes the body and its margin).
          */
         getDocumentWidth: function() {
-            var scrollWidth = (document.compatMode != 'CSS1Compat') ? document.body.scrollWidth : document.documentElement.scrollWidth;
-            var w = Math.max(scrollWidth, Y.Dom.getViewportWidth());
+            var scrollWidth = (document[COMPAT_MODE] != CSS1_COMPAT || isSafari) ? document.body.scrollWidth : documentElement.scrollWidth,
+                w = Math.max(scrollWidth, Y.Dom.getViewportWidth());
             YAHOO.log('getDocumentWidth returning ' + w, 'info', 'Dom');
             return w;
         },
@@ -686,12 +859,12 @@ version: 2.5.1
          * @return {Int} The height of the viewable area of the page (excludes scrollbars).
          */
         getViewportHeight: function() {
-            var height = self.innerHeight; // Safari, Opera
-            var mode = document.compatMode;
+            var height = self.innerHeight, // Safari, Opera
+                mode = document[COMPAT_MODE];
         
             if ( (mode || isIE) && !isOpera ) { // IE, Gecko
-                height = (mode == 'CSS1Compat') ?
-                        document.documentElement.clientHeight : // Standards
+                height = (mode == CSS1_COMPAT) ?
+                        documentElement.clientHeight : // Standards
                         document.body.clientHeight; // Quirks
             }
         
@@ -706,12 +879,12 @@ version: 2.5.1
          */
         
         getViewportWidth: function() {
-            var width = self.innerWidth;  // Safari
-            var mode = document.compatMode;
+            var width = self.innerWidth,  // Safari
+                mode = document[COMPAT_MODE];
             
             if (mode || isIE) { // IE, Gecko, Opera
-                width = (mode == 'CSS1Compat') ?
-                        document.documentElement.clientWidth : // Standards
+                width = (mode == CSS1_COMPAT) ?
+                        documentElement.clientWidth : // Standards
                         document.body.clientWidth; // Quirks
             }
             YAHOO.log('getViewportWidth returning ' + width, 'info', 'Dom');
@@ -727,8 +900,8 @@ version: 2.5.1
          * @return {Object} HTMLElement or null if not found
          */
         getAncestorBy: function(node, method) {
-            while (node = node.parentNode) { // NOTE: assignment
-                if ( testElement(node, method) ) {
+            while ( (node = node[PARENT_NODE]) ) { // NOTE: assignment
+                if ( Y.Dom._testElement(node, method) ) {
                     YAHOO.log('getAncestorBy returning ' + node, 'info', 'Dom');
                     return node;
                 }
@@ -769,7 +942,7 @@ version: 2.5.1
                 return null;
             }
             var method = function(el) {
-                 return el.tagName && el.tagName.toUpperCase() == tagName.toUpperCase();
+                 return el[TAG_NAME] && el[TAG_NAME].toUpperCase() == tagName.toUpperCase();
             };
 
             return Y.Dom.getAncestorBy(node, method);
@@ -788,7 +961,7 @@ version: 2.5.1
         getPreviousSiblingBy: function(node, method) {
             while (node) {
                 node = node.previousSibling;
-                if ( testElement(node, method) ) {
+                if ( Y.Dom._testElement(node, method) ) {
                     return node;
                 }
             }
@@ -824,7 +997,7 @@ version: 2.5.1
         getNextSiblingBy: function(node, method) {
             while (node) {
                 node = node.nextSibling;
-                if ( testElement(node, method) ) {
+                if ( Y.Dom._testElement(node, method) ) {
                     return node;
                 }
             }
@@ -856,7 +1029,7 @@ version: 2.5.1
          * @return {Object} HTMLElement or null if not found
          */
         getFirstChildBy: function(node, method) {
-            var child = ( testElement(node.firstChild, method) ) ? node.firstChild : null;
+            var child = ( Y.Dom._testElement(node.firstChild, method) ) ? node.firstChild : null;
             return child || Y.Dom.getNextSiblingBy(node.firstChild, method);
         }, 
 
@@ -888,7 +1061,7 @@ version: 2.5.1
                 YAHOO.log('getLastChild failed: invalid node argument', 'error', 'Dom');
                 return null;
             }
-            var child = ( testElement(node.lastChild, method) ) ? node.lastChild : null;
+            var child = ( Y.Dom._testElement(node.lastChild, method) ) ? node.lastChild : null;
             return child || Y.Dom.getPreviousSiblingBy(node.lastChild, method);
         }, 
 
@@ -912,8 +1085,8 @@ version: 2.5.1
          * @return {Array} A static array of HTMLElements
          */
         getChildrenBy: function(node, method) {
-            var child = Y.Dom.getFirstChildBy(node, method);
-            var children = child ? [child] : [];
+            var child = Y.Dom.getFirstChildBy(node, method),
+                children = child ? [child] : [];
 
             Y.Dom.getNextSiblingBy(child, function(node) {
                 if ( !method || method(node) ) {
@@ -939,7 +1112,7 @@ version: 2.5.1
 
             return Y.Dom.getChildrenBy(node);
         },
- 
+
         /**
          * Returns the left scroll value of the document 
          * @method getDocumentScrollLeft
@@ -948,7 +1121,7 @@ version: 2.5.1
          */
         getDocumentScrollLeft: function(doc) {
             doc = doc || document;
-            return Math.max(doc.documentElement.scrollLeft, doc.body.scrollLeft);
+            return Math.max(doc[DOCUMENT_ELEMENT].scrollLeft, doc.body.scrollLeft);
         }, 
 
         /**
@@ -959,7 +1132,7 @@ version: 2.5.1
          */
         getDocumentScrollTop: function(doc) {
             doc = doc || document;
-            return Math.max(doc.documentElement.scrollTop, doc.body.scrollTop);
+            return Math.max(doc[DOCUMENT_ELEMENT].scrollTop, doc.body.scrollTop);
         },
 
         /**
@@ -973,12 +1146,12 @@ version: 2.5.1
             newNode = Y.Dom.get(newNode); 
             referenceNode = Y.Dom.get(referenceNode); 
             
-            if (!newNode || !referenceNode || !referenceNode.parentNode) {
+            if (!newNode || !referenceNode || !referenceNode[PARENT_NODE]) {
                 YAHOO.log('insertAfter failed: missing or invalid arg(s)', 'error', 'Dom');
                 return null;
             }       
 
-            return referenceNode.parentNode.insertBefore(newNode, referenceNode); 
+            return referenceNode[PARENT_NODE].insertBefore(newNode, referenceNode); 
         },
 
         /**
@@ -992,15 +1165,15 @@ version: 2.5.1
             newNode = Y.Dom.get(newNode); 
             referenceNode = Y.Dom.get(referenceNode); 
             
-            if (!newNode || !referenceNode || !referenceNode.parentNode) {
+            if (!newNode || !referenceNode || !referenceNode[PARENT_NODE]) {
                 YAHOO.log('insertAfter failed: missing or invalid arg(s)', 'error', 'Dom');
                 return null;
             }       
 
             if (referenceNode.nextSibling) {
-                return referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling); 
+                return referenceNode[PARENT_NODE].insertBefore(newNode, referenceNode.nextSibling); 
             } else {
-                return referenceNode.parentNode.appendChild(newNode);
+                return referenceNode[PARENT_NODE].appendChild(newNode);
             }
         },
 
@@ -1016,66 +1189,153 @@ version: 2.5.1
                 b = Y.Dom.getViewportHeight() + t;
 
             return new Y.Region(t, r, b, l);
+        },
+
+        /**
+         * Provides a normalized attribute interface. 
+         * @method setAttribute
+         * @param {String | HTMLElement} el The target element for the attribute.
+         * @param {String} attr The attribute to set.
+         * @param {String} val The value of the attribute.
+         */
+        setAttribute: function(el, attr, val) {
+            Y.Dom.batch(el, Y.Dom._setAttribute, { attr: attr, val: val });
+        },
+
+        _setAttribute: function(el, args) {
+            var attr = Y.Dom._toCamel(args.attr),
+                val = args.val;
+
+            if (el && el.setAttribute) {
+                // set as DOM property, except for BUTTON, which errors on property setter
+                if (Y.Dom.DOT_ATTRIBUTES[attr] && el.tagName && el.tagName != 'BUTTON') {
+                    el[attr] = val;
+                } else {
+                    attr = Y.Dom.CUSTOM_ATTRIBUTES[attr] || attr;
+                    el.setAttribute(attr, val);
+                }
+            } else {
+                YAHOO.log('setAttribute method not available for ' + el, 'error', 'Dom');
+            }
+        },
+
+        /**
+         * Provides a normalized attribute interface. 
+         * @method getAttribute
+         * @param {String | HTMLElement} el The target element for the attribute.
+         * @param {String} attr The attribute to get.
+         * @return {String} The current value of the attribute. 
+         */
+        getAttribute: function(el, attr) {
+            return Y.Dom.batch(el, Y.Dom._getAttribute, attr);
+        },
+
+
+        _getAttribute: function(el, attr) {
+            var val;
+            attr = Y.Dom.CUSTOM_ATTRIBUTES[attr] || attr;
+
+            if (Y.Dom.DOT_ATTRIBUTES[attr]) {
+                val = el[attr];
+            } else if (el && 'getAttribute' in el) {
+                if (/^(?:href|src)$/.test(attr)) { // use IE flag to return exact value
+                    val = el.getAttribute(attr, 2);
+                } else {
+                    val = el.getAttribute(attr);
+                }
+            } else {
+                YAHOO.log('getAttribute method not available for ' + el, 'error', 'Dom');
+            }
+
+            return val;
+        },
+
+        _toCamel: function(property) {
+            var c = propertyCache;
+
+            function tU(x,l) {
+                return l.toUpperCase();
+            }
+
+            return c[property] || (c[property] = property.indexOf('-') === -1 ? 
+                                    property :
+                                    property.replace( /-([a-z])/gi, tU ));
+        },
+
+        _getClassRegex: function(className) {
+            var re;
+            if (className !== undefined) { // allow empty string to pass
+                if (className.exec) { // already a RegExp
+                    re = className;
+                } else {
+                    re = reCache[className];
+                    if (!re) {
+                        // escape special chars (".", "[", etc.)
+                        className = className.replace(Y.Dom._patterns.CLASS_RE_TOKENS, '\\$1');
+                        className = className.replace(/\s+/g, SPACE); // convert line breaks and other delims
+                        re = reCache[className] = new RegExp(C_START + className + C_END, G);
+                    }
+                }
+            }
+            return re;
+        },
+
+        _patterns: {
+            ROOT_TAG: /^body|html$/i, // body for quirks mode, html for standards,
+            CLASS_RE_TOKENS: /([\.\(\)\^\$\*\+\?\|\[\]\{\}\\])/g
+        },
+
+
+        _testElement: function(node, method) {
+            return node && node[NODE_TYPE] == 1 && ( !method || method(node) );
+        },
+
+        _calcBorders: function(node, xy2) {
+            var t = parseInt(Y.Dom[GET_COMPUTED_STYLE](node, BORDER_TOP_WIDTH), 10) || 0,
+                l = parseInt(Y.Dom[GET_COMPUTED_STYLE](node, BORDER_LEFT_WIDTH), 10) || 0;
+            if (isGecko) {
+                if (RE_TABLE.test(node[TAG_NAME])) {
+                    t = 0;
+                    l = 0;
+                }
+            }
+            xy2[0] += l;
+            xy2[1] += t;
+            return xy2;
         }
     };
-    
-    var getXY = function() {
-        if (document.documentElement.getBoundingClientRect) { // IE
-            return function(el) {
-                var box = el.getBoundingClientRect();
+        
+    var _getComputedStyle = Y.Dom[GET_COMPUTED_STYLE];
+    // fix opera computedStyle default color unit (convert to rgb)
+    if (UA.opera) {
+        Y.Dom[GET_COMPUTED_STYLE] = function(node, att) {
+            var val = _getComputedStyle(node, att);
+            if (RE_COLOR.test(att)) {
+                val = Y.Dom.Color.toRGB(val);
+            }
 
-                var rootNode = el.ownerDocument;
-                return [box.left + Y.Dom.getDocumentScrollLeft(rootNode), box.top +
-                        Y.Dom.getDocumentScrollTop(rootNode)];
-            };
-        } else {
-            return function(el) { // manually calculate by crawling up offsetParents
-                var pos = [el.offsetLeft, el.offsetTop];
-                var parentNode = el.offsetParent;
+            return val;
+        };
 
-                // safari: subtract body offsets if el is abs (or any offsetParent), unless body is offsetParent
-                var accountForBody = (isSafari &&
-                        Y.Dom.getStyle(el, 'position') == 'absolute' &&
-                        el.offsetParent == el.ownerDocument.body);
+    }
 
-                if (parentNode != el) {
-                    while (parentNode) {
-                        pos[0] += parentNode.offsetLeft;
-                        pos[1] += parentNode.offsetTop;
-                        if (!accountForBody && isSafari && 
-                                Y.Dom.getStyle(parentNode,'position') == 'absolute' ) { 
-                            accountForBody = true;
-                        }
-                        parentNode = parentNode.offsetParent;
-                    }
-                }
+    // safari converts transparent to rgba(), others use "transparent"
+    if (UA.webkit) {
+        Y.Dom[GET_COMPUTED_STYLE] = function(node, att) {
+            var val = _getComputedStyle(node, att);
 
-                if (accountForBody) { //safari doubles in this case
-                    pos[0] -= el.ownerDocument.body.offsetLeft;
-                    pos[1] -= el.ownerDocument.body.offsetTop;
-                } 
-                parentNode = el.parentNode;
+            if (val === 'rgba(0, 0, 0, 0)') {
+                val = 'transparent'; 
+            }
 
-                // account for any scrolled ancestors
-                while ( parentNode.tagName && !patterns.ROOT_TAG.test(parentNode.tagName) ) 
-                {
-                    if (parentNode.scrollTop || parentNode.scrollLeft) {
-                        // work around opera inline/table scrollLeft/Top bug (false reports offset as scroll)
-                        if (!patterns.OP_SCROLL.test(Y.Dom.getStyle(parentNode, 'display'))) { 
-                            if (!isOpera || Y.Dom.getStyle(parentNode, 'overflow') !== 'visible') { // opera inline-block misreports when visible
-                                pos[0] -= parentNode.scrollLeft;
-                                pos[1] -= parentNode.scrollTop;
-                            }
-                        }
-                    }
-                    
-                    parentNode = parentNode.parentNode; 
-                }
+            return val;
+        };
 
-                return pos;
-            };
-        }
-    }() // NOTE: Executing for loadtime branching
+    }
+
+    if (UA.ie && UA.ie >= 8) {
+        Y.Dom.DOT_ATTRIBUTES.type = true; // IE 8 errors on input.setAttribute('type')
+    }
 })();
 /**
  * A region is a representation of an object on a grid.  It is defined
@@ -1097,6 +1357,13 @@ YAHOO.util.Region = function(t, r, b, l) {
      * @type Int
      */
     this.top = t;
+    
+    /**
+     * The region's top extent
+     * @property y
+     * @type Int
+     */
+    this.y = t;
     
     /**
      * The region's top extent as index, for symmetry with set/getXY
@@ -1127,11 +1394,32 @@ YAHOO.util.Region = function(t, r, b, l) {
     this.left = l;
     
     /**
+     * The region's left extent
+     * @property x
+     * @type Int
+     */
+    this.x = l;
+    
+    /**
      * The region's left extent as index, for symmetry with set/getXY
      * @property 0
      * @type Int
      */
     this[0] = l;
+
+    /**
+     * The region's total width 
+     * @property width 
+     * @type Int
+     */
+    this.width = this.right - this.left;
+
+    /**
+     * The region's total height 
+     * @property height 
+     * @type Int
+     */
+    this.height = this.bottom - this.top;
 };
 
 /**
@@ -1166,10 +1454,10 @@ YAHOO.util.Region.prototype.getArea = function() {
  * @return {Region}        The overlap region, or null if there is no overlap
  */
 YAHOO.util.Region.prototype.intersect = function(region) {
-    var t = Math.max( this.top,    region.top    );
-    var r = Math.min( this.right,  region.right  );
-    var b = Math.min( this.bottom, region.bottom );
-    var l = Math.max( this.left,   region.left   );
+    var t = Math.max( this.top,    region.top    ),
+        r = Math.min( this.right,  region.right  ),
+        b = Math.min( this.bottom, region.bottom ),
+        l = Math.max( this.left,   region.left   );
     
     if (b >= t && r >= l) {
         return new YAHOO.util.Region(t, r, b, l);
@@ -1186,10 +1474,10 @@ YAHOO.util.Region.prototype.intersect = function(region) {
  * @return {Region}        The union region
  */
 YAHOO.util.Region.prototype.union = function(region) {
-    var t = Math.min( this.top,    region.top    );
-    var r = Math.max( this.right,  region.right  );
-    var b = Math.max( this.bottom, region.bottom );
-    var l = Math.min( this.left,   region.left   );
+    var t = Math.min( this.top,    region.top    ),
+        r = Math.max( this.right,  region.right  ),
+        b = Math.max( this.bottom, region.bottom ),
+        l = Math.min( this.left,   region.left   );
 
     return new YAHOO.util.Region(t, r, b, l);
 };
@@ -1205,6 +1493,8 @@ YAHOO.util.Region.prototype.toString = function() {
              ", right: "   + this.right  + 
              ", bottom: "  + this.bottom + 
              ", left: "    + this.left   + 
+             ", height: "  + this.height + 
+             ", width: "    + this.width   + 
              "}" );
 };
 
@@ -1216,12 +1506,11 @@ YAHOO.util.Region.prototype.toString = function() {
  * @static
  */
 YAHOO.util.Region.getRegion = function(el) {
-    var p = YAHOO.util.Dom.getXY(el);
-
-    var t = p[1];
-    var r = p[0] + el.offsetWidth;
-    var b = p[1] + el.offsetHeight;
-    var l = p[0];
+    var p = YAHOO.util.Dom.getXY(el),
+        t = p[1],
+        r = p[0] + el.offsetWidth,
+        b = p[1] + el.offsetHeight,
+        l = p[0];
 
     return new YAHOO.util.Region(t, r, b, l);
 };
@@ -1244,23 +1533,353 @@ YAHOO.util.Point = function(x, y) {
       y = x[1]; // dont blow away x yet
       x = x[0];
    }
-   
-    /**
-     * The X position of the point, which is also the right, left and index zero (for Dom.getXY symmetry)
-     * @property x
-     * @type Int
-     */
-
-    this.x = this.right = this.left = this[0] = x;
-     
-    /**
-     * The Y position of the point, which is also the top, bottom and index one (for Dom.getXY symmetry)
-     * @property y
-     * @type Int
-     */
-    this.y = this.top = this.bottom = this[1] = y;
+ 
+    YAHOO.util.Point.superclass.constructor.call(this, y, x, y, x);
 };
 
-YAHOO.util.Point.prototype = new YAHOO.util.Region();
+YAHOO.extend(YAHOO.util.Point, YAHOO.util.Region);
 
-YAHOO.register("dom", YAHOO.util.Dom, {version: "2.5.1", build: "984"});
+(function() {
+/**
+ * Internal methods used to add style management functionality to DOM.
+ * @module dom
+ * @class IEStyle
+ * @namespace YAHOO.util.Dom
+ */
+
+var Y = YAHOO.util, 
+    CLIENT_TOP = 'clientTop',
+    CLIENT_LEFT = 'clientLeft',
+    PARENT_NODE = 'parentNode',
+    RIGHT = 'right',
+    HAS_LAYOUT = 'hasLayout',
+    PX = 'px',
+    OPACITY = 'opacity',
+    AUTO = 'auto',
+    BORDER_LEFT_WIDTH = 'borderLeftWidth',
+    BORDER_TOP_WIDTH = 'borderTopWidth',
+    BORDER_RIGHT_WIDTH = 'borderRightWidth',
+    BORDER_BOTTOM_WIDTH = 'borderBottomWidth',
+    VISIBLE = 'visible',
+    TRANSPARENT = 'transparent',
+    HEIGHT = 'height',
+    WIDTH = 'width',
+    STYLE = 'style',
+    CURRENT_STYLE = 'currentStyle',
+
+// IE getComputedStyle
+// TODO: unit-less lineHeight (e.g. 1.22)
+    re_size = /^width|height$/,
+    re_unit = /^(\d[.\d]*)+(em|ex|px|gd|rem|vw|vh|vm|ch|mm|cm|in|pt|pc|deg|rad|ms|s|hz|khz|%){1}?/i,
+
+    ComputedStyle = {
+        /**
+        * @method get
+        * @description Method used by DOM to get style information for IE
+        * @param {HTMLElement} el The element to check
+        * @param {String} property The property to check
+        * @returns {String} The computed style
+        */
+        get: function(el, property) {
+            var value = '',
+                current = el[CURRENT_STYLE][property];
+
+            if (property === OPACITY) {
+                value = Y.Dom.getStyle(el, OPACITY);        
+            } else if (!current || (current.indexOf && current.indexOf(PX) > -1)) { // no need to convert
+                value = current;
+            } else if (Y.Dom.IE_COMPUTED[property]) { // use compute function
+                value = Y.Dom.IE_COMPUTED[property](el, property);
+            } else if (re_unit.test(current)) { // convert to pixel
+                value = Y.Dom.IE.ComputedStyle.getPixel(el, property);
+            } else {
+                value = current;
+            }
+
+            return value;
+        },
+        /**
+        * @method getOffset
+        * @description Determine the offset of an element
+        * @param {HTMLElement} el The element to check
+        * @param {String} prop The property to check.
+        * @return {String} The offset
+        */
+        getOffset: function(el, prop) {
+            var current = el[CURRENT_STYLE][prop],                        // value of "width", "top", etc.
+                capped = prop.charAt(0).toUpperCase() + prop.substr(1), // "Width", "Top", etc.
+                offset = 'offset' + capped,                             // "offsetWidth", "offsetTop", etc.
+                pixel = 'pixel' + capped,                               // "pixelWidth", "pixelTop", etc.
+                value = '',
+                actual;
+
+            if (current == AUTO) {
+                actual = el[offset]; // offsetHeight/Top etc.
+                if (actual === undefined) { // likely "right" or "bottom"
+                    value = 0;
+                }
+
+                value = actual;
+                if (re_size.test(prop)) { // account for box model diff 
+                    el[STYLE][prop] = actual; 
+                    if (el[offset] > actual) {
+                        // the difference is padding + border (works in Standards & Quirks modes)
+                        value = actual - (el[offset] - actual);
+                    }
+                    el[STYLE][prop] = AUTO; // revert to auto
+                }
+            } else { // convert units to px
+                if (!el[STYLE][pixel] && !el[STYLE][prop]) { // need to map style.width to currentStyle (no currentStyle.pixelWidth)
+                    el[STYLE][prop] = current;              // no style.pixelWidth if no style.width
+                }
+                value = el[STYLE][pixel];
+            }
+            return value + PX;
+        },
+        /**
+        * @method getBorderWidth
+        * @description Try to determine the width of an elements border
+        * @param {HTMLElement} el The element to check
+        * @param {String} property The property to check
+        * @return {String} The elements border width
+        */
+        getBorderWidth: function(el, property) {
+            // clientHeight/Width = paddingBox (e.g. offsetWidth - borderWidth)
+            // clientTop/Left = borderWidth
+            var value = null;
+            if (!el[CURRENT_STYLE][HAS_LAYOUT]) { // TODO: unset layout?
+                el[STYLE].zoom = 1; // need layout to measure client
+            }
+
+            switch(property) {
+                case BORDER_TOP_WIDTH:
+                    value = el[CLIENT_TOP];
+                    break;
+                case BORDER_BOTTOM_WIDTH:
+                    value = el.offsetHeight - el.clientHeight - el[CLIENT_TOP];
+                    break;
+                case BORDER_LEFT_WIDTH:
+                    value = el[CLIENT_LEFT];
+                    break;
+                case BORDER_RIGHT_WIDTH:
+                    value = el.offsetWidth - el.clientWidth - el[CLIENT_LEFT];
+                    break;
+            }
+            return value + PX;
+        },
+        /**
+        * @method getPixel
+        * @description Get the pixel value from a style property
+        * @param {HTMLElement} node The element to check
+        * @param {String} att The attribute to check
+        * @return {String} The pixel value
+        */
+        getPixel: function(node, att) {
+            // use pixelRight to convert to px
+            var val = null,
+                styleRight = node[CURRENT_STYLE][RIGHT],
+                current = node[CURRENT_STYLE][att];
+
+            node[STYLE][RIGHT] = current;
+            val = node[STYLE].pixelRight;
+            node[STYLE][RIGHT] = styleRight; // revert
+
+            return val + PX;
+        },
+
+        /**
+        * @method getMargin
+        * @description Get the margin value from a style property
+        * @param {HTMLElement} node The element to check
+        * @param {String} att The attribute to check
+        * @return {String} The margin value
+        */
+        getMargin: function(node, att) {
+            var val;
+            if (node[CURRENT_STYLE][att] == AUTO) {
+                val = 0 + PX;
+            } else {
+                val = Y.Dom.IE.ComputedStyle.getPixel(node, att);
+            }
+            return val;
+        },
+
+        /**
+        * @method getVisibility
+        * @description Get the visibility of an element
+        * @param {HTMLElement} node The element to check
+        * @param {String} att The attribute to check
+        * @return {String} The value
+        */
+        getVisibility: function(node, att) {
+            var current;
+            while ( (current = node[CURRENT_STYLE]) && current[att] == 'inherit') { // NOTE: assignment in test
+                node = node[PARENT_NODE];
+            }
+            return (current) ? current[att] : VISIBLE;
+        },
+
+        /**
+        * @method getColor
+        * @description Get the color of an element
+        * @param {HTMLElement} node The element to check
+        * @param {String} att The attribute to check
+        * @return {String} The value
+        */
+        getColor: function(node, att) {
+            return Y.Dom.Color.toRGB(node[CURRENT_STYLE][att]) || TRANSPARENT;
+        },
+
+        /**
+        * @method getBorderColor
+        * @description Get the bordercolor of an element
+        * @param {HTMLElement} node The element to check
+        * @param {String} att The attribute to check
+        * @return {String} The value
+        */
+        getBorderColor: function(node, att) {
+            var current = node[CURRENT_STYLE],
+                val = current[att] || current.color;
+            return Y.Dom.Color.toRGB(Y.Dom.Color.toHex(val));
+        }
+
+    },
+
+//fontSize: getPixelFont,
+    IEComputed = {};
+
+IEComputed.top = IEComputed.right = IEComputed.bottom = IEComputed.left = 
+        IEComputed[WIDTH] = IEComputed[HEIGHT] = ComputedStyle.getOffset;
+
+IEComputed.color = ComputedStyle.getColor;
+
+IEComputed[BORDER_TOP_WIDTH] = IEComputed[BORDER_RIGHT_WIDTH] =
+        IEComputed[BORDER_BOTTOM_WIDTH] = IEComputed[BORDER_LEFT_WIDTH] =
+        ComputedStyle.getBorderWidth;
+
+IEComputed.marginTop = IEComputed.marginRight = IEComputed.marginBottom =
+        IEComputed.marginLeft = ComputedStyle.getMargin;
+
+IEComputed.visibility = ComputedStyle.getVisibility;
+IEComputed.borderColor = IEComputed.borderTopColor =
+        IEComputed.borderRightColor = IEComputed.borderBottomColor =
+        IEComputed.borderLeftColor = ComputedStyle.getBorderColor;
+
+Y.Dom.IE_COMPUTED = IEComputed;
+Y.Dom.IE_ComputedStyle = ComputedStyle;
+})();
+(function() {
+/**
+ * Add style management functionality to DOM.
+ * @module dom
+ * @class Color
+ * @namespace YAHOO.util.Dom
+ */
+
+var TO_STRING = 'toString',
+    PARSE_INT = parseInt,
+    RE = RegExp,
+    Y = YAHOO.util;
+
+Y.Dom.Color = {
+    /**
+    * @property KEYWORDS
+    * @type Object
+    * @description Color keywords used when converting to Hex
+    */
+    KEYWORDS: {
+        black: '000',
+        silver: 'c0c0c0',
+        gray: '808080',
+        white: 'fff',
+        maroon: '800000',
+        red: 'f00',
+        purple: '800080',
+        fuchsia: 'f0f',
+        green: '008000',
+        lime: '0f0',
+        olive: '808000',
+        yellow: 'ff0',
+        navy: '000080',
+        blue: '00f',
+        teal: '008080',
+        aqua: '0ff'
+    },
+    /**
+    * @property re_RGB
+    * @private
+    * @type Regex
+    * @description Regex to parse rgb(0,0,0) formatted strings
+    */
+    re_RGB: /^rgb\(([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\)$/i,
+    /**
+    * @property re_hex
+    * @private
+    * @type Regex
+    * @description Regex to parse #123456 formatted strings
+    */
+    re_hex: /^#?([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})$/i,
+    /**
+    * @property re_hex3
+    * @private
+    * @type Regex
+    * @description Regex to parse #123 formatted strings
+    */
+    re_hex3: /([0-9A-F])/gi,
+    /**
+    * @method toRGB
+    * @description Converts a hex or color string to an rgb string: rgb(0,0,0)
+    * @param {String} val The string to convert to RGB notation.
+    * @returns {String} The converted string
+    */
+    toRGB: function(val) {
+        if (!Y.Dom.Color.re_RGB.test(val)) {
+            val = Y.Dom.Color.toHex(val);
+        }
+
+        if(Y.Dom.Color.re_hex.exec(val)) {
+            val = 'rgb(' + [
+                PARSE_INT(RE.$1, 16),
+                PARSE_INT(RE.$2, 16),
+                PARSE_INT(RE.$3, 16)
+            ].join(', ') + ')';
+        }
+        return val;
+    },
+    /**
+    * @method toHex
+    * @description Converts an rgb or color string to a hex string: #123456
+    * @param {String} val The string to convert to hex notation.
+    * @returns {String} The converted string
+    */
+    toHex: function(val) {
+        val = Y.Dom.Color.KEYWORDS[val] || val;
+        if (Y.Dom.Color.re_RGB.exec(val)) {
+            val = [
+                Number(RE.$1).toString(16),
+                Number(RE.$2).toString(16),
+                Number(RE.$3).toString(16)
+            ];
+
+            for (var i = 0; i < val.length; i++) {
+                if (val[i].length < 2) {
+                    val[i] = '0' + val[i];
+                }
+            }
+
+            val = val.join('');
+        }
+
+        if (val.length < 6) {
+            val = val.replace(Y.Dom.Color.re_hex3, '$1$1');
+        }
+
+        if (val !== 'transparent' && val.indexOf('#') < 0) {
+            val = '#' + val;
+        }
+
+        return val.toUpperCase();
+    }
+};
+}());
+YAHOO.register("dom", YAHOO.util.Dom, {version: "2.9.0", build: "2800"});

@@ -32,7 +32,7 @@ public class WeatherColumn extends ListViewColumn {
     public WeatherColumn() {
     }
 
-    @Extension
+    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_ICON_START-2)
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {

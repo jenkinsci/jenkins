@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import com.google.common.base.Predicates;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -184,6 +186,33 @@ public class Iterators {
     }
 
     /**
+     * Returns an {@link Iterable} that lists items in the normal order
+     * but which hides the base iterator implementation details.
+     *
+     * @since 1.492
+     */
+    public static <T> Iterable<T> wrap(final Iterable<T> base) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                final Iterator<T> itr = base.iterator();
+                return new Iterator<T>() {
+                    public boolean hasNext() {
+                        return itr.hasNext();
+                    }
+
+                    public T next() {
+                        return itr.next();
+                    }
+
+                    public void remove() {
+                        itr.remove();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
      * Returns a list that represents [start,end).
      *
      * For example sequence(1,5,1)={1,2,3,4}, and sequence(7,1,-2)={7.5,3}
@@ -276,12 +305,7 @@ public class Iterators {
      * Wraps another iterator and throws away nulls.
      */
     public static <T> Iterator<T> removeNull(final Iterator<T> itr) {
-        return new FilterIterator<T>(itr) {
-            @Override
-            protected boolean filter(T t) {
-                return t!=null;
-            }
-        };
+        return com.google.common.collect.Iterators.filter(itr, Predicates.notNull());
     }
 
     /**
@@ -302,8 +326,78 @@ public class Iterators {
         };
     }
 
+    /**
+     * Filters another iterator by eliminating duplicates.
+     */
+    public static <T> Iterator<T> removeDups(Iterator<T> iterator) {
+        return new FilterIterator<T>(iterator) {
+            final Set<T> found = new HashSet<T>();
+            @Override
+            protected boolean filter(T t) {
+                return found.add(t);
+            }
+        };
+    }
+
+    /**
+     * Filters another iterator by eliminating duplicates.
+     */
+    public static <T> Iterable<T> removeDups(final Iterable<T> base) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return removeDups(base.iterator());
+            }
+        };
+    }
+
     public static <T> Iterator<T> sequence(Iterator<? extends T>... iterators) {
         return com.google.common.collect.Iterators.concat(iterators);
     }
 
+    /**
+     * Returns the elements in the base iterator until it hits any element that doesn't satisfy the filter.
+     * Then the rest of the elements in the base iterator gets ignored.
+     *
+     * @since 1.485
+     */
+    public static <T> Iterator<T> limit(final Iterator<? extends T> base, final CountingPredicate<? super T> filter) {
+        return new Iterator<T>() {
+            private T next;
+            private boolean end;
+            private int index=0;
+            public boolean hasNext() {
+                fetch();
+                return next!=null;
+            }
+
+            public T next() {
+                fetch();
+                T r = next;
+                next = null;
+                return r;
+            }
+
+            private void fetch() {
+                if (next==null && !end) {
+                    if (base.hasNext()) {
+                        next = base.next();
+                        if (!filter.apply(index++,next)) {
+                            next = null;
+                            end = true;
+                        }
+                    } else {
+                        end = true;
+                    }
+                }
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public interface CountingPredicate<T> {
+        boolean apply(int index, T input);
+    }
 }

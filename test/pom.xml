@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -22,26 +22,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>pom</artifactId>
     <groupId>org.jenkins-ci.main</groupId>
-    <version>1.427-SNAPSHOT</version>
+    <artifactId>pom</artifactId>
+    <version>1.626-SNAPSHOT</version>
   </parent>
-  <groupId>org.jenkins-ci.main</groupId>
+
   <artifactId>jenkins-test-harness</artifactId>
 
   <name>Test harness for Jenkins and plugins</name>
-  <description>
-    Unit test harness (src/main) and Unit tests for Jenkins core (src/test)
-  </description>
+  <description>Unit test harness (src/main) and Unit tests for Jenkins core (src/test)</description>
 
   <properties>
-    <concurrency>2</concurrency> <!-- -1 means # of processors in the system -->
+    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
+    <ignore.random.failures>false</ignore.random.failures>
+    <jacocoSurefireArgs /><!-- empty by default -->
   </properties>
 
   <dependencies>
@@ -54,16 +53,52 @@ THE SOFTWARE.
       <artifactId>jenkins-war</artifactId>
       <version>${project.version}</version>
       <classifier>war-for-test</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.modules</groupId>
+          <artifactId>sshd</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
-      <version>${project.version}</version>
+      <version>${maven-plugin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>subversion</artifactId>
-      <version>1.25</version>
+      <version>1.45</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mailer</artifactId>
+      <version>1.10</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <version>1.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>antisamy-markup-formatter</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>${matrix-project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <version>1.2-beta-4</version>
     </dependency>
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
@@ -71,9 +106,9 @@ THE SOFTWARE.
       <version>6.1.26</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
       <scope>compile</scope>
       <!-- in this module we need this as a compile scope, whereas in the parent it's test -->
     </dependency>
@@ -85,17 +120,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.2</version>
     </dependency>
-    <!--dependency>
-      <groupId>org.openqa.selenium.client-drivers</groupId>
-      <artifactId>selenium-java-client-driver</artifactId>
-      <version>1.0-beta-1</version>
-    </dependency-->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>1.3</version>
+    </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>htmlunit</artifactId>
-      <version>2.6-jenkins-4</version>
+      <version>2.6-jenkins-6</version>
       <exclusions>
         <exclusion>
           <!--  hides JDK DOM classes in Eclipse -->
@@ -104,7 +138,11 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
-
+    <dependency><!-- we exclude this transient dependency from htmlunit, which we actually need in the test -->
+      <groupId>xalan</groupId>
+      <artifactId>xalan</artifactId>
+      <version>2.7.1</version>
+    </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>embedded-rhino-debugger</artifactId>
@@ -124,8 +162,22 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>1.8.5</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.modules</groupId>
+      <artifactId>org-netbeans-insane</artifactId>
+      <version>RELEASE72</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.stephenc.findbugs</groupId>
+      <artifactId>findbugs-annotations</artifactId>
+      <version>1.3.9-1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.geb</groupId>
+      <artifactId>geb-implicit-assertions</artifactId>
+      <version>0.7.2</version>
     </dependency>
   </dependencies>
 
@@ -138,18 +190,35 @@ THE SOFTWARE.
         <extensions>true</extensions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <skip>true</skip>
-          <!-- tests now run by maven-junit-plugin -->
+          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx256m -XX:MaxPermSize=128m</argLine>
+          <systemPropertyVariables>
+              <!-- use AntClassLoader that supports predictable file handle release -->
+              <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
+              <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
+              <buildDirectory>${project.build.directory}</buildDirectory>
+              <ignore.random.failures>${ignore.random.failures}</ignore.random.failures>
+          </systemPropertyVariables>
+          <reuseForks>true</reuseForks>
+          <forkCount>${concurrency}</forkCount>
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.kohsuke.gmaven</groupId>
+        <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
+          <execution>
+            <id>default</id>
+            <!-- compile and process annotations in Groovy test code -->
+            <goals>
+              <goal>generateTestStubs</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
           <execution>
             <id>preset-packager</id>
             <phase>process-resources</phase>
@@ -160,13 +229,6 @@ THE SOFTWARE.
               <source>${pom.basedir}/src/main/preset-data/package.groovy</source>
             </configuration>
           </execution>
-          <execution>
-            <id>test-in-groovy</id>
-            <!-- allow tests written in Groovy -->
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
         </executions>
         <dependencies>
           <dependency>
@@ -174,65 +236,26 @@ THE SOFTWARE.
             <artifactId>ant</artifactId>
             <version>1.8.0</version>
           </dependency>
+          <!-- Usually a dependency of ant, but some people seem to have an incomplete ant POM. See JENKINS-11416 -->
+          <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-launcher</artifactId>
+            <version>1.8.0</version>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.gmaven.runtime</groupId>
+            <artifactId>gmaven-runtime-2.0</artifactId>
+            <version>1.5-jenkins-1</version>
+          </dependency>
         </dependencies>
+        <configuration>
+          <providerSelection>2.0</providerSelection>
+        </configuration>
       </plugin>
     </plugins>
   </build>
 
   <profiles>
-
-    <profile>
-      <id>run-test-harness</id>
-      <activation>
-        <property>
-          <name>!skip-test-harness</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <!-- see http://maven-junit-plugin.kenai.com/ for more info -->
-            <groupId>org.kohsuke</groupId>
-            <artifactId>maven-junit-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>test</goal>
-                </goals>
-                <configuration>
-                  <fork>true</fork>
-                  <concurrency>${concurrency}</concurrency>
-                  <argLine>-Dfile.encoding=UTF-8</argLine>
-                  <timeout>300</timeout>
-                  <systemProperties>
-                    <property>
-                      <!-- use AntClassLoader that supports predictable file handle release -->
-                      <name>hudson.ClassicPluginStrategy.useAntClassLoader</name>
-                      <value>true</value>
-                    </property>
-                    <property>
-                      <name>hudson.maven.debug</name>
-                      <value>${mavenDebug}</value>
-                    </property>
-                    <property>
-                      <name>java.io.tmpdir</name>
-                      <value>${project.build.directory}</value>
-                    </property>
-                    <property>
-                      <name>buildDirectory</name>
-                      <value>${project.build.directory}</value>
-                    </property>
-                  </systemProperties>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-
-    </profile>
-
     <profile>
       <id>light-test</id>
       <properties>
@@ -240,14 +263,23 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <!--
-        Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire.
-      -->
+      <id>all-tests</id>
+      <activation>
+        <property>
+          <name>!test</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+      </properties>
+    </profile>
+    <profile>
+      <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
       <id>cobertura</id>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.kohsuke.gmaven</groupId>
+            <groupId>org.codehaus.gmaven</groupId>
             <artifactId>gmaven-plugin</artifactId>
             <!-- version specified in grandparent pom -->
             <executions>
@@ -270,5 +302,51 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>    
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.6.3.201306030806</version>
+            <executions>
+              <!--
+                Prepares the property pointing to the JaCoCo runtime agent which
+                is passed as VM argument when Maven the Surefire plugin is executed.
+              -->
+              <execution>
+                <id>pre-unit-test</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <!-- Sets the path to the file which contains the execution data. -->
+                  <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
+                  <propertyName>jacocoSurefireArgs</propertyName>
+                </configuration>
+              </execution>
+              <!--
+                Ensures that the code coverage report for unit tests is created after
+                unit tests have been run.
+              -->
+              <execution>
+                <id>post-unit-test</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <configuration>
+                  <!-- Sets the path to the file which contains the execution data. -->
+                  <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+                  <!-- Sets the output directory for the code coverage report. -->
+                  <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>

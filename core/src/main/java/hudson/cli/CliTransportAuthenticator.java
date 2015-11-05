@@ -49,6 +49,6 @@ public abstract class CliTransportAuthenticator implements ExtensionPoint {
     public abstract void authenticate(String protocol, Channel channel, Connection con);
 
     public static ExtensionList<CliTransportAuthenticator> all() {
-        return Jenkins.getInstance().getExtensionList(CliTransportAuthenticator.class);
+        return ExtensionList.lookup(CliTransportAuthenticator.class);
     }
 }

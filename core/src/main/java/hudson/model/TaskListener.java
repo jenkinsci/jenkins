@@ -111,5 +111,5 @@ public interface TaskListener extends Serializable {
     /**
      * {@link TaskListener} that discards the output.
      */
-    public static final TaskListener NULL = new StreamTaskListener(new NullStream());
+    TaskListener NULL = new StreamTaskListener(new NullStream());
 }

@@ -58,7 +58,7 @@ THE SOFTWARE.
       if present, the foldable section will not be grouped into a separate JSON object upon submission
     </st:attribute>
   </st:documentation>
-  <j:if test="${attrs.help==null}">
+  <j:if test="${attrs.help == null and attrs.field != null}">
     <!-- infer the help page from the current descriptor and field if possible -->
     <j:set target="${attrs}" property="help"
            value="${descriptor.getHelpFile(attrs.field)}" />
@@ -71,11 +71,7 @@ THE SOFTWARE.
           <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
                       negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
         </td>
-        <j:if test="${attrs.help!=null}">
-          <td>
-            <a href="#" class="help-button" helpURL="${rootURL}${attrs.help}"><img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${title}" height="16" width="16" /></a>
-          </td>
-        </j:if>
+        <f:helpLink url="${attrs.help}" featureName="${title}"/>
       </tr>
       <j:if test="${attrs.help!=null}">
         <f:helpArea />

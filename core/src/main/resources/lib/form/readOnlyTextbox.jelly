@@ -68,7 +68,7 @@ THE SOFTWARE.
          id="${attrs.id}"
          type="text"
          readonly="readonly"
-         checkUrl="${attrs.checkUrl}" checkMethod="${attrs.checkMethod}"
+         checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
          checkMessage="${attrs.checkMessage}"
          onchange="${attrs.onchange}" onkeyup="${attrs.onkeyup}"/>
 </j:jelly>

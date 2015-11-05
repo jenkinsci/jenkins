@@ -29,6 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <local:table page="updates" list="${app.updateCenter.updates}" xmlns:local="/hudson/PluginManager">
     <div style="margin-top:1em">
+      ${%Select}: <a href="javascript:toggleCheckboxes(true);">${%All}</a>, <a href="javascript:toggleCheckboxes(false);">${%None}</a><br/>
       ${%UpdatePageDescription}
       <j:if test="${!empty(app.updateCenter.jobs)}">
         <br/> ${%UpdatePageLegend(rootURL+'/updateCenter/')}

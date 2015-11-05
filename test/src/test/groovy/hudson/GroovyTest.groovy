@@ -23,17 +23,23 @@
  */
 package hudson
 
-import org.jvnet.hudson.test.GroovyHudsonTestCase
-
+import org.junit.Rule
+import org.junit.Test
+import org.jvnet.hudson.test.JenkinsRule
 
 /**
  * First groovy test!
  *
  * @author Kohsuke Kawaguchi
  */
-public class GroovyTest extends GroovyHudsonTestCase {
-    void test1() {
-        def wc = createWebClient();
-        wc.goTo("/");
+public class GroovyTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule()
+
+    @Test
+    void test() {
+        def wc = j.createWebClient();
+        wc.goTo("");
     }
 }

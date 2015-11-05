@@ -23,14 +23,23 @@
  */
 package hudson.model.labels;
 
-import org.jvnet.hudson.test.HudsonTestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class LabelAtomPropertyTest extends HudsonTestCase {
+public class LabelAtomPropertyTest {
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
     public static class LabelAtomPropertyImpl extends LabelAtomProperty {
         public final String abc;
 
@@ -51,16 +60,17 @@ public class LabelAtomPropertyTest extends HudsonTestCase {
     /**
      * Tests the configuration persistence between disk, memory, and UI.
      */
-    public void testConfigRoundtrip() throws Exception {
-        LabelAtom foo = hudson.getLabelAtom("foo");
+    @Test
+    public void configRoundtrip() throws Exception {
+        LabelAtom foo = j.jenkins.getLabelAtom("foo");
         LabelAtomPropertyImpl old = new LabelAtomPropertyImpl("value");
         foo.getProperties().add(old);
         assertTrue(foo.getConfigFile().exists());
         foo.load(); // make sure load works
 
         // it should survive the configuration roundtrip
-        submit(createWebClient().goTo("label/foo/configure").getFormByName("config"));
+        j.submit(j.createWebClient().goTo("label/foo/configure").getFormByName("config"));
         assertEquals(1,foo.getProperties().size());
-        assertEqualDataBoundBeans(old, foo.getProperties().get(LabelAtomPropertyImpl.class));
+        j.assertEqualDataBoundBeans(old, foo.getProperties().get(LabelAtomPropertyImpl.class));
     }
 }

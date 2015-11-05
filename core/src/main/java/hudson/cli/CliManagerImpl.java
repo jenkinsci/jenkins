@@ -23,35 +23,22 @@
  */
 package hudson.cli;
 
-import hudson.model.User;
+import hudson.remoting.CallableFilter;
 import hudson.remoting.Channel;
 import hudson.remoting.Pipe;
-import hudson.util.IOUtils;
-import jenkins.model.Jenkins;
-import org.apache.commons.discovery.resource.ClassLoaders;
-import org.apache.commons.discovery.resource.classes.DiscoverClasses;
-import org.apache.commons.discovery.resource.names.DiscoverServiceNames;
-import org.apache.commons.discovery.ResourceNameIterator;
-import org.apache.commons.discovery.ResourceClassIterator;
-import org.kohsuke.args4j.spi.OptionHandler;
-import org.kohsuke.args4j.CmdLineParser;
-import org.jvnet.tiger_types.Types;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.util.List;
-import java.util.Locale;
-import java.util.Collections;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.logging.Level;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.*;
 
 /**
  * {@link CliEntryPoint} implementation exposed to the remote CLI.
@@ -59,10 +46,30 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class CliManagerImpl implements CliEntryPoint, Serializable {
-    private final Channel channel;
+    private transient final Channel channel;
+    
+    private Authentication transportAuth;
+
+    /**
+     * Runs callable from this CLI client with the transport authentication credential.
+     */
+    private final CallableFilter authenticationFilter = new CallableFilter() {
+        public <V> V call(Callable<V> callable) throws Exception {
+            SecurityContext context = SecurityContextHolder.getContext();
+            Authentication old = context.getAuthentication();
+            if (transportAuth!=null)
+                context.setAuthentication(transportAuth);
+            try {
+                return callable.call();
+            } finally {
+                context.setAuthentication(old);
+            }
+        }
+    };
 
     public CliManagerImpl(Channel channel) {
         this.channel = channel;
+        channel.addLocalExecutionInterceptor(authenticationFilter);
     }
 
     public int main(List<String> args, Locale locale, InputStream stdin, OutputStream stdout, OutputStream stderr) {
@@ -77,8 +84,11 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         String subCmd = args.get(0);
         CLICommand cmd = CLICommand.clone(subCmd);
         if(cmd!=null) {
+            cmd.channel = Channel.current();
             final CLICommand old = CLICommand.setCurrent(cmd);
             try {
+                transportAuth = Channel.current().getProperty(CLICommand.TRANSPORT_AUTHENTICATION);
+                cmd.setTransportAuth(transportAuth);
                 return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
             } finally {
                 CLICommand.setCurrent(old);
@@ -115,23 +125,6 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
 
     private Object writeReplace() {
         return Channel.current().export(CliEntryPoint.class,this);
-    }
-
-    static {
-        // register option handlers that are defined
-        ClassLoaders cls = new ClassLoaders();
-        cls.put(Jenkins.getInstance().getPluginManager().uberClassLoader);
-
-        ResourceNameIterator servicesIter =
-            new DiscoverServiceNames(cls).findResourceNames(OptionHandler.class.getName());
-        final ResourceClassIterator itr =
-            new DiscoverClasses(cls).findResourceClasses(servicesIter);
-
-        while(itr.hasNext()) {
-            Class h = itr.nextResourceClass().loadClass();
-            Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
-            CmdLineParser.registerHandler(c,h);
-        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(CliManagerImpl.class.getName());

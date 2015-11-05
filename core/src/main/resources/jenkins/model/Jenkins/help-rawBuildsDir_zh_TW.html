@@ -1,0 +1,13 @@
+<div>
+    設定 Jenkins 存放過去建置記錄的地方。可以使用下列變數:
+
+    <ul>
+        <li><code>${JENKINS_HOME}</code> &mdash; Jenkins 主目錄。
+        <li><code>${ITEM_ROOTDIR}</code> &mdash; 作業根目錄，也就是放預設工作區的地方。
+        <li><code>${ITEM_FULL_NAME}</code> &mdash; 用 '/' 隔開的作業名稱，例如 "foo/bar"。
+    </ul>
+
+    <p>
+    舉例來說，您可以將建置記錄放在較大但是沒那麼快的磁碟，而把 JENKINS_HOME 留在穩定且定期會備份的磁碟上。
+    預設值是 <code>${ITEM_ROOTDIR}/builds</code>。
+</div>

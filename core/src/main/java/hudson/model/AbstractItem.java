@@ -1,8 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Daniel Dyer, Tom Huybrechts
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Daniel Dyer, Tom Huybrechts, Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,13 @@ import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
-import hudson.util.IOException2;
 import hudson.util.IOUtils;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.acegisecurity.Authentication;
+import jenkins.util.xml.XMLUtils;
+
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.WebMethod;
@@ -52,8 +56,11 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -61,15 +68,17 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.HttpDeletable;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
-import javax.xml.transform.Transformer;
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import org.kohsuke.stapler.Ancestor;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -80,6 +89,9 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 // Java doesn't let multiple inheritance.
 @ExportedBean
 public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner {
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
+
     /**
      * Project name.
      */
@@ -91,6 +103,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected volatile String description;
 
     private transient ItemGroup parent;
+    
+    protected String displayName;
 
     protected AbstractItem(ItemGroup parent, String name) {
         this.parent = parent;
@@ -115,20 +129,57 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     @Exported
+    /**
+     * @return The display name of this object, or if it is not set, the name
+     * of the object.
+     */
     public String getDisplayName() {
+        if(null!=displayName) {
+            return displayName;
+        }
+        // if the displayName is not set, then return the name as we use to do
         return getName();
     }
-
+    
+    @Exported
+    /**
+     * This is intended to be used by the Job configuration pages where
+     * we want to return null if the display name is not set.
+     * @return The display name of this object or null if the display name is not
+     * set
+     */
+    public String getDisplayNameOrNull() {
+        return displayName;
+    }
+    
+    /**
+     * This method exists so that the Job configuration pages can use 
+     * getDisplayNameOrNull so that nothing is shown in the display name text
+     * box if the display name is not set.
+     * @param displayName
+     * @throws IOException
+     */
+    public void setDisplayNameOrNull(String displayName) throws IOException {
+        setDisplayName(displayName);
+    }
+    
+    public void setDisplayName(String displayName) throws IOException {
+        this.displayName = Util.fixEmpty(displayName);
+        save();
+    }
+             
     public File getRootDir() {
-        return parent.getRootDirFor(this);
+        return getParent().getRootDirFor(this);
     }
 
     /**
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
     @WithBridgeMethods(value=Jenkins.class,castRequired=true)
-    public ItemGroup getParent() {
-        assert parent!=null;
+    @Override public @Nonnull ItemGroup getParent() {
+        if (parent == null) {
+            throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + name + "]");
+        }
         return parent;
     }
 
@@ -146,6 +197,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public void setDescription(String description) throws IOException {
         this.description = description;
         save();
+        ItemListener.fireOnUpdated(this);
     }
 
     /**
@@ -161,9 +213,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Not all the Items need to support this operation, but if you decide to do so,
      * you can use this method.
      */
-    protected void renameTo(String newName) throws IOException {
+    protected void renameTo(final String newName) throws IOException {
         // always synchronize from bigger objects first
         final ItemGroup parent = getParent();
+        String oldName = this.name;
+        String oldFullName = getFullName();
         synchronized (parent) {
             synchronized (this) {
                 // sanity check
@@ -174,15 +228,28 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 if (this.name.equals(newName))
                     return;
 
-                Item existing = parent.getItem(newName);
-                if (existing != null && existing!=this)
-                    // the look up is case insensitive, so we need "existing!=this"
-                    // to allow people to rename "Foo" to "foo", for example.
-                    // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
-                    throw new IllegalArgumentException("Job " + newName
-                            + " already exists");
+                // the test to see if the project already exists or not needs to be done in escalated privilege
+                // to avoid overwriting
+                ACL.impersonate(ACL.SYSTEM,new NotReallyRoleSensitiveCallable<Void,IOException>() {
+                    final Authentication user = Jenkins.getAuthentication();
+                    @Override
+                    public Void call() throws IOException {
+                        Item existing = parent.getItem(newName);
+                        if (existing != null && existing!=AbstractItem.this) {
+                            if (existing.getACL().hasPermission(user,Item.DISCOVER))
+                                // the look up is case insensitive, so we need "existing!=this"
+                                // to allow people to rename "Foo" to "foo", for example.
+                                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
+                                throw new IllegalArgumentException("Job " + newName + " already exists");
+                            else {
+                                // can't think of any real way to hide this, but at least the error message could be vague.
+                                throw new IOException("Unable to rename to " + newName);
+                            }
+                        }
+                        return null;
+                    }
+                });
 
-                String oldName = this.name;
                 File oldRoot = this.getRootDir();
 
                 doSetName(newName);
@@ -227,7 +294,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         cp.setProject(new org.apache.tools.ant.Project());
                         cp.setTodir(newRoot);
                         FileSet src = new FileSet();
-                        src.setDir(getRootDir());
+                        src.setDir(oldRoot);
                         cp.addFileset(src);
                         cp.setOverwrite(true);
                         cp.setPreserveLastModified(true);
@@ -251,24 +318,28 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         doSetName(oldName);
                 }
 
-                callOnRenamed(newName, parent, oldName);
-
-                for (ItemListener l : ItemListener.all())
-                    l.onRenamed(this, oldName, newName);
+                try {
+                    parent.onRenamed(this, oldName, newName);
+                } catch (AbstractMethodError _) {
+                    // ignore
+                }
             }
         }
+        ItemListener.fireLocationChange(this, oldFullName);
     }
 
+
     /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
+     * Notify this item it's been moved to another location, replaced by newItem (might be the same object, but not guaranteed).
+     * This method is executed <em>after</em> the item root directory has been moved to it's new location.
+     * <p>
+     * Derived classes can override this method to add some specific behavior on move, but have to call parent method
+     * so the item is actually setup within it's new parent.
+     *
+     * @see hudson.model.Items#move(AbstractItem, jenkins.model.DirectlyModifiableTopLevelItemGroup)
      */
-    private void callOnRenamed(String newName, ItemGroup parent, String oldName) throws IOException {
-        try {
-            parent.onRenamed(this, oldName, newName);
-        } catch (AbstractMethodError _) {
-            // ignore
-        }
+    public void movedTo(DirectlyModifiableTopLevelItemGroup destination, AbstractItem newItem, File destDir) throws IOException {
+        newItem.onLoad(destination, name);
     }
 
     /**
@@ -285,41 +356,39 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
         if(n.length()==0)   return getDisplayName();
-        else                return n+" \u00BB "+getDisplayName();
+        else                return n+" » "+getDisplayName();
+    }
+    
+    /**
+     * Gets the display name of the current item relative to the given group.
+     *
+     * @since 1.515
+     * @param p the ItemGroup used as point of reference for the item
+     * @return
+     *      String like "foo » bar"
+     */
+    public String getRelativeDisplayNameFrom(ItemGroup p) {
+        return Functions.getRelativeDisplayNameFrom(this, p);
+    }
+    
+    /**
+     * This method only exists to disambiguate {@link #getRelativeNameFrom(ItemGroup)} and {@link #getRelativeNameFrom(Item)}
+     * @since 1.512
+     * @see #getRelativeNameFrom(ItemGroup)
+     */
+    public String getRelativeNameFromGroup(ItemGroup p) {
+        return getRelativeNameFrom(p);
     }
 
+    /**
+     * @param p
+     *  The ItemGroup instance used as context to evaluate the relative name of this AbstractItem
+     * @return
+     *  The name of the current item, relative to p.
+     *  Nested ItemGroups are separated by / character.
+     */
     public String getRelativeNameFrom(ItemGroup p) {
-        // first list up all the parents
-        Map<ItemGroup,Integer> parents = new HashMap<ItemGroup,Integer>();
-        int depth=0;
-        while (p!=null) {
-            parents.put(p, depth++);
-            if (p instanceof Item)
-                p = ((Item)p).getParent();
-            else
-                p = null;
-        }
-
-        StringBuilder buf = new StringBuilder();
-        Item i=this;
-        while (true) {
-            if (buf.length()>0) buf.insert(0,'/');
-            buf.insert(0,i.getName());
-            ItemGroup g = i.getParent();
-
-            Integer d = parents.get(g);
-            if (d!=null) {
-                String s="";
-                for (int j=d; j>0; j--)
-                    s+="../";
-                return s+buf;
-            }
-
-            if (g instanceof Item)
-                i = (Item)g;
-            else
-                return null;
-        }
+        return Functions.getRelativeNameFrom(this, p);
     }
 
     public String getRelativeNameFrom(Item item) {
@@ -328,7 +397,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Called right after when a {@link Item} is loaded from disk.
-     * This is an opporunity to do a post load processing.
+     * This is an opportunity to do a post load processing.
      */
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         this.parent = parent;
@@ -353,20 +422,47 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public final String getUrl() {
         // try to stick to the current view if possible
         StaplerRequest req = Stapler.getCurrentRequest();
+        String shortUrl = getShortUrl();
+        String uri = req == null ? null : req.getRequestURI();
         if (req != null) {
             String seed = Functions.getNearestAncestorUrl(req,this);
+            LOGGER.log(Level.FINER, "seed={0} for {1} from {2}", new Object[] {seed, this, uri});
             if(seed!=null) {
                 // trim off the context path portion and leading '/', but add trailing '/'
                 return seed.substring(req.getContextPath().length()+1)+'/';
             }
+            List<Ancestor> ancestors = req.getAncestors();
+            if (!ancestors.isEmpty()) {
+                Ancestor last = ancestors.get(ancestors.size() - 1);
+                if (last.getObject() instanceof View) {
+                    View view = (View) last.getObject();
+                    if (view.getOwnerItemGroup() == getParent() && !view.isDefault()) {
+                        // Showing something inside a view, so should use that as the base URL.
+                        String base = last.getUrl().substring(req.getContextPath().length() + 1) + '/';
+                        LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
+                        return base + shortUrl;
+                    } else {
+                        LOGGER.log(Level.FINER, "irrelevant {0} for {1} from {2}", new Object[] {view.getViewName(), this, uri});
+                    }
+                } else {
+                    LOGGER.log(Level.FINER, "inapplicable {0} for {1} from {2}", new Object[] {last.getObject(), this, uri});
+                }
+            } else {
+                LOGGER.log(Level.FINER, "no ancestors for {0} from {1}", new Object[] {this, uri});
+            }
+        } else {
+            LOGGER.log(Level.FINER, "no current request for {0}", this);
         }
-
         // otherwise compute the path normally
-        return getParent().getUrl()+getShortUrl();
+        String base = getParent().getUrl();
+        LOGGER.log(Level.FINER, "falling back to {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
+        return base + shortUrl;
     }
 
     public String getShortUrl() {
-        return getParent().getUrlChildPrefix()+'/'+Util.rawEncode(getName())+'/';
+        String prefix = getParent().getUrlChildPrefix();
+        String subdir = Util.rawEncode(getName());
+        return prefix.equals(".") ? subdir + '/' : prefix + '/' + subdir + '/';
     }
 
     public String getSearchUrl() {
@@ -438,13 +534,30 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * Deletes this item.
+     * Note on the funny name: for reasons of historical compatibility, this URL is {@code /doDelete}
+     * since it predates {@code <l:confirmationLink>}. {@code /delete} goes to a Jelly page
+     * which should now be unused by core but is left in case plugins are still using it.
      */
-    @CLIMethod(name="delete-job")
+    @RequirePOST
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
-        requirePOST();
         delete();
-        if (rsp != null) // null for CLI
-            rsp.sendRedirect2(req.getContextPath()+"/"+getParent().getUrl());
+        if (req == null || rsp == null) { // CLI
+            return;
+        }
+        List<Ancestor> ancestors = req.getAncestors();
+        ListIterator<Ancestor> it = ancestors.listIterator(ancestors.size());
+        String url = getParent().getUrl(); // fallback but we ought to get to Jenkins.instance at the root
+        while (it.hasPrevious()) {
+            Object a = it.previous().getObject();
+            if (a instanceof View) {
+                url = ((View) a).getUrl();
+                break;
+            } else if (a instanceof ViewGroup && a != this) {
+                url = ((ViewGroup) a).getUrl();
+                break;
+            }
+        }
+        rsp.sendRedirect2(req.getContextPath() + '/' + url);
     }
 
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -463,25 +576,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Any exception indicates the deletion has failed, but {@link AbortException} would prevent the caller
      * from showing the stack trace. This
      */
-    public synchronized void delete() throws IOException, InterruptedException {
+    public void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
-        performDelete();
-
-        try {
-            invokeOnDeleted();
-        } catch (AbstractMethodError e) {
-            // ignore
-        }
-
-        Jenkins.getInstance().rebuildDependencyGraph();
-    }
-
-    /**
-     * A pointless function to work around what appears to be a HotSpot problem. See JENKINS-5756 and bug 6933067
-     * on BugParade for more details.
-     */
-    private void invokeOnDeleted() throws IOException {
-        getParent().onDeleted(this);
+        synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
+            performDelete();
+        } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
+        getParent().onDeleted(AbstractItem.this);
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
 
     /**
@@ -507,7 +608,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         }
         if (req.getMethod().equals("POST")) {
             // submission
-            updateByXml(new StreamSource(req.getReader()));
+            updateByXml((Source)new StreamSource(req.getReader()));
             return;
         }
 
@@ -516,39 +617,102 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Updates Job by its XML definition.
+     * @deprecated as of 1.473
+     *      Use {@link #updateByXml(Source)}
      */
+    @Deprecated
     public void updateByXml(StreamSource source) throws IOException {
+        updateByXml((Source)source);
+    }
+
+    /**
+     * Updates an Item by its XML definition.
+     * @param source source of the Item's new definition.
+     *               The source should be either a <code>StreamSource</code> or a <code>SAXSource</code>, other
+     *               sources may not be handled.
+     * @since 1.473
+     */
+    public void updateByXml(Source source) throws IOException {
         checkPermission(CONFIGURE);
         XmlFile configXmlFile = getConfigFile();
-        AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
+        final AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
         try {
             try {
-                // this allows us to use UTF-8 for storing data,
-                // plus it checks any well-formedness issue in the submitted
-                // data
-                Transformer t = TransformerFactory.newInstance()
-                        .newTransformer();
-                t.transform(source,
-                        new StreamResult(out));
+                XMLUtils.safeTransform(source, new StreamResult(out));
                 out.close();
             } catch (TransformerException e) {
-                throw new IOException2("Failed to persist configuration.xml", e);
+                throw new IOException("Failed to persist config.xml", e);
+            } catch (SAXException e) {
+                throw new IOException("Failed to persist config.xml", e);
             }
 
             // try to reflect the changes by reloading
-            new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
-            onLoad(getParent(), getRootDir().getName());
+            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
+            if (o!=this) {
+                // ensure that we've got the same job type. extending this code to support updating
+                // to different job type requires destroying & creating a new job type
+                throw new IOException("Expecting "+this.getClass()+" but got "+o.getClass()+" instead");
+            }
+
+            Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void,IOException>() {
+                @Override public Void call() throws IOException {
+                    onLoad(getParent(), getRootDir().getName());
+                    return null;
+                }
+            });
+            Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             // if everything went well, commit this new version
             out.commit();
+            SaveableListener.fireOnChange(this, getConfigFile());
+
         } finally {
             out.abort(); // don't leave anything behind
         }
     }
 
-    public String toString() {
-        return super.toString()+'['+getFullName()+']';
+    /**
+     * Reloads this job from the disk.
+     *
+     * Exposed through CLI as well.
+     *
+     * TODO: think about exposing this to UI
+     *
+     * @since 1.556
+     */
+    @CLIMethod(name="reload-job")
+    @RequirePOST
+    public void doReload() throws IOException {
+        checkPermission(CONFIGURE);
+
+        // try to reflect the changes by reloading
+        getConfigFile().unmarshal(this);
+        Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
+            @Override
+            public Void call() throws IOException {
+                onLoad(getParent(), getRootDir().getName());
+                return null;
+            }
+        });
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
+
+        SaveableListener.fireOnChange(this, getConfigFile());
+    }
+
+
+    /* (non-Javadoc)
+     * @see hudson.model.AbstractModelObject#getSearchName()
+     */
+    @Override
+    public String getSearchName() {
+        // the search name of abstract items should be the name and not display name.
+        // this will make suggestions use the names and not the display name
+        // so that the links will 302 directly to the thing the user was finding
+        return getName();
+    }
+
+    @Override public String toString() {
+        return super.toString() + '[' + (parent != null ? getFullName() : "?/" + name) + ']';
     }
 
     /**
@@ -557,6 +721,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @CLIResolver
     public static AbstractItem resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+        // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
         if (item==null)
             throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
@@ -567,4 +732,5 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
 }

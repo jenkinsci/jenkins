@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Geoff Cummings
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,164 +23,321 @@
  */
 package hudson.util;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import hudson.model.AbstractBuild;
-import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.TopLevelItem;
 import hudson.model.View;
+import hudson.util.Iterators.CountingPredicate;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
  *
- * TODO: this should be immutable
- *
  * @author Kohsuke Kawaguchi
  */
-public class RunList<R extends Run> extends ArrayList<R> {
+public class RunList<R extends Run> extends AbstractList<R> {
+
+    private Iterable<R> base;
+
+    private R first;
+    private Integer size;
+
     public RunList() {
+        base = Collections.emptyList();
     }
 
     public RunList(Job j) {
-        addAll(j.getBuilds());
-    }
-
-    public R getFirstBuild() {
-        return isEmpty() ? null : get(size()-1);
-    }
-
-    public R getLastBuild() {
-        return isEmpty() ? null : get(0);
+        base = j.getBuilds();
     }
 
     public RunList(View view) {// this is a type unsafe operation
-        for (Item item : view.getItems())
-            for (Job<?,?> j : item.getAllJobs())
-                addAll((Collection<R>)j.getBuilds());
-        Collections.sort(this,Run.ORDER_BY_DATE);
+        Set<Job> jobs = new HashSet<Job>();
+        for (TopLevelItem item : view.getItems())
+            jobs.addAll(item.getAllJobs());
+
+        List<Iterable<R>> runLists = new ArrayList<Iterable<R>>();
+        for (Job job : jobs) {
+            runLists.add(job.getBuilds());
+        }
+        this.base = combine(runLists);
     }
 
     public RunList(Collection<? extends Job> jobs) {
+        List<Iterable<R>> runLists = new ArrayList<Iterable<R>>();
         for (Job j : jobs)
-            addAll(j.getBuilds());
-        Collections.sort(this,Run.ORDER_BY_DATE);
+            runLists.add(j.getBuilds());
+        this.base = combine(runLists);
     }
 
-    private RunList(Collection<? extends R> c, boolean hack) {
-        super(c);
+    private Iterable<R> combine(Iterable<Iterable<R>> runLists) {
+        return Iterables.mergeSorted(runLists, new Comparator<R>() {
+            public int compare(R o1, R o2) {
+                long lhs = o1.getTimeInMillis();
+                long rhs = o2.getTimeInMillis();
+                if (lhs > rhs) return -1;
+                if (lhs < rhs) return 1;
+                return 0;
+            }
+        });
+    }
+
+    private RunList(Iterable<R> c) {
+        base = c;
+    }
+
+    @Override
+    public Iterator<R> iterator() {
+        return base.iterator();
+    }
+
+    /**
+     * @deprecated as of 1.485
+     *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
+     */
+    @Override
+    @Deprecated
+    public int size() {
+        if (size==null) {
+            int sz=0;
+            for (R r : this) {
+                first = r;
+                sz++;
+            }
+            size = sz;
+        }
+        return size;
+    }
+
+    /**
+     * @deprecated as of 1.485
+     *      {@link RunList}, despite its name, should be really used as {@link Iterable}, not as {@link List}.
+     */
+    @Override
+    @Deprecated
+    public R get(int index) {
+        return Iterators.get(iterator(),index);
+    }
+
+    /**
+     * {@link AbstractList#subList(int, int)} isn't very efficient on our {@link Iterable} based implementation.
+     * In fact the range check alone would require us to iterate all the elements,
+     * so we'd be better off just copying into ArrayList.
+     */
+    @Override
+    public List<R> subList(int fromIndex, int toIndex) {
+        List<R> r = new ArrayList<R>();
+        Iterator<R> itr = iterator();
+        Iterators.skip(itr,fromIndex);
+        for (int i=toIndex-fromIndex; i>0; i--) {
+            r.add(itr.next());
+        }
+        return r;
+    }
+
+    @Override
+    public int indexOf(Object o) {
+        int index=0;
+        for (R r : this) {
+            if (r.equals(o))
+                return index;
+            index++;
+        }
+        return -1;
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        int a = -1;
+        int index=0;
+        for (R r : this) {
+            if (r.equals(o))
+                a = index;
+            index++;
+        }
+        return a;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return !iterator().hasNext();
+    }
+
+    /** @deprecated see {@link #size()} for why this violates lazy-loading */
+    @Deprecated
+    public R getFirstBuild() {
+        size();
+        return first;
+    }
+
+    public R getLastBuild() {
+        Iterator<R> itr = iterator();
+        return itr.hasNext() ? itr.next() : null;
     }
 
     public static <R extends Run>
     RunList<R> fromRuns(Collection<? extends R> runs) {
-        return new RunList<R>(runs,false);
+        return new RunList<R>((Iterable)runs);
+    }
+
+    /**
+     * Returns elements that satisfy the given predicate.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.544
+     */
+    public RunList<R> filter(Predicate<R> predicate) {
+        size = null;
+        first = null;
+        base = Iterables.filter(base,predicate);
+        return this;
+    }
+
+    /**
+     * Returns the first streak of the elements that satisfy the given predicate.
+     *
+     * For example, {@code filter([1,2,3,4],odd)==[1,3]} but {@code limit([1,2,3,4],odd)==[1]}.
+     */
+    private RunList<R> limit(final CountingPredicate<R> predicate) {
+        size = null;
+        first = null;
+        final Iterable<R> nested = base;
+        base = new Iterable<R>() {
+            public Iterator<R> iterator() {
+                return hudson.util.Iterators.limit(nested.iterator(),predicate);
+            }
+
+            @Override
+            public String toString() {
+                return Iterables.toString(this);
+            }
+        };
+        return this;
+    }
+
+    /**
+     * Return only the most recent builds.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @param n a count
+     * @return the n most recent builds
+     * @since 1.507
+     */
+    public RunList<R> limit(final int n) {
+        return limit(new CountingPredicate<R>() {
+            public boolean apply(int index, R input) {
+                return index<n;
+            }
+        });
     }
 
     /**
      * Filter the list to non-successful builds only.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> failureOnly() {
-        for (Iterator<R> itr = iterator(); itr.hasNext();) {
-            Run r = itr.next();
-            if(r.getResult()==Result.SUCCESS)
-                itr.remove();
-        }
-        return this;
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return r.getResult()!=Result.SUCCESS;
+            }
+        });
+    }
+
+    /**
+     * Filter the list to builds above threshold.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.517
+     */
+    public RunList<R> overThresholdOnly(final Result threshold) {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold));
+            }
+        });
+    }
+
+    /**
+     * Filter the list to completed builds.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.561
+     */
+    public RunList<R> completedOnly() {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return !r.isBuilding();
+            }
+        });
     }
 
     /**
      * Filter the list to builds on a single node only
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
-    public RunList<R> node(Node node) {
-        for (Iterator<R> itr = iterator(); itr.hasNext();) {
-            Run r = itr.next();
-            if (!(r instanceof AbstractBuild) || ((AbstractBuild)r).getBuiltOn()!=node) {
-                itr.remove();
+    public RunList<R> node(final Node node) {
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return (r instanceof AbstractBuild) && ((AbstractBuild)r).getBuiltOn()==node;
             }
-        }
-        return this;
+        });
     }
 
     /**
      * Filter the list to regression builds only.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> regressionOnly() {
-        for (Iterator<R> itr = iterator(); itr.hasNext();) {
-            Run r = itr.next();
-            if(!r.getBuildStatusSummary().isWorse)
-                itr.remove();
-        }
-        return this;
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return r.getBuildStatusSummary().isWorse;
+            }
+        });
     }
 
     /**
      * Filter the list by timestamp.
      *
      * {@code s&lt=;e}.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
-    public RunList<R> byTimestamp(long start, long end) {
-        AbstractList<Long> TIMESTAMP_ADAPTER = new AbstractList<Long>() {
-            public Long get(int index) {
-                return RunList.this.get(index).getTimeInMillis();
+    public RunList<R> byTimestamp(final long start, final long end) {
+        return
+        limit(new CountingPredicate<R>() {
+            public boolean apply(int index, R r) {
+                return start<=r.getTimeInMillis();
             }
-
-            public int size() {
-                return RunList.this.size();
-            }
-        };
-        Comparator<Long> DESCENDING_ORDER = new Comparator<Long>() {
-            public int compare(Long o1, Long o2) {
-                if (o1 > o2) return -1;
-                if (o1 < o2) return +1;
-                return 0;
-            }
-        };
-
-        int s = Collections.binarySearch(TIMESTAMP_ADAPTER, start, DESCENDING_ORDER);
-        if (s<0)    s=-(s+1);   // min is inclusive
-        int e = Collections.binarySearch(TIMESTAMP_ADAPTER, end,   DESCENDING_ORDER);
-        if (e<0)    e=-(e+1);   else e++;   // max is exclusive, so the exact match should be excluded
-
-        return fromRuns(subList(e,s));
+        }).filter(new Predicate<R>() {
+        	public boolean apply(R r) {
+        		return r.getTimeInMillis()<end;
+                    }
+        });
     }
 
     /**
      * Reduce the size of the list by only leaving relatively new ones.
      * This also removes on-going builds, as RSS cannot be used to publish information
      * if it changes.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> newBuilds() {
-        GregorianCalendar threshold = new GregorianCalendar();
-        threshold.add(Calendar.DAY_OF_YEAR,-7);
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.add(Calendar.DAY_OF_YEAR, -7);
+        final long t = cal.getTimeInMillis();
 
-        int count=0;
-
-        for (Iterator<R> itr = iterator(); itr.hasNext();) {
-            R r = itr.next();
-            if(r.isBuilding()) {
-                // can't publish on-going builds
-                itr.remove();
-                continue;
+        // can't publish on-going builds
+        return filter(new Predicate<R>() {
+            public boolean apply(R r) {
+                return !r.isBuilding();
             }
-            // at least put 10 items
-            if(count<10) {
-                count++;
-                continue;
+        })
+        // put at least 10 builds, but otherwise ignore old builds
+        .limit(new CountingPredicate<R>() {
+            public boolean apply(int index, R r) {
+                return index < 10 || r.getTimeInMillis() >= t;
             }
-            // anything older than 7 days will be ignored
-            if(r.getTimestamp().before(threshold))
-                itr.remove();
-        }
-        return this;
+        });
     }
 }

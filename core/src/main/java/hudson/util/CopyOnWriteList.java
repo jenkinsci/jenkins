@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -38,9 +38,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
-import java.util.logging.Logger;
 
-import static java.util.logging.Level.WARNING;
+import jenkins.util.xstream.CriticalXStreamException;
+
 
 /**
  * {@link List}-like implementation that has copy-on-write semantics.
@@ -138,7 +138,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         this.core = new ArrayList<E>();
     }
 
-    public E[] toArray(E[] array) {
+    public <E> E[] toArray(E[] array) {
         return core.toArray(array);
     }
 
@@ -164,6 +164,10 @@ public class CopyOnWriteList<E> implements Iterable<E> {
 
     public boolean contains(Object item) {
         return core.contains(item);
+    }
+
+    @Override public String toString() {
+        return core.toString();
     }
 
     /**
@@ -192,11 +196,11 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                 try {
                     Object item = readItem(reader, context, items);
                     items.add(item);
-                } catch (CannotResolveClassException e) {
-                    LOGGER.log(WARNING,"Failed to resolve class",e);
+                } catch (CriticalXStreamException e) {
+                    throw e;
+                } catch (XStreamException e) {
                     RobustReflectionConverter.addErrorInContext(context, e);
                 } catch (LinkageError e) {
-                    LOGGER.log(WARNING,"Failed to resolve class",e);
                     RobustReflectionConverter.addErrorInContext(context, e);
                 }
                 reader.moveUp();
@@ -206,5 +210,4 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         }
     }
 
-    private static final Logger LOGGER = Logger.getLogger(CopyOnWriteList.class.getName());
 }

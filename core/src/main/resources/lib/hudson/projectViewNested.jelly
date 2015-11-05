@@ -44,11 +44,11 @@ THE SOFTWARE.
             </a>
           </j:otherwise>
         </j:choose>
-        <img src="${imagesURL}/${iconSize}/folder.png" style="margin-left:4px" alt="" class="icon${iconSize}" />
+        <l:icon class="icon-folder ${iconSizeClass}" style="margin-left:4px" />
       </div>
     </td>
     <td colspan="5" style="${indenter.getCss(job)}">
-      <a href="${rootURL}/${v.url}">
+      <a href="${rootURL}/${v.url}" class="model-link inside">
         ${v.viewName}
       </a>
     </td>

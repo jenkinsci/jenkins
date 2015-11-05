@@ -31,6 +31,7 @@ import hudson.model.BuildListener;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -75,7 +76,7 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
     }
     
     @Override
-    public boolean checkout(AbstractBuild build, Launcher launcher, FilePath workspace, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
+    public boolean checkout(AbstractBuild<?,?> build, Launcher launcher, FilePath workspace, BuildListener listener, File changeLogFile) throws IOException, InterruptedException {
         if (workspace.exists()) {
             listener.getLogger().println("Deleting existing workspace " + workspace.getRemote());
             workspace.deleteRecursive();
@@ -122,13 +123,13 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
         stream.println("<extractChanges>");
         stream.println("<entry>");
         stream.println("<zipFile>" + escapeForXml(changeLog.getZipFile()) + "</zipFile>");
-        stream.println("<file>");
 
         for (String fileName : changeLog.getAffectedPaths()) {
+            stream.println("<file>");
             stream.println("<fileName>" + escapeForXml(fileName) + "</fileName>");
+            stream.println("</file>");
         }
 
-        stream.println("</file>");
         stream.println("</entry>");
         stream.println("</extractChanges>");
 
@@ -139,4 +140,13 @@ public class ExtractResourceWithChangesSCM extends NullSCM {
      * Don't write 'this', so that subtypes can be implemented as anonymous class.
      */
     private Object writeReplace() { return new Object(); }
+
+    @Override public SCMDescriptor<?> getDescriptor() {
+        return new SCMDescriptor<ExtractResourceWithChangesSCM>(ExtractResourceWithChangesSCM.class, null) {
+            @Override public String getDisplayName() {
+                return "ExtractResourceWithChangesSCM";
+            }
+        };
+    }
+
 }

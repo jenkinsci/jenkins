@@ -23,18 +23,26 @@
  */
 package hudson.cli
 
-import org.jvnet.hudson.test.HudsonTestCase
+import static org.junit.Assert.assertFalse
+import static org.junit.Assert.assertTrue
+
+import org.junit.Rule
+import org.junit.Test
+import org.jvnet.hudson.test.JenkinsRule
 
 /**
- *
- *
  * @author Kohsuke Kawaguchi
  */
-public class EnableJobCommandTest extends HudsonTestCase {
-    void test1() {
-        def p = createFreeStyleProject();
+public class EnableJobCommandTest {
 
-        def cli = new CLI(getURL())
+    @Rule
+    public JenkinsRule j = new JenkinsRule()
+
+    @Test
+    void test() {
+        def p = j.createFreeStyleProject()
+
+        def cli = new CLI(j.getURL())
 
         try {
             cli.execute(["disable-job",p.name])
@@ -42,8 +50,7 @@ public class EnableJobCommandTest extends HudsonTestCase {
             cli.execute(["enable-job",p.name])
             assertFalse(p.disabled)
         } finally {
-            cli.close();
+            cli.close()
         }
     }
-
 }

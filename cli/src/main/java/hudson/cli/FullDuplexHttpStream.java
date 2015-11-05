@@ -21,7 +21,11 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class FullDuplexHttpStream {
     private final URL target;
-
+    /**
+     * Authorization header value needed to get through the HTTP layer.
+     */
+    private final String authorization;
+    
     private final OutputStream output;
     private final InputStream input;
 
@@ -33,13 +37,26 @@ public class FullDuplexHttpStream {
         return output;
     }
 
+    @Deprecated
     public FullDuplexHttpStream(URL target) throws IOException {
-        this.target = target;
+        this(target,basicAuth(target.getUserInfo()));
+    }
 
-        String authorization = null;
-        if (target.getUserInfo() != null) {
-        	authorization = new String(new Base64().encodeBase64(target.getUserInfo().getBytes()));
-        }
+    private static String basicAuth(String userInfo) {
+        if (userInfo != null)
+            return "Basic "+new String(new Base64().encodeBase64(userInfo.getBytes()));
+        return null;
+    }
+
+    /**
+     * @param target
+     *      The endpoint that we are making requests to.
+     * @param authorization
+     *      The value of the authorization header, if non-null.
+     */
+    public FullDuplexHttpStream(URL target, String authorization) throws IOException {
+        this.target = target;
+        this.authorization = authorization;
 
         CrumbData crumbData = new CrumbData();
 
@@ -52,7 +69,7 @@ public class FullDuplexHttpStream {
         con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side","download");
         if (authorization != null) {
-            con.addRequestProperty("Authorization", "Basic " + authorization);
+            con.addRequestProperty("Authorization", authorization);
         }
         if(crumbData.isValid) {
             con.addRequestProperty(crumbData.crumbName, crumbData.crumb);
@@ -72,7 +89,7 @@ public class FullDuplexHttpStream {
         con.addRequestProperty("Session", uuid.toString());
         con.addRequestProperty("Side","upload");
         if (authorization != null) {
-        	con.addRequestProperty ("Authorization", "Basic " + authorization);
+        	con.addRequestProperty ("Authorization", authorization);
         }
 
         if(crumbData.isValid) {
@@ -99,8 +116,9 @@ public class FullDuplexHttpStream {
     	private void getData() {
             try {
                 String base = createCrumbUrlBase();
-                crumbName = readData(base+"?xpath=/*/crumbRequestField/text()");
-                crumb = readData(base+"?xpath=/*/crumb/text()");
+                String[] pair = readData(base + "?xpath=concat(//crumbRequestField,\":\",//crumb)").split(":", 2);
+                crumbName = pair[0];
+                crumb = pair[1];
                 isValid = true;
                 LOGGER.fine("Crumb data: "+crumbName+"="+crumb);
             } catch (IOException e) {
@@ -116,9 +134,22 @@ public class FullDuplexHttpStream {
 
     	private String readData(String dest) throws IOException {
             HttpURLConnection con = (HttpURLConnection) new URL(dest).openConnection();
+            if (authorization != null) {
+                con.addRequestProperty("Authorization", authorization);
+            }
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                return reader.readLine();
+                String line = reader.readLine();
+                String nextLine = reader.readLine();
+                if (nextLine != null) {
+                    System.err.println("Warning: received junk from " + dest);
+                    System.err.println(line);
+                    System.err.println(nextLine);
+                    while ((nextLine = reader.readLine()) != null) {
+                        System.err.println(nextLine);
+                    }
+                }
+                return line;
             }
             finally {
                 con.disconnect();

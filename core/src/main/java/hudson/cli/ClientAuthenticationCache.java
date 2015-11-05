@@ -1,14 +1,10 @@
 package hudson.cli;
 
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
-import jenkins.model.Jenkins;
-import jenkins.model.Jenkins.MasterComputer;
-import hudson.os.PosixAPI;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
-import hudson.remoting.VirtualChannel;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -16,8 +12,8 @@ import org.acegisecurity.userdetails.UserDetails;
 import org.springframework.dao.DataAccessException;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Properties;
@@ -44,14 +40,23 @@ public class ClientAuthenticationCache implements Serializable {
     private final Properties props = new Properties();
 
     public ClientAuthenticationCache(Channel channel) throws IOException, InterruptedException {
-        store = (channel==null ? MasterComputer.localChannel :  channel).call(new Callable<FilePath, IOException>() {
+        store = (channel==null ? FilePath.localChannel :  channel).call(new MasterToSlaveCallable<FilePath, IOException>() {
             public FilePath call() throws IOException {
                 File home = new File(System.getProperty("user.home"));
-                return new FilePath(new File(home, ".hudson/cli-credentials"));
+                File hudsonHome = new File(home, ".hudson");
+                if (hudsonHome.exists()) {
+                    return new FilePath(new File(hudsonHome, "cli-credentials"));
+                }
+                return new FilePath(new File(home, ".jenkins/cli-credentials"));
             }
         });
         if (store.exists()) {
-            props.load(store.read());
+            InputStream istream = store.read();
+            try {
+                props.load(istream);
+            } finally {
+                istream.close();
+            }
         }
     }
 
@@ -106,21 +111,13 @@ public class ClientAuthenticationCache implements Serializable {
     }
 
     private void save() throws IOException, InterruptedException {
-        store.act(new FileCallable<Void>() {
-            public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                f.getParentFile().mkdirs();
-
-                OutputStream os = new FileOutputStream(f);
-                try {
-                    props.store(os,"Credential store");
-                } finally {
-                    os.close();
-                }
-
-                // try to protect this file from other users, if we can.
-                PosixAPI.get().chmod(f.getAbsolutePath(),0600);
-                return null;
-            }
-        });
+        OutputStream os = store.write();
+        try {
+            props.store(os,"Credential store");
+        } finally {
+            os.close();
+        }
+        // try to protect this file from other users, if we can.
+        store.chmod(0600);
     }
 }

@@ -25,8 +25,9 @@ package hudson.node_monitors;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -64,17 +65,20 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
             return Messages.DiskSpaceMonitor_DisplayName();
         }
 
-        protected DiskSpace getFreeSpace(Computer c) throws IOException, InterruptedException {
-            FilePath p = c.getNode().getRootPath();
+        @Override
+        protected Callable<DiskSpace, IOException> createCallable(Computer c) {
+            Node node = c.getNode();
+            if (node == null) return null;
+            
+            FilePath p = node.getRootPath();
             if(p==null) return null;
 
-            return p.act(new GetUsableSpace());
+            return p.asCallableWith(new GetUsableSpace());
         }
     };
 
     @Extension
     public static DiskSpaceMonitorDescriptor install() {
-        if(Functions.isMustangOrAbove())    return DESCRIPTOR;
-        return null;
+        return DESCRIPTOR;
     }
 }

@@ -42,21 +42,22 @@ THE SOFTWARE.
     <table id="computers" class="sortable pane bigtable">
       <tr>
         <th width="32">S</th>
-        <th initialSortDir="down">${%Name}</th>
+        <th initialSortDir="down" align="left">${%Name}</th>
         <j:forEach var="m" items="${monitors}">
           <j:if test="${m.columnCaption!=null}">
             <j:set var="tableWidth" value="${tableWidth+1}"/>
-            <th>${m.columnCaption}</th>
+            <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
           </j:if>
         </j:forEach>
         <th />
       </tr>
+
       <j:forEach var="c" items="${it._all}">
-        <tr>
+        <tr id="node_${c.name}">
           <td width="32" data="${c.icon}">
-            <img src="${imagesURL}/32x32/${c.icon}" width="32" height="32" alt="${c.iconAltText}"/>
+            <l:icon class="${c.iconClassName} icon-lg" alt="${c.iconAltText}"/>
           </td>
-          <td><a href="${rootURL}/${c.url}">${c.displayName}</a></td>
+          <td><a href="${rootURL}/${c.url}" class="model-link inside">${c.displayName}</a></td>
           <j:forEach var="m" items="${monitors}">
             <j:if test="${m.columnCaption!=null}">
               <j:set var="data" value="${m.data(c)}"/>
@@ -67,9 +68,7 @@ THE SOFTWARE.
           <td><!-- config link -->
             <j:if test="${c.hasPermission(c.CONFIGURE)}">
               <a href="${rootURL}/${c.url}configure">
-                <img src="${imagesURL}/32x32/setting.png"
-                     title="${%Configure}" alt="${%Configure}"
-                     height="32" width="32" border="0"/>
+                <l:icon class="icon-setting icon-lg" tooltip="${%Configure}"/>
               </a>
             </j:if>
           </td>
@@ -80,6 +79,20 @@ THE SOFTWARE.
       <j:forEach var="cloud" items="${app.clouds}">
         <st:include it="${cloud}" page="computerSet.jelly" optional="true" />
       </j:forEach>
+
+      <tr class="sortbottom">
+        <th />
+        <th>${%Data obtained}</th>
+        <j:forEach var="m" items="${monitors}">
+          <j:if test="${m.columnCaption!=null}">
+            <th align="right">
+              ${m.descriptor.timestampString}
+            </th>
+          </j:if>
+        </j:forEach>
+        <th />
+      </tr>
+
     </table>
     <j:if test="${app.hasPermission(app.ADMINISTER)}">
       <div align="right" style="margin-top:0.5em">

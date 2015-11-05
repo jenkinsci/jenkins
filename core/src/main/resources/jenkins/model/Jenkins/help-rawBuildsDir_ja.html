@@ -1,0 +1,14 @@
+<div>
+    過去のビルドのデータを保存する場所を指定します。
+    次の変数を使用して場所を指定することができます。
+
+    <ul>
+        <li><tt>${JENKINS_HOME}</tt> &mdash; Jenkinsのホームディレクトリ
+        <li><tt>${ITEM_ROOTDIR}</tt> &mdash; ワークスペースを配置するジョブのルートディレクトリ
+        <li><tt>${ITEM_FULL_NAME}</tt> &mdash; "foo/bar"のように、'/'区切りのジョブ名
+    </ul>
+
+    <p>
+    例えば、この値を変更することで、JENKINS_HOMEを可用性の高いバックアップされたドライブに配置しつつ、
+    ビルドのデータを大きいけれど遅いディスクに配置することも可能です。    
+    デフォルト値は、<tt>${ITEM_ROOTDIR}/builds</tt>です。

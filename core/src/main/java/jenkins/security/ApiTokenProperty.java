@@ -24,13 +24,11 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.Functions;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
-import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
@@ -64,12 +62,18 @@ public class ApiTokenProperty extends UserProperty {
      * We don't let the external code set the API token,
      * but for the initial value of the token we need to compute the seed by ourselves.
      */
-    private ApiTokenProperty(String seed) {
+    /*package*/ ApiTokenProperty(String seed) {
         apiToken = Secret.fromString(seed);
     }
 
     public String getApiToken() {
-        return Util.getDigestOf(apiToken.getPlainText());
+        String p = apiToken.getPlainText();
+        if (p.equals(Util.getDigestOf(Jenkins.getInstance().getSecretKey()+":"+user.getId()))) {
+            // if the current token is the initial value created by pre SECURITY-49 Jenkins, we can't use that.
+            // force using the newer value
+            apiToken = Secret.fromString(p=API_KEY_SEED.mac(user.getId()));
+        }
+        return Util.getDigestOf(p);
     }
 
     public boolean matchesPassword(String password) {
@@ -77,9 +81,9 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public void changeApiToken() throws IOException {
+        user.checkPermission(Jenkins.ADMINISTER);
         _changeApiToken();
-        if (user!=null)
-            user.save();
+        user.save();
     }
 
     private void _changeApiToken() {
@@ -96,7 +100,7 @@ public class ApiTokenProperty extends UserProperty {
     @Extension
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         public String getDisplayName() {
-            return "API Token";
+            return Messages.ApiTokenProperty_DisplayName();
         }
 
         /**
@@ -105,10 +109,10 @@ public class ApiTokenProperty extends UserProperty {
          * because there's no guarantee that the property is saved.
          *
          * But we also need to make sure that an attacker won't be able to guess
-         * the initial API token value. So we take the seed by hasing the instance secret key + user ID.
+         * the initial API token value. So we take the seed by hashing the secret + user ID.
          */
         public ApiTokenProperty newInstance(User user) {
-            return new ApiTokenProperty(Util.getDigestOf(Jenkins.getInstance().getSecretKey() + ":" + user.getId()));
+            return new ApiTokenProperty(API_KEY_SEED.mac(user.getId()));
         }
 
         public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
@@ -120,9 +124,14 @@ public class ApiTokenProperty extends UserProperty {
                 p.changeApiToken();
             }
             rsp.setHeader("script","document.getElementById('apiToken').value='"+p.getApiToken()+"'");
-            return HttpResponses.html("<div>Updated</div>");
+            return HttpResponses.html(Messages.ApiTokenProperty_ChangeToken_Success());
         }
     }
 
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    /**
+     * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
+     */
+    private static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class,"seed",16);
 }

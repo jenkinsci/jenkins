@@ -24,11 +24,10 @@
 package hudson;
 
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * Pluggability point for how to create {@link PluginWrapper}.
@@ -45,10 +44,17 @@ public interface PluginStrategy extends ExtensionPoint {
 	/**
 	 * Creates a plugin wrapper, which provides a management interface for the plugin
 	 * @param archive
-     *      Either a directory that points to a pre-exploded plugin, or an hpi file, or an hpl file.
+     *      Either a directory that points to a pre-exploded plugin, or an jpi file, or an jpl file.
 	 */
-	public abstract PluginWrapper createPluginWrapper(File archive)
+	PluginWrapper createPluginWrapper(File archive)
 			throws IOException;
+
+    /**
+     * Finds the plugin name without actually unpacking anything {@link #createPluginWrapper} would.
+     * Needed by {@link PluginManager#dynamicLoad} to decide whether such a plugin is already installed.
+     * @return the {@link PluginWrapper#getShortName}
+     */
+    @Nonnull String getShortName(File archive) throws IOException;
 
 	/**
 	 * Loads the plugin and starts it.
@@ -57,7 +63,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * This should be done after all the classloaders are constructed for all
 	 * the plugins, so that dependencies can be properly loaded by plugins.
 	 */
-	public abstract void load(PluginWrapper wrapper) throws IOException;
+	void load(PluginWrapper wrapper) throws IOException;
 
 	/**
 	 * Optionally start services provided by the plugin. Should be called
@@ -65,7 +71,7 @@ public interface PluginStrategy extends ExtensionPoint {
 	 * 
 	 * @param plugin
 	 */
-	public abstract void initializeComponents(PluginWrapper plugin);
+	void initializeComponents(PluginWrapper plugin);
 
 	/**
 	 * Find components of the given type using the assigned strategy.
@@ -76,5 +82,15 @@ public interface PluginStrategy extends ExtensionPoint {
      * @return Sequence of components
 	 * @since 1.400
 	 */
-	public abstract <T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson);
+	<T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson);
+    
+    /**
+     * Called when a plugin is installed, but there was already a plugin installed which optionally depended on that plugin.
+     * The class loader of the existing depending plugin should be updated
+     * to load classes from the newly installed plugin.
+     * @param depender plugin depending on dependee.
+     * @param dependee newly loaded plugin.
+     * @since 1.557
+     */
+    void updateDependency(PluginWrapper depender, PluginWrapper dependee);
 }

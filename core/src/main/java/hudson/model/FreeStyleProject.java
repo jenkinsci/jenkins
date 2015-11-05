@@ -25,6 +25,8 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Free-style software project.
@@ -36,6 +38,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     /**
      * @deprecated as of 1.390
      */
+    @Deprecated
     public FreeStyleProject(Jenkins parent, String name) {
         super(parent, name);
     }
@@ -50,9 +53,14 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     }
 
     public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
+        return (DescriptorImpl)Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
+    /**
+     * Descriptor is instantiated as a field purely for backward compatibility.
+     * Do not do this in your code. Put @Extension on your DescriptorImpl class instead.
+     */
+    @Restricted(NoExternalUse.class)
     @Extension(ordinal=1000)
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 

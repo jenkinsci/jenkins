@@ -42,11 +42,15 @@ THE SOFTWARE.
         <j:otherwise>
           <ol>
             <j:forEach var="i" items="${items}">
-              <li>
+              <li id="item_${i.path}">
                 <a href="?q=${i.path}">${i.path}</a>
               </li>
             </j:forEach>
           </ol>
+            <j:if test="${items.hasMoreResults()}">
+                <j:set var="max" value="${request.hasParameter('max')?request.getParameter('max'):20}"/>
+                <em>result has been truncated, <a href="?q=${q}&amp;max=${max+20}">see 20 more</a></em>
+            </j:if>
         </j:otherwise>
       </j:choose>
     </l:main-panel>

@@ -24,14 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${app.items.size()>10}">
-    <!--
-      unless you have a fair number of projects, this option is likely pointless.
-      so let's hide this option for new users to avoid confusing them.
-    -->
+  <j:if test="${descriptor.pollingThreadCountOptionVisible}">
     <f:section title="${%SCM Polling}">
       <f:entry title="${%Max # of concurrent polling}" field="pollingThreadCount">
-        <f:textbox value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"/>
+        <f:number value="${descriptor.pollingThreadCount==0 ? '' : descriptor.pollingThreadCount}"
+           clazz="positive-number" min="1" step="1"/>
       </f:entry>
     </f:section>
   </j:if>

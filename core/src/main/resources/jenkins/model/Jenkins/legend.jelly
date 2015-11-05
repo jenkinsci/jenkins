@@ -29,57 +29,57 @@ THE SOFTWARE.
   <l:layout>
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <table cellpadding="5">
+      <table cellpadding="5" id="legend-table">
         <tr><td>
-          <img src="images/48x48/grey.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-grey icon-xlg"/>
           ${%grey}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/grey_anime.gif" alt="" height="48" width="48"/>
+          <l:icon class="icon-grey-anime icon-xlg"/>
           ${%grey_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/blue.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-blue icon-xlg"/>
           ${%blue}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/blue_anime.gif" alt="" height="48" width="48"/>
+          <l:icon class="icon-blue-anime icon-xlg"/>
           ${%blue_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/yellow.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-yellow icon-xlg"/>
           ${%yellow}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/yellow_anime.gif" alt="" height="48" width="48"/>
+          <l:icon class="icon-yellow-anime icon-xlg"/>
           ${%yellow_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/red.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-red icon-xlg"/>
           ${%red}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/red_anime.gif" alt="" height="48" width="48"/>
+          <l:icon class="icon-red-anime icon-xlg"/>
           ${%red_anime}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-80plus.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-health-80plus icon-xlg"/>
           ${%health-81plus}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-60to79.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-health-60to79 icon-xlg"/>
           ${%health-61to80}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-40to59.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-health-40to59 icon-xlg"/>
           ${%health-41to60}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-20to39.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-health-20to39 icon-xlg"/>
           ${%health-21to40}
         </td></tr>
         <tr><td>
-          <img src="images/48x48/health-00to19.png" alt="" height="48" width="48"/>
+          <l:icon class="icon-health-00to19 icon-xlg"/>
           ${%health-00to20}
         </td></tr>
       </table>

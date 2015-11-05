@@ -40,38 +40,38 @@ THE SOFTWARE.
 
       <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
         <!-- made overridable for ViewGroup that doesn't allow modifications -->
-        <l:task icon="images/24x24/new-package.png" href="${rootURL}/${it.viewUrl}newJob" title="${%NewJob(it.newPronoun)}" permission="${it.itemCreatePermission}" it="${app}" />
+        <l:task href="${rootURL}/${it.viewUrl}newJob" icon="icon-new-package icon-md" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
       </st:include>
 
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
-          <l:task icon="images/24x24/user.png" href="${rootURL}/people/" title="${%People}" />
+          <l:task href="${rootURL}/asynchPeople/" icon="icon-user icon-md" title="${%People}"/>
         </j:when>
-        <j:when test="${it.isDefault() or it.hasPeople()}">
-          <l:task icon="images/24x24/user.png" href="${rootURL}/${it.viewUrl}people/" title="${%People}" />
-        </j:when>
+        <j:otherwise>
+          <l:task href="${rootURL}/${it.viewUrl}asynchPeople/" icon="icon-user icon-md" title="${%People}"/>
+        </j:otherwise>
       </j:choose>
-      <l:task icon="images/24x24/notepad.png" href="${rootURL}/${it.url}builds" title="${%Build History}"/>
+      <l:task href="${rootURL}/${it.viewUrl}builds" icon="icon-notepad icon-md" title="${%Build History}"/>
       <j:if test="${it.isEditable()}">
         <!-- /configure URL on Jenkins object is overloaded with Jenkins's system config, so always use the explicit name. -->
-        <l:task icon="images/24x24/gear.png" href="${rootURL}/${it.viewUrl}configure" title="${%Edit View}" permission="${it.CONFIGURE}" />
+        <l:task href="${rootURL}/${it.viewUrl}configure" icon="icon-gear icon-md" permission="${it.CONFIGURE}" title="${%Edit View}"/>
       </j:if>
       <j:if test="${it.owner.canDelete(it)}">
-        <l:task icon="images/24x24/edit-delete.png" href="delete" title="${%Delete View}" permission="${it.DELETE}" />
+        <l:task href="delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete View}"/>
       </j:if>
       <j:if test="${app.fingerprintMap.ready}">
-        <l:task icon="images/24x24/search.png" href="${rootURL}/projectRelationship" title="${%Project Relationship}" />
-        <l:task icon="images/24x24/fingerprint.png" href="${rootURL}/fingerprintCheck" title="${%Check File Fingerprint}" />
+        <l:task href="${rootURL}/projectRelationship" icon="icon-search icon-md" title="${%Project Relationship}"/>
+        <l:task href="${rootURL}/fingerprintCheck" icon="icon-fingerprint icon-md" title="${%Check File Fingerprint}"/>
       </j:if>
 
       <!-- subtypes can put more stuff here -->
       <st:include page="sidepanel2.jelly" optional="true"/>
 
+      <st:include page="tasks-bottom.jelly" it="${it.owner}" optional="true" />
       <t:actions />
     </l:tasks>
-    <t:queue items="${it.queueItems}" />
-    <t:executors computers="${it.computers}" />
     <j:forEach var="w" items="${it.widgets}">
+      <j:set var="view" value="${it}" /><!-- expose the view that's rendering this sidepanel to the widget -->
       <st:include it="${w}" page="index.jelly" />
     </j:forEach>
   </l:side-panel>

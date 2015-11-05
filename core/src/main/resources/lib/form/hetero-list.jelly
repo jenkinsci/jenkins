@@ -29,6 +29,8 @@ THE SOFTWARE.
     arbitrary items from the given list of descriptors, and configure them independently.
 
     The submission can be data-bound into List&lt;T> where T is the common base type for the describable instances.
+
+    For databinding use, please use &lt;f:repeatableHeteroProperty />
     
     <st:attribute name="name" use="required">
       form name that receives an array for all the items in the heterogeneous list.
@@ -52,6 +54,21 @@ THE SOFTWARE.
       For each item, add a caption from descriptor.getDisplayName().
       This also activates drag&amp;drop (where the header is a grip), and help text support.
     </st:attribute>
+    <st:attribute name="oneEach">
+      If true, only allow up to one instance per descriptor.
+    </st:attribute>
+    <st:attribute name="menuAlign">
+      Menu alignment against the button. Defaults to tl-bl
+    </st:attribute>
+    <st:attribute name="honorOrder">
+      If true, insert new addition by default to their 'desired' location, which
+      is the order induced by the descriptors.
+    </st:attribute>
+    <st:attribute name="capture">
+      Config fragments from descriptors are rendered lazily by default, which means
+      variables seen in the caller aren't visible to them. This attribute allows you
+      to nominate additional variables and their values to be captured for descriptors.
+    </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
@@ -64,11 +81,7 @@ THE SOFTWARE.
                 <b>${descriptor.displayName}</b>
               </div>
             </td>
-            <j:if test="${help!=null}">
-              <td>
-                <a href="#" class="help-button" helpURL="${rootURL}${help}"><img src="${imagesURL}/16x16/help.png" alt="[help]" height="16" width="16"/></a>
-              </td>
-            </j:if>
+            <f:helpLink url="${help}"/>
           </tr>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
@@ -78,24 +91,25 @@ THE SOFTWARE.
 
         <d:invokeBody/>
 
+        <f:class-entry descriptor="${descriptor}" />
         <f:block>
           <div align="right">
-            <input type="hidden" name="stapler-class" value="${descriptor.clazz.name}" />
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
           </div>
         </f:block>
       </table>
-      <input type="hidden" name="kind" value="${descriptor.class.name}" />
     </d:tag>
   </d:taglib>
 
+  <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
+
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <div class="hetero-list-container${hasHeader?' with-drag-drop':''}">
+  <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
     <j:forEach var="i" items="${attrs.items}">
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
-      <div name="${attrs.name}" class="repeated-chunk">
+      <div name="${attrs.name}" class="repeated-chunk" descriptorId="${descriptor.id}">
         <local:body deleteCaption="${attrs.deleteCaption}">
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </local:body>
@@ -107,10 +121,12 @@ THE SOFTWARE.
     <div class="prototypes to-be-removed">
       <!-- render one prototype for each type -->
       <j:set var="instance" value="${null}" />
-      <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
+      <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
+      <j:forEach var="descriptor" items="${descriptors}" varStatus="loop">
         <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
+          <j:set var="capture" value="${attrs.capture?:''}" />
           <local:body deleteCaption="${attrs.deleteCaption}">
-            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance">
+            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
               <l:ajax>
                 <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
               </l:ajax>
@@ -121,7 +137,7 @@ THE SOFTWARE.
     </div>
 
     <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" />
+      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
     </div>
   </div>
 </j:jelly>

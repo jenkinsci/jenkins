@@ -1,31 +1,30 @@
 <div>
-  Steuert die Zuweisung von Builds durch Jenkins auf diesem Rechner.
+  Steuert, wie Jenkins Builds an diesen Knoten zuweist.
 
   <dl>
     <dt><b>
-      Verwende diesen Slave-Knoten so viel wie möglich
+      Diesen Knoten so viel wie möglich verwenden
     </b></dt>
     <dd>
       Dies ist die Vorgabe- und Normaleinstellung.
-      In diesem Modus verwendet Jenkins den Slave-Knoten ohne Einschränkungen.
-      Wann immer ein Build ansteht, der von diesem Slave-Knoten übernommen 
+      In diesem Modus verwendet Jenkins den Knoten ohne Einschränkungen.
+      Wann immer ein Build ansteht, der von diesem Knoten übernommen 
       werden kann, wird Jenkins den Knoten verwenden.
     </dd>
 
     <dt><b>
-      Reserviere diesen Slave-Knoten für gebundene Jobs
+      Diesen Knoten exklusiv für gebundene Jobs reservieren
     </b></dt>
     <dd>
-      In diesem Modus wird Jenkins auf diesem Slave-Knoten nur dann einen Build
-      starten, wenn das Projekt an diesem Rechner explizit als 
-      "zugewiesenem Knoten" gebunden ist.
+      In diesem Modus wird Jenkins auf diesem Knoten nur dann einen Build
+      starten, wenn das Projekt explizit an diesen Knoten gebunden wurde.
     
-      Dadurch bleibt der Slave-Knoten für bestimmte Jobs reserviert.
+      Damit können Sie einen Slave-Knoten für bestimmte Jobs reservieren.
       Beispiel: Um Leistungsmessungen kontinuierlich per Jenkins durchzuführen,
-      legen Sie die Anzahl von Build-Prozessoren auf 1 fest, so daß zu jedem
+      legen Sie die Anzahl von Build-Prozessoren auf 1 fest, so dass zu jedem
       Zeitpunkt nur jeweils ein Leistungstest durchgeführt wird. Gleichzeitig
       blockiert der Build-Prozessor keine Builds, die auch auf anderen 
-      Slave-Knoten durchgeführt werden können.
+      Knoten durchgeführt werden können.
     </dd>
   </dl>
 </div>

@@ -1,7 +1,8 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+ * Yahoo!, Inc.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +25,9 @@
 package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-
+import hudson.Util;
 import hudson.util.EditDistance;
+
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -33,7 +35,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.servlet.ServletException;
+
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -44,9 +50,14 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
 
 /**
- * Web-bound object that serves QuickSilver-like search requests.
+ * Web-bound object that provides search/navigation capability.
+ *
+ * <p>
+ * This object is bound to "./search" of a model object via {@link SearchableModelObject} and serves
+ * HTTP requests coming from JavaScript to provide search result and auto-completion.
  *
  * @author Kohsuke Kawaguchi
+ * @see SearchableModelObject
  */
 public class Search {
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -55,14 +66,17 @@ public class Search {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
                 SearchableModelObject smo = (SearchableModelObject) a.getObject();
+                if(LOGGER.isLoggable(Level.FINE)){
+                    LOGGER.fine(String.format("smo.displayName=%s, searchName=%s",smo.getDisplayName(), smo.getSearchName()));
+                }
 
                 SearchIndex index = smo.getSearchIndex();
                 String query = req.getParameter("q");
                 if(query!=null) {
-                    SuggestedItem target = find(index, query);
+                    SuggestedItem target = find(index, query, smo);
                     if(target!=null) {
                         // found
-                        rsp.sendRedirect2(a.getUrl()+target.getUrl());
+                        rsp.sendRedirect2(req.getContextPath()+target.getUrl());
                         return;
                     }
                 }
@@ -84,6 +98,7 @@ public class Search {
      * See http://developer.mozilla.org/en/docs/Supporting_search_suggestions_in_search_plugins
      */
     public void doSuggestOpenSearch(StaplerRequest req, StaplerResponse rsp, @QueryParameter String q) throws IOException, ServletException {
+        rsp.setContentType(Flavor.JSON.contentType);
         DataWriter w = Flavor.JSON.createDataWriter(null, rsp);
         w.startArray();
         w.value(q);
@@ -113,15 +128,31 @@ public class Search {
      *      can be empty but never null. The size of the list is always smaller than
      *      a certain threshold to avoid showing too many options. 
      */
-    public List<SuggestedItem> getSuggestions(StaplerRequest req, String query) {
+    public SearchResult getSuggestions(StaplerRequest req, String query) {
         Set<String> paths = new HashSet<String>();  // paths already added, to control duplicates
-        List<SuggestedItem> r = new ArrayList<SuggestedItem>();
-        for (SuggestedItem i : suggest(makeSuggestIndex(req), query)) {
-            if(r.size()>20) break;
+        SearchResultImpl r = new SearchResultImpl();
+        int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 20;
+        SearchableModelObject smo = findClosestSearchableModelObject(req);
+        for (SuggestedItem i : suggest(makeSuggestIndex(req), query, smo)) {
+            if(r.size()>=max) {
+                r.hasMoreResults = true;
+                break;
+            }
             if(paths.add(i.getPath()))
                 r.add(i);
         }
         return r;
+    }
+
+    private SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
+        List<Ancestor> l = req.getAncestors();
+        for( int i=l.size()-1; i>=0; i-- ) {
+            Ancestor a = l.get(i);
+            if (a.getObject() instanceof SearchableModelObject) {
+                return (SearchableModelObject)a.getObject();
+            }
+        }
+        return null;
     }
 
     /**
@@ -136,6 +167,15 @@ public class Search {
             }
         }
         return builder.make();
+    }
+
+    private static class SearchResultImpl extends ArrayList<SuggestedItem> implements SearchResult {
+
+        private boolean hasMoreResults = false;
+
+        public boolean hasMoreResults() {
+            return hasMoreResults;
+        }
     }
 
     @ExportedBean
@@ -171,15 +211,72 @@ public class Search {
     }
 
     /**
-     * Performs a search and returns the match, or null if no match was found.
+     * When there are mutiple suggested items, this method can narrow down the resultset
+     * to the SuggestedItem that has a url that contains the query. This is useful is one
+     * job has a display name that matches another job's project name.
+     * @param r A list of Suggested items. It is assumed that there is at least one 
+     * SuggestedItem in r.
+     * @param query A query string
+     * @return Returns the SuggestedItem which has a search url that contains the query.
+     * If no SuggestedItems have a search url which contains the query, then the first
+     * SuggestedItem in the List is returned.
      */
+    static SuggestedItem findClosestSuggestedItem(List<SuggestedItem> r, String query) {
+        for(SuggestedItem curItem : r) {
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("item's searchUrl:%s;query=%s", curItem.item.getSearchUrl(), query));
+            }
+            if(curItem.item.getSearchUrl().contains(Util.rawEncode(query))) {
+                return curItem;
+            }
+        }
+        
+        // couldn't find an item with the query in the url so just
+        // return the first one
+        return r.get(0);        
+    }
+    
+    /**
+     * @deprecated Use {@link Search#find(SearchIndex, String, SearchableModelObject)} instead.
+     */
+    @Deprecated
     public static SuggestedItem find(SearchIndex index, String query) {
-        List<SuggestedItem> r = find(Mode.FIND, index, query);
-        if(r.isEmpty()) return null;
-        else            return r.get(0);
+        return find(index, query, null);
+    }
+    
+    /**
+     * Performs a search and returns the match, or null if no match was found
+     * or more than one match was found.
+     * @since 1.527
+     */
+    public static SuggestedItem find(SearchIndex index, String query, SearchableModelObject searchContext) {
+        List<SuggestedItem> r = find(Mode.FIND, index, query, searchContext);
+        if(r.isEmpty()){ 
+            return null;
+        }
+        else if(1==r.size()){
+            return r.get(0);
+        }
+        else  {
+            // we have more than one suggested item, so return the item who's url
+            // contains the query as this is probably the job's name
+            return findClosestSuggestedItem(r, query);
+        }
+                    
     }
 
+    /**
+     * @deprecated use {@link Search#suggest(SearchIndex, String, SearchableModelObject)} instead. 
+     */
+    @Deprecated
     public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList) {
+        return suggest(index, tokenList, null);
+    }
+
+    /**
+     * @since 1.527
+     */
+    public static List<SuggestedItem> suggest(SearchIndex index, final String tokenList, SearchableModelObject searchContext) {
 
         class Tag implements Comparable<Tag>{
             final SuggestedItem item;
@@ -201,7 +298,7 @@ public class Search {
         }
 
         List<Tag> buf = new ArrayList<Tag>();
-        List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList);
+        List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList, searchContext);
 
         // sort them
         for( SuggestedItem i : items)
@@ -244,9 +341,21 @@ public class Search {
                 }
             };
         }
+        
+        
+        public String toString() {
+            StringBuilder s = new StringBuilder("TokenList{");
+            for(String token : tokens) {
+                s.append(token);
+                s.append(",");
+            }
+            s.append('}');
+            
+            return s.toString();
+        }
     }
 
-    private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList) {
+    private static List<SuggestedItem> find(Mode m, SearchIndex index, String tokenList, SearchableModelObject searchContext) {
         TokenList tokens = new TokenList(tokenList);
         if(tokens.length()==0) return Collections.emptyList();   // no tokens given
 
@@ -256,14 +365,17 @@ public class Search {
 
         List<SearchItem> items = new ArrayList<SearchItem>(); // items found in 1 step
 
-
+        LOGGER.log(Level.FINE, "tokens={0}", tokens);
+        
         // first token
         int w=1;    // width of token
         for (String token : tokens.subSequence(0)) {
             items.clear();
             m.find(index,token,items);
-            for (SearchItem si : items)
-                paths[w].add(new SuggestedItem(si));
+            for (SearchItem si : items) {
+                paths[w].add(SuggestedItem.build(searchContext ,si));
+                LOGGER.log(Level.FINE, "found search item: {0}", si.getSearchName());
+            }
             w++;
         }
 
@@ -285,4 +397,6 @@ public class Search {
 
         return paths[tokens.length()];
     }
+    
+    private final static Logger LOGGER = Logger.getLogger(Search.class.getName());
 }

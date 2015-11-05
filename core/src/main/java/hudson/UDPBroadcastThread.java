@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import hudson.util.OneShotEvent;
@@ -52,11 +53,13 @@ public class UDPBroadcastThread extends Thread {
     public final OneShotEvent ready = new OneShotEvent();
     private MulticastSocket mcs;
     private boolean shutdown;
+    static boolean udpHandlingProblem; // for tests
 
     /**
      * @deprecated as of 1.416
      *      Use {@link #UDPBroadcastThread(Jenkins)}
      */
+    @Deprecated
     public UDPBroadcastThread(Hudson jenkins) throws IOException {
         this((Jenkins)jenkins);
     }
@@ -67,6 +70,7 @@ public class UDPBroadcastThread extends Thread {
         mcs = new MulticastSocket(PORT);
     }
 
+    @SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     @Override
     public void run() {
         try {
@@ -86,7 +90,7 @@ public class UDPBroadcastThread extends Thread {
                 StringBuilder rsp = new StringBuilder("<hudson>");
                 tag(rsp,"version", Jenkins.VERSION);
                 tag(rsp,"url", jenkins.getRootUrl());
-                tag(rsp,"server-id", Util.getDigestOf(jenkins.getSecretKey()));
+                tag(rsp,"server-id", jenkins.getLegacyInstanceId());
                 tag(rsp,"slave-port",tal==null?null:tal.getPort());
 
                 for (UDPBroadcastFragment f : UDPBroadcastFragment.all())
@@ -106,6 +110,7 @@ public class UDPBroadcastThread extends Thread {
         } catch (IOException e) {
             if (shutdown)   return; // forcibly closed
             LOGGER.log(Level.WARNING, "UDP handling problem",e);
+            udpHandlingProblem = true;
         }
     }
 

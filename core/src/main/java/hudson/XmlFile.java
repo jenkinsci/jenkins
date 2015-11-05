@@ -24,15 +24,14 @@
 package hudson;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.XppDriver;
-import com.thoughtworks.xstream.io.xml.XppReader;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
-import hudson.util.IOException2;
-import hudson.util.IOUtils;
 import hudson.util.XStream2;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -93,6 +92,11 @@ import java.util.logging.Logger;
  * old fields will be never written back.)
  *
  * <p>
+ * You may also want to call {@link OldDataMonitor#report(UnmarshallingContext, String)}.
+ * This can be done within a nested class {@code ConverterImpl} extending {@link hudson.util.XStream2.PassthruConverter}
+ * in an override of {@link hudson.util.XStream2.PassthruConverter#callback}.
+ *
+ * <p>
  * In some limited cases (specifically when the class is the root object
  * to be read from XML, such as {@link Descriptor}), it is possible
  * to completely and drastically change the data format. See
@@ -102,6 +106,7 @@ import java.util.logging.Logger;
  * There's a few other possibilities, such as implementing a custom
  * {@link Converter} for XStream, or {@link XStream#alias(String, Class) registering an alias}.
  *
+ * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Architecture#Architecture-Persistence">Architecture » Persistence</a>
  * @author Kohsuke Kawaguchi
  */
 public final class XmlFile {
@@ -121,6 +126,10 @@ public final class XmlFile {
         return file;
     }
 
+    public XStream getXStream() {
+        return xs;
+    }
+
     /**
      * Loads the contents of this file into a new object.
      */
@@ -131,12 +140,10 @@ public final class XmlFile {
         InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             return xs.fromXML(in);
-        } catch(StreamException e) {
-            throw new IOException2("Unable to read "+file,e);
-        } catch(ConversionException e) {
-            throw new IOException2("Unable to read "+file,e);
+        } catch (XStreamException e) {
+            throw new IOException("Unable to read "+file,e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read "+file,e);
+            throw new IOException("Unable to read "+file,e);
         } finally {
             in.close();
         }
@@ -154,12 +161,10 @@ public final class XmlFile {
         try {
             // TODO: expose XStream the driver from XStream
             return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
-        } catch (StreamException e) {
-            throw new IOException2("Unable to read "+file,e);
-        } catch(ConversionException e) {
-            throw new IOException2("Unable to read "+file,e);
+        } catch (XStreamException e) {
+            throw new IOException("Unable to read "+file,e);
         } catch(Error e) {// mostly reflection errors
-            throw new IOException2("Unable to read "+file,e);
+            throw new IOException("Unable to read "+file,e);
         } finally {
             in.close();
         }
@@ -173,7 +178,7 @@ public final class XmlFile {
             xs.toXML(o,w);
             w.commit();
         } catch(StreamException e) {
-            throw new IOException2(e);
+            throw new IOException(e);
         } finally {
             w.abort();
         }
@@ -261,8 +266,7 @@ public final class XmlFile {
                 @Override
                 public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                     attempt();
-                    // if we still haven't found it at the first start element,
-                    // there's something wrong.
+                    // if we still haven't found it at the first start element, then we are not going to find it.
                     throw new Eureka(null);
                 }
 
@@ -279,11 +283,13 @@ public final class XmlFile {
             // can't reach here
             throw new AssertionError();
         } catch (Eureka e) {
-            if(e.encoding==null)
-                throw new IOException("Failed to detect encoding of "+file);
-            return e.encoding;
+            if(e.encoding!=null)
+                return e.encoding;
+            // the environment can contain old version of Xerces and others that do not support Locator2
+            // in such a case, assume UTF-8 rather than fail, since Jenkins internally always write XML in UTF-8
+            return "UTF-8";
         } catch (SAXException e) {
-            throw new IOException2("Failed to detect encoding of "+file,e);
+            throw new IOException("Failed to detect encoding of "+file,e);
         } catch (ParserConfigurationException e) {
             throw new AssertionError(e);    // impossible
         } finally {

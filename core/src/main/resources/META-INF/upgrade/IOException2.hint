@@ -1,0 +1,2 @@
+new hudson.util.IOException2($t) :: $t instanceof Throwable => new java.io.IOException($t);;
+new hudson.util.IOException2($s, $t) :: $s instanceof String && $t instanceof Throwable => new java.io.IOException($s, $t);;

@@ -55,6 +55,11 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     public boolean isActivated() {
         return activated;
     }
+    
+    @Override
+    public String getDisplayName() {
+    	return Messages.HudsonHomeDiskUsageMonitor_DisplayName();
+    }
 
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
@@ -129,7 +134,7 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
          * All registered {@link Solution}s.
          */
         public static ExtensionList<Solution> all() {
-            return Jenkins.getInstance().getExtensionList(Solution.class);
+            return ExtensionList.lookup(Solution.class);
         }
     }
 }

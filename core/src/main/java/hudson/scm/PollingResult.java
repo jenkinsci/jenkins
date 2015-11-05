@@ -5,13 +5,16 @@ import hudson.model.TaskListener;
 import hudson.Launcher;
 import hudson.FilePath;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 
 /**
  * Immutable object that represents the result of {@linkplain SCM#poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState) SCM polling}.
  *
  * <p>
- * This object is marked serializable just to be remoting friendly &mdash; Hudson by itself
+ * This object is marked serializable just to be remoting friendly &mdash; Jenkins by itself
  * doesn't persist this object.
  *
  * @author Kohsuke Kawaguchi
@@ -23,13 +26,13 @@ public final class PollingResult implements Serializable {
      * (This comes from either the workspace, or from the remote repository as of the last polling.
      * Can be null.
      */
-    public final SCMRevisionState baseline;
+    public final @CheckForNull SCMRevisionState baseline;
 
     /**
      * Current state of the remote repository. To be passed to the next invocation of the polling method.
      * Can be null.
      */
-    public final SCMRevisionState remote;
+    public final @CheckForNull SCMRevisionState remote;
 
     /**
      * Degree of the change between baseline and remote. Never null.
@@ -39,7 +42,7 @@ public final class PollingResult implements Serializable {
      * the immediate rebuild, and (2) allow SCM to ignore some changes in the repository to implement
      * exclusion feature.
      */
-    public final Change change;
+    public final @Nonnull Change change;
 
     /**
      * Degree of changes between the previous state and this state.
@@ -56,7 +59,7 @@ public final class PollingResult implements Serializable {
          */
         INSIGNIFICANT,
         /**
-         * There are changes between states that warrant a new build. Hudson will eventually
+         * There are changes between states that warrant a new build. Jenkins will eventually
          * schedule a new build for this change, subject to other considerations
          * such as the quiet period.
          */
@@ -64,27 +67,27 @@ public final class PollingResult implements Serializable {
         /**
          * The state as of baseline is so different from the current state that they are incomparable
          * (for example, the workspace and the remote repository points to two unrelated repositories
-         * because the configuration has changed.) This forces Hudson to schedule a build right away.
+         * because the configuration has changed.) This forces Jenkins to schedule a build right away.
          * <p>
          * This is primarily useful in SCM implementations that require a workspace to be able
          * to perform a polling. SCMs that can always compare remote revisions regardless of the local
-         * state should do so, and never return this constant, to let Hudson maintain the quiet period
+         * state should do so, and never return this constant, to let Jenkins maintain the quiet period
          * behavior all the time.
          * <p>
          * This constant is not to be confused with the errors encountered during polling, which
-         * should result in an exception and eventual retry by Hudson.
+         * should result in an exception and eventual retry by Jenkins.
          */
         INCOMPARABLE
     }
 
-    public PollingResult(SCMRevisionState baseline, SCMRevisionState remote, Change change) {
+    public PollingResult(@CheckForNull SCMRevisionState baseline, @CheckForNull SCMRevisionState remote, @Nonnull Change change) {
         if (change==null)   throw new IllegalArgumentException();
         this.baseline = baseline;
         this.remote = remote;
         this.change = change;
     }
 
-    public PollingResult(Change change) {
+    public PollingResult(@Nonnull Change change) {
         this(null,null,change);
     }
 

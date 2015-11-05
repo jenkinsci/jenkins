@@ -31,7 +31,9 @@ THE SOFTWARE.
   <l:layout norefresh="true" permission="${permission}" title="${%NewJob(it.newPronoun)}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <j:invokeStatic var="jobs" className="hudson.model.Items" method="all" />
+      <j:invokeStatic var="jobs" className="hudson.model.Items" method="all">
+        <j:arg type="hudson.model.ItemGroup" value="${it.ownerItemGroup}"/>
+      </j:invokeStatic>
       <n:form nameTitle="${%JobName(it.newPronoun)}" copyTitle="${%CopyExisting(it.newPronoun)}" showCopyOption="${!empty(app.itemMap)}"
               descriptors="${jobs}" checkUrl="${rootURL}/checkJobName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>

@@ -29,6 +29,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Builder;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 
@@ -40,6 +41,7 @@ import java.io.IOException;
 public class SleepBuilder extends Builder {
     public final long time;
 
+    @DataBoundConstructor
     public SleepBuilder(long time) {
         this.time = time;
     }

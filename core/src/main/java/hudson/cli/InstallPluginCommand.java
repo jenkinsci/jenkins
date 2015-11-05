@@ -25,7 +25,7 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.util.IOException2;
+import hudson.PluginManager;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Data;
@@ -34,6 +34,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.HashSet;
@@ -65,19 +66,27 @@ public class InstallPluginCommand extends CLICommand {
     @Option(name="-restart",usage="Restart Jenkins upon successful installation")
     public boolean restart;
 
+    @Option(name="-deploy",usage="Deploy plugins right away without postponing them until the reboot.")
+    public boolean dynamicLoad;
+
     protected int run() throws Exception {
         Jenkins h = Jenkins.getInstance();
-        h.checkPermission(Jenkins.ADMINISTER);
+        h.checkPermission(PluginManager.UPLOAD_PLUGINS);
+        PluginManager pm = h.getPluginManager();
 
         for (String source : sources) {
             // is this a file?
-            FilePath f = new FilePath(channel, source);
-            if (f.exists()) {
-                stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
-                if (name==null)
-                    name = f.getBaseName();
-                f.copyTo(getTargetFile());
-                continue;
+            if (channel!=null) {
+                FilePath f = new FilePath(channel, source);
+                if (f.exists()) {
+                    stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
+                    if (name==null)
+                        name = f.getBaseName();
+                    f.copyTo(getTargetFilePath());
+                    if (dynamicLoad)
+                        pm.dynamicLoad(getTargetFile());
+                    continue;
+                }
             }
 
             // is this an URL?
@@ -86,12 +95,14 @@ public class InstallPluginCommand extends CLICommand {
                 stdout.println(Messages.InstallPluginCommand_InstallingPluginFromUrl(u));
                 if (name==null) {
                     name = u.getPath();
-                    name = name.substring(name.indexOf('/')+1);
-                    name = name.substring(name.indexOf('\\')+1);
+                    name = name.substring(name.lastIndexOf('/')+1);
+                    name = name.substring(name.lastIndexOf('\\')+1);
                     int idx = name.lastIndexOf('.');
                     if (idx>0)  name = name.substring(0,idx);
                 }
-                getTargetFile().copyFrom(u);
+                getTargetFilePath().copyFrom(u);
+                if (dynamicLoad)
+                    pm.dynamicLoad(getTargetFile());
                 continue;
             } catch (MalformedURLException e) {
                 // not an URL
@@ -101,9 +112,9 @@ public class InstallPluginCommand extends CLICommand {
             UpdateSite.Plugin p = h.getUpdateCenter().getPlugin(source);
             if (p!=null) {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
-                Throwable e = p.deploy().get().getError();
+                Throwable e = p.deploy(dynamicLoad).get().getError();
                 if (e!=null)
-                    throw new IOException2("Failed to install plugin "+source,e);
+                    throw new IOException("Failed to install plugin "+source,e);
                 continue;
             }
 
@@ -130,11 +141,15 @@ public class InstallPluginCommand extends CLICommand {
         }
 
         if (restart)
-            h.restart();
+            h.safeRestart();
         return 0; // all success
     }
 
-    private FilePath getTargetFile() {
-        return new FilePath(new File(Jenkins.getInstance().getPluginManager().rootDir,name+".hpi"));
+    private FilePath getTargetFilePath() {
+        return new FilePath(getTargetFile());
+    }
+
+    private File getTargetFile() {
+        return new File(Jenkins.getInstance().getPluginManager().rootDir,name+".jpi");
     }
 }

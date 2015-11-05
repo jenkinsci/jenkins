@@ -26,6 +26,7 @@ package hudson.scm;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskAction;
 import hudson.model.BuildBadgeAction;
+import hudson.model.Run;
 import hudson.security.Permission;
 import hudson.security.ACL;
 import org.kohsuke.stapler.StaplerRequest;
@@ -33,9 +34,10 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import jenkins.model.RunAction2;
 
 /**
- * Common part of {@link CVSSCM.TagAction} and {@link SubversionTagAction}.
+ * Common part of <tt>CVSSCM.TagAction</tt> and <tt>SubversionTagAction</tt>.
  *
  * <p>
  * This class implements the action that tags the modules. Derived classes
@@ -44,11 +46,23 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction {
-    protected final AbstractBuild build;
+public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction, RunAction2 {
 
+    private transient /*final*/ Run<?,?> run;
+    @Deprecated
+    protected transient /*final*/ AbstractBuild build;
+
+    /**
+     * @since 1.568
+     */
+    protected AbstractScmTagAction(Run<?,?> run) {
+        this.run = run;
+        this.build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
+    }
+
+    @Deprecated
     protected AbstractScmTagAction(AbstractBuild build) {
-        this.build = build;
+        this((Run) build);
     }
 
     public final String getUrlName() {
@@ -63,6 +77,14 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         return SCM.TAG;
     }
 
+    /**
+     * @since 1.568
+     */
+    public Run<?,?> getRun() {
+        return run;
+    }
+
+    @Deprecated
     public AbstractBuild getBuild() {
         return build;
     }
@@ -80,7 +102,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     public abstract boolean isTagged();
 
     protected ACL getACL() {
-        return build.getACL();
+        return run.getACL();
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -91,6 +113,15 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         if(workerThread!=null)
             return "inProgress.jelly";
         return "tagForm.jelly";
+    }
+
+    @Override public void onAttached(Run<?, ?> r) {
+        // unnecessary, constructor already does this
+    }
+
+    @Override public void onLoad(Run<?, ?> r) {
+        run = r;
+        build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
     }
 
 }

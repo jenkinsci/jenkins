@@ -23,69 +23,40 @@
  */
 package hudson;
 
-import jenkins.model.Jenkins;
-import hudson.model.Computer;
 import hudson.slaves.OfflineCause;
-import hudson.slaves.SlaveComputer;
-import hudson.remoting.Channel;
-import hudson.remoting.SocketOutputStream;
-import hudson.remoting.SocketInputStream;
-import hudson.remoting.Engine;
-import hudson.remoting.Channel.Listener;
-import hudson.remoting.Channel.Mode;
-import hudson.cli.CliManagerImpl;
-import hudson.cli.CliEntryPoint;
-import hudson.util.IOException2;
+import jenkins.AgentProtocol;
 
-import java.io.ByteArrayInputStream;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.BindException;
-import java.security.SecureRandom;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Listens to incoming TCP connections from JNLP slave agents and CLI.
  *
- * <h2>Security</h2>
  * <p>
- * Once connected, remote slave agents can send in commands to be
- * executed on the master, so in a way this is like an rsh service.
- * Therefore, it is important that we reject connections from
- * unauthorized remote slaves.
+ * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
+ * Historically  this was used for inbound connection from slave agents (hence the name), but over time
+ * it was extended and made generic, so that multiple protocols of different purposes can co-exist on the
+ * same socket.
  *
  * <p>
- * The approach here is to have {@link jenkins.model.Jenkins#getSecretKey() a secret key} on the master.
- * This key is sent to the slave inside the <tt>.jnlp</tt> file
- * (this file itself is protected by HTTP form-based authentication that
- * we use everywhere else in Hudson), and the slave sends this
- * token back when it connects to the master.
- * Unauthorized slaves can't access the protected <tt>.jnlp</tt> file,
- * so it can't impersonate a valid slave.
- *
- * <p>
- * We don't want to force the JNLP slave agents to be restarted
- * whenever the server restarts, so right now this secret master key
- * is generated once and used forever, which makes this whole scheme
- * less secure.
+ * This class accepts the socket, then after a short handshaking, it dispatches to appropriate
+ * {@link AgentProtocol}s.
  *
  * @author Kohsuke Kawaguchi
+ * @see AgentProtocol
  */
 public final class TcpSlaveAgentListener extends Thread {
 
-    private final ServerSocket serverSocket;
+    private final ServerSocketChannel serverSocket;
     private volatile boolean shuttingDown;
 
     public final int configuredPort;
@@ -97,13 +68,14 @@ public final class TcpSlaveAgentListener extends Thread {
     public TcpSlaveAgentListener(int port) throws IOException {
         super("TCP slave agent listener port="+port);
         try {
-            serverSocket = new ServerSocket(port);
+            serverSocket = ServerSocketChannel.open();
+            serverSocket.socket().bind(new InetSocketAddress(port));
         } catch (BindException e) {
             throw (BindException)new BindException("Failed to listen on port "+port+" because it's already in use.").initCause(e);
         }
         this.configuredPort = port;
 
-        LOGGER.info("JNLP slave agent listener started on TCP port "+getPort());
+        LOGGER.log(Level.FINE, "JNLP slave agent listener started on TCP port {0}", getPort());
 
         start();
     }
@@ -112,11 +84,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * Gets the TCP port number in which we are listening.
      */
     public int getPort() {
-        return serverSocket.getLocalPort();
-    }
-
-    private String getSecretKey() {
-        return Jenkins.getInstance().getSecretKey();
+        return serverSocket.socket().getLocalPort();
     }
 
     @Override
@@ -124,12 +92,14 @@ public final class TcpSlaveAgentListener extends Thread {
         try {
             // the loop eventually terminates when the socket is closed.
             while (true) {
-                Socket s = serverSocket.accept();
+                Socket s = serverSocket.accept().socket();
 
                 // this prevents a connection from silently terminated by the router in between or the other peer
                 // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
                 // by default in Linux) that this alone is enough to prevent that.
                 s.setKeepAlive(true);
+                // we take care of buffering on our own
+                s.setTcpNoDelay(true);
 
                 new ConnectionHandler(s).start();
             }
@@ -173,21 +143,19 @@ public final class TcpSlaveAgentListener extends Thread {
                 LOGGER.info("Accepted connection #"+id+" from "+s.getRemoteSocketAddress());
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
-                PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+                PrintWriter out = new PrintWriter(
+                        new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8")),
+                        true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
                 String s = in.readUTF();
 
                 if(s.startsWith("Protocol:")) {
                     String protocol = s.substring(9);
-                    if(protocol.equals("JNLP-connect")) {
-                        runJnlpConnect(in, out);
-                    } else if(protocol.equals("JNLP2-connect")) {
-                        runJnlp2Connect(in, out);
-                    } else if(protocol.equals("CLI-connect")) {
-                        runCliConnect(in, out);
-                    } else {
+                    AgentProtocol p = AgentProtocol.of(protocol);
+                    if (p!=null)
+                        p.handle(this.s);
+                    else
                         error(out, "Unknown protocol:" + s);
-                    }
                 } else {
                     error(out, "Unrecognized protocol: "+s);
                 }
@@ -205,146 +173,6 @@ public final class TcpSlaveAgentListener extends Thread {
                 } catch (IOException _) {
                     // try to clean up the socket
                 }
-            }
-        }
-
-        /**
-         * Handles CLI connection request.
-         */
-        private void runCliConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
-            out.println("Welcome");
-            Channel channel = new Channel("CLI channel from " + s.getInetAddress(),
-                    Computer.threadPoolForRemoting, Mode.BINARY,
-                    new BufferedInputStream(new SocketInputStream(this.s)),
-                    new BufferedOutputStream(new SocketOutputStream(this.s)), null, true);
-            channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
-            channel.join();
-        }
-
-        /**
-         * Handles JNLP slave agent connection request.
-         */
-        private void runJnlpConnect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
-            if(!getSecretKey().equals(in.readUTF())) {
-                error(out, "Unauthorized access");
-                return;
-            }
-
-            final String nodeName = in.readUTF();
-            SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
-            if(computer==null) {
-                error(out, "No such slave: "+nodeName);
-                return;
-            }
-
-            if(computer.getChannel()!=null) {
-                error(out, nodeName+" is already connected to this master. Rejecting this connection.");
-                return;
-            }
-
-            out.println(Engine.GREETING_SUCCESS);
-
-            jnlpConnect(computer);
-        }
-
-        /**
-         * Handles JNLP slave agent connection request (v2 protocol)
-         */
-        private void runJnlp2Connect(DataInputStream in, PrintWriter out) throws IOException, InterruptedException {
-            Properties request = new Properties();
-            request.load(new ByteArrayInputStream(in.readUTF().getBytes("UTF-8")));
-
-            if(!getSecretKey().equals(request.getProperty("Secret-Key"))) {
-                error(out, "Unauthorized access");
-                return;
-            }
-
-            final String nodeName = request.getProperty("Node-Name");
-            SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
-            if(computer==null) {
-                error(out, "No such slave: "+nodeName);
-                return;
-            }
-
-            Channel ch = computer.getChannel();
-            if(ch !=null) {
-                String c = request.getProperty("Cookie");
-                if (c!=null && c.equals(ch.getProperty(COOKIE_NAME))) {
-                    // we think we are currently connected, but this request proves that it's from the party
-                    // we are supposed to be communicating to. so let the current one get disconnected
-                    LOGGER.info("Disconnecting "+nodeName+" as we are reconnected from the current peer");
-                    try {
-                        computer.disconnect(new ConnectionFromCurrentPeer()).get(15, TimeUnit.SECONDS);
-                    } catch (ExecutionException e) {
-                        throw new IOException2("Failed to disconnect the current client",e);
-                    } catch (TimeoutException e) {
-                        throw new IOException2("Failed to disconnect the current client",e);
-                    }
-                } else {
-                    error(out, nodeName + " is already connected to this master. Rejecting this connection.");
-                    return;
-                }
-            }
-
-            out.println(Engine.GREETING_SUCCESS);
-
-            Properties response = new Properties();
-            String cookie = generateCookie();
-            response.put("Cookie",cookie);
-            writeResponseHeaders(out, response);
-
-            ch = jnlpConnect(computer);
-
-            ch.setProperty(COOKIE_NAME, cookie);
-        }
-
-        private void writeResponseHeaders(PrintWriter out, Properties response) {
-            for (Entry<Object, Object> e : response.entrySet()) {
-                out.println(e.getKey()+": "+e.getValue());
-            }
-            out.println(); // empty line to conclude the response header
-        }
-
-        private String generateCookie() {
-            byte[] cookie = new byte[32];
-            new SecureRandom().nextBytes(cookie);
-            return Util.toHexString(cookie);
-        }
-
-        private Channel jnlpConnect(SlaveComputer computer) throws InterruptedException, IOException {
-            final String nodeName = computer.getName();
-            final OutputStream log = computer.openLogFile();
-            PrintWriter logw = new PrintWriter(log,true);
-            logw.println("JNLP agent connected from "+ this.s.getInetAddress());
-
-            try {
-                computer.setChannel(new BufferedInputStream(this.s.getInputStream()), new BufferedOutputStream(this.s.getOutputStream()), log,
-                    new Listener() {
-                        @Override
-                        public void onClosed(Channel channel, IOException cause) {
-                            try {
-                                log.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            if(cause!=null)
-                                LOGGER.log(Level.WARNING, "Connection #"+id+" for + " + nodeName + " terminated",cause);
-                            try {
-                                ConnectionHandler.this.s.close();
-                            } catch (IOException e) {
-                                // ignore
-                            }
-                        }
-                    });
-                return computer.getChannel();
-            } catch (AbortException e) {
-                logw.println(e.getMessage());
-                logw.println("Failed to establish the connection with the slave");
-                throw e;
-            } catch (IOException e) {
-                logw.println("Failed to establish the connection with the slave " + nodeName);
-                e.printStackTrace(logw);
-                throw e;
             }
         }
 
@@ -368,7 +196,26 @@ public final class TcpSlaveAgentListener extends Thread {
 
     private static final Logger LOGGER = Logger.getLogger(TcpSlaveAgentListener.class.getName());
 
-    private static final String COOKIE_NAME = TcpSlaveAgentListener.class.getName()+".cookie";
+    /**
+     * Host name that we advertise the CLI client to connect to.
+     * This is primarily for those who have reverse proxies in place such that the HTTP host name
+     * and the CLI TCP/IP connection host names are different.
+     *
+     * TODO: think about how to expose this (including whether this needs to be exposed at all.)
+     */
+    public static String CLI_HOST_NAME = System.getProperty(TcpSlaveAgentListener.class.getName()+".hostName");
+
+    /**
+     * Port number that we advertise the CLI client to connect to.
+     * This is primarily for the case where the port that Jenkins runs is different from the port
+     * that external world should connect to, because of the presence of NAT / port-forwarding / TCP reverse
+     * proxy.
+     *
+     * If left to null, fall back to {@link #getPort()}
+     *
+     * @since 1.611
+     */
+    public static Integer CLI_PORT = Integer.getInteger(TcpSlaveAgentListener.class.getName()+".port");
 }
 
 /*

@@ -65,15 +65,10 @@ final class WarExploder {
      * Explodes hudson.war, if necessary, and returns its root dir.
      */
     private static File explode() throws Exception {
-        // are we in the hudson main workspace? If so, pick up hudson/main/war/resources
+        // are we in the Jenkins main workspace? If so, pick up hudson/main/war/resources
         // this saves the effort of packaging a war file and makes the debug cycle faster
 
         File d = new File(".").getAbsoluteFile();
-
-        // just in case we were started from hudson instead of from hudson/main/...
-        if (new File(d, "main/war/target/jenkins").exists()) {
-            return new File(d, "main/war/target/jenkins");
-        }
 
         for( ; d!=null; d=d.getParentFile()) {
             if(new File(d,".jenkins").exists()) {
@@ -85,24 +80,32 @@ final class WarExploder {
             }
         }
 
-        // locate hudson.war
+        // locate jenkins.war
         URL winstone = WarExploder.class.getResource("/winstone.jar");
         if(winstone==null)
-        // impossible, since the test harness pulls in hudson.war
-            throw new AssertionError("jenkins.war is not in the classpath.");
+            // impossible, since the test harness pulls in jenkins.war
+            throw new AssertionError("jenkins.war is not in the classpath. If you are running this from the core workspace, run 'mvn install' to create the war image in war/target/jenkins");
         File war = Which.jarFile(Class.forName("executable.Executable"));
 
-        File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();
+        // TODO this assumes that the CWD of the Maven process is the plugin ${basedir}, which may not be the case
+        File buildDirectory = new File(System.getProperty("buildDirectory", "target"));
+        File explodeDir = new File(buildDirectory, "jenkins-for-test").getAbsoluteFile();
+        explodeDir.getParentFile().mkdirs();
+        while (new File(explodeDir + ".exploding").isFile()) {
+            explodeDir = new File(explodeDir + "x");
+        }
         File timestamp = new File(explodeDir,".timestamp");
 
         if(!timestamp.exists() || (timestamp.lastModified()!=war.lastModified())) {
-            System.out.println("Exploding jenkins.war at "+war);
+            System.out.println("Exploding " + war + " into " + explodeDir);
+            new FileOutputStream(explodeDir + ".exploding").close();
             new FilePath(explodeDir).deleteRecursive();
             new FilePath(war).unzip(new FilePath(explodeDir));
             if(!explodeDir.exists())    // this is supposed to be impossible, but I'm investigating HUDSON-2605
                 throw new IOException("Failed to explode "+war);
             new FileOutputStream(timestamp).close();
             timestamp.setLastModified(war.lastModified());
+            new File(explodeDir + ".exploding").delete();
         } else {
             System.out.println("Picking up existing exploded jenkins.war at "+explodeDir.getAbsolutePath());
         }

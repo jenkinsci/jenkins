@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Url;
 
@@ -260,7 +261,7 @@ public class CronTabDayOfWeekLocaleTest {
     }
     
     @Test
-    public void isSundayAndNextRunIsPreviousSunday() throws Exception {
+    public void isSundayAndPreviousRunIsPreviousSunday() throws Exception {
         final Calendar cal = Calendar.getInstance(locale);
         cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 1 * * 0"; // Sundays @01:00
@@ -273,7 +274,68 @@ public class CronTabDayOfWeekLocaleTest {
         expected.set(2011, 0, 9, 1, 0, 0);
         compare(expected, actual);
     }
-    
+
+    @Test
+    @Issue("JENKINS-12357")
+    public void isSundayAndNextRunIsNextSunday7() throws Exception {
+        final Calendar cal = Calendar.getInstance(locale);
+        cal.set(2011, 0, 16, 1, 0, 0); // Sunday, Jan 16th 2011, 01:00
+        final String cronStr = "0 0 * * 7"; // Sundays(7 not 0) @00:00
+
+        final CronTab cron = new CronTab(cronStr);
+        final Calendar actual = cron.ceil(cal);
+
+        final Calendar expected = Calendar.getInstance();
+        // Expected next: Sunday, Jan 22th 2011, 00:00
+        expected.set(2011, 0, 23, 0, 0, 0);
+        compare(expected, actual);
+    }
+
+    @Test
+    public void isSundayAndPreviousRunIsPreviousSunday7() throws Exception {
+        final Calendar cal = Calendar.getInstance(locale);
+        cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
+        final String cronStr = "0 1 * * 7"; // Sundays(7 not 0) @01:00
+
+        final CronTab cron = new CronTab(cronStr);
+        final Calendar actual = cron.floor(cal);
+
+        final Calendar expected = Calendar.getInstance();
+        // Expected next: Sunday, Jan 9th 2011, 01:00
+        expected.set(2011, 0, 9, 1, 0, 0);
+        compare(expected, actual);
+    }
+
+    @Test
+    public void isSaturdayAndNextRunIsSundayAsterisk() throws Exception {
+        final Calendar cal = Calendar.getInstance(locale);
+        cal.set(2011, 0, 15, 1, 0, 0); // Saturday, Jan 15th 2011, 01:00
+        final String cronStr = "0 0 * * *"; // Everyday @00:00
+
+        final CronTab cron = new CronTab(cronStr);
+        final Calendar actual = cron.ceil(cal);
+
+        final Calendar expected = Calendar.getInstance();
+        // Expected next: Sunday, Jan 16th 2011, 00:00
+        expected.set(2011, 0, 16, 0, 0, 0);
+        compare(expected, actual);
+    }
+
+    @Test
+    public void isSundayAndPreviousRunIsSaturdayAsterisk() throws Exception {
+        final Calendar cal = Calendar.getInstance(locale);
+        cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
+        final String cronStr = "0 23 * * *"; // Everyday @23:00
+
+        final CronTab cron = new CronTab(cronStr);
+        final Calendar actual = cron.floor(cal);
+
+        final Calendar expected = Calendar.getInstance();
+        // Expected next: Saturday, Jan 15th 2011, 23:00
+        expected.set(2011, 0, 15, 23, 0, 0);
+        compare(expected, actual);
+    }
+
     private void compare(final Calendar expected, final Calendar actual) {
         final DateFormat f = DateFormat.getDateTimeInstance();
         final String msg = "Locale: " + locale + " FirstDayOfWeek: " + actual.getFirstDayOfWeek() + " Expected: "

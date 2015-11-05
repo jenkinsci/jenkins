@@ -26,26 +26,10 @@ THE SOFTWARE.
   Side panel for the build view.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-      <l:task icon="images/24x24/up.png" href="${it.upUrl}" title="${%Back to Project}" />
-      <l:task icon="images/24x24/search.png" href="${buildUrl.baseUrl}/" title="${%Status}" />
-      <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/changes" title="${%Changes}" />
-      <j:choose>
-        <j:when test="${it.logFile.length() > 200000}">
-          <!-- Show raw link directly so user need not click through live console page. -->
-          <div class="task">
-            <a href="${buildUrl.baseUrl}/console">
-              <img width="24" height="24" style="margin: 2px;" src="${imagesURL}/24x24/terminal.png" alt=""/>
-            </a>
-            <st:nbsp />
-            <a href="${buildUrl.baseUrl}/console">${%Console Output}</a>
-            <st:nbsp />
-            <a href="${buildUrl.baseUrl}/consoleText">[${%raw}]</a>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <l:task icon="images/24x24/terminal.png" href="${buildUrl.baseUrl}/console" title="${%Console Output}" />
-        </j:otherwise>
-      </j:choose>
-      <l:task icon="images/24x24/notepad.png" href="${buildUrl.baseUrl}/configure" title="${h.hasPermission(it,it.UPDATE)?'%Edit Build Information':'%View Build Information'}"/>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/hudson/project">
+      <l:task contextMenu="false" href="${it.upUrl}" icon="icon-up icon-md" title="${%Back to Project}"/>
+      <l:task contextMenu="false" href="${buildUrl.baseUrl}/" icon="icon-search icon-md" title="${%Status}"/>
+      <l:task href="${buildUrl.baseUrl}/changes" icon="icon-notepad icon-md" title="${%Changes}"/>
+      <p:console-link/>
+      <l:task href="${buildUrl.baseUrl}/configure" icon="icon-notepad icon-md" title="${h.hasPermission(it,it.UPDATE)?'%Edit Build Information':'%View Build Information'}"/>
 </j:jelly>

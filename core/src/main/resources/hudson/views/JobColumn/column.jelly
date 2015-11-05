@@ -25,6 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
     <td style="${indenter.getCss(job)}">
-        <a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName}</a>
+        <!-- TODO consider using ${rootURL}/${job.url} instead (also in other column.jelly) -->
+        <a href="${jobBaseUrl}${job.shortUrl}" class='model-link inside'> <l:breakable value="${h.getRelativeDisplayNameFrom(job, itemGroup)}"/></a>
     </td>
 </j:jelly>

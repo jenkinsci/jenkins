@@ -1,7 +1,6 @@
 package hudson.util;
 
 import hudson.Util;
-import hudson.model.TaskListener;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 
@@ -28,23 +27,38 @@ public abstract class DirScanner implements Serializable {
     public abstract void scan(File dir, FileVisitor visitor) throws IOException;
 
     /**
+     * @since 1.532
+     */
+    protected final void scanSingle(File f, String relative, FileVisitor visitor) throws IOException {
+        if (visitor.understandsSymlink()) {
+            try {
+                String target;
+                try {
+                    target = Util.resolveSymlink(f);
+                } catch (IOException x) { // JENKINS-13202
+                    target = null;
+                }
+                if (target != null) {
+                    visitor.visitSymlink(f, target, relative);
+                    return;
+                }
+            } catch (InterruptedException e) {
+                throw (IOException) new InterruptedIOException().initCause(e);
+            }
+        }
+        visitor.visit(f, relative);
+    }
+
+    /**
      * Scans everything recursively.
+     * <p>Note that all file paths are prefixed by the name of the root directory.
+     * For example, when scanning a directory {@code /tmp/dir} containing a file {@code file},
+     * the {@code relativePath} sent to the {@link FileVisitor} will be {@code dir/file}.
      */
     public static class Full extends DirScanner {
         private void scan(File f, String path, FileVisitor visitor) throws IOException {
             if (f.canRead()) {
-                if (visitor.understandsSymlink()) {
-                    try {
-                        String target = Util.resolveSymlink(f, TaskListener.NULL);
-                        if (target!=null) {
-                            visitor.visitSymlink(f,target,path+f.getName());
-                            return;
-                        }
-                    } catch (InterruptedException e) {
-                        throw (IOException)new InterruptedIOException().initCause(e);
-                    }
-                }
-                visitor.visit(f,path+f.getName());
+                scanSingle(f, path + f.getName(), visitor);
                 if(f.isDirectory()) {
                     for( File child : f.listFiles() )
                         scan(child,path+f.getName()+'/',visitor);
@@ -60,7 +74,8 @@ public abstract class DirScanner implements Serializable {
     }
 
     /**
-     * Scans by filtering things out from {@link FileFilter}
+     * Scans by filtering things out from {@link FileFilter}.
+     * <p>An initial basename is prepended as with {@link Full}.
      */
     public static class Filter extends Full {
         private final FileFilter filter;
@@ -79,13 +94,24 @@ public abstract class DirScanner implements Serializable {
 
     /**
      * Scans by using Ant GLOB syntax.
+     * <p>An initial basename is prepended as with {@link Full} <strong>if the includes and excludes are blank</strong>.
+     * Otherwise there is no prepended path. So for example when scanning a directory {@code /tmp/dir} containing a file {@code file},
+     * the {@code relativePath} sent to the {@link FileVisitor} will be {@code dir/file} if {@code includes} is blank
+     * but {@code file} if it is {@code **}. (This anomaly is historical.)
      */
     public static class Glob extends DirScanner {
         private final String includes, excludes;
 
+        private boolean useDefaultExcludes = true;
+
         public Glob(String includes, String excludes) {
             this.includes = includes;
             this.excludes = excludes;
+        }
+
+        public Glob(String includes, String excludes, boolean useDefaultExcludes) {
+            this(includes, excludes);
+            this.useDefaultExcludes = useDefaultExcludes;
         }
 
         public void scan(File dir, FileVisitor visitor) throws IOException {
@@ -96,12 +122,13 @@ public abstract class DirScanner implements Serializable {
             }
 
             FileSet fs = Util.createFileSet(dir,includes,excludes);
+            fs.setDefaultexcludes(useDefaultExcludes);
 
             if(dir.exists()) {
                 DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
-                    visitor.visit(file,f);
+                    scanSingle(file, f, visitor);
                 }
             }
         }

@@ -24,12 +24,14 @@
 package hudson.model;
 
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
 import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -40,6 +42,9 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.security.NotReallyRoleSensitiveCallable;
 
 /**
  * Defines a bunch of static methods to be used as a "mix-in" for {@link ItemGroup}
@@ -96,10 +101,22 @@ public abstract class ItemGroupMixIn {
         CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<K,V>();
         for (File subdir : subdirs) {
             try {
-                V item = (V) Items.load(parent,subdir);
+                // Try to retain the identity of an existing child object if we can.
+                V item = (V) parent.getItem(subdir.getName());
+                if (item == null) {
+                    XmlFile xmlFile = Items.getConfigFile(subdir);
+                    if (xmlFile.exists()) {
+                        item = (V) Items.load(parent, subdir);
+                    } else {
+                        Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not find file " + xmlFile.getFile());
+                        continue;
+                    }
+                } else {
+                    item.onLoad(parent, subdir.getName());
+                }
                 configurations.put(key.call(item), item);
-            } catch (IOException e) {
-                e.printStackTrace(); // TODO: logging
+            } catch (Exception e) {
+                Logger.getLogger(ItemGroupMixIn.class.getName()).log(Level.WARNING, "could not load " + subdir, e);
             }
         }
 
@@ -120,7 +137,7 @@ public abstract class ItemGroupMixIn {
      * or throws an exception if it fails.
      */
     public synchronized TopLevelItem createTopLevelItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        acl.checkPermission(Job.CREATE);
+        acl.checkPermission(Item.CREATE);
 
         TopLevelItem result;
 
@@ -170,9 +187,15 @@ public abstract class ItemGroupMixIn {
             } else {
                 if(mode==null)
                     throw new Failure("No mode given");
+                TopLevelItemDescriptor descriptor = Items.all().findByName(mode);
+                if (descriptor == null) {
+                    throw new Failure("No item type ‘" + mode + "’ is known");
+                }
+                descriptor.checkApplicableIn(parent);
+                acl.getACL().checkCreatePermission(parent, descriptor);
 
                 // create empty job and redirect to the project config screen
-                result = createProject(Items.all().findByName(mode), name, true);
+                result = createProject(descriptor, name, true);
             }
         }
 
@@ -189,13 +212,13 @@ public abstract class ItemGroupMixIn {
 
     /**
      * Copies an existing {@link TopLevelItem} to a new name.
-     *
-     * The caller is responsible for calling {@link ItemListener#fireOnCopied(Item, Item)}. This method
-     * cannot do that because it doesn't know how to make the newly added item reachable from the parent.
      */
     @SuppressWarnings({"unchecked"})
     public synchronized <T extends TopLevelItem> T copy(T src, String name) throws IOException {
-        acl.checkPermission(Job.CREATE);
+        acl.checkPermission(Item.CREATE);
+        src.checkPermission(Item.EXTENDED_READ);
+        src.getDescriptor().checkApplicableIn(parent);
+        acl.getACL().checkCreatePermission(parent, src.getDescriptor());
 
         T result = (T)createProject(src.getDescriptor(),name,false);
 
@@ -203,53 +226,80 @@ public abstract class ItemGroupMixIn {
         Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
 
         // reload from the new config
-        result = (T)Items.load(parent,result.getRootDir());
+        final File rootDir = result.getRootDir();
+        result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<T,IOException>() {
+            @Override public T call() throws IOException {
+                return (T) Items.load(parent, rootDir);
+            }
+        });
         result.onCopiedFrom(src);
 
         add(result);
         ItemListener.fireOnCopied(src,result);
-        Hudson.getInstance().rebuildDependencyGraph();
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
 
         return result;
     }
 
     public synchronized TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
-        acl.checkPermission(Job.CREATE);
+        acl.checkPermission(Item.CREATE);
+
+        Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
+        if (parent.getItem(name) != null) {
+            throw new IllegalArgumentException(parent.getDisplayName() + " already contains an item '" + name + "'");
+        }
+        // TODO what if we have no DISCOVER permission on the existing job?
 
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
-        configXml.getParentFile().mkdirs();
+        final File dir = configXml.getParentFile();
+        dir.mkdirs();
+        boolean success = false;
         try {
             IOUtils.copy(xml,configXml);
 
             // load it
-            TopLevelItem result = (TopLevelItem)Items.load(parent,configXml.getParentFile());
+            TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem,IOException>() {
+                @Override public TopLevelItem call() throws IOException {
+                    return (TopLevelItem) Items.load(parent, dir);
+                }
+            });
+
+            success = acl.getACL().hasCreatePermission(Jenkins.getAuthentication(), parent, result.getDescriptor())
+                && result.getDescriptor().isApplicableIn(parent);
+
             add(result);
 
             ItemListener.fireOnCreated(result);
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             return result;
         } catch (IOException e) {
-            // if anything fails, delete the config file to avoid further confusion
-            Util.deleteRecursive(configXml.getParentFile());
+            success = false;
             throw e;
+        } catch (RuntimeException e) {
+            success = false;
+            throw e;
+        } finally {
+            if (!success) {
+                // if anything fails, delete the config file to avoid further confusion
+                Util.deleteRecursive(dir);
+            }
         }
     }
 
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
             throws IOException {
-        acl.checkPermission(Job.CREATE);
+        acl.checkPermission(Item.CREATE);
+        type.checkApplicableIn(parent);
+        acl.getACL().checkCreatePermission(parent, type);
 
+        Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
         if(parent.getItem(name)!=null)
             throw new IllegalArgumentException("Project of the name "+name+" already exists");
+        // TODO problem with DISCOVER as noted above
 
-        TopLevelItem item;
-        try {
-            item = type.newInstance(parent,name);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
+        TopLevelItem item = type.newInstance(parent, name);
         try {
             callOnCreatedFromScratch(item);
         } catch (AbstractMethodError e) {
@@ -257,6 +307,7 @@ public abstract class ItemGroupMixIn {
         }
         item.save();
         add(item);
+        Jenkins.getInstance().rebuildDependencyGraphAsync();
 
         if (notify)
             ItemListener.fireOnCreated(item);

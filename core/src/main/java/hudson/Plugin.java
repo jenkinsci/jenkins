@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.util.TimeUnit2;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
@@ -34,19 +35,23 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.File;
-import java.net.URL;
 
 import net.sf.json.JSONObject;
 import com.thoughtworks.xstream.XStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Base class of Hudson plugin.
  *
  * <p>
- * A plugin needs to derive from this class.
+ * A plugin may derive from this class, or it may directly define extension
+ * points annotated with {@link hudson.Extension}. For a list of extension
+ * points, see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Extension+points">
+ * https://wiki.jenkins-ci.org/display/JENKINS/Extension+points</a>.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point
@@ -54,7 +59,7 @@ import com.thoughtworks.xstream.XStream;
  *
  * <p>
  * A plugin is bound to URL space of Hudson as <tt>${rootURL}/plugin/foo/</tt>,
- * where "foo" is taken from your plugin name "foo.hpi". All your web resources
+ * where "foo" is taken from your plugin name "foo.jpi". All your web resources
  * in src/main/webapp are visible from this URL, and you can also define Jelly
  * views against your Plugin class, and those are visible in this URL, too.
  *
@@ -159,6 +164,7 @@ public abstract class Plugin implements Saveable {
      * @since 1.233
      * @deprecated as of 1.305 override {@link #configure(StaplerRequest,JSONObject)} instead
      */
+    @Deprecated
     public void configure(JSONObject formData) throws IOException, ServletException, FormException {
     }
 
@@ -199,17 +205,27 @@ public abstract class Plugin implements Saveable {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
 
+        if (path.startsWith("/META-INF/") || path.startsWith("/WEB-INF/")) {
+            throw HttpResponses.notFound();
+        }
+
         if(path.length()==0)
             path = "/";
 
-        if(path.indexOf("..")!=-1 || path.length()<1) {
-            // don't serve anything other than files in the sub directory.
-            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
+        // Stapler routes requests like the "/static/.../foo/bar/zot" to be treated like "/foo/bar/zot"
+        // and this is used to serve long expiration header, by using Jenkins.VERSION_HASH as "..."
+        // to create unique URLs. Recognize that and set a long expiration header.
+        String requestPath = req.getRequestURI().substring(req.getContextPath().length());
+        boolean staticLink = requestPath.startsWith("/static/");
+
+        long expires = staticLink ? TimeUnit2.DAYS.toMillis(365) : -1;
 
         // use serveLocalizedFile to support automatic locale selection
-        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL,'.'+path));
+        try {
+            rsp.serveLocalizedFile(req, wrapper.baseResourceURL.toURI().resolve(new URI(null, '.' + path, null)).toURL(), expires);
+        } catch (URISyntaxException x) {
+            throw new IOException(x);
+        }
     }
 
 //

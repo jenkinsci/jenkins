@@ -27,6 +27,8 @@ package hudson.console;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractBuild;
+import hudson.tasks.BuildWrapper;
+import hudson.util.ArgumentListBuilder;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
@@ -37,9 +39,10 @@ import java.io.OutputStream;
  * Unlike {@link ConsoleAnnotator} and {@link ConsoleNote}, this class provides
  * direct access to the underlying {@link OutputStream} so it's possible to suppress
  * data, which isn't possible from the other interfaces.
- * 
+ * ({@link ArgumentListBuilder#add(String, boolean)} is a simpler way to suppress a single password.)
  * @author dty
  * @since 1.383
+ * @see BuildWrapper#decorateLogger
  */
 public abstract class ConsoleLogFilter implements ExtensionPoint {
     /**
@@ -52,6 +55,6 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      * All the registered {@link ConsoleLogFilter}s.
      */
     public static ExtensionList<ConsoleLogFilter> all() {
-        return Jenkins.getInstance().getExtensionList(ConsoleLogFilter.class);
+        return ExtensionList.lookup(ConsoleLogFilter.class);
     }
 }

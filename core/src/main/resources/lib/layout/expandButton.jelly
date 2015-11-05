@@ -33,7 +33,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="advancedLink">
-    <input type="button" value="${attrs.title}" class="expandButton" />
+    <input type="button" value="${attrs.title}" class="expand-button expandButton" /><!-- expandButton is legacy -->
   </div>
   <div style="display:none">
     <!-- this is the hidden portion to be expanded -->

@@ -27,4 +27,11 @@ THE SOFTWARE.
   <f:entry title="${%Schedule}" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
     <f:textarea name="scmpoll_spec" checkUrl="'${rootURL}/trigger/TimerTrigger/check?value='+encodeURIComponent(this.value)" value="${instance.spec}"/>
   </f:entry>
+  <f:entry field="ignorePostCommitHooks" title="${%Ignore post-commit hooks}">
+    <f:checkbox />
+  </f:entry>
+  <j:invokeStatic var="listeners" method="all" className="hudson.model.listeners.SCMPollListener"/>
+  <j:forEach var="l" items="${listeners}">
+    <st:include page="config" it="${l}" optional="true" />
+  </j:forEach>
 </j:jelly>

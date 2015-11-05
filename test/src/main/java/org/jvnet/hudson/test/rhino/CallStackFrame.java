@@ -60,18 +60,11 @@ public class CallStackFrame implements DebugFrame {
         this.activation = activation;
         this.thisObj = thisObj;
         this.args = args;
-        owner.callStack.add(this);
+        owner.addCallStackFrame(this);
     }
 
     public void onExit(Context cx, boolean byThrow, Object resultOrException) {
-        // can't simply call removeFirst, because due to tail call elimination,
-        // intermediate frames can be dropped at any time
-        // TODO: shouldn't it be suffice to just check the end?
-        for( int i=owner.callStack.size()-1; i>=0; i-- )
-            if(owner.callStack.get(i)==this) {
-                owner.callStack.remove(i);
-                break;
-            }
+        owner.removeCallStackFrame(this);
 
         activation = null;
         thisObj = null;

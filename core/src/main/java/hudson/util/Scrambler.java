@@ -29,12 +29,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Used when storing passwords in configuration files.
- *
- * <p>
- * This doesn't make passwords secure, but it prevents unwanted
- * exposure to passwords, such as when one is grepping the file system
- * or looking at config files for trouble-shooting.
+ * Scrambles, but does not encrypt, text.
+ * <strong>Do not use this</strong> for storing passwords and the like in configuration.
+ * Use {@link Secret} instead.
  *
  * @author Kohsuke Kawaguchi
  * @see Protector

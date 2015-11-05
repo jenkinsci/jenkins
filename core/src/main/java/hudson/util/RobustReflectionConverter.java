@@ -23,38 +23,38 @@
  */
 package hudson.util;
 
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.ConversionException;
-import com.thoughtworks.xstream.converters.SingleValueConverter;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.SingleValueConverter;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.reflection.ObjectAccessException;
+import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.converters.reflection.ReflectionConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionProvider;
 import com.thoughtworks.xstream.converters.reflection.SerializationMethodInvoker;
-import com.thoughtworks.xstream.converters.reflection.ObjectAccessException;
-import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
-import com.thoughtworks.xstream.converters.reflection.NonExistentFieldException;
 import com.thoughtworks.xstream.core.util.Primitives;
+import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 import com.thoughtworks.xstream.mapper.Mapper;
-import com.thoughtworks.xstream.mapper.CannotResolveClassException;
-
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Saveable;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Collection;
-import java.util.HashMap;
+import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.WARNING;
+import javax.annotation.Nonnull;
+import jenkins.util.xstream.CriticalXStreamException;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -73,11 +73,23 @@ public class RobustReflectionConverter implements Converter {
     protected final Mapper mapper;
     protected transient SerializationMethodInvoker serializationMethodInvoker;
     private transient ReflectionProvider pureJavaReflectionProvider;
+    private final @Nonnull XStream2.ClassOwnership classOwnership;
+    /** {@code pkg.Clazz#fieldName} */
+    private final Set<String> criticalFields = Collections.synchronizedSet(new HashSet<String>());
 
     public RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
+        this(mapper, reflectionProvider, new XStream2().new PluginClassOwnership());
+    }
+    RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider, XStream2.ClassOwnership classOwnership) {
         this.mapper = mapper;
         this.reflectionProvider = reflectionProvider;
+        assert classOwnership != null;
+        this.classOwnership = classOwnership;
         serializationMethodInvoker = new SerializationMethodInvoker();
+    }
+
+    void addCriticalField(Class<?> clazz, String field) {
+        criticalFields.add(clazz.getName() + '#' + field);
     }
 
     public boolean canConvert(Class type) {
@@ -91,7 +103,43 @@ public class RobustReflectionConverter implements Converter {
             writer.addAttribute(mapper.aliasForAttribute("resolves-to"), mapper.serializedClass(source.getClass()));
         }
 
-        doMarshal(source, writer, context);
+        OwnerContext oc = OwnerContext.find(context);
+        oc.startVisiting(writer, classOwnership.ownerOf(original.getClass()));
+        try {
+            doMarshal(source, writer, context);
+        } finally {
+            oc.stopVisiting();
+        }
+    }
+
+    /** Marks {@code plugin="..."} on elements where the owner is known and distinct from the closest owned ancestor. */
+    private static class OwnerContext extends LinkedList<String> {
+        static OwnerContext find(MarshallingContext context) {
+            OwnerContext c = (OwnerContext) context.get(OwnerContext.class);
+            if (c == null) {
+                c = new OwnerContext();
+                context.put(OwnerContext.class, c);
+            }
+            return c;
+        }
+        private void startVisiting(HierarchicalStreamWriter writer, String owner) {
+            if (owner != null) {
+                boolean redundant = false;
+                for (String parentOwner : this) {
+                    if (parentOwner != null) {
+                        redundant = parentOwner.equals(owner);
+                        break;
+                    }
+                }
+                if (!redundant) {
+                    writer.addAttribute("plugin", owner);
+                }
+            }
+            addFirst(owner);
+        }
+        private void stopVisiting() {
+            removeFirst();
+        }
     }
 
     protected void doMarshal(final Object source, final HierarchicalStreamWriter writer, final MarshallingContext context) {
@@ -172,7 +220,8 @@ public class RobustReflectionConverter implements Converter {
     }
 
     protected void marshallField(final MarshallingContext context, Object newObj, Field field) {
-        context.convertAnother(newObj);
+        Converter converter = mapper.getLocalConverter(field.getDeclaringClass(), field.getName());
+        context.convertAnother(newObj, converter);
     }
 
     public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context) {
@@ -219,8 +268,16 @@ public class RobustReflectionConverter implements Converter {
         while (reader.hasMoreChildren()) {
             reader.moveDown();
 
+            boolean critical = false;
             try {
                 String fieldName = mapper.realMember(result.getClass(), reader.getNodeName());
+                for (Class<?> concrete = result.getClass(); concrete != null; concrete = concrete.getSuperclass()) {
+                    // Not quite right since a subclass could shadow a field, but probably suffices:
+                    if (criticalFields.contains(concrete.getName() + '#' + fieldName)) {
+                        critical = true;
+                        break;
+                    }
+                }
                 boolean implicitCollectionHasSameName = mapper.getImplicitCollectionDefForFieldName(result.getClass(), reader.getNodeName()) != null;
 
                 Class classDefiningField = determineWhichClassDefinesField(reader);
@@ -251,14 +308,17 @@ public class RobustReflectionConverter implements Converter {
                         implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
                     }
                 }
-            } catch (NonExistentFieldException e) {
-                LOGGER.log(WARNING,"Skipping a non-existent field "+e.getFieldName(),e);
-                addErrorInContext(context, e);
-            } catch (CannotResolveClassException e) {
-                LOGGER.log(WARNING,"Skipping a non-existent type",e);
+            } catch (CriticalXStreamException e) {
+                throw e;
+            } catch (XStreamException e) {
+                if (critical) {
+                    throw new CriticalXStreamException(e);
+                }
                 addErrorInContext(context, e);
             } catch (LinkageError e) {
-                LOGGER.log(WARNING,"Failed to resolve a type",e);
+                if (critical) {
+                    throw e;
+                }
                 addErrorInContext(context, e);
             }
 
@@ -274,6 +334,7 @@ public class RobustReflectionConverter implements Converter {
     }
 
     public static void addErrorInContext(UnmarshallingContext context, Throwable e) {
+        LOGGER.log(FINE, "Failed to load", e);
         ArrayList<Throwable> list = (ArrayList<Throwable>)context.get("ReadError");
         if (list == null)
             context.put("ReadError", list = new ArrayList<Throwable>());
@@ -287,7 +348,8 @@ public class RobustReflectionConverter implements Converter {
     }
 
     protected Object unmarshalField(final UnmarshallingContext context, final Object result, Class type, Field field) {
-        return context.convertAnother(result, type);
+        Converter converter = mapper.getLocalConverter(field.getDeclaringClass(), field.getName());
+        return context.convertAnother(result, type, converter);
     }
 
     private Map writeValueToImplicitCollection(UnmarshallingContext context, Object value, Map implicitCollections, Object result, String itemFieldName) {

@@ -1,0 +1,24 @@
+<div>
+    If this option is checked, Jenkins will schedule and execute multiple builds concurrently (provided
+    that you have sufficient executors and incoming build requests.) This is useful on builds and test jobs that
+    take a long time, as each build will only contain a smaller number of changes, and the total turn-around
+    time decreases due to the shorter time a build request spends waiting for the previous build to complete.
+    It is also very useful with parameterized builds, whose individual executions are independent from each other.
+
+    <p>
+    For other kinds of jobs, allowing concurrent executions of multiple builds may be problematic,
+    for example if it assumes a monopoly on a certain resource, like database, or for jobs where you use Jenkins
+    as a cron replacement.
+
+    <p>
+    If you use a custom workspace and enable this option, all your builds will run on the same workspace,
+    thus unless a care is taken by your side, it'll likely to collide with each other.
+    Otherwise, even when they are run on the same node, Jenkins will use different workspaces to keep
+    them isolated.
+
+    <p>
+    When Jenkins creates different workspaces for isolation, Jenkins appends "@<I>num</I>" to the
+    workspace directory name, e.g. "@2".  The separator "@" can be configured by setting the system property
+    "hudson.slaves.WorkspaceList" to the desired separator string on the Jenkins command line. 
+    E.g. "-Dhudson.slaves.WorkspaceList=-" will use a dash as separator.
+</div>

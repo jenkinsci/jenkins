@@ -32,8 +32,9 @@ import hudson.security.BasicAuthenticationFilter
 import hudson.security.ChainedServletFilter
 import hudson.security.UnwrapSecurityExceptionFilter
 import hudson.security.HudsonAuthenticationEntryPoint
+import jenkins.security.BasicHeaderProcessor
 import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
-import org.acegisecurity.ui.ExceptionTranslationFilter
+import jenkins.security.ExceptionTranslationFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilter
 import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
@@ -63,13 +64,15 @@ filter(ChainedServletFilter) {
     filters = [
         // this persists the authentication across requests by using session
         bean(HttpSessionContextIntegrationFilter2) {
+            // not allowing filter to create sessions, as it potentially tries to create
+            // sessions for any request (although it usually fails
+            // I suspect this is related to JENKINS-12585, in that
+            // it ends up setting Set-Cookie for image responses.
+            // Instead, we use layout.jelly to create sessions.
+            allowSessionCreation = false;
         },
-        bean(ApiTokenFilter),
-        // allow clients to submit basic authentication credential
-        // but allow that to be skipped since it can interfere with reverse proxy setup
-        Boolean.getBoolean("jenkins.security.ignoreBasicAuth") ? bean(NoopFilter) :
-        bean(BasicProcessingFilter) {
-            authenticationManager = securityComponents.manager
+        // if any "Authorization: Basic xxx:yyy" is sent this is the filter that processes it
+        bean(BasicHeaderProcessor) {
             // if basic authentication fails (which only happens incorrect basic auth credential is sent),
             // respond with 401 with basic auth request, instead of redirecting the user to the login page,
             // since users of basic auth tends to be a program and won't see the redirection to the form

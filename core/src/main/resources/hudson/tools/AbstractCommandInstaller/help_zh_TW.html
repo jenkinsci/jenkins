@@ -1,0 +1,21 @@
+<p>
+    依據您的選擇執行 Shell 指令安裝工具。
+    以 Ubuntu 為例，假設 Jenkins 使用者在 <code>/etc/sudoers</code>:
+</p>
+<pre>sudo apt-get --yes install openjdk-6-jdk</pre>
+<p>
+    (這個例子中用 <code>/usr/lib/jvm/java-6-openjdk-i386</code> 當作主目錄。)
+</p>
+<p>
+    再舉一個例子，要在 (x86) Linus 上安裝舊版的 Sun JDK 6，您可以使用已經過時的
+    <a href="http://jdk-distros.java.net/">DLJ</a>:
+</p>
+<pre>bin=jdk-6u13-dlj-linux-i586.bin
+if [ \! -f $bin ]
+then
+    wget --no-verbose http://download.java.net/dlj/binaries/$bin
+    sh $bin --unpack --accept-license
+fi</pre>
+<p>
+    (這個例子中指定 <code>jdk1.6.0_13</code> 為主目錄。)
+</p>

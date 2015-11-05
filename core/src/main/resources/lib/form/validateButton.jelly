@@ -48,7 +48,7 @@ THE SOFTWARE.
   </st:documentation>
   <f:entry>
     <div style="float:right">
-      <input type="button" value="${title}" class="yui-button" onclick="validateButton('${rootURL}${descriptor.descriptorFullUrl}/${method}','${with}',this)" />
+      <input type="button" value="${title}" class="yui-button validate-button" onclick="validateButton('${descriptor.descriptorFullUrl}/${method}','${with}',this)" />
     </div>
     <div style="display:none;">
       <img src="${imagesURL}/spinner.gif" /> ${attrs.progress}

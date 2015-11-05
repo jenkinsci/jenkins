@@ -31,5 +31,6 @@ THE SOFTWARE.
       Caption of the button. Defaults to 'Delete'.
     </st:attribute>
   </st:documentation>
-  <input type="button" value="${attrs.value ?: '%Delete'}" class="repeatable-delete" />
+  <st:adjunct includes="lib.form.repeatable.repeatable"/>
+  <input type="button" value="${attrs.value ?: '%Delete'}" class="repeatable-delete danger" />
 </j:jelly>

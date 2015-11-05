@@ -44,4 +44,16 @@ public class TextParameterDefinition extends StringParameterDefinition {
             return Messages.TextParameterDefinition_DisplayName();
         }
     }
+
+    @Override
+    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        TextParameterValue value = req.bindJSON(TextParameterValue.class, jo);
+        value.setDescription(getDescription());
+        return value;
+    }
+
+    @Override
+    public ParameterValue createValue(String value) {
+        return new TextParameterValue(getName(), value, getDescription());
+    }
 }

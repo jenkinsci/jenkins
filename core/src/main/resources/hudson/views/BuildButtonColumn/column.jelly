@@ -26,11 +26,30 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
       <td>
           <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
+              <j:set var="id" value="${h.generateId()}"/>
               <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
-                  <img src="${imagesURL}/${subIconSize}/clock.png"
-                       title="${%Schedule a build}" alt="${%Schedule a build}"
-                       border="0"/>
+                  <j:choose>
+                      <j:when test="${job.parameterized}">
+                          <j:set var="title" value="${%Schedule_a_build_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup))}"/>
+                          <j:set var="onclick" value="${null}"/>
+                      </j:when>
+                      <j:otherwise>
+                          <j:set var="title" value="${%Schedule_a_build(h.getRelativeDisplayNameFrom(job, itemGroup))}"/>
+                          <j:set var="onclick" value="return build_${id}(this)"/>
+                      </j:otherwise>
+                  </j:choose>
+                  <j:set var="icon" value="${app.queue.contains(job) ? 'icon-clock-anime' : 'icon-clock'}"/>
+                  <l:icon class="${icon} ${subIconSizeClass}"
+                         title="${title}" alt="${title}"
+                         onclick="${onclick}"/>
               </a>
+              <script>
+                function build_${id}(img) {
+                  new Ajax.Request(img.parentNode.href);
+                  hoverNotification('${%Build_scheduled}', img, -100);
+                  return false;
+                }
+              </script>
           </j:if>
       </td>
 </j:jelly>

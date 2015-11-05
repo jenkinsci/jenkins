@@ -23,13 +23,20 @@
  */
 package hudson.lifecycle;
 
+import com.sun.jna.Native;
 import hudson.Functions;
+import hudson.Launcher.LocalLauncher;
 import hudson.model.ManagementLink;
+import hudson.model.TaskListener;
+import hudson.util.jna.Kernel32Utils;
+import hudson.util.jna.SHELLEXECUTEINFO;
+import hudson.util.jna.Shell32;
 import jenkins.model.Jenkins;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -42,10 +49,13 @@ import org.apache.tools.ant.types.FileSet;
 
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URL;
+
+import static hudson.util.jna.SHELLEXECUTEINFO.*;
 
 /**
  * {@link ManagementLink} that allows the installation as a Windows service.
@@ -117,8 +127,9 @@ public class WindowsInstallerLink extends ManagementLink {
 
         try {
             // copy files over there
-            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe"), "jenkins.exe");
-            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.xml"), "jenkins.xml");
+            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe"),         "jenkins.exe");
+            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.exe.config"),  "jenkins.exe.config");
+            copy(req, rsp, dir, getClass().getResource("/windows-service/jenkins.xml"),         "jenkins.xml");
             if(!hudsonWar.getCanonicalFile().equals(new File(dir,"jenkins.war").getCanonicalFile()))
                 copy(req, rsp, dir, hudsonWar.toURI().toURL(), "jenkins.war");
 
@@ -126,8 +137,7 @@ public class WindowsInstallerLink extends ManagementLink {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StreamTaskListener task = new StreamTaskListener(baos);
             task.getLogger().println("Installing a service");
-            int r = WindowsSlaveInstaller.runElevated(
-                    new File(dir, "jenkins.exe"), "install", task, dir);
+            int r = runElevated(new File(dir, "jenkins.exe"), "install", task, dir);
             if(r!=0) {
                 sendError(baos.toString(),req,rsp);
                 return;
@@ -195,7 +205,7 @@ public class WindowsInstallerLink extends ManagementLink {
                                 }
                                 LOGGER.info("Starting a Windows service");
                                 StreamTaskListener task = StreamTaskListener.fromStdout();
-                                int r = WindowsSlaveInstaller.runElevated(
+                                int r = runElevated(
                                         new File(installationDir, "jenkins.exe"), "start", task, installationDir);
                                 task.getLogger().println(r==0?"Successfully started":"start service failed. Exit code="+r);
                             } catch (IOException e) {
@@ -252,7 +262,7 @@ public class WindowsInstallerLink extends ManagementLink {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
 
             // in certain situations where we know the user is just trying Jenkins (like when Jenkins is launched
-            // from JNLP from https://hudson.dev.java.net/), also put this link on the navigation bar to increase
+            // from JNLP), also put this link on the navigation bar to increase
             // visibility
             if(System.getProperty(WindowsInstallerLink.class.getName()+".prominent")!=null)
                 Jenkins.getInstance().getActions().add(link);
@@ -261,6 +271,44 @@ public class WindowsInstallerLink extends ManagementLink {
         }
 
         return null;
+    }
+
+    /**
+     * Invokes jenkins.exe with a SCM management command.
+     *
+     * <p>
+     * If it fails in a way that indicates the presence of UAC, retry in an UAC compatible manner.
+     */
+    static int runElevated(File jenkinsExe, String command, TaskListener out, File pwd) throws IOException, InterruptedException {
+        try {
+            return new LocalLauncher(out).launch().cmds(jenkinsExe, command).stdout(out).pwd(pwd).join();
+        } catch (IOException e) {
+            if (e.getMessage().contains("CreateProcess") && e.getMessage().contains("=740")) {
+                // fall through
+            } else {
+                throw e;
+            }
+        }
+
+        // error code 740 is ERROR_ELEVATION_REQUIRED, indicating that
+        // we run in UAC-enabled Windows and we need to run this in an elevated privilege
+        SHELLEXECUTEINFO sei = new SHELLEXECUTEINFO();
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+        sei.lpVerb = "runas";
+        sei.lpFile = jenkinsExe.getAbsolutePath();
+        sei.lpParameters = "/redirect redirect.log "+command;
+        sei.lpDirectory = pwd.getAbsolutePath();
+        sei.nShow = SW_HIDE;
+        if (!Shell32.INSTANCE.ShellExecuteEx(sei))
+            throw new IOException("Failed to shellExecute: "+ Native.getLastError());
+
+        try {
+            return Kernel32Utils.waitForExitProcess(sei.hProcess);
+        } finally {
+            FileInputStream fin = new FileInputStream(new File(pwd,"redirect.log"));
+            IOUtils.copy(fin, out.getLogger());
+            fin.close();
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(WindowsInstallerLink.class.getName());

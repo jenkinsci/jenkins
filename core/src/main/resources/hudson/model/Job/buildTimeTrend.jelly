@@ -34,15 +34,39 @@ THE SOFTWARE.
       <div style="height:2em"/><!-- spacer -->
 
       <h1>${%Build Time Trend}</h1>
-      <j:choose>
-        <j:when test="${it.builds.size()&gt;1}">
           <div align="center">
             <img src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[Build time graph]" style="float:right"/>
           </div>
 
           <j:set var="isMasterSlaveEnabled" value="${!empty(app.slaves)}"/>
           <div align="center">
-            <table class="sortable" style="margin-top:1em;">
+            <script>
+                function displayBuilds(data) {
+                    var p = $$('trend');
+                    for (var x = 0; data.length > x; x++) {
+                        var e = data[x];
+                        var tr = new Element('tr');
+                        tr.insert(new Element('td', {data: e.iconColorOrdinal}).
+                            insert(new Element('img', {width: 16, height: 16, src: '${imagesURL}/16x16/' + e.buildStatusUrl, alt: e.iconColorDescription})));
+                        tr.insert(new Element('td', {data: e.number}).
+                            insert(new Element('a', {href: e.number + '/', 'class': 'model-link inside'}).
+                                update(e.displayName.escapeHTML())));
+                        tr.insert(new Element('td', {data: e.duration}).
+                                update(e.durationString.escapeHTML()));
+                <j:if test="${isMasterSlaveEnabled}">
+                        tr.insert(new Element('td').
+                            update(e.builtOn ? new Element('a', {href: '${rootURL}/computer/' + e.builtOn, 'class': 'model-link inside'}).update(e.builtOnStr) : e.builtOnStr));
+                </j:if>
+                        p.insert(tr);
+                        Behaviour.applySubtree(tr);
+                    }
+                    ts_refresh(p);
+                }
+            </script>
+            <j:new var="handler" className="jenkins.widgets.BuildTimeTrend"/>
+            ${handler.setBuilds(it.builds)}
+            <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
+            <table class="sortable" style="margin-top:1em;" id="trend">
               <tr>
                 <th><st:nbsp/></th>
                 <th initialSortDir="up">${%Build}</th>
@@ -51,33 +75,8 @@ THE SOFTWARE.
                   <th>${%Slave}</th>
                 </j:if>
               </tr>
-              <j:forEach var="r" items="${it.builds}">
-                <tr>
-                  <td>
-                  	<img width="16" height="16" src="${imagesURL}/16x16/${r.buildStatusUrl}" alt="${r.iconColor.description}" />
-                  </td>
-                  <td data="${r.number}">
-                    <a href="${r.number}">
-                    ${r.displayName}
-                    </a>
-                  </td>
-                  <td data="${r.duration}">
-                    ${r.durationString}
-                  </td>
-                  <j:if test="${isMasterSlaveEnabled}">
-                    <td>
-                      <t:node value="${r.builtOn}"/>
-                    </td>
-                  </j:if>
-                </tr>
-              </j:forEach>
             </table>
           </div>
-        </j:when>
-        <j:otherwise>
-          ${%More than 1 builds are needed for the trend report.}
-        </j:otherwise>
-      </j:choose>
     </l:main-panel>
 	</l:layout>
 </j:jelly>

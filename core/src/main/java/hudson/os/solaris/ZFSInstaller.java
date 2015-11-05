@@ -38,6 +38,7 @@ import hudson.util.HudsonIsRestarting;
 import hudson.util.StreamTaskListener;
 import static hudson.util.jna.GNUCLibrary.*;
 
+import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 import org.jvnet.solaris.libzfs.ACLBuilder;
@@ -52,6 +53,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -69,6 +71,8 @@ import java.util.logging.Logger;
  * @since 1.283
  */
 public class ZFSInstaller extends AdministrativeMonitor implements Serializable {
+    private static final long serialVersionUID = 1018007614648118323L;
+
     /**
      * True if $JENKINS_HOME is a ZFS file system by itself.
      */
@@ -125,8 +129,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Called from the management screen.
      */
+    @RequirePOST
     public HttpResponse doAct(StaplerRequest req) throws ServletException, IOException {
-        requirePOST();
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
         if(req.hasParameter("n")) {
@@ -164,7 +168,9 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
 
         // this is the actual creation of the file system.
         // return true indicating a success
-        return SU.execute(listener, rootUsername, rootPassword, new Callable<String,IOException>() {
+        return SU.execute(listener, rootUsername, rootPassword, new MasterToSlaveCallable<String,IOException>() {
+            private static final long serialVersionUID = 7731167233498214301L;
+
             public String call() throws IOException {
                 PrintStream out = listener.getLogger();
 
@@ -211,8 +217,8 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Called from the confirmation screen to actually initiate the migration.
      */
+    @RequirePOST
     public void doStart(StaplerRequest req, StaplerResponse rsp, @QueryParameter String username, @QueryParameter String password) throws ServletException, IOException {
-        requirePOST(); 
         Jenkins hudson = Jenkins.getInstance();
         hudson.checkPermission(Jenkins.ADMINISTER);
 
