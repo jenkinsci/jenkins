@@ -115,6 +115,71 @@ public class ApiTokenPropertyTest {
         u.addProperty(t);
         assertTrue(t.getApiToken().equals(Util.getDigestOf(historicalInitialValue+"somethingElse")));
     }
+    
+    @Issue("SECURITY-200")
+    @Test
+    public void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User u = User.get("foo");
+        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+        final String token = t.getApiToken();
+        
+        // Make sure the UI does not show the token to another user
+        WebClient wc = createClientForUser("bar");
+        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+        HtmlForm form = config.getFormByName("config");
+        assertEquals(Messages.ApiTokenProperty_ChangeToken_TokenIsHidden(), form.getInputByName("_.apiToken").getValueAttribute());
+    }
+    
+    @Issue("SECURITY-200")
+    @Test
+    public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User foo = User.get("foo");
+        User bar = User.get("bar");
+        final ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
+        final ApiTokenProperty.DescriptorImpl descriptor = (ApiTokenProperty.DescriptorImpl) t.getDescriptor();
+        
+        // Make sure that Admin can reset a token of another user
+        WebClient wc = createClientForUser("bar");
+        HtmlPage res = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
+        assertEquals("Update token response is incorrect", 
+                Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
+    }
+    
+    @Nonnull
+    private WebClient createClientForUser(final String username) throws Exception {
+        User u = User.get(username);
+        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+        // Yes, we use the insecure call in the test stuff
+        final String token = t.getApiTokenInsecure();
+        
+        WebClient wc = j.createWebClient();
+        wc.setCredentialsProvider(new CredentialsProvider() {
+            @Override
+            public void clear() {
+                // Do nothing
+            }
+
+            @Override
+            public Credentials getCredentials(AuthScope as) {
+                return new UsernamePasswordCredentials(username, token);    
+            }   
+
+            @Override
+            public void setCredentials(AuthScope as, Credentials c) {
+                // Ignore
+            }
+        });
+        
+        
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        provider.setCredentials(new AuthScope("localhost", AuthScope.ANY_PORT, AuthScope.ANY_REALM),
+                                new UsernamePasswordCredentials(username, token));
+        wc.setCredentialsProvider(provider);
+        wc.login(username);
+        return wc;
+    }
 
     private void configureWebConnection(final WebClient wc, final String username, final String token) throws IOException {
         // See https://hc.apache.org/httpcomponents-client-ga/tutorial/html/authentication.html
@@ -181,48 +246,5 @@ public class ApiTokenPropertyTest {
                 }
             }
         });
-    }
-    
-    @Issue("SECURITY-200")
-    @Test
-    public void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User u = User.get("foo");
-        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-        final String token = t.getApiToken();
-        
-        // Make sure the UI does not show the token to another user
-        WebClient wc = createClientForUser("bar");
-        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
-        HtmlForm form = config.getFormByName("config");
-        assertEquals(Messages.ApiTokenProperty_ChangeToken_TokenIsHidden(), form.getInputByName("_.apiToken").getValueAttribute());
-    }
-    
-    @Issue("SECURITY-200")
-    @Test
-    public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User foo = User.get("foo");
-        User bar = User.get("bar");
-        final ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
-        final ApiTokenProperty.DescriptorImpl descriptor = (ApiTokenProperty.DescriptorImpl) t.getDescriptor();
-        
-        // Make sure that Admin can reset a token of another user
-        WebClient wc = createClientForUser("bar");
-        HtmlPage res = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
-        assertEquals("Update token response is incorrect", 
-                Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
-    }
-    
-    @Nonnull
-    private WebClient createClientForUser(final String username) throws IOException {
-        User u = User.get(username);
-        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-        // Yes, we use the insecure call in the test stuff
-        final String token = t.getApiTokenInsecure();
-        
-        WebClient wc = j.createWebClient();
-        configureWebConnection(wc, username, token);
-        return wc;
     }
 }
