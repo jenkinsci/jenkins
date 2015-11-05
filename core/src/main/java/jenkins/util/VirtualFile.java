@@ -162,7 +162,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Does case-insensitive comparison.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int compareTo(VirtualFile o) {
         return getName().compareToIgnoreCase(o.getName());
