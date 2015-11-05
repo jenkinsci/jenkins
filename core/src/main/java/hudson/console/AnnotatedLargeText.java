@@ -147,7 +147,7 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     /**
      * Strips annotations using a {@link PlainTextConsoleOutputStream}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public long writeLogTo(long start, OutputStream out) throws IOException {
