@@ -202,6 +202,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * it's always configured through <tt>config.jelly</tt> and never with
      * <tt>global.jelly</tt>. 
      */
+    @Override
     public Descriptor<SecurityRealm> getDescriptor() {
         return super.getDescriptor();
     }

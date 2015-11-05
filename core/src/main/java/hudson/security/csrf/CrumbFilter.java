@@ -104,6 +104,7 @@ public class CrumbFilter implements Filter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void destroy() {
     }
 

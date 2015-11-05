@@ -161,6 +161,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         /**
          * {@inheritDoc}
          */
+        @Override
         @Nonnull
         public String keyFor(@Nonnull String id) {
             return id.toLowerCase(Locale.ENGLISH);
@@ -288,6 +289,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         /**
          * {@inheritDoc}
          */
+        @Override
         @Nonnull
         public String keyFor(@Nonnull String id) {
             return id;
@@ -348,6 +350,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         /**
          * {@inheritDoc}
          */
+        @Override
         @Nonnull
         public String keyFor(@Nonnull String id) {
             int index = id.lastIndexOf('@'); // The @ can be used in local-part if quoted correctly
