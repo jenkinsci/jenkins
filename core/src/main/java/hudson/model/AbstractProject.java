@@ -1090,6 +1090,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * or if the blockBuildWhenUpstreamBuilding option is true and an upstream
      * project is building, but derived classes can also check other conditions.
      */
+    @Override
     public boolean isBuildBlocked() {
         return getCauseOfBlockage()!=null;
     }
