@@ -67,7 +67,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             // DEFAULT_NAME took this value prior to 1.598.
             return true;
         }
-        return DEFAULT_NAME.equals(name);
+        return DEFAULT_NAME.equals(name) || name == null;
     }
 
     /**
