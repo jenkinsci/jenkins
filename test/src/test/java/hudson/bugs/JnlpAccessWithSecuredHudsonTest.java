@@ -120,7 +120,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
                     Channel channel = slave.getComputer().getChannel();
                     assertFalse("SECURITY-206", channel.isRemoteClassLoadingAllowed());
                     jenkins.getExtensionList(AdminWhitelistRule.class).get(AdminWhitelistRule.class).setMasterKillSwitch(false);
-                    final File f = new File(jenkins.getRootDir(), "secrets/master.key"); // DefaultConfidentialStore
+                    final File f = new File(jenkins.getRootDir(), "config.xml");
                     assertTrue(f.exists());
                     try {
                         fail("SECURITY-206: " + channel.call(new Attack(f.getAbsolutePath())));
