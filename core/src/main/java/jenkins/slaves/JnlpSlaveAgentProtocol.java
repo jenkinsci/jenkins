@@ -9,6 +9,7 @@ import hudson.remoting.Engine;
 import hudson.slaves.SlaveComputer;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
 import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
@@ -117,6 +118,10 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
 
             try {
                 ChannelBuilder cb = createChannelBuilder(nodeName);
+
+                for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+                    cc.onChannelBuilding(cb, computer);
+                }
 
                 computer.setChannel(cb.withHeaderStream(log).build(socket), log,
                     new Listener() {
