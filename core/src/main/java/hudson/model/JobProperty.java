@@ -99,6 +99,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
     /**
      * {@inheritDoc}
      */
+    @Override
     public JobPropertyDescriptor getDescriptor() {
         return (JobPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
@@ -153,6 +154,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * <p>
      * Invoked after {@link Publisher}s have run.
      */
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         return true;
     }

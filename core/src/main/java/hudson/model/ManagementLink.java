@@ -79,6 +79,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * In case of {@link ManagementLink}, this value is put straight into the href attribute,
      * so relative paths are interpreted against the root {@link Jenkins} object.
      */
+    @Override
     public abstract String getUrlName();
 
     /**

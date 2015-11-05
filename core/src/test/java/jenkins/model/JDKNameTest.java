@@ -36,8 +36,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 public class JDKNameTest {
     @Test
-    public void nullIsNotDefaultName() {
-        assertThat(JDK.isDefaultName(null), is(false));
+    public void nullIsDefaultName() {
+        assertThat(JDK.isDefaultName(null), is(true));
     }
     
     @Test

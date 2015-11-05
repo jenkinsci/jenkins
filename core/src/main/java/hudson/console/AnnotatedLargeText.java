@@ -156,7 +156,6 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     /**
      * Calls {@link LargeText#writeLogTo(long, OutputStream)} without stripping annotations as {@link #writeLogTo(long, OutputStream)} would.
-     * @inheritDoc
      * @since 1.577
      */
     public long writeRawLogTo(long start, OutputStream out) throws IOException {

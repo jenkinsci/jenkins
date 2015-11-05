@@ -65,6 +65,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      * @inheritDoc
      * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
      */
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (this instanceof SimpleBuildStep) {
             // delegate to the overloaded version defined in SimpleBuildStep
