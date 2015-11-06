@@ -162,7 +162,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Does case-insensitive comparison.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int compareTo(VirtualFile o) {
         return getName().compareToIgnoreCase(o.getName());
@@ -170,7 +170,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Compares according to {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final boolean equals(Object obj) {
         return obj instanceof VirtualFile && toURI().equals(((VirtualFile) obj).toURI());
@@ -178,7 +178,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Hashes according to {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int hashCode() {
         return toURI().hashCode();
@@ -186,7 +186,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Displays {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final String toString() {
         return toURI().toString();
