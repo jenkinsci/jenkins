@@ -34,7 +34,6 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;

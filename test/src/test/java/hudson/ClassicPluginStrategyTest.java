@@ -26,7 +26,6 @@ package hudson;
 
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.LenientRunnable;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.net.URL;

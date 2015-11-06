@@ -27,7 +27,6 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Computer;
-import hudson.model.ItemGroupMixIn;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Saveable;

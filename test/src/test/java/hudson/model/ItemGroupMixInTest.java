@@ -44,7 +44,6 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;

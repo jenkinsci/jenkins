@@ -6,7 +6,6 @@ import org.jenkinsci.remoting.nio.NioChannelHub;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Properties;
 
 /**
  * {@link JnlpSlaveAgentProtocol} Version 2.

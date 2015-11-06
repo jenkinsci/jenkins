@@ -27,7 +27,6 @@ import hudson.init.Initializer;
 import jenkins.model.Jenkins;
 import jenkins.util.groovy.GroovyHookScript;
 
-import java.io.IOException;
 
 import static hudson.init.InitMilestone.*;
 

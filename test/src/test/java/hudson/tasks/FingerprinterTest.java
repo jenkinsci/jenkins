@@ -47,7 +47,6 @@ import static org.junit.Assert.*;
 
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
-import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
