@@ -133,7 +133,7 @@ footer {
   background-color: #f6faf2;
   border-top: 1px solid #d3d7cf;
   width: 100%;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   font-size: 12px;
