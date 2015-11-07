@@ -31,7 +31,7 @@ public class Security218Test implements Serializable {
     /**
      * JNLP slave.
      */
-    private Process jnlp;
+    private transient Process jnlp;
 
     /**
      * Makes sure SECURITY-218 fix also applies to slaves.
