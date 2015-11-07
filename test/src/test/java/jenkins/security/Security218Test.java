@@ -55,6 +55,10 @@ public class Security218Test implements Serializable {
         check(s);
     }
 
+    /**
+     * The attack scenario here is that a master sends a normal command to a slave and a slave
+     * inserts a malicious response.
+     */
     @SuppressWarnings("ConstantConditions")
     private void check(DumbSlave s) throws Exception {
         try {
