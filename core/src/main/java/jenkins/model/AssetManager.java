@@ -7,6 +7,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -44,17 +45,22 @@ public class AssetManager implements UnprotectedRootAction {
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
-
+        URL resource = findResource(path);
+        
+        if (resource == null) {
+            rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        
         // Stapler routes requests like the "/static/.../foo/bar/zot" to be treated like "/foo/bar/zot"
         // and this is used to serve long expiration header, by using Jenkins.VERSION_HASH as "..."
         // to create unique URLs. Recognize that and set a long expiration header.
         String requestPath = req.getRequestURI().substring(req.getContextPath().length());
         boolean staticLink = requestPath.startsWith("/static/");
-
         long expires = staticLink ? TimeUnit2.DAYS.toMillis(365) : -1;
 
         // use serveLocalizedFile to support automatic locale selection
-        rsp.serveLocalizedFile(req, findResource(path), expires);
+        rsp.serveLocalizedFile(req, resource, expires);
     }
 
     /**
