@@ -144,6 +144,12 @@ THE SOFTWARE.
       <version>1.6</version>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.ui</groupId>
+      <artifactId>jquery-detached</artifactId>
+      <version>1.2-SNAPSHOT</version>
+      <classifier>core-assets</classifier>
+    </dependency>
+    <dependency>
       <!--
         We bundle slf4j binding since we got some components (sshd for example)
         that uses slf4j.
