@@ -110,7 +110,7 @@ public class Connection {
      */
     public <T> T readObject() throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStreamEx(in,
-                ClassFilter.DEFAULT.decorate(getClass().getClassLoader()));
+                getClass().getClassLoader(), ClassFilter.DEFAULT);
         return (T)ois.readObject();
     }
 
