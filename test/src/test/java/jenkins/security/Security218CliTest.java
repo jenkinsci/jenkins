@@ -34,7 +34,6 @@ import jenkins.security.security218.Payload;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -42,7 +41,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.kohsuke.args4j.Argument;
 
-public class Security218BlackBoxTest {
+public class Security218CliTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
