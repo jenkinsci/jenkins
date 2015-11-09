@@ -171,7 +171,8 @@ public class Security218BlackBoxTest {
                     }
                 }
 
-                if (cause.getMessage().contains("cannot be cast to java.util.Set")) {
+                final String message = cause.getMessage();
+                if (message != null && message.contains("cannot be cast to java.util.Set")) {
                     // We ignore this exception, because there is a known issue in the test payload
                     // CommonsCollections1, CommonsCollections2 and Groovy1 fail witth this error,
                     // but actually it means that the conversion has been triggered
