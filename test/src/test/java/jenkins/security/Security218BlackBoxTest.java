@@ -51,21 +51,22 @@ public class Security218BlackBoxTest {
     @Test
     @Issue("SECURITY-218")
     public void probeCommonsCollections1() throws Exception {
-        probe(Payload.CommonsCollections1);
+        probe(Payload.CommonsCollections1, PayloadCaller.EXIT_CODE_REJECTED);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-218")
     public void probeCommonsCollections2() throws Exception {
-        probe(Payload.CommonsCollections2);
+        //TODO: Payload content issue
+        probe(Payload.CommonsCollections2, -1);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-218")
     public void probeGroovy1() throws Exception {
-        probe(Payload.Groovy1);
+        probe(Payload.Groovy1, PayloadCaller.EXIT_CODE_REJECTED);
     }
     
     //TODO: Fix the conversion layer (not urgent)
@@ -76,18 +77,18 @@ public class Security218BlackBoxTest {
     @Issue("SECURITY-218")
     @Ignore
     public void probeSpring1() throws Exception {
-        probe(Payload.Spring1);
+        probe(Payload.Spring1, PayloadCaller.EXIT_CODE_OK);
     }
     
-    private void probe(Payload payload) throws Exception {
+    private void probe(Payload payload, int expectedResultCode) throws Exception {
         File file = File.createTempFile("security-218", payload + "-payload");
         File moved = new File(file.getAbsolutePath() + "-moved");
         
         // Bypassing _main because it does nothing interesting here.
         // Hardcoding CLI protocol version 1 (CliProtocol) because it is easier to sniff.
-        int exitCode = new CLI(r.getURL()).execute("send-payload", 
+        int exitCode = new CLI(r.getURL()).execute("send-payload",
                 payload.toString(), "mv " + file.getAbsolutePath() + " " + moved.getAbsolutePath());
-        assertEquals("CLI Command execution failed", exitCode, 0);
+        assertEquals("Unexpected result code.", expectedResultCode, exitCode);
         assertTrue("Payload should not invoke the move operation " + file, !moved.exists());
         file.delete();
     }
@@ -110,8 +111,7 @@ public class Security218BlackBoxTest {
         protected int run() throws Exception {
             Payload payloadItem = Payload.valueOf(this.payload);
             PayloadCaller callable = new PayloadCaller(payloadItem, command);
-            channel.call(callable);
-            return 0;
+            return channel.call(callable);
         }
 
         @Override
@@ -119,11 +119,15 @@ public class Security218BlackBoxTest {
             stderr.println("Sends a payload over the channel");
         }
     }
-    
-    public static class PayloadCaller implements Callable<Void, Exception> {
+
+    public static class PayloadCaller implements Callable<Integer, Exception> {
 
         private final Payload payload;
         private final String command;
+
+        public static final int EXIT_CODE_OK = 0;
+        public static final int EXIT_CODE_REJECTED = 42;
+        public static final int EXIT_CODE_ASSIGNMENT_ISSUE = 43;
 
         public PayloadCaller(Payload payload, String command) {
             this.payload = payload;
@@ -131,7 +135,7 @@ public class Security218BlackBoxTest {
         }
         
         @Override
-        public Void call() throws Exception {
+        public Integer call() throws Exception {
             final Object ysoserial = payload.getPayloadClass().newInstance().getObject(command);
             
             // Invoke backward call
@@ -154,17 +158,30 @@ public class Security218BlackBoxTest {
                 Throwable cause = ex;
                 while (cause.getCause() != null) {
                     cause = cause.getCause();
-                } 
-                
+                }
+
+                if (cause instanceof SecurityException) {
+                    // It should happen if the remote chanel reject a class.
+                    // That's what we have done in SECURITY-218 => may be OK
+                    if (cause.getMessage().contains("Rejected")) {
+                        // OK
+                        return PayloadCaller.EXIT_CODE_REJECTED;
+                    } else {
+                        // Something wrong
+                        throw ex;
+                    }
+                }
+
                 if (cause.getMessage().contains("cannot be cast to java.util.Set")) {
                     // We ignore this exception, because there is a known issue in the test payload
                     // CommonsCollections1, CommonsCollections2 and Groovy1 fail witth this error,
                     // but actually it means that the conversion has been triggered
+                    return EXIT_CODE_ASSIGNMENT_ISSUE;
                 } else {
                     throw ex;
                 }
             }
-            return null;
+            return EXIT_CODE_OK;
         }
 
         @Override
