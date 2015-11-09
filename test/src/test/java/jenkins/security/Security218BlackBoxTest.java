@@ -30,9 +30,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicLong;
 import jenkins.util.Timer;
 import org.junit.Test;
@@ -50,13 +52,14 @@ public class Security218BlackBoxTest {
     @Test
     public void probe() throws Exception {
         final ServerSocket proxySocket = new ServerSocket(0);
-        final String localhost = r.getURL().getHost();
         Timer.get().submit(new Runnable() {
             @Override
             public void run() {
                 try {
                     Socket proxy = proxySocket.accept();
-                    Socket real = new Socket(localhost, r.jenkins.tcpSlaveAgentListener.getPort());
+                    String overrideURL = System.getenv("JENKINS_URL");
+                    URL url = overrideURL == null ? r.getURL() : new URL(overrideURL);
+                    Socket real = new Socket(url.getHost(), ((HttpURLConnection) url.openConnection()).getHeaderFieldInt("X-Jenkins-CLI-Port", -1));
                     final InputStream realIS = real.getInputStream();
                     final OutputStream realOS = real.getOutputStream();
                     final InputStream proxyIS = proxy.getInputStream();
@@ -133,7 +136,7 @@ public class Security218BlackBoxTest {
         new CLI(r.getURL()) {
             @Override
             protected CliPort getCliTcpPort(String url) throws IOException {
-                return new CliPort(new InetSocketAddress(localhost, proxySocket.getLocalPort()), /* ignore identity */null, 1);
+                return new CliPort(new InetSocketAddress(proxySocket.getInetAddress(), proxySocket.getLocalPort()), /* ignore identity */null, 1);
             }
         }.execute("help");
         fail("TODO assert that payloads did not work");
