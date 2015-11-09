@@ -23,7 +23,6 @@
  */
 package jenkins.security.ysoserial.payloads;
 
-import com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -33,6 +32,7 @@ import org.apache.commons.collections4.functors.InvokerTransformer;
 import jenkins.security.ysoserial.util.Gadgets;
 import jenkins.security.ysoserial.util.PayloadRunner;
 import jenkins.security.ysoserial.util.Reflections;
+import org.apache.xalan.xsltc.trax.TemplatesImpl;
 
 /*
 	Gadget chain:	

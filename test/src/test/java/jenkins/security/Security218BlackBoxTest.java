@@ -24,14 +24,27 @@
 
 package jenkins.security;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
+import hudson.Extension;
 import hudson.cli.CLI;
+import hudson.cli.CLICommand;
 import hudson.cli.CliPort;
+import hudson.console.AnnotatedLargeText;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Item;
+import hudson.model.PermalinkProjectAction;
+import hudson.remoting.Callable;
+import hudson.remoting.Channel;
+import hudson.util.IOUtils;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -42,13 +55,19 @@ import jenkins.security.ysoserial.payloads.CommonsCollections1;
 import jenkins.security.ysoserial.payloads.CommonsCollections2;
 import jenkins.security.ysoserial.payloads.Groovy1;
 import jenkins.security.ysoserial.payloads.ObjectPayload;
+import jenkins.security.ysoserial.payloads.Payload;
 import jenkins.security.ysoserial.payloads.Spring1;
 import jenkins.util.Timer;
+import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.Option;
 
 public class Security218BlackBoxTest {
 
@@ -64,172 +83,107 @@ public class Security218BlackBoxTest {
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY) // allow who-am-i to run all the way to completion
     @Test
     public void probeCommonsCollections1() throws Exception {
-        probe(CommonsCollections1.class);
+        probe(Payload.CommonsCollections1);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY) // allow who-am-i to run all the way to completion
     @Test
     public void probeCommonsCollections2() throws Exception {
-        probe(CommonsCollections2.class);
+        probe(Payload.CommonsCollections2);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY) // allow who-am-i to run all the way to completion
     @Test
     public void probeGroovy1() throws Exception {
-        probe(Groovy1.class);
+        probe(Payload.Groovy1);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY) // allow who-am-i to run all the way to completion
     @Test
     public void probeSpring1() throws Exception {
-        probe(Spring1.class);
+        probe(Payload.Spring1);
     }
     
-    private void probe(final @CheckForNull Class<? extends ObjectPayload> payloadClass) throws Exception {
+    private void probe(Payload payload) throws Exception {
         final ServerSocket proxySocket = new ServerSocket(0);
         final String localhost = r.getURL().getHost();
-        final int[] requestsCounter = new int[] { 0 };
-        Timer.get().submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Socket proxy = proxySocket.accept();
-                    Socket real = new Socket(localhost, r.jenkins.tcpSlaveAgentListener.getPort());
-                    final InputStream realIS = real.getInputStream();
-                    final OutputStream realOS = real.getOutputStream();
-                    final InputStream proxyIS = proxy.getInputStream();
-                    final OutputStream proxyOS = proxy.getOutputStream();
-                    final AtomicLong timestamp = new AtomicLong(System.currentTimeMillis());
-                    final ByteArrayOutputStream incoming = new ByteArrayOutputStream();
-                    final ByteArrayOutputStream outgoing = new ByteArrayOutputStream();
-                    
-                    // Process Channels
-                    Timer.get().submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                int c;
-                                while ((c = realIS.read()) != -1) {
-                                    synchronized (timestamp) {
-                                        incoming.write(c);
-                                        timestamp.set(System.currentTimeMillis());
-                                    }
-                                }
-                            } catch (IOException x) {
-                                x.printStackTrace();
-                            }
-                        }
-                    });
-                    Timer.get().submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                int c;
-                                while ((c = proxyIS.read()) != -1) {
-                                    synchronized (timestamp) {
-                                        outgoing.write(c);
-                                        timestamp.set(System.currentTimeMillis());
-                                    }
-                                }
-                            } catch (IOException x) {
-                                x.printStackTrace();
-                            }
-                        }
-                    });
-                    while (true) {
-                        while (System.currentTimeMillis() - timestamp.get() < /* wait for a complete packet */ 500) {
-                            Thread.sleep(10);
-                        }
-                        synchronized (timestamp) {
-                            if (incoming.size() > 0) {
-                                byte[] data = incoming.toByteArray();
-                                System.err.print("← ");
-                                display(data);
-                                System.err.println();
-                                proxyOS.write(data);
-                                incoming.reset();
-                                timestamp.set(System.currentTimeMillis());
-                            } else if (outgoing.size() > 0) {
-                                byte[] data = outgoing.toByteArray();
-                                      
-                                //TODO: This code is not correct, we should follow https://github.com/foxglovesec/JavaUnserializeExploits/blob/master/jenkins.py
-                                // Inject the payload into the second request with <===[JENKINS REMOTING CAPACITY]===>                           
-                                requestsCounter[0] += 1;
-                                if (payloadClass != null && requestsCounter[0] == 2) {
-                                    ByteOutputStream byteOs = new ByteOutputStream();
-                                    if (payloadClass != null) {
-                                        writePayload(byteOs, payloadClass, "echo Hello");
-                                    }
-                                    byte[] payload = byteOs.getBytes();
-                                    
-                                    int prefixId = -1;
-                                    for (int i = 0; i < data.length; i++) {
-                                        if (data[i] == '>') {
-                                            prefixId = i + 1;
-                                            break;
-                                        }
-                                    }
-                                                                  
-                                    if (prefixId != -1) {
-                                        byte[] sendBuffer = new byte[prefixId + payload.length];
-                                        System.arraycopy(data, 0, sendBuffer, 0, prefixId);
-                                        System.arraycopy(payload, 0, sendBuffer, prefixId, payload.length);
-                                        data = sendBuffer;
-                                    }  
-                                }
-                                
-                                System.err.print("→ ");
-                                display(data);
-                                System.err.println();
-                                
-                                realOS.write(data); 
-                                
-                                outgoing.reset();
-                                timestamp.set(System.currentTimeMillis());
-                            }
-                        }
-                    }
-                } catch (InterruptedException x) {
-                    // OK
-                } catch (Exception x) {
-                    x.printStackTrace();
-                } 
-            }
-        });
+        
+        File file = File.createTempFile("security-218", payload + "-payload");
+        
         // Bypassing _main because it does nothing interesting here.
         // Hardcoding CLI protocol version 1 (CliProtocol) because it is easier to sniff.
-        new CLI(r.getURL()) {
-            @Override
-            protected CliPort getCliTcpPort(String url) throws IOException {
-                return new CliPort(new InetSocketAddress(localhost, proxySocket.getLocalPort()), /* ignore identity */null, 1);
-            }
-        }.execute("who-am-i");
-        fail("TODO assert that payloads did not work");
+        int exitCode = new CLI(r.getURL()).execute("send-payload", 
+                payload.toString(), "rm " + file.getAbsolutePath());
+        assertEquals("CLI Command execution failed", exitCode, 0);
+        assertTrue("Payload should not delete the file " + file, file.exists());
+        file.delete();
     }
     
-    /**
-     * Writes payload to the output channel.
-     * @param ostream Output stream
-     * @param payloadClass Class to be injected
-     * @param command Command to be executed
-     * @throws Exception Execution failure
-     */
-    private void writePayload(@Nonnull OutputStream ostream, @Nonnull Class<? extends ObjectPayload> payloadClass, 
-            @Nonnull String command) throws Exception {
-        final ObjectPayload payload = payloadClass.newInstance();
-        final Object object = payload.getObject(command);
-        final ObjectOutputStream objOut = new ObjectOutputStream(ostream);
-        objOut.writeObject(object);
-    }
+    @TestExtension("probeCommonsCollections1")
+    public static class SendPayloadCommand extends CLICommand {
 
-    private static void display(byte[] data) {
-        for (byte c : data) {
-            if (c >= ' ' && c <= '~') {
-                System.err.write(c);
-            } else {
-                System.err.printf("\\x%02X", c);
-            }
+        @Override
+        public String getShortDescription() {
+            return hudson.cli.Messages.ConsoleCommand_ShortDescription();
         }
+
+        @Argument(metaVar = "payload", usage = "ID of the payload", required = true, index = 0)
+        public String payload;
+        
+        @Argument(metaVar = "command", usage = "Command to be launched by the payload", required = true, index = 1)
+        public String command;
+        
+
+        protected int run() throws Exception {
+            Payload payloadItem = Payload.valueOf(this.payload);
+            PayloadCaller callable = new PayloadCaller(payloadItem, command);
+            channel.call(callable);
+            return 0;
+        }
+
+        @Override
+        protected void printUsageSummary(PrintStream stderr) {
+            stderr.println("Sends a payload over the channel");
+        }
+    }
+    
+    public static class PayloadCaller implements Callable<Void, Exception> {
+
+        private final Payload payload;
+        private final String command;
+
+        public PayloadCaller(Payload payload, String command) {
+            this.payload = payload;
+            this.command = command;
+        }
+        
+        @Override
+        public Void call() throws Exception {
+            final Object ysoserial = payload.getPayloadClass().newInstance().getObject(command);
+            
+            // Invoke backward call
+            Channel.current().call(new Callable<String, Exception>() {
+                private static final long serialVersionUID = 1L;
+                 
+                @Override
+                public String call() throws Exception {
+                    // We don't care what happens here. Object should be sent over the channel
+                    return ysoserial.toString();
+                }
+
+                @Override
+                public void checkRoles(RoleChecker checker) throws SecurityException {
+                    // do nothing
+                }
+            });
+            return null;
+        }
+
+        @Override
+        public void checkRoles(RoleChecker checker) throws SecurityException {
+            // Do nothing
+        }
+        
     }
 
 }

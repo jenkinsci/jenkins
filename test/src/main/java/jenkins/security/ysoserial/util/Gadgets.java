@@ -34,13 +34,13 @@ import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 
-import com.sun.org.apache.xalan.internal.xsltc.DOM;
-import com.sun.org.apache.xalan.internal.xsltc.TransletException;
-import com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;
-import com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;
-import com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;
-import com.sun.org.apache.xml.internal.dtm.DTMAxisIterator;
-import com.sun.org.apache.xml.internal.serializer.SerializationHandler;
+import org.apache.xalan.processor.TransformerFactoryImpl;
+import org.apache.xalan.xsltc.DOM;
+import org.apache.xalan.xsltc.TransletException;
+import org.apache.xalan.xsltc.runtime.AbstractTranslet;
+import org.apache.xalan.xsltc.trax.TemplatesImpl;
+import org.apache.xml.dtm.DTMAxisIterator;
+import org.apache.xml.serializer.SerializationHandler;
 
 /*
  * utility generator functions for common jdk-only gadgets
