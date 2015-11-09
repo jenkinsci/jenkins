@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ysoserial.util;
+package jenkins.security.security218.ysoserial.util;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;

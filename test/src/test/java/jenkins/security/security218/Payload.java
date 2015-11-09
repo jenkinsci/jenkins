@@ -21,7 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ysoserial.payloads;
+package jenkins.security.security218;
+
+import jenkins.security.security218.ysoserial.payloads.CommonsCollections1;
+import jenkins.security.security218.ysoserial.payloads.CommonsCollections2;
+import jenkins.security.security218.ysoserial.payloads.Groovy1;
+import jenkins.security.security218.ysoserial.payloads.ObjectPayload;
+import jenkins.security.security218.ysoserial.payloads.Spring1;
 
 
 /**

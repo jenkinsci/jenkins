@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ysoserial;
+package jenkins.security.security218.ysoserial;
 
 import java.security.Permission;
 import java.util.concurrent.Callable;

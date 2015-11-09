@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ysoserial.util;
+package jenkins.security.security218.ysoserial.util;
 
 
 import java.util.concurrent.Callable;
-import jenkins.security.ysoserial.ExecBlockingSecurityManager;
-import jenkins.security.ysoserial.payloads.ObjectPayload;
-import static jenkins.security.ysoserial.util.Serializables.deserialize;
-import static jenkins.security.ysoserial.util.Serializables.serialize;
+import jenkins.security.security218.ysoserial.ExecBlockingSecurityManager;
+import jenkins.security.security218.ysoserial.payloads.ObjectPayload;
+import static jenkins.security.security218.ysoserial.util.Serializables.deserialize;
+import static jenkins.security.security218.ysoserial.util.Serializables.serialize;
 
 /*
  * utility class for running exploits locally from command line

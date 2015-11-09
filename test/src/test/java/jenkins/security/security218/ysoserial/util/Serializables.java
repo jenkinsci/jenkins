@@ -21,47 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ysoserial.util;
+package jenkins.security.security218.ysoserial.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
-public class ClassFiles {
-	public static String classAsFile(final Class<?> clazz) {
-		return classAsFile(clazz, true);
+public class Serializables {
+
+	public static byte[] serialize(final Object obj) throws IOException {
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		serialize(obj, out);
+		return out.toByteArray();
+	}
+
+	public static void serialize(final Object obj, final OutputStream out) throws IOException {
+		final ObjectOutputStream objOut = new ObjectOutputStream(out);
+		objOut.writeObject(obj);				
 	}
 	
-	public static String classAsFile(final Class<?> clazz, boolean suffix) {
-		String str;
-		if (clazz.getEnclosingClass() == null) {
-			str = clazz.getName().replace(".", "/");
-		} else {
-			str = classAsFile(clazz.getEnclosingClass(), false) + "$" + clazz.getSimpleName();
-		}
-		if (suffix) {
-			str += ".class";			
-		}
-		return str;  
+	public static Object deserialize(final byte[] serialized) throws IOException, ClassNotFoundException {
+		final ByteArrayInputStream in = new ByteArrayInputStream(serialized);
+		return deserialize(in);
 	}
-
-	public static byte[] classAsBytes(final Class<?> clazz) {
-		try {
-			final byte[] buffer = new byte[1024];
-			final String file = classAsFile(clazz);
-			final InputStream in = ClassFiles.class.getClassLoader().getResourceAsStream(file);
-			if (in == null) {
-				throw new IOException("couldn't find '" + file + "'");
-			}
-			final ByteArrayOutputStream out = new ByteArrayOutputStream();
-			int len;
-			while ((len = in.read(buffer)) != -1) {
-				out.write(buffer, 0, len);
-			}
-			return out.toByteArray();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	
+	public static Object deserialize(final InputStream in) throws ClassNotFoundException, IOException {
+		final ObjectInputStream objIn = new ObjectInputStream(in);
+		return objIn.readObject();
 	}
 	
 }

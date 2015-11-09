@@ -30,7 +30,7 @@ import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import java.io.File;
 import java.io.PrintStream;
-import jenkins.security.ysoserial.payloads.Payload;
+import jenkins.security.security218.Payload;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Test;
 import static org.junit.Assert.*;

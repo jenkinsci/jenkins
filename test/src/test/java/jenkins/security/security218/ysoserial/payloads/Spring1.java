@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security.ysoserial.payloads;
+package jenkins.security.security218.ysoserial.payloads;
 
 import static java.lang.Class.forName;
 
@@ -34,9 +34,9 @@ import javax.xml.transform.Templates;
 import org.springframework.beans.factory.ObjectFactory;
 
 
-import jenkins.security.ysoserial.util.Gadgets;
-import jenkins.security.ysoserial.util.PayloadRunner;
-import jenkins.security.ysoserial.util.Reflections;
+import jenkins.security.security218.ysoserial.util.Gadgets;
+import jenkins.security.security218.ysoserial.util.PayloadRunner;
+import jenkins.security.security218.ysoserial.util.Reflections;
 import org.apache.xalan.xsltc.trax.TemplatesImpl;
 
 /*
