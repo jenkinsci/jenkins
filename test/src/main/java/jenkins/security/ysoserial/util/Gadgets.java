@@ -34,11 +34,11 @@ import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 
-import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xalan.xsltc.DOM;
 import org.apache.xalan.xsltc.TransletException;
 import org.apache.xalan.xsltc.runtime.AbstractTranslet;
 import org.apache.xalan.xsltc.trax.TemplatesImpl;
+import org.apache.xalan.xsltc.trax.TransformerFactoryImpl;
 import org.apache.xml.dtm.DTMAxisIterator;
 import org.apache.xml.serializer.SerializationHandler;
 

@@ -59,7 +59,7 @@ public class Security218BlackBoxTest {
     @Issue("SECURITY-218")
     public void probeCommonsCollections2() throws Exception {
         //TODO: Payload content issue
-        probe(Payload.CommonsCollections2, -1);
+        probe(Payload.CommonsCollections2, PayloadCaller.EXIT_CODE_REJECTED);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
@@ -75,9 +75,8 @@ public class Security218BlackBoxTest {
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-218")
-    @Ignore
     public void probeSpring1() throws Exception {
-        probe(Payload.Spring1, PayloadCaller.EXIT_CODE_OK);
+        probe(Payload.Spring1, -1);
     }
     
     private void probe(Payload payload, int expectedResultCode) throws Exception {
