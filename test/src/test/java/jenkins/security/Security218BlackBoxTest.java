@@ -46,7 +46,7 @@ public class Security218BlackBoxTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
-    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY) // allow who-am-i to run all the way to completion
+    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Test
     public void probe() throws Exception {
         final ServerSocket proxySocket = new ServerSocket(0);
@@ -135,7 +135,7 @@ public class Security218BlackBoxTest {
             protected CliPort getCliTcpPort(String url) throws IOException {
                 return new CliPort(new InetSocketAddress(localhost, proxySocket.getLocalPort()), /* ignore identity */null, 1);
             }
-        }.execute("who-am-i");
+        }.execute("help");
         fail("TODO assert that payloads did not work");
     }
 
