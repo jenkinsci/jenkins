@@ -31,10 +31,7 @@ import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import org.jenkinsci.remoting.CallableDecorator;
 import hudson.remoting.Channel;
-import hudson.remoting.ChannelBuilder;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 

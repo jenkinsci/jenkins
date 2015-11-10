@@ -3,9 +3,7 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
-import hudson.remoting.Callable;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.commons.io.IOUtils;

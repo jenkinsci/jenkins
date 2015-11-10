@@ -28,8 +28,6 @@ import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
 import jenkins.security.ApiTokenProperty;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;

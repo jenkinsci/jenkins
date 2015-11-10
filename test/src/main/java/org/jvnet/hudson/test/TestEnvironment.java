@@ -23,7 +23,6 @@
  */
 package org.jvnet.hudson.test;
 
-import hudson.model.Computer;
 
 import java.io.IOException;
 import javax.annotation.CheckForNull;
