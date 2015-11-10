@@ -57,7 +57,8 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-218")
     public void probeCommonsCollections2() throws Exception {
-        //TODO: Payload content issue
+        // The issue with CommonsCollections2 does not appear in manual tests on Jenkins, but it may be a risk
+        // in newer commons-collections version => remoting implementation should filter this class anyway
         probe(Payload.CommonsCollections2, PayloadCaller.EXIT_CODE_REJECTED);
     }
     
@@ -70,7 +71,7 @@ public class Security218CliTest {
     
     //TODO: Fix the conversion layer (not urgent)
     // There is an issue in the conversion layer after the migration to another XALAN namespace
-    // with newer libs. SECURITY-218 does not apper in this case OOTB anyway
+    // with newer libs. SECURITY-218 does not apper in this case in manual tests anyway
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-218")
