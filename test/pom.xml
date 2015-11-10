@@ -183,20 +183,17 @@ THE SOFTWARE.
       <artifactId>geb-implicit-assertions</artifactId>
       <version>0.7.2</version>
     </dependency>
-    <!-- <dependency>
-      <groupId>ysoserial</groupId>
-      <artifactId>ysoserial</artifactId>
-      <version>0.0.2-jenkins-SNAPSHOT</version>
-    </dependency> -->
     <dependency>
       <groupId>org.javassist</groupId>
       <artifactId>javassist</artifactId>
       <version>3.19.0-GA</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
       <version>4.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
