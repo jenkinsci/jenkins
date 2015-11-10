@@ -86,7 +86,9 @@ public class Security218BlackBoxTest {
                 public void run() {
                     try {
                         Socket proxy = proxySocket.accept();
-                        Socket real = new Socket(url.getHost(), ((HttpURLConnection) url.openConnection()).getHeaderFieldInt("X-Jenkins-CLI-Port", -1));
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        String host = conn.getHeaderField("X-Jenkins-CLI-Host");
+                        Socket real = new Socket(host == null ? url.getHost() : host, conn.getHeaderFieldInt("X-Jenkins-CLI-Port", -1));
                         final InputStream realIS = real.getInputStream();
                         final OutputStream realOS = real.getOutputStream();
                         final InputStream proxyIS = proxy.getInputStream();
