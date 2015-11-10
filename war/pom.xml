@@ -227,7 +227,7 @@ THE SOFTWARE.
           </execution>
           <execution>
             <id>resgen</id>
-            <phase>generate-resources</phase>
+            <phase>package</phase>
             <goals>
               <goal>copy</goal>
             </goals>
