@@ -54,8 +54,8 @@ import org.jvnet.hudson.test.recipes.PresetData;
 
 public class Security218BlackBoxTest {
 
-    private static final String overrideURL = System.getenv("JENKINS_URL");
-    private static final String overrideHome = System.getenv("JENKINS_HOME");
+    private static final String overrideURL = System.getenv("VICTIM_JENKINS_URL");
+    private static final String overrideHome = System.getenv("VICTIM_JENKINS_HOME");
     static {
         assertTrue("$JENKINS_URL and $JENKINS_HOME must both be defined together", (overrideURL == null) == (overrideHome == null));
     }
