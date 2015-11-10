@@ -37,7 +37,6 @@ import com.google.inject.Scope;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 import com.google.common.collect.ImmutableList;
-import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;

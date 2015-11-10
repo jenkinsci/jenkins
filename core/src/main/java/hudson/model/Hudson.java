@@ -47,9 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static hudson.Util.fixEmpty;
 import javax.annotation.CheckForNull;

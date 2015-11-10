@@ -28,7 +28,6 @@ import org.jvnet.hudson.test.JenkinsRecipe;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.apache.commons.io.FileUtils;
 
-import hudson.util.JenkinsReloadFailed;
 
 import java.io.File;
 import java.lang.annotation.Documented;

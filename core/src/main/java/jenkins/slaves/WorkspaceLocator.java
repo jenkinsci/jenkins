@@ -5,7 +5,6 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.model.Node;
 import hudson.model.TopLevelItem;
-import jenkins.model.Jenkins;
 
 /**
  * Allow extensions to override workspace locations

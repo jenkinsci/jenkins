@@ -3,7 +3,6 @@ package jenkins.slaves;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Slave;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.Properties;

@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.Formatter;
 
 /**
  * Receives events that happen during some lengthy operation

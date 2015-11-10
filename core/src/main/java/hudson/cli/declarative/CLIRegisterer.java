@@ -33,7 +33,6 @@ import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
-import hudson.remoting.Channel;
 import hudson.security.CliAuthenticator;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;

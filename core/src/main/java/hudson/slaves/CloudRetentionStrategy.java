@@ -23,10 +23,6 @@
  */
 package hudson.slaves;
 
-import hudson.model.Computer;
-import hudson.model.Node;
-import hudson.model.Queue;
-import jenkins.model.Jenkins;
 
 import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;

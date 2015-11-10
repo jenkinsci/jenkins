@@ -29,7 +29,6 @@ import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteInputStream;

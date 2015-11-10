@@ -25,7 +25,6 @@ package hudson.node_monitors;
 
 import hudson.Util;
 import hudson.Extension;
-import hudson.slaves.OfflineCause;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import jenkins.security.MasterToSlaveCallable;

@@ -29,7 +29,6 @@ import hudson.security.ACL;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.util.Timer;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 

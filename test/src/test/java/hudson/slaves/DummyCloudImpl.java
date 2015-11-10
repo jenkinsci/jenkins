@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import hudson.util.DescribableList;
-import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import javax.xml.ws.Provider;

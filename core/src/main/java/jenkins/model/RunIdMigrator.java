@@ -28,7 +28,6 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
 import hudson.model.RootAction;
-import hudson.model.Run;
 import hudson.util.AtomicFileWriter;
 import hudson.util.StreamTaskListener;
 import java.io.File;

@@ -25,7 +25,6 @@ package jenkins.model;
 
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Executor;
-import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import org.kohsuke.stapler.export.Exported;

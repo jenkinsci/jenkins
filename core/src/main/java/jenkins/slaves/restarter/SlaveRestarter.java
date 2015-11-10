@@ -2,7 +2,6 @@ package jenkins.slaves.restarter;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 
 import java.io.Serializable;
 import java.util.logging.Logger;

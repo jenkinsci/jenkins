@@ -27,11 +27,9 @@ package org.jvnet.hudson.test;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.Queue;
-import hudson.model.User;
 import java.util.Map;
 import javax.inject.Inject;
 import jenkins.security.QueueItemAuthenticator;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorDescriptor;
 import org.acegisecurity.Authentication;
 

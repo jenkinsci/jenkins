@@ -30,7 +30,6 @@ import hudson.model.Job;
 import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
