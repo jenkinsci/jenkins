@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.638</version>
+    <version>1.639-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-test-harness</artifactId>
