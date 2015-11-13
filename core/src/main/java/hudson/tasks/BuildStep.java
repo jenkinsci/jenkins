@@ -49,6 +49,8 @@ import java.util.WeakHashMap;
 import jenkins.security.QueueItemAuthenticator;
 import org.acegisecurity.Authentication;
 
+import javax.annotation.Nonnull;
+
 /**
  * One step of the whole build process.
  *
@@ -154,6 +156,7 @@ public interface BuildStep {
      * @return
      *      can be empty but never null.
      */
+    @Nonnull
     Collection<? extends Action> getProjectActions(AbstractProject<?,?> project);
 
 

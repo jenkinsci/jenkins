@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import jenkins.model.Jenkins;
@@ -106,6 +107,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         };
     }
 
+    @Nonnull
     @Override
     public Collection<Action> getJobActions(Job<?, ?> job) {
         return Collections.<Action>singleton(this);
