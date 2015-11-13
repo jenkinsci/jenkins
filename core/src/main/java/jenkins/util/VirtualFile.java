@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -305,6 +306,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
             } catch (IOException x) {
                 Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "could not determine symlink status of " + f, x);
+            } catch (InvalidPathException x2) {
+                // if this cannot be converted to a path, it cannot be an illegal symlink, as it cannot exist
+                Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "Could not convert " + f + " to path", x2);
             }
             return false;
         }
