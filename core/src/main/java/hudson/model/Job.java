@@ -430,7 +430,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the configured build discarder for this job, via {@link BuildDiscarderProperty}, or null if none.
      */
     public synchronized BuildDiscarder getBuildDiscarder() {
-        BuildDiscarderProperty prop = getProperty(BuildDiscarderProperty.class);
+        BuildDiscarderProperty prop = _getProperty(BuildDiscarderProperty.class);
         return prop != null ? prop.getStrategy() : /* settings compatibility */ logRotator;
     }
 
@@ -553,9 +553,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Gets all the job properties configured for this job.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Map<JobPropertyDescriptor, JobProperty<? super JobT>> getProperties() {
-        return Descriptor.toMap((Iterable) properties);
+        Map result = Descriptor.toMap((Iterable) properties);
+        if (logRotator != null) {
+            result.put(Jenkins.getActiveInstance().getDescriptorByType(BuildDiscarderProperty.DescriptorImpl.class), new BuildDiscarderProperty(logRotator));
+        }
+        return result;
     }
 
     /**
@@ -572,6 +576,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * this job.
      */
     public <T extends JobProperty> T getProperty(Class<T> clazz) {
+        if (clazz == BuildDiscarderProperty.class && logRotator != null) {
+            return clazz.cast(new BuildDiscarderProperty(logRotator));
+        }
+        return _getProperty(clazz);
+    }
+
+    private <T extends JobProperty> T _getProperty(Class<T> clazz) {
         for (JobProperty p : properties) {
             if (clazz.isInstance(p))
                 return clazz.cast(p);
@@ -1195,6 +1206,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         try {
             setDisplayName(json.optString("displayNameOrNull"));
+
+            logRotator = null;
 
             DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
             JSONObject jsonProperties = json.optJSONObject("properties");
