@@ -90,6 +90,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      */
     private boolean onlyIfSuccessful;
 
+    /**
+     * Archive only if build is not successful, skip archiving on successful builds.
+     */
+    private boolean onlyIfNotSuccessful;
+
     private boolean fingerprint;
 
     /**
@@ -169,8 +174,22 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         return onlyIfSuccessful;
     }
 
+    public boolean isOnlyIfNotSuccessful() {
+        return onlyIfNotSuccessful;
+    }
+
     @DataBoundSetter public final void setOnlyIfSuccessful(boolean onlyIfSuccessful) {
         this.onlyIfSuccessful = onlyIfSuccessful;
+		if (this.onlyIfSuccessful == true) {
+			this.onlyIfNotSuccessful = False;
+		}
+    }
+
+    @DataBoundSetter public final void setOnlyIfNotSuccessful(boolean onlyIfNotSuccessful) {
+        this.onlyIfNotSuccessful = onlyIfNotSuccessful;
+		if (this.onlyIfNotSuccessful == true) {
+			this.onlyIfSuccessful = False;
+		}
     }
 
     public boolean isFingerprint() {
@@ -222,8 +241,16 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             return;
         }
 
-        if (onlyIfSuccessful && build.getResult() != null && build.getResult().isWorseThan(Result.UNSTABLE)) {
-            listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
+		// Determine if we want to archive the logs:
+		// 1. If onlySuccessful is set and the build result is successful or
+		// 2. If onlyNotSuccessful is set and the build result is a failure
+        if ((onlyIfSuccessful && build.getResult() != null && build.getResult().isWorseThan(Result.UNSTABLE)) ||
+            (onlyIfNotSuccessful && build.getResult() != null && build.getResult() == Result.FAILURE)) {
+			if (this.onlyIfSuccessful) {
+				listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
+			} else {
+				listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfNotSuccessful());
+			}
             return;
         }
 

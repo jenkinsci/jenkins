@@ -37,6 +37,9 @@ THE SOFTWARE.
     <f:entry field="onlyIfSuccessful" >
       <f:checkbox title="${%onlyIfSuccessful}"/>
     </f:entry>
+    <f:entry field="onlyIfNotSuccessful" >
+      <f:checkbox title="${%onlyIfNotSuccessful}"/>
+    </f:entry>
     <f:entry field="fingerprint">
       <f:checkbox title="${%Fingerprint all archived artifacts}"/>
     </f:entry>
