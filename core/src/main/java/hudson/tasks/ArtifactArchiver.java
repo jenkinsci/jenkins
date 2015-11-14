@@ -248,8 +248,6 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             (onlyIfNotSuccessful && build.getResult() != null && build.getResult() == Result.FAILURE)) {
 			if (this.onlyIfSuccessful) {
 				listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
-			} else {
-				listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfNotSuccessful());
 			}
             return;
         }
