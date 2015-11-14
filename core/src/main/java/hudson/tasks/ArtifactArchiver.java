@@ -181,14 +181,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @DataBoundSetter public final void setOnlyIfSuccessful(boolean onlyIfSuccessful) {
         this.onlyIfSuccessful = onlyIfSuccessful;
 		if (this.onlyIfSuccessful == true) {
-			this.onlyIfNotSuccessful = False;
+			this.onlyIfNotSuccessful = false;
 		}
     }
 
     @DataBoundSetter public final void setOnlyIfNotSuccessful(boolean onlyIfNotSuccessful) {
         this.onlyIfNotSuccessful = onlyIfNotSuccessful;
 		if (this.onlyIfNotSuccessful == true) {
-			this.onlyIfSuccessful = False;
+			this.onlyIfSuccessful = false;
 		}
     }
 
