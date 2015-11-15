@@ -74,10 +74,17 @@ body {
   background-color: #f6faf2;
 }
 
+#page-body {
+  min-height: calc(100vh - 103px);
+  overflow: hidden;
+}
+
 #side-panel {
-  padding: 15px 15px 80px 15px;
+  padding: 15px 15px 99999px 15px;
+  margin-bottom: -99999px;
   float: left;
   width: 320px;
+  border-right: solid 2px #f0f0f0;
 }
 
 #main-panel {
@@ -90,6 +97,7 @@ body {
     width: 100%;
     float: none;
     padding-bottom: 20px;
+    border: none;
   }
 
   #main-panel {
@@ -363,6 +371,7 @@ pre.console {
 
 .setting-name {
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .setting-main {
@@ -1758,7 +1767,7 @@ table#legend-table td {
   font-size: 12px;
   padding: 3px 20px;
   *border: 0;
-  border-radius: 1px;
+  border-radius: 4px;
 
   border: 1px solid #cccccc;
   background-color: #e0e0e0;
