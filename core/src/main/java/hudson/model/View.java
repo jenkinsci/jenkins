@@ -1157,18 +1157,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
+        String mode = req.getParameter("mode");
+
         String requestContentType = req.getContentType();
-        if(requestContentType==null)
+        if (requestContentType == null
+                && !(mode != null && mode.equals("copy")))
             throw new Failure("No Content-Type header set");
 
-        boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
+        boolean isXmlSubmission = requestContentType != null
+                && (requestContentType.startsWith("application/xml")
+                        || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
         checkGoodName(name);
         if(owner.getView(name)!=null)
             throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
-        String mode = req.getParameter("mode");
         if (mode==null || mode.length()==0) {
             if(isXmlSubmission) {
                 View v = createViewFromXML(name, req.getInputStream());
