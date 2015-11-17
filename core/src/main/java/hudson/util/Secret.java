@@ -29,6 +29,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.trilead.ssh2.crypto.Base64;
+import hudson.SystemProperties;
 import jenkins.model.Jenkins;
 import hudson.Util;
 import jenkins.security.CryptoConfidentialKey;
@@ -223,7 +224,7 @@ public final class Secret implements Serializable {
      * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
      * @see #getCipher(String)
      */
-    private static final String PROVIDER = System.getProperty(Secret.class.getName()+".provider");
+    private static final String PROVIDER = SystemProperties.getProperty(Secret.class.getName()+".provider");
 
     /**
      * For testing only. Override the secret key so that we can test this class without {@link Jenkins}.

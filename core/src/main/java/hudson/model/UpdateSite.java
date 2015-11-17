@@ -27,6 +27,7 @@ package hudson.model;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.SystemProperties;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
@@ -843,6 +844,6 @@ public class UpdateSite {
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
     // The name uses UpdateCenter for compatibility reason.
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
 }

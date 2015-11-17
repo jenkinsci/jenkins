@@ -561,7 +561,7 @@ public class Functions {
     /**
      * Set to true if you need to use the debug version of YUI.
      */
-    public static boolean DEBUG_YUI = Boolean.getBoolean("debug.YUI");
+    public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
 
     /**
      * Creates a sub map by using the given range (both ends inclusive).
@@ -616,7 +616,7 @@ public class Functions {
             response.addCookie(c);
         }
         if (refresh) {
-            response.addHeader("Refresh", System.getProperty("hudson.Functions.autoRefreshSeconds", "10"));
+            response.addHeader("Refresh", SystemProperties.getProperty("hudson.Functions.autoRefreshSeconds", "10"));
         }
     }
 
@@ -838,7 +838,7 @@ public class Functions {
      */
     public static String getFooterURL() {
         if(footerURL == null) {
-            footerURL = System.getProperty("hudson.footerURL");
+            footerURL = SystemProperties.getProperty("hudson.footerURL");
             if(StringUtils.isBlank(footerURL)) {
                 footerURL = "http://jenkins-ci.org/";
             }
@@ -1567,10 +1567,6 @@ public class Functions {
         return projectName;
     }
 
-    public String getSystemProperty(String key) {
-        return System.getProperty(key);
-    }
-
     /**
      * Obtains the host name of the Hudson server that clients can use to talk back to.
      * <p>
@@ -1772,7 +1768,7 @@ public class Functions {
      * the permission can't be configured in the security screen). Got it?</p>
      */
     public static boolean isArtifactsPermissionEnabled() {
-        return Boolean.getBoolean("hudson.security.ArtifactsPermission");
+        return SystemProperties.getBoolean("hudson.security.ArtifactsPermission");
     }
 
     /**
@@ -1787,7 +1783,7 @@ public class Functions {
      * control on the "Wipe Out Workspace" action.</p>
      */
     public static boolean isWipeOutPermissionEnabled() {
-        return Boolean.getBoolean("hudson.security.WipeOutPermission");
+        return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
     }
 
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {

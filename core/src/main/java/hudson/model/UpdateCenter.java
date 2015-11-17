@@ -30,6 +30,7 @@ import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import hudson.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
@@ -116,7 +117,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @ExportedBean
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 	
-    private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+    private static final String UPDATE_CENTER_URL = SystemProperties.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
 
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
@@ -1572,7 +1573,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *      Use {@link UpdateSite#neverUpdate}
      */
     @Deprecated
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
     public static final XStream2 XSTREAM = new XStream2();
 

@@ -1,5 +1,6 @@
 package jenkins;
 
+import hudson.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.util.DaemonThreadFactory;
@@ -91,7 +92,7 @@ public class InitReactorRunner {
     protected void onInitMilestoneAttained(InitMilestone milestone) {
     }
 
-    private static final int TWICE_CPU_NUM = Integer.getInteger(
+    private static final int TWICE_CPU_NUM = SystemProperties.getInteger(
             InitReactorRunner.class.getName()+".concurrency",
             Runtime.getRuntime().availableProcessors() * 2);
 

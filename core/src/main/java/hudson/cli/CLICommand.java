@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import hudson.SystemProperties;
 import hudson.cli.declarative.OptionHandlerExtension;
 import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
@@ -418,7 +419,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
 
         public String call() throws IOException {
-            return System.getProperty(name);
+            return SystemProperties.getProperty(name);
         }
 
         private static final long serialVersionUID = 1L;

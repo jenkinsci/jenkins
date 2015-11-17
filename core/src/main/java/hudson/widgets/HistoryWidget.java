@@ -24,6 +24,7 @@
 package hudson.widgets;
 
 import hudson.Functions;
+import hudson.SystemProperties;
 import hudson.model.ModelObject;
 import hudson.model.Run;
 
@@ -242,7 +243,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         req.getView(page,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 
-    static final int THRESHOLD = Integer.getInteger(HistoryWidget.class.getName()+".threshold",30);
+    static final int THRESHOLD = SystemProperties.getInteger(HistoryWidget.class.getName()+".threshold",30);
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;

@@ -27,6 +27,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
 import hudson.Extension;
+import hudson.SystemProperties;
 import hudson.views.ViewsTabBar;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -162,7 +163,7 @@ public class TreeView extends View implements ViewGroup {
     // this feature is not public yet
     @Extension
     public static ViewDescriptor register() {
-        if(Boolean.getBoolean("hudson.TreeView"))
+        if(SystemProperties.getBoolean("hudson.TreeView"))
             return new DescriptorImpl();
         else
             return null;

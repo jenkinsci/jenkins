@@ -2,6 +2,7 @@ package hudson.model.queue;
 
 import com.google.common.collect.Iterables;
 import hudson.Extension;
+import hudson.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import jenkins.model.Jenkins;
@@ -204,7 +205,7 @@ public class BackFiller extends LoadPredictor {
      */
     @Extension
     public static BackFiller newInstance() {
-        if (Boolean.getBoolean(BackFiller.class.getName()))
+        if (SystemProperties.getBoolean(BackFiller.class.getName()))
             return new BackFiller();
         return null;
     }

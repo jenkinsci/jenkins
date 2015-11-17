@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.SystemProperties;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
@@ -371,11 +372,11 @@ public abstract class LoadStatistics {
      * 
      * Put differently, the half reduction time is {@code CLOCK*log(0.5)/log(DECAY)}
      */
-    public static final float DECAY = Float.parseFloat(System.getProperty(LoadStatistics.class.getName()+".decay","0.9"));
+    public static final float DECAY = Float.parseFloat(SystemProperties.getProperty(LoadStatistics.class.getName()+".decay","0.9"));
     /**
      * Load statistics clock cycle in milliseconds. Specify a small value for quickly debugging this feature and node provisioning through cloud.
      */
-    public static int CLOCK = Integer.getInteger(LoadStatistics.class.getName() + ".clock", 10 * 1000);
+    public static int CLOCK = SystemProperties.getInteger(LoadStatistics.class.getName() + ".clock", 10 * 1000);
 
     /**
      * Periodically update the load statistics average.

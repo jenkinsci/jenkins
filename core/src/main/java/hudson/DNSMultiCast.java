@@ -86,5 +86,5 @@ public class DNSMultiCast implements Closeable {
 
     private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
 
-    public static boolean disabled = Boolean.getBoolean(DNSMultiCast.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(DNSMultiCast.class.getName()+".disabled");
 }

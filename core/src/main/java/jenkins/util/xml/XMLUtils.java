@@ -1,5 +1,6 @@
 package jenkins.util.xml;
 
+import hudson.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.xml.sax.InputSource;
@@ -66,7 +67,7 @@ public final class XMLUtils {
             // for some reason we could not convert source
             // this applies to DOMSource and StAXSource - and possibly 3rd party implementations...
             // a DOMSource can already be compromised as it is parsed by the time it gets to us.
-            if (Boolean.getBoolean(DISABLED_PROPERTY_NAME)) {
+            if (SystemProperties.getBoolean(DISABLED_PROPERTY_NAME)) {
                 LOGGER.log(Level.WARNING,  "XML external entity (XXE) prevention has been disabled by the system " +
                         "property {0}=true Your system may be vulnerable to XXE attacks.", DISABLED_PROPERTY_NAME);
                 if (LOGGER.isLoggable(Level.FINE)) {

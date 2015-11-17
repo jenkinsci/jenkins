@@ -28,6 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
+import hudson.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
@@ -408,7 +409,7 @@ public class DownloadService extends PageDecorator {
                 Long.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
-    public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
 
     /**
      * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
@@ -416,6 +417,6 @@ public class DownloadService extends PageDecorator {
      * Should only be used when {@link DownloadSettings#isUseBrowser};
      * disabling signature checks for in-browser downloads is <em>very dangerous</em> as unprivileged users could submit spoofed metadata!
      */
-    public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
+    public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 

@@ -61,6 +61,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import com.jcraft.jzlib.GZIPOutputStream;
+import hudson.SystemProperties;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -272,5 +273,5 @@ public class UsageStatistics extends PageDecorator {
 
     private static final long DAY = DAYS.toMillis(1);
 
-    public static boolean DISABLED = Boolean.getBoolean(UsageStatistics.class.getName()+".disabled");
+    public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

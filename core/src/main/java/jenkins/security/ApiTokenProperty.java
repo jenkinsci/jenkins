@@ -24,6 +24,7 @@
 package jenkins.security;
 
 import hudson.Extension;
+import hudson.SystemProperties;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
@@ -65,7 +66,7 @@ public class ApiTokenProperty extends UserProperty {
      * @since TODO
      */
     private static final boolean SHOW_TOKEN_TO_ADMINS = 
-            Boolean.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
+            SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
     
     
     @DataBoundConstructor

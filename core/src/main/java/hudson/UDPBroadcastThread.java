@@ -125,7 +125,7 @@ public class UDPBroadcastThread extends Thread {
         interrupt();
     }
 
-    public static final int PORT = Integer.getInteger("hudson.udp",33848);
+    public static final int PORT = SystemProperties.getInteger("hudson.udp",33848);
 
     private static final Logger LOGGER = Logger.getLogger(UDPBroadcastThread.class.getName());
 

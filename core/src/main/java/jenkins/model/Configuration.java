@@ -23,6 +23,7 @@
  */
 package jenkins.model;
 
+import hudson.SystemProperties;
 import hudson.model.Hudson;
 
 
@@ -34,9 +35,9 @@ public class Configuration {
     }
 
     public static String getStringConfigParameter(String name, String defaultValue) {
-        String value = System.getProperty(Jenkins.class.getName()+"." + name);
+        String value = SystemProperties.getProperty(Jenkins.class.getName()+"." + name);
         if( value == null )
-            value = System.getProperty(Hudson.class.getName()+"." + name);
+            value = SystemProperties.getProperty(Hudson.class.getName()+"." + name);
         return (value==null)?defaultValue:value;
     }
 }

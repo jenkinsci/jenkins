@@ -1006,6 +1006,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * JENKINS-22346.
      */
-    public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = Boolean.getBoolean(User.class.getName()+".allowNonExistentUserToLogin");
+    public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName()+".allowNonExistentUserToLogin");
 }
 

@@ -1,6 +1,7 @@
 package jenkins.security.s2m;
 
 import hudson.Extension;
+import hudson.SystemProperties;
 import hudson.remoting.Callable;
 import hudson.remoting.ChannelBuilder;
 import jenkins.security.ChannelConfigurator;
@@ -38,7 +39,7 @@ public class CallableDirectionChecker extends RoleChecker {
      * This is an escape hatch in case the fix breaks something critical, to allow the user
      * to keep operation.
      */
-    public static boolean BYPASS = Boolean.getBoolean(BYPASS_PROP);
+    public static boolean BYPASS = SystemProperties.getBoolean(BYPASS_PROP);
 
     private CallableDirectionChecker(Object context) {
         this.context = context;

@@ -30,6 +30,7 @@ import jenkins.model.Jenkins;
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
+import hudson.SystemProperties;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
@@ -778,8 +779,8 @@ public class NodeProvisioner {
          * Give some initial warm up time so that statically connected slaves
          * can be brought online before we start allocating more.
          */
-    	 public static int INITIALDELAY = Integer.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
-    	 public static int RECURRENCEPERIOD = Integer.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
+        public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
+        public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
 
         @Override
         public long getInitialDelay() {
@@ -800,7 +801,7 @@ public class NodeProvisioner {
     }
 
     private static final Logger LOGGER = Logger.getLogger(NodeProvisioner.class.getName());
-    private static final float MARGIN = Integer.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100f;
+    private static final float MARGIN = SystemProperties.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100f;
     private static final float MARGIN0 = Math.max(MARGIN, getFloatSystemProperty(NodeProvisioner.class.getName()+".MARGIN0",0.5f));
     private static final float MARGIN_DECAY = getFloatSystemProperty(NodeProvisioner.class.getName()+".MARGIN_DECAY",0.5f);
 
@@ -808,7 +809,7 @@ public class NodeProvisioner {
     private static final TimeScale TIME_SCALE = TimeScale.SEC10;
 
     private static float getFloatSystemProperty(String propName, float defaultValue) {
-        String v = System.getProperty(propName);
+        String v = SystemProperties.getProperty(propName);
         if (v!=null)
             try {
                 return Float.parseFloat(v);

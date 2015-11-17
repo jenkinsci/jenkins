@@ -117,6 +117,8 @@ public class WebAppMain implements ServletContextListener {
 
             installLogger();
 
+            SystemProperties.initialize( event.getServletContext() );
+
             markCookieAsHttpOnly(context);
 
             final FileAndDescription describedHomeDir = getHomeDir(event);
@@ -357,9 +359,9 @@ public class WebAppMain implements ServletContextListener {
 
         // next the system property
         for (String name : HOME_NAMES) {
-            String sysProp = System.getProperty(name);
+            String sysProp = SystemProperties.getProperty(name);
             if(sysProp!=null)
-                return new FileAndDescription(new File(sysProp.trim()),"System.getProperty(\""+name+"\")");
+                return new FileAndDescription(new File(sysProp.trim()),"SystemProperties.getProperty(\""+name+"\")");
         }
 
         // look at the env var next

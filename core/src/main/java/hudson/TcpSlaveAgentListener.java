@@ -203,7 +203,7 @@ public final class TcpSlaveAgentListener extends Thread {
      *
      * TODO: think about how to expose this (including whether this needs to be exposed at all.)
      */
-    public static String CLI_HOST_NAME = System.getProperty(TcpSlaveAgentListener.class.getName()+".hostName");
+    public static String CLI_HOST_NAME = SystemProperties.getProperty(TcpSlaveAgentListener.class.getName()+".hostName");
 
     /**
      * Port number that we advertise the CLI client to connect to.
@@ -215,7 +215,7 @@ public final class TcpSlaveAgentListener extends Thread {
      *
      * @since 1.611
      */
-    public static Integer CLI_PORT = Integer.getInteger(TcpSlaveAgentListener.class.getName()+".port");
+    public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName()+".port");
 }
 
 /*

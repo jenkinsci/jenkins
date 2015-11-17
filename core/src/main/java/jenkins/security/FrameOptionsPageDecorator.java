@@ -1,6 +1,7 @@
 package jenkins.security;
 
 import hudson.Extension;
+import hudson.SystemProperties;
 import hudson.model.PageDecorator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -13,5 +14,5 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Extension(ordinal = 1000)
 public class FrameOptionsPageDecorator extends PageDecorator {
     @Restricted(NoExternalUse.class)
-    public static boolean enabled = Boolean.valueOf(System.getProperty(FrameOptionsPageDecorator.class.getName() + ".enabled", "true"));
+    public static boolean enabled = Boolean.valueOf(SystemProperties.getProperty(FrameOptionsPageDecorator.class.getName() + ".enabled", "true"));
 }

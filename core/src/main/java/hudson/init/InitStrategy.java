@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.PluginManager;
+import hudson.SystemProperties;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import hudson.util.Service;
@@ -84,7 +85,7 @@ public class InitStrategy {
      * TODO: maven-hpi-plugin should inject its own InitStrategy instead of having this in the core.
      */
     protected void getBundledPluginsFromProperty(final List<File> r) {
-        String hplProperty = System.getProperty("hudson.bundled.plugins");
+        String hplProperty = SystemProperties.getProperty("hudson.bundled.plugins");
         if (hplProperty != null) {
             for (String hplLocation : hplProperty.split(",")) {
                 File hpl = new File(hplLocation.trim());

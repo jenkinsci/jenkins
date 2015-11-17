@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import hudson.SystemProperties;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,13 +49,13 @@ public class CharacterEncodingFilter implements Filter {
     private static final String ENCODING = "UTF-8";
 
     private static final Boolean DISABLE_FILTER
-            = Boolean.getBoolean(CharacterEncodingFilter.class.getName() + ".disableFilter");
+            = SystemProperties.getBoolean(CharacterEncodingFilter.class.getName() + ".disableFilter");
 
     /**
      * The character encoding sets forcibly?
      */
     private static final Boolean FORCE_ENCODING
-            = Boolean.getBoolean(CharacterEncodingFilter.class.getName() + ".forceEncoding");
+            = SystemProperties.getBoolean(CharacterEncodingFilter.class.getName() + ".forceEncoding");
 
     public void init(FilterConfig filterConfig) throws ServletException {
         LOGGER.log(Level.FINE,

@@ -1525,7 +1525,7 @@ public class Util {
     /**
      * On Unix environment that cannot run "ln", set this to true.
      */
-    public static boolean NO_SYMLINK = Boolean.getBoolean(Util.class.getName()+".noSymLink");
+    public static boolean NO_SYMLINK = SystemProperties.getBoolean(Util.class.getName()+".noSymLink");
 
-    public static boolean SYMLINK_ESCAPEHATCH = Boolean.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
+    public static boolean SYMLINK_ESCAPEHATCH = SystemProperties.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
 }
