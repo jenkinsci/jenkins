@@ -50,7 +50,7 @@ import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.TcpSlaveAgentListener;
 import hudson.UDPBroadcastThread;
 import hudson.Util;

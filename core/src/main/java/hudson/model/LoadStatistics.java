@@ -24,7 +24,7 @@
 package hudson.model;
 
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
@@ -372,7 +372,7 @@ public abstract class LoadStatistics {
      * 
      * Put differently, the half reduction time is {@code CLOCK*log(0.5)/log(DECAY)}
      */
-    public static final float DECAY = Float.parseFloat(SystemProperties.getProperty(LoadStatistics.class.getName()+".decay","0.9"));
+    public static final float DECAY = Float.parseFloat(SystemProperties.getString(LoadStatistics.class.getName()+".decay","0.9"));
     /**
      * Load statistics clock cycle in milliseconds. Specify a small value for quickly debugging this feature and node provisioning through cloud.
      */

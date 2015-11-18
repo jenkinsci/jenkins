@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
@@ -633,7 +634,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Creates a hudson.PluginStrategy, looking at the corresponding system property.
      */
     protected PluginStrategy createPluginStrategy() {
-		String strategyName = SystemProperties.getProperty(PluginStrategy.class.getName());
+		String strategyName = SystemProperties.getString(PluginStrategy.class.getName());
 		if (strategyName != null) {
 			try {
 				Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);

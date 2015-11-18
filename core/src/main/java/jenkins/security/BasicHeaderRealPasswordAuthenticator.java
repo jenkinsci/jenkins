@@ -15,7 +15,7 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import jenkins.ExtensionFilter;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;

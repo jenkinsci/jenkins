@@ -1,5 +1,6 @@
 package hudson;
 
+import jenkins.util.SystemProperties;
 import jenkins.model.Jenkins;
 import jenkins.model.Jenkins.MasterComputer;
 

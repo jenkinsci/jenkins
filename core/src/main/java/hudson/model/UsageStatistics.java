@@ -61,7 +61,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import com.jcraft.jzlib.GZIPOutputStream;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 
 /**
  * @author Kohsuke Kawaguchi

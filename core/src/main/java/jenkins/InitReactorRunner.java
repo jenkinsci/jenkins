@@ -1,6 +1,6 @@
 package jenkins;
 
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import hudson.util.DaemonThreadFactory;

@@ -26,7 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import java.io.IOException;
 import java.util.ArrayList;

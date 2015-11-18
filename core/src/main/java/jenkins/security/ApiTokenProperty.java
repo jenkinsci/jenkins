@@ -24,7 +24,7 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;

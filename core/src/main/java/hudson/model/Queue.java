@@ -123,7 +123,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import jenkins.model.queue.AsynchronousExecution;

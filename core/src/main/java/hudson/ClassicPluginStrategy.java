@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import com.google.common.collect.Lists;
 import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;

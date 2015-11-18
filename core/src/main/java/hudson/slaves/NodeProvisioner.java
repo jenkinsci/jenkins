@@ -30,7 +30,7 @@ import jenkins.model.Jenkins;
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
@@ -809,7 +809,7 @@ public class NodeProvisioner {
     private static final TimeScale TIME_SCALE = TimeScale.SEC10;
 
     private static float getFloatSystemProperty(String propName, float defaultValue) {
-        String v = SystemProperties.getProperty(propName);
+        String v = SystemProperties.getString(propName);
         if (v!=null)
             try {
                 return Float.parseFloat(v);

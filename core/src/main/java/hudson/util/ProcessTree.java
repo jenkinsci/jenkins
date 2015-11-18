@@ -59,7 +59,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.CheckForNull;
 import static com.sun.jna.Pointer.NULL;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;

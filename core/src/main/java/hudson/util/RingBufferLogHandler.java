@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.logging.Handler;

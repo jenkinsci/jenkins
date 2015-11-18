@@ -25,6 +25,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotatorFactory;
@@ -616,7 +617,7 @@ public class Functions {
             response.addCookie(c);
         }
         if (refresh) {
-            response.addHeader("Refresh", SystemProperties.getProperty("hudson.Functions.autoRefreshSeconds", "10"));
+            response.addHeader("Refresh", SystemProperties.getString("hudson.Functions.autoRefreshSeconds", "10"));
         }
     }
 
@@ -838,7 +839,7 @@ public class Functions {
      */
     public static String getFooterURL() {
         if(footerURL == null) {
-            footerURL = SystemProperties.getProperty("hudson.footerURL");
+            footerURL = SystemProperties.getString("hudson.footerURL");
             if(StringUtils.isBlank(footerURL)) {
                 footerURL = "http://jenkins-ci.org/";
             }

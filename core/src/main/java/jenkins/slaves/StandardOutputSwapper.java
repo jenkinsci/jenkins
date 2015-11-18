@@ -2,7 +2,7 @@ package jenkins.slaves;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;

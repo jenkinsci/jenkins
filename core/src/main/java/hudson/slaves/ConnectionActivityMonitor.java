@@ -31,7 +31,7 @@ import hudson.util.TimeUnit2;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import jenkins.security.SlaveToMasterCallable;
 
 import java.io.IOException;

@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
 import hudson.remoting.Channel.Mode;

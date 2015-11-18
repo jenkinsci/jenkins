@@ -29,7 +29,7 @@ import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -1273,7 +1273,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
-            return SystemProperties.getProperty("host.name");
+            return SystemProperties.getString("host.name");
         }
         private static final long serialVersionUID = 1L;
     }

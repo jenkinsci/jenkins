@@ -24,7 +24,7 @@
 package hudson.slaves;
 
 
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
 import java.util.logging.Logger;

@@ -25,7 +25,7 @@
 package hudson.model;
 
 import hudson.Functions;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.security.PermissionScope;
 import org.kohsuke.stapler.StaplerRequest;
 

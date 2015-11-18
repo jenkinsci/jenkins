@@ -29,7 +29,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;

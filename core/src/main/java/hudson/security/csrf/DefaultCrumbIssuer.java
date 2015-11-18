@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import jenkins.model.Jenkins;
 import hudson.model.ModelObject;
@@ -122,7 +122,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         private final static HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);
         
         public DescriptorImpl() {
-            super(CRUMB_SALT.get(), SystemProperties.getProperty("hudson.security.csrf.requestfield", ".crumb"));
+            super(CRUMB_SALT.get(), SystemProperties.getString("hudson.security.csrf.requestfield", ".crumb"));
             load();
         }
 

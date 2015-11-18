@@ -27,7 +27,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.views.ViewsTabBar;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;

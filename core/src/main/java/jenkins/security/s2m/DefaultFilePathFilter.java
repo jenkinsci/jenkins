@@ -25,7 +25,7 @@
 package jenkins.security.s2m;
 
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.remoting.ChannelBuilder;
 import jenkins.ReflectiveFilePathFilter;
 import jenkins.security.ChannelConfigurator;

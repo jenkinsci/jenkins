@@ -1,6 +1,6 @@
 package jenkins.util.xml;
 
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.xml.sax.InputSource;

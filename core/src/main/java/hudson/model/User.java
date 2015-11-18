@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import jenkins.util.SystemProperties;
 import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.*;

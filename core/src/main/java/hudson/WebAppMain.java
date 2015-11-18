@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
 import com.trilead.ssh2.util.IOUtils;
@@ -359,7 +360,7 @@ public class WebAppMain implements ServletContextListener {
 
         // next the system property
         for (String name : HOME_NAMES) {
-            String sysProp = SystemProperties.getProperty(name);
+            String sysProp = SystemProperties.getString(name);
             if(sysProp!=null)
                 return new FileAndDescription(new File(sysProp.trim()),"SystemProperties.getProperty(\""+name+"\")");
         }

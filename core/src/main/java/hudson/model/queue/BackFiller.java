@@ -2,7 +2,7 @@ package hudson.model.queue;
 
 import com.google.common.collect.Iterables;
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import jenkins.model.Jenkins;

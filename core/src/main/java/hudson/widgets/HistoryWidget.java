@@ -24,7 +24,7 @@
 package hudson.widgets;
 
 import hudson.Functions;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.model.ModelObject;
 import hudson.model.Run;
 

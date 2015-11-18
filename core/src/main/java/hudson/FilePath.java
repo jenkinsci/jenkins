@@ -25,6 +25,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 import hudson.Launcher.LocalLauncher;

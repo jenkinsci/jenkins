@@ -28,7 +28,7 @@ import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
 import hudson.model.Run;

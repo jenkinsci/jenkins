@@ -1,7 +1,7 @@
 package jenkins.security.s2m;
 
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.remoting.Callable;
 import hudson.remoting.ChannelBuilder;
 import jenkins.security.ChannelConfigurator;

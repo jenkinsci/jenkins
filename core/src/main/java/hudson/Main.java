@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 import com.thoughtworks.xstream.core.util.Base64Encoder;

@@ -1,7 +1,7 @@
 package jenkins.slaves;
 
 import hudson.Extension;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 

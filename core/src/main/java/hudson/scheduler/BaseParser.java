@@ -31,7 +31,7 @@ import antlr.Token;
 import antlr.TokenBuffer;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -146,7 +146,7 @@ abstract class BaseParser extends LLkParser {
     /**
      * This property hashes tokens in the cron tab tokens like @daily so that they spread evenly.
      */
-    public static boolean HASH_TOKENS = !"false".equals(SystemProperties.getProperty(BaseParser.class.getName()+".hash"));
+    public static boolean HASH_TOKENS = !"false".equals(SystemProperties.getString(BaseParser.class.getName()+".hash"));
 
     /**
      * Constant that indicates no step value.

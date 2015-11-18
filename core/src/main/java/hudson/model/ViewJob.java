@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import hudson.model.Descriptor.FormException;
 import java.io.IOException;
 import java.util.LinkedHashSet;

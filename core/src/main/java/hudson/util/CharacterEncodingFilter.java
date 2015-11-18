@@ -23,7 +23,7 @@
  */
 package hudson.util;
 
-import hudson.SystemProperties;
+import jenkins.util.SystemProperties;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

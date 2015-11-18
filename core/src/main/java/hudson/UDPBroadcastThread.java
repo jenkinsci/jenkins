@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
