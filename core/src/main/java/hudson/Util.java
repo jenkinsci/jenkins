@@ -1668,7 +1668,7 @@ public class Util {
      * Whatever the reason, this allows us to do multiple attempts before we
      * give up, thus improving build reliability.
      */
-    public static int DELETION_MAX = Math.max(1, Integer.getInteger(Util.class.getName() + ".deletionMax", 3).intValue());
+    static int DELETION_MAX = Math.max(1, Integer.getInteger(Util.class.getName() + ".deletionMax", 3).intValue());
 
     /**
      * The time (in milliseconds) that we will wait between attempts to
@@ -1679,7 +1679,7 @@ public class Util {
      * If negative, we will wait an (linearly) increasing multiple of this value
      * between attempts.
      */
-    public static int WAIT_BETWEEN_DELETION_RETRIES = Integer.getInteger(Util.class.getName() + ".deletionRetryWait", 100).intValue();
+    static int WAIT_BETWEEN_DELETION_RETRIES = Integer.getInteger(Util.class.getName() + ".deletionRetryWait", 100).intValue();
 
     /**
      * If this flag is set to true then we will request a garbage collection
@@ -1702,5 +1702,5 @@ public class Util {
      * recommended, and should not be used on the main Jenkins server
      * unless you can tolerate the performance impact.
      */
-    public static boolean GC_AFTER_FAILED_DELETE = Boolean.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
+    static boolean GC_AFTER_FAILED_DELETE = Boolean.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 }
