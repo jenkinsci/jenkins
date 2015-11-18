@@ -28,6 +28,9 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebClientUtil;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * {@link HtmlElement} helper methods.
@@ -57,5 +60,17 @@ public class HtmlElementUtil {
             WebClient webClient = element.getPage().getWebClient();
             WebClientUtil.waitForJSExec(webClient);
         }
+    }
+
+    /**
+     * Does the supplied element define the specified HTML "class" name.
+     * @param element The element to check.
+     * @param className The HTML "class" name to check for.
+     * @return {@code true} if the element defines the specified class, otherwise {@code false}.
+     */
+    public static boolean hasClassName(HtmlElement element, String className) {
+        String classAttribute = element.getAttribute("class");
+        Set<String> classes = new HashSet<>(Arrays.asList(classAttribute.split(" ")));
+        return classes.contains(className);
     }
 }
