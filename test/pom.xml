@@ -150,6 +150,12 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>embedded-rhino-debugger</artifactId>
       <version>1.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jvnet.hudson</groupId>
+          <artifactId>htmlunit-core-js</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <!-- for testing JNLP launch. -->
