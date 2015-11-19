@@ -117,6 +117,11 @@ var crumb = {
         var div = document.createElement("div");
         div.innerHTML = "<input type=hidden name='"+this.fieldName+"' value='"+this.value+"'>";
         form.appendChild(div);
+        if (form.action.indexOf("?") != -1) {
+            form.action = form.action+"&"+this.fieldName+"="+this.value;
+        } else {
+            form.action = form.action+"?"+this.fieldName+"="+this.value;
+        }
     }
 }
 
