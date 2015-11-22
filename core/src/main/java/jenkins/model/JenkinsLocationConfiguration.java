@@ -156,6 +156,9 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
      * Checks the URL in <tt>global.jelly</tt>
      */
     public FormValidation doCheckUrl(@QueryParameter String value) {
+        if (value.isEmpty()) {
+            return FormValidation.warning(Messages.Jenkins_EmptyRootUrl());
+        }
         if(value.startsWith("http://localhost"))
             return FormValidation.warning(Messages.Mailer_Localhost_Error());
         return FormValidation.ok();
