@@ -1963,7 +1963,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return null;
     }
 
-    public void setCatchedRootUrl(String url) {
+    /**
+     * Sets the last known root URL that will be used as fallback in {@link #getRootUrl()} if any other way
+     * to infere the value fail.
+     * @see #cachedRootUrl
+     */
+    public void setCachedRootUrl(String url) {
         this.cachedRootUrl = url;
     }
 
