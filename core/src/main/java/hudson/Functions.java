@@ -233,7 +233,8 @@ public class Functions {
 
         // The path starts with a "/" character but does not end with a "/" character.
         context.setVariable("rootURL", rootURL);
-        Jenkins.getActiveInstance().setCachedRootUrl(rootURL);
+        Jenkins jenkins = Jenkins.getActiveInstance();
+        jenkins.setCachedRootUrl(jenkins.getRootUrlFromRequest());
 
         /*
             load static resources from the path dedicated to a specific version.

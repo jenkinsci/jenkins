@@ -26,6 +26,8 @@ package jenkins.diagnostics;
 
 import java.io.IOException;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -39,6 +41,7 @@ import jenkins.model.JenkinsLocationConfiguration;
  * There is a default behavior (infer the URL from the request object), but innacurate in some scenarios.
  */
 @Extension
+@Restricted(NoExternalUse.class)
 public class UnsetRootUrlMonitor extends AdministrativeMonitor {
 
     @Override
