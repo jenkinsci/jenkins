@@ -150,6 +150,18 @@ THE SOFTWARE.
       <classifier>core-assets</classifier>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.ui</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>1.2-SNAPSHOT</version>
+      <classifier>core-assets</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.ui</groupId>
+      <artifactId>handlebars</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <classifier>core-assets</classifier>
+    </dependency>
+    <dependency>
       <!--
         We bundle slf4j binding since we got some components (sshd for example)
         that uses slf4j.
@@ -266,31 +278,6 @@ THE SOFTWARE.
                   <artifactId>winstone</artifactId>
                   <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
                   <destFileName>winstone.jar</destFileName>
-                </artifactItem>
-                <!-- bundled plugins -->
-                <artifactItem>
-                  <groupId>org.jenkins-ci.ui</groupId>
-                  <artifactId>jquery-detached</artifactId>
-                  <version>1.1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.ui</groupId>
-                  <artifactId>bootstrap</artifactId>
-                  <version>1.0</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.ui</groupId>
-                  <artifactId>momentjs</artifactId>
-                  <version>1.0</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.ui</groupId>
-                  <artifactId>handlebars</artifactId>
-                  <version>1.0</version>
-                  <type>hpi</type>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins</outputDirectory>
