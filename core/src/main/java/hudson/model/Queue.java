@@ -64,6 +64,8 @@ import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
+import hudson.security.AccessControlled;
+import hudson.security.Permission;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -782,23 +784,23 @@ public class Queue extends ResourceController implements Saveable {
         List<Item> r = new ArrayList<Item>();
 
         for(WaitingItem p : s.waitingList) {
-            r = filterItemListBasedOnPermissions(r, p);
+            r = checkPermissionsAndAddToList(r, p);
         }
         for (BlockedItem p : s.blockedProjects){
-            r = filterItemListBasedOnPermissions(r, p);
+            r = checkPermissionsAndAddToList(r, p);
         }
         for (BuildableItem p : reverse(s.buildables)) {
-            r = filterItemListBasedOnPermissions(r, p);
+            r = checkPermissionsAndAddToList(r, p);
         }
         for (BuildableItem p : reverse(s.pendings)) {
-            r= filterItemListBasedOnPermissions(r, p);
+            r= checkPermissionsAndAddToList(r, p);
         }
         Item[] items = new Item[r.size()];
         r.toArray(items);
         return items;
     }
 
-    private List<Item> filterItemListBasedOnPermissions(List<Item> r, Item t) {
+    private List<Item> checkPermissionsAndAddToList(List<Item> r, Item t) {
         if (t.task instanceof hudson.security.AccessControlled) {
             if (((hudson.security.AccessControlled)t.task).hasPermission(hudson.model.Item.READ)
                     || ((hudson.security.AccessControlled) t.task).hasPermission(hudson.security.Permission.READ)) {
@@ -1729,6 +1731,10 @@ public class Queue extends ResourceController implements Saveable {
      * compatibility with future changes to this interface.
      *
      * <p>
+     * Plugins are encouraged to implement {@link AccessControlled} otherwise
+     * the tasks will be hidden from display in the queue.
+     *
+     * <p>
      * For historical reasons, {@link Task} object by itself
      * also represents the "primary" sub-task (and as implied by this
      * design, a {@link Task} must have at least one sub-task.)
@@ -1780,6 +1786,9 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Checks the permission to see if the current user can abort this executable.
          * Returns normally from this method if it's OK.
+         * <p>
+         * NOTE: If you have implemented {@link AccessControlled} this should just be
+         * {@code checkPermission(hudson.model.Item.CANCEL);}
          *
          * @throws AccessDeniedException if the permission is not granted.
          */
@@ -1789,6 +1798,12 @@ public class Queue extends ResourceController implements Saveable {
          * Works just like {@link #checkAbortPermission()} except it indicates the status by a return value,
          * instead of exception.
          * Also used by default for {@link hudson.model.Queue.Item#hasCancelPermission}.
+         * <p>
+         * NOTE: If you have implemented {@link AccessControlled} this should just be
+         * {@code return hasPermission(hudson.model.Item.CANCEL);}
+         *
+         * @return false
+         *      if the user doesn't have the permission.
          */
         boolean hasAbortPermission();
 
