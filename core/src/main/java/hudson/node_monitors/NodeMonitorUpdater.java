@@ -10,7 +10,6 @@ import jenkins.model.Jenkins;
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import jenkins.util.Timer;
 

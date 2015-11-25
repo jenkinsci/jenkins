@@ -24,7 +24,6 @@
 package hudson;
 
 import jenkins.model.Jenkins;
-import hudson.tasks.UserNameResolver;
 import hudson.util.CopyOnWriteList;
 
 import java.util.AbstractList;

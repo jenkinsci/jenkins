@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.638-SNAPSHOT</version>
+    <version>1.639-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-test-harness</artifactId>
@@ -150,6 +150,12 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>embedded-rhino-debugger</artifactId>
       <version>1.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jvnet.hudson</groupId>
+          <artifactId>htmlunit-core-js</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <!-- for testing JNLP launch. -->
@@ -181,6 +187,18 @@ THE SOFTWARE.
       <groupId>org.codehaus.geb</groupId>
       <artifactId>geb-implicit-assertions</artifactId>
       <version>0.7.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <version>3.19.0-GA</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

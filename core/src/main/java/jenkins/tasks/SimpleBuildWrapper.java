@@ -33,7 +33,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Computer;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;

@@ -24,12 +24,9 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.cli.handlers.ViewOptionHandler;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
-import hudson.model.ViewGroup;
-import hudson.model.View;
 
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;

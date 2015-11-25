@@ -1,9 +1,11 @@
 package hudson.cli;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import hudson.remoting.FastPipedInputStream;
 import hudson.remoting.FastPipedOutputStream;
+import org.codehaus.groovy.runtime.Security218;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -69,6 +71,17 @@ public class ConnectionTest {
             t1.interrupt();
             t2.interrupt();
             throw new Error("thread is still alive");
+        }
+    }
+
+    @Test
+    public void testSecurity218() throws Exception {
+        c1.writeObject(new Security218());
+        try {
+            c2.readObject();
+            fail();
+        } catch (SecurityException e) {
+            assertTrue(e.getMessage().contains(Security218.class.getName()));
         }
     }
 }

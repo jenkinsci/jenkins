@@ -1,8 +1,6 @@
 package hudson;
 
-import jenkins.model.Jenkins;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**

@@ -468,7 +468,7 @@ public class SlaveComputer extends Computer {
 
     /**
      * Sets up the connection through an existing channel.
-     *
+     * @param channel the channel to use; <strong>warning:</strong> callers are expected to have called {@link ChannelConfigurator} already
      * @since 1.444
      */
     public void setChannel(Channel channel, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {

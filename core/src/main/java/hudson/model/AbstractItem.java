@@ -30,7 +30,6 @@ import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;

@@ -64,7 +64,8 @@ import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
-import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.Permission;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -113,6 +114,7 @@ import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.jenkinsci.bytecode.AdaptField;
 import org.jenkinsci.remoting.RoleChecker;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.export.Exported;
@@ -779,18 +781,69 @@ public class Queue extends ResourceController implements Saveable {
     @Exported(inline=true)
     public Item[] getItems() {
         Snapshot s = this.snapshot;
-        Item[] r = new Item[s.waitingList.size() + s.blockedProjects.size() + s.buildables.size() +
-                s.pendings.size()];
-        s.waitingList.toArray(r);
-        int idx = s.waitingList.size();
-        for (BlockedItem p : s.blockedProjects) {
-            r[idx++] = p;
+        List<Item> r = new ArrayList<Item>();
+
+        for(WaitingItem p : s.waitingList) {
+            r = checkPermissionsAndAddToList(r, p);
+        }
+        for (BlockedItem p : s.blockedProjects){
+            r = checkPermissionsAndAddToList(r, p);
         }
         for (BuildableItem p : reverse(s.buildables)) {
-            r[idx++] = p;
+            r = checkPermissionsAndAddToList(r, p);
         }
         for (BuildableItem p : reverse(s.pendings)) {
-            r[idx++] = p;
+            r= checkPermissionsAndAddToList(r, p);
+        }
+        Item[] items = new Item[r.size()];
+        r.toArray(items);
+        return items;
+    }
+
+    private List<Item> checkPermissionsAndAddToList(List<Item> r, Item t) {
+        if (t.task instanceof hudson.security.AccessControlled) {
+            if (((hudson.security.AccessControlled)t.task).hasPermission(hudson.model.Item.READ)
+                    || ((hudson.security.AccessControlled) t.task).hasPermission(hudson.security.Permission.READ)) {
+                r.add(t);
+            }
+        }
+        return r;
+    }
+
+    /**
+     * Returns an array of Item for which it is only visible the name of the task.
+     *
+     * Generally speaking the array is sorted such that the items that are most likely built sooner are
+     * at the end.
+     */
+    @Restricted(NoExternalUse.class)
+    @Exported(inline=true)
+    public StubItem[] getDiscoverableItems() {
+        Snapshot s = this.snapshot;
+        List<StubItem> r = new ArrayList<StubItem>();
+
+        for(WaitingItem p : s.waitingList) {
+            r = filterDiscoverableItemListBasedOnPermissions(r, p);
+        }
+        for (BlockedItem p : s.blockedProjects){
+            r = filterDiscoverableItemListBasedOnPermissions(r, p);
+        }
+        for (BuildableItem p : reverse(s.buildables)) {
+            r = filterDiscoverableItemListBasedOnPermissions(r, p);
+        }
+        for (BuildableItem p : reverse(s.pendings)) {
+            r= filterDiscoverableItemListBasedOnPermissions(r, p);
+        }
+        StubItem[] items = new StubItem[r.size()];
+        r.toArray(items);
+        return items;
+    }
+
+    private List<StubItem> filterDiscoverableItemListBasedOnPermissions(List<StubItem> r, Item t) {
+        if (t.task instanceof hudson.model.Item) {
+            if (!((hudson.model.Item)t.task).hasPermission(hudson.model.Item.READ) && ((hudson.model.Item)t.task).hasPermission(hudson.model.Item.DISCOVER)) {
+                r.add(new StubItem(new StubTask(t.task)));
+            }
         }
         return r;
     }
@@ -1678,6 +1731,10 @@ public class Queue extends ResourceController implements Saveable {
      * compatibility with future changes to this interface.
      *
      * <p>
+     * Plugins are encouraged to implement {@link AccessControlled} otherwise
+     * the tasks will be hidden from display in the queue.
+     *
+     * <p>
      * For historical reasons, {@link Task} object by itself
      * also represents the "primary" sub-task (and as implied by this
      * design, a {@link Task} must have at least one sub-task.)
@@ -1729,6 +1786,9 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Checks the permission to see if the current user can abort this executable.
          * Returns normally from this method if it's OK.
+         * <p>
+         * NOTE: If you have implemented {@link AccessControlled} this should just be
+         * {@code checkPermission(hudson.model.Item.CANCEL);}
          *
          * @throws AccessDeniedException if the permission is not granted.
          */
@@ -1738,6 +1798,12 @@ public class Queue extends ResourceController implements Saveable {
          * Works just like {@link #checkAbortPermission()} except it indicates the status by a return value,
          * instead of exception.
          * Also used by default for {@link hudson.model.Queue.Item#hasCancelPermission}.
+         * <p>
+         * NOTE: If you have implemented {@link AccessControlled} this should just be
+         * {@code return hasPermission(hudson.model.Item.CANCEL);}
+         *
+         * @return false
+         *      if the user doesn't have the permission.
          */
         boolean hasAbortPermission();
 
@@ -2160,6 +2226,42 @@ public class Queue extends ResourceController implements Saveable {
 
     }
 
+    /**
+     * A Stub class for {@link Task} which exposes only the name of the Task to be displayed when the user
+     * has DISCOVERY permissions only.
+     */
+    @Restricted(NoExternalUse.class)
+    @ExportedBean(defaultVisibility = 999)
+    public static class StubTask {
+
+        private String name;
+
+        public StubTask(@Nonnull Queue.Task base) {
+            this.name = base.getName();
+        }
+
+        @Exported
+        public String getName() {
+            return name;
+        }
+    }
+
+    /**
+     * A Stub class for {@link Item} which exposes only the name of the Task to be displayed when the user
+     * has DISCOVERY permissions only.
+     */
+    @Restricted(NoExternalUse.class)
+    @ExportedBean(defaultVisibility = 999)
+    public class StubItem {
+
+        @Exported public StubTask task;
+
+        public StubItem(StubTask task) {
+            this.task = task;
+        }
+
+    }
+    
     /**
      * An optional interface for actions on Queue.Item.
      * Lets the action cooperate in queue management.

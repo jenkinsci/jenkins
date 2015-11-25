@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.TcpSlaveAgentListener;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.net.Socket;

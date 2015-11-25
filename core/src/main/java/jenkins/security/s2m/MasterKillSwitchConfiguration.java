@@ -1,13 +1,14 @@
 package jenkins.security.s2m;
 
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import javax.inject.Inject;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
-
-import javax.inject.Inject;
 
 /**
  * Exposes {@link AdminWhitelistRule#masterKillSwitch} to the admin.
@@ -47,9 +48,45 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
      * Unless this option is relevant, we don't let users choose this.
      */
     public boolean isRelevant() {
-        return jenkins.getComputers().length>1  // if there's no slave, there's no point
-            && jenkins.isUseSecurity()          // if security is off, likewise this is pointless
+        if (rule.getMasterKillSwitch()) {
+            return true; // always relevant if it is enabled.
+        }
+        return jenkins.isUseSecurity()            // if security is off, there's no point
+            && (jenkins.getComputers().length>1   // if there's no slave,
+                || !jenkins.clouds.isEmpty()      // and no clouds, likewise this is pointless
+                || Relevance.fromExtension()      // unless a plugin thinks otherwise
+            )
         ;
+    }
+
+    /**
+     * Some plugins may cause the {@link MasterKillSwitchConfiguration} to be relevant for additional reasons,
+     * by implementing this extension point they can indicate such additional conditions.
+     *
+     * @since FIXME
+     */
+    public static abstract class Relevance implements ExtensionPoint {
+
+        /**
+         * Is the {@link MasterKillSwitchConfiguration} relevant.
+         *
+         * @return {@code true} if the {@link MasterKillSwitchConfiguration} relevant.
+         */
+        public abstract boolean isRelevant();
+
+        /**
+         * Is the {@link MasterKillSwitchConfiguration} relevant for any of the {@link Relevance} extensions.
+         *
+         * @return {@code true} if and only if {@link Relevance#isRelevant()} for at least one extension.
+         */
+        public static boolean fromExtension() {
+            for (Relevance r : ExtensionList.lookup(Relevance.class)) {
+                if (r.isRelevant()) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
 

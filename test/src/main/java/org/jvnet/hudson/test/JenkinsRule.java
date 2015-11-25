@@ -37,6 +37,7 @@ import com.gargoylesoftware.htmlunit.WebResponseListener;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
@@ -126,7 +127,6 @@ import java.lang.management.ThreadInfo;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
@@ -1342,9 +1342,12 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      */
     public HtmlPage submit(HtmlForm form, String name) throws Exception {
         for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
-            HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
-            if(e instanceof HtmlButton && p.getAttribute("name").equals(name)) {
-                return (HtmlPage)HtmlFormUtil.submit(form, (HtmlButton) e);
+            HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();                        
+            if (p.getAttribute("name").equals(name) && HtmlElementUtil.hasClassName(p, "yui-submit-button")) {
+                // For YUI handled submit buttons, just do a click.
+                return (HtmlPage) HtmlElementUtil.click(e);
+            } else if (e.getAttribute("name").equals(name)) {
+                return (HtmlPage) HtmlFormUtil.submit(form, e);
             }
         }
         throw new AssertionError("No such submit button with the name "+name);

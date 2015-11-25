@@ -24,7 +24,6 @@
 package hudson.lifecycle;
 
 import com.sun.akuma.JavaVMArguments;
-import com.sun.akuma.Daemon;
 import com.sun.jna.Native;
 import com.sun.jna.StringArray;
 

@@ -24,9 +24,6 @@
 package hudson.views;
 
 import hudson.Extension;
-import hudson.markup.MarkupFormatter;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.SecurityRealm;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;

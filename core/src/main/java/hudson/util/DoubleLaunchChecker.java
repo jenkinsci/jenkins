@@ -28,7 +28,6 @@ import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 

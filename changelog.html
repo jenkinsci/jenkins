@@ -20,7 +20,7 @@ Some tips:
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <title>Changelog</title>
-  <link rel="stylesheet" TYPE="text/css" href="changelog.css">
+  <link rel="stylesheet" TYPE="text/css" href="/changelog.css">
 <!--[if IE]>
 <style type="text/css">div.rate-offset { bottom: 0.2em !important; left: 5em !important; }</style>
 <![endif]-->
@@ -29,8 +29,8 @@ Some tips:
 <body>
 <div align="right">Legend:
     <span class="iconlegend">
-        <img src="images/rfe2.gif" alt="major RFE">major enhancement <img src="images/rfe.gif" alt="RFE">enhancement
-        <img src="images/bug2.gif" alt="major bug">major bug fix     <img src="images/bug.gif" alt="bug">bug fix
+        <img src="/images/rfe2.gif" alt="major RFE">major enhancement <img src="/images/rfe.gif" alt="RFE">enhancement
+        <img src="/images/bug2.gif" alt="major bug">major bug fix     <img src="/images/bug.gif" alt="bug">bug fix
     </span><span style="visibility:hidden">xxxxx</span>
 </div>
 
@@ -55,9 +55,23 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="major bug">
+    “Discard old builds” setting would be lost if resaving job configuration as of 1.637 without rechecking the box.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31518">issue 31518</a>)
+  <li class="major bug">
+    “Form too large” errors from Jetty when submitting massive forms.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20327">issue 20327</a>)
+  <li class="bug">
+    Multiple workspace browser features broken on Windows masters since 1.634.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31015">issue 31015</a>)
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v1.638>What's new in 1.638</a> (2015/11/11)</h3>
+<ul class=image>
+  <li class="major bug">
+    <strong>Important security fixes</strong>
+    (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2015-11-11">security advisory</a>)
+</ul>
 <h3><a name=v1.637>What's new in 1.637</a> (2015/11/08)</h3>
 <ul class=image>
   <li class="bug">
@@ -1783,7 +1797,7 @@ Upcoming changes</a>
 </ul>
 
 <p>
-<b>Older changelogs can be found in a <a href="changelog-old.html">separate file</a></b>
+<b>Older changelogs can be found in a <a href="/changelog-old.html">separate file</a></b>
 
 </body>
 </html>

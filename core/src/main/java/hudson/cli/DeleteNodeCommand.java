@@ -24,7 +24,6 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.Computer;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;

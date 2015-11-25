@@ -26,7 +26,6 @@ package hudson.security;
 
 import hudson.ExtensionPoint;
 import hudson.model.User;
-import jenkins.model.Jenkins;
 
 /**
  * Service which can add permissions for a given user to the configured authorization strategy.

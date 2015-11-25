@@ -29,14 +29,17 @@ import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
-import hudson.util.IOUtils;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
+import jenkins.util.xml.XMLUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -45,6 +48,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.xml.sax.SAXException;
 
 /**
  * Defines a bunch of static methods to be used as a "mix-in" for {@link ItemGroup}
@@ -142,10 +146,14 @@ public abstract class ItemGroupMixIn {
         TopLevelItem result;
 
         String requestContentType = req.getContentType();
-        if(requestContentType==null)
+        String mode = req.getParameter("mode");
+        if (requestContentType == null
+                && !(mode != null && mode.equals("copy")))
             throw new Failure("No Content-Type header set");
 
-        boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
+        boolean isXmlSubmission = requestContentType != null
+            && (requestContentType.startsWith("application/xml")
+                    || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
         if(name==null)
@@ -158,7 +166,6 @@ public abstract class ItemGroupMixIn {
                 throw new Failure(Messages.Hudson_JobAlreadyExists(name));
         }
 
-        String mode = req.getParameter("mode");
         if(mode!=null && mode.equals("copy")) {
             String from = req.getParameter("from");
 
@@ -256,7 +263,7 @@ public abstract class ItemGroupMixIn {
         dir.mkdirs();
         boolean success = false;
         try {
-            IOUtils.copy(xml,configXml);
+            XMLUtils.safeTransform((Source)new StreamSource(xml), new StreamResult(configXml));
 
             // load it
             TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem,IOException>() {
@@ -274,6 +281,12 @@ public abstract class ItemGroupMixIn {
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
             return result;
+        } catch (TransformerException e) {
+            success = false;
+            throw new IOException("Failed to persist config.xml", e);
+        } catch (SAXException e) {
+            success = false;
+            throw new IOException("Failed to persist config.xml", e);
         } catch (IOException e) {
             success = false;
             throw e;
