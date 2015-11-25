@@ -800,8 +800,9 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private List<Item> filterItemListBasedOnPermissions(List<Item> r, Item t) {
-        if (t.task instanceof hudson.model.Item) {
-            if (((hudson.model.Item)t.task).hasPermission(hudson.model.Item.READ)) {
+        if (t.task instanceof hudson.security.AccessControlled) {
+            if (((hudson.security.AccessControlled)t.task).hasPermission(hudson.model.Item.READ)
+                    || ((hudson.security.AccessControlled) t.task).hasPermission(hudson.security.Permission.READ)) {
                 r.add(t);
             }
         }

@@ -48,7 +48,7 @@ public class DeleteNodeCommandTest {
 
     @Before public void setUp() {
 
-        command = new CLICommandInvoker(j, new DeleteNodeCommand());
+        command = new CLICommandInvoker(j, "delete-node");
     }
 
     @Test public void deleteNodeShouldFailWithoutNodeDeletePermission() throws Exception {
