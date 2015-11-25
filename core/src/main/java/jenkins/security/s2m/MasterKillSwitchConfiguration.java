@@ -1,8 +1,6 @@
 package jenkins.security.s2m;
 
 import hudson.Extension;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
 import javax.inject.Inject;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -54,39 +52,8 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
         return jenkins.isUseSecurity()            // if security is off, there's no point
             && (jenkins.getComputers().length>1   // if there's no slave,
                 || !jenkins.clouds.isEmpty()      // and no clouds, likewise this is pointless
-                || Relevance.fromExtension()      // unless a plugin thinks otherwise
             )
         ;
-    }
-
-    /**
-     * Some plugins may cause the {@link MasterKillSwitchConfiguration} to be relevant for additional reasons,
-     * by implementing this extension point they can indicate such additional conditions.
-     *
-     * @since FIXME
-     */
-    public static abstract class Relevance implements ExtensionPoint {
-
-        /**
-         * Is the {@link MasterKillSwitchConfiguration} relevant.
-         *
-         * @return {@code true} if the {@link MasterKillSwitchConfiguration} relevant.
-         */
-        public abstract boolean isRelevant();
-
-        /**
-         * Is the {@link MasterKillSwitchConfiguration} relevant for any of the {@link Relevance} extensions.
-         *
-         * @return {@code true} if and only if {@link Relevance#isRelevant()} for at least one extension.
-         */
-        public static boolean fromExtension() {
-            for (Relevance r : ExtensionList.lookup(Relevance.class)) {
-                if (r.isRelevant()) {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 }
 
