@@ -48,6 +48,9 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
      * Unless this option is relevant, we don't let users choose this.
      */
     public boolean isRelevant() {
+        if (!jenkins.hasPermission(Jenkins.RUN_SCRIPTS))) {
+            return false;
+        }
         if (rule.getMasterKillSwitch()) {
             return true; // always relevant if it is enabled.
         }
