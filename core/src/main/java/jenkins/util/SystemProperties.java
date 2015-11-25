@@ -33,14 +33,24 @@ import javax.servlet.ServletContext;
  * the <code>ServletContext</code>, so properties like <code>hudson.DNSMultiCast.disabled</code>
  * can be set in <code>context.xml</code> and the app server's boot script does not
  * have to be changed.
- * 
- * <p>While it looks like it on first glance, this cannot be mapped to <code>EnvVars.java</code>
- * because <code>EnvVars.java</code> is only for build variables, not Jenkins itself variables. 
- * 
+ *
  * <p>This should be used to obtain hudson/jenkins "app"-level parameters
  * (e.g. <code>hudson.DNSMultiCast.disabled</code>), but not for system parameters
  * (e.g. <code>os.name</code>).
- * 
+ *
+ * <p>If you run multiple instances of Jenkins in the same virtual machine and wish
+ * to obtain properties from <code>context.xml</code>, make sure these Jenkins instances use
+ * different ClassLoaders. Tomcat, for example, does this automatically. If you do
+ * not use different ClassLoaders, the values of properties specified in
+ * <code>context.xml</code> is undefined.
+ *
+ * <p>Property access is logged on <code>Level.CONFIG</code>. Note that some properties
+ * may be accessed by Jenkins before logging is configured properly, so early access to
+ * some properties may not be logged.
+ *
+ * <p>While it looks like it on first glance, this cannot be mapped to <code>EnvVars.java</code>
+ * because <code>EnvVars.java</code> is only for build variables, not Jenkins itself variables.
+ *
  * @author Johannes Ernst
  * @since 1.639
  */
@@ -79,19 +89,19 @@ public class SystemProperties {
     public static String getString(String key) {
         String value = System.getProperty(key); // keep passing on any exceptions
         if (value != null) {
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, "Property (system): {0} => {1}", new Object[] {key, value});
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
             }
         } else if (theContext != null) {
             value = theContext.getInitParameter(key);
             if (value != null) {
-                if (LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO, "Property (context): {0} => {1}", new Object[] {key, value});
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[] {key, value});
                 }
             }
         } else {
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, "Property (not found): {0} => {1}", new Object[] {key, value});
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.CONFIG, "Property (not found): {0} => {1}", new Object[] {key, value});
             }
         }
         return value;
@@ -117,21 +127,21 @@ public class SystemProperties {
     public static String getString(String key, String def) {
         String value = System.getProperty(key); // keep passing on any exceptions
         if (value != null) {
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, "Property (system): {0} => {1}", new Object[] {key, value});
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
             }
         } else if (theContext != null) {
             value = theContext.getInitParameter(key);
             if (value != null) {
-                if(LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO, "Property (context): {0} => {1}", new Object[] {key, value});
+                if(LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[] {key, value});
                 }
             }
         }
         if (value == null) {
             value = def;
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, "Property (default): {0} => {1}", new Object[] {key, value});
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.CONFIG, "Property (default): {0} => {1}", new Object[] {key, value});
             }
         }
         return value;        
