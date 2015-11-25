@@ -101,7 +101,7 @@ public class AbstractProjectTest extends HudsonTestCase {
         // make sure that the action link is protected
         com.gargoylesoftware.htmlunit.WebClient wc = createWebClient();
         try {
-            wc.getPage(new WebRequestSettings(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
+            wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
             fail("Expected HTTP status code 403")
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());

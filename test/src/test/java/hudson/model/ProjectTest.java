@@ -24,7 +24,7 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -609,7 +609,7 @@ public class ProjectTest {
         project.getBuildersList().add(new Shell("echo hello > change.log"));
         j.buildAndAssertSuccess(project);
         JenkinsRule.WebClient wc = j.createWebClient().login(user.getId(), "password");
-        WebRequestSettings request = new WebRequestSettings(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
