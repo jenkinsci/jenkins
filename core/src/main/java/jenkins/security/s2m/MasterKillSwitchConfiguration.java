@@ -46,14 +46,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
      * Unless this option is relevant, we don't let users choose this.
      */
     public boolean isRelevant() {
-        if (rule.getMasterKillSwitch()) {
-            return true; // always relevant if it is enabled.
-        }
-        return jenkins.isUseSecurity()            // if security is off, there's no point
-            && (jenkins.getComputers().length>1   // if there's no slave,
-                || !jenkins.clouds.isEmpty()      // and no clouds, likewise this is pointless
-            )
-        ;
+        return jenkins.hasPermission(Jenkins.RUN_SCRIPTS) && jenkins.isUseSecurity();
     }
 }
 
