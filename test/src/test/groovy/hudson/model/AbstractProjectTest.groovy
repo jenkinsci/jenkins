@@ -99,7 +99,13 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert b.getWorkspace().exists(): "Workspace should exist by now";
 
         // make sure that the action link is protected
-        createWebClient().assertFails(project.getUrl() + "doWipeOutWorkspace", HttpURLConnection.HTTP_FORBIDDEN);
+        com.gargoylesoftware.htmlunit.WebClient wc = createWebClient();
+        try {
+            wc.getPage(new WebRequestSettings(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
+            fail("Expected HTTP status code 403")
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
+        }
     }
 
     /**

@@ -810,6 +810,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Bare-minimum configuration mechanism to change the update center.
      */
+    @RequirePOST
     public HttpResponse doSiteConfigure(@QueryParameter String site) throws IOException {
         Jenkins hudson = Jenkins.getInstance();
         hudson.checkPermission(CONFIGURE_UPDATECENTER);
@@ -825,6 +826,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
 
+    @RequirePOST
     public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
         Jenkins jenkins = Jenkins.getInstance();
         jenkins.checkPermission(CONFIGURE_UPDATECENTER);
@@ -843,6 +845,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Uploads a plugin.
      */
+    @RequirePOST
     public HttpResponse doUploadPlugin(StaplerRequest req) throws IOException, ServletException {
         try {
             Jenkins.getInstance().checkPermission(UPLOAD_PLUGINS);

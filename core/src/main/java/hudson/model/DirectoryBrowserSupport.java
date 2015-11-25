@@ -47,6 +47,8 @@ import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -309,6 +311,17 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             // pseudo file name to let the Stapler set text/plain
             rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
         } else {
+            String csp = System.getProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
+            if (csp == null) {
+                // default value unless overridden with system property
+                csp = DEFAULT_CSP_VALUE;
+            }
+            if (!csp.trim().equals("")) {
+                // allow users to prevent sending this header by setting empty system property
+                for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                    rsp.setHeader(header, csp);
+                }
+            }
             rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName() );
         }
     }
@@ -576,4 +589,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
 
     private static final Logger LOGGER = Logger.getLogger(DirectoryBrowserSupport.class.getName());
+
+    @Restricted(NoExternalUse.class)
+    public static final String DEFAULT_CSP_VALUE = "sandbox; default-src 'none'; img-src 'self'; style-src 'self';";
 }
