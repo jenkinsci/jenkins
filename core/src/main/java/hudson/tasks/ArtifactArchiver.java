@@ -89,6 +89,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      * Archive only if build is successful, skip archiving on failed builds.
      */
     private boolean onlyIfSuccessful;
+    private boolean onSuccessful;
+    private boolean onFailed;
+    private boolean onAborted;
 
     private boolean fingerprint;
 
@@ -169,8 +172,34 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         return onlyIfSuccessful;
     }
 
+    public boolean isOnSuccessful() {
+        return onSuccessful;
+    }
+
+    public boolean isOnFailed() {
+        return onFailed;
+    }
+
+    public boolean isOnAborted() {
+        return onAborted;
+    }
+
     @DataBoundSetter public final void setOnlyIfSuccessful(boolean onlyIfSuccessful) {
-        this.onlyIfSuccessful = onlyIfSuccessful;
+        this.onSuccessful = onlyIfSuccessful;
+        this.onFailed = false;
+        this.onAborted = false;
+    }
+
+    @DataBoundSetter public final void setOnSuccessful(boolean onSuccessful) {
+        this.onSuccessful = onSuccessful;
+    }
+
+    @DataBoundSetter public final void setOnFailed(boolean onFailed) {
+        this.onFailed = onFailed;
+    }
+
+    @DataBoundSetter public final void setOnAborted(boolean onAborted) {
+        this.onAborted = onAborted;
     }
 
     public boolean isFingerprint() {
@@ -227,42 +256,46 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             return;
         }
 
-        listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
-        try {
-            String artifacts = build.getEnvironment(listener).expand(this.artifacts);
-
-            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
-            if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
-                if (fingerprint) {
-                    new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
-                }
-            } else {
-                Result result = build.getResult();
-                if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
-                    // If the build failed, don't complain that there was no matching artifact.
-                    // The build probably didn't even get to the point where it produces artifacts. 
-                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
-                    String msg = null;
-                    try {
-                    	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
-                    } catch (Exception e) {
-                    	listenerWarnOrError(listener, e.getMessage());
-                    }
-                    if(msg!=null)
-                        listenerWarnOrError(listener, msg);
-                }
-                if (!allowEmptyArchive) {
-                	build.setResult(Result.FAILURE);
-                }
-                return;
-            }
-        } catch (IOException e) {
-            Util.displayIOException(e,listener);
-            e.printStackTrace(listener.error(
-                    Messages.ArtifactArchiver_FailedToArchive(artifacts)));
-            build.setResult(Result.FAILURE);
-            return;
+        if (onSuccessful && build.getResult() == Result.SUCCESS ||
+        	onFailed && build.getResult() == Result.FAILURE ||
+        	onAborted && build.getResult() == Result.ABORTED) {
+       
+       		listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
+       		try {
+       			String artifacts = build.getEnvironment(listener).expand(this.artifacts);
+        		Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
+        		if (!files.isEmpty()) {
+        			build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
+        			if (fingerprint) {
+        				new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
+        			}
+        		} else {
+        			Result result = build.getResult();
+        			if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
+        				// If the build failed, don't complain that there was no matching artifact.
+        				// The build probably didn't even get to the point where it produces artifacts. 
+        				listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
+        				String msg = null;
+        				try {
+        					msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
+        				} catch (Exception e) {
+        					listenerWarnOrError(listener, e.getMessage());
+        				}
+        				if(msg!=null)
+        					listenerWarnOrError(listener, msg);
+        			}
+        			if (!allowEmptyArchive) {
+        				build.setResult(Result.FAILURE);
+        			}
+        			return;
+        		}
+        	} catch (IOException e) {
+        		Util.displayIOException(e,listener);
+        		e.printStackTrace(listener.error(
+        				Messages.ArtifactArchiver_FailedToArchive(artifacts)));
+        		build.setResult(Result.FAILURE);
+        		return;
+        	}
         }
     }
 

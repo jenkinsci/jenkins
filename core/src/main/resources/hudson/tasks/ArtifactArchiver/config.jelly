@@ -34,9 +34,6 @@ THE SOFTWARE.
     <f:entry field="allowEmptyArchive" >
       <f:checkbox title="${%allowEmptyArchive}"/>
     </f:entry>
-    <f:entry field="onlyIfSuccessful" >
-      <f:checkbox title="${%onlyIfSuccessful}"/>
-    </f:entry>
     <f:entry field="fingerprint">
       <f:checkbox title="${%Fingerprint all archived artifacts}"/>
     </f:entry>
@@ -45,6 +42,15 @@ THE SOFTWARE.
     </f:entry>
     <f:entry field="caseSensitive" >
       <f:checkbox title="${%caseSensitive}" default="true"/>
+    </f:entry>
+    <f:entry title="Archive artifacts when" field="onSuccessful" >
+      <f:checkbox title="${%onSuccessful}"/>
+    </f:entry>
+    <f:entry field="onFailed" >
+      <f:checkbox title="${%onFailed}"/>
+    </f:entry>
+    <f:entry field="onAborted" >
+      <f:checkbox title="${%onAborted}"/>
     </f:entry>
   </f:advanced>
 </j:jelly>
