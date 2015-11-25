@@ -169,6 +169,36 @@ public class DirectoryBrowserSupportTest {
         zipfile.delete();
     }
 
+    @Issue("SECURITY-95")
+    @Test
+    public void contentSecurityPolicy() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("test.html", "<html><body><h1>Hello world!</h1></body></html>"));
+        p.getPublishersList().add(new ArtifactArchiver("*", "", true));
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+            assertEquals("Header set: " + header, page.getWebResponse().getResponseHeaderValue(header), DirectoryBrowserSupport.DEFAULT_CSP_VALUE);
+        }
+
+        String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
+        String initialValue = System.getProperty(propName);
+        try {
+            System.setProperty(propName, "");
+            page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                assertFalse("Header not set: " + header, page.getWebResponse().getResponseHeaders().contains(header));
+            }
+        } finally {
+            if (initialValue == null) {
+                System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
+            } else {
+                System.setProperty(DirectoryBrowserSupport.class.getName() + ".CSP", initialValue);
+            }
+        }
+    }
+
     private File download(UnexpectedPage page) throws IOException {
 
         File file = File.createTempFile("DirectoryBrowserSupport", "zipDownload");
