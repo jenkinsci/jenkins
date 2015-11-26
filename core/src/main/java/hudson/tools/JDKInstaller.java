@@ -512,7 +512,7 @@ public class JDKInstaller extends ToolInstaller {
 
                     m = post;
                 } else {
-                    log.getLogger().println("Downloading " + m.getResponseContentLength() + "bytes");
+                    log.getLogger().println("Downloading " + m.getResponseContentLength() + " bytes");
 
                     // download to a temporary file and rename it in to handle concurrency and failure correctly,
                     File tmp = new File(cache.getPath()+".tmp");
