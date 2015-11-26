@@ -1968,7 +1968,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * to infere the value fail.
      * @see #cachedRootUrl
      */
-    public void setCachedRootUrl(String url) {
+    @Restricted(NoExternalUse.class)
+    public void setCachedRootUrl(@Nonnull String url) {
         this.cachedRootUrl = url;
     }
 

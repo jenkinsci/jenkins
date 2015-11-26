@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Antonio Muñiz.
+ * Copyright 2015 Cloudbees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,8 @@ import java.io.IOException;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
@@ -49,12 +48,11 @@ public class UnsetRootUrlMonitor extends AdministrativeMonitor {
         return JenkinsLocationConfiguration.get().getUrl() == null;
     }
 
-    public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        if(no != null) { // Dismiss
-            disable(true);
-            return HttpResponses.redirectViaContextPath("/manage");
+    public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if(req.hasParameter("no")) { // Dismiss
+            doDisable(req, rsp);
         } else { // Configure
-            return HttpResponses.redirectViaContextPath("/configure");
+            rsp.sendRedirect(req.getContextPath() + "/configure");
         }
     }
 
