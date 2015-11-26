@@ -38,7 +38,7 @@ THE SOFTWARE.
   </st:documentation>
   <select class="setting-input" name="${field}">
     <j:forEach var="it" items="${descriptor.getPropertyType(instance,field).enumConstants}">
-      <f:option value="${it.name()}" selected="${${instance != null ? it==instance[field] : it.name()==default}}">
+      <f:option value="${it.name()}" selected="${instance != null ? it==instance[field] : it.name()==default}">
         <d:invokeBody />
       </f:option>
     </j:forEach>
