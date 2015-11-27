@@ -54,6 +54,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.jvnet.localizer.Localizable;
@@ -64,6 +65,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -71,6 +73,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1103,6 +1108,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private Authentication authentication;
 
         /**
+         * During download, an attempt is made to compute the SHA-1 checksum of the file.
+         *
+         * @since TODO
+         */
+        // TODO no new API in LTS, but remove for mainline
+        @Restricted(NoExternalUse.class)
+        @CheckForNull
+        protected String computedSHA1;
+
+        /**
          * Get the user that initiated this job
          */
         public Authentication getUser() {
@@ -1141,6 +1156,24 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
             File dst = getDestination();
             File tmp = config.download(this, src);
+
+            try {
+                MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+                DigestInputStream dis = new DigestInputStream(new FileInputStream(tmp), sha1);
+                byte[] unused = new byte[1024];
+                try {
+                    while (dis.read(unused) != -1)
+                        ; // do nothing, just read the entire file
+                } finally {
+                    dis.close();
+                }
+                byte[] digest = sha1.digest();
+                computedSHA1 = Base64.encodeBase64String(digest);
+            } catch (NoSuchAlgorithmException ignored) {
+                // Irrelevant as the Java spec says SHA-1 must exist. Still, if this fails
+                // the DownloadJob will just have computedSha1 = null and that is expected
+                // to be handled by caller
+            }
 
             config.postValidate(this, tmp);
             config.install(this, tmp, dst);
@@ -1351,6 +1384,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             	dst.renameTo(bak);
             }
             legacy.delete();
+
+            if (plugin.sha1 != null) {
+                if (computedSHA1 == null) {
+                    // refuse to install if SHA-1 could not be computed
+                    throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
+                }
+                if (!plugin.sha1.equals(computedSHA1)) {
+                    throw new IOException("Downloaded file " + src.getAbsolutePath() + " does not match expected SHA-1, expected " + plugin.sha1 + ", actual " + computedSHA1);
+                    // keep 'src' around for investigating what's going on
+                }
+            }
+
             dst.delete(); // any failure up to here is no big deal
             
             if(!src.renameTo(dst)) {
@@ -1470,6 +1515,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected void replace(File dst, File src) throws IOException {
+            String expectedSHA1 = site.getData().core.sha1;
+            if (expectedSHA1 != null) {
+                if (computedSHA1 == null) {
+                    // refuse to install if SHA-1 could not be computed
+                    throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
+                }
+                if (!expectedSHA1.equals(computedSHA1)) {
+                    throw new IOException("Downloaded file " + src.getAbsolutePath() + " does not match expected SHA-1, expected " + expectedSHA1 + ", actual " + computedSHA1);
+                    // keep 'src' around for investigating what's going on
+                }
+            }
             Lifecycle.get().rewriteHudsonWar(src);
         }
     }

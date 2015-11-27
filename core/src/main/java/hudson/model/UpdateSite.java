@@ -27,6 +27,7 @@ package hudson.model;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.Util;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
@@ -125,6 +126,8 @@ public class UpdateSite {
      * Path to <tt>update-center.json</tt>, like <tt>http://jenkins-ci.org/update-center.json</tt>.
      */
     private final String url;
+
+
 
     public UpdateSite(String id, String url) {
         this.id = id;
@@ -507,6 +510,13 @@ public class UpdateSite {
         @Exported
         public final String url;
 
+        /**
+         * The base64 encoded binary SHA-1 checksum of the file.
+         * @since TODO
+         */
+        // TODO @Exported assuming we want this in the API
+        public final String sha1;
+
         public Entry(String sourceId, JSONObject o) {
             this(sourceId, o, null);
         }
@@ -515,6 +525,7 @@ public class UpdateSite {
             this.sourceId = sourceId;
             this.name = o.getString("name");
             this.version = o.getString("version");
+            this.sha1 = Util.fixEmpty(o.optString("sha1"));
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
                 if (baseURL == null) {
