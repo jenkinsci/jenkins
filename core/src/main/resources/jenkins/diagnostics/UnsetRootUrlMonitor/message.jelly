@@ -25,12 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="warning">
-    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <div style="float:right">
-        <f:submit name="yes" value="${%Configure}"/>
-        <f:submit name="no" value="${%Dismiss}"/>
-      </div>
-      ${%blurb}
-    </form>
+      ${%blurb} (Or you can <a href="${it.url}/disable">dismiss</a> this message)
   </div>
 </j:jelly>

@@ -24,12 +24,8 @@
 
 package jenkins.diagnostics;
 
-import java.io.IOException;
-
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
@@ -47,14 +43,6 @@ public class UnsetRootUrlMonitor extends AdministrativeMonitor {
     public boolean isActivated() {
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
         return loc == null || (loc != null && loc.getUrl() == null);
-    }
-
-    public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if(req.hasParameter("no")) { // Dismiss
-            doDisable(req, rsp);
-        } else { // Configure
-            rsp.sendRedirect(req.getContextPath() + "/configure");
-        }
     }
 
 }
