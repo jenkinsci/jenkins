@@ -1104,9 +1104,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         protected abstract void onSuccess();
 
-
-        private Authentication authentication;
-
         /**
          * During download, an attempt is made to compute the SHA-1 checksum of the file.
          *
@@ -1115,7 +1112,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         // TODO no new API in LTS, but remove for mainline
         @Restricted(NoExternalUse.class)
         @CheckForNull
-        protected String computedSHA1;
+        protected String getComputedSHA1() {
+            return computedSHA1;
+        }
+
+        private String computedSHA1;
+
+        private Authentication authentication;
 
         /**
          * Get the user that initiated this job
@@ -1168,7 +1171,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     dis.close();
                 }
                 byte[] digest = sha1.digest();
-                computedSHA1 = Base64.encodeBase64String(digest);
+                // need to trim because commons-codec 1.4 used in test chunked output and adds \r\n at the end
+                computedSHA1 = Base64.encodeBase64String(digest).trim();
             } catch (NoSuchAlgorithmException ignored) {
                 // Irrelevant as the Java spec says SHA-1 must exist. Still, if this fails
                 // the DownloadJob will just have computedSha1 = null and that is expected
@@ -1374,30 +1378,33 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         @Override
         protected void replace(File dst, File src) throws IOException {
-        	File bak = Util.changeExtension(dst,".bak");
-        	
-            bak.delete();
-            final File legacy = getLegacyDestination();
-			if(legacy.exists()){
-            	legacy.renameTo(bak);
-            }else{
-            	dst.renameTo(bak);
-            }
-            legacy.delete();
 
-            if (plugin.sha1 != null) {
-                if (computedSHA1 == null) {
+            if (plugin.getSha1() != null) {
+                if (getComputedSHA1() == null) {
                     // refuse to install if SHA-1 could not be computed
                     throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
                 }
-                if (!plugin.sha1.equals(computedSHA1)) {
-                    throw new IOException("Downloaded file " + src.getAbsolutePath() + " does not match expected SHA-1, expected " + plugin.sha1 + ", actual " + computedSHA1);
+                if (!plugin.getSha1().equals(getComputedSHA1())) {
+                    throw new IOException("Downloaded file " + src.getAbsolutePath() + " does not match expected SHA-1, expected " + plugin.getSha1() + ", actual " + getComputedSHA1());
                     // keep 'src' around for investigating what's going on
                 }
             }
 
-            dst.delete(); // any failure up to here is no big deal
-            
+            File bak = Util.changeExtension(dst, ".bak");
+            bak.delete();
+
+            final File legacy = getLegacyDestination();
+            if (legacy.exists()) {
+                if (!legacy.renameTo(bak)) {
+                    legacy.delete();
+                }
+            }
+            if (dst.exists()) {
+                if (!dst.renameTo(bak)) {
+                    dst.delete();
+                }
+            }
+
             if(!src.renameTo(dst)) {
                 throw new IOException("Failed to rename "+src+" to "+dst);
             }
@@ -1515,14 +1522,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected void replace(File dst, File src) throws IOException {
-            String expectedSHA1 = site.getData().core.sha1;
+            String expectedSHA1 = site.getData().core.getSha1();
             if (expectedSHA1 != null) {
-                if (computedSHA1 == null) {
+                if (getComputedSHA1() == null) {
                     // refuse to install if SHA-1 could not be computed
                     throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
                 }
-                if (!expectedSHA1.equals(computedSHA1)) {
-                    throw new IOException("Downloaded file " + src.getAbsolutePath() + " does not match expected SHA-1, expected " + expectedSHA1 + ", actual " + computedSHA1);
+                if (!expectedSHA1.equals(getComputedSHA1())) {
+                    throw new IOException("Downloaded file " + src.getAbsolutePath() + " does not match expected SHA-1, expected " + expectedSHA1 + ", actual " + getComputedSHA1());
                     // keep 'src' around for investigating what's going on
                 }
             }

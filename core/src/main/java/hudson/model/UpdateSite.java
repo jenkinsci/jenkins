@@ -510,12 +510,7 @@ public class UpdateSite {
         @Exported
         public final String url;
 
-        /**
-         * The base64 encoded binary SHA-1 checksum of the file.
-         * @since TODO
-         */
-        // TODO @Exported assuming we want this in the API
-        public final String sha1;
+        private final String sha1;
 
         public Entry(String sourceId, JSONObject o) {
             this(sourceId, o, null);
@@ -534,6 +529,16 @@ public class UpdateSite {
                 url = URI.create(baseURL).resolve(url).toString();
             }
             this.url = url;
+        }
+
+        /**
+         * The base64 encoded binary SHA-1 checksum of the file.
+         * Can be null if not provided by the update site.
+         * @since TODO
+         */
+        // TODO @Exported assuming we want this in the API
+        public String getSha1() {
+            return sha1;
         }
 
         /**
