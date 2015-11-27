@@ -45,7 +45,8 @@ public class UnsetRootUrlMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        return JenkinsLocationConfiguration.get().getUrl() == null;
+        JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
+        return loc == null || (loc != null && loc.getUrl() == null);
     }
 
     public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
