@@ -62,6 +62,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.Nonnull;
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.ServletException;
 import java.io.File;
@@ -74,6 +75,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.security.DigestInputStream;
+import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -752,6 +754,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @see DownloadJob
          */
         public File download(DownloadJob job, URL src) throws IOException {
+            MessageDigest sha1 = null;
+            try {
+                sha1 = MessageDigest.getInstance("SHA-1");
+            } catch (NoSuchAlgorithmException ignored) {
+                // Irrelevant as the Java spec says SHA-1 must exist. Still, if this fails
+                // the DownloadJob will just have computedSha1 = null and that is expected
+                // to be handled by caller
+            }
+
             CountingInputStream in = null;
             OutputStream out = null;
             URLConnection con = null;
@@ -765,6 +776,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath()+".tmp");
                 out = new FileOutputStream(tmp);
+                if (sha1 != null) {
+                    out = new DigestOutputStream(out, sha1);
+                }
 
                 LOGGER.info("Downloading "+job.getName());
                 Thread t = Thread.currentThread();
@@ -778,6 +792,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } catch (IOException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
                 } finally {
+                    IOUtils.closeQuietly(out);
                     t.setName(oldName);
                 }
 
@@ -788,6 +803,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     throw new IOException("Inconsistent file length: expected "+total+" but only got "+tmp.length());
                 }
 
+                if (sha1 != null) {
+                    byte[] digest = sha1.digest();
+                    // need to trim because commons-codec 1.4 used in test chunked output and adds \r\n at the end
+                    job.computedSHA1 = Base64.encodeBase64String(digest).trim();
+                }
                 return tmp;
             } catch (IOException e) {
                 // assist troubleshooting in case of e.g. "too many redirects" by printing actual URL
@@ -1160,25 +1180,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             File dst = getDestination();
             File tmp = config.download(this, src);
 
-            try {
-                MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-                DigestInputStream dis = new DigestInputStream(new FileInputStream(tmp), sha1);
-                byte[] unused = new byte[1024];
-                try {
-                    while (dis.read(unused) != -1)
-                        ; // do nothing, just read the entire file
-                } finally {
-                    dis.close();
-                }
-                byte[] digest = sha1.digest();
-                // need to trim because commons-codec 1.4 used in test chunked output and adds \r\n at the end
-                computedSHA1 = Base64.encodeBase64String(digest).trim();
-            } catch (NoSuchAlgorithmException ignored) {
-                // Irrelevant as the Java spec says SHA-1 must exist. Still, if this fails
-                // the DownloadJob will just have computedSha1 = null and that is expected
-                // to be handled by caller
-            }
-
             config.postValidate(this, tmp);
             config.install(this, tmp, dst);
         }
@@ -1380,6 +1381,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         protected void replace(File dst, File src) throws IOException {
 
             if (plugin.getSha1() != null) {
+                // we have an update site that provides SHA-1 checksums, and this is not a plugin file upload
                 if (getComputedSHA1() == null) {
                     // refuse to install if SHA-1 could not be computed
                     throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
