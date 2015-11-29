@@ -25,10 +25,10 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Node;
+import org.acegisecurity.AccessDeniedException;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
-import java.nio.file.AccessDeniedException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
