@@ -2663,15 +2663,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private synchronized TaskBuilder loadTasks() throws IOException {
-        File projectsDir = new File(root,"jobs");
-        if(!projectsDir.getCanonicalFile().isDirectory() && !projectsDir.mkdirs()) {
-            if(projectsDir.exists())
-                throw new IOException(projectsDir+" is not a directory");
-            throw new IOException("Unable to create "+projectsDir+"\nPermission issue? Please create this directory manually.");
-        }
-        File[] subdirs = projectsDir.listFiles();
-
-        final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<String>());
 
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
@@ -2699,19 +2690,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
 
-        for (final File subdir : subdirs) {
-            g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading job "+subdir.getName(),new Executable() {
-                public void run(Reactor session) throws Exception {
-                    if(!Items.getConfigFile(subdir).exists()) {
-                        //Does not have job config file, so it is not a jenkins job hence skip it
-                        return;
-                    }
-                    TopLevelItem item = (TopLevelItem) Items.load(Jenkins.this, subdir);
-                    items.put(item.getName(), item);
-                    loadedNames.add(item.getName());
-                }
-            });
-        }
+        final Set<String> loadedNames = loadItems(g,loadJenkins);
 
         g.requires(JOB_LOADED).add("Cleaning up old builds",new Executable() {
             public void run(Reactor reactor) throws Exception {
@@ -3991,6 +3970,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         else {
             return FormValidation.ok();
         }
+    }
+    private Set<String> loadItems(TaskGraphBuilder g, Handle loadJenkins) throws IOException {
+        final Set<String> loadedNames = Collections.synchronizedSet(new HashSet<String>());
+        g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading items ",new Executable() {
+            public void run(Reactor session) throws Exception {
+                Collection<TopLevelItem> loadedItems =  new ArrayList<TopLevelItem>();
+                for( TopLevelItemLoader loader : getExtensionList(TopLevelItemLoader.class)){
+                    loadedItems.addAll(loader.load(Jenkins.this));
+                }
+                for(TopLevelItem item : loadedItems){
+                    items.put(item.getName(), item);
+                    loadedNames.add(item.getName());
+                }
+            }});
+        return loadedNames;
     }
 
     public static class MasterComputer extends Computer {
