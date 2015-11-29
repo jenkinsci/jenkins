@@ -73,6 +73,14 @@ THE SOFTWARE.
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpcore</artifactId>
         </exclusion>
+        <exclusion>
+          <!--
+            during test, this jar gets loaded at the same level as remoting.jar and can cause conflicts depending on the order.
+            the package is also not signed, and it creates package conflicts between the signed package from remoting.jar
+          -->
+          <groupId>org.jenkins-ci</groupId>
+          <artifactId>SECURITY-144-compat</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
