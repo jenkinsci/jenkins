@@ -11,7 +11,7 @@ import java.util.Collection;
 
 
 @Extension
-public class DiskTaskLoader implements TopLevelItemLoader {
+public class DiskItemLoader extends TopLevelItemLoader {
 
     public Collection<TopLevelItem> load(Jenkins jenkins) throws IOException {
         Collection<TopLevelItem> items = new ArrayList<TopLevelItem>();

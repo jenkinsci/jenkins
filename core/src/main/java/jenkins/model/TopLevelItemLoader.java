@@ -7,6 +7,6 @@ import java.io.IOException;
 import java.util.Collection;
 
 
-public interface TopLevelItemLoader extends ExtensionPoint {
-     Collection<TopLevelItem> load(Jenkins jenkins) throws IOException;
+public abstract class TopLevelItemLoader implements ExtensionPoint {
+     public abstract Collection<TopLevelItem> load(Jenkins jenkins) throws IOException;
 }
