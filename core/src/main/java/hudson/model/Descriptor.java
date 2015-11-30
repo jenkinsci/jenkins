@@ -577,9 +577,14 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 // new behavior as of 1.206
                 BindInterceptor oldInterceptor = req.getBindInterceptor();
                 try {
-                    if (!(oldInterceptor instanceof NewInstanceBindInterceptor)) {
-                        req.setBindInterceptor(new NewInstanceBindInterceptor(oldInterceptor));
+                    NewInstanceBindInterceptor interceptor;
+                    if ((oldInterceptor instanceof NewInstanceBindInterceptor)) {
+                        interceptor = (NewInstanceBindInterceptor) oldInterceptor;
+                    } else {
+                        interceptor = new NewInstanceBindInterceptor(oldInterceptor);
+                        req.setBindInterceptor(interceptor);
                     }
+                    interceptor.processed.put(formData, null);
                     return verifyNewInstance(req.bindJSON(clazz, formData));
                 } finally {
                     req.setBindInterceptor(oldInterceptor);
@@ -607,7 +612,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     private static class NewInstanceBindInterceptor extends BindInterceptor {
 
         private final BindInterceptor oldInterceptor;
-        private final Map<JSONObject,Boolean> processed = new IdentityHashMap<>();
+        private final Map<JSONObject,Void> processed = new IdentityHashMap<>();
 
         NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
             LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);
@@ -623,7 +628,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 LOGGER.log(Level.FINER, "ignoring non-Describable {0} {1}", new Object[] {type.getName(), json});
                 return false;
             }
-            if (Boolean.TRUE.equals(processed.put(json, true))) {
+            if (processed.containsKey(json)) {
                 LOGGER.log(Level.FINER, "already processed {0} {1}", new Object[] {type.getName(), json});
                 return false;
             }
