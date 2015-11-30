@@ -28,7 +28,6 @@ import java.util.Locale;
 import net.sf.json.JSONObject;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -40,7 +39,6 @@ public class ParametersDefinitionPropertyTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
-    @Ignore("TODO after 600b1f0 (#1888): NoStaplerConstructorException: There's no @DataBoundConstructor on any constructor of class hudson.model.ParametersDefinitionPropertyTest$KrazyParameterDefinition")
     @Issue("JENKINS-31458")
     @Test
     public void customNewInstance() throws Exception {

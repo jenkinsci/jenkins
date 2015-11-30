@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -470,10 +471,13 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         if (form==null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
-        BindInterceptor old = req.setBindListener(new BindInterceptor() {
+        final AtomicReference<BindInterceptor> old = new AtomicReference<>();
+        old.set(req.setBindListener(new BindInterceptor() {
             @Override
             public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
-                if (jsonForProperties!=jsonSource)  return DEFAULT;
+                if (jsonForProperties != jsonSource) {
+                    return old.get().onConvert(targetType, targetTypeErasure, jsonSource);
+                }
 
                 try {
                     DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<NodeProperty<?>, NodePropertyDescriptor>(Saveable.NOOP,getNodeProperties().toList());
@@ -485,12 +489,12 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                     throw new IllegalArgumentException(e);
                 }
             }
-        });
+        }));
 
         try {
             return getDescriptor().newInstance(req, form);
         } finally {
-            req.setBindListener(old);
+            req.setBindListener(old.get());
         }
     }
 
