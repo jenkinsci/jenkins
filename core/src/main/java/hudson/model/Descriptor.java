@@ -560,13 +560,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      Signals a problem in the submitted form.
      * @since 1.145
      */
-    public T newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-        BindInterceptor oldInterceptor = req.getBindInterceptor();
+    public T newInstance(@CheckForNull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
         try {
-            if (!(oldInterceptor instanceof NewInstanceBindInterceptor)) {
-                req.setBindInterceptor(new NewInstanceBindInterceptor(oldInterceptor));
-            }
-
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
             if(!Modifier.isAbstract(m.getDeclaringClass().getModifiers())) {
@@ -580,7 +575,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 }
 
                 // new behavior as of 1.206
-                return verifyNewInstance(req.bindJSON(clazz,formData));
+                BindInterceptor oldInterceptor = req.getBindInterceptor();
+                try {
+                    if (!(oldInterceptor instanceof NewInstanceBindInterceptor)) {
+                        req.setBindInterceptor(new NewInstanceBindInterceptor(oldInterceptor));
+                    }
+                    return verifyNewInstance(req.bindJSON(clazz, formData));
+                } finally {
+                    req.setBindInterceptor(oldInterceptor);
+                }
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
@@ -590,8 +593,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
         } catch (RuntimeException e) {
             throw new RuntimeException("Failed to instantiate "+clazz+" from "+formData,e);
-        } finally {
-            req.setBindInterceptor(oldInterceptor);
         }
     }
 
