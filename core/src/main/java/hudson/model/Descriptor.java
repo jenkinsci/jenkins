@@ -610,47 +610,60 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         private final Map<JSONObject,Boolean> processed = new IdentityHashMap<>();
 
         NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
-            LOGGER.log(Level.FINE, "new interceptor delegating to {0}", oldInterceptor);
+            LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);
             this.oldInterceptor = oldInterceptor;
+        }
+
+        private boolean isApplicable(Class type, JSONObject json) {
+            if (Modifier.isAbstract(type.getModifiers())) {
+                LOGGER.log(Level.FINER, "ignoring abstract {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            if (!Describable.class.isAssignableFrom(type)) {
+                LOGGER.log(Level.FINER, "ignoring non-Describable {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            if (Boolean.TRUE.equals(processed.put(json, true))) {
+                LOGGER.log(Level.FINER, "already processed {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            return true;
         }
 
         @Override
         public Object instantiate(Class actualType, JSONObject json) {
-            if (Modifier.isAbstract(actualType.getModifiers())) {
-                LOGGER.log(Level.FINE, "ignoring abstract {0} {1}", new Object[] {actualType, json});
-                return oldInterceptor.instantiate(actualType, json);
+            if (isApplicable(actualType, json)) {
+                LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
+                try {
+                    return Jenkins.getActiveInstance().getDescriptor(actualType).newInstance(Stapler.getCurrentRequest(), json);
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
+                    // If nested objects are not using newInstance, bindJSON will wind up throwing the same exception anyway,
+                    // so logging above will result in a duplicated stack trace.
+                    // However if they *are* then this is the only way to find errors in that newInstance.
+                    // Normally oldInterceptor.instantiate will just return DEFAULT, not actually do anything,
+                    // so we cannot try calling the default instantiation and then decide which problem to report.
+                }
             }
-            if (!Describable.class.isAssignableFrom(actualType)) {
-                LOGGER.log(Level.FINE, "ignoring non-Describable {0} {1}", new Object[] {actualType, json});
-                return oldInterceptor.instantiate(actualType, json);
-            }
-            if (Boolean.TRUE.equals(processed.put(json, true))) {
-                LOGGER.log(Level.FINE, "already processed {0} {1}", new Object[] {actualType, json});
-                return oldInterceptor.instantiate(actualType, json);
-            }
-            LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType, json});
-            try {
-                return Jenkins.getActiveInstance().getDescriptor(actualType).newInstance(Stapler.getCurrentRequest(), json);
-            } catch (Exception x) {
-                LOGGER.log(Level.WARNING, "falling back to default instantiation " + actualType + " " + json, x);
-                // If nested objects are not using newInstance, bindJSON will wind up throwing the same exception anyway,
-                // so logging above will result in a duplicated stack trace.
-                // However if they *are* then this is the only way to find errors in that newInstance.
-                // Normally oldInterceptor.instantiate will just return DEFAULT, not actually do anything,
-                // so we cannot try calling the default instantiation and then decide which problem to report.
-                return oldInterceptor.instantiate(actualType, json);
-            }
+            return oldInterceptor.instantiate(actualType, json);
         }
 
         @Override
         public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
             if (jsonSource instanceof JSONObject) {
-                LOGGER.log(Level.FINE, "potentially converting {0} {1} {2}", new Object[] {targetType, targetTypeErasure, jsonSource});
-                return instantiate(targetTypeErasure, (JSONObject) jsonSource);
+                JSONObject json = (JSONObject) jsonSource;
+                if (isApplicable(targetTypeErasure, json)) {
+                    LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
+                    try {
+                        return Jenkins.getActiveInstance().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "falling back to default instantiation " + targetTypeErasure.getName() + " " + json, x);
+                    }
+                }
             } else {
-                LOGGER.log(Level.FINE, "ignoring non-object {0}", jsonSource);
-                return oldInterceptor.onConvert(targetType, targetTypeErasure, jsonSource);
+                LOGGER.log(Level.FINER, "ignoring non-object {0}", jsonSource);
             }
+            return oldInterceptor.onConvert(targetType, targetTypeErasure, jsonSource);
         }
 
     }

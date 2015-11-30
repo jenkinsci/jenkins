@@ -25,9 +25,14 @@
 package hudson.model;
 
 import java.util.Locale;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -35,6 +40,15 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class ParametersDefinitionPropertyTest {
+
+    private static final Logger logger = Logger.getLogger(Descriptor.class.getName());
+    @BeforeClass
+    public static void logging() {
+        logger.setLevel(Level.ALL);
+        Handler handler = new ConsoleHandler();
+        handler.setLevel(Level.ALL);
+        logger.addHandler(handler);
+    }
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
