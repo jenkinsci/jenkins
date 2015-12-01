@@ -1479,6 +1479,23 @@ public class Util {
     }
 
     /**
+     * Convert a list of {@link StackTraceElement}s to a String with a new line for each element.
+     *
+     * @param elements List of elements
+     * @return String representation of the elements
+     */
+    @Nonnull
+    public static String stackTraceArrayToString(@Nullable StackTraceElement[] elements) {
+        StringBuilder b = new StringBuilder();
+        if (elements != null) {
+            for (StackTraceElement e : elements) {
+                b.append(e).append('\n');
+            }
+        }
+        return b.toString();
+    }
+
+    /**
      * Return true if the systemId denotes an absolute URI .
      *
      * The same algorithm can be seen in {@link URI}, but

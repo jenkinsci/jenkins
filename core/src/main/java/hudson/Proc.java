@@ -310,8 +310,8 @@ public abstract class Proc {
             // since this involves some native work, let's have some soak period before enabling this by default 
             Thread t = Thread.currentThread();
             String oldName = t.getName();
+            ProcessTree.OSProcess p = ProcessTree.get().get(proc);
             if (SHOW_PID) {
-                ProcessTree.OSProcess p = ProcessTree.get().get(proc);
                 t.setName(oldName+" "+(p!=null?"waiting for pid="+p.getPid():"waiting for "+name));
             }
 
@@ -328,7 +328,16 @@ public abstract class Proc {
                     String msg = "Process leaked file descriptors. See http://wiki.jenkins-ci.org/display/JENKINS/Spawning+processes+from+build for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        if (p != null) {
+                            LOGGER.log(Level.FINER, "Process with PID: " + p.getPid() + " leaked file descriptors.");
+                        } else {
+                            LOGGER.log(Level.FINER, "Process with no PID leaked file descriptors.");
+                        }
 
+                        if (copier != null)  LOGGER.log(Level.FINER, "Stacktrace for leaked process: " + Util.stackTraceArrayToString(copier.getStackTrace()));
+                        if (copier2 != null) LOGGER.log(Level.FINER, "Stacktrace for leaked process: " + Util.stackTraceArrayToString(copier2.getStackTrace()));
+                    }
                     // doing proc.getInputStream().close() hangs in FileInputStream.close0()
                     // it could be either because another thread is blocking on read, or
                     // it could be a bug in Windows JVM. Who knows.
