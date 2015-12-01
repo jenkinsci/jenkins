@@ -1289,6 +1289,26 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /**
+     * If expectedSHA1 is non-null, ensure that actualSha1 is the same value, otherwise throw.
+     *
+     * Utility method for InstallationJob and HudsonUpgradeJob.
+     *
+     * @throws IOException when checksums don't match, or actual checksum was null.
+     */
+    private void verifyChecksums(String expectedSHA1, String actualSha1, File downloadedFile) throws IOException {
+        if (expectedSHA1 != null) {
+            if (actualSha1 == null) {
+                // refuse to install if SHA-1 could not be computed
+                throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
+            }
+            if (!expectedSHA1.equals(actualSha1)) {
+                throw new IOException("Downloaded file " + downloadedFile.getAbsolutePath() + " does not match expected SHA-1, expected " + expectedSHA1 + ", actual " + actualSha1);
+                // keep 'downloadedFile' around for investigating what's going on
+            }
+        }
+    }
+
+    /**
      * Represents the state of the installation activity of one plugin.
      */
     public final class InstallationJob extends DownloadJob {
@@ -1380,17 +1400,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         protected void replace(File dst, File src) throws IOException {
 
-            if (plugin.getSha1() != null) {
-                // we have an update site that provides SHA-1 checksums, and this is not a plugin file upload
-                if (getComputedSHA1() == null) {
-                    // refuse to install if SHA-1 could not be computed
-                    throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
-                }
-                if (!plugin.getSha1().equals(getComputedSHA1())) {
-                    throw new IOException("Downloaded file " + src.getAbsolutePath() + " does not match expected SHA-1, expected " + plugin.getSha1() + ", actual " + getComputedSHA1());
-                    // keep 'src' around for investigating what's going on
-                }
-            }
+            verifyChecksums(plugin.getSha1(), getComputedSHA1(), src);
 
             File bak = Util.changeExtension(dst, ".bak");
             bak.delete();
@@ -1525,16 +1535,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         protected void replace(File dst, File src) throws IOException {
             String expectedSHA1 = site.getData().core.getSha1();
-            if (expectedSHA1 != null) {
-                if (getComputedSHA1() == null) {
-                    // refuse to install if SHA-1 could not be computed
-                    throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
-                }
-                if (!expectedSHA1.equals(getComputedSHA1())) {
-                    throw new IOException("Downloaded file " + src.getAbsolutePath() + " does not match expected SHA-1, expected " + expectedSHA1 + ", actual " + getComputedSHA1());
-                    // keep 'src' around for investigating what's going on
-                }
-            }
+            verifyChecksums(expectedSHA1, getComputedSHA1(), src);
             Lifecycle.get().rewriteHudsonWar(src);
         }
     }

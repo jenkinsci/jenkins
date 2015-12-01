@@ -510,7 +510,10 @@ public class UpdateSite {
         @Exported
         public final String url;
 
-        private final String sha1;
+
+        // non-private, non-final for test
+        @Restricted(NoExternalUse.class)
+        /* final */ String sha1;
 
         public Entry(String sourceId, JSONObject o) {
             this(sourceId, o, null);
