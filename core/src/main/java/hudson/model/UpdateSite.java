@@ -524,10 +524,9 @@ public class UpdateSite {
             this.name = o.getString("name");
             this.version = o.getString("version");
 
-            String sha = Util.fixEmpty(o.optString("sha1"));
             // Trim this to prevent issues when the other end used Base64.encodeBase64String that added newlines
             // to the end in old commons-codec. Not the case on updates.jenkins-ci.org, but let's be safe.
-            this.sha1 = (sha == null) ? null : sha.trim();
+            this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
 
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {

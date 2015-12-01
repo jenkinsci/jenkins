@@ -64,6 +64,12 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
       <version>${maven-plugin.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -135,6 +141,10 @@ THE SOFTWARE.
           <!--  hides JDK DOM classes in Eclipse -->
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

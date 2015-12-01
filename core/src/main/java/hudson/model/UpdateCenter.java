@@ -805,8 +805,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 if (sha1 != null) {
                     byte[] digest = sha1.digest();
-                    // need to trim because commons-codec 1.4 used in test chunked output and adds \r\n at the end
-                    job.computedSHA1 = Base64.encodeBase64String(digest).trim();
+                    job.computedSHA1 = Base64.encodeBase64String(digest);
                 }
                 return tmp;
             } catch (IOException e) {
@@ -1302,7 +1301,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
             }
             if (!expectedSHA1.equals(actualSha1)) {
-                throw new IOException("Downloaded file " + downloadedFile.getAbsolutePath() + " does not match expected SHA-1, expected " + expectedSHA1 + ", actual " + actualSha1);
+                throw new IOException("Downloaded file " + downloadedFile.getAbsolutePath() + " does not match expected SHA-1, expected '" + expectedSHA1 + "', actual '" + actualSha1 + "'");
                 // keep 'downloadedFile' around for investigating what's going on
             }
         }
