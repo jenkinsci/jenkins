@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.Plugin;
 import hudson.model.Descriptor.FormException;
 import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
@@ -49,7 +48,7 @@ import javax.annotation.Nonnull;
  * Extensible property of {@link Job}.
  *
  * <p>
- * {@link Plugin}s can extend this to define custom properties
+ * Plugins can extend this to define custom properties
  * for {@link Job}s. {@link JobProperty}s show up in the user
  * configuration screen, and they are persisted with the job object.
  *
