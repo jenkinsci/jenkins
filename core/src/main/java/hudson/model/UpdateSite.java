@@ -545,8 +545,6 @@ public class UpdateSite {
          * @since TODO
          */
         // TODO @Exported assuming we want this in the API
-        // TODO No new API in LTS, remove for mainline
-        @Restricted(NoExternalUse.class)
         public String getSha1() {
             return sha1;
         }

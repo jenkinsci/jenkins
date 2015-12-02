@@ -1133,8 +1133,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *
          * @since TODO
          */
-        // TODO no new API in LTS, but remove for mainline
-        @Restricted(NoExternalUse.class)
         @CheckForNull
         protected String getComputedSHA1() {
             return computedSHA1;
