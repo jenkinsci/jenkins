@@ -66,7 +66,8 @@ public class DNSMultiCast implements Closeable {
                     jmdns.registerService(ServiceInfo.create("_http._tcp.local.","Jenkins",
                             jenkins_port,0,0,props));
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING,"Failed to advertise the service to DNS multi-cast",e);
+                    LOGGER.log(Level.INFO, "Cannot advertise service to DNS multi-cast, skipping: {0}", e);
+                    LOGGER.log(Level.FINE, null, e);
                 }
                 return null;
             }
