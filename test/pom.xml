@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.639-SNAPSHOT</version>
+    <version>1.640-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-test-harness</artifactId>
@@ -72,6 +72,14 @@ THE SOFTWARE.
         <exclusion>
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpcore</artifactId>
+        </exclusion>
+        <exclusion>
+          <!--
+            during test, this jar gets loaded at the same level as remoting.jar and can cause conflicts depending on the order.
+            the package is also not signed, and it creates package conflicts between the signed package from remoting.jar
+          -->
+          <groupId>org.jenkins-ci</groupId>
+          <artifactId>SECURITY-144-compat</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
