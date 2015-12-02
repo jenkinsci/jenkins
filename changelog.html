@@ -58,6 +58,10 @@ Upcoming changes</a>
   <li class="rfe">
     Added support of default values in the <code>enum.jelly</code> form element.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1926">PR 1926</a>)
+  <li class="bug">
+    Bytecode Compatibility Transformer computes the common super class without loading classes.
+    Fixes the <code>ClassCircularityError</code> exception in Ruby Runtime Plugin. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31019">issue 31019</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v1.639>What's new in 1.639</a> (2015/11/29)</h3>
