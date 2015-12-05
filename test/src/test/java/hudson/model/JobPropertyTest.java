@@ -23,15 +23,19 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
 import hudson.model.Descriptor.FormException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONObject;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -41,6 +45,15 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class JobPropertyTest {
+
+    private static final Logger logger = Logger.getLogger(Descriptor.class.getName());
+    @BeforeClass
+    public static void logging() {
+        logger.setLevel(Level.ALL);
+        Handler handler = new ConsoleHandler();
+        handler.setLevel(Level.ALL);
+        logger.addHandler(handler);
+    }
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -104,6 +117,11 @@ public class JobPropertyTest {
         JobPropertyWithConfigImpl after = p.getProperty(JobPropertyWithConfigImpl.class);
         assertNotSame(after,before);
         j.assertEqualDataBoundBeans(before, after);
+        p.removeProperty(after);
+        JobPropertyWithConfigImpl empty = new JobPropertyWithConfigImpl("");
+        p.addProperty(empty);
+        j.configRoundtrip((Item)p);
+        assertNull(p.getProperty(JobPropertyWithConfigImpl.class));
     }
 
     public static class JobPropertyWithConfigImpl extends JobProperty<Job<?,?>> {
@@ -115,7 +133,13 @@ public class JobPropertyTest {
         }
 
         @TestExtension("configRoundtrip")
-        public static class DescriptorImpl extends JobPropertyDescriptor {}
+        public static class DescriptorImpl extends JobPropertyDescriptor {
+            @Override
+            public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                JobPropertyWithConfigImpl prop = (JobPropertyWithConfigImpl) super.newInstance(req, formData);
+                return prop.name.isEmpty() ? null : prop;
+            }
+        }
     }
 
     @Test
