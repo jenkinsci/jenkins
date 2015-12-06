@@ -84,7 +84,7 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class Slave extends Node implements Serializable {
+public abstract class Slave extends Node {
     /**
      * Name of this slave node.
      */
