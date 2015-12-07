@@ -34,7 +34,10 @@ import hudson.scheduler.CronTabList;
 import hudson.scheduler.Hash;
 import hudson.util.FormValidation;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -83,20 +86,30 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         public FormValidation doCheckSpec(@QueryParameter String value, @AncestorInPath Item item) {
             try {
                 CronTabList ctl = CronTabList.create(fixNull(value), item != null ? Hash.from(item.getFullName()) : null);
-                String msg = ctl.checkSanity();
-                if(msg!=null)   return FormValidation.warning(msg);
-                Calendar prev = ctl.previous();
-                Calendar next = ctl.next();
-                if (prev != null && next != null) {
-                    DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
-                    return FormValidation.ok(Messages.TimerTrigger_would_last_have_run_at_would_next_run_at(fmt.format(prev.getTime()), fmt.format(next.getTime())));
-                } else {
-                    return FormValidation.warning(Messages.TimerTrigger_no_schedules_so_will_never_run());
-                }
+                Collection<FormValidation> validations = new ArrayList<>();
+                updateValidationsForSanity(validations, ctl);
+                updateValidationsForNextRun(validations, ctl);
+                return FormValidation.aggregate(validations);
             } catch (ANTLRException e) {
                 if (value.trim().indexOf('\n')==-1 && value.contains("**"))
                     return FormValidation.error(Messages.TimerTrigger_MissingWhitespace());
                 return FormValidation.error(e.getMessage());
+            }
+        }
+
+        private void updateValidationsForSanity(Collection<FormValidation> validations, CronTabList ctl) {
+            String msg = ctl.checkSanity();
+            if(msg!=null)  validations.add(FormValidation.warning(msg));
+        }
+
+        private void updateValidationsForNextRun(Collection<FormValidation> validations, CronTabList ctl) {
+            Calendar prev = ctl.previous();
+            Calendar next = ctl.next();
+            if (prev != null && next != null) {
+                DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
+                validations.add(FormValidation.ok(Messages.TimerTrigger_would_last_have_run_at_would_next_run_at(fmt.format(prev.getTime()), fmt.format(next.getTime()))));
+            } else {
+                validations.add(FormValidation.warning(Messages.TimerTrigger_no_schedules_so_will_never_run()));
             }
         }
     }

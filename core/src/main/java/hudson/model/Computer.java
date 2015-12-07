@@ -522,7 +522,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         setTemporarilyOffline(true, new ByCLI(cause));
     }
 
-    @CLIMethod(name="online-node")
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
         setTemporarilyOffline(false, null);

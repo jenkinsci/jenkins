@@ -227,7 +227,7 @@ ${h.initPageVariables(context)}
       </div>
     </div>
 
-    <div id="page-body">
+    <div id="page-body" class="clear">
       <div id="side-panel">
         <j:set var="mode" value="side-panel" />
         <d:invokeBody />
