@@ -108,8 +108,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      * Indicate whether to flatten directories in archive and just store the files. Will cause an {@link hudson.AbortException}
      * if there are duplicate filenames selected.
      */
-    @Nonnull
-    private Boolean flattenDirectories = false;
+    private boolean flattenDirectories = false;
 
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
@@ -151,9 +150,6 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
         if (caseSensitive == null) {
             caseSensitive = true;
-        }
-        if (flattenDirectories == null) {
-            flattenDirectories = false;
         }
         return this;
     }
