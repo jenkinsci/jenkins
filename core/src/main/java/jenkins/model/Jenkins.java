@@ -431,7 +431,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient volatile boolean isQuietingDown;
     private transient volatile boolean terminating;
 
+    // All access to this field must be synchronized on jdksLock
     private List<JDK> jdks = new ArrayList<JDK>();
+    // Used to synchronize access to jdks
+    private Object jdksLock = new Object();
 
     private transient volatile DependencyGraph dependencyGraph;
     private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
@@ -1663,10 +1666,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return Messages.Hudson_DisplayName();
     }
 
-    public synchronized List<JDK> getJDKs() {
-        if(jdks==null)
-            jdks = new ArrayList<JDK>();
-        return jdks;
+    public List<JDK> getJDKs() {
+        synchronized (jdksLock) {
+            return jdks;
+        }
     }
 
     /**
@@ -1676,8 +1679,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * set JDK installations from external code.
      */
     @Restricted(NoExternalUse.class)
-    public synchronized void setJDKs(Collection<? extends JDK> jdks) {
-        this.jdks = new ArrayList<JDK>(jdks);
+    public void setJDKs(Collection<? extends JDK> jdks) {
+        synchronized (jdksLock) {
+            this.jdks = new ArrayList<JDK>(jdks);
+        }
     }
 
     /**
