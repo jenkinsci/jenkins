@@ -136,5 +136,39 @@ public abstract class DirScanner implements Serializable {
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * Scans by using Ant GLOB syntax.
+     * <p>An initial basename is prepended as with {@link Full} <strong>if the includes and excludes are blank</strong>.
+     * Otherwise there is no prepended path. So for example when scanning a directory {@code /tmp/dir} containing a file {@code file},
+     * the {@code relativePath} sent to the {@link FileVisitor} will be {@code dir/file} if {@code includes} is blank
+     * but {@code file} if it is {@code **}. (This anomaly is historical.)
+     */
+    public static class FlattenGlob extends DirScanner {
+        private final String includes, excludes;
+
+        private boolean useDefaultExcludes = true;
+
+        public FlattenGlob(String includes, String excludes, boolean useDefaultExcludes) {
+            this.includes = includes;
+            this.excludes = excludes;
+            this.useDefaultExcludes = useDefaultExcludes;
+        }
+
+        public void scan(File dir, FileVisitor visitor) throws IOException {
+            FileSet fs = Util.createFileSet(dir,includes,excludes);
+            fs.setDefaultexcludes(useDefaultExcludes);
+
+            if(dir.exists()) {
+                DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+                for( String f : ds.getIncludedFiles()) {
+                    File file = new File(dir, f);
+                    scanSingle(file, file.getName(), visitor);
+                }
+            }
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
     private static final long serialVersionUID = 1L;
 }

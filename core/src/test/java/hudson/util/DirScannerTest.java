@@ -24,12 +24,16 @@
 package hudson.util;
 
 import hudson.FilePath;
-import java.io.File;
-import java.io.IOException;
-import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
+
+import java.io.File;
+import java.io.IOException;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Christoph Thelen
@@ -82,7 +86,35 @@ public class DirScannerTest {
             tmp.deleteRecursive();
         }
     }
-    
+
+    @Test
+    @Issue("JENKINS-29780")
+    public void testFlattenGlob() throws Exception {
+        FilePath tmp = new FilePath(tmpRule.getRoot());
+        try {
+            FilePath d1 = tmp.child("firstdir");
+            d1.mkdirs();
+            d1.child("firstfile").touch(0);
+
+            FilePath d2 = tmp.child("seconddir");
+            d2.mkdirs();
+            d2.child("secondfile").touch(0);
+
+            DirScanner flattenGlob = new DirScanner.FlattenGlob("**/*", null, true);
+            FileNameMatchFileVisitor firstFile = new FileNameMatchFileVisitor("firstfile");
+            FileNameMatchFileVisitor secondFile = new FileNameMatchFileVisitor("secondfile");
+
+            flattenGlob.scan(new File(tmp.getRemote()), firstFile);
+            flattenGlob.scan(new File(tmp.getRemote()), secondFile);
+
+            assertTrue(firstFile.found);
+            assertTrue(secondFile.found);
+        } finally {
+            tmp.deleteRecursive();
+        }
+    }
+
+
     private static class MatchingFileVisitor extends FileVisitor {
     
         public boolean found = false;
@@ -95,6 +127,23 @@ public class DirScannerTest {
     
         public void visit(File f, String relativePath) throws IOException {
             if (relativePath.endsWith(filename)) {
+                found = true;
+            }
+        }
+    }
+
+    private static class FileNameMatchFileVisitor extends FileVisitor {
+
+        public boolean found = false;
+
+        public final String filename;
+
+        public FileNameMatchFileVisitor(String filename) {
+            this.filename = filename;
+        }
+
+        public void visit(File f, String relativePath) throws IOException {
+            if (relativePath.equals(filename)) {
                 found = true;
             }
         }
