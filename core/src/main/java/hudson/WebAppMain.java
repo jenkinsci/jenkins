@@ -396,8 +396,10 @@ public class WebAppMain implements ServletContextListener {
         if(instance!=null)
             instance.cleanUp();
         Thread t = initThread;
-        if (t!=null)
+        if (t != null && t.isAlive()) {
+            LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
             t.interrupt();
+        }
 
         // Logger is in the system classloader, so if we don't do this
         // the whole web app will never be undepoyed.
