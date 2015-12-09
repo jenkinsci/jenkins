@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -19,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.HudsonHomeLoader;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
@@ -34,6 +36,7 @@ public class BootFailureTest {
     public TemporaryFolder tmpDir = new TemporaryFolder();
 
     static boolean makeBootFail = true;
+    static WebAppMain wa;
 
     static class CustomRule extends JenkinsRule {
         @Override
@@ -46,7 +49,7 @@ public class BootFailureTest {
         @Override
         public Hudson newHudson() throws Exception {
             ServletContext ws = createWebServer();
-            WebAppMain wa = new WebAppMain() {
+            wa = new WebAppMain() {
                 @Override
                 public WebAppMain.FileAndDescription getHomeDir(ServletContextEvent event) {
                     try {
@@ -128,6 +131,30 @@ public class BootFailureTest {
 
     private static int bootFailures(File home) throws IOException {
         return FileUtils.readLines(BootFailure.getBootFailureFile(home)).size();
+    }
+
+    @Issue("JENKINS-24696")
+    @Test
+    public void interruptedStartup() throws Exception {
+        final File home = tmpDir.newFolder();
+        j.with(new HudsonHomeLoader() {
+            @Override
+            public File allocate() throws Exception {
+                return home;
+            }
+        });
+        File d = new File(home, "boot-failure.groovy.d");
+        d.mkdirs();
+        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'");
+        j.newHudson();
+        assertEquals(Collections.singletonList("1"), runRecord);
+    }
+    @TestExtension("interruptedStartup")
+    public static class PauseBoot extends ItemListener {
+        @Override
+        public void onLoaded() {
+            wa.contextDestroyed(null);
+        }
     }
 
     // to be set by the script
