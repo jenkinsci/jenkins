@@ -31,10 +31,7 @@ html {
 
 body {
   margin: 0;
-  padding: 0;
-  background: white;
-  margin-right: auto;
-  margin-left: auto;
+  padding: 0 0 40px 0;
 }
 
 #header {
@@ -74,14 +71,20 @@ body {
   background-color: #f6faf2;
 }
 
+#page-body.clear:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
 #side-panel {
-  padding: 15px 15px 80px 15px;
+  padding: 15px 15px 40px 15px;
   float: left;
   width: 320px;
 }
 
 #main-panel {
-  padding: 15px 15px 80px 15px;
+  padding: 15px 15px 40px 15px;
   margin-left: 320px;
 }
 
@@ -129,13 +132,15 @@ body {
 /* footer */
 
 footer {
-  padding: 10px 0;
+  padding: 11px 0;
   background-color: #f6faf2;
   border-top: 1px solid #d3d7cf;
+  border-bottom: 1px solid #f6faf2;
   width: 100%;
   position: absolute;
   bottom: 0;
   left: 0;
+  clear: both;
   font-size: 12px;
   text-align: right;
 }
