@@ -25,11 +25,15 @@ package hudson.model;
 
 import hudson.model.UpdateCenter.DownloadJob;
 import hudson.model.UpdateCenter.DownloadJob.Success;
+import hudson.model.UpdateCenter.DownloadJob.Failure;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RandomlyFails;
+
+import java.io.IOException;
 
 /**
  *
@@ -56,6 +60,19 @@ public class UpdateCenter2Test {
         UpdateSite.neverUpdate = false;
         assertTrue(j.jenkins.getUpdateCenter().getById("default").isDue());
         assertEquals(Messages.UpdateCenter_n_a(), j.jenkins.getUpdateCenter().getLastUpdatedString());
+    }
+
+    @Issue("SECURITY-234")
+    @Test public void installInvalidChecksum() throws Exception {
+        UpdateSite.neverUpdate = false;
+        j.jenkins.pluginManager.doCheckUpdatesServer(); // load the metadata
+        String wrongChecksum = "ABCDEFG1234567890";
+
+        // usually the problem is the file having a wrong checksum, but changing the expected one works just the same
+        j.jenkins.getUpdateCenter().getSite("default").getPlugin("changelog-history").sha1 = wrongChecksum;
+        DownloadJob job = (DownloadJob) j.jenkins.getUpdateCenter().getPlugin("changelog-history").deploy().get();
+        assertTrue(job.status instanceof Failure);
+        assertTrue("error message references checksum", ((Failure) job.status).problem.getMessage().contains(wrongChecksum));
     }
 
 }

@@ -122,6 +122,13 @@ var crumb = {
         var div = document.createElement("div");
         div.innerHTML = "<input type=hidden name='"+this.fieldName+"' value='"+this.value+"'>";
         form.appendChild(div);
+        if (form.enctype == "multipart/form-data") {
+            if (form.action.indexOf("?") != -1) {
+                form.action = form.action+"&"+this.fieldName+"="+this.value;
+            } else {
+                form.action = form.action+"?"+this.fieldName+"="+this.value;
+            }
+        }
     }
 }
 
@@ -2553,6 +2560,7 @@ function buildFormTree(form) {
                 // switch to multipart/form-data to support file submission
                 // @enctype is the standard, but IE needs @encoding.
                 form.enctype = form.encoding = "multipart/form-data";
+                crumb.appendToForm(form);
                 break;
             case "radio":
                 if(!e.checked)  break;

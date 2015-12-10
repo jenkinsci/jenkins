@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.639-SNAPSHOT</version>
+    <version>1.642-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-test-harness</artifactId>
@@ -72,6 +72,18 @@ THE SOFTWARE.
         <exclusion>
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpcore</artifactId>
+        </exclusion>
+        <exclusion>
+          <!--
+            during test, this jar gets loaded at the same level as remoting.jar and can cause conflicts depending on the order.
+            the package is also not signed, and it creates package conflicts between the signed package from remoting.jar
+          -->
+          <groupId>org.jenkins-ci</groupId>
+          <artifactId>SECURITY-144-compat</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -140,6 +152,12 @@ THE SOFTWARE.
       <groupId>net.sourceforge.htmlunit</groupId>
       <artifactId>htmlunit</artifactId>
       <version>2.18</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency><!-- we exclude this transient dependency from htmlunit, which we actually need in the test -->
       <groupId>xalan</groupId>
@@ -150,6 +168,12 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>embedded-rhino-debugger</artifactId>
       <version>1.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jvnet.hudson</groupId>
+          <artifactId>htmlunit-core-js</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <!-- for testing JNLP launch. -->

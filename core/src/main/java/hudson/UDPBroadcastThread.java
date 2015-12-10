@@ -30,11 +30,11 @@ import jenkins.model.Jenkins;
 import hudson.util.OneShotEvent;
 
 import java.io.IOException;
-import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.logging.Level;
@@ -104,10 +104,13 @@ public class UDPBroadcastThread extends Thread {
             }
         } catch (ClosedByInterruptException e) {
             // shut down
-        } catch (BindException e) {
-            // if we failed to listen to UDP, just silently abandon it, as a stack trace
+        } catch (SocketException e) {
+            if (shutdown) { // forcibly closed
+                return;
+            }            // if we failed to listen to UDP, just silently abandon it, as a stack trace
             // makes people unnecessarily concerned, for a feature that currently does no good.
-            LOGGER.log(Level.WARNING, "Failed to listen to UDP port "+PORT,e);
+            LOGGER.log(Level.INFO, "Cannot listen to UDP port {0}, skipping: {1}", new Object[] {PORT, e});
+            LOGGER.log(Level.FINE, null, e);
         } catch (IOException e) {
             if (shutdown)   return; // forcibly closed
             LOGGER.log(Level.WARNING, "UDP handling problem",e);

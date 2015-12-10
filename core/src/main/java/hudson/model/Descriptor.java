@@ -72,6 +72,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
+import java.util.IdentityHashMap;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -559,7 +560,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      Signals a problem in the submitted form.
      * @since 1.145
      */
-    public T newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+    public T newInstance(@CheckForNull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
         try {
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
@@ -574,7 +575,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 }
 
                 // new behavior as of 1.206
-                return verifyNewInstance(req.bindJSON(clazz,formData));
+                BindInterceptor oldInterceptor = req.getBindInterceptor();
+                try {
+                    NewInstanceBindInterceptor interceptor;
+                    if ((oldInterceptor instanceof NewInstanceBindInterceptor)) {
+                        interceptor = (NewInstanceBindInterceptor) oldInterceptor;
+                    } else {
+                        interceptor = new NewInstanceBindInterceptor(oldInterceptor);
+                        req.setBindInterceptor(interceptor);
+                    }
+                    interceptor.processed.put(formData, null);
+                    return verifyNewInstance(req.bindJSON(clazz, formData));
+                } finally {
+                    req.setBindInterceptor(oldInterceptor);
+                }
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
@@ -585,6 +599,78 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
         } catch (RuntimeException e) {
             throw new RuntimeException("Failed to instantiate "+clazz+" from "+formData,e);
         }
+    }
+
+    /**
+     * Ensures that calls to {@link StaplerRequest#bindJSON(Class, JSONObject)} from {@link #newInstance(StaplerRequest, JSONObject)} recurse properly.
+     * {@code doConfigSubmit}-like methods will wind up calling {@code newInstance} directly
+     * or via {@link #newInstancesFromHeteroList(StaplerRequest, Object, Collection)},
+     * which consult any custom {@code newInstance} overrides for top-level {@link Describable} objects.
+     * But for nested describable objects Stapler would know nothing about {@code newInstance} without this trick.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static class NewInstanceBindInterceptor extends BindInterceptor {
+
+        private final BindInterceptor oldInterceptor;
+        private final Map<JSONObject,Void> processed = new IdentityHashMap<>();
+
+        NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
+            LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);
+            this.oldInterceptor = oldInterceptor;
+        }
+
+        private boolean isApplicable(Class type, JSONObject json) {
+            if (Modifier.isAbstract(type.getModifiers())) {
+                LOGGER.log(Level.FINER, "ignoring abstract {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            if (!Describable.class.isAssignableFrom(type)) {
+                LOGGER.log(Level.FINER, "ignoring non-Describable {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            if (processed.containsKey(json)) {
+                LOGGER.log(Level.FINER, "already processed {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public Object instantiate(Class actualType, JSONObject json) {
+            if (isApplicable(actualType, json)) {
+                LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
+                try {
+                    return Jenkins.getActiveInstance().getDescriptor(actualType).newInstance(Stapler.getCurrentRequest(), json);
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
+                    // If nested objects are not using newInstance, bindJSON will wind up throwing the same exception anyway,
+                    // so logging above will result in a duplicated stack trace.
+                    // However if they *are* then this is the only way to find errors in that newInstance.
+                    // Normally oldInterceptor.instantiate will just return DEFAULT, not actually do anything,
+                    // so we cannot try calling the default instantiation and then decide which problem to report.
+                }
+            }
+            return oldInterceptor.instantiate(actualType, json);
+        }
+
+        @Override
+        public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
+            if (jsonSource instanceof JSONObject) {
+                JSONObject json = (JSONObject) jsonSource;
+                if (isApplicable(targetTypeErasure, json)) {
+                    LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
+                    try {
+                        return Jenkins.getActiveInstance().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "falling back to default instantiation " + targetTypeErasure.getName() + " " + json, x);
+                    }
+                }
+            } else {
+                LOGGER.log(Level.FINER, "ignoring non-object {0}", jsonSource);
+            }
+            return oldInterceptor.onConvert(targetType, targetTypeErasure, jsonSource);
+        }
+
     }
 
     /**
