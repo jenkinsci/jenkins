@@ -39,6 +39,14 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </j:when>
+      <j:when test="${upJob!=null and upJob.error != null}">
+        <form method="post" action="${rootURL}/updateCenter/upgrade">
+          ${%UpgradeFailed(ucData.core.version,upJob.errorMessage,rootURL+'/updateCenter/')}
+          <j:if test="${ucData.canUpgrade()}">
+            <f:submit value="${%Retry}"/>
+          </j:if>
+        </form>
+      </j:when>
       <j:when test="${upJob!=null}">
         ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
       </j:when>
