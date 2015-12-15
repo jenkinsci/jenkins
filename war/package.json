@@ -6,14 +6,15 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "handlebars": "^3.0.3",
-    "jenkins-js-builder": "0.0.30",
-    "jenkins-js-test": "0.0.15"
+    "hbsfy": "^2.4.1",
+    "jenkins-handlebars-rt": "^1.0.1",
+    "jenkins-js-builder": "0.0.37",
+    "jenkins-js-test": "0.0.16"
   },
   "dependencies": {
-    "jenkins-handlebars-rt": "^1.0.1",
+    "bootstrap-detached": "^3.3.5-v1",
     "jenkins-js-modules": "^1.4.0",
     "jquery-detached": "^2.1.4-v2",
-    "bootstrap-detached": "^3.3.4-v6",
     "window-handle": "0.0.6"
   }
 }
