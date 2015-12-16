@@ -111,18 +111,37 @@ public class ArgumentListBuilderTest {
                 "-Dfoo9=%'''%%@%"); // no quotes as none of the % are followed by a letter
         // By default, does not escape %VAR%
         assertThat(builder.toWindowsCommand().toCommandArray(), is(new String[] { "cmd.exe", "/C",
-                "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
+                "ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
                 + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\""
                 + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
                 + " \"-Dfoo8=% %QED% %comspec% %-%(%.%\""
-                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" }));
+                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%" }));
         // Pass flag to escape %VAR%
         assertThat(builder.toWindowsCommand(true).toCommandArray(), is(new String[] { "cmd.exe", "/C",
-                "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
+                "ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
                 + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\""
                 + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
                 + " \"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\""
-                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" }));
+                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%" }));
+        // JENKINS-31986
+        assertThat(new ArgumentListBuilder(
+                        "mvn",
+                        "-DdevelopmentVersion=2.1-SNAPSHOT",
+                        "-DreleaseVersion=2.0",
+                        "-Dtag=2.0",
+                        "-DautoVersionSubmodules=true",
+                        "-Darguments=-Dtag=2.0 -DreleaseVersion=2.0 -DdevelopmentVersion=2.1-SNAPSHOT",
+                        "release:prepare",
+                        "release:perform"
+                ).toWindowsCommand(true).toCommandArray(),
+                is(new String[]{
+                        "cmd.exe",
+                        "/C",
+                        "mvn -DdevelopmentVersion=2.1-SNAPSHOT -DreleaseVersion=2.0 -Dtag=2.0 -DautoVersionSubmodules=true " + 
+                        "\"-Darguments=-Dtag=2.0 -DreleaseVersion=2.0 -DdevelopmentVersion=2.1-SNAPSHOT\" " +
+                        "release:prepare release:perform && exit %%ERRORLEVEL%%"
+                })
+        );
     }
 
     @Test
