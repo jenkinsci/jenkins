@@ -350,7 +350,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         // double %% is needed because we want ERRORLEVEL to be expanded after
         // batch file executed, not before. This alone shows how broken Windows is...
         quotedArgs.append("&& exit %%ERRORLEVEL%%");
-        return new ArgumentListBuilder().add("cmd.exe", "/C").addQuoted(quotedArgs.toString());
+        return new ArgumentListBuilder().add("cmd.exe", "/C").add(quotedArgs.toString());
     }
 
     /**
