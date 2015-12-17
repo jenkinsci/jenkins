@@ -267,7 +267,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
                                     // we've been idle for long enough
                                     logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
                                             new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
-                                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
+                                    c.disconnect(new OfflineCause.IdleOfflineCause());
                                 }
                             }
                         }
