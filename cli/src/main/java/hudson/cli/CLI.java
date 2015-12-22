@@ -131,11 +131,16 @@ public class CLI {
 
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
+        CliPort cliPort = factory.cliPort != null ? factory.cliPort : getCliTcpPort(url);
 
         Channel _channel;
         try {
-            _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
+            _channel = connectViaCliPort(jenkins, cliPort);
         } catch (IOException e) {
+            if (factory.onlyCliPortConnection) {
+                throw e;
+            }
+
             LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
             try {
                 _channel = connectViaHttp(url);

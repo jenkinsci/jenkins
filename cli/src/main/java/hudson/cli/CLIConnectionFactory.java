@@ -2,6 +2,8 @@ package hudson.cli;
 
 import org.apache.commons.codec.binary.Base64;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,6 +19,11 @@ public class CLIConnectionFactory {
     ExecutorService exec;
     String httpsProxyTunnel;
     String authorization;
+
+    @CheckForNull
+    CliPort cliPort;
+
+    boolean onlyCliPortConnection = false;
 
     /**
      * Top URL of the Jenkins to connect to.
@@ -54,6 +61,22 @@ public class CLIConnectionFactory {
      */
     public CLIConnectionFactory authorization(String value) {
         this.authorization = value;
+        return this;
+    }
+
+    /**
+     * Use specified CliPort configuration instead of searching configuration from http headers.
+     */
+    public CLIConnectionFactory cliPort(CliPort cliPort) {
+        this.cliPort = cliPort;
+        return this;
+    }
+
+    /**
+     * Enforces CLI to use CliPort connection, either fail connection.
+     */
+    public CLIConnectionFactory onlyCliPortConnection(boolean onlyCliPortConnection) {
+        this.onlyCliPortConnection = onlyCliPortConnection;
         return this;
     }
 
