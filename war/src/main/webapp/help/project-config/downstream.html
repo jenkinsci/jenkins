@@ -6,8 +6,11 @@
   Other than the obvious use case where you'd like to build other projects that have a dependency
   on the current project, this can also be useful to split a long build process in to multiple
   stages (such as the build portion and the test portion).
-
   <p>
-    Projects located inside folders can be specified using an absolute path starting with "/" or a
+    When using
+    <a href="https://wiki.jenkins-ci.org/display/JENKINS/CloudBees+Folders+Plugin">CloudBees Folder Plugin</a>
+    or other plugins depending on it and organizing jobs into folders such as
+    <a href="https://wiki.jenkins-ci.org/display/JENKINS/Multi-Branch+Project+Plugin">Multi-Branch Project Plugin</a>,
+    projects located inside folders can be specified using an absolute path starting with "/" or a
     relative path from the current project location.
 </div>
