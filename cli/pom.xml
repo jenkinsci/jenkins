@@ -49,6 +49,12 @@
       <artifactId>trilead-ssh2</artifactId>
       <version>build214-jenkins-1</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>3.0.0</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
