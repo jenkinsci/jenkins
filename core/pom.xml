@@ -558,6 +558,11 @@ THE SOFTWARE.
       <artifactId>robust-http-client</artifactId>
       <version>1.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>symbol-annotation</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
 
     <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.6 until we figure out a mechanism to let plugins load its own -->
       <groupId>commons-codec</groupId>
