@@ -212,8 +212,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * When the job is disabled.
+     * TODO: @since
      */
-    protected long disabledSince;
+    protected Long disabledSince = null;
 
     /**
      * True to keep builds of this project in queue when downstream projects are
@@ -696,7 +697,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * When the Job is disabled.
      *
-     * @since 1.640
+     * TODO: @since
      */
     @Exported
     public @Nonnull Calendar getDisabledSince() {
