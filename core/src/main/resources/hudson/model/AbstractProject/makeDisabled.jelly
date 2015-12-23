@@ -28,7 +28,7 @@ THE SOFTWARE.
     <j:when test="${it.disabled}">
       <div class="warning">
         <form method="post" id='enable-project' action="enable">
-          ${%This project is currently disabled}
+          ${%This project is currently disabled since}
           <i:formatDate value="${it.disabledSince.time}" type="both" dateStyle="medium" timeStyle="short" />
           <l:hasPermission permission="${it.CONFIGURE}">
             <f:submit value="${%Enable}" />
