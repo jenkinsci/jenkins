@@ -4,7 +4,10 @@
         <conf-provider type="maven"/>
     </conf-providers>
     <chain name="default">
-        <transformation type="dead-code-cleaner"/>
+        <transformation type="dead-code-cleaner">
+            <param name="ignoreSerializableMethods">true</param>
+            <param name="excludedMethods">["hudson.FilePath#_syncIO()"]</param>
+        </transformation>
         <writer path="src/main/java" type="org.walkmod:walkmod-javalang-plugin:string-writer"/>
     </chain>
 </walkmod>
