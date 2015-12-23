@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
@@ -802,6 +803,19 @@ public class ProjectTest {
 
 
         assertFalse(j.jenkins.getQueue().isEmpty());
+    }
+
+    @Issue("JENKINS-32183")
+    @Test
+    public void testDisabledSince() throws Exception{
+        FreeStyleProject p = j.createFreeStyleProject("project");
+        p.makeDisabled(true);
+        assertTrue("Project should be disabled.", p.isDisabled());
+        HtmlPage page = j.createWebClient().getPage(p);
+        WebAssert.assertTextPresent(page, "since");
+        p.makeDisabled(false);
+        page = j.createWebClient().getPage(p);
+        WebAssert.assertTextNotPresent(page, "since");
     }
 
     public static class TransientAction extends InvisibleAction{
