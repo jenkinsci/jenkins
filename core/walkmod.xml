@@ -7,6 +7,7 @@
         <transformation type="dead-code-cleaner">
             <param name="ignoreSerializableMethods">true</param>
             <param name="excludedMethods">["hudson.FilePath#_syncIO()"]</param>
+            <param name="excludedFields">["hudson.model.Slave#labels", "hudson.model.JenkinsLocationConfiguration#charset", "jenkins.model.JenkinsLocationConfiguration#useSsl"]</param>
         </transformation>
         <writer path="src/main/java" type="org.walkmod:walkmod-javalang-plugin:string-writer"/>
     </chain>
