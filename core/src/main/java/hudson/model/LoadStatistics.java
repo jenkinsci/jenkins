@@ -27,7 +27,7 @@ import hudson.Extension;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
 import hudson.model.queue.SubTask;
-import hudson.model.queue.Tasks;
+
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
 import jenkins.model.Jenkins;
@@ -401,15 +401,7 @@ public abstract class LoadStatistics {
             j.overallLoad.updateCounts(j.overallLoad.computeSnapshot(bis));
         }
 
-        private int count(List<Queue.BuildableItem> bis, Label l) {
-            int q=0;
-            for (Queue.BuildableItem bi : bis) {
-                for (SubTask st : Tasks.getSubTasksOf(bi.task))
-                    if (bi.getAssignedLabelFor(st)==l)
-                        q++;
-            }
-            return q;
-        }
+        
     }
 
     /**
