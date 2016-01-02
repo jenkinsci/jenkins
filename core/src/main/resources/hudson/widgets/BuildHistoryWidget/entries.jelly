@@ -28,5 +28,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:include page="entries.jelly" />
+  <st:include page="/hudson/widgets/HistoryWidget/entries.jelly" />
 </j:jelly>
