@@ -359,6 +359,7 @@ public class PluginManagerTest {
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
     
+    @WithPlugin("tasks.jpi")
     @Test public void pluginListJSONApi() throws IOException {
         JSONObject response = r.getJSON("pluginManager/plugins").getJSONObject();
 
