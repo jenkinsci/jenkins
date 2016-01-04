@@ -321,6 +321,10 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * @throws Throwable if setup fails (which will disable {@code after}
      */
     public void before() throws Throwable {
+        if (Thread.interrupted()) { // JENKINS-30395
+            System.err.println("was interrupted before start");
+        }
+
         if(Functions.isWindows()) {
             // JENKINS-4409.
             // URLConnection caches handles to jar files by default,
