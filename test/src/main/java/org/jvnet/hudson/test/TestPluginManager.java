@@ -37,6 +37,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -73,6 +74,11 @@ public class TestPluginManager extends PluginManager {
     }
 
     private Set<String> loadBundledPlugins(File fromDir) throws IOException, URISyntaxException {
+        if (!fromDir.exists()) {
+            LOGGER.log(Level.INFO, "No plugins loaded from " + fromDir + ". Directory doesn't exist.");
+            return Collections.emptySet();
+        }
+        
         Set<String> names = new HashSet<String>();
 
         File[] children = fromDir.listFiles();
