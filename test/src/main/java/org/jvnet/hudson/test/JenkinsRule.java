@@ -322,7 +322,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      */
     public void before() throws Throwable {
         if (Thread.interrupted()) { // JENKINS-30395
-            System.err.println("was interrupted before start");
+            LOGGER.warning("was interrupted before start");
         }
 
         if(Functions.isWindows()) {
