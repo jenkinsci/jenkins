@@ -65,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -74,6 +75,10 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.bytecode.Transformer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import javax.annotation.Nonnull;
 
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
@@ -280,9 +285,53 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     /**
+     * Get the list of all plugins that have ever been detached from Jenkins core.
+     * @return A {@link List} of {@link DetachedPlugin}s.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull List<DetachedPlugin> getDetachedPlugins() {
+        return DETACHED_LIST;
+    }
+
+    /**
+     * Get the list of plugins that have been detached since a specific Jenkins release version.
+     * @param since The Jenkins version.
+     * @return A {@link List} of {@link DetachedPlugin}s.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull List<DetachedPlugin> getDetachedPlugins(@Nonnull VersionNumber since) {
+        List<DetachedPlugin> detachedPlugins = new ArrayList<>();
+
+        for (DetachedPlugin detachedPlugin : DETACHED_LIST) {
+            if (!detachedPlugin.getSplitWhen().isOlderThan(since)) {
+                detachedPlugins.add(detachedPlugin);
+            }
+        }
+
+        return detachedPlugins;
+    }
+
+    /**
+     * Is the named plugin a plugin that was detached from Jenkins at some point in the past.
+     * @param pluginId The plugin ID.
+     * @return {@code true} if the plugin is a plugin that was detached from Jenkins at some
+     * point in the past, otherwise {@code false}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isDetachedPlugin(@Nonnull String pluginId) {
+        for (DetachedPlugin detachedPlugin : DETACHED_LIST) {
+            if (detachedPlugin.getShortName().equals(pluginId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Information about plugins that were originally in the core.
      */
-    private static final class DetachedPlugin {
+    public static final class DetachedPlugin {
         private final String shortName;
         /**
          * Plugins built for this Jenkins version (and earlier) will automatically be assumed to have
@@ -298,6 +347,22 @@ public class ClassicPluginStrategy implements PluginStrategy {
             this.shortName = shortName;
             this.splitWhen = new VersionNumber(splitWhen);
             this.requireVersion = requireVersion;
+        }
+
+        /**
+         * Get the short name of the plugin.
+         * @return The short name of the plugin.
+         */
+        public String getShortName() {
+            return shortName;
+        }
+
+        /**
+         * Get the Jenkins version from which the plugin was detached.
+         * @return The Jenkins version from which the plugin was detached.
+         */
+        public VersionNumber getSplitWhen() {
+            return splitWhen;
         }
 
         private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
@@ -320,22 +385,22 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
-    private static final List<DetachedPlugin> DETACHED_LIST = Arrays.asList(
-        new DetachedPlugin("maven-plugin","1.296","1.296"),
-        new DetachedPlugin("subversion","1.310","1.0"),
-        new DetachedPlugin("cvs","1.340","0.1"),
-        new DetachedPlugin("ant","1.430.*","1.0"),
-        new DetachedPlugin("javadoc","1.430.*","1.0"),
-        new DetachedPlugin("external-monitor-job","1.467.*","1.0"),
-        new DetachedPlugin("ldap","1.467.*","1.0"),
-        new DetachedPlugin("pam-auth","1.467.*","1.0"),
-        new DetachedPlugin("mailer","1.493.*","1.2"),
-        new DetachedPlugin("matrix-auth","1.535.*","1.0.2"),
-        new DetachedPlugin("windows-slaves","1.547.*","1.0"),
-        new DetachedPlugin("antisamy-markup-formatter","1.553.*","1.0"),
-        new DetachedPlugin("matrix-project","1.561.*","1.0"),
-        new DetachedPlugin("junit","1.577.*","1.0")
-    );
+    private static final List<DetachedPlugin> DETACHED_LIST = Collections.unmodifiableList(Arrays.asList(
+            new DetachedPlugin("maven-plugin", "1.296", "1.296"),
+            new DetachedPlugin("subversion", "1.310", "1.0"),
+            new DetachedPlugin("cvs", "1.340", "0.1"),
+            new DetachedPlugin("ant", "1.430.*", "1.0"),
+            new DetachedPlugin("javadoc", "1.430.*", "1.0"),
+            new DetachedPlugin("external-monitor-job", "1.467.*", "1.0"),
+            new DetachedPlugin("ldap", "1.467.*", "1.0"),
+            new DetachedPlugin("pam-auth", "1.467.*", "1.0"),
+            new DetachedPlugin("mailer", "1.493.*", "1.2"),
+            new DetachedPlugin("matrix-auth", "1.535.*", "1.0.2"),
+            new DetachedPlugin("windows-slaves", "1.547.*", "1.0"),
+            new DetachedPlugin("antisamy-markup-formatter", "1.553.*", "1.0"),
+            new DetachedPlugin("matrix-project", "1.561.*", "1.0"),
+            new DetachedPlugin("junit", "1.577.*", "1.0")
+    ));
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
     private static final Set<String> BREAK_CYCLES = new HashSet<String>(Arrays.asList(

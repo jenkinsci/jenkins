@@ -41,6 +41,8 @@ THE SOFTWARE.
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
+    <node.version>4.0.0</node.version>
+    <npm.version>2.13.1</npm.version>
   </properties>
 
   <dependencies>
@@ -140,6 +142,24 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
       <version>1.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.ui</groupId>
+      <artifactId>jquery-detached</artifactId>
+      <version>1.2</version>
+      <classifier>core-assets</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.ui</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>1.3.1</version>
+      <classifier>core-assets</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.ui</groupId>
+      <artifactId>handlebars</artifactId>
+      <version>1.1</version>
+      <classifier>core-assets</classifier>
     </dependency>
     <dependency>
       <!--
@@ -259,7 +279,25 @@ THE SOFTWARE.
                   <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
                   <destFileName>winstone.jar</destFileName>
                 </artifactItem>
-                <!-- bundled plugins -->
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins</outputDirectory>
+              <stripVersion>true</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+          <execution>
+            <id>detached-plugins</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <!-- 
+                    Detached plugins and their dependencies - detached plugins that used to be bundled plugins 
+                -->
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>maven-plugin</artifactId>
@@ -374,7 +412,7 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
-              <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins</outputDirectory>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/detached-plugins</outputDirectory>
               <stripVersion>true</stripVersion>
               <overWriteIfNewer>true</overWriteIfNewer>
               <overWriteReleases>false</overWriteReleases>
@@ -538,36 +576,92 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>
+
+      
+    <!--
+        The following profiles are required to integration the node/gulp build into this maven build.
+        Hopefully we can push these profiles down into a parent pom.
+        See https://github.com/tfennelly/jenkins-js-builder#maven-integration
+    -->
+      
+    <!--
+        Manually download node and NPM for the frontend plugin so it gets cached in the local maven repo.
+        Otherwise frontend will be downloading it all the time on the CI servers. The download-maven-plugin 
+        caches it's downloads in the local maven repo.
+    -->
     <profile>
-      <!-- profile for running Grunt and optimize static resources -->
-      <id>grunt</id>
+        <id>node-classifier-linux</id>
+        <activation><os><family>Linux</family><arch>amd64</arch></os></activation>
+		<properties>
+			<node.download.file>node-v${node.version}-linux-x64.tar.gz</node.download.file>
+			<node.download.classifier></node.download.classifier>
+		</properties>
+    </profile>
+    <profile>
+        <id>node-classifier-mac</id>
+        <activation><os><family>mac</family></os></activation>
+        <properties>
+			<node.download.file>node-v${node.version}-darwin-x64.tar.gz</node.download.file>
+			<node.download.classifier></node.download.classifier>
+		</properties>
+    </profile>
+    <profile>
+        <id>node-classifier-windows</id>
+        <activation><os><family>windows</family><arch>x64</arch></os></activation>
+		<properties>
+			<node.download.file>win-x64/node.exe</node.download.file>
+			<node.download.classifier>/x64</node.download.classifier>
+		</properties>
+    </profile>
+    <profile>
+        <id>node-classifier-windows-amd64</id>
+        <activation><os><family>windows</family><arch>amd64</arch></os></activation>
+		<properties>
+			<node.download.file>win-x64/node.exe</node.download.file>
+			<node.download.classifier>/x64</node.download.classifier>
+		</properties>
+    </profile>
+    <profile>
+        <id>node-classifier-windows-x86</id>
+        <activation><os><family>windows</family><arch>x86</arch></os></activation>
+		<properties>
+			<node.download.file>win-x86/node.exe</node.download.file>
+			<node.download.classifier></node.download.classifier>
+		</properties>
+    </profile>
+    <profile>
+        <id>node-download</id>
+        <activation><file><exists>package.json</exists></file></activation>
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
+                    <groupId>com.googlecode.maven-download-plugin</groupId>
+                    <artifactId>download-maven-plugin</artifactId>
+                    <version>1.2.1</version>
                     <executions>
                         <execution>
-                            <id>install</id>
-                            <phase>validate</phase>
+                            <id>get-node</id>
+                            <phase>initialize</phase>
                             <goals>
-                                <goal>exec</goal>
+                                <goal>wget</goal>
                             </goals>
                             <configuration>
-                                <executable>npm</executable>
-                                <arguments>
-                                    <argument>install</argument>
-                                </arguments>
+                                <url>https://nodejs.org/dist/v${node.version}/${node.download.file}</url>
+                                <unpack>false</unpack>
+                                <outputDirectory>${project.build.directory}/frontend/v${node.version}${node.download.classifier}</outputDirectory>
                             </configuration>
                         </execution>
                         <execution>
-                            <id>grunt</id>
-                            <phase>prepare-package</phase>
+                            <id>get-npm</id>
+                            <phase>initialize</phase>
                             <goals>
-                                <goal>exec</goal>
+                                <goal>wget</goal>
                             </goals>
                             <configuration>
-                                <executable>grunt</executable>
+                                <url>http://registry.npmjs.org/npm/-/npm-${npm.version}.tgz</url>
+                                <unpack>false</unpack>
+                                <outputDirectory>${project.build.directory}/frontend/</outputDirectory>
+                                <outputFileName>npm-${npm.version}.tgz</outputFileName>
                             </configuration>
                         </execution>
                     </executions>
@@ -575,5 +669,124 @@ THE SOFTWARE.
             </plugins>
         </build>
     </profile>
-  </profiles>
+    <profile>
+        <id>gulp-execution</id>
+        <activation>
+            <file>
+                <exists>gulpfile.js</exists>
+            </file>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.3.1</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-versions</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireMavenVersion>
+                                        <version>3.1.0</version>
+                                    </requireMavenVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>0.0.23</version>
+
+                    <executions>
+
+                        <execution>
+                            <phase>initialize</phase>
+                            <id>install node and npm</id>
+                            <goals>
+                                <goal>install-node-and-npm</goal>
+                            </goals>
+                            <configuration>
+                                <nodeVersion>v${node.version}</nodeVersion>
+                                <npmVersion>${npm.version}</npmVersion>
+                                <!-- Use the pre-download node and npm packages. See download-maven-plugin config above. -->
+                                <downloadRoot>${project.baseUri}target/frontend/</downloadRoot>
+                            </configuration>
+                        </execution>
+
+                        <execution>
+                            <phase>initialize</phase>
+                            <id>npm install</id>
+                            <goals>
+                                <goal>npm</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Note that this may not be omitted lest maven-release-plugin be confused (frontend-maven-plugin #109): -->
+                                <arguments>install</arguments>
+                            </configuration>
+                        </execution>
+
+                        <execution>
+                            <phase>generate-sources</phase>
+                            <id>gulp bundle</id>
+                            <goals>
+                                <goal>gulp</goal>
+                            </goals>
+                            <configuration>
+                                <arguments>bundle</arguments>
+                            </configuration>
+                        </execution>
+
+                        <execution>
+                            <phase>test</phase>
+                            <id>gulp test</id>
+                            <goals>
+                                <goal>gulp</goal>
+                            </goals>
+                            <configuration><arguments>bundle test</arguments></configuration>
+                        </execution>
+
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+
+    <profile>
+        <id>clean-node</id>
+        <activation>
+            <file>
+                <exists>package.json</exists>
+            </file>
+            <property>
+                <name>cleanNode</name>
+            </property>
+        </activation>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <configuration>
+                        <filesets>
+                            <fileset>
+                                <directory>node</directory>
+                                <followSymlinks>false</followSymlinks>
+                            </fileset>
+                            <fileset>
+                                <directory>node_modules</directory>
+                                <followSymlinks>false</followSymlinks>
+                            </fileset>
+                        </filesets>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>      
+</profiles>
 </project>
