@@ -42,6 +42,11 @@ THE SOFTWARE.
       <param-value>false</param-value>
     </init-param>
   </servlet>
+    
+  <context-param>
+      <param-name>install-wizard-path</param-name>
+      <param-value>jsbundles/pluginSetupWizard</param-value>
+  </context-param>
 
   <servlet-mapping>
     <servlet-name>Stapler</servlet-name>

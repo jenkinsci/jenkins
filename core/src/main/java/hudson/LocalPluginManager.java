@@ -26,15 +26,9 @@ package hudson;
 
 import jenkins.model.Jenkins;
 
-import javax.servlet.ServletContext;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -64,28 +58,11 @@ public class LocalPluginManager extends PluginManager {
             return Collections.emptySet();
         }
 
-        Set<String> names = new HashSet<String>();
-
-        ServletContext context = Jenkins.getInstance().servletContext;
-
-        for( String path : Util.fixNull((Set<String>)context.getResourcePaths("/WEB-INF/plugins"))) {
-            String fileName = path.substring(path.lastIndexOf('/')+1);
-            if(fileName.length()==0) {
-                // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
-                // I suspect some containers are returning directory names.
-                continue;
-            }
-            try {
-                names.add(fileName);
-
-                URL url = context.getResource(path);
-                copyBundledPlugin(url, fileName);
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
-            }
+        try {
+            return loadPluginsFromWar("/WEB-INF/plugins");
+        } finally {
+            loadDetachedPlugins();
         }
-
-        return names;
     }
 
     private static final Logger LOGGER = Logger.getLogger(LocalPluginManager.class.getName());

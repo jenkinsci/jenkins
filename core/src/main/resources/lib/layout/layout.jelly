@@ -80,7 +80,7 @@ ${h.initPageVariables(context)}
   </j:if>
 <x:doctype name="html" />
 <html>
-  <head resURL="${resURL}">
+  <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
 
     <j:if test="${isMSIE}">
@@ -102,7 +102,7 @@ ${h.initPageVariables(context)}
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
-
+    
     <!-- we include our own prototype.js, so don't let stapler pull in another. -->
     <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"
                 includes="org.kohsuke.stapler.bind"/>
@@ -153,6 +153,13 @@ ${h.initPageVariables(context)}
       <j:forEach var="pd" items="${h.pageDecorators}">
         <st:include it="${pd}" page="header.jelly" optional="true" />
       </j:forEach>
+    </j:if>
+
+	<j:invokeStatic var="j" className="jenkins.model.Jenkins" method="getActiveInstance" />
+    <j:set var="installState" value="${j.installState.name()}" />
+    <j:if test="${installState == 'NEW' || installState == 'INITIAL_PLUGINS_INSTALLING'}">
+      <script src="${resURL}/${j.installWizardPath}.js" type="text/javascript"/>
+      <link rel="stylesheet" href="${resURL}/${j.installWizardPath}.css" type="text/css" />
     </j:if>
 
     <j:if test="${isMSIE}">

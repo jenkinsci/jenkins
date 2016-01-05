@@ -192,6 +192,8 @@ import hudson.widgets.Widget;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.install.InstallState;
+import jenkins.install.InstallUtil;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -328,6 +330,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     // this field needs to be at the very top so that other components can look at this value even during unmarshalling
     private String version = "1.0";
 
+    /**
+     * The Jenkins instance startup type i.e. NEW, UPGRADE etc
+     */
+    private InstallState installState;
+    
     /**
      * Number of executors of the master node.
      */
@@ -762,6 +769,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
+            installState = InstallUtil.getInstallState();
+            if (installState == InstallState.RESTART || installState == InstallState.DOWNGRADE) {                
+                InstallUtil.saveLastExecVersion();
+            }
+            
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with slaves
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
@@ -884,6 +896,32 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         });
 
         executeReactor(null, graphBuilder);
+    }
+
+    /**
+     * Get the Jenkins {@link jenkins.install.InstallState install state}.   
+     * @return The Jenkins {@link jenkins.install.InstallState install state}.
+     */
+    @Restricted(NoExternalUse.class)
+    public InstallState getInstallState() {
+        return installState;
+    }
+
+    /**
+     * Update the current install state.
+     */
+    @Restricted(NoExternalUse.class)
+    public void setInstallState(@Nonnull InstallState newState) {
+        installState = newState;
+    }
+
+    /**
+     * Get the URL path to the Install Wizard JavaScript.
+     * @return The URL path to the Install Wizard JavaScript.
+     */
+    @Restricted(NoExternalUse.class)
+    public String getInstallWizardPath() {
+        return servletContext.getInitParameter("install-wizard-path");
     }
 
     /**
@@ -2662,6 +2700,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new Hudson.MasterComputer();
     }
 
+    private void loadConfig() throws IOException {
+        XmlFile cfg = getConfigFile();
+        if (cfg.exists()) {
+            // reset some data that may not exist in the disk file
+            // so that we can take a proper compensation action later.
+            primaryView = null;
+            views.clear();
+
+            // load from disk
+            cfg.unmarshal(Jenkins.this);
+        }
+    }
+
     private synchronized TaskBuilder loadTasks() throws IOException {
         File projectsDir = new File(root,"jobs");
         if(!projectsDir.getCanonicalFile().isDirectory() && !projectsDir.mkdirs()) {
@@ -2676,17 +2727,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
-                XmlFile cfg = getConfigFile();
-                if (cfg.exists()) {
-                    // reset some data that may not exist in the disk file
-                    // so that we can take a proper compensation action later.
-                    primaryView = null;
-                    views.clear();
-
-                    // load from disk
-                    cfg.unmarshal(Jenkins.this);
-                }
-
+                loadConfig();
                 // if we are loading old data that doesn't have this field
                 if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
                     nodes.setNodes(slaves);
@@ -4151,14 +4192,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             IOUtils.closeQuietly(is);
         }
         String ver = props.getProperty("version");
-        if(ver==null)   ver="?";
+        if(ver==null)   ver = UNCOMPUTED_VERSION;
         VERSION = ver;
         context.setAttribute("version",ver);
 
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
-        if(ver.equals("?") || Boolean.getBoolean("hudson.script.noCache"))
+        if(ver.equals(UNCOMPUTED_VERSION) || Boolean.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
             RESOURCE_PATH = "/static/"+SESSION_HASH;
@@ -4167,23 +4208,54 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * The version number before it is "computed" (by a call to computeVersion()).
+     * @since FIXME
+     */
+    public static final String UNCOMPUTED_VERSION = "?";
+
+    /**
      * Version number of this Jenkins.
      */
-    public static String VERSION="?";
+    public static String VERSION = UNCOMPUTED_VERSION;
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
      */
-    public static VersionNumber getVersion() {
+    public @CheckForNull static VersionNumber getVersion() {
+        return toVersion(VERSION);
+    }
+
+    /**
+     * Get the stored version of Jenkins, as stored by
+     * {@link #doConfigSubmit(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}.
+     * <p>
+     * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
+     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     * @since FIXME
+     */
+    public @CheckForNull static VersionNumber getStoredVersion() {
+        return toVersion(Jenkins.getActiveInstance().version);
+    }
+
+    /**
+     * Parses a version string into {@link VersionNumber}, or null if it's not parseable as a version number
+     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     */
+    private static @CheckForNull VersionNumber toVersion(@CheckForNull String versionString) {
+        if (versionString == null) {
+            return null;
+        }
+
         try {
-            return new VersionNumber(VERSION);
+            return new VersionNumber(versionString);
         } catch (NumberFormatException e) {
             try {
                 // for non-released version of Jenkins, this looks like "1.345 (private-foobar), so try to approximate.
-                int idx = VERSION.indexOf(' ');
-                if (idx>0)
-                    return new VersionNumber(VERSION.substring(0,idx));
+                int idx = versionString.indexOf(' ');
+                if (idx > 0) {
+                    return new VersionNumber(versionString.substring(0,idx));
+                }
             } catch (NumberFormatException _) {
                 // fall through
             }
