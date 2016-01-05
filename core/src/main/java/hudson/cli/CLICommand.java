@@ -37,6 +37,7 @@ import hudson.remoting.ChannelProperty;
 import hudson.security.CliAuthenticator;
 import hudson.security.SecurityRealm;
 import jenkins.security.MasterToSlaveCallable;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
@@ -239,6 +240,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println(e.getMessage());
             printUsage(stderr, p);
             return -1;
+        } catch (AccessDeniedException e) {
+            stderr.println(e.getMessage());
+            return -1;
         } catch (AbortException e) {
             // signals an error without stack trace
             stderr.println(e.getMessage());
@@ -251,6 +255,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println("Bad Credentials. Search the server log for "+id+" for more details.");
             return -1;
         } catch (Exception e) {
+            final String errorMsg = String.format("Unexpected exception occurred while performing %s command!",
+                    getName());
+            stderr.println(errorMsg);
+            LOGGER.log(Level.WARNING, errorMsg, e);
             e.printStackTrace(stderr);
             return -1;
         } finally {
