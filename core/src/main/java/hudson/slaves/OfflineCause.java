@@ -158,7 +158,7 @@ public abstract class OfflineCause {
 
     /**
      * Caused by idle period.
-     * @since TODO
+     * @since 1.644
      */
     public static class IdleOfflineCause extends SimpleOfflineCause {
         public IdleOfflineCause () {
