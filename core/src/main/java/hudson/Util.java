@@ -40,6 +40,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import jnr.posix.FileStat;
 import jnr.posix.POSIX;
 
@@ -1668,6 +1670,7 @@ public class Util {
      * Whatever the reason, this allows us to do multiple attempts before we
      * give up, thus improving build reliability.
      */
+    @Restricted(value = NoExternalUse.class)
     static int DELETION_MAX = Math.max(1, Integer.getInteger(Util.class.getName() + ".deletionMax", 3).intValue());
 
     /**
@@ -1679,6 +1682,7 @@ public class Util {
      * If negative, we will wait an (linearly) increasing multiple of this value
      * between attempts.
      */
+    @Restricted(value = NoExternalUse.class)
     static int WAIT_BETWEEN_DELETION_RETRIES = Integer.getInteger(Util.class.getName() + ".deletionRetryWait", 100).intValue();
 
     /**
@@ -1702,5 +1706,6 @@ public class Util {
      * recommended, and should not be used on the main Jenkins server
      * unless you can tolerate the performance impact.
      */
+    @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = Boolean.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 }
