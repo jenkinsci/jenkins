@@ -887,6 +887,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Maintains backwards compatibility. Invoked by XStream when this object is de-serialized.
+     */
+    @SuppressWarnings({"unused"})
+    private Object readResolve() {
+        if (jdks == null) {
+            jdks = new ArrayList<>();
+        }
+        return this;
+    }
+
+    /**
      * Executes a reactor.
      *
      * @param is
@@ -1664,8 +1675,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public List<JDK> getJDKs() {
-        if(jdks==null)
-            jdks = new ArrayList<JDK>();
         return jdks;
     }
 
