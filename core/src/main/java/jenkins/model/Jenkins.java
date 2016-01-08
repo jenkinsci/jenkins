@@ -431,7 +431,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient volatile boolean isQuietingDown;
     private transient volatile boolean terminating;
 
-    private List<JDK> jdks = new ArrayList<JDK>();
+    private volatile List<JDK> jdks = new ArrayList<JDK>();
 
     private transient volatile DependencyGraph dependencyGraph;
     private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
@@ -884,6 +884,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         });
 
         executeReactor(null, graphBuilder);
+    }
+
+    /**
+     * Maintains backwards compatibility. Invoked by XStream when this object is de-serialized.
+     */
+    @SuppressWarnings({"unused"})
+    private Object readResolve() {
+        if (jdks == null) {
+            jdks = new ArrayList<>();
+        }
+        return this;
     }
 
     /**
@@ -1663,9 +1674,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return Messages.Hudson_DisplayName();
     }
 
-    public synchronized List<JDK> getJDKs() {
-        if(jdks==null)
-            jdks = new ArrayList<JDK>();
+    public List<JDK> getJDKs() {
         return jdks;
     }
 
@@ -1676,7 +1685,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * set JDK installations from external code.
      */
     @Restricted(NoExternalUse.class)
-    public synchronized void setJDKs(Collection<? extends JDK> jdks) {
+    public void setJDKs(Collection<? extends JDK> jdks) {
         this.jdks = new ArrayList<JDK>(jdks);
     }
 
