@@ -2,7 +2,8 @@
  * The MIT License
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts, CloudBees, Inc.
+ * Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts,
+ * CloudBees, Inc., Christopher Simons
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1384,13 +1385,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
-        String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
-        Jenkins.checkGoodName(name);
+        String proposedName = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
+        Jenkins.checkGoodName(proposedName);
 
         Node node = getNode();
         if (node == null) {
             throw new ServletException("No such node " + nodeName);
         }
+
+        if ((!proposedName.equals(nodeName))
+                && Jenkins.getActiveInstance().getNode(proposedName) != null) {
+            throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
+        }
+
         Node result = node.reconfigure(req, req.getSubmittedForm());
         replaceBy(result);
 
