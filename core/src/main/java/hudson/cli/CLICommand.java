@@ -237,30 +237,36 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 Jenkins.getInstance().checkPermission(Jenkins.READ);
             return run();
         } catch (CmdLineException e) {
-            stderr.println(e.getMessage());
+            stderr.println("\nERROR: " + e.getMessage());
             printUsage(stderr, p);
-            return -1;
-        } catch (AccessDeniedException e) {
-            stderr.println(e.getMessage());
-            return -1;
+            return 2;
+        } catch (IllegalStateException e) {
+            stderr.println("\nERROR: " + e.getMessage());
+            return 4;
+        } catch (IllegalArgumentException e) {
+            stderr.println("\nERROR: " + e.getMessage());
+            return 3;
         } catch (AbortException e) {
             // signals an error without stack trace
-            stderr.println(e.getMessage());
-            return -1;
+            stderr.println("\nERROR: " + e.getMessage());
+            return 5;
+        } catch (AccessDeniedException e) {
+            stderr.println("\nERROR: " + e.getMessage());
+            return 6;
         } catch (BadCredentialsException e) {
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
             String id = UUID.randomUUID().toString();
-            LOGGER.log(Level.INFO, "CLI login attempt failed: "+id, e);
-            stderr.println("Bad Credentials. Search the server log for "+id+" for more details.");
-            return -1;
+            LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
+            stderr.println("\nERROR: Bad Credentials. Search the server log for " + id + " for more details.");
+            return 7;
         } catch (Exception e) {
-            final String errorMsg = String.format("Unexpected exception occurred while performing %s command!",
+            final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                     getName());
             stderr.println(errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
             e.printStackTrace(stderr);
-            return -1;
+            return 1;
         } finally {
             sc.setAuthentication(old); // restore
         }
