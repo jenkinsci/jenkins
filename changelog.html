@@ -63,6 +63,18 @@ Upcoming changes</a>
   <li class="rfe">
     API changes: Add a reusable implementation of <code>IdleOfflineCause</code> class.
     (<a href="https://github.com/jenkinsci/jenkins/commit/7e05b5032e138b5780eabc790d7cddecdc9b0b7c">commit 7e05b50</a>)
+  <li class="rfe">
+    Add time zone to generation date in footer in most locales.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32194">issue 32194</a>)
+  <li class="bug">
+    Prevent renaming nodes from overwriting existing nodes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31321">issue 31321</a>)
+  <li class="bug">
+    Avoid synchronization when setting/getting the list of JDKs to improve performance.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31932">issue 31932</a>)
+  <li class="rfe">
+    The Windows service wrapper now specifies the <code>--webroot</code> argument to extract the war file into <code>%BASE%</code>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1951">pull 1951</a>)
 </ul>
 <h3><a name=v1.643>What's new in 1.643</a> (2015/12/20)</h3>
 <ul class=image>
