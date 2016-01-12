@@ -30,6 +30,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+/**
+ * Will retrieve inodes usage percentage from the node being ran on.
+ *
+ * @see InodesMonitor
+ */
 class InodesUsageGetter {
 	private static final Logger LOGGER = Logger.getLogger(InodesUsageGetter.class.getName());
 
