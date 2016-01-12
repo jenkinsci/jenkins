@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 class DfRunner {
-	private static final Logger LOGGER = Logger.getLogger(DfRunner.class.getSimpleName());
+	private static final Logger LOGGER = Logger.getLogger(DfRunner.class.getName());
 
 	private static Map<String, DfCommand> IMPLEMENTATIONS = new LinkedHashMap<String, DfCommand>();
 

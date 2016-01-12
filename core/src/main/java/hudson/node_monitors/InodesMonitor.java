@@ -50,7 +50,7 @@ import jenkins.security.MasterToSlaveCallable;
  */
 public class InodesMonitor extends NodeMonitor {
 
-	private static final Logger LOGGER = Logger.getLogger(InodesMonitor.class.getSimpleName());
+	private static final Logger LOGGER = Logger.getLogger(InodesMonitor.class.getName());
 
 	private static final String DEFAULT_OFFLINE_THRESHOLD = "95%";
 
