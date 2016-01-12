@@ -23,10 +23,7 @@
  */
 package hudson.node_monitors;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.logging.Logger;
 
@@ -36,8 +33,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import hudson.Extension;
 import hudson.model.Computer;
-import hudson.node_monitors.AbstractAsyncNodeMonitorDescriptor;
-import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Callable;
 import hudson.slaves.OfflineCause;
 import jenkins.model.Jenkins;
