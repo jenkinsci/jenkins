@@ -151,7 +151,7 @@ public class InodesMonitor extends NodeMonitor {
 		private static final long serialVersionUID = 1L;
 		@Override
 		public String call() {
-			return new DfRunner().getUsedInodesPercentage();
+			return new InodesUsageGetter().getUsedInodesPercentage();
 		}
 	}
 }

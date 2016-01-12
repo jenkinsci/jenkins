@@ -2,9 +2,9 @@ package hudson.node_monitors;
 
 import org.junit.Test;
 
-public class DfRunnerTest {
+public class InodesUsageGetterTest {
 	@Test
 	public void get_percentage() throws Exception {
-		new DfRunner().getUsedInodesPercentage();
+		new InodesUsageGetter().getUsedInodesPercentage();
 	}
 }
