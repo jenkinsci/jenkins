@@ -24,6 +24,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:entry title="${%Inodes Usage Percentage Threshold}" field="inodesPercentThreshold">
-    <f:textbox default="96%"/>
+    <f:textbox default="95%"/>
   </f:entry>
 </j:jelly>
