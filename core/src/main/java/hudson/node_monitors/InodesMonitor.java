@@ -119,9 +119,7 @@ public class InodesMonitor extends NodeMonitor {
 	}
 
 	@Extension
-	public static final InodesUseInPercentMonitorDescriptor DESCRIPTOR = new InodesUseInPercentMonitorDescriptor();
-
-	static class InodesUseInPercentMonitorDescriptor extends AbstractAsyncNodeMonitorDescriptor<String> {
+	public static class InodesUseInPercentMonitorDescriptor extends AbstractAsyncNodeMonitorDescriptor<String> {
 
 		@Override
 		public String getDisplayName() {
