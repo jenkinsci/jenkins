@@ -40,8 +40,6 @@ import jenkins.security.MasterToSlaveCallable;
 
 /**
  * Checks the used percentage of inodes on the FS (Linux/Unix only).
- *
- * Uses the <code>df</code> system command.
  */
 public class InodesMonitor extends NodeMonitor {
 
