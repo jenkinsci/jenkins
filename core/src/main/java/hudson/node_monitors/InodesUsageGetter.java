@@ -127,11 +127,16 @@ class InodesUsageGetter {
 	}
 
 	/**
-	 * Tries to run df anyway. Fallback. Will return N/A anyway if an error occurs. Or should we just return N/A directly?
+	 * Fallback. Return N/A with a hint as to why it's N/A.
 	 */
 	private static class DefaultDfCommand extends DfCommand {
 		DefaultDfCommand() {
-			super("df -i .", 2, 5);
+			super(null, -1, -1);
+		}
+
+		@Override
+		public String get() {
+			return Messages.InodesMonitor_NotApplicable_UnsupportedPlatform();
 		}
 	}
 }
