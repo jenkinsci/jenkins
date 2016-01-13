@@ -62,6 +62,8 @@ import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -77,6 +79,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+
+import javax.annotation.CheckForNull;
 
 /**
  * Build by using Maven.
@@ -137,6 +141,15 @@ public class Maven extends Builder {
      */
     private GlobalSettingsProvider globalSettings;
 
+    /**
+     * Skip injecting build variables as properties into maven process.
+     *
+     * Defaults to false to mimic the legacy behavior.
+     *
+     * @since TODO
+     */
+    private boolean doNotInjectBuildVariables = false;
+
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
     
@@ -155,8 +168,12 @@ public class Maven extends Builder {
         this(targets, name, pom, properties, jvmOptions, usePrivateRepository, null, null);
     }
     
-    @DataBoundConstructor
     public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
+        this(targets, name, pom, properties, jvmOptions, usePrivateRepository, settings, globalSettings, true);
+    }
+
+    @DataBoundConstructor
+    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings, boolean injectBuildVariables) {
         this.targets = targets;
         this.mavenName = name;
         this.pom = Util.fixEmptyAndTrim(pom);
@@ -165,6 +182,7 @@ public class Maven extends Builder {
         this.usePrivateRepository = usePrivateRepository;
         this.settings = settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
         this.globalSettings = globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
+        this.doNotInjectBuildVariables = !injectBuildVariables;
     }
 
     public String getTargets() {
@@ -199,6 +217,11 @@ public class Maven extends Builder {
 
     public boolean usesPrivateRepository() {
         return usePrivateRepository;
+    }
+
+    @Restricted(NoExternalUse.class) // Exposed for view
+    public boolean isInjectBuildVariables() {
+        return !doNotInjectBuildVariables;
     }
 
     /**
@@ -311,11 +334,13 @@ public class Maven extends Builder {
                 }
             }
 
-            Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+            if (isInjectBuildVariables()) {
+                Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+                args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
+                final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+                args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
+            }
 
-            args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
-            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
-            args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
