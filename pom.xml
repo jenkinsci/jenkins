@@ -50,6 +50,8 @@ THE SOFTWARE.
   <modules>
     <module>core</module>
     <module>war</module>
+    <module>test-harness</module>
+    <module>test-harness-tools</module>
     <module>test</module>
     <module>cli</module>
     <module>plugins</module>

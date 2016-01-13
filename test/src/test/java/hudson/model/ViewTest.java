@@ -215,7 +215,7 @@ public class ViewTest {
         inView1.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
         view1.add(inView1);
 
-        MatrixProject inView2 = j.createMatrixProject("in-view2");
+        MatrixProject inView2 = j.jenkins.createProject(MatrixProject.class, "in-view2");
         inView2.setAssignedLabel(j.jenkins.getLabelAtom("without-any-slave"));
         view2.add(inView2);
 
@@ -277,7 +277,7 @@ public class ViewTest {
         view1.add(freestyleJob);
         freestyleJob.setAssignedLabel(j.jenkins.getLabel("label0||label2"));
 
-        MatrixProject matrixJob = j.createMatrixProject("matrix");
+        MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
                 new LabelAxis("label", Arrays.asList("label1"))
@@ -346,7 +346,7 @@ public class ViewTest {
     public void testGetItem() throws Exception{
         ListView view = listView("foo");
         FreeStyleProject job1 = j.createFreeStyleProject("free");
-        MatrixProject job2 = j.createMatrixProject("matrix");
+        MatrixProject job2 = j.jenkins.createProject(MatrixProject.class, "matrix");
         FreeStyleProject job3 = j.createFreeStyleProject("not-included");
         view.jobNames.add(job2.getDisplayName());
         view.jobNames.add(job1.getDisplayName());
