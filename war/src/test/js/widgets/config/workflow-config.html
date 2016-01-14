@@ -1,0 +1,1358 @@
+<div>
+    <form method="post" name="config" action="configSubmit">
+        <link rel="stylesheet" href="/jenkins/adjuncts/6072b27b/lib/form/section_.css" type="text/css">
+        <table width="100%">
+            <tbody>
+            <tr>
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Workflow name</td>
+                <td class="setting-main">
+
+
+                    <input name="name" type="text" class="setting-input   " value="first-workflow"></td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="validation-error-area">
+                <td colspan="2"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Description</td>
+                <td class="setting-main">
+                    <script src="/jenkins/adjuncts/6072b27b/lib/form/textarea/textarea.js"
+                            type="text/javascript"></script>
+                    <textarea name="description" rows="5" class="setting-input   "></textarea>
+
+                    <div class="textarea-handle"></div>
+                    <div class="textarea-preview-container">
+                        [Escaped HTML]&nbsp;<a previewendpoint="/markupFormatter/previewDescription" href="#"
+                                               class="textarea-show-preview">Preview</a>&nbsp;<a href="#"
+                                                                                                 class="textarea-hide-preview"
+                                                                                                 style="display: none;">Hide
+                        preview</a>
+
+                        <div class="textarea-preview" style="display: none;"></div>
+                    </div>
+                </td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="validation-error-area">
+                <td colspan="2"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr class="optional-block-start " hashelp="true" ref="cb7">
+                <td colspan="3"><input onclick="javascript:updateOptionalBlock(this,true)" name="logrotate"
+                                       type="checkbox" class=" " id="cb7"><label class="attach-previous">Discard Old
+                    Builds</label></td>
+                <td class="setting-help"><a helpurl="/jenkins/help/project-config/log-rotation.html" href="#"
+                                            class="help-button" tabindex="9999"><img
+                        src="/jenkins/static/6072b27b/images/16x16/help.png" alt="Help for feature: Discard Old Builds"
+                        style="width: 16px; height: 16px; " class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="help-area">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="rowvg-start" style="display: none;"></tr>
+            <tr style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Strategy</td>
+                <td class="setting-main"><select class="setting-input dropdownList">
+                    <option value="0">Log Rotation</option>
+                </select></td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="dropdownList-container" style="display: none;">
+                <td colspan="2"></td>
+                <td colspan="2">
+                    <table width="100%" name="buildDiscarder">
+                        <tbody>
+                        <tr class="dropdownList-start rowvg-start"></tr>
+
+                        <tr>
+                            <td class="setting-leftspace">&nbsp;</td>
+                            <td class="setting-name">Days to keep builds</td>
+                            <td class="setting-main"><input step="1" min="1" name="_.daysToKeepStr" type="number"
+                                                            class="setting-input  positive-number" value=""></td>
+                            <td class="setting-no-help"></td>
+                        </tr>
+                        <tr class="validation-error-area">
+                            <td colspan="2"></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"></td>
+                            <td class="setting-description">if not empty, build records are only kept up to this number
+                                of days
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="setting-leftspace">&nbsp;</td>
+                            <td class="setting-name">Max # of builds to keep</td>
+                            <td class="setting-main"><input step="1" min="1" name="_.numToKeepStr" type="number"
+                                                            class="setting-input  positive-number" value=""></td>
+                            <td class="setting-no-help"></td>
+                        </tr>
+                        <tr class="validation-error-area">
+                            <td colspan="2"></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"></td>
+                            <td class="setting-description">if not empty, only up to this number of build records are
+                                kept
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <script src="/jenkins/adjuncts/6072b27b/lib/form/advanced/advanced.js"
+                                        type="text/javascript"></script>
+                                <div style="" class="advancedLink"><span style="display: none" id="id1693"><img
+                                        src="/jenkins/static/6072b27b/images/24x24/notepad.png"
+                                        tooltip="One or more fields in this block have been edited."
+                                        style="width: 24px; height: 24px; vertical-align: baseline"
+                                        class="icon-notepad icon-md"
+                                        title="One or more fields in this block have been edited."></span>&nbsp;<span
+                                        class="yui-button yui-push-button advanced-button advancedButton" id="yui-gen7"><span
+                                        class="first-child"><button type="button" tabindex="0" id="yui-gen7-button">
+                                    Advanced...
+                                </button></span></span></div>
+                                <table class="advancedBody">
+                                    <tbody>
+                                    <tr>
+                                        <td class="setting-leftspace">&nbsp;</td>
+                                        <td class="setting-name">Days to keep artifacts</td>
+                                        <td class="setting-main"><input step="1" min="1" name="_.artifactDaysToKeepStr"
+                                                                        type="number"
+                                                                        class="setting-input  positive-number" value="">
+                                        </td>
+                                        <td class="setting-no-help"></td>
+                                    </tr>
+                                    <tr class="validation-error-area">
+                                        <td colspan="2"></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td class="setting-description">if not empty, artifacts from builds older than
+                                            this number of days will be deleted, but the logs, history, reports, etc for
+                                            the build will be kept
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="setting-leftspace">&nbsp;</td>
+                                        <td class="setting-name">Max # of builds to keep with artifacts</td>
+                                        <td class="setting-main"><input step="1" min="1" name="_.artifactNumToKeepStr"
+                                                                        type="number"
+                                                                        class="setting-input  positive-number" value="">
+                                        </td>
+                                        <td class="setting-no-help"></td>
+                                    </tr>
+                                    <tr class="validation-error-area">
+                                        <td colspan="2"></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td class="setting-description">if not empty, only up to this number of builds
+                                            have their artifacts retained
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><input name="stapler-class" type="hidden" value="hudson.tasks.LogRotator"><input
+                                    name="$class" type="hidden" value="hudson.tasks.LogRotator"></td>
+                        </tr>
+                        <tr class="dropdownList-end rowvg-end"></tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr class=" rowvg-end optional-block-end"></tr>
+            <script src="/jenkins/adjuncts/6072b27b/lib/form/section_.js" type="text/javascript"></script>
+            <tr name="properties" style="display:none" class="row-set-start" id="rowSetStart16"></tr>
+            <tr nameref="rowSetStart16">
+                <td><input type="hidden" name="stapler-class-bag" value="true"></td>
+            </tr>
+            <tr name="hudson-model-ParametersDefinitionProperty" style="display:none" class="row-set-start"
+                id="rowSetStart15" nameref="rowSetStart16"></tr>
+            <tr class="optional-block-start row-set-start" hashelp="true" ref="cb8" nameref="rowSetStart15">
+                <td colspan="3"><input onclick="javascript:updateOptionalBlock(this,true)" name="parameterized"
+                                       type="checkbox" class=" " id="cb8"><label class="attach-previous">This build is
+                    parameterized</label></td>
+                <td class="setting-help"><a helpurl="/jenkins/help/project-config/parameterized-build.html" href="#"
+                                            class="help-button" tabindex="9999"><img
+                        src="/jenkins/static/6072b27b/images/16x16/help.png"
+                        alt="Help for feature: This build is parameterized" style="width: 16px; height: 16px; "
+                        class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="help-area" nameref="cb8">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="rowvg-start" nameref="cb8" style="display: none;"></tr>
+            <tr nameref="cb8" style="display: none;">
+                <td colspan="2"></td>
+                <td colspan="2">
+                    <script src="/jenkins/adjuncts/6072b27b/lib/form/dragdrop/dragdrop.js"
+                            type="text/javascript"></script>
+                    <script src="/jenkins/adjuncts/6072b27b/lib/form/hetero-list/hetero-list.js"
+                            type="text/javascript"></script>
+                    <div class="hetero-list-container with-drag-drop  ">
+                        <div class="repeatable-insertion-point"></div>
+                        <div><span class="yui-button yui-menu-button" id="yui-gen1"><span class="first-child"><button
+                                type="button" tabindex="0" id="yui-gen1-button" class="hetero-list-add"
+                                suffix="parameter">Add Parameter
+                        </button></span></span></div>
+                    </div>
+                </td>
+            </tr>
+            <tr class="row-set-end rowvg-end optional-block-end" nameref="rowSetStart15"></tr>
+            <tr class="row-set-end" nameref="rowSetStart16"></tr>
+            <tr class="row-set-end"></tr>
+            <tr class="optional-block-start " hashelp="false" ref="cb9">
+                <td colspan="3"><input onclick="javascript:updateOptionalBlock(this,true)" name="_.concurrentBuild"
+                                       checked="true" type="checkbox" class=" " id="cb9"><label class="attach-previous">Execute
+                    concurrent builds if necessary</label></td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="rowvg-start"></tr>
+            <tr class=" rowvg-end optional-block-end"></tr>
+            <tr class="optional-block-start " hashelp="true" ref="cb10">
+                <td colspan="3"><input onclick="javascript:updateOptionalBlock(this,true)" name="hasCustomQuietPeriod"
+                                       type="checkbox" class=" " id="cb10"><label class="attach-previous">Quiet
+                    period</label></td>
+                <td class="setting-help"><a
+                        helpurl="/jenkins/descriptor/jenkins.model.GlobalQuietPeriodConfiguration/help/quietPeriod"
+                        href="#" class="help-button" tabindex="9999"><img
+                        src="/jenkins/static/6072b27b/images/16x16/help.png" alt="Help for feature: Quiet period"
+                        style="width: 16px; height: 16px; " class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="help-area">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="rowvg-start" style="display: none;"></tr>
+            <tr style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Quiet period</td>
+                <td class="setting-main"><input step="1" min="0" name="quiet_period" type="number"
+                                                class="setting-input  number" value="5"></td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="validation-error-area" style="display: none;">
+                <td colspan="2"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr style="display: none;">
+                <td colspan="2"></td>
+                <td class="setting-description">Number of seconds</td>
+                <td></td>
+            </tr>
+            <tr class=" rowvg-end optional-block-end"></tr>
+            <tr>
+                <td colspan="4">
+                    <div class="section-header"><a id="section0" class="section-anchor">#</a>Build Triggers</div>
+                </td>
+            </tr>
+            <tr class="optional-block-start row-set-start" hashelp="true" ref="cb11">
+                <td colspan="3"><input onclick="javascript:updateOptionalBlock(this,true)"
+                                       name="jenkins-triggers-ReverseBuildTrigger" type="checkbox" class=" "
+                                       id="cb11"><label class="attach-previous">Build after other projects are
+                    built</label></td>
+                <td class="setting-help"><a helpurl="/jenkins/descriptor/jenkins.triggers.ReverseBuildTrigger/help"
+                                            href="#" class="help-button" tabindex="9999"><img
+                        src="/jenkins/static/6072b27b/images/16x16/help.png"
+                        alt="Help for feature: Build after other projects are built" style="width: 16px; height: 16px; "
+                        class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="help-area" nameref="cb11">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="rowvg-start" nameref="cb11" style="display: none;"></tr>
+            <tr nameref="cb11" style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Projects to watch</td>
+                <td class="setting-main">
+
+
+                    <input checkdependson=""
+                           autocompleteurl="/jenkins/job/first-workflow/descriptorByName/jenkins.triggers.ReverseBuildTrigger/autoCompleteUpstreamProjects"
+                           checkurl="/jenkins/job/first-workflow/descriptorByName/jenkins.triggers.ReverseBuildTrigger/checkUpstreamProjects"
+                           autocompletedelimchar="," name="_.upstreamProjects" type="text"
+                           class="setting-input validated auto-complete  yui-ac-input" value="" autocomplete="off"
+                           style="position: relative;">
+
+                    <div class="yui-ac-container">
+                        <div class="yui-ac-content" style="display: none;">
+                            <div class="yui-ac-hd" style="display: none;"></div>
+                            <div class="yui-ac-bd">
+                                <ul>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                    <li style="display: none;"></li>
+                                </ul>
+                            </div>
+                            <div class="yui-ac-ft" style="display: none;"></div>
+                        </div>
+                    </div>
+                </td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="validation-error-area" nameref="cb11" style="display: none;">
+                <td colspan="2"></td>
+                <td>
+                    <div class="error"><img src="/jenkins/static/6072b27b/images/none.gif" height="16" width="1">No
+                        project specified
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr nameref="cb11" style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name"></td>
+                <td class="setting-main"><input name="ReverseBuildTrigger.threshold" checked="true" type="radio"
+                                                value="SUCCESS"><label class="attach-previous">Trigger only if build is
+                    stable</label></td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="validation-error-area" nameref="cb11" style="display: none;">
+                <td colspan="2"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr nameref="cb11" style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name"></td>
+                <td class="setting-main"><input name="ReverseBuildTrigger.threshold" type="radio"
+                                                value="UNSTABLE"><label class="attach-previous">Trigger even if the
+                    build is unstable</label></td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="validation-error-area" nameref="cb11" style="display: none;">
+                <td colspan="2"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr nameref="cb11" style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name"></td>
+                <td class="setting-main"><input name="ReverseBuildTrigger.threshold" type="radio" value="FAILURE"><label
+                        class="attach-previous">Trigger even if the build fails</label></td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="validation-error-area" nameref="cb11" style="display: none;">
+                <td colspan="2"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr class="row-set-end rowvg-end optional-block-end"></tr>
+            <tr class="optional-block-start row-set-start" hashelp="true" ref="cb12">
+                <td colspan="3"><input onclick="javascript:updateOptionalBlock(this,true)"
+                                       name="hudson-triggers-TimerTrigger" type="checkbox" class=" " id="cb12"><label
+                        class="attach-previous">Build periodically</label></td>
+                <td class="setting-help"><a helpurl="/jenkins/descriptor/hudson.triggers.TimerTrigger/help" href="#"
+                                            class="help-button" tabindex="9999"><img
+                        src="/jenkins/static/6072b27b/images/16x16/help.png" alt="Help for feature: Build periodically"
+                        style="width: 16px; height: 16px; " class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="help-area" nameref="cb12">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="rowvg-start" nameref="cb12" style="display: none;"></tr>
+            <tr nameref="cb12" style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Schedule</td>
+                <td class="setting-main"><textarea checkdependson="" name="_.spec" rows="5"
+                                                   class="setting-input validated  "
+                                                   checkurl="/jenkins/job/first-workflow/descriptorByName/hudson.triggers.TimerTrigger/checkSpec"></textarea>
+
+                    <div class="textarea-handle"></div>
+                </td>
+                <td class="setting-help"><a helpurl="/jenkins/descriptor/hudson.triggers.TimerTrigger/help/spec"
+                                            href="#" class="help-button" tabindex="9999"><img
+                        src="/jenkins/static/6072b27b/images/16x16/help.png" alt="Help for feature: Schedule"
+                        style="width: 16px; height: 16px; " class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="validation-error-area" nameref="cb12" style="display: none;">
+                <td colspan="2"></td>
+                <td>
+                    <div class="warning"><img src="/jenkins/static/6072b27b/images/none.gif" height="16" width="1">No
+                        schedules so will never run
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="help-area" nameref="cb12" style="display: none;">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="row-set-end rowvg-end optional-block-end"></tr>
+            <tr class="optional-block-start row-set-start" hashelp="true" ref="cb13">
+                <td colspan="3"><input onclick="javascript:updateOptionalBlock(this,true)"
+                                       name="hudson-triggers-SCMTrigger" type="checkbox" class=" " id="cb13"><label
+                        class="attach-previous">Poll SCM</label></td>
+                <td class="setting-help"><a helpurl="/jenkins/descriptor/hudson.triggers.SCMTrigger/help" href="#"
+                                            class="help-button" tabindex="9999"><img
+                        src="/jenkins/static/6072b27b/images/16x16/help.png" alt="Help for feature: Poll SCM"
+                        style="width: 16px; height: 16px; " class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="help-area" nameref="cb13">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="rowvg-start" nameref="cb13" style="display: none;"></tr>
+            <tr nameref="cb13" style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Schedule</td>
+                <td class="setting-main"><textarea name="scmpoll_spec" rows="5" class="setting-input validated  "
+                                                   checkurl="'/jenkins/trigger/TimerTrigger/check?value='+encodeURIComponent(this.value)"></textarea>
+
+                    <div class="textarea-handle"></div>
+                </td>
+                <td class="setting-help"><a helpurl="/jenkins/descriptor/hudson.triggers.TimerTrigger/help/spec"
+                                            href="#" class="help-button" tabindex="9999"><img
+                        src="/jenkins/static/6072b27b/images/16x16/help.png" alt="Help for feature: Schedule"
+                        style="width: 16px; height: 16px; " class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="validation-error-area" nameref="cb13" style="display: none;">
+                <td colspan="2"></td>
+                <td>
+                    <div class="warning"><img src="/jenkins/static/6072b27b/images/none.gif" height="16" width="1">No
+                        schedules so will never run
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="help-area" nameref="cb13" style="display: none;">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr nameref="cb13" style="display: none;">
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Ignore post-commit hooks</td>
+                <td class="setting-main"><input name="_.ignorePostCommitHooks" type="checkbox" class=" "></td>
+                <td class="setting-help"><a
+                        helpurl="/jenkins/descriptor/hudson.triggers.SCMTrigger/help/ignorePostCommitHooks" href="#"
+                        class="help-button" tabindex="9999"><img src="/jenkins/static/6072b27b/images/16x16/help.png"
+                                                                 alt="Help for feature: Ignore post-commit hooks"
+                                                                 style="width: 16px; height: 16px; "
+                                                                 class="icon-help icon-sm"></a></td>
+            </tr>
+            <tr class="validation-error-area" nameref="cb13" style="display: none;">
+                <td colspan="2"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr class="help-area" nameref="cb13" style="display: none;">
+                <td></td>
+                <td colspan="2">
+                    <div class="help">Loading...</div>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="row-set-end rowvg-end optional-block-end"></tr>
+            <tr>
+                <td colspan="4">
+                    <div class="section-header"><a id="section1" class="section-anchor">#</a>Advanced Project Options
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>
+                    <script src="/jenkins/adjuncts/6072b27b/lib/form/advanced/advanced.js"
+                            type="text/javascript"></script>
+                    <div style="" class="advancedLink"><span style="display: none" id="id1691"><img
+                            src="/jenkins/static/6072b27b/images/24x24/notepad.png"
+                            tooltip="One or more fields in this block have been edited."
+                            style="width: 24px; height: 24px; vertical-align: baseline" class="icon-notepad icon-md"
+                            title="One or more fields in this block have been edited."></span>&nbsp;<span
+                            class="yui-button yui-push-button advanced-button advancedButton" id="yui-gen3"><span
+                            class="first-child"><button type="button" tabindex="0" id="yui-gen3-button">Advanced...
+                    </button></span></span></div>
+                    <table class="advancedBody">
+                        <tbody>
+                        <tr>
+                            <td class="setting-leftspace">&nbsp;</td>
+                            <td class="setting-name">Display Name</td>
+                            <td class="setting-main">
+
+
+                                <input checkurl="'/jenkins/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('first-workflow')"
+                                       name="_.displayNameOrNull" type="text" class="setting-input validated  "
+                                       value=""></td>
+                            <td class="setting-help"><a
+                                    helpurl="/jenkins/descriptor/org.jenkinsci.plugins.workflow.job.WorkflowJob/help/displayNameOrNull"
+                                    href="#" class="help-button" tabindex="9999"><img
+                                    src="/jenkins/static/6072b27b/images/16x16/help.png"
+                                    alt="Help for feature: Display Name" style="width: 16px; height: 16px; "
+                                    class="icon-help icon-sm"></a></td>
+                        </tr>
+                        <tr class="validation-error-area">
+                            <td colspan="2"></td>
+                            <td>
+                                <div></div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr class="help-area">
+                            <td></td>
+                            <td colspan="2">
+                                <div class="help">Loading...</div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <div class="section-header"><a id="section2" class="section-anchor">#</a>Workflow</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="setting-leftspace">&nbsp;</td>
+                <td class="setting-name">Definition</td>
+                <td class="setting-main"><select class="setting-input dropdownList">
+                    <option value="0" selected="true">Workflow script</option>
+                    <option value="1">Workflow script from SCM</option>
+                </select></td>
+                <td class="setting-no-help"></td>
+            </tr>
+            <tr class="dropdownList-container">
+                <td colspan="2"></td>
+                <td colspan="2">
+                    <table width="100%" name="definition">
+                        <tbody>
+                        <tr class="dropdownList-start rowvg-start"></tr>
+                        <tr>
+                            <td class="setting-leftspace">&nbsp;</td>
+                            <td class="setting-name">Script</td>
+                            <td class="setting-main">
+                                <div id="workflow-editor-wrapper" style="display: none; position: relative"><textarea
+                                        checkdependson="sandbox" name="_.script" checkmethod="post" rows="6"
+                                        class="setting-input validated  "
+                                        checkurl="/jenkins/job/first-workflow/descriptorByName/org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition/checkScript">node
+                                    {
+                                    stage 'Stage 1'
+                                    echo 'Hello World 1'
+                                    stage 'Stage 2'
+                                    echo 'Hello World 2'
+                                    }</textarea>
+
+                                    <div class="textarea-handle"></div>
+                                    <div id="workflow-editor" class="pane-frame" style="height: 250px;"></div>
+                                </div>
+                            </td>
+                            <td class="setting-help"><a
+                                    helpurl="/jenkins/descriptor/org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition/help/script"
+                                    href="#" class="help-button" tabindex="9999"><img
+                                    src="/jenkins/static/6072b27b/images/16x16/help.png" alt="Help for feature: Script"
+                                    style="width: 16px; height: 16px; " class="icon-help icon-sm"></a></td>
+                        </tr>
+                        <tr class="validation-error-area">
+                            <td colspan="2"></td>
+                            <td>
+                                <div></div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr class="help-area">
+                            <td></td>
+                            <td colspan="2">
+                                <div class="help">Loading...</div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="setting-leftspace">&nbsp;</td>
+                            <td class="setting-name"></td>
+                            <td class="setting-main"><input name="_.sandbox" type="checkbox" class=" "><label
+                                    class="attach-previous">Use Groovy Sandbox</label></td>
+                            <td class="setting-help"><a
+                                    helpurl="/jenkins/descriptor/org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition/help/sandbox"
+                                    href="#" class="help-button" tabindex="9999"><img
+                                    src="/jenkins/static/6072b27b/images/16x16/help.png"
+                                    alt="Help for feature: Workflow script" style="width: 16px; height: 16px; "
+                                    class="icon-help icon-sm"></a></td>
+                        </tr>
+                        <tr class="validation-error-area">
+                            <td colspan="2"></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="help-area">
+                            <td></td>
+                            <td colspan="2">
+                                <div class="help">Loading...</div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr class="optional-block-start row-set-start" hashelp="true" ref="cb14">
+                            <td colspan="3"><input onclick="javascript:updateOptionalBlock(this,true)"
+                                                   name="snippetizer" type="checkbox" class=" " id="cb14"><label
+                                    class="attach-previous">Snippet Generator</label></td>
+                            <td class="setting-help"><a helpurl="/jenkins/workflow-cps-snippetizer/help" href="#"
+                                                        class="help-button" tabindex="9999"><img
+                                    src="/jenkins/static/6072b27b/images/16x16/help.png"
+                                    alt="Help for feature: Snippet Generator" style="width: 16px; height: 16px; "
+                                    class="icon-help icon-sm"></a></td>
+                        </tr>
+                        <tr class="help-area" nameref="cb14">
+                            <td></td>
+                            <td colspan="2">
+                                <div class="help">Loading...</div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr class="rowvg-start" nameref="cb14" style="display: none;"></tr>
+                        <tr nameref="cb14" style="display: none;">
+                            <td colspan="4">
+                                <div class="section-header"><a id="section3" class="section-anchor">#</a>Steps</div>
+                            </td>
+                        </tr>
+                        <tr nameref="cb14" style="display: none;">
+                            <td class="setting-leftspace">&nbsp;</td>
+                            <td class="setting-name">Sample Step</td>
+                            <td class="setting-main"><select class="setting-input dropdownList">
+                                <option value="0">Allocate node</option>
+                                <option value="0">Allocate workspace</option>
+                                <option value="0">Archive Artifacts</option>
+                                <option value="0">Build a Job</option>
+                                <option value="0">Change Directory</option>
+                                <option value="0">Determine Current Directory</option>
+                                <option value="0">Error</option>
+                                <option value="0">Evaluate a Groovy source file into the workflow script</option>
+                                <option value="0">Execute sub-workflows in parallel</option>
+                                <option value="0">Executes the body with a timeout</option>
+                                <option value="0">General Build Step</option>
+                                <option value="0">General Build Wrapper</option>
+                                <option value="0">General SCM</option>
+                                <option value="0">Git</option>
+                                <option value="0">Input</option>
+                                <option value="0">Install a tool</option>
+                                <option value="0">Mail</option>
+                                <option value="0">Print Message</option>
+                                <option value="0">Read file from workspace</option>
+                                <option value="0">Recursively delete the current directory from the workspace</option>
+                                <option value="0">Restore files previously stashed</option>
+                                <option value="0">Retry the body up to N times</option>
+                                <option value="0">Set environment variables</option>
+                                <option value="0">Shell Script</option>
+                                <option value="0">Sleep</option>
+                                <option value="0">Stage</option>
+                                <option value="0">Stash some files to be used later in the build</option>
+                                <option value="0">Subversion</option>
+                                <option value="0">Verify if file exists in workspace</option>
+                                <option value="0">Wait for condition</option>
+                                <option value="0">Windows Batch Script</option>
+                                <option value="0">Write file to workspace</option>
+                                <option value="0">— Advanced/Deprecated —</option>
+                                <option value="0">Catch error and set build result</option>
+                                <option value="0">Copy archived artifacts into the workspace</option>
+                            </select></td>
+                            <td class="setting-no-help"></td>
+                        </tr>
+                        <tr class="dropdownList-container" nameref="cb14" style="display: none;">
+                            <td colspan="2"></td>
+                            <td colspan="2">
+                                <table width="100%" name="prototype">
+                                    <tbody>
+                                    <tr class="dropdownList-start rowvg-start"></tr>
+
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td class="setting-help"><a
+                                                helpurl="/jenkins/descriptor/org.jenkinsci.plugins.workflow.support.steps.ExecutorStep/help"
+                                                href="#" class="help-button" tabindex="9999"><img
+                                                src="/jenkins/static/6072b27b/images/16x16/help.png" alt="[Help]"
+                                                style="width: 16px; height: 16px; " class="icon-help icon-sm"></a></td>
+                                    </tr>
+                                    <tr class="help-area">
+                                        <td></td>
+                                        <td colspan="2">
+                                            <div class="help">Loading...</div>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="setting-leftspace">&nbsp;</td>
+                                        <td class="setting-name">Label</td>
+                                        <td class="setting-main">
+
+
+                                            <input checkdependson=""
+                                                   autocompleteurl="/jenkins/job/first-workflow/descriptorByName/org.jenkinsci.plugins.workflow.support.steps.ExecutorStep/autoCompleteLabel"
+                                                   checkurl="/jenkins/job/first-workflow/descriptorByName/org.jenkinsci.plugins.workflow.support.steps.ExecutorStep/checkLabel"
+                                                   name="_.label" type="text"
+                                                   class="setting-input validated auto-complete  yui-ac-input" value=""
+                                                   autocomplete="off" style="position: relative;">
+
+                                            <div class="yui-ac-container">
+                                                <div class="yui-ac-content" style="display: none;">
+                                                    <div class="yui-ac-hd" style="display: none;"></div>
+                                                    <div class="yui-ac-bd">
+                                                        <ul>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                            <li style="display: none;"></li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="yui-ac-ft" style="display: none;"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="setting-no-help"></td>
+                                    </tr>
+                                    <tr class="validation-error-area">
+                                        <td colspan="2"></td>
+                                        <td>
+                                            <div></div>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.support.steps.ExecutorStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.support.steps.ExecutorStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/c28e327d-a7a3-4791-94eb-2d1f39ed88ab','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.support.steps.WorkspaceStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.support.steps.WorkspaceStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/dee5f108-7599-44d5-8213-8ef079873e07','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.ArtifactArchiverStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.ArtifactArchiverStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/f2af0645-3f37-480d-ad29-95f25534735a','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.support.steps.build.BuildTriggerStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.support.steps.build.BuildTriggerStep">
+                                        </td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/33492119-c945-4952-9cb1-98e6f76a4a57','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.PushdStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.PushdStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/21a26005-1156-4fea-be68-8687725f6b1c','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.PwdStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.PwdStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/a3011e70-0040-4fd6-a028-e868757d0f14','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.ErrorStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.ErrorStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/c64b1430-5683-4e25-a89e-3bb7b66cc634','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.cps.steps.LoadStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.cps.steps.LoadStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/c3d537c7-e84d-4243-b69f-378807094331','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.cps.steps.ParallelStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.cps.steps.ParallelStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/ac0c7728-17d3-46c7-a3c1-423598deeb20','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.TimeoutStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.TimeoutStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/6ba17710-ba52-4aec-9f5b-1cec5196fd23','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.CoreStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.CoreStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/b258b45a-c918-4e90-8194-6f7ae8d905b8','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.CoreWrapperStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.CoreWrapperStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/d75f032b-b7d8-4488-877b-4401f72e5487','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.scm.GenericSCMStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.scm.GenericSCMStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/074c303e-029d-41e3-b6dc-570bc5a4a860','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.scm.GitStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.scm.GitStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/0e319ba4-1284-4180-b7d5-5e4406fbc3b4','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.support.steps.input.InputStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.support.steps.input.InputStep">
+                                        </td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/f42e73c1-c0b4-468a-bf4b-cdf065a0db44','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.ToolStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.ToolStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/f49ffb7d-5496-4f87-b562-edbb71977827','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.MailStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.MailStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/8acd2e91-0d0a-41c3-b8f5-79b69f986fd7','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.EchoStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.EchoStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/b4a0075c-093f-41e3-8f12-cf49d23fe709','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.ReadFileStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.ReadFileStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/c718aa9d-0233-49be-83f7-c22abe344102','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.DeleteDirStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.DeleteDirStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/33749d1f-4727-42a6-8620-fe54afe8e5b2','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.support.steps.stash.UnstashStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.support.steps.stash.UnstashStep">
+                                        </td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/70989319-a293-450f-a8c3-115518f0a2e4','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.RetryStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.RetryStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/319539ce-1b86-49be-a59e-e4231a91328f','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.EnvStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.EnvStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/5f225dd4-efd1-4cc5-b001-119726807e56','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.durable_task.ShellStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.durable_task.ShellStep">
+                                        </td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/d0be282c-b716-4f95-ab56-554cad6bb351','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.SleepStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.SleepStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/cee2ee42-a3e2-4e03-9bda-75b9e699301e','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.support.steps.StageStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.support.steps.StageStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/2bef513e-d42d-4679-9dd0-d65580b26295','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.support.steps.stash.StashStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.support.steps.stash.StashStep">
+                                        </td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/ea427730-4f3e-4823-a65b-fdc9b9fa391e','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.scm.SubversionStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.scm.SubversionStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/ac91c258-4036-435d-81a4-be2d471b6d6b','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.FileExistsStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.FileExistsStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/62c11818-cc81-4dce-8826-3eb74016f227','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.WaitForConditionStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.WaitForConditionStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/be16d68e-b574-4f0d-bb6f-168d73e74929','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.durable_task.BatchScriptStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.durable_task.BatchScriptStep">
+                                        </td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/f7066159-b000-4109-91ef-f391b12969df','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.WriteFileStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.WriteFileStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/62988e62-4402-49fb-a0fe-f39f64df447f','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.CatchErrorStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.CatchErrorStep"></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/330c0d82-0d05-4ad3-b20b-14fd92365f4e','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr style="display:none" field-disabled="true">
+                                        <td><input name="stapler-class" type="hidden"
+                                                   value="org.jenkinsci.plugins.workflow.steps.ArtifactUnarchiverStep"><input
+                                                name="$class" type="hidden"
+                                                value="org.jenkinsci.plugins.workflow.steps.ArtifactUnarchiverStep">
+                                        </td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr nameref="cb14" style="display: none;">
+                            <td colspan="4"><span class="yui-button yui-push-button submit-button primary"
+                                                  id="yui-gen5"><span class="first-child"><button type="button"
+                                                                                                  tabindex="0"
+                                                                                                  id="yui-gen5-button">
+                                Generate Groovy
+                            </button></span></span><textarea readonly="true" name="_." style="margin-top: 10px"
+                                                             id="prototypeText_id1692" rows="5"
+                                                             class="setting-input   "></textarea>
+
+                                <div class="textarea-handle"></div>
+                            </td>
+                        </tr>
+                        <script nameref="cb14" style="display: none;">function handlePrototype_id1692() {
+                            buildFormTree(document.forms.config);
+                            // TODO JSON.stringify fails in some circumstances: https://gist.github.com/jglick/70ec4b15c1f628fdf2e9 due to Array.prototype.toJSON
+                            var json = Object.toJSON(JSON.parse(document.forms.config.elements.json.value).definition.snippetizer.prototype);
+                            if (!json) {
+                                return; // just a separator
+                            }
+                            new Ajax.Request('/jenkins/workflow-cps-snippetizer/generateSnippet', {
+                                method: 'POST',
+                                parameters: {json: json},
+                                onSuccess: function (r) {
+                                    document.getElementById('prototypeText_id1692').value = r.responseText;
+                                }
+                            });
+                        }</script>
+                        <tr nameref="cb14" style="display: none;">
+                            <td colspan="4">
+                                <div class="section-header"><a id="section4" class="section-anchor">#</a>Global
+                                    variables
+                                </div>
+                            </td>
+                        </tr>
+                        <tr nameref="cb14" style="display: none;">
+                            <td class="setting-leftspace">&nbsp;</td>
+                            <td class="setting-name">Variable</td>
+                            <td class="setting-main"><select class="setting-input dropdownList">
+                                <option value="0">env</option>
+                                <option value="0">currentBuild</option>
+                            </select></td>
+                            <td class="setting-no-help"></td>
+                        </tr>
+                        <tr class="dropdownList-container" nameref="cb14" style="display: none;">
+                            <td colspan="2"></td>
+                            <td colspan="2">
+                                <table width="100%" name="var">
+                                    <tbody>
+                                    <tr class="dropdownList-start rowvg-start"></tr>
+
+                                    <tr>
+                                        <td colspan="4"><p>
+                                            Environment variables are accessible from Groovy code as
+                                            <code>env.VARNAME</code>.
+                                            You can write to such properties as well:
+                                        </p>
+
+                                            <p></p><pre>env.MYTOOL_VERSION = '1.33'
+node {
+  sh '/usr/local/mytool-$MYTOOL_VERSION/bin/start'
+}</pre>
+                                            <p></p>
+
+                                            <p>
+                                                These definitions will also be available via the REST API during the
+                                                build or after its completion,
+                                                and from upstream Workflow builds using the <code>build</code> step.
+                                            </p>
+
+                                            <p>
+                                                However any variables set this way are global to the workflow build.
+                                                For variables with node-specific content (such as file paths),
+                                                you should instead use the <code>withEnv</code> step,
+                                                to bind the variable only within a <code>node</code> block.
+                                            </p>
+
+                                            <p>
+                                                A set of environment variables are made available to all Jenkins
+                                                projects, including workflows.
+                                                The following is a general list of variables (by name) that are
+                                                available;
+                                                see the notes below the list for Workflow-specific details.
+                                            </p>
+                                            <iframe src="/jenkins/env-vars.html" width="100%"></iframe>
+                                            <p>
+                                                The following variables are currently unavailable inside a workflow
+                                                script:
+                                            </p>
+                                            <ul>
+                                                <li><code>EXECUTOR_NUMBER</code></li>
+                                                <li><code>NODE_LABELS</code></li>
+                                                <li><code>WORKSPACE</code></li>
+                                                <li>SCM-specific variables such as <code>SVN_REVISION</code></li>
+                                            </ul>
+                                            <p>
+                                                As an example of loading variable values from Groovy:
+                                            </p>
+
+                                            <p></p><pre>mail to: 'devops@acme.com',
+    subject: "Job '' () is waiting for input",
+    body: "Please go to  and verify the build"</pre>
+                                            <p></p></td>
+                                    </tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    <tr class="dropdownList-start rowvg-start" field-disabled="true"
+                                        style="display: none;"></tr>
+                                    <tr class="render-on-demand "
+                                        proxy="makeStaplerProxy('/jenkins/$stapler/bound/ef312cff-362d-40d4-bdd8-ba37d5a6bef4','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                                        field-disabled="true" style="display: none;"></tr>
+                                    <tr class="dropdownList-end rowvg-end"></tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr class="row-set-end rowvg-end optional-block-end"></tr>
+                        <script src="/jenkins/adjuncts/6072b27b/org/jenkinsci/plugins/workflow/workflow.js"
+                                type="text/javascript"></script>
+                        <tr>
+                            <td><input name="stapler-class" type="hidden"
+                                       value="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition"><input name="$class"
+                                                                                                           type="hidden"
+                                                                                                           value="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition">
+                            </td>
+                        </tr>
+                        <tr class="dropdownList-end rowvg-end"></tr>
+                        <tr class="dropdownList-start rowvg-start" field-disabled="true" style="display: none;"></tr>
+                        <tr class="render-on-demand "
+                            proxy="makeStaplerProxy('/jenkins/$stapler/bound/bd2cbd2c-7646-4929-bcac-7928e492bd63','d2c6d096-988c-4360-bdb0-b0be4fc93725',['render'])"
+                            field-disabled="true" style="display: none;"></tr>
+                        <tr style="display:none" field-disabled="true">
+                            <td><input name="stapler-class" type="hidden"
+                                       value="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition"><input
+                                    name="$class" type="hidden"
+                                    value="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition"></td>
+                        </tr>
+                        <tr class="dropdownList-end rowvg-end"></tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <div style="height: 74px;"></div>
+                    <div id="bottom-sticker" style="position: fixed; bottom: 41px; left: 373px;">
+                        <div class="bottom-sticker-edge"></div>
+                        <div class="bottom-sticker-inner"><span
+                                class="yui-button yui-submit-button submit-button primary" id="yui-gen6"
+                                name="Submit"><span class="first-child"><button type="button" tabindex="0"
+                                                                                id="yui-gen6-button">Save
+                        </button></span></span>
+                            <script src="/jenkins/adjuncts/6072b27b/lib/form/apply/apply.js"
+                                    type="text/javascript"></script>
+                            <input type="hidden" name="core:apply" value=""><span
+                                    class="yui-button yui-push-button apply-button applyButton" id="yui-gen4"
+                                    name="Apply"><span class="first-child"><button type="button" tabindex="0"
+                                                                                   id="yui-gen4-button">Apply
+                            </button></span></span></div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div><input type="hidden" name="json" value="init"></div>
+    </form>
+</div>
