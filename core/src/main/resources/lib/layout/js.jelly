@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2012, CloudBees, Inc.
+Copyright (c) 2016, CloudBees
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,15 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form"
-         xmlns:st="jelly:stapler">
-  <s:documentation>
-    "Apply" button that submits the form but without a page transition.
-    See hudson.util.FormApply for the server-side code.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation>
+    Client-side JavaScript loading tag. Similar to adjunct, but driven from the client. See page-init.js.
 
-    When this button is pressed, the FORM element fires the "jenkins:apply" event
-    that allows interested parties to write back whatever states back into the INPUT
-    elements.
-    <s:attribute name="value">
-      The text of the apply button.
-    </s:attribute>
-  </s:documentation>
-  <st:adjunct includes="lib.form.apply.apply"/>
-  <input type="hidden" name="core:apply" value="" />
-  <input type="button" value="${attrs.value ?: 'Apply'}" class="apply-button applyButton" name="Apply"/><!-- applyButton is legacy -->
+    @since 2.0
+    <st:attribute name="src" required="true">
+      JavaScript source path (relative to Jenkins).
+    </st:attribute>
+  </st:documentation>
+
+  <div class="jenkins-js-load" data-src="${attrs.src}" />
 </j:jelly>

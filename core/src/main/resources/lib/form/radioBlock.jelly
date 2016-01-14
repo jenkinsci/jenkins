@@ -58,7 +58,7 @@ THE SOFTWARE.
 	  <td colspan="3">
       <label>
 	      <input type="radio" name="${name}" value="${value}"
-             class="radio-block-control" checked="${checked?'true':null}" />
+             class="radio-block-control block-control" checked="${checked?'true':null}" />
         ${title}
       </label>
     </td>
