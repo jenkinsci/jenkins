@@ -14,8 +14,11 @@ function loadScripts() {
     $('.jenkins-js-load').each(function () {
         var scriptUrl = $(this).attr('data-src');
         if (scriptUrl) {
-            // This will ensure that the script is loaded once and once only.
+            // jsModules.addScript will ensure that the script is 
+            // loaded once and once only. So, this can be considered
+            // analogous to a client-side adjunct.
             jsModules.addScript(scriptUrl);
+            $(this).remove();
         }
     });
 }
@@ -24,8 +27,11 @@ function loadCSS() {
     $('.jenkins-css-load').each(function () {
         var cssUrl = $(this).attr('data-src');
         if (cssUrl) {
-            // This will ensure that the CSS is loaded once and once only.
+            // jsModules.addCSSToPage will ensure that the CSS is
+            // loaded once and once only. So, this can be considered
+            // analogous to a client-side adjunct.
             jsModules.addCSSToPage(cssUrl);
+            $(this).remove();
         }
     });
 }
