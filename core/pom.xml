@@ -413,6 +413,13 @@ THE SOFTWARE.
       <artifactId>jline</artifactId>
       <version>0.9.94</version>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <!-- erronous dep in the version of jline -->
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>org.fusesource.jansi</groupId>
