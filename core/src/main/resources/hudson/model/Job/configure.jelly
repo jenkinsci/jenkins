@@ -56,7 +56,7 @@ THE SOFTWARE.
           <f:bottomButtonBar>
             <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
             <f:submit value="${%Save}"/>
-            <f:apply />
+            <f:apply value="${%Apply}"/>
           </f:bottomButtonBar>
         </j:if>
       </f:form>
