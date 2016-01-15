@@ -89,6 +89,11 @@ exports.filterRows = function(topRows, selector) {
     topRows.hide();
     topRows.filter(selector).show();
 
+    var $ = jQD.getJQuery();
+    // Hide the section header row. No need for it now because the
+    // tab text acts as the section label.
+    $('.section-header-row').hide();
+
     // and always show the buttons
     topRows.filter('.config_buttons').show();
 };
