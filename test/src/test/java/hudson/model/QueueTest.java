@@ -373,7 +373,7 @@ public class QueueTest {
 
     @Issue("JENKINS-8790")
     @Test public void flyweightTasks() throws Exception {
-        MatrixProject m = r.createMatrixProject();
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
@@ -398,7 +398,7 @@ public class QueueTest {
         r.jenkins.clouds.add(cloud);
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.<Node>emptyList());
-        MatrixProject m = r.createMatrixProject();
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.setAxes(new AxisList(new LabelAxis("label", Arrays.asList("remote"))));
         MatrixBuild build;
         try {
@@ -797,7 +797,7 @@ public class QueueTest {
      * and the flyweight task will be executed.
      */
     public void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Exception {
-        MatrixProject matrixProject = r.createMatrixProject();
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "p");
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
@@ -812,7 +812,7 @@ public class QueueTest {
 
     @Test
     public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
-        MatrixProject matrixProject = r.createMatrixProject("downstream");
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "downstream");
         matrixProject.setDisplayName("downstream");
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")

@@ -73,13 +73,6 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>${maven-plugin.version}</version>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
@@ -263,6 +256,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>maven-plugin</artifactId>
+                  <version>${maven-plugin.version}</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

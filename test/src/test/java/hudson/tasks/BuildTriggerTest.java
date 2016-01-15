@@ -79,6 +79,7 @@ import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestNotifier;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
+import org.jvnet.hudson.test.ToolInstallations;
 import org.xml.sax.SAXException;
 
 /**
@@ -150,8 +151,8 @@ public class BuildTriggerTest {
             }
         }
         FreeStyleProject dp = createDownstreamProject();
-        j.configureDefaultMaven();
-        MavenModuleSet m = j.createMavenProject();
+        ToolInstallations.configureDefaultMaven();
+        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
         m.getPublishersList().add(new BuildTrigger("downstream", evenWhenUnstable));
         if (!evenWhenUnstable) {
             // Configure for UNSTABLE
