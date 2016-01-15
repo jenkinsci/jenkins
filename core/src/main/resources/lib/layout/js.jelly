@@ -26,8 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
     Client-side JavaScript loading tag. Similar to adjunct, but driven from the client. See page-init.js.  
-    @since FIXME
-
+    
+    @since 2.0
     <st:attribute name="src" required="true">
       JavaScript source path (relative to Jenkins).
     </st:attribute>

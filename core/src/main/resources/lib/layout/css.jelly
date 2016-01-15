@@ -27,7 +27,7 @@ THE SOFTWARE.
   <st:documentation>
     Client-side CSS loading tag. Similar to adjunct, but driven from the client. See page-init.js.  
 
-    @since FIXME
+    @since 2.0
     <st:attribute name="src" required="true">
       CSS source path (relative to Jenkins).
     </st:attribute>
