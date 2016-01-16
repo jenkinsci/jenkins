@@ -11,7 +11,7 @@ describe("Config tabbar tests", function () {
             var $ = jQD.getJQuery();
             
             expect($('.section-header-row', firstTableMetadata.configTable).size()).toBe(5);
-            expect(firstTableMetadata.length).toBe(4);
+            expect(firstTableMetadata.sections.length).toBe(4);
             expect($('.tabBar .tab').size()).toBe(4);
             
             // TODO: lots more tests !!!

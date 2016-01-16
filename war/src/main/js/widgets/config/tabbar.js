@@ -35,7 +35,7 @@ exports.addTabs = function(configTable, activateTabId) {
         tab.click(function() {
             $('.tab.active', tabBar).removeClass('active');
             tab.addClass('active');
-            tableMetadata.showRows(configTableMetadata.topRows, '.' + section.id);
+            configTableMetadata.showRows('.' + section.id);
         });
 
         section.tab = tab;
@@ -44,8 +44,8 @@ exports.addTabs = function(configTable, activateTabId) {
     }
 
     var section;
-    for (var i = 0; i < configTableMetadata.length; i++) {
-        section = configTableMetadata[i];
+    for (var i = 0; i < configTableMetadata.sections.length; i++) {
+        section = configTableMetadata.sections[i];
         var tab = newTab(section);
         tabBar.append(tab);
     }
@@ -55,15 +55,15 @@ exports.addTabs = function(configTable, activateTabId) {
     tabs.insertBefore(configTableMetadata.configTable);
 
     if (activateTabId) {
-        for (var ii = 0; ii < configTableMetadata.length; ii++) {
-            section = configTableMetadata[ii];
+        for (var ii = 0; ii < configTableMetadata.sections.length; ii++) {
+            section = configTableMetadata.sections[ii];
             if (section.id === activateTabId) {
-                configTableMetadata[ii].tab.click();
+                configTableMetadata.sections[ii].tab.click();
                 return;
             }
         }
     }
-    configTableMetadata[0].tab.click();
+    configTableMetadata.sections[0].tab.click();
     
     return configTableMetadata;
 };

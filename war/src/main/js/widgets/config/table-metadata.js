@@ -35,18 +35,16 @@ exports.decorateConfigTable = function(configTable) {
     // version of the section title as the section id.
     var tbody = $('> tbody', configTable);
     var topRows = $('> tr', tbody);
-    var configTableMetadata = [];
     var curSection = {
         title: 'General'
     };
 
-    exports.showRows(topRows);
-
-    configTableMetadata.push(curSection);
+    var configTableMetadata = new ConfigTableMetaData(configTable, topRows);
+    configTableMetadata.sections.push(curSection);
     curSection.id = exports.toId(curSection.title);
-    configTableMetadata.configTable = configTable;
-    configTableMetadata.topRows = topRows;
 
+    configTableMetadata.showRows(topRows);
+    
     topRows.each(function () {
         var tr = $(this);
         if (tr.hasClass('section-header-row')) {
@@ -56,7 +54,7 @@ exports.decorateConfigTable = function(configTable) {
                 title: title,
                 id: exports.toId(title)
             };
-            configTableMetadata.push(curSection);
+            configTableMetadata.sections.push(curSection);
         }
 
         tr.addClass(curSection.id);
@@ -69,9 +67,23 @@ exports.decorateConfigTable = function(configTable) {
     return configTableMetadata;
 };
 
-exports.showRows = function(topRows, selector) {
-    topRows.hide();
-    topRows.filter(selector).show();
+exports.toId = function(string) {
+    return 'config_' + string.replace(/[\W_]+/g, '_').toLowerCase();
+};
+
+/*
+ * ConfigTable MetaData class.
+ */
+
+function ConfigTableMetaData(configTable, topRows) {
+    this.configTable = configTable;
+    this.topRows = topRows;
+    this.sections = [];    
+}
+
+ConfigTableMetaData.prototype.showRows = function(selector) {
+    this.topRows.hide();
+    this.topRows.filter(selector).show();
 
     var $ = jQD.getJQuery();
     // Hide the section header row. No need for it now because the
@@ -79,9 +91,5 @@ exports.showRows = function(topRows, selector) {
     $('.section-header-row').hide();
 
     // and always show the buttons
-    topRows.filter('.config_buttons').show();
-};
-
-exports.toId = function(string) {
-    return 'config_' + string.replace(/[\W_]+/g, '_').toLowerCase();
+    this.topRows.filter('.config_buttons').show();
 };
