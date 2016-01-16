@@ -24,15 +24,15 @@
 package hudson.model;
 
 import com.trilead.ssh2.crypto.Base64;
-import hudson.PluginWrapper;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.Extension;
-import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
 
 import jenkins.model.Jenkins;
+import jenkins.model.statistics.UsageStatisticsContributor;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
@@ -60,6 +60,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.jcraft.jzlib.GZIPOutputStream;
 
 /**
@@ -67,6 +70,7 @@ import com.jcraft.jzlib.GZIPOutputStream;
  */
 @Extension
 public class UsageStatistics extends PageDecorator {
+    private static final Logger LOGGER = Logger.getLogger(UsageStatistics.class.getName());
     private final String keyImage;
 
     /**
@@ -123,50 +127,34 @@ public class UsageStatistics extends PageDecorator {
      */
     public String getStatData() throws IOException {
         Jenkins j = Jenkins.getInstance();
+        JSONObject data = new JSONObject();
 
-        JSONObject o = new JSONObject();
-        o.put("stat",1);
-        o.put("install", j.getLegacyInstanceId());
-        o.put("servletContainer", j.servletContext.getServerInfo());
-        o.put("version", Jenkins.VERSION);
+        ExtensionList<UsageStatisticsContributor> contributors = UsageStatisticsContributor.all();
 
         List<JSONObject> nodes = new ArrayList<JSONObject>();
-        for( Computer c : j.getComputers() ) {
-            JSONObject  n = new JSONObject();
-            if(c.getNode()==j) {
-                n.put("master",true);
-                n.put("jvm-vendor", System.getProperty("java.vm.vendor"));
-                n.put("jvm-name", System.getProperty("java.vm.name"));
-                n.put("jvm-version", System.getProperty("java.version"));
+        for (Computer computer : j.getComputers()) {
+            JSONObject nodeData = new JSONObject();
+            for (UsageStatisticsContributor contributor : contributors) {
+                try { // robustness: a sole contributor shouldn't be able to interrupt the whole stats retrieval process
+                    contributor.contributeNodeData(computer, nodeData);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, null, e);
+                }
             }
-            n.put("executors",c.getNumExecutors());
-            DescriptorImpl descriptor = j.getDescriptorByType(DescriptorImpl.class);
-            n.put("os", descriptor.get(c));
-            nodes.add(n);
+            nodes.add(nodeData);
         }
-        o.put("nodes",nodes);
+        data.put("nodes", nodes);
 
-        List<JSONObject> plugins = new ArrayList<JSONObject>();
-        for( PluginWrapper pw : j.getPluginManager().getPlugins() ) {
-            if(!pw.isActive())  continue;   // treat disabled plugins as if they are uninstalled
-            JSONObject p = new JSONObject();
-            p.put("name",pw.getShortName());
-            p.put("version",pw.getVersion());
-            plugins.add(p);
-        }
-        o.put("plugins",plugins);
+        for (UsageStatisticsContributor contributor : contributors) {
+            Class<? extends UsageStatisticsContributor> contributorClass = contributor.getClass();
+            LOGGER.finest(String.format("Calling '%s' usage stats contributor",  contributorClass));
 
-        JSONObject jobs = new JSONObject();
-        List<TopLevelItem> items = j.getAllItems(TopLevelItem.class);
-        for (TopLevelItemDescriptor d : Items.all()) {
-            int cnt=0;
-            for (TopLevelItem item : items) {
-                if(item.getDescriptor()==d)
-                    cnt++;
+            try { // robustness: a sole contributor shouldn't be able to interrupt the whole stats retrieval process
+                contributor.contributeData(data);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, null, e);
             }
-            jobs.put(d.getJsonSafeClassName(),cnt);
         }
-        o.put("jobs",jobs);
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -174,7 +162,7 @@ public class UsageStatistics extends PageDecorator {
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
             OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getKey(),"AES")), "UTF-8");
             try {
-                o.write(w);
+                data.write(w);
             } finally {
                 IOUtils.closeQuietly(w);
             }
