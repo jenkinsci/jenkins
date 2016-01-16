@@ -69,22 +69,6 @@ exports.decorateConfigTable = function(configTable) {
     return configTableMetadata;
 };
 
-exports.markConfigTables = function() {
-    var $ = jQD.getJQuery();
-    var configTablesMetadata = [];
-    var configTables = exports.findConfigTables();
-
-    // Mark the config tables.
-    configTables.addClass('config-table');
-
-    // For each table (is there ever more than one?)
-    configTables.each(function() {
-        configTablesMetadata.push(exports.decorateConfigTable($(this)));
-    });
-
-    return configTablesMetadata;
-};
-
 exports.showRows = function(topRows, selector) {
     topRows.hide();
     topRows.filter(selector).show();
