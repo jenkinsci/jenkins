@@ -18,11 +18,11 @@ exports.addTabs = function(configTable, activateTabId) {
         if (configTableEl.size() === 0) {
             throw "No config table found using selector '" + configTable + "'";
         } else {
-            configTableMetadata = tableMetadata.markConfigTable(configTableEl);
+            configTableMetadata = tableMetadata.decorateConfigTable(configTableEl);
         }
     } else {
         // It's a config <table> element
-        configTableMetadata = tableMetadata.markConfigTable(configTable);
+        configTableMetadata = tableMetadata.decorateConfigTable(configTable);
     }
     
     var tabBar = $('<div class="tabBar"></div>');
@@ -35,7 +35,7 @@ exports.addTabs = function(configTable, activateTabId) {
         tab.click(function() {
             $('.tab.active', tabBar).removeClass('active');
             tab.addClass('active');
-            tableMetadata.filterRows(configTableMetadata.topRows, '.' + section.id);
+            tableMetadata.showRows(configTableMetadata.topRows, '.' + section.id);
         });
 
         section.tab = tab;

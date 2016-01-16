@@ -11,7 +11,7 @@ exports.findConfigTables = function() {
     return $('form[name="config"] > table');
 };
 
-exports.markConfigTable = function(configTable) {
+exports.decorateConfigTable = function(configTable) {
     var $ = jQD.getJQuery();
     var sectionHeaders = $('.section-header', configTable);
 
@@ -40,7 +40,7 @@ exports.markConfigTable = function(configTable) {
         title: 'General'
     };
 
-    exports.filterRows(topRows);
+    exports.showRows(topRows);
 
     configTableMetadata.push(curSection);
     curSection.id = exports.toId(curSection.title);
@@ -79,13 +79,13 @@ exports.markConfigTables = function() {
 
     // For each table (is there ever more than one?)
     configTables.each(function() {
-        configTablesMetadata.push(exports.markConfigTable($(this)));
+        configTablesMetadata.push(exports.decorateConfigTable($(this)));
     });
 
     return configTablesMetadata;
 };
 
-exports.filterRows = function(topRows, selector) {
+exports.showRows = function(topRows, selector) {
     topRows.hide();
     topRows.filter(selector).show();
 
