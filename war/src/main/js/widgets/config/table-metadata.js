@@ -66,6 +66,7 @@ exports.decorateConfigTable = function(configTable) {
 };
 
 exports.toId = function(string) {
+    string = string.trim();
     return 'config_' + string.replace(/[\W_]+/g, '_').toLowerCase();
 };
 
@@ -104,6 +105,14 @@ ConfigTableMetaData.prototype.hasSections = function() {
     return  hasSections;
 };
 
+ConfigTableMetaData.prototype.sectionIds = function() {
+    var sectionIds = [];
+    for (var i = 0; i < this.sections.length; i++) {
+        sectionIds.push(this.sections[i].id);
+    }
+    return sectionIds;
+};
+
 ConfigTableMetaData.prototype.activateSection = function(sectionId) {
     if (!sectionId) {
         throw 'Invalid section id "' + sectionId + '"';
@@ -125,3 +134,4 @@ ConfigTableMetaData.prototype.activateFirstSection = function() {
         this.activateSection(this.sections[0].id);
     }
 };
+

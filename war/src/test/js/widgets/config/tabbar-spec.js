@@ -16,6 +16,9 @@ describe("Config tabbar tests", function () {
             
             // TODO: lots more tests !!!
             
+            expect(firstTableMetadata.sectionIds().toString())
+                .toBe('config_general,config__build_triggers,config__advanced_project_options,config__workflow');
+            
             done();
         }, 'widgets/config/workflow-config.html');
     });
