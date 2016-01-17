@@ -95,3 +95,33 @@ ConfigTableMetaData.prototype.showSection = function(sectionId) {
 ConfigTableMetaData.prototype.sectionCount = function() {
     return this.sections.length;
 };
+
+ConfigTableMetaData.prototype.activateSection = function(sectionId) {
+    if (!sectionId) {
+        throw 'Invalid section id "' + sectionId + '"';
+    }
+
+    if (this.hasSections()) {
+        for (var i = 0; i < this.sections.length; i++) {
+            var section = this.sections[i];
+            if (section.id === sectionId) {
+                this.sections[i].clicker.click();
+                return;
+            }
+        }
+    }
+};
+
+ConfigTableMetaData.prototype.activateFirstSection = function() {
+    if (this.hasSections()) {
+        this.activateSection(this.sections[0].id);
+    }
+};
+
+ConfigTableMetaData.prototype.hasSections = function() {
+    var hasSections = (this.sectionCount() > 0);
+    if (!hasSections) {
+        console.warn('Jenkins configuration without sections?');
+    }
+    return  hasSections;
+};

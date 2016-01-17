@@ -1,11 +1,11 @@
 var jQD = require('jquery-detached');
 var tableMetadata = require('./table-metadata');
 
-exports.addTabsOnFirst = function(activateTabId) {
-    return exports.addTabs(tableMetadata.findConfigTables().first(), activateTabId);
+exports.addTabsOnFirst = function() {
+    return exports.addTabs(tableMetadata.findConfigTables().first());
 };
 
-exports.addTabs = function(configTable, activateTabId) {
+exports.addTabs = function(configTable) {
     var $ = jQD.getJQuery();
     var configTableMetadata;
     
@@ -38,7 +38,7 @@ exports.addTabs = function(configTable, activateTabId) {
             configTableMetadata.showSection(section.id);
         });
 
-        section.tab = tab;
+        section.clicker = tab;
 
         return tab;
     }
@@ -54,16 +54,8 @@ exports.addTabs = function(configTable, activateTabId) {
     tabs.append(tabBar);
     tabs.insertBefore(configTableMetadata.configTable);
 
-    if (activateTabId) {
-        for (var ii = 0; ii < configTableMetadata.sections.length; ii++) {
-            section = configTableMetadata.sections[ii];
-            if (section.id === activateTabId) {
-                configTableMetadata.sections[ii].tab.click();
-                return;
-            }
-        }
-    }
-    configTableMetadata.sections[0].tab.click();
+    // Always activate the first section by default.
+    configTableMetadata.activateFirstSection();
     
     return configTableMetadata;
 };
