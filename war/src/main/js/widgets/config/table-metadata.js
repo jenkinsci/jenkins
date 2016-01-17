@@ -35,11 +35,9 @@ exports.decorateConfigTable = function(configTable) {
     // version of the section title as the section id.
     var tbody = $('> tbody', configTable);
     var topRows = $('> tr', tbody);
-    var curSection = {
-        title: 'General'
-    };
-
     var configTableMetadata = new ConfigTableMetaData(configTable, topRows);
+    var curSection = new ConfigSection(configTableMetadata, 'General');
+
     configTableMetadata.sections.push(curSection);
     curSection.id = exports.toId(curSection.title);
 
@@ -48,13 +46,11 @@ exports.decorateConfigTable = function(configTable) {
         if (tr.hasClass('section-header-row')) {
             // a new section
             var title = tr.attr('title');
-            curSection = {
-                title: title,
-                id: exports.toId(title)
-            };
+            curSection = new ConfigSection(configTableMetadata, title);
             configTableMetadata.sections.push(curSection);
         }
 
+        curSection.rows.push(tr);
         tr.addClass(curSection.id);
     });
 
@@ -71,27 +67,53 @@ exports.toId = function(string) {
 };
 
 /*
+ * Configuration table section.
+ */
+function ConfigSection(parentCMD, title) {
+    this.parentCMD = parentCMD;
+    this.title = title;
+    this.id = exports.toId(title);
+    this.rows = [];
+}
+
+/*
+ * Set the element (jquery) that activates the section (on click).
+ */
+ConfigSection.prototype.setActivator = function(activator) {
+    this.activator = activator;
+    
+    var section = this;
+    section.activator.click(function() {
+        section.parentCMD.showSection(section);
+    });
+};
+
+ConfigSection.prototype.activate = function() {
+    if (this.activator) {
+        this.activator.click();
+    } else {
+        console.warn('No activator attached to config section object.');
+    }
+};
+
+ConfigSection.prototype.activeRowCount = function() {
+    var activeRowCount = 0;
+    for (var i = 0; i < this.rows.length; i++) {
+        if (this.rows[i].hasClass('active')) {
+            activeRowCount++;
+        }
+    }
+    return activeRowCount;
+};
+
+/*
  * ConfigTable MetaData class.
  */
-
 function ConfigTableMetaData(configTable, topRows) {
     this.configTable = configTable;
     this.topRows = topRows;
     this.sections = [];
 }
-
-ConfigTableMetaData.prototype.showSection = function(sectionId) {
-    this.topRows.hide();
-    this.topRows.filter('.' + sectionId).show();
-
-    var $ = jQD.getJQuery();
-    // Hide the section header row. No need for it now because the
-    // tab text acts as the section label.
-    $('.section-header-row').hide();
-
-    // and always show the buttons
-    this.topRows.filter('.config_buttons').show();
-};
 
 ConfigTableMetaData.prototype.sectionCount = function() {
     return this.sections.length;
@@ -118,15 +140,33 @@ ConfigTableMetaData.prototype.activateSection = function(sectionId) {
         throw 'Invalid section id "' + sectionId + '"';
     }
 
+    var section = this.getSection(sectionId);
+    if (section) {
+        section.activate();
+    }
+};
+
+ConfigTableMetaData.prototype.activeSection = function() {
+    if (this.hasSections()) {
+        for (var i = 0; i < this.sections.length; i++) {
+            var section = this.sections[i];
+            if (section.activator.hasClass('active')) {
+                return section;
+            }
+        }
+    }
+};
+
+ConfigTableMetaData.prototype.getSection = function(sectionId) {
     if (this.hasSections()) {
         for (var i = 0; i < this.sections.length; i++) {
             var section = this.sections[i];
             if (section.id === sectionId) {
-                this.sections[i].clicker.click();
-                return;
+                return section;
             }
         }
     }
+    return undefined;
 };
 
 ConfigTableMetaData.prototype.activateFirstSection = function() {
@@ -135,14 +175,41 @@ ConfigTableMetaData.prototype.activateFirstSection = function() {
     }
 };
 
-ConfigTableMetaData.prototype.addSectionClicker = function(section, clicker) {
-    var configTMD = this;
-    var $ = jQD.getJQuery();
-    
-    section.clicker = clicker;
-    section.clicker.click(function() {
-        $('.config-section-clicker.active', configTMD.clickerContainer).removeClass('active');
-        section.clicker.addClass('active');
-        configTMD.showSection(section.id);
-    });
+ConfigTableMetaData.prototype.activeSectionCount = function() {
+    var activeSectionCount = 0;
+    if (this.hasSections()) {
+        for (var i = 0; i < this.sections.length; i++) {
+            var section = this.sections[i];
+            if (section.activator.hasClass('active')) {
+                activeSectionCount++;
+            }
+        }
+    }
+    return activeSectionCount;
+};
+
+ConfigTableMetaData.prototype.showSection = function(section) {
+    if (typeof section === 'string') {
+        section = this.getSection(section);
+    }
+
+    if (section) {
+        var $ = jQD.getJQuery();
+
+        // Deactive currently active section ...
+        $('.config-section-activator.active', this.activatorContainer).removeClass('active');
+        this.topRows.filter('.active').removeClass('active');
+        this.topRows.hide();
+
+        // Active the specified section
+        section.activator.addClass('active');
+        this.topRows.filter('.' + section.id).addClass('active').show();
+
+        // Hide the section header row. No need for it now because the
+        // tab text acts as the section label.
+        $('.section-header-row').hide();
+
+        // and always show the buttons
+        this.topRows.filter('.config_buttons').show();
+    }
 };

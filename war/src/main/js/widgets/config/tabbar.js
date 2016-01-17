@@ -26,10 +26,10 @@ exports.addTabs = function(configTable) {
     }
     
     var tabBar = $('<div class="tabBar"></div>');
-    configTableMetadata.clickerContainer = tabBar;
+    configTableMetadata.activatorContainer = tabBar;
 
     function newTab(section) {
-        var tab = $('<div class="tab config-section-clicker"></div>');
+        var tab = $('<div class="tab config-section-activator"></div>');
 
         tab.text(section.title);
         tab.addClass(section.id);
@@ -42,7 +42,7 @@ exports.addTabs = function(configTable) {
         section = configTableMetadata.sections[i];
         var tab = newTab(section);
         tabBar.append(tab);
-        configTableMetadata.addSectionClicker(section, tab);
+        section.setActivator(tab);
     }
 
     var tabs = $('<div class="form-config tabBarFrame"></div>');
