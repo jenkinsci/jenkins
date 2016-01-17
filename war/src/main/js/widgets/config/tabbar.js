@@ -26,19 +26,13 @@ exports.addTabs = function(configTable) {
     }
     
     var tabBar = $('<div class="tabBar"></div>');
+    configTableMetadata.clickerContainer = tabBar;
 
     function newTab(section) {
-        var tab = $('<div class="tab"></div>');
+        var tab = $('<div class="tab config-section-clicker"></div>');
 
         tab.text(section.title);
         tab.addClass(section.id);
-        tab.click(function() {
-            $('.tab.active', tabBar).removeClass('active');
-            tab.addClass('active');
-            configTableMetadata.showSection(section.id);
-        });
-
-        section.clicker = tab;
 
         return tab;
     }
@@ -48,6 +42,7 @@ exports.addTabs = function(configTable) {
         section = configTableMetadata.sections[i];
         var tab = newTab(section);
         tabBar.append(tab);
+        configTableMetadata.addSectionClicker(section, tab);
     }
 
     var tabs = $('<div class="form-config tabBarFrame"></div>');

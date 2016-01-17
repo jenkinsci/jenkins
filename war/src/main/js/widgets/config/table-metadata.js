@@ -77,7 +77,8 @@ exports.toId = function(string) {
 function ConfigTableMetaData(configTable, topRows) {
     this.configTable = configTable;
     this.topRows = topRows;
-    this.sections = [];    
+    this.sections = [];
+    this.$ = jQD.getJQuery();
 }
 
 ConfigTableMetaData.prototype.showSection = function(sectionId) {
@@ -135,3 +136,13 @@ ConfigTableMetaData.prototype.activateFirstSection = function() {
     }
 };
 
+ConfigTableMetaData.prototype.addSectionClicker = function(section, clicker) {
+    var configTMD = this;
+    
+    section.clicker = clicker;
+    section.clicker.click(function() {
+        configTMD.$('.config-section-clicker.active', configTMD.clickerContainer).removeClass('active');
+        section.clicker.addClass('active');
+        configTMD.showSection(section.id);
+    });
+};

@@ -14,8 +14,6 @@ describe("Config tabbar tests", function () {
             expect(firstTableMetadata.sectionCount()).toBe(4);
             expect($('.tabBar .tab').size()).toBe(4);
             
-            // TODO: lots more tests !!!
-            
             expect(firstTableMetadata.sectionIds().toString())
                 .toBe('config_general,config__build_triggers,config__advanced_project_options,config__workflow');
             
