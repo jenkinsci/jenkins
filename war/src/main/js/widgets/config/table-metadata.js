@@ -93,3 +93,7 @@ ConfigTableMetaData.prototype.showRows = function(selector) {
     // and always show the buttons
     this.topRows.filter('.config_buttons').show();
 };
+
+ConfigTableMetaData.prototype.sectionCount = function() {
+    return this.sections.length;
+};
