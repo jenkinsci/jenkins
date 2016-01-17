@@ -96,6 +96,14 @@ ConfigTableMetaData.prototype.sectionCount = function() {
     return this.sections.length;
 };
 
+ConfigTableMetaData.prototype.hasSections = function() {
+    var hasSections = (this.sectionCount() > 0);
+    if (!hasSections) {
+        console.warn('Jenkins configuration without sections?');
+    }
+    return  hasSections;
+};
+
 ConfigTableMetaData.prototype.activateSection = function(sectionId) {
     if (!sectionId) {
         throw 'Invalid section id "' + sectionId + '"';
@@ -116,12 +124,4 @@ ConfigTableMetaData.prototype.activateFirstSection = function() {
     if (this.hasSections()) {
         this.activateSection(this.sections[0].id);
     }
-};
-
-ConfigTableMetaData.prototype.hasSections = function() {
-    var hasSections = (this.sectionCount() > 0);
-    if (!hasSections) {
-        console.warn('Jenkins configuration without sections?');
-    }
-    return  hasSections;
 };
