@@ -67,13 +67,16 @@ exports.toId = function(string) {
 };
 
 /*
+ * =======================================================================================
  * Configuration table section.
+ * =======================================================================================
  */
 function ConfigSection(parentCMD, title) {
     this.parentCMD = parentCMD;
     this.title = title;
     this.id = exports.toId(title);
     this.rows = [];
+    this.rowSets = undefined;
 }
 
 /*
@@ -106,8 +109,82 @@ ConfigSection.prototype.activeRowCount = function() {
     return activeRowCount;
 };
 
+ConfigSection.prototype.updateRowSetVisibility = function() {
+    if (this.rowSets === undefined) {
+        // Lazily gather rowset information.
+        this.gatherRowSets();
+    }
+    for (var i = 0; i < this.rowSets.length; i++) {
+        var rowSet = this.rowSets[i];
+        if (rowSet.toggleWidget !== undefined) {
+            var isChecked = rowSet.toggleWidget.is(':checked');
+            for (var ii = 0; ii < rowSet.rows.length; ii++) {
+                if (isChecked) {
+                    rowSet.rows[ii].show();
+                } else {
+                    rowSet.rows[ii].hide();
+                }
+            }
+        }
+    }
+};
+
+ConfigSection.prototype.gatherRowSets = function() {
+    this.rowSets = [];
+    
+    var curRowSet = undefined;
+    for (var i = 0; i < this.rows.length; i++) {
+        var row = this.rows[i];
+        
+        if (row.hasClass('row-set-start')) {
+            curRowSet = new ConfigRowSet(row);
+            curRowSet.findToggleWidget(row);
+            this.rowSets.push(curRowSet);
+        } else if (curRowSet !== undefined) {
+            if (row.hasClass('row-set-end')) {
+                curRowSet.endRow = row;
+                curRowSet = undefined;
+            } else if (curRowSet.toggleWidget === undefined) {
+                curRowSet.findToggleWidget(row);
+            } else {
+                // we have the toggleWidget, which means that this row is
+                // one of the rows after that row and is one of the rows that's
+                // subject to being made visible/hidden when the input is
+                // checked or unchecked.
+                curRowSet.rows.push(row);
+            }
+        }
+    }
+};
+
 /*
+ * =======================================================================================
+ * Configuration table section.
+ * =======================================================================================
+ */
+function ConfigRowSet(startRow) {
+    this.startRow = startRow;
+    this.rows = [];
+    this.endRow = undefined;
+    this.toggleWidget = undefined;
+}
+
+/*
+ * Find the row-set toggle widget i.e. the input element that indicates that
+ * the row-set rows should be made visible or not.
+ */
+ConfigRowSet.prototype.findToggleWidget = function(row) {
+    var $ = jQD.getJQuery();
+    var input = $(':input', row);
+    if (input.size() === 1) {
+        this.toggleWidget = input;
+    }
+};
+
+/*
+ * =======================================================================================
  * ConfigTable MetaData class.
+ * =======================================================================================
  */
 function ConfigTableMetaData(configTable, topRows) {
     this.configTable = configTable;
@@ -211,5 +288,8 @@ ConfigTableMetaData.prototype.showSection = function(section) {
 
         // and always show the buttons
         this.topRows.filter('.config_buttons').show();
+        
+        // Update the row-set visibility
+        section.updateRowSetVisibility();
     }
 };
