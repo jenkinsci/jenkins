@@ -35,7 +35,7 @@ exports.addTabs = function(configTable, activateTabId) {
         tab.click(function() {
             $('.tab.active', tabBar).removeClass('active');
             tab.addClass('active');
-            configTableMetadata.showRows('.' + section.id);
+            configTableMetadata.showSection(section.id);
         });
 
         section.tab = tab;

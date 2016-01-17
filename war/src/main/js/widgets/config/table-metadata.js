@@ -43,8 +43,6 @@ exports.decorateConfigTable = function(configTable) {
     configTableMetadata.sections.push(curSection);
     curSection.id = exports.toId(curSection.title);
 
-    configTableMetadata.showRows(topRows);
-    
     topRows.each(function () {
         var tr = $(this);
         if (tr.hasClass('section-header-row')) {
@@ -81,9 +79,9 @@ function ConfigTableMetaData(configTable, topRows) {
     this.sections = [];    
 }
 
-ConfigTableMetaData.prototype.showRows = function(selector) {
+ConfigTableMetaData.prototype.showSection = function(sectionId) {
     this.topRows.hide();
-    this.topRows.filter(selector).show();
+    this.topRows.filter('.' + sectionId).show();
 
     var $ = jQD.getJQuery();
     // Hide the section header row. No need for it now because the
