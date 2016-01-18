@@ -132,6 +132,13 @@ ConfigSection.prototype.updateRowSetVisibility = function() {
 ConfigSection.prototype.gatherRowSets = function() {
     this.rowSets = [];
     
+    // Only tracking row-sets that are bounded by 'row-set-start' and 'row-set-end' (for now).
+    // Also, only capturing the rows after the 'block-control' input (checkbox, radio etc)
+    // and before the 'row-set-end'.
+    // TODO: Find out how these actually work. It seems like they can be nested into a hierarchy :(
+    // Also seems like you can have these "optional-block" thingies which are not wrapped
+    // in 'row-set-start' etc. Grrrrrr :( 
+    
     var curRowSet = undefined; // jshint ignore:line
     for (var i = 0; i < this.rows.length; i++) {
         var row = this.rows[i];
@@ -139,10 +146,12 @@ ConfigSection.prototype.gatherRowSets = function() {
         if (row.hasClass('row-set-start')) {
             curRowSet = new ConfigRowSet(row);
             curRowSet.findToggleWidget(row);
-            this.rowSets.push(curRowSet);
         } else if (curRowSet !== undefined) {
             if (row.hasClass('row-set-end')) {
                 curRowSet.endRow = row;
+                // Only capture the row-set if we find a 'row-set-end'.
+                // Yeah, this does not handle hierarchical stuff (see above TO-DO).
+                this.rowSets.push(curRowSet); 
                 curRowSet = undefined;
             } else if (curRowSet.toggleWidget === undefined) {
                 curRowSet.findToggleWidget(row);
@@ -157,6 +166,17 @@ ConfigSection.prototype.gatherRowSets = function() {
     }
 };
 
+ConfigSection.prototype.getRowSetLabels = function() {
+    var labels = [];
+    for (var i = 0; i < this.rowSets.length; i++) {
+        var rowSet = this.rowSets[i];
+        if (rowSet.label) {
+            labels.push(rowSet.label);
+        }
+    }
+    return labels;
+};
+
 /*
  * =======================================================================================
  * Configuration table section.
@@ -167,6 +187,7 @@ function ConfigRowSet(startRow) {
     this.rows = [];
     this.endRow = undefined;
     this.toggleWidget = undefined;
+    this.label = undefined;
 }
 
 /*
@@ -178,6 +199,7 @@ ConfigRowSet.prototype.findToggleWidget = function(row) {
     var input = $(':input.block-control', row);
     if (input.size() === 1) {
         this.toggleWidget = input;
+        this.label = input.parent().find('label').text();
         input.addClass('disable-behavior');
     }
 };

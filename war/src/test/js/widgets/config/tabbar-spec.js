@@ -12,7 +12,7 @@ describe("tabbar-spec tests", function () {
             
             expect($('.section-header-row', firstTableMetadata.configTable).size()).toBe(5);
             expect(firstTableMetadata.sectionCount()).toBe(4);
-            expect($('.tabBar .tab').size()).toBe(4);
+            expect($('.tabBar .tab').size()).toBe(8);
             
             expect(firstTableMetadata.sectionIds().toString())
                 .toBe('config_general,config__build_triggers,config__advanced_project_options,config__workflow');
@@ -38,6 +38,22 @@ describe("tabbar-spec tests", function () {
             expect(activeSection.id).toBe('config__workflow');
             expect(activeSection.activeRowCount()).toBe(3);
             expect(firstTableMetadata.topRows.filter('.active').size()).toBe(3); // should be the same as activeSection.activeRowCount()            
+            
+            done();
+        }, 'widgets/config/workflow-config.html');
+    });
+
+    it("- test row-set activation", function (done) {
+        jsTest.onPage(function() {
+            var configTabBar = jsTest.requireSrcModule('widgets/config/tabbar');
+            var firstTableMetadata = configTabBar.addTabsOnFirst();
+            
+            var generalSection = firstTableMetadata.activeSection();
+            expect(generalSection.id).toBe('config_general');
+            expect(generalSection.rowSets.length).toBe(2);
+            expect(generalSection.getRowSetLabels().toString()).toBe('Discard Old Builds,This build is parameterized');
+            expect(generalSection.rowSets[0].rows.length).toBe(4);
+            expect(generalSection.rowSets[1].rows.length).toBe(4);
             
             done();
         }, 'widgets/config/workflow-config.html');
