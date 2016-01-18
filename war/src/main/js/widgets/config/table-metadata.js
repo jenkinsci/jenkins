@@ -175,9 +175,10 @@ function ConfigRowSet(startRow) {
  */
 ConfigRowSet.prototype.findToggleWidget = function(row) {
     var $ = jQD.getJQuery();
-    var input = $(':input', row);
+    var input = $(':input.block-control', row);
     if (input.size() === 1) {
         this.toggleWidget = input;
+        input.addClass('disable-behavior');
     }
 };
 
