@@ -35,12 +35,15 @@ THE SOFTWARE.
 		<st:include page="sidepanel.jelly" it="${build}" />
 		<l:main-panel>
 			<h1>${%Build} ${build.displayName}</h1>
-			<l:pane title="${%Parameters}" width="3">
-			<j:forEach var="parameterValue" items="${it.parameters}">
-				<st:include it="${parameterValue}"
-					page="value.jelly" />
-			</j:forEach>
-			</l:pane>
+			<p>${%Parameters} :</p>
+			<table class="parameters" width="100%">
+				<j:forEach var="parameterValue" items="${it.parameters}">
+					<tbody>
+						<st:include it="${parameterValue}"
+						page="value.jelly" />
+					</tbody>
+				</j:forEach>
+			</table>
 		</l:main-panel>
   </l:layout>
 </j:jelly>
