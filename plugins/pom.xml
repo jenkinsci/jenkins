@@ -60,7 +60,7 @@
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
-      <type>war</type>
+      <classifier>war-for-test</classifier>
       <version>1.645-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
@@ -73,7 +73,13 @@
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.645-SNAPSHOT</version>
+      <version>2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
+      <version>1.2</version>
       <scope>test</scope>
     </dependency>
     <!--
