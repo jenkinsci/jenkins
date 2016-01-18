@@ -17,7 +17,11 @@ $(function() {
             var tabBarWidget = require('./widgets/config/tabbar.js');
             
             configTables.each(function() {
-                tabBarWidget.addTabs($(this));
+                var tabBar = tabBarWidget.addTabs($(this));
+                tabBar.onShowSection(function() {
+                    // Hook back into hudson-behavior.js
+                    Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
+                });
             });
         }    
     });

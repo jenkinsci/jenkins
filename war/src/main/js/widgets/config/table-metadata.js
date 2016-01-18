@@ -213,6 +213,7 @@ function ConfigTableMetaData(configTable, topRows) {
     this.configTable = configTable;
     this.topRows = topRows;
     this.sections = [];
+    this.showListeners = [];
 }
 
 ConfigTableMetaData.prototype.sectionCount = function() {
@@ -315,6 +316,19 @@ ConfigTableMetaData.prototype.showSection = function(section) {
         // Update the row-set visibility
         section.updateRowSetVisibility();
 
-        Event.fire(window, 'jenkins:config-tab-activated'); // jshint ignore:line
+        fireListeners(this.showListeners, section);
     }
 };
+
+ConfigTableMetaData.prototype.onShowSection = function(listener) {
+    this.showListeners.push(listener);
+};
+
+function fireListeners(listeners, contextObject) {
+    for (var i = 0; i < listeners.length; i++) {
+        fireListener(listeners[0], contextObject);
+    }    
+    function fireListener(listener, contextObject) {
+        listener.call(contextObject);
+    }
+}
