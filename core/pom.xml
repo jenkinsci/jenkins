@@ -408,10 +408,10 @@ THE SOFTWARE.
       <artifactId>groovy-all</artifactId>
       <version>${groovy.version}</version>
     </dependency>
-    <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
+    <dependency><!-- groovy shell uses this but uses an optional dependency -->
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
-      <version>0.9.94</version>
+      <version>1.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
