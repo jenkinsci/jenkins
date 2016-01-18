@@ -314,5 +314,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
         
         // Update the row-set visibility
         section.updateRowSetVisibility();
+
+        Event.fire(window, 'jenkins:config-tab-activated'); // jshint ignore:line
     }
 };
