@@ -5,7 +5,7 @@ $(function() {
     // We need to use Behaviour.js to wait until after radioBlock.js Behaviour.js rules
     // have been applied, otherwise row-set rows become visible across sections.
     var done = false;            
-    Behaviour.specify(".block-control", 'row-set-block-control', 1000, function() {
+    Behaviour.specify(".block-control", 'row-set-block-control', 1000, function() { // jshint ignore:line
         if (done) {
             return;
         }

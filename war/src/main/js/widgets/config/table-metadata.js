@@ -132,7 +132,7 @@ ConfigSection.prototype.updateRowSetVisibility = function() {
 ConfigSection.prototype.gatherRowSets = function() {
     this.rowSets = [];
     
-    var curRowSet = undefined;
+    var curRowSet = undefined; // jshint ignore:line
     for (var i = 0; i < this.rows.length; i++) {
         var row = this.rows[i];
         
