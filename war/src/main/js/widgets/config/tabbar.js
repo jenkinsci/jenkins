@@ -25,7 +25,7 @@ exports.addTabs = function(configTable) {
         configTableMetadata = tableMetadata.decorateConfigTable(configTable);
     }
     
-    var tabBar = $('<div class="tabBar"></div>');
+    var tabBar = $('<div class="tabBar config-section-activators"></div>');
     configTableMetadata.activatorContainer = tabBar;
 
     function newTab(section) {
@@ -45,12 +45,32 @@ exports.addTabs = function(configTable) {
         section.setActivator(tab);
     }
 
+    var configWidgets = $('<div class="config-widgets"></div>');
     var tabs = $('<div class="form-config tabBarFrame"></div>');
+    var noTabs = $('<div class="noTabs" title="Hide configuration tabs">hide tabs</div>');
+
+    configWidgets.append(tabs);
+    tabs.append(noTabs);
     tabs.append(tabBar);
-    tabs.insertBefore(configTableMetadata.configTable);
+    configWidgets.insertBefore(configTableMetadata.configTable);
+    
+    tabs.mouseenter(function() {
+        tabs.addClass('mouse-over');
+    });
+    tabs.mouseleave(function() {
+        tabs.removeClass('mouse-over');
+    });
+    configTableMetadata.deactivator = noTabs;
 
     // Always activate the first section by default.
     configTableMetadata.activateFirstSection();
     
     return configTableMetadata;
+};
+
+exports.addTabsActivator = function(configTable) {
+    var $ = jQD.getJQuery();
+    var configWidgets = $('<div class="config-widgets"><span class="showTabs" title="Show configuration tabs">show tabs</span></div>');
+    configWidgets.insertBefore(configTable);
+    return configWidgets;
 };

@@ -14,15 +14,32 @@ $(function() {
         // Only do job configs for now.
         var configTables = $('.job-config.tabbed');
         if (configTables.size() > 0) {
+            var localStorage = require('./util/localStorage.js');
+            var tabBarShowPreferenceKey = 'jenkins:config:usetabs:' + window.location.href;
+            var tabBarShowPreference = localStorage.getItem(tabBarShowPreferenceKey, "yes");
+
             var tabBarWidget = require('./widgets/config/tabbar.js');
-            
-            configTables.each(function() {
-                var tabBar = tabBarWidget.addTabs($(this));
-                tabBar.onShowSection(function() {
-                    // Hook back into hudson-behavior.js
-                    Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
+            if (tabBarShowPreference === "yes") {
+                configTables.each(function() {
+                    var tabBar = tabBarWidget.addTabs($(this));
+                    tabBar.onShowSection(function() {
+                        // Hook back into hudson-behavior.js
+                        Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
+                    });
+                    tabBar.deactivator.click(function() {
+                        localStorage.setItem(tabBarShowPreferenceKey, "no");
+                        require('window-handle').getWindow().location.reload();
+                    });
                 });
-            });
+            } else {
+                configTables.each(function() {
+                    var activator = tabBarWidget.addTabsActivator($(this));
+                    activator.click(function() {
+                        localStorage.setItem(tabBarShowPreferenceKey, "yes");
+                        require('window-handle').getWindow().location.reload();
+                    });
+                });                
+            }
         }    
     });
 });
