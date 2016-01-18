@@ -1,8 +1,8 @@
 var jsTest = require("jenkins-js-test");
 
-describe("Config tabbar tests", function () {
+describe("tabbar-spec tests", function () {
 
-    it("- test", function (done) {
+    it("- test section count", function (done) {
         jsTest.onPage(function() {
             var configTabBar = jsTest.requireSrcModule('widgets/config/tabbar');
             var firstTableMetadata = configTabBar.addTabsOnFirst();
@@ -16,7 +16,16 @@ describe("Config tabbar tests", function () {
             
             expect(firstTableMetadata.sectionIds().toString())
                 .toBe('config_general,config__build_triggers,config__advanced_project_options,config__workflow');
+            
+            done();
+        }, 'widgets/config/workflow-config.html');
+    });
 
+    it("- test section activation", function (done) {
+        jsTest.onPage(function() {
+            var configTabBar = jsTest.requireSrcModule('widgets/config/tabbar');
+            var firstTableMetadata = configTabBar.addTabsOnFirst();
+            
             // The first section ("General") should be active by default
             expect(firstTableMetadata.activeSection().id).toBe('config_general');
             expect(firstTableMetadata.activeSectionCount()).toBe(1);
