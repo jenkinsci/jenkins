@@ -35,7 +35,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
-import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -87,7 +86,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  * be used to associate new {@link Action}s to slaves.
  *
  * @author Kohsuke Kawaguchi
- * @see NodeMonitor
  * @see NodeDescriptor
  * @see Computer
  */
