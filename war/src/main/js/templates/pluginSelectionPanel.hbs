@@ -1,0 +1,57 @@
+<div class="modal-header">
+	<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	<h4 class="modal-title">{{translations.installWizard_installCustom_title}}</h4>
+</div>
+<div class="modal-body plugin-selector">
+	<div class="categories col-sm-3">
+	<ul class="nav">
+	  {{#each categories}}
+	  <li><a href="#{{id this}}" class="select-category">{{this}}</a></li>
+	  {{/each}}
+	</ul>
+	</div>
+	<div class="plugins col-sm-9">
+		<div class="plugin-select-controls">
+			<span class="plugin-select-actions">
+				<a href="#" class="plugin-select-all">{{translations.installWizard_installCustom_selectAll}}</a>
+				<a href="#" class="plugin-select-none">{{translations.installWizard_installCustom_selectNone}}</a>
+				<a href="#" class="plugin-select-recommended">{{translations.installWizard_installCustom_selectRecommended}}</a>
+			</span>
+			<span class="plugin-search-controls">
+				<input type="text" name="searchbox" class="form-control" />
+				<a href="#" class="clear-search">&times;</a>
+			</span>
+			<span id="plugin-selected-info" class="plugin-selected-info" data-selected-plugins="{{#each selectedPlugins}}{{this}},{{/each}}">
+				<a href="#" class="plugin-show-selected">{{translations.installWizard_installCustom_selected}}</a> {{totalPluginCount}}
+			</span>
+		</div>
+		<div class="plugin-list">
+            <div class="plugin-list-description">{{{translations.installWizard_installCustom_pluginListDesc}}}</div>
+			{{#each categorizedPlugins}}
+			<h2 id="{{id @key}}" class="expanded">{{@key}} {{pluginCountForCategory @key}}</h2>
+			<div class="plugins-for-category">
+				{{#each this}}
+				<label class="{{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}}" id="row-{{plugin.name}}"
+					{{#hasDependencies plugin.name}}data-tooltip="{{../../../translations.installWizard_installCustom_dependenciesPrefix}}: {{dependencyText ../plugin.name}}"{{/hasDependencies}}>
+					<span class="title">
+						<input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
+						{{plugin.title}}
+					</span>
+					<span class="description">
+						{{{plugin.excerpt}}}
+					</span>
+				</label>
+				{{/each}}
+			</div>
+			{{/each}}
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-link install-home">
+		{{translations.installWizard_goBack}}
+	</button>
+	<button type="button" class="btn btn-primary install-selected">
+		{{translations.installWizard_goInstall}}
+	</button>
+</div>

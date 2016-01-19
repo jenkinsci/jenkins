@@ -1,17 +1,29 @@
 package jenkins.util.xml;
 
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -19,6 +31,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 /**
  * Utilities useful when working with various XML types.
@@ -79,6 +94,92 @@ public final class XMLUtils {
                         "XXEPrevention is enabled.");
             }
         }
+    }
+
+    /**
+     * Parse the supplied XML stream data to a {@link Document}.
+     * <p>
+     * This function does not close the stream.
+     *
+     * @param stream The XML stream.
+     * @return The XML {@link Document}.
+     * @throws SAXException Error parsing the XML stream data e.g. badly formed XML.
+     * @throws IOException Error reading from the steam.
+     * @since FIXME
+     */
+    public static @Nonnull Document parse(@Nonnull Reader stream) throws SAXException, IOException {
+        DocumentBuilder docBuilder;
+
+        try {
+            docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new IllegalStateException("Unexpected error creating DocumentBuilder.", e);
+        }
+
+        return docBuilder.parse(new InputSource(stream));
+    }
+
+    /**
+     * Parse the supplied XML file data to a {@link Document}.
+     * @param file The file to parse.
+     * @param encoding The encoding of the XML in the file.
+     * @return The parsed document.
+     * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
+     * @throws IOException Error reading from the file.
+     * @since FIXME
+     */
+    public static @Nonnull Document parse(@Nonnull File file, @Nonnull String encoding) throws SAXException, IOException {
+        if (!file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException(String.format("File %s does not exist or is not a 'normal' file.", file.getAbsolutePath()));
+        }
+
+        FileInputStream fileInputStream = new FileInputStream(file);
+        try {
+            InputStreamReader fileReader = new InputStreamReader(fileInputStream, encoding);
+            try {
+                return parse(fileReader);
+            } finally {
+                IOUtils.closeQuietly(fileReader);
+            }
+        } finally {
+            IOUtils.closeQuietly(fileInputStream);
+        }
+    }
+
+    /**
+     * The a "value" from an XML file using XPath.
+     * <p>
+     * Uses the system encoding for reading the file.
+     *
+     * @param xpath The XPath expression to select the value.
+     * @param file The file to read.
+     * @return The data value. An empty {@link String} is returned when the expression does not evaluate
+     * to anything in the document.
+     * @throws IOException Error reading from the file.
+     * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
+     * @throws XPathExpressionException Invalid XPath expression.
+     * @since FIXME
+     */
+    public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file) throws IOException, SAXException, XPathExpressionException {
+        return getValue(xpath, file, Charset.defaultCharset().toString());
+    }
+
+    /**
+     * The a "value" from an XML file using XPath.
+     * @param xpath The XPath expression to select the value.
+     * @param file The file to read.
+     * @param fileDataEncoding The file data format.
+     * @return The data value. An empty {@link String} is returned when the expression does not evaluate
+     * to anything in the document.
+     * @throws IOException Error reading from the file.
+     * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
+     * @throws XPathExpressionException Invalid XPath expression.
+     * @since FIXME
+     */
+    public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file, @Nonnull String fileDataEncoding) throws IOException, SAXException, XPathExpressionException {
+        Document document = parse(file, fileDataEncoding);
+        XPath xPathProcessor = XPathFactory.newInstance().newXPath();
+        return xPathProcessor.compile(xpath).evaluate(document);
     }
 
     /**
