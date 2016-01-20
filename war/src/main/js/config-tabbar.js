@@ -21,7 +21,8 @@ $(function() {
             var tabBarWidget = require('./widgets/config/tabbar.js');
             if (tabBarShowPreference === "yes") {
                 configTables.each(function() {
-                    var tabBar = tabBarWidget.addTabs($(this));
+                    var configTable = $(this);
+                    var tabBar = tabBarWidget.addTabs(configTable);
 
                     addFinderToggle(tabBar);
                     tabBar.onShowSection(function() {
@@ -35,6 +36,15 @@ $(function() {
                     $('.jenkins-config .find-container input').focus(function() {
                         fireBottomStickerAdjustEvent();
                     });
+
+                    if (tabBar.hasSections()) {
+                        var tabBarLastSectionKey = 'jenkins:config:' + tabBar.configForm.attr('name') + ':last-tab:' + window.location.href;
+                        var tabBarLastSection = localStorage.getItem(tabBarLastSectionKey, tabBar.sections[0].id);
+                        tabBar.onShowSection(function() {
+                            localStorage.setItem(tabBarLastSectionKey, this.id);
+                        });
+                        tabBar.showSection(tabBarLastSection);
+                    }
                 });
             } else {
                 configTables.each(function() {

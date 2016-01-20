@@ -5,7 +5,9 @@
 var jQD = require('jquery-detached');
 
 exports.markConfigForm = function(configTable) {
-    configTable.closest('form').addClass('jenkins-config');
+    var form = configTable.closest('form');
+    form.addClass('jenkins-config');
+    return form;
 };
 
 exports.findConfigTables = function() {
@@ -18,8 +20,7 @@ exports.findConfigTables = function() {
 exports.decorateConfigTable = function(configTable) {
     var $ = jQD.getJQuery();
     var sectionHeaders = $('.section-header', configTable);
-
-    exports.markConfigForm(configTable);
+    var configForm = exports.markConfigForm(configTable);
 
     // Mark the ancestor <tr>s of the section headers and add a title
     sectionHeaders.each(function () {
@@ -41,7 +42,7 @@ exports.decorateConfigTable = function(configTable) {
     // version of the section title as the section id.
     var tbody = $('> tbody', configTable);
     var topRows = $('> tr', tbody);
-    var configTableMetadata = new ConfigTableMetaData(configTable, topRows);
+    var configTableMetadata = new ConfigTableMetaData(configForm, configTable, topRows);
     var curSection = new ConfigSection(configTableMetadata, 'General');
 
     configTableMetadata.sections.push(curSection);
@@ -191,13 +192,15 @@ ConfigSection.prototype.highlightText = function(text) {
     for (var i = 0; i < this.rows.length; i++) {
         var row = this.rows[i];
 
-        $('span.highlight', row).each(function() {
+        /*jshint loopfunc: true */
+        $('span.highlight', row).each(function() { // jshint ignore:line
             var highlight = $(this);
             highlight.before(highlight.text());
             highlight.remove();
         });
 
         if (text !== '') {
+            /*jshint loopfunc: true */
             $(selector, row).find(':not(:input)').html(function(_, html) {
                 var regex = new RegExp(text,"g");
                 return html.replace(regex, '<span class="highlight">' + text + '</span>');
@@ -238,11 +241,11 @@ ConfigRowSet.prototype.findToggleWidget = function(row) {
  * ConfigTable MetaData class.
  * =======================================================================================
  */
-function ConfigTableMetaData(configTable, topRows) {
+function ConfigTableMetaData(configForm, configTable, topRows) {
+    this.configForm = configForm;
     this.configTable = configTable;
     this.topRows = topRows;
     this.sections = [];
-    this.activeSection = undefined;
     this.findInput = undefined;
     this.showListeners = [];
     this.configWidgets = undefined;
@@ -371,7 +374,6 @@ ConfigTableMetaData.prototype.showSection = function(section) {
         // Active the specified section
         section.activator.addClass('active');
         this.topRows.filter('.' + section.id).addClass('active').show();
-        this.activeSection = section;
 
         // Hide the section header row. No need for it now because the
         // tab text acts as the section label.
@@ -394,7 +396,6 @@ ConfigTableMetaData.prototype.deactivateActiveSection = function() {
     $('.config-section-activator.active', this.activatorContainer).removeClass('active');
     this.topRows.filter('.active').removeClass('active');
     this.topRows.hide();
-    this.activeSection = undefined;
 };
 
 ConfigTableMetaData.prototype.onShowSection = function(listener) {
@@ -407,10 +408,11 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
             for (var i1 = 0; i1 < this.sections.length; i1++) {
                 this.sections[i1].activator.show();
             }
-            if (!this.activeSection) {
+            var activeSection = this.activeSection();
+            if (!activeSection) {
                 this.showSection(this.sections[0]);
             } else {
-                this.activeSection.highlightText(this.findInput.val());
+                activeSection.highlightText(this.findInput.val());
             }
         }
     } else {
@@ -452,7 +454,7 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
 
 function fireListeners(listeners, contextObject) {
     for (var i = 0; i < listeners.length; i++) {
-        fireListener(listeners[0], contextObject);
+        fireListener(listeners[i], contextObject);
     }
     function fireListener(listener, contextObject) {
         setTimeout(function() {
