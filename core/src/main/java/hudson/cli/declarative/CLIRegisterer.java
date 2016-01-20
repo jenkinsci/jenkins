@@ -23,6 +23,7 @@
  */
 package hudson.cli.declarative;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
@@ -34,7 +35,9 @@ import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
 import hudson.security.CliAuthenticator;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
@@ -56,6 +59,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 import static java.util.logging.Level.SEVERE;
+
+import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -166,13 +172,13 @@ public class CLIRegisterer extends ExtensionFinder {
                                 try {
                                     // authentication
                                     CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
-                                    new ClassParser().parse(authenticator,parser);
+                                    new ClassParser().parse(authenticator, parser);
 
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
                                     Authentication auth = authenticator.authenticate();
-                                    if (auth== Jenkins.ANONYMOUS)
+                                    if (auth == Jenkins.ANONYMOUS)
                                         auth = loadStoredAuthentication();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     hudson.checkPermission(Jenkins.READ);
@@ -195,10 +201,33 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(old); // restore
                                 }
                             } catch (CmdLineException e) {
-                                stderr.println(e.getMessage());
-                                printUsage(stderr,parser);
-                                return 1;
+                                stderr.println("\nERROR: " + e.getMessage());
+                                printUsage(stderr, parser);
+                                return 2;
+                            } catch (IllegalStateException e) {
+                                stderr.println("\nERROR: " + e.getMessage());
+                                return 4;
+                            } catch (IllegalArgumentException e) {
+                                stderr.println("\nERROR: " + e.getMessage());
+                                return 3;
+                            } catch (AbortException e) {
+                                stderr.println("\nERROR: " + e.getMessage());
+                                return 5;
+                            } catch (AccessDeniedException e) {
+                                stderr.println("\nERROR: " + e.getMessage());
+                                return 6;
+                            } catch (BadCredentialsException e) {
+                                // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
+                                // do that to the server log instead
+                                String id = UUID.randomUUID().toString();
+                                LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
+                                stderr.println("\nERROR: Bad Credentials. Search the server log for " + id + " for more details.");
+                                return 7;
                             } catch (Exception e) {
+                                final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
+                                        getName());
+                                stderr.println("\nERROR: " + errorMsg);
+                                LOGGER.log(Level.WARNING, errorMsg, e);
                                 e.printStackTrace(stderr);
                                 return 1;
                             }
@@ -213,7 +242,7 @@ public class CLIRegisterer extends ExtensionFinder {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(SEVERE, "Failed to discvoer @CLIMethod",e);
+            LOGGER.log(SEVERE, "Failed to discover @CLIMethod",e);
         }
 
         return r;

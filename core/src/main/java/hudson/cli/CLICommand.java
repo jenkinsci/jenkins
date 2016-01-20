@@ -195,7 +195,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * to an empty method.
      * You would however then have to consider {@link CliAuthenticator} and {@link #getTransportAuthentication},
      * so this is not really recommended.
-     * 
+     *
      * @param args
      *      Arguments to the sub command. For example, if the CLI is invoked like "java -jar cli.jar foo bar zot",
      *      then "foo" is the sub-command and the argument list is ["bar","zot"].
@@ -209,7 +209,23 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @param stderr
      *      Connected to the stderr of the CLI client.
      * @return
-     *      Exit code from the command.
+     *      1 If unexpected exception is thrown while performing the command
+     *          Means: Unknown issue occurred
+     *      2 If CmdLineException is thrown while performing the command
+     *          Means: Wrong parameter, input value can't be decoded etc.
+     *      3 If IllegalArgumentException is thrown while performing the command
+     *          Means; Can't continue due to wrong input parameter (job doesn't exist etc.)
+     *      4 If IllegalStateException is thrown while performing the command
+     *          Means: Can't continue due to an incorect state of Jenkins, job, build etc.
+     *      5 If AbortException is thrown while performing the command
+     *          Means: Can't continue due to an other (rare) issue
+     *      6 If AccessDeniedException is thrown while performing the command
+     *          Means: Not sufficent rights for requested action
+     *      7 If BadCreedentialsException is thrown while performing the command
+     *          Means: Bad credentials provided via CLI
+     *      Exit code from the command - 0 means everything went well
+     *
+     *      Note: For details - see JENKINS-32273
      */
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         this.stdin = new BufferedInputStream(stdin);
@@ -220,21 +236,23 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         CmdLineParser p = getCmdLineParser();
 
         // add options from the authenticator
-        SecurityContext sc = SecurityContextHolder.getContext();
-        Authentication old = sc.getAuthentication();
-
-        CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
-        sc.setAuthentication(getTransportAuthentication());
-        new ClassParser().parse(authenticator,p);
-
+        SecurityContext sc = null;
+        Authentication old = null;
         try {
+            sc = SecurityContextHolder.getContext();
+            old = sc.getAuthentication();
+
+            CliAuthenticator authenticator = Jenkins.getActiveInstance().getSecurityRealm().createCliAuthenticator(this);
+            sc.setAuthentication(getTransportAuthentication());
+            new ClassParser().parse(authenticator,p);
+
             p.parseArgument(args.toArray(new String[args.size()]));
             Authentication auth = authenticator.authenticate();
             if (auth==Jenkins.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
             if (!(this instanceof LoginCommand || this instanceof HelpCommand))
-                Jenkins.getInstance().checkPermission(Jenkins.READ);
+                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             return run();
         } catch (CmdLineException e) {
             stderr.println("\nERROR: " + e.getMessage());
@@ -263,12 +281,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (Exception e) {
             final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                     getName());
-            stderr.println(errorMsg);
+            stderr.println("\nERROR: " + errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
             e.printStackTrace(stderr);
             return 1;
         } finally {
-            sc.setAuthentication(old); // restore
+            if(sc != null)
+                sc.setAuthentication(old); // restore
         }
     }
 
@@ -500,7 +519,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected void registerOptionHandlers() {
         try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.getInstance().pluginManager.uberClassLoader,Class.class)) {
+            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.getActiveInstance().pluginManager.uberClassLoader,Class.class)) {
                 Type t = Types.getBaseClass(c, OptionHandler.class);
                 CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t,0)), c);
             }
@@ -552,7 +571,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     static {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getActiveInstance();
         if (j!=null) {// only when running on the master
             cls.put(j.getPluginManager().uberClassLoader);
 

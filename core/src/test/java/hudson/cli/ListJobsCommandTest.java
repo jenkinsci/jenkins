@@ -50,6 +50,7 @@ public class ListJobsCommandTest {
         jenkins = mock(Jenkins.class);
         mockStatic(Jenkins.class);
         when(Jenkins.getInstance()).thenReturn(jenkins);
+        when(Jenkins.getActiveInstance()).thenReturn(jenkins);
         command = mock(ListJobsCommand.class, Mockito.CALLS_REAL_METHODS);
         command.stdout = new PrintStream(stdout);
         command.stderr = new PrintStream(stderr);
@@ -61,9 +62,14 @@ public class ListJobsCommandTest {
         when(jenkins.getView("NoSuchViewOrItemGroup")).thenReturn(null);
         when(jenkins.getItemByFullName("NoSuchViewOrItemGroup")).thenReturn(null);
 
-        assertThat(runWith("NoSuchViewOrItemGroup"), equalTo(-1));
+        try {
+            assertThat(runWith("NoSuchViewOrItemGroup"), equalTo(3));
+        } catch (IllegalArgumentException e) { // Expected
+            assertThat(e.getMessage(), containsString("No view or item group with the given name 'NoSuchViewOrItemGroup' found."));
+        } catch (Exception e) { // Others are un-expected
+            throw e;
+        }
         assertThat(stdout, is(empty()));
-        assertThat(stderr.toString(), containsString("No view or item group with the given name found"));
     }
 
     /*

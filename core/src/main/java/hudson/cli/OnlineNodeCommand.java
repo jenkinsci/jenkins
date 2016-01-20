@@ -43,8 +43,6 @@ public class OnlineNodeCommand extends CLICommand {
     @Argument(metaVar="NAME", usage="Slave name, or empty string for master")
     public String computerName;
 
-    private static final Logger LOGGER = Logger.getLogger(OnlineNodeCommand.class.getName());
-
     @Override
     public String getShortDescription() {
 
@@ -54,32 +52,17 @@ public class OnlineNodeCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        boolean errorOccurred = false;
-
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getActiveInstance();
 
         Computer computer = jenkins.getComputer(computerName);
 
         if (computer == null) {
-            stderr.println(hudson.model.Messages.Computer_NoSuchSlaveExists(computerName, null));
-            errorOccurred = true;
+            throw new IllegalArgumentException(hudson.model.Messages.Computer_NoSuchSlaveExists(computerName, null));
         } else {
-            try {
-                computer.cliOnline();
-            } catch (AccessDeniedException e) {
-                stderr.println(e.getMessage());
-                errorOccurred = true;
-            } catch (Exception e) {
-                final String errorMsg = String.format("Unexpected exception occurred during performing online operation on node '%s': %s",
-                        computer == null ? "(null)" : computer.getName(),
-                        e.getMessage());
-                stderr.println(errorMsg);
-                LOGGER.warning(errorMsg);
-                errorOccurred = true;
-            }
+            computer.cliOnline();
         }
 
-        return errorOccurred ? 1 : 0;
+        return 0;
     }
 
 }

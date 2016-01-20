@@ -66,7 +66,7 @@ public class ClientAuthenticationCache implements Serializable {
      * @return {@link jenkins.model.Jenkins#ANONYMOUS} if no such credential is found, or if the stored credential is invalid.
      */
     public Authentication get() {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getActiveInstance();
         Secret userName = Secret.decrypt(props.getProperty(getPropertyKey()));
         if (userName==null) return Jenkins.ANONYMOUS; // failed to decrypt
         try {
@@ -83,7 +83,7 @@ public class ClientAuthenticationCache implements Serializable {
      * Computes the key that identifies this Hudson among other Hudsons that the user has a credential for.
      */
     private String getPropertyKey() {
-        String url = Jenkins.getInstance().getRootUrl();
+        String url = Jenkins.getActiveInstance().getRootUrl();
         if (url!=null)  return url;
         return Secret.fromString("key").toString();
     }
@@ -92,7 +92,7 @@ public class ClientAuthenticationCache implements Serializable {
      * Persists the specified authentication.
      */
     public void set(Authentication a) throws IOException, InterruptedException {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getActiveInstance();
 
         // make sure that this security realm is capable of retrieving the authentication by name,
         // as it's not required.

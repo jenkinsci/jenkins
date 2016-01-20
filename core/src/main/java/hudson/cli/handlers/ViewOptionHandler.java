@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
 
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -81,21 +82,17 @@ public class ViewOptionHandler extends OptionHandler<View> {
      * Note: Personal user's views aren't supported now.
      *
      * @param name A view name
-     * @return The {@link View} instance. Null if {@link Jenkins#getInstance()} returns null
-     *         sor user doesn't have a READ permission.
-     * @throws CmdLineException
-     *      If view isn't found or an un-expected error occurred
+     * @return The {@link View} instance. Null if name is empty string
+     * @throws IllegalArgumentException - If view isn't found
+     * @throws IllegalStateException - If cannot get active Jenkins instance or view can't conain views
+     * @throws AccessDeniedException - If user doens't have a READ permission for the view
      * @since TODO
      */
     @CheckForNull
     public View getView(final String name) throws CmdLineException {
 
-        ViewGroup group = Jenkins.getInstance();
+        ViewGroup group = Jenkins.getActiveInstance();
         View view = null;
-
-        if (group == null)
-            throw new CmdLineException(owner,
-                    "The Jenkins instance has not been started, or was already shut down!");
 
         final StringTokenizer tok = new StringTokenizer(name, "/");
         while(tok.hasMoreTokens()) {
@@ -104,23 +101,16 @@ public class ViewOptionHandler extends OptionHandler<View> {
 
             view = group.getView(viewName);
             if (view == null)
-                throw new CmdLineException(owner, String.format(
+                throw new IllegalArgumentException(String.format(
                         "No view named %s inside view %s",
                         viewName, group.getDisplayName()
                 ));
 
-            try {
-                view.checkPermission(View.READ);
-            } catch (Exception e) {
-                throw new CmdLineException(owner, e.getMessage());
-            }
-
+            view.checkPermission(View.READ);
             if (view instanceof ViewGroup) {
                 group = (ViewGroup) view;
             } else if (tok.hasMoreTokens()) {
-                throw new CmdLineException(
-                        owner,  view.getViewName() + " view can not contain views"
-                );
+                throw new IllegalStateException(view.getViewName() + " view can not contain views");
             }
         }
 

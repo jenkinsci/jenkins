@@ -77,7 +77,7 @@ public class CliProtocol extends AgentProtocol {
             Channel channel = cb
                     .withMode(Mode.BINARY)
                     .withRestricted(true)
-                    .withBaseLoader(Jenkins.getInstance().pluginManager.uberClassLoader)
+                    .withBaseLoader(Jenkins.getActiveInstance().pluginManager.uberClassLoader)
                     .build(new BufferedInputStream(c.in), new BufferedOutputStream(c.out));
 
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));

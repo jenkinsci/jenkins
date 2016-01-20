@@ -42,6 +42,7 @@ import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
 import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 import java.util.Map;
@@ -90,7 +91,7 @@ public class BuildCommand extends CLICommand {
     @Option(name="-r") @Deprecated
     public int retryCnt = 10;
 
-    protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue";
+    protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue.";
 
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
@@ -99,7 +100,7 @@ public class BuildCommand extends CLICommand {
         if (!parameters.isEmpty()) {
             ParametersDefinitionProperty pdp = job.getProperty(ParametersDefinitionProperty.class);
             if (pdp==null)
-                throw new AbortException(job.getFullDisplayName()+" is not parameterized but the -p option was specified");
+                throw new IllegalStateException(job.getFullDisplayName()+" is not parameterized but the -p option was specified.");
 
             //TODO: switch to type annotations after the migration to Java 1.8
             List<ParameterValue> values = new ArrayList<ParameterValue>();
@@ -108,12 +109,14 @@ public class BuildCommand extends CLICommand {
                 String name = e.getKey();
                 ParameterDefinition pd = pdp.getParameterDefinition(name);
                 if (pd==null) {
-                    throw new AbortException(String.format("\'%s\' is not a valid parameter. Did you mean %s?",
-                            name, EditDistance.findNearest(name, pdp.getParameterDefinitionNames())));
+                    String nearest = EditDistance.findNearest(name, pdp.getParameterDefinitionNames());
+                    throw new CmdLineException(null, nearest == null ?
+                            String.format("'%s' is not a valid parameter.", name) :
+                            String.format("'%s' is not a valid parameter. Did you mean %s?", name, nearest));
                 }
                 ParameterValue val = pd.createValue(this, Util.fixNull(e.getValue()));
                 if (val == null) {
-                    throw new AbortException(String.format("Cannot resolve the value for the parameter \'%s\'.",name));
+                    throw new CmdLineException(null, String.format("Cannot resolve the value for the parameter '%s'.",name));
                 }
                 values.add(val);
             }
@@ -126,7 +129,7 @@ public class BuildCommand extends CLICommand {
                 // not passed in use default
                 ParameterValue defaultValue = pd.getDefaultParameterValue();
                 if (defaultValue == null) {
-                    throw new AbortException(String.format("No default value for the parameter \'%s\'.",pd.getName()));
+                    throw new CmdLineException(null, String.format("No default value for the parameter '%s'.",pd.getName()));
                 }
                 values.add(defaultValue);
             }
@@ -147,16 +150,14 @@ public class BuildCommand extends CLICommand {
             } else if (job.isHoldOffBuildUntilSave()){
                 msg = Messages.BuildCommand_CLICause_CannotBuildConfigNotSaved(job.getFullDisplayName());
             }
-            stderr.println(msg);
-            return -1;
+            throw new IllegalStateException(msg);
         }
 
         QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
         
         if (wait || sync || follow) {
             if (f == null) {
-                stderr.println(BUILD_SCHEDULING_REFUSED);
-                return -1;
+                throw new IllegalStateException(BUILD_SCHEDULING_REFUSED);
             }
             AbstractBuild b = f.waitForStart();    // wait for the start
             stdout.println("Started "+b.getFullDisplayName());
@@ -177,7 +178,9 @@ public class BuildCommand extends CLICommand {
                             }
                             catch (FileNotFoundException e) {
                                 if ( i == retryCnt ) {
-                                    throw e;
+                                    Exception myException = new AbortException();
+                                    myException.initCause(e);
+                                    throw myException;
                                 }
                                 i++;
                                 Thread.sleep(retryInterval);
@@ -193,7 +196,9 @@ public class BuildCommand extends CLICommand {
                     } else {
                         // if the CLI is aborted, try to abort the build as well
                         f.cancel(true);
-                        throw e;
+                        Exception myException = new AbortException();
+                        myException.initCause(e);
+                        throw myException;
                     }
                 }
             }
@@ -214,9 +219,9 @@ public class BuildCommand extends CLICommand {
             "With the -f option, this command changes the exit code based on\n" +
             "the outcome of the build (exit code 0 indicates a success)\n" +
             "however, unlike -s, interrupting the command will not interrupt\n" +
-            "the job (exit code 125 indicates the command was interrupted)\n" +
+            "the job (exit code 125 indicates the command was interrupted).\n" +
             "With the -c option, a build will only run if there has been\n" +
-            "an SCM change"
+            "an SCM change."
         );
     }
 
