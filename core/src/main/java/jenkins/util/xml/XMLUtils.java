@@ -59,7 +59,7 @@ public final class XMLUtils {
         documentBuilderFactory.setExpandEntityReferences(false);
         setDocumentBuilderFactoryFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         setDocumentBuilderFactoryFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES, false);
-        setDocumentBuilderFactoryFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES, true);
+        setDocumentBuilderFactoryFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES, false);
         setDocumentBuilderFactoryFeature("http://apache.org/xml/features/disallow-doctype-decl", true);        
     }    
     private static void setDocumentBuilderFactoryFeature(String feature, boolean state) {
