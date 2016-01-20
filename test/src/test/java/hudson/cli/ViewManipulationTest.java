@@ -84,12 +84,12 @@ public class ViewManipulationTest {
         j.createFreeStyleProject("a_project");
 
         res = add().invokeWithArgs("All", "a_project");
-        assertThat(res, failedWith(-1));
-        assertThat(res.stderr(), containsString("'All' view can not be modified directly"));
+        assertThat(res, failedWith(4));
+        assertThat(res.stderr(), containsString("ERROR: 'All' view can not be modified directly"));
 
         res = remove().invokeWithArgs("All", "a_project");
-        assertThat(res, failedWith(-1));
-        assertThat(res.stderr(), containsString("'All' view can not be modified directly"));
+        assertThat(res, failedWith(4));
+        assertThat(res.stderr(), containsString("ERROR: 'All' view can not be modified directly"));
     }
 
     @Test
@@ -99,12 +99,12 @@ public class ViewManipulationTest {
         j.createFreeStyleProject("a_project");
 
         res = add().authorizedTo(Jenkins.READ, Job.READ, View.READ).invokeWithArgs("a_view", "a_project");
-        assertThat(res, failedWith(-1));
-        assertThat(res.stderr(), containsString("user is missing the View/Configure permission"));
+        assertThat(res, failedWith(6));
+        assertThat(res.stderr(), containsString("ERROR: user is missing the View/Configure permission"));
 
         res = remove().authorizedTo(Jenkins.READ, Job.READ, View.READ).invokeWithArgs("a_view", "a_project");
-        assertThat(res, failedWith(-1));
-        assertThat(res.stderr(), containsString("user is missing the View/Configure permission"));
+        assertThat(res, failedWith(6));
+        assertThat(res.stderr(), containsString("ERROR: user is missing the View/Configure permission"));
     }
 
     private CLICommandInvoker add() {
