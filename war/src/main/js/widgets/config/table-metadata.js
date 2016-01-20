@@ -184,6 +184,28 @@ ConfigSection.prototype.getRowSetLabels = function() {
     return labels;
 };
 
+ConfigSection.prototype.highlightText = function(text) {
+    var $ = jQD.getJQuery();
+    var selector = ":contains('" + text + "')";
+
+    for (var i = 0; i < this.rows.length; i++) {
+        var row = this.rows[i];
+
+        $('span.highlight', row).each(function() {
+            var highlight = $(this);
+            highlight.before(highlight.text());
+            highlight.remove();
+        });
+
+        if (text !== '') {
+            $(selector, row).find(':not(:input)').html(function(_, html) {
+                var regex = new RegExp(text,"g");
+                return html.replace(regex, '<span class="highlight">' + text + '</span>');
+            });
+        }
+    }
+};
+
 /*
  * =======================================================================================
  * Configuration table section.
@@ -256,7 +278,7 @@ ConfigTableMetaData.prototype.addFindWidget = function() {
         findTimeout = setTimeout(function() {
             findTimeout = undefined;
             thisTMD.showSections(thisTMD.findInput.val());
-        }, 500);
+        }, 300);
     });
 
     this.configWidgets.append(findWidget);
@@ -360,6 +382,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
 
         // Update the row-set visibility
         section.updateRowSetVisibility();
+        section.highlightText(this.findInput.val());
 
         fireListeners(this.showListeners, section);
     }
@@ -381,11 +404,13 @@ ConfigTableMetaData.prototype.onShowSection = function(listener) {
 ConfigTableMetaData.prototype.showSections = function(withText) {
     if (withText === '') {
         if (this.hasSections()) {
-            for (var i = 0; i < this.sections.length; i++) {
-                this.sections[i].activator.show();
+            for (var i1 = 0; i1 < this.sections.length; i1++) {
+                this.sections[i1].activator.show();
             }
             if (!this.activeSection) {
                 this.showSection(this.sections[0]);
+            } else {
+                this.activeSection.highlightText(this.findInput.val());
             }
         }
     } else {
@@ -394,12 +419,12 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
             var selector = ":contains('" + withText + "')";
             var sectionsWithText = [];
 
-            for (var i = 0; i < this.sections.length; i++) {
-                var section = this.sections[i];
+            for (var i2 = 0; i2 < this.sections.length; i2++) {
+                var section = this.sections[i2];
                 var containsText = false;
 
-                for (var ii = 0; ii < section.rows.length; ii++) {
-                    var row = section.rows[ii];
+                for (var i3 = 0; i3 < section.rows.length; i3++) {
+                    var row = section.rows[i3];
                     var elementsWithText = $(selector, row);
 
                     if (elementsWithText.size() > 0) {
