@@ -49,9 +49,6 @@ node('java') {
         if (runTests) {
             step([$class: 'JUnitResultArchiver', healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'])
         }
-
-        // And stash the jenkins.war for the next step
-        stash name: "jenkins.war", includes: "war/target/jenkins.war"
     }
 }
 
@@ -59,7 +56,7 @@ def debFileName
 def rpmFileName
 def suseFileName
 
-// Run the packaging build on a node with the "pkg" label.
+// Run the packaging build on a node with the "docker" label.
 node('docker') {
     // Add timestamps to logging output.
     wrap([$class: 'TimestamperBuildWrapper']) {
@@ -76,36 +73,48 @@ node('docker') {
         stage "packaging - actually packaging"
         // Working packaging code, separate branch with fixes
         dir('packaging') {
-            git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
-            // Grab the war file from the stash - it goes to war/target/jenkins.war
-            unstash "jenkins.war"
-            sh "cp war/target/jenkins.war ."
+            deleteDir()
 
-            sh 'docker run --rm -v "`pwd`":/tmp/packaging -w /tmp/packaging jenkins-packaging-builder:0.1 make clean deb rpm suse BRAND=./branding/jenkins.mk BUILDENV=./env/test.mk CREDENTIAL=./credentials/test.mk WAR=jenkins.war'
+            docker.image("jenkins-packaging-builder:0.1").inside("-u root") {
+                git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
 
-            dir("target/debian") {
-                def debFilesFound = findFiles(glob: "*.deb")
-                if (debFilesFound.size() > 0) {
-                    debFileName = debFilesFound[0]?.name
+                try {
+                    // Saw issues with unstashing inside a container, and not sure copy artifact plugin would work here.
+                    // So, simple wget.
+                    sh "wget -q ${currentBuild.absoluteUrl}/artifact/war/target/jenkins.war"
+                    sh "make clean deb rpm suse BRAND=./branding/jenkins.mk BUILDENV=./env/test.mk CREDENTIAL=./credentials/test.mk WAR=jenkins.war"
+                } catch (Exception e) {
+                    error "Packaging failed: ${e}"
+                } finally {
+                    // Needed to make sure the output of the build can be deleted by later runs.
+                    // Hackish, yes, but rpm builds as a numeric UID only user fail, so...
+                    sh "chmod -R a+w target || true"
+                    sh "chmod a+w jenkins.war || true"
                 }
+                dir("target/debian") {
+                    def debFilesFound = findFiles(glob: "*.deb")
+                    if (debFilesFound.size() > 0) {
+                        debFileName = debFilesFound[0]?.name
+                    }
+                }
+
+                dir("target/rpm") {
+                    def rpmFilesFound = findFiles(glob: "*.rpm")
+                    if (rpmFilesFound.size() > 0) {
+                        rpmFileName = rpmFilesFound[0]?.name
+                    }
+                }
+
+                dir("target/suse") {
+                    def suseFilesFound = findFiles(glob: "*.rpm")
+                    if (suseFilesFound.size() > 0) {
+                        suseFileName = suseFilesFound[0]?.name
+                    }
+                }
+                archive includes: "target/**/*"
             }
 
-            dir("target/rpm") {
-                def rpmFilesFound = findFiles(glob: "*.rpm")
-                if (rpmFilesFound.size() > 0) {
-                    rpmFileName = rpmFilesFound[0]?.name
-                }
-            }
-
-            dir("target/suse") {
-                def suseFilesFound = findFiles(glob: "*.rpm")
-                if (suseFilesFound.size() > 0) {
-                    suseFileName = suseFilesFound[0]?.name
-                }
-            }
-            archive includes: "target/**/*"
         }
-
     }
 }
 
