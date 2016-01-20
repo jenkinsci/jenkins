@@ -455,6 +455,8 @@ function fireListeners(listeners, contextObject) {
         fireListener(listeners[0], contextObject);
     }
     function fireListener(listener, contextObject) {
-        listener.call(contextObject);
+        setTimeout(function() {
+            listener.call(contextObject);
+        }, 1);
     }
 }
