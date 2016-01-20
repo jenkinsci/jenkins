@@ -83,6 +83,7 @@ function ConfigSection(parentCMD, title) {
     this.id = exports.toId(title);
     this.rows = [];
     this.rowSets = undefined;
+    this.activator = undefined;
 }
 
 /*
@@ -219,7 +220,10 @@ function ConfigTableMetaData(configTable, topRows) {
     this.configTable = configTable;
     this.topRows = topRows;
     this.sections = [];
+    this.activeSection = undefined;
+    this.findInput = undefined;
     this.showListeners = [];
+    this.configWidgets = undefined;
     this.addWidgetsContainer();
     this.addFindWidget();
 }
@@ -232,7 +236,29 @@ ConfigTableMetaData.prototype.addWidgetsContainer = function() {
 
 ConfigTableMetaData.prototype.addFindWidget = function() {
     var $ = jQD.getJQuery();
+    var thisTMD = this;
     var findWidget = $('<div class="find-container"><div class="find"><span title="Clear" class="clear">x</span><input placeholder="find"/></div></div>');
+
+    thisTMD.findInput = $('input', findWidget);
+
+    // Add the find text clearer
+    $('.clear', findWidget).click(function() {
+        thisTMD.findInput.val('');
+        thisTMD.showSections('');
+    });
+
+    var findTimeout;
+    thisTMD.findInput.keydown(function() {
+        if (findTimeout) {
+            clearTimeout(findTimeout);
+            findTimeout = undefined;
+        }
+        findTimeout = setTimeout(function() {
+            findTimeout = undefined;
+            thisTMD.showSections(thisTMD.findInput.val());
+        }, 500);
+    });
+
     this.configWidgets.append(findWidget);
 };
 
@@ -317,14 +343,13 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     if (section) {
         var $ = jQD.getJQuery();
 
-        // Deactive currently active section ...
-        $('.config-section-activator.active', this.activatorContainer).removeClass('active');
-        this.topRows.filter('.active').removeClass('active');
-        this.topRows.hide();
+        // Deactivate currently active section ...
+        this.deactivateActiveSection();
 
         // Active the specified section
         section.activator.addClass('active');
         this.topRows.filter('.' + section.id).addClass('active').show();
+        this.activeSection = section;
 
         // Hide the section header row. No need for it now because the
         // tab text acts as the section label.
@@ -340,8 +365,64 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     }
 };
 
+ConfigTableMetaData.prototype.deactivateActiveSection = function() {
+    var $ = jQD.getJQuery();
+
+    $('.config-section-activator.active', this.activatorContainer).removeClass('active');
+    this.topRows.filter('.active').removeClass('active');
+    this.topRows.hide();
+    this.activeSection = undefined;
+};
+
 ConfigTableMetaData.prototype.onShowSection = function(listener) {
     this.showListeners.push(listener);
+};
+
+ConfigTableMetaData.prototype.showSections = function(withText) {
+    if (withText === '') {
+        if (this.hasSections()) {
+            for (var i = 0; i < this.sections.length; i++) {
+                this.sections[i].activator.show();
+            }
+            if (!this.activeSection) {
+                this.showSection(this.sections[0]);
+            }
+        }
+    } else {
+        if (this.hasSections()) {
+            var $ = jQD.getJQuery();
+            var selector = ":contains('" + withText + "')";
+            var sectionsWithText = [];
+
+            for (var i = 0; i < this.sections.length; i++) {
+                var section = this.sections[i];
+                var containsText = false;
+
+                for (var ii = 0; ii < section.rows.length; ii++) {
+                    var row = section.rows[ii];
+                    var elementsWithText = $(selector, row);
+
+                    if (elementsWithText.size() > 0) {
+                        containsText = true;
+                        break;
+                    }
+                }
+
+                if (containsText) {
+                    sectionsWithText.push(section);
+                } else {
+                    section.activator.hide();
+                }
+            }
+
+            // Select the first section to contain the text.
+            if (sectionsWithText.length > 0) {
+                this.showSection(sectionsWithText[0]);
+            } else {
+                this.deactivateActiveSection();
+            }
+        }
+    }
 };
 
 function fireListeners(listeners, contextObject) {
