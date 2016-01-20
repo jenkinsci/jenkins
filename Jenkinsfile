@@ -55,6 +55,10 @@ node('java') {
     }
 }
 
+def debFileName
+def rpmFileName
+def suseFileName
+
 // Run the packaging build on a node with the "pkg" label.
 node('docker') {
     // Add timestamps to logging output.
@@ -79,6 +83,26 @@ node('docker') {
 
             sh 'docker run --rm -v "`pwd`":/tmp/packaging -w /tmp/packaging jenkins-packaging-builder:0.1 make clean deb rpm suse BRAND=./branding/jenkins.mk BUILDENV=./env/test.mk CREDENTIAL=./credentials/test.mk WAR=jenkins.war'
 
+            dir("target/debian") {
+                def debFilesFound = findFiles(glob: "*.deb")
+                if (debFilesFound.size() > 0) {
+                    debFileName = debFilesFound[0]?.name
+                }
+            }
+
+            dir("target/rpm") {
+                def rpmFilesFound = findFiles(glob: "*.rpm")
+                if (rpmFilesFound.size() > 0) {
+                    rpmFileName = rpmFilesFound[0]?.name
+                }
+            }
+
+            dir("target/suse") {
+                def suseFilesFound = findFiles(glob: "*.rpm")
+                if (suseFilesFound.size() > 0) {
+                    suseFileName = suseFilesFound[0]?.name
+                }
+            }
             archive includes: "target/**/*"
         }
 
@@ -96,9 +120,9 @@ if (runTests) {
     String jenkinsPort = (binding.hasVariable('jenkinsPort')) ? jenkinsPort : '8080'
 
     // Set up
-    String debfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/debian/jenkins_2.0_all.deb"
-    String rpmfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/rpm/jenkins-2.0-1.1.noarch.rpm"
-    String susefile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/suse/jenkins-2.0-1.2.noarch.rpm"
+    String debfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/debian/${debFileName}"
+    String rpmfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/rpm/${rpmFileName}"
+    String susefile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/suse/${suseFileName}"
 
     node("docker") {
         stage "Load Lib"
@@ -110,7 +134,7 @@ if (runTests) {
     }
     // Run the real tests within docker node label
     flow.fetchAndRunJenkinsInstallerTest("docker", rpmfile, susefile, debfile,
-            packagingTestBranch, artifactName, jenkinsPort)
+            packagingBranch, artifactName, jenkinsPort)
 } else {
     echo "Skipping package tests"
 }
@@ -138,4 +162,3 @@ void withMavenEnv(List envVars = [], def body) {
         body.call()
     }
 }
-
