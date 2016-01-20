@@ -23,8 +23,6 @@ node('java') {
         // currently, we can use "checkout scm".
         stage "Checkout source"
 
-        // This will not work for standalone Workflow scripts. There, use:
-        // git url: 'git://github.com/jenkinsci/jenkins', branch: '2.0'
         checkout scm
 
         // Now run the actual build.
