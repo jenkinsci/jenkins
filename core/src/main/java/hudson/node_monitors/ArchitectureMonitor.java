@@ -61,7 +61,8 @@ public class ArchitectureMonitor extends NodeMonitor {
         public String call() {
             String os = System.getProperty("os.name");
             String arch = System.getProperty("os.arch");
-            return os+" ("+arch+')';
+            String version = System.getProperty("os.version");
+            return os + " (" + arch + ")(" + version + ")";
         }
 
         private static final long serialVersionUID = 1L;
