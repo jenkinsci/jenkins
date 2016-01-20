@@ -11,7 +11,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -44,6 +43,31 @@ public final class XMLUtils {
     private final static Logger LOGGER = LogManager.getLogManager().getLogger(XMLUtils.class.getName());
     private final static String DISABLED_PROPERTY_NAME = XMLUtils.class.getName() + ".disableXXEPrevention";
 
+    public static final String FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
+    public static final String FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES = "http://xml.org/sax/features/external-parameter-entities";
+
+    private static final DocumentBuilderFactory documentBuilderFactory;
+
+    static {
+        documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        // Set parser features to prevent against XXE etc.
+        // Note: setting only the external entity features on DocumentBuilderFactory instance
+        // (ala how safeTransform does it for SAXTransformerFactory) does seem to work (was still 
+        // processing the entities - tried Oracle JDK 7 and 8 on OSX). Setting seems a bit extreme,
+        // but looks like there's no other choice.
+        documentBuilderFactory.setXIncludeAware(false);
+        documentBuilderFactory.setExpandEntityReferences(false);
+        setDocumentBuilderFactoryFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        setDocumentBuilderFactoryFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES, false);
+        setDocumentBuilderFactoryFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES, true);
+        setDocumentBuilderFactoryFeature("http://apache.org/xml/features/disallow-doctype-decl", true);        
+    }    
+    private static void setDocumentBuilderFactoryFeature(String feature, boolean state) {
+        try {
+            documentBuilderFactory.setFeature(feature, state);
+        } catch (Exception e) {}        
+    }
+
     /**
      * Transform the source to the output in a manner that is protected against XXE attacks.
      * If the transform can not be completed safely then an IOException is thrown.
@@ -62,11 +86,11 @@ public final class XMLUtils {
 
             XMLReader xmlReader = XMLReaderFactory.createXMLReader();
             try {
-                xmlReader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                xmlReader.setFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES, false);
             }
             catch (SAXException ignored) { /* ignored */ }
             try {
-                xmlReader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+                xmlReader.setFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES, false);
             }
             catch (SAXException ignored) { /* ignored */ }
             // defend against XXE
@@ -111,7 +135,8 @@ public final class XMLUtils {
         DocumentBuilder docBuilder;
 
         try {
-            docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            docBuilder = documentBuilderFactory.newDocumentBuilder();
+            docBuilder.setEntityResolver(RestrictiveEntityResolver.INSTANCE);            
         } catch (ParserConfigurationException e) {
             throw new IllegalStateException("Unexpected error creating DocumentBuilder.", e);
         }
@@ -178,6 +203,19 @@ public final class XMLUtils {
      */
     public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file, @Nonnull String fileDataEncoding) throws IOException, SAXException, XPathExpressionException {
         Document document = parse(file, fileDataEncoding);
+        return getValue(xpath, document);
+    }
+
+    /**
+     * The a "value" from an XML file using XPath.
+     * @param xpath The XPath expression to select the value.
+     * @param document The document from which the value is to be extracted.
+     * @return The data value. An empty {@link String} is returned when the expression does not evaluate
+     * to anything in the document.
+     * @throws XPathExpressionException Invalid XPath expression.
+     * @since FIXME
+     */
+    public static String getValue(String xpath, Document document) throws XPathExpressionException {
         XPath xPathProcessor = XPathFactory.newInstance().newXPath();
         return xPathProcessor.compile(xpath).evaluate(document);
     }
