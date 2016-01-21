@@ -9,12 +9,12 @@
     "hbsfy": "^2.4.1",
     "jenkins-handlebars-rt": "^1.0.1",
     "jenkins-js-builder": "0.0.40",
-    "jenkins-js-test": "0.0.16"
+    "jenkins-js-test": "^1.0.0"
   },
   "dependencies": {
     "bootstrap-detached": "^3.3.5-v1",
     "jenkins-js-modules": "^1.5.0",
     "jquery-detached": "^2.1.4-v2",
-    "window-handle": "0.0.6"
+    "window-handle": "^1.0.0"
   }
 }
