@@ -263,8 +263,8 @@ function ConfigTableMetaData(configForm, configTable, topRows) {
 
 ConfigTableMetaData.prototype.addWidgetsContainer = function() {
     var $ = jQD.getJQuery();
-    this.configWidgets = $('<div class="config-widgets"></div>');
-    this.configWidgets.insertBefore(this.configTable);
+    this.configWidgets = $('<div class="jenkins-config-widgets"></div>');
+    this.configWidgets.insertBefore(this.configForm);
 };
 
 ConfigTableMetaData.prototype.addFindWidget = function() {

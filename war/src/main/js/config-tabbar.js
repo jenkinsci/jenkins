@@ -33,7 +33,7 @@ $(function() {
                         localStorage.setItem(tabBarShowPreferenceKey, "no");
                         require('window-handle').getWindow().location.reload();
                     });
-                    $('.jenkins-config .find-container input').focus(function() {
+                    $('.jenkins-config-widgets .find-container input').focus(function() {
                         fireBottomStickerAdjustEvent();
                     });
 

@@ -2,44 +2,36 @@
  * Tab bar specific rules.
  */
 
-.jenkins-config {
+.jenkins-config-widgets {
   position: relative;
 
-  span.highlight {
-    background-color: #ffff00;
+  .showTabs {
+    float: right;
+    margin-bottom: 5px;
+    margin-right: 20px;
+    cursor: pointer;
+    opacity: 0.4;
+  }
+  .showTabs:hover {
+    opacity: 0.8;
   }
 
-  .config-widgets {
-    position: relative;
+  @find-container-height: 40px;
+  @find-container-width: 200px;
+  .find-container {
+    .border-radius(@find-container-height/2);
+    .find-container(@height: @find-container-height, @width: @find-container-width);
+    display: none;
+    background-color: @light-backgrond;
+    margin-bottom: 15px;
 
-    .showTabs {
-      float: right;
-      margin-bottom: 5px;
-      margin-right: 20px;
-      cursor: pointer;
-      opacity: 0.4;
+    .find {
+      left: 50%;
+      margin-left: -100px;
     }
-    .showTabs:hover {
-      opacity: 0.8;
-    }
-
-    @find-container-height: 40px;
-    @find-container-width: 200px;
-    .find-container {
-      .border-radius(@find-container-height/2);
-      .find-container(@height: @find-container-height, @width: @find-container-width);
-      display: none;
-      background-color: @light-backgrond;
-      margin-bottom: 15px;
-
-      .find {
-        left: 50%;
-        margin-left: -100px;
-      }
-    }
-    .find-container.visible {
-      display: block;
-    }
+  }
+  .find-container.visible {
+    display: block;
   }
 
   .form-config.tabBarFrame {
@@ -97,5 +89,12 @@
     .noTabs:hover {
       opacity: 0.8;
     }
+  }
+
+}
+
+.jenkins-config {
+  span.highlight {
+    background-color: #ffff00;
   }
 }
