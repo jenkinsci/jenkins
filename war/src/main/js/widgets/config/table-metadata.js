@@ -278,6 +278,7 @@ ConfigTableMetaData.prototype.addFindWidget = function() {
     $('.clear', findWidget).click(function() {
         thisTMD.findInput.val('');
         thisTMD.showSections('');
+        thisTMD.findInput.focus();
     });
 
     var findTimeout;
