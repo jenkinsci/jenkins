@@ -13,7 +13,7 @@ exports.getJQuery = function() {
 };
 
 /*
- * Clear the $ext instance if hte window changes. Primarily for unit testing.
+ * Clear the $ext instance if the window changes. Primarily for unit testing.
  */
 var windowHandle = require('window-handle');
 windowHandle.getWindow(function() {
@@ -21,8 +21,8 @@ windowHandle.getWindow(function() {
 });
 
 function initJQueryExt() {
-// We are going to be adding "stuff" to jQuery. We create a totally new jQuery instance
-// because we do NOT want to run the risk of polluting the shared instance.
+    // We are going to be adding "stuff" to jQuery. We create a totally new jQuery instance
+    // because we do NOT want to run the risk of polluting the shared instance.
     $ext = jQD.newJQuery();
 
     /**
