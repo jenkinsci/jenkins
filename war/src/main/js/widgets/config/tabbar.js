@@ -46,7 +46,7 @@ exports.addTabs = function(configTable) {
     }
 
     var tabs = $('<div class="form-config tabBarFrame"></div>');
-    var noTabs = $('<div class="noTabs" title="Hide configuration tabs">hide tabs</div>');
+    var noTabs = $('<div class="noTabs" title="Remove configuration tabs and revert to the &quot;classic&quot; configuration view">untab</div>');
 
     configTableMetadata.configWidgets.append(tabs);
     tabs.append(noTabs);
@@ -68,7 +68,7 @@ exports.addTabs = function(configTable) {
 
 exports.addTabsActivator = function(configTable) {
     var $ = jQD.getJQuery();
-    var configWidgets = $('<div class="jenkins-config-widgets"><span class="showTabs" title="Show configuration tabs">show tabs</span></div>');
+    var configWidgets = $('<div class="jenkins-config-widgets"><span class="showTabs" title="Add configuration section tabs">tab</span></div>');
     configWidgets.insertBefore(configTable);
     return configWidgets;
 };
