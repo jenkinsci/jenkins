@@ -43,30 +43,8 @@ public final class XMLUtils {
     private final static Logger LOGGER = LogManager.getLogManager().getLogger(XMLUtils.class.getName());
     private final static String DISABLED_PROPERTY_NAME = XMLUtils.class.getName() + ".disableXXEPrevention";
 
-    public static final String FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
-    public static final String FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES = "http://xml.org/sax/features/external-parameter-entities";
-
-    private static final DocumentBuilderFactory documentBuilderFactory;
-
-    static {
-        documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        // Set parser features to prevent against XXE etc.
-        // Note: setting only the external entity features on DocumentBuilderFactory instance
-        // (ala how safeTransform does it for SAXTransformerFactory) does seem to work (was still 
-        // processing the entities - tried Oracle JDK 7 and 8 on OSX). Setting seems a bit extreme,
-        // but looks like there's no other choice.
-        documentBuilderFactory.setXIncludeAware(false);
-        documentBuilderFactory.setExpandEntityReferences(false);
-        setDocumentBuilderFactoryFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        setDocumentBuilderFactoryFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES, false);
-        setDocumentBuilderFactoryFeature(FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES, false);
-        setDocumentBuilderFactoryFeature("http://apache.org/xml/features/disallow-doctype-decl", true);        
-    }    
-    private static void setDocumentBuilderFactoryFeature(String feature, boolean state) {
-        try {
-            documentBuilderFactory.setFeature(feature, state);
-        } catch (Exception e) {}        
-    }
+    private static final String FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
+    private static final String FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES = "http://xml.org/sax/features/external-parameter-entities";
 
     /**
      * Transform the source to the output in a manner that is protected against XXE attacks.
@@ -135,8 +113,8 @@ public final class XMLUtils {
         DocumentBuilder docBuilder;
 
         try {
-            docBuilder = documentBuilderFactory.newDocumentBuilder();
-            docBuilder.setEntityResolver(RestrictiveEntityResolver.INSTANCE);            
+            docBuilder = newDocumentBuilderFactory().newDocumentBuilder();
+            docBuilder.setEntityResolver(RestrictiveEntityResolver.INSTANCE);
         } catch (ParserConfigurationException e) {
             throw new IllegalStateException("Unexpected error creating DocumentBuilder.", e);
         }
@@ -235,4 +213,25 @@ public final class XMLUtils {
         t.transform(source, out);
     }
 
+    private static DocumentBuilderFactory newDocumentBuilderFactory() {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        // Set parser features to prevent against XXE etc.
+        // Note: setting only the external entity features on DocumentBuilderFactory instance
+        // (ala how safeTransform does it for SAXTransformerFactory) does seem to work (was still
+        // processing the entities - tried Oracle JDK 7 and 8 on OSX). Setting seems a bit extreme,
+        // but looks like there's no other choice.
+        documentBuilderFactory.setXIncludeAware(false);
+        documentBuilderFactory.setExpandEntityReferences(false);
+        setDocumentBuilderFactoryFeature(documentBuilderFactory, XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        setDocumentBuilderFactoryFeature(documentBuilderFactory, FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES, false);
+        setDocumentBuilderFactoryFeature(documentBuilderFactory, FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES, false);
+        setDocumentBuilderFactoryFeature(documentBuilderFactory, "http://apache.org/xml/features/disallow-doctype-decl", true);
+
+        return documentBuilderFactory;
+    }
+    private static void setDocumentBuilderFactoryFeature(DocumentBuilderFactory documentBuilderFactory, String feature, boolean state) {
+        try {
+            documentBuilderFactory.setFeature(feature, state);
+        } catch (Exception e) {}
+    }
 }
