@@ -15,7 +15,7 @@ $(function() {
         var configTables = $('.job-config.tabbed');
         if (configTables.size() > 0) {
             var localStorage = require('./util/localStorage.js');
-            var tabBarShowPreferenceKey = 'jenkins:config:usetabs:' + window.location.href;
+            var tabBarShowPreferenceKey = 'jenkins:config:usetabs';
             var tabBarShowPreference = localStorage.getItem(tabBarShowPreferenceKey, "yes");
 
             var tabBarWidget = require('./widgets/config/tabbar.js');
