@@ -2,7 +2,7 @@
  * Internal support module for config tables.
  */
 
-var jQD = require('jquery-detached');
+var jQD = require('../../util/jquery-ext.js');
 
 exports.markConfigForm = function(configTable) {
     var form = configTable.closest('form');
@@ -187,23 +187,31 @@ ConfigSection.prototype.getRowSetLabels = function() {
 
 ConfigSection.prototype.highlightText = function(text) {
     var $ = jQD.getJQuery();
-    var selector = ":contains('" + text + "')";
+    var selector = ":containsci('" + text + "')";
 
     for (var i = 0; i < this.rows.length; i++) {
         var row = this.rows[i];
 
         /*jshint loopfunc: true */
-        $('span.highlight', row).each(function() { // jshint ignore:line
-            var highlight = $(this);
-            highlight.before(highlight.text());
-            highlight.remove();
+        $('span.highlight-split', row).each(function() { // jshint ignore:line
+            var highlightSplit = $(this);
+            highlightSplit.before(highlightSplit.text());
+            highlightSplit.remove();
         });
 
         if (text !== '') {
+            var regex = new RegExp('(' + text + ')',"gi");
+
             /*jshint loopfunc: true */
-            $(selector, row).find(':not(:input)').html(function(_, html) {
-                var regex = new RegExp(text,"g");
-                return html.replace(regex, '<span class="highlight">' + text + '</span>');
+            $(selector, row).find(':not(:input)').each(function() {
+                var $this = $(this);
+                $this.contents().each(function () {
+                    // We specifically only mess with text nodes
+                    if (this.nodeType === 3) {
+                        var highlightedMarkup = this.wholeText.replace(regex, '<span class="highlight">$1</span>');
+                        $(this).replaceWith('<span class="highlight-split">' + highlightedMarkup + '</span>');
+                    }
+                });
             });
         }
     }
@@ -418,7 +426,7 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
     } else {
         if (this.hasSections()) {
             var $ = jQD.getJQuery();
-            var selector = ":contains('" + withText + "')";
+            var selector = ":containsci('" + withText + "')";
             var sectionsWithText = [];
 
             for (var i2 = 0; i2 < this.sections.length; i2++) {
