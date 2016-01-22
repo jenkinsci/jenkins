@@ -9,7 +9,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import hudson.tasks.Maven;
+import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.JDKInstaller;
+import hudson.tools.ToolInstallation;
 import jenkins.model.DownloadSettings;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.Issue;
@@ -126,5 +128,37 @@ public class DownloadServiceTest extends HudsonTestCase {
         URL expectedResult = DownloadServiceTest.class.getResource("hudson.tools.JDKInstallerResult.json");
         JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
         assertEquals(reducedJson, expectedResultJson);
+    }
+
+    public void testReduceFunctionWithNotDefaultSchemaJsons() throws Exception {
+        URL resource1 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller1.json");
+        URL resource2 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller2.json");
+        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
+        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
+        List<JSONObject> jsonObjectList = new ArrayList<>();
+        jsonObjectList.add(json1);
+        jsonObjectList.add(json2);
+        Downloadable downloadable = new GenericDownloadFromUrlInstaller.DescriptorImpl().createDownloadable();
+        JSONObject reducedJson = downloadable.reduce(jsonObjectList);
+        URL expectedResult = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstallerResult.json");
+        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
+        assertEquals(reducedJson, expectedResultJson);
+    }
+
+    private static class GenericDownloadFromUrlInstaller extends DownloadFromUrlInstaller {
+        protected GenericDownloadFromUrlInstaller(String id) {
+            super(id);
+        }
+
+        public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<Maven.MavenInstaller> {
+            public String getDisplayName() {
+                return "";
+            }
+
+            @Override
+            public boolean isApplicable(Class<? extends ToolInstallation> toolType) {
+                return true;
+            }
+        }
     }
 }

@@ -136,11 +136,37 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
                 final DownloadFromUrlInstaller.DescriptorImpl delegate = (DownloadFromUrlInstaller.DescriptorImpl)this;
                 return new Downloadable(getId()) {
                     public JSONObject reduce(List<JSONObject> jsonList) {
-                        return delegate.reduce(jsonList);
+                        if (isDefualtSchema(jsonList)) {
+                            return delegate.reduce(jsonList);
+                        } else {
+                            //if it's not default schema fall back to the super class implementation
+                            return super.reduce(jsonList);
+                        }
                     }
                 };
             }
             return new Downloadable(getId());
+        }
+
+        /**
+         * this function checks is the update center tool has the default schema
+         * @param jsonList the list of Update centers json files
+         * @return true if the schema is the default one (id, name, url), false otherwise
+         */
+        private boolean isDefualtSchema(List<JSONObject> jsonList) {
+            JSONObject jsonToolInstallerList = jsonList.get(0);
+            ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolInstallerList, ToolInstallerList.class);
+
+            if (toolInstallerList != null) {
+                ToolInstallerEntry[] entryList = toolInstallerList.list;
+                ToolInstallerEntry sampleEntry = entryList[0];
+                if (sampleEntry != null) {
+                    if (sampleEntry.id != null && sampleEntry.name != null && sampleEntry.url != null) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private JSONObject reduce(List<JSONObject> jsonList) {
