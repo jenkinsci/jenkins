@@ -285,7 +285,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     /**
-     * Get the list of all plugins that have ever been detached from Jenkins core.
+     * Get the list of all plugins that have ever been {@link DetachedPlugin detached} from Jenkins core.
      * @return A {@link List} of {@link DetachedPlugin}s.
      */
     @Restricted(NoExternalUse.class)
@@ -330,7 +330,19 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * Information about plugins that were originally in the core.
+     * <p>
+     * A detached plugin is one that has any of the following characteristics:
+     * <ul>
+     *     <li>
+     *         Was an existing plugin that at some time previously bundled with the Jenkins war file.
+     *     </li>
+     *     <li>
+     *         Was previous code in jenkins core that was split to a separate-plugin (but may not have
+     *         ever been bundled in a jenkins war file - i.e. it gets split after this 2.0 update).
+     *     </li>
+     * </ul>
      */
+    @Restricted(NoExternalUse.class)
     public static final class DetachedPlugin {
         private final String shortName;
         /**
