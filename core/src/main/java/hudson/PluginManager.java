@@ -437,7 +437,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath, @CheckForNull FilenameFilter filter) {
         Set<String> names = new HashSet();
 
-        ServletContext context = Jenkins.getInstance().servletContext;
+        ServletContext context = Jenkins.getActiveInstance().servletContext;
         Set<String> plugins = Util.fixNull((Set<String>) context.getResourcePaths(fromPath));
         Set<URL> copiedPlugins = new HashSet<>();
         Set<URL> dependencies = new HashSet<>();
@@ -499,7 +499,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
         if (dependencySpec != null) {
             String[] dependencyTokens = dependencySpec.split(",");
-            ServletContext context = Jenkins.getInstance().servletContext;
+            ServletContext context = Jenkins.getActiveInstance().servletContext;
 
             for (String dependencyToken : dependencyTokens) {
                 if (dependencyToken.endsWith(";resolution:=optional")) {
