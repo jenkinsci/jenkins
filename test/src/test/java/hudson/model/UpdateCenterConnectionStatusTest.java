@@ -73,7 +73,7 @@ public class UpdateCenterConnectionStatusTest {
     private UpdateSite updateSite = new UpdateSite(UpdateCenter.ID_DEFAULT, "http://xyz") {
         @Override
         public String getConnectionCheckUrl() {
-            return "http://xyz";
+            return "http://xyz./";
         }
     };
 
