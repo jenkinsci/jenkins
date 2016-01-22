@@ -43,7 +43,7 @@ public enum InstallState {
      */
     INITIAL_PLUGINS_INSTALLING,
     /**
-     * New Jenkins install. The initial set of plugins are not installed.
+     * New Jenkins install. The initial set of plugins are now installed.
      */
     INITIAL_PLUGINS_INSTALLED,
     /**
