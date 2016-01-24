@@ -526,7 +526,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         List<String> missingDependencies = new ArrayList<String>();
         // make sure dependencies exist
         for (Dependency d : dependencies) {
-            if (parent.getPlugin(d.shortName) == null)
+            if (parent.getPlugin(d.shortName) == null || !(parent.getPlugin(d.shortName).active))
                 missingDependencies.add(d.toString());
         }
         if (!missingDependencies.isEmpty())
@@ -534,7 +534,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         // add the optional dependencies that exists
         for (Dependency d : optionalDependencies) {
-            if (parent.getPlugin(d.shortName) != null)
+            if (parent.getPlugin(d.shortName) != null && parent.getPlugin(d.shortName).active)
                 dependencies.add(d);
         }
     }
