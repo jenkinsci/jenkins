@@ -65,7 +65,27 @@ Upcoming changes</a>
 </div><!--=TRUNK-END=-->
 <h3><a name=v1.645>What's new in 1.645</a> (2016/01/18)</h3>
 <ul class=image>
-  <li class=>
+  <li class="bug">
+    Cleanup of CLI error handling and return codes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32273">issue 32273</a>)
+  <li class="bug">
+    Boot failure hook script did not work, WebAppMain.contextDestroyed produces weird errors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24696">issue 24696</a>)
+  <li class="bug">
+    Don't request usage statistics update if Jenkins hasn't finished loading.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32190">issue 32190</a>)
+  <li class="rfe">
+    Split test harness into separate artifact.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32478">issue 32478</a>)
+  <li class="bug">
+    Fix encoding of some help files.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1975">pull 1975</a>)
+  <li class="bug">
+    Remove JUnit dependency pulled in from JLine.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1981">pull 1981</a>)
+  <li class="bug">
+    Pass <tt>$it</tt> to contents of <tt>dropdownDescriptorSelector</tt>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19565">issue 19565</a>)
 </ul>
 <h3><a name=v1.644>What's new in 1.644</a> (2016/01/10)</h3>
 <ul class=image>
