@@ -45,7 +45,7 @@ node('java') {
         // Once we've built, archive the artifacts and the test results.
         stage "Archive artifacts and test results"
 
-        archive includes: "**/target/*.jar, **/target/*.war, **/target/*.hpi"
+        step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi', excludes: null, fingerprint: true])
         if (runTests) {
             step([$class: 'JUnitResultArchiver', healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'])
         }
@@ -111,7 +111,7 @@ node('docker') {
                         suseFileName = suseFilesFound[0]?.name
                     }
                 }
-                archive includes: "target/**/*"
+                step([$class: 'ArtifactArchiver', artifacts: 'target/**/*', excludes: null, fingerprint: true])
             }
 
         }
