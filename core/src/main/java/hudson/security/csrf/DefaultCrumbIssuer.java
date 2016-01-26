@@ -95,7 +95,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         if (request instanceof HttpServletRequest) {
             String newCrumb = issueCrumb(request, salt);
             if ((newCrumb != null) && (crumb != null)) {
-                return newCrumb.equals(crumb);
+                return MessageDigest.isEqual(newCrumb.getBytes(), crumb.getBytes());
             }
         }
         return false;
