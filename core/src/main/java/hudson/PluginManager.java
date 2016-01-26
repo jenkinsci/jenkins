@@ -40,7 +40,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
@@ -49,6 +48,8 @@ import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.InitReactorRunner;
 import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
+import jenkins.install.InstallState;
+import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
@@ -60,6 +61,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.bytecode.Transformer;
 import org.jvnet.hudson.reactor.Executable;
@@ -67,6 +69,7 @@ import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -79,16 +82,20 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -98,11 +105,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -120,6 +129,7 @@ import static hudson.init.InitMilestone.*;
 import hudson.model.DownloadService;
 import hudson.util.FormValidation;
 
+import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import org.kohsuke.accmod.Restricted;
@@ -187,11 +197,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Strategy for creating and initializing plugins
      */
     private final PluginStrategy strategy;
-
-    /**
-     * Manifest of the plugin binaries that are bundled with core.
-     */
-    private final Map<String,Manifest> bundledPluginManifests = new HashMap<String, Manifest>();
 
     public PluginManager(ServletContext context, File rootDir) {
         this.context = context;
@@ -366,13 +371,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         // lists up initialization tasks about loading plugins.
         return TaskBuilder.union(initializerFinder, // this scans @Initializer in the core once
-            builder,new TaskGraphBuilder() {{
-            requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins",new Executable() {
+                builder, new TaskGraphBuilder() {{
+            requires(PLUGINS_LISTED).attains(PLUGINS_PREPARED).add("Loading plugins", new Executable() {
                 /**
                  * Once the plugins are listed, schedule their initialization.
                  */
                 public void run(Reactor session) throws Exception {
-                    Jenkins.getInstance().lookup.set(PluginInstanceStore.class,new PluginInstanceStore());
+                    Jenkins.getInstance().lookup.set(PluginInstanceStore.class, new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
 
                     // schedule execution of loading plugins
@@ -425,6 +430,190 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }});
     }
 
+    protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath) {
+        return loadPluginsFromWar(fromPath, null);
+    }
+
+    protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath, @CheckForNull FilenameFilter filter) {
+        Set<String> names = new HashSet();
+
+        ServletContext context = Jenkins.getActiveInstance().servletContext;
+        Set<String> plugins = Util.fixNull((Set<String>) context.getResourcePaths(fromPath));
+        Set<URL> copiedPlugins = new HashSet<>();
+        Set<URL> dependencies = new HashSet<>();
+
+        for( String pluginPath : plugins) {
+            String fileName = pluginPath.substring(pluginPath.lastIndexOf('/')+1);
+            if(fileName.length()==0) {
+                // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
+                // I suspect some containers are returning directory names.
+                continue;
+            }
+            try {
+                URL url = context.getResource(pluginPath);
+                if (filter != null && url != null) {
+                    if (!filter.accept(new File(url.getFile()).getParentFile(), fileName)) {
+                        continue;
+                    }
+                }
+
+                names.add(fileName);
+                copyBundledPlugin(url, fileName);
+                copiedPlugins.add(url);
+                try {
+                    addDependencies(url, fromPath, dependencies);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to resolve dependencies for the bundled plugin " + fileName, e);
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
+            }
+        }
+
+        // Copy dependencies. These are not detached plugins, but are required by them.
+        for (URL dependency : dependencies) {
+            if (copiedPlugins.contains(dependency)) {
+                // Ignore. Already copied.
+                continue;
+            }
+
+            String fileName = new File(dependency.getFile()).getName();
+            try {
+                names.add(fileName);
+                copyBundledPlugin(dependency, fileName);
+                copiedPlugins.add(dependency);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to extract the bundled dependency plugin " + fileName, e);
+            }
+        }
+
+        return names;
+    }
+
+    protected static void addDependencies(URL hpiResUrl, String fromPath, Set<URL> dependencySet) throws URISyntaxException, MalformedURLException {
+        if (dependencySet.contains(hpiResUrl)) {
+            return;
+        }
+
+        Manifest manifest = parsePluginManifest(hpiResUrl);
+        String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
+        if (dependencySpec != null) {
+            String[] dependencyTokens = dependencySpec.split(",");
+            ServletContext context = Jenkins.getActiveInstance().servletContext;
+
+            for (String dependencyToken : dependencyTokens) {
+                if (dependencyToken.endsWith(";resolution:=optional")) {
+                    // ignore optional dependencies
+                    continue;
+                }
+
+                String artifactId = dependencyToken.split(":")[0];
+                URL dependencyURL = context.getResource(fromPath + "/" + artifactId + ".hpi");
+
+                if (dependencyURL == null) {
+                    // Maybe bundling has changed .jpi files
+                    dependencyURL = context.getResource(fromPath + "/" + artifactId + ".jpi");
+                }
+
+                if (dependencyURL != null) {
+                    dependencySet.add(dependencyURL);
+                    // And transitive deps...
+                    addDependencies(dependencyURL, fromPath, dependencySet);
+                }
+            }
+        }
+    }
+
+    /**
+     * Load detached plugins and their dependencies.
+     * <p>
+     * Only loads plugins that:
+     * <ul>
+     *     <li>Have been detached since the last running version.</li>
+     *     <li>Are already installed and need to be upgraded. This can be the case if this Jenkins install has been running since before plugins were "unbundled".</li>
+     *     <li>Are dependencies of one of the above e.g. script-security is not one of the detached plugins but it must be loaded if matrix-project is loaded.</li>
+     * </ul>
+     */
+    protected void loadDetachedPlugins() {
+        InstallState installState = Jenkins.getActiveInstance().getInstallState();
+        if (installState == InstallState.UPGRADE) {
+            VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
+
+            LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
+                    new Object[] {lastExecVersion, Jenkins.VERSION});
+
+            final List<ClassicPluginStrategy.DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(lastExecVersion);
+
+            Set<String> loadedDetached = loadPluginsFromWar("/WEB-INF/detached-plugins", new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    name = normalisePluginName(name);
+
+                    // If this was a plugin that was detached some time in the past i.e. not just one of the
+                    // plugins that was bundled "for fun".
+                    if (ClassicPluginStrategy.isDetachedPlugin(name)) {
+                        // If it's already installed and the installed version is older
+                        // than the bundled version, then we upgrade. The bundled version is the min required version
+                        // for "this" version of Jenkins, so we must upgrade.
+                        VersionNumber installedVersion = getPluginVersion(rootDir, name);
+                        VersionNumber bundledVersion = getPluginVersion(dir, name);
+                        if (installedVersion != null && bundledVersion != null && installedVersion.isOlderThan(bundledVersion)) {
+                            return true;
+                        }
+                    }
+
+                    // If it's a plugin that was detached since the last running version.
+                    for (ClassicPluginStrategy.DetachedPlugin detachedPlugin : detachedPlugins) {
+                        if (detachedPlugin.getShortName().equals(name)) {
+                            return true;
+                        }
+                    }
+
+                    // Otherwise skip this and do not install.
+                    return false;
+                }
+            });
+
+            LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
+                    new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
+
+            InstallUtil.saveLastExecVersion();
+        }
+    }
+
+    private String normalisePluginName(@Nonnull String name) {
+        // Normalise the name by stripping off the file extension (if present)...
+        return name.replace(".jpi", "").replace(".hpi", "");
+    }
+
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull File dir, @Nonnull String pluginId) {
+        VersionNumber version = getPluginVersion(new File(dir, pluginId + ".jpi"));
+        if (version == null) {
+            version = getPluginVersion(new File(dir, pluginId + ".hpi"));
+        }
+        return version;
+    }
+
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull File pluginFile) {
+        if (!pluginFile.exists()) {
+            return null;
+        }
+        try {
+            return getPluginVersion(pluginFile.toURI().toURL());
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
+
+    private @CheckForNull VersionNumber getPluginVersion(@Nonnull URL pluginURL) {
+        Manifest manifest = parsePluginManifest(pluginURL);
+        if (manifest == null) {
+            return null;
+        }
+        String versionSpec = manifest.getMainAttributes().getValue("Plugin-Version");
+        return new VersionNumber(versionSpec);
+    }
+
     /*
      * contains operation that considers xxx.hpi and xxx.jpi as equal
      * this is necessary since the bundled plugins are still called *.hpi
@@ -437,8 +626,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Returns the manifest of a bundled but not-extracted plugin.
      */
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public @CheckForNull Manifest getBundledPluginManifest(String shortName) {
-        return bundledPluginManifests.get(shortName);
+        return null;
     }
 
     /**
@@ -568,16 +758,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = src.openConnection().getLastModified();
         File file = new File(rootDir, fileName);
-        File pinFile = new File(rootDir, fileName+".pinned");
 
         // normalization first, if the old file exists.
         rename(new File(rootDir,legacyName),file);
-        rename(new File(rootDir,legacyName+".pinned"),pinFile);
 
         // update file if:
         //  - no file exists today
-        //  - bundled version and current version differs (by timestamp), and the file isn't pinned.
-        if (!file.exists() || (file.lastModified() != lastModified && !pinFile.exists())) {
+        //  - bundled version and current version differs (by timestamp).
+        if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
             file.setLastModified(src.openConnection().getLastModified());
             // lastModified is set for two reasons:
@@ -585,15 +773,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // - to make sure the value is not changed after each restart, so we can avoid
             // unpacking the plugin itself in ClassicPluginStrategy.explode
         }
-        if (pinFile.exists())
-            parsePinnedBundledPluginManifest(src);
+
+        // Plugin pinning has been deprecated.
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     }
 
-    /**
-     * When a pin file prevented a bundled plugin from getting extracted, check if the one we currently have
-     * is older than we bundled.
-     */
-    private void parsePinnedBundledPluginManifest(URL bundledJpi) {
+    private static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
         try {
             URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
             InputStream in=null;
@@ -602,8 +787,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (res!=null) {
                     in = res.openStream();
                     Manifest manifest = new Manifest(in);
-                    String shortName = PluginWrapper.computeShortName(manifest, FilenameUtils.getName(bundledJpi.getPath()));
-                    bundledPluginManifests.put(shortName, manifest);
+                    return manifest;
                 }
             } finally {
                 IOUtils.closeQuietly(in);
@@ -613,6 +797,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to parse manifest of "+bundledJpi, e);
         }
+        return null;
     }
 
     /**
@@ -781,6 +966,54 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         LogFactory.release(uberClassLoader);
     }
 
+    /**
+     * Get the list of all plugins - available and installed.
+     * @return The list of all plugins - available and installed.
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doPlugins() {
+        JSONArray response = new JSONArray();
+        Map<String,JSONObject> allPlugins = new HashMap<>();
+        for (PluginWrapper plugin : plugins) {
+            JSONObject pluginInfo = new JSONObject();
+            pluginInfo.put("installed", true);
+            pluginInfo.put("name", plugin.getShortName());
+            pluginInfo.put("title", plugin.getDisplayName());
+            pluginInfo.put("active", plugin.isActive());
+            pluginInfo.put("enabled", plugin.isEnabled());
+            pluginInfo.put("bundled", plugin.isBundled);
+            pluginInfo.put("deleted", plugin.isDeleted());
+            pluginInfo.put("downgradable", plugin.isDowngradable());
+            List<Dependency> dependencies = plugin.getDependencies();
+            if (dependencies != null && !dependencies.isEmpty()) {
+                Map<String, String> dependencyMap = new HashMap<>();
+                for (Dependency dependency : dependencies) {
+                    dependencyMap.put(dependency.shortName, dependency.version);
+                }
+                pluginInfo.put("dependencies", dependencyMap);
+            } else {
+                pluginInfo.put("dependencies", Collections.emptyMap());
+            }
+            response.add(pluginInfo);
+        }
+        for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+            for (UpdateSite.Plugin plugin: site.getAvailables()) {
+                JSONObject pluginInfo = allPlugins.get(plugin.name);
+                if(pluginInfo == null) {
+			pluginInfo = new JSONObject();
+			pluginInfo.put("installed", false);
+                }
+                pluginInfo.put("name", plugin.name);
+                pluginInfo.put("title", plugin.getDisplayName());
+                pluginInfo.put("excerpt", plugin.excerpt);
+                pluginInfo.put("site", site.getId());
+                pluginInfo.put("dependencies", plugin.dependencies);
+                response.add(pluginInfo);
+            }
+        }
+        return hudson.util.HttpResponses.okJSON(response);
+    }
+
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
         Jenkins.getInstance().checkPermission(CONFIGURE_UPDATECENTER);
 
@@ -804,43 +1037,141 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Performs the installation of the plugins.
      */
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        boolean dynamicLoad = req.getParameter("dynamicLoad")!=null;
-        final List<Future<UpdateCenter.UpdateCenterJob>> deployJobs = new ArrayList<>();
+        Set<String> plugins = new LinkedHashSet<>();
 
         Enumeration<String> en = req.getParameterNames();
         while (en.hasMoreElements()) {
             String n =  en.nextElement();
             if(n.startsWith("plugin.")) {
                 n = n.substring(7);
-                // JENKINS-22080 plugin names can contain '.' as could (according to rumour) update sites
-                int index = n.indexOf('.');
-                UpdateSite.Plugin p = null;
+                plugins.add(n);
+            }
+        }
+
+        boolean dynamicLoad = req.getParameter("dynamicLoad")!=null;
+        install(plugins, dynamicLoad);
+
+        rsp.sendRedirect("../updateCenter/");
+    }
+
+    /**
+     * Installs a list of plugins from a JSON POST.
+     * @param req The request object.
+     * @return A JSON response that includes a "correlationId" in the "data" element.
+     * That "correlationId" can then be used in calls to
+     * {@link UpdateCenter#doInstallStatus(org.kohsuke.stapler.StaplerRequest)}.
+     * @throws IOException Error reading JSON payload fro request.
+     */
+    @RequirePOST
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doInstallPlugins(StaplerRequest req) throws IOException {
+        String payload = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
+        JSONObject request = JSONObject.fromObject(payload);
+        JSONArray pluginListJSON = request.getJSONArray("plugins");
+        List<String> plugins = new ArrayList<>();
+
+        for (int i = 0; i < pluginListJSON.size(); i++) {
+            plugins.add(pluginListJSON.getString(i));
+        }
+
+        UUID correlationId = UUID.randomUUID();
+        try {
+            boolean dynamicLoad = request.getBoolean("dynamicLoad");
+            install(plugins, dynamicLoad, correlationId);
+
+            JSONObject responseData = new JSONObject();
+            responseData.put("correlationId", correlationId.toString());
+
+            return hudson.util.HttpResponses.okJSON(responseData);
+        } catch (Exception e) {
+            return hudson.util.HttpResponses.errorJSON(e.getMessage());
+        }
+    }
+
+    /**
+     * Performs the installation of the plugins.
+     * @param plugins The collection of plugins to install.
+     * @param dynamicLoad If true, the plugin will be dynamically loaded into this Jenkins. If false,
+     *                    the plugin will only take effect after the reboot.
+     *                    See {@link UpdateCenter#isRestartRequiredForCompletion()}
+     * @return The install job list.
+     * @since FIXME
+     */
+    public List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad) {
+        return install(plugins, dynamicLoad, null);
+    }
+
+    private List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad, @CheckForNull UUID correlationId) {
+        List<Future<UpdateCenter.UpdateCenterJob>> installJobs = new ArrayList<>();
+
+        for (String n : plugins) {
+            // JENKINS-22080 plugin names can contain '.' as could (according to rumour) update sites
+            int index = n.indexOf('.');
+            UpdateSite.Plugin p = null;
+
+            if (index == -1) {
+                p = getPlugin(n, UpdateCenter.ID_DEFAULT);
+            } else {
                 while (index != -1) {
                     if (index + 1 >= n.length()) {
                         break;
                     }
                     String pluginName = n.substring(0, index);
                     String siteName = n.substring(index + 1);
-                    UpdateSite updateSite = Jenkins.getInstance().getUpdateCenter().getById(siteName);
-                    if (updateSite == null) {
-                        throw new Failure("No such update center: " + siteName);
-                    } else {
-                        UpdateSite.Plugin plugin = updateSite.getPlugin(pluginName);
-                        if (plugin != null) {
-                            if (p != null) {
-                                throw new Failure("Ambiguous plugin: " + n);
-                            }
-                            p = plugin;
+                    UpdateSite.Plugin plugin = getPlugin(pluginName, siteName);
+                    // TODO: Someone that understands what the following logic is about, please add a comment.
+                    if (plugin != null) {
+                        if (p != null) {
+                            throw new Failure("Ambiguous plugin: " + n);
                         }
+                        p = plugin;
                     }
                     index = n.indexOf('.', index + 1);
                 }
-                if (p == null) {
-                    throw new Failure("No such plugin: " + n);
-                }
-                
-                deployJobs.add(p.deploy(dynamicLoad));
             }
+            if (p == null) {
+                throw new Failure("No such plugin: " + n);
+            }
+            Future<UpdateCenter.UpdateCenterJob> jobFuture = p.deploy(dynamicLoad, correlationId);
+            installJobs.add(jobFuture);
+        }
+
+        if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
+            trackInitialPluginInstall(installJobs);
+        }
+
+        return installJobs;
+    }
+
+    private void trackInitialPluginInstall(@Nonnull final List<Future<UpdateCenter.UpdateCenterJob>> installJobs) {
+        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final UpdateCenter updateCenter = jenkins.getUpdateCenter();
+
+        updateCenter.persistInstallStatus();
+        if (jenkins.getInstallState() == InstallState.NEW) {
+            jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
+            new Thread() {
+                @Override
+                public void run() {
+                    INSTALLING: while (true) {
+                        try {
+				updateCenter.persistInstallStatus();
+                            Thread.sleep(500);
+                            for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
+                                if(!jobFuture.isDone() && !jobFuture.isCancelled()) {
+                                    continue INSTALLING;
+                                }
+                            }
+                        } catch (InterruptedException e) {
+                            LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
+                        }
+                        break;
+                    }
+			updateCenter.persistInstallStatus();
+                    jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLED);
+                    InstallUtil.saveLastExecVersion();
+                }
+            }.start();
         }
         
         // Fire a one-off thread to wait for the plugins to be deployed and then
@@ -849,7 +1180,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             @Override
             public void run() {
                 INSTALLING: while (true) {
-                    for (Future<UpdateCenter.UpdateCenterJob> deployJob : deployJobs) {
+                    for (Future<UpdateCenter.UpdateCenterJob> deployJob : installJobs) {
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e) {
@@ -868,9 +1199,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }.start();
         
-        rsp.sendRedirect("../updateCenter/");
     }
 
+    private UpdateSite.Plugin getPlugin(String pluginName, String siteName) {
+        UpdateSite updateSite = Jenkins.getInstance().getUpdateCenter().getById(siteName);
+        if (updateSite == null) {
+            throw new Failure("No such update center: " + siteName);
+        }
+        return updateSite.getPlugin(pluginName);
+    }
 
     /**
      * Bare-minimum configuration mechanism to change the update center.
