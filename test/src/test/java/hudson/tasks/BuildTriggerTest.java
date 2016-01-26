@@ -69,26 +69,27 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.junit.Assume;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.TestNotifier;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.ToolInstallations;
 import org.xml.sax.SAXException;
 
-/**
- * Tests for hudson.tasks.BuildTrigger
- * @author Alan.Harder@sun.com
- */
 public class BuildTriggerTest {
 
-    public @Rule JenkinsRule j = new JenkinsRule();
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @ClassRule
+    public static BuildWatcher buildWatcher = new BuildWatcher();
 
     private FreeStyleProject createDownstreamProject() throws Exception {
         FreeStyleProject dp = j.createFreeStyleProject("downstream");
@@ -309,13 +310,6 @@ public class BuildTriggerTest {
 
         final FreeStyleProject us = j.createFreeStyleProject();
         us.getPublishersList().add(new BuildTrigger("downstream", true));
-        us.getPublishersList().add(new TestNotifier() {
-            @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                Thread.sleep(5000); // Build does not complete just after the BuildTrigger
-                return true;
-            }
-        });
 
         FreeStyleProject ds = createDownstreamProject();
         ds.getBuildersList().add(new AssertTriggerBuildCompleted(us, j.createWebClient()));
@@ -324,7 +318,9 @@ public class BuildTriggerTest {
 
         j.buildAndAssertSuccess(us);
 
+        j.waitUntilNoActivity();
         final FreeStyleBuild dsb = ds.getBuildByNumber(1);
+        assertNotNull(dsb);
         j.waitForCompletion(dsb);
         j.assertBuildStatusSuccess(dsb);
     }
