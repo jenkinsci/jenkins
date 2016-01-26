@@ -41,6 +41,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang.StringUtils;
@@ -109,7 +110,8 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String password) {
-        return  getApiTokenInsecure().equals(password);
+        String token = getApiTokenInsecure();
+        return MessageDigest.isEqual(password.getBytes(), token.getBytes());
     }
     
     private boolean hasPermissionToSeeToken() {
