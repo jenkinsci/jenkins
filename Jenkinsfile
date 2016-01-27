@@ -13,41 +13,37 @@ properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator',
 
 String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'master'
 
-node('java') {
+timestampedNode('java') {
 
-    // Add timestamps to logging output.
-    wrap([$class: 'TimestamperBuildWrapper']) {
+    // First stage is actually checking out the source. Since we're using Multibranch
+    // currently, we can use "checkout scm".
+    stage "Checkout source"
 
-        // First stage is actually checking out the source. Since we're using Multibranch
-        // currently, we can use "checkout scm".
-        stage "Checkout source"
+    checkout scm
 
-        checkout scm
+    // Now run the actual build.
+    stage "Build and test"
 
-        // Now run the actual build.
-        stage "Build and test"
-
-        // We're wrapping this in a timeout - if it takes more than 180 minutes, kill it.
-        timeout(time: 180, unit: 'MINUTES') {
-            // See below for what this method does - we're passing an arbitrary environment
-            // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
-            withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m",
-                          "MAVEN_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m"]) {
-                // Actually run Maven!
-                // The -Dmaven.repo.local=${pwd()}/.repository means that Maven will create a
-                // .repository directory at the root of the build (which it gets from the
-                // pwd() Workflow call) and use that for the local Maven repository.
-                sh "mvn -Pdebug -U clean install ${runTests ? '-Dmaven.test.failure.ignore=true -Dconcurrency=1' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository"
-            }
+    // We're wrapping this in a timeout - if it takes more than 180 minutes, kill it.
+    timeout(time: 180, unit: 'MINUTES') {
+        // See below for what this method does - we're passing an arbitrary environment
+        // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
+        withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m",
+                      "MAVEN_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m"]) {
+            // Actually run Maven!
+            // The -Dmaven.repo.local=${pwd()}/.repository means that Maven will create a
+            // .repository directory at the root of the build (which it gets from the
+            // pwd() Workflow call) and use that for the local Maven repository.
+            sh "mvn -Pdebug -U clean install ${runTests ? '-Dmaven.test.failure.ignore=true -Dconcurrency=1' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository"
         }
+    }
 
-        // Once we've built, archive the artifacts and the test results.
-        stage "Archive artifacts and test results"
+    // Once we've built, archive the artifacts and the test results.
+    stage "Archive artifacts and test results"
 
-        step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi', fingerprint: true])
-        if (runTests) {
-            step([$class: 'JUnitResultArchiver', healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'])
-        }
+    step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi', fingerprint: true])
+    if (runTests) {
+        step([$class: 'JUnitResultArchiver', healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'])
     }
 }
 
@@ -56,65 +52,62 @@ def rpmFileName
 def suseFileName
 
 // Run the packaging build on a node with the "docker" label.
-node('docker') {
-    // Add timestamps to logging output.
-    wrap([$class: 'TimestamperBuildWrapper']) {
+timestampedNode('docker') {
+    // First stage here is getting prepped for packaging.
+    stage "packaging - docker prep"
 
-        // First stage here is getting prepped for packaging.
-        stage "packaging - docker prep"
+    // Docker environment to build packagings
+    dir('packaging-docker') {
+        git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
+        sh 'docker build -t jenkins-packaging-builder:0.1 docker'
+    }
 
-        // Docker environment to build packagings
-        dir('packaging-docker') {
+    stage "packaging - actually packaging"
+    // Working packaging code, separate branch with fixes
+    dir('packaging') {
+        deleteDir()
+
+        docker.image("jenkins-packaging-builder:0.1").inside("-u root") {
             git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
-            sh 'docker build -t jenkins-packaging-builder:0.1 docker'
-        }
 
-        stage "packaging - actually packaging"
-        // Working packaging code, separate branch with fixes
-        dir('packaging') {
-            deleteDir()
-
-            docker.image("jenkins-packaging-builder:0.1").inside("-u root") {
-                git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
-
-                try {
-                    // Saw issues with unstashing inside a container, and not sure copy artifact plugin would work here.
-                    // So, simple wget.
-                    sh "wget -q ${currentBuild.absoluteUrl}/artifact/war/target/jenkins.war"
-                    sh "make clean deb rpm suse BRAND=./branding/jenkins.mk BUILDENV=./env/test.mk CREDENTIAL=./credentials/test.mk WAR=jenkins.war"
-                } catch (Exception e) {
-                    error "Packaging failed: ${e}"
-                } finally {
-                    // Needed to make sure the output of the build can be deleted by later runs.
-                    // Hackish, yes, but rpm builds as a numeric UID only user fail, so...
-                    sh "chmod -R a+w target || true"
-                    sh "chmod a+w jenkins.war || true"
+            try {
+                // Saw issues with unstashing inside a container, and not sure copy artifact plugin would work here.
+                // So, simple wget.
+                sh "wget -q ${currentBuild.absoluteUrl}/artifact/war/target/jenkins.war"
+                sh "make clean deb rpm suse BRAND=./branding/jenkins.mk BUILDENV=./env/test.mk CREDENTIAL=./credentials/test.mk WAR=jenkins.war"
+            } catch (Exception e) {
+                error "Packaging failed: ${e}"
+            } finally {
+                // Needed to make sure the output of the build can be deleted by later runs.
+                // Hackish, yes, but rpm builds as a numeric UID only user fail, so...
+                sh "chmod -R a+w target || true"
+                sh "chmod a+w jenkins.war || true"
+            }
+            dir("target/debian") {
+                def debFilesFound = findFiles(glob: "*.deb")
+                if (debFilesFound.size() > 0) {
+                    debFileName = debFilesFound[0]?.name
                 }
-                dir("target/debian") {
-                    def debFilesFound = findFiles(glob: "*.deb")
-                    if (debFilesFound.size() > 0) {
-                        debFileName = debFilesFound[0]?.name
-                    }
-                }
-
-                dir("target/rpm") {
-                    def rpmFilesFound = findFiles(glob: "*.rpm")
-                    if (rpmFilesFound.size() > 0) {
-                        rpmFileName = rpmFilesFound[0]?.name
-                    }
-                }
-
-                dir("target/suse") {
-                    def suseFilesFound = findFiles(glob: "*.rpm")
-                    if (suseFilesFound.size() > 0) {
-                        suseFileName = suseFilesFound[0]?.name
-                    }
-                }
-                step([$class: 'ArtifactArchiver', artifacts: 'target/**/*', fingerprint: true])
             }
 
+            dir("target/rpm") {
+                def rpmFilesFound = findFiles(glob: "*.rpm")
+                if (rpmFilesFound.size() > 0) {
+                    rpmFileName = rpmFilesFound[0]?.name
+                }
+            }
+
+            dir("target/suse") {
+                def suseFilesFound = findFiles(glob: "*.rpm")
+                if (suseFilesFound.size() > 0) {
+                    suseFileName = suseFilesFound[0]?.name
+                }
+            }
+            step([$class: 'ArtifactArchiver', artifacts: 'target/**/*', fingerprint: true])
         }
+
     }
+
 }
 
 stage "Package testing"
@@ -168,5 +161,14 @@ void withMavenEnv(List envVars = [], def body) {
     // Invoke the body closure we're passed within the environment we've created.
     withEnv(mvnEnv) {
         body.call()
+    }
+}
+
+// Runs the given body within a Timestamper wrapper on the given label.
+def timestampedNode(String label, Closure body) {
+    node(label) {
+        wrap([$class: 'TimestamperBuildWrapper']) {
+            body.call()
+        }
     }
 }
