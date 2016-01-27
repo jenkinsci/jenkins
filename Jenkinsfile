@@ -2,6 +2,10 @@
 /*
  * This Jenkinsfile is intended to run on https://ci.jenkins-ci.org and may fail anywhere else.
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
+ *
+ * The required labels are "java" and "docker" - "java" would be any node that can run Java builds. It doesn't need
+ * to have Java installed, but some setups may have nodes that shouldn't have heavier builds running on them, so we
+ * make this explicit. "docker" would be any node with docker installed.
  */
 
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
@@ -9,7 +13,8 @@ def runTests = true
 
 // Only keep the 10 most recent builds.
 properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator',
-                                                          numToKeepStr: '10']]])
+                                                          numToKeepStr: '50',
+                                                          artifactNumToKeepStr: '20']]])
 
 String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'master'
 
@@ -125,7 +130,7 @@ if (runTests) {
     String rpmfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/rpm/${rpmFileName}"
     String susefile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/suse/${suseFileName}"
 
-    node("docker") {
+    timestampedNode("docker") {
         stage "Load Lib"
         sh 'rm -rf workflowlib'
         dir ('workflowlib') {
