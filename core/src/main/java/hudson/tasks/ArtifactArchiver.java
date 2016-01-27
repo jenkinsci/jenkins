@@ -250,7 +250,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 if (isFlattenDirectories()) {
                     Map<String,String> flattenedFiles = new LinkedHashMap<>();
                     for (Map.Entry<String,String> soloFile : files.entrySet()) {
-                        String simpleFile = soloFile.getKey().replaceFirst(".+/", "");
+                        String simpleFile = soloFile.getKey().replaceFirst(".*/", "");
                         if (flattenedFiles.put(simpleFile, soloFile.getKey()) != null) {
                             throw new AbortException("Attempted to add duplicate filenames to flattened archive. " +
                                     "First file path: " + flattenedFiles.get(simpleFile) + " and second file path: "

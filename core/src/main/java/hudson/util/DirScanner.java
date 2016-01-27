@@ -137,11 +137,8 @@ public abstract class DirScanner implements Serializable {
     }
 
     /**
-     * Scans by using Ant GLOB syntax.
-     * <p>An initial basename is prepended as with {@link Full} <strong>if the includes and excludes are blank</strong>.
-     * Otherwise there is no prepended path. So for example when scanning a directory {@code /tmp/dir} containing a file {@code file},
-     * the {@code relativePath} sent to the {@link FileVisitor} will be {@code dir/file} if {@code includes} is blank
-     * but {@code file} if it is {@code **}. (This anomaly is historical.)
+     * Scans by using Ant GLOB syntax, flattening all the resulting files into a single directory.
+     * @since TODO
      */
     public static class FlattenGlob extends DirScanner {
         private final String includes, excludes;
