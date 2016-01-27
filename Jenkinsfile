@@ -11,8 +11,7 @@ def runTests = true
 properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator',
                                                           numToKeepStr: '10']]])
 
-// TODO: Once https://github.com/jenkinsci/packaging/pull/34 is merged, switch to master branch.
-String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'oss-dockerized-tests'
+String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'master'
 
 node('java') {
 
