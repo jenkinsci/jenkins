@@ -108,7 +108,14 @@ timestampedNode('docker') {
                     suseFileName = suseFilesFound[0]?.name
                 }
             }
+
             step([$class: 'ArtifactArchiver', artifacts: 'target/**/*', fingerprint: true])
+
+            // Fail the build if we didn't find at least one of the packages, meaning they weren't built but
+            // somehow make didn't error out.
+            if (debFileName == null || rpmFileName == null || suseFileName  == null) {
+                error "At least one of Debian, RPM or SuSE packages are missing, so failing the build."
+            }
         }
 
     }
@@ -132,8 +139,8 @@ if (runTests) {
 
     timestampedNode("docker") {
         stage "Load Lib"
-        sh 'rm -rf workflowlib'
         dir ('workflowlib') {
+            deleteDir()
             git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
             flow = load 'workflow/installertest.groovy'
         }
