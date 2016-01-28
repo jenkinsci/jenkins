@@ -60,7 +60,7 @@ public class UpdateNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/Configure permission"));
+        assertThat(result.stderr(), containsString("user is missing the Agent/Configure permission"));
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
     }
