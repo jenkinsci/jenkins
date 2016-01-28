@@ -63,7 +63,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.1-beta-1</version> <!-- TODO: release -->
+      <version>2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -24,6 +24,8 @@
 package jenkins.util;
 
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.util.Locale;
@@ -50,6 +52,7 @@ public class ResourceBundleUtil {
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
+    @Restricted(NoExternalUse.class)
     public static @Nonnull JSONObject getBundle(@Nonnull String baseName) throws MissingResourceException {
         return getBundle(baseName, Locale.getDefault());
     }
@@ -61,6 +64,7 @@ public class ResourceBundleUtil {
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
+    @Restricted(NoExternalUse.class)
     public static @Nonnull JSONObject getBundle(@Nonnull String baseName, @Nonnull Locale locale) throws MissingResourceException {
         String bundleKey = baseName + ":" + locale.toString();
         JSONObject bundleJSON = bundles.get(bundleKey);

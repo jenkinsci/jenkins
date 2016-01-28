@@ -1,0 +1,69 @@
+downloadService.post('hudson.tools.JDKInstaller',{
+  "data": [
+    {
+      "name": "JDK 8",
+      "releases": [
+        {
+          "files": [
+            {
+              "filepath": "http://download.oracle.com/otn-pub/java/jdk/8u66-b17/jdk-8u66-linux-i586.tar.gz",
+              "name": "jdk-8u66-linux-i586.tar.gz",
+              "title": "Linux x86"
+            },
+            {
+              "filepath": "http://download.oracle.com/otn-pub/java/jdk/8u66-b17/jdk-8u66-macosx-x64.dmg",
+              "name": "jdk-8u66-macosx-x64.dmg",
+              "title": "Mac OS X x64"
+            }
+          ],
+          "licpath": "/technetwork/java/javase/terms/license",
+          "lictitle": "Oracle Binary Code License Agreement for Java SE",
+          "name": "jdk-8u66-oth-JPR",
+          "title": "Java SE Development Kit 8u66"
+        },
+        {
+          "files": [
+            {
+              "filepath": "http://download.oracle.com/otn-pub/java/jdk/8u65-b17/jdk-8u65-linux-arm32-vfp-hflt.tar.gz",
+              "name": "jdk-8u65-linux-arm32-vfp-hflt.tar.gz",
+              "title": "Linux ARM v6/v7 Hard Float ABI"
+            },
+            {
+              "filepath": "http://download.oracle.com/otn-pub/java/jdk/8u65-b17/jdk-8u65-linux-arm64-vfp-hflt.tar.gz",
+              "name": "jdk-8u65-linux-arm64-vfp-hflt.tar.gz",
+              "title": "Linux ARM v8 Hard Float ABI"
+            }
+          ],
+          "licpath": "/technetwork/java/javase/terms/license",
+          "lictitle": "Oracle Binary Code License Agreement for Java SE",
+          "name": "jdk-8u65-oth-JPR",
+          "title": "Java SE Development Kit 8u65"
+        }
+      ]
+    },
+    {
+      "name": "JDK 7",
+      "releases": [
+        {
+          "files": [
+            {
+              "filepath": "http://download.oracle.com/otn-pub/java/jdk/7u80-b15/jdk-7u80-linux-i586.tar.gz",
+              "name": "jdk-7u80-linux-i586.tar.gz",
+              "title": "Linux x86"
+            },
+            {
+              "filepath": "http://download.oracle.com/otn-pub/java/jdk/7u80-b15/jdk-7u80-linux-x64.tar.gz",
+              "name": "jdk-7u80-linux-x64.tar.gz",
+              "title": "Linux x64"
+            }
+          ],
+          "licpath": "/technetwork/java/javase/terms/license",
+          "lictitle": "Oracle Binary Code License Agreement for Java SE",
+          "name": "jdk-7u80-oth-JPR",
+          "title": "Java SE Development Kit 7u80"
+        }
+      ]
+    }
+  ],
+  "version": 2
+}

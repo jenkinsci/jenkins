@@ -466,7 +466,9 @@ public class Executor extends Thread implements ModelObject {
     }
 
     private void finish2() {
-        for (RuntimeException e1: owner.getTerminatedBy()) LOGGER.log(Level.WARNING, String.format("%s termination trace", getName()), e1);
+        for (RuntimeException e1 : owner.getTerminatedBy()) {
+            LOGGER.log(Level.FINE, String.format("%s termination trace", getName()), e1);
+        }
         if (causeOfDeath == null) {// let this thread die and be replaced by a fresh unstarted instance
             owner.removeExecutor(this);
         }
