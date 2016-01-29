@@ -563,7 +563,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient final CopyOnWriteList<SCMListener> scmListeners = new CopyOnWriteList<SCMListener>();
 
     /**
-     * TCP slave agent port.
+     * TCP agent port.
      * 0 for random, -1 to disable.
      */
     private int slaveAgentPort = Integer.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
@@ -593,7 +593,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public transient final OverallLoadStatistics overallLoad = new OverallLoadStatistics();
 
     /**
-     * Load statistics of the free roaming jobs and slaves.
+     * Load statistics of the free roaming jobs and agents.
      *
      * This includes all executors on {@link hudson.model.Node.Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
      *
@@ -613,7 +613,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Use {@link #unlabeledNodeProvisioner}.
      *      This was broken because it was tracking all the executors in the system, but it was only tracking
      *      free-roaming jobs in the queue. So {@link Cloud} fails to launch nodes when you have some exclusive
-     *      slaves and free-roaming jobs in the queue.
+     *      agents and free-roaming jobs in the queue.
      */
     @Restricted(NoExternalUse.class)
     @Deprecated
@@ -763,7 +763,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             theInstance = this;
 
             if (!new File(root,"jobs").exists()) {
-                // if this is a fresh install, use more modern default layout that's consistent with slaves
+                // if this is a fresh install, use more modern default layout that's consistent with agents
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
             }
 
@@ -988,8 +988,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     }
                 } catch (BindException e) {
                     new AdministrativeError(administrativeMonitorId,
-                            "Failed to listen to incoming slave connection",
-                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.", e);
+                            "Failed to listen to incoming agent connection",
+                            "Failed to listen to incoming agent connection. <a href='configure'>Change the port number</a> to solve the problem.", e);
                 }
             }
         }
@@ -1709,7 +1709,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
 
     /**
-     * Gets the slave node of the give name, hooked under this Jenkins.
+     * Gets the agent node of the give name, hooked under this Jenkins.
      */
     public @CheckForNull Node getNode(String name) {
         return nodes.getNode(name);
@@ -2743,7 +2743,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                 {// recompute label objects - populates the labels mapping.
                     for (Node slave : nodes.getNodes())
-                        // Note that not all labels are visible until the slaves have connected.
+                        // Note that not all labels are visible until the agents have connected.
                         slave.getAssignedLabels();
                     getAssignedLabels();
                 }
@@ -3054,10 +3054,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Obtains the thread dump of all slaves (including the master.)
+     * Obtains the thread dump of all agents (including the master.)
      *
      * <p>
-     * Since this is for diagnostics, it has a built-in precautionary measure against hang slaves.
+     * Since this is for diagnostics, it has a built-in precautionary measure against hang agents.
      */
     public Map<String,Map<String,String>> getAllThreadDumps() throws IOException, InterruptedException {
         checkPermission(ADMINISTER);
@@ -3238,7 +3238,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Serves jar files for JNLP slave agents.
+     * Serves jar files for JNLP agents.
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
@@ -4263,7 +4263,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
 
     /**
-     * Automatically try to launch a slave when Jenkins is initialized or a new slave is created.
+     * Automatically try to launch an agent when Jenkins is initialized or a new slave is created.
      */
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
 
@@ -4322,7 +4322,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             assert PERMISSIONS != null;
             assert ADMINISTER != null;
         } catch (RuntimeException e) {
-            // when loaded on a slave and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
+            // when loaded on an agent and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
             // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8051847
             // As we don't know where the first exception will go, let's also send this to logging so that
             // we have a known place to look at.

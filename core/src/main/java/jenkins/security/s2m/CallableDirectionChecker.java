@@ -55,11 +55,11 @@ public class CallableDirectionChecker extends RoleChecker {
 
         if (isWhitelisted(subject,expected)) {
             // this subject is dubious, but we are letting it through as per whitelisting
-            LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from slave to master", name);
+            LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from agent to master", name);
             return;
         }
 
-        throw new SecurityException("Sending " + name + " from slave to master is prohibited.\nSee http://jenkins-ci.org/security-144 for more details");
+        throw new SecurityException("Sending " + name + " from agent to master is prohibited.\nSee http://jenkins-ci.org/security-144 for more details");
     }
 
     /**

@@ -47,7 +47,7 @@ import java.util.List;
 public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
 
     /**
-     * Slave-specific environment variables
+     * Agent-specific environment variables
      */
     private final EnvVars envVars;
     

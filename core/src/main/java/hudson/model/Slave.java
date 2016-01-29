@@ -73,7 +73,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * Information about a Hudson slave node.
+ * Information about a Hudson agent node.
  *
  * <p>
  * Ideally this would have been in the <tt>hudson.slaves</tt> package,
@@ -86,7 +86,7 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 public abstract class Slave extends Node implements Serializable {
     /**
-     * Name of this slave node.
+     * Name of this agent node.
      */
     protected String name;
 
@@ -116,12 +116,12 @@ public abstract class Slave extends Node implements Serializable {
     private Mode mode;
 
     /**
-     * Slave availablility strategy.
+     * Agent availablility strategy.
      */
     private RetentionStrategy retentionStrategy;
 
     /**
-     * The starter that will startup this slave.
+     * The starter that will startup this agent.
      */
     private ComputerLauncher launcher;
 
@@ -139,7 +139,7 @@ public abstract class Slave extends Node implements Serializable {
     private transient volatile Set<Label> labels;
 
     /**
-     * Id of user which creates this slave {@link User}.
+     * Id of user which creates this agent {@link User}.
      */
     private String userId;
 
@@ -173,7 +173,7 @@ public abstract class Slave extends Node implements Serializable {
          Slave node = (Slave) Jenkins.getInstance().getNode(name);
 
        if(node!=null){
-            this.userId= node.getUserId(); //slave has already existed
+            this.userId= node.getUserId(); //agent has already existed
         }
        else{
             User user = User.current();
@@ -190,7 +190,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Return id of user which created this slave
+     * Return id of user which created this agent
      *
      * @return id of user
      */
@@ -300,7 +300,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Root directory on this slave where all the job workspaces are laid out.
+     * Root directory on this agent where all the job workspaces are laid out.
      * @return
      *      null if not connected.
      */
@@ -372,7 +372,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Creates a launcher for the slave.
+     * Creates a launcher for the agent.
      *
      * @return
      *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
@@ -381,7 +381,7 @@ public abstract class Slave extends Node implements Serializable {
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
         if (c == null) {
-            listener.error("Issue with creating launcher for slave " + name + ".");
+            listener.error("Issue with creating launcher for agent " + name + ".");
             return new Launcher.DummyLauncher(listener);
         } else {
             return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
@@ -438,7 +438,7 @@ public abstract class Slave extends Node implements Serializable {
         }
 
         /**
-         * Performs syntactical check on the remote FS for slaves.
+         * Performs syntactical check on the remote FS for agents.
          */
         public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
             if(Util.fixEmptyAndTrim(value)==null)

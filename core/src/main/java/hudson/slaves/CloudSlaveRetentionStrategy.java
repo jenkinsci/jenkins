@@ -11,9 +11,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Default convenience implementation of {@link RetentionStrategy} for slaves provisioned from {@link Cloud}.
+ * Default convenience implementation of {@link RetentionStrategy} for agents provisioned from {@link Cloud}.
  *
- * If a slave is idle for 10 mins, this retention strategy will remove the slave. This can be used as-is for
+ * If an agent is idle for 10 mins, this retention strategy will remove the agent. This can be used as-is for
  * a {@link Node} provisioned by cloud to implement the auto-scaling semantics, it can be subtyped to tweak
  * the behavior, or it can be used as an example.
  * <p>TODO {@link CloudRetentionStrategy} seems to be a better implementation.
@@ -64,7 +64,7 @@ public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionSt
     }
 
     /**
-     * If the computer has been idle longer than this time, we'll kill the slave.
+     * If the computer has been idle longer than this time, we'll kill the agent.
      */
     protected long getIdleMaxTime() {
         return TIMEOUT;
