@@ -4,6 +4,7 @@ import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.Engine;
+import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import java.io.DataInputStream;
@@ -21,6 +22,8 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.561
+ * @deprecated as of 1.609
+ *      Use {@link JnlpServerHandshake}
  */
 public class JnlpSlaveHandshake {
     /**
