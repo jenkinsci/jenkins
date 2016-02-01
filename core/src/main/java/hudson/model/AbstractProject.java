@@ -55,7 +55,6 @@ import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.SubTaskContributor;
-import hudson.node_monitors.DiskSpaceMonitor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
@@ -1265,13 +1264,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;    // no SCM
 
         FilePath workspace = build.getWorkspace();
-        try {
-            workspace.mkdirs();
-        } catch (IOException e) {
-            // Can't create workspace dir - Is agent disk full ?
-            new DiskSpaceMonitor().markNodeOfflineIfDiskspaceIsTooLow(build.getBuiltOn().toComputer());
-            throw e;
-        }
+        workspace.mkdirs();
 
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
         if (r) {
