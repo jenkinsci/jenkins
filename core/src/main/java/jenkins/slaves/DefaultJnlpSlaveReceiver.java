@@ -88,7 +88,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
      * @return
      * true if the slave secret matches the handshake secret, false otherwise.
      */
-    private boolean matchesSecret(String nodeName, JnlpSlaveHandshake handshake){
+    private boolean matchesSecret(String nodeName, JnlpServerHandshake handshake){
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
         String handshakeSecret = handshake.getRequestProperty("Secret-Key");
         // Verify that the slave secret matches the handshake secret.
