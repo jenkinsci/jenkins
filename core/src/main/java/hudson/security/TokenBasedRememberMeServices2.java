@@ -41,7 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.logging.Level;
 
 /**
  * {@link TokenBasedRememberMeServices} with modification so as not to rely

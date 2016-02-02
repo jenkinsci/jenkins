@@ -30,7 +30,6 @@ import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
@@ -164,7 +163,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
     
     public void setDisplayName(String displayName) throws IOException {
-        this.displayName = Util.fixEmpty(displayName);
+        this.displayName = Util.fixEmptyAndTrim(displayName);
         save();
     }
              
@@ -538,7 +537,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * since it predates {@code <l:confirmationLink>}. {@code /delete} goes to a Jelly page
      * which should now be unused by core but is left in case plugins are still using it.
      */
-    @CLIMethod(name="delete-job")
     @RequirePOST
     public void doDoDelete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         delete();
@@ -621,6 +619,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @deprecated as of 1.473
      *      Use {@link #updateByXml(Source)}
      */
+    @Deprecated
     public void updateByXml(StreamSource source) throws IOException {
         updateByXml((Source)source);
     }
@@ -680,7 +679,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      *
      * @since 1.556
      */
-    @CLIMethod(name="reload-job")
     @RequirePOST
     public void doReload() throws IOException {
         checkPermission(CONFIGURE);
@@ -700,8 +698,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
 
-    /* (non-Javadoc)
-     * @see hudson.model.AbstractModelObject#getSearchName()
+    /**
+     * {@inheritDoc}
      */
     @Override
     public String getSearchName() {
@@ -723,8 +721,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
         // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
-        if (item==null)
-            throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
+        if (item==null) {
+            AbstractProject project = AbstractProject.findNearest(name);
+            throw new CmdLineException(null, project == null ? Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name)
+                    : Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));
+        }
         return item;
     }
 

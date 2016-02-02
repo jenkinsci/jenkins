@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import hudson.model.ViewGroup;
@@ -157,10 +156,12 @@ public class ViewOptionHandlerTest {
 
         denyAccessOn(outer);
 
-        parseFailedWith(AccessDeniedException.class, "outer/nested/inner");
+        assertEquals(
+                "Access denied for: outer",
+                parseFailedWith(CmdLineException.class, "outer/nested/inner")
+        );
 
         verify(outer).checkPermission(View.READ);
-        verifyNoMoreInteractions(outer);
 
         verifyZeroInteractions(nested);
         verifyZeroInteractions(inner);
@@ -171,10 +172,12 @@ public class ViewOptionHandlerTest {
 
         denyAccessOn(nested);
 
-        parseFailedWith(AccessDeniedException.class, "outer/nested/inner");
+        assertEquals(
+                "Access denied for: nested",
+                parseFailedWith(CmdLineException.class, "outer/nested/inner")
+        );
 
         verify(nested).checkPermission(View.READ);
-        verifyNoMoreInteractions(nested);
 
         verifyZeroInteractions(inner);
         verifyZeroInteractions(setter);
@@ -184,17 +187,20 @@ public class ViewOptionHandlerTest {
 
         denyAccessOn(inner);
 
-        parseFailedWith(AccessDeniedException.class, "outer/nested/inner");
+        assertEquals(
+                "Access denied for: inner",
+                parseFailedWith(CmdLineException.class, "outer/nested/inner")
+        );
 
         verify(inner).checkPermission(View.READ);
-        verifyNoMoreInteractions(inner);
 
         verifyZeroInteractions(setter);
     }
 
     private void denyAccessOn(View view) {
 
-        doThrow(new AccessDeniedException(null)).when(view).checkPermission(View.READ);
+        final AccessDeniedException ex = new AccessDeniedException("Access denied for: " + view.getViewName());
+        doThrow(ex).when(view).checkPermission(View.READ);
     }
 
     private String parseFailedWith(Class<? extends Exception> type, final String... params) throws Exception {

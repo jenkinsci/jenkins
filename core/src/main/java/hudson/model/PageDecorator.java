@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
-import hudson.Plugin;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.DescriptorList;
@@ -45,7 +44,7 @@ import java.util.List;
  *
  * <h2>Life-cycle</h2>
  * <p>
- * {@link Plugin}s that contribute this extension point
+ * Plugins that contribute this extension point
  * should implement a new decorator and put {@link Extension} on the class.
  *
  * <h2>Associated Views</h2>
@@ -79,6 +78,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * @deprecated as of 1.425
      *      Use the default constructor that's less error prone
      */
+    @Deprecated
     protected PageDecorator(Class<? extends PageDecorator> yourClass) {
         super(yourClass);
     }
@@ -93,14 +93,6 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
 
     public final Descriptor<PageDecorator> getDescriptor() {
         return this;
-    }
-
-    /**
-     * Unless this object has additional web presence, display name is not used at all.
-     * So default to "".
-     */
-    public String getDisplayName() {
-        return "";
     }
 
     /**
@@ -119,6 +111,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<PageDecorator> ALL = (List)new DescriptorList<PageDecorator>(PageDecorator.class);
 
     /**

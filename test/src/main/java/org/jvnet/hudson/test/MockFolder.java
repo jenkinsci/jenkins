@@ -77,7 +77,7 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
     private String primaryView;
     private ViewsTabBar viewsTabBar;
 
-    private MockFolder(ItemGroup parent, String name) {
+    protected MockFolder(ItemGroup parent, String name) {
         super(parent, name);
     }
 
@@ -270,10 +270,6 @@ public class MockFolder extends AbstractItem implements DirectlyModifiableTopLev
     }
 
     @Extension public static class DescriptorImpl extends TopLevelItemDescriptor {
-
-        @Override public String getDisplayName() {
-            return "MockFolder";
-        }
 
         @Override public TopLevelItem newInstance(ItemGroup parent, String name) {
             return new MockFolder(parent, name);

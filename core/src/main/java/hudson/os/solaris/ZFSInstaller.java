@@ -32,7 +32,6 @@ import hudson.os.SU;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.util.ForkOutputStream;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.StreamTaskListener;

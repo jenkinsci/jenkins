@@ -39,12 +39,14 @@ public interface BuildableItem extends Item, Task {
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
 	 */
+    @Deprecated
     boolean scheduleBuild();
 	boolean scheduleBuild(Cause c);
 	/**
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
 	 */
+    @Deprecated
 	boolean scheduleBuild(int quietPeriod);
 	boolean scheduleBuild(int quietPeriod, Cause c);
 }

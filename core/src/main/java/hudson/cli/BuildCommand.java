@@ -35,7 +35,6 @@ import hudson.model.ParameterDefinition;
 import hudson.Extension;
 import hudson.AbortException;
 import hudson.model.Item;
-import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
@@ -52,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 

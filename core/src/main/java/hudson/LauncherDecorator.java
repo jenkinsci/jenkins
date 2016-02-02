@@ -1,6 +1,5 @@
 package hudson;
 
-import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Executor;
 import hudson.tasks.BuildWrapper;

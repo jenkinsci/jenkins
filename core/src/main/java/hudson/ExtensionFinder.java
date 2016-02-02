@@ -37,7 +37,6 @@ import com.google.inject.Scope;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 import com.google.common.collect.ImmutableList;
-import hudson.init.InitMilestone;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
@@ -85,6 +84,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      *      Use and implement {@link #find(Class,Hudson)} that allows us to put some metadata.
      */
     @Restricted(NoExternalUse.class)
+    @Deprecated
     public <T> Collection<T> findExtensions(Class<T> type, Hudson hudson) {
         return Collections.emptyList();
     }

@@ -54,6 +54,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.jvnet.localizer.Localizable;
@@ -61,9 +62,11 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.Nonnull;
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -71,6 +74,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.security.DigestInputStream;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -320,6 +327,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *      TODO: revisit tool update mechanism, as that should be de-centralized, too. In the mean time,
      *      please try not to use this method, and instead ping us to get this part completed.
      */
+    @Deprecated
     public String getDefaultBaseUrl() {
         return config.getUpdateCenterUrl();
     }
@@ -747,6 +755,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @see DownloadJob
          */
         public File download(DownloadJob job, URL src) throws IOException {
+            MessageDigest sha1 = null;
+            try {
+                sha1 = MessageDigest.getInstance("SHA-1");
+            } catch (NoSuchAlgorithmException ignored) {
+                // Irrelevant as the Java spec says SHA-1 must exist. Still, if this fails
+                // the DownloadJob will just have computedSha1 = null and that is expected
+                // to be handled by caller
+            }
+
             CountingInputStream in = null;
             OutputStream out = null;
             URLConnection con = null;
@@ -760,6 +777,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath()+".tmp");
                 out = new FileOutputStream(tmp);
+                if (sha1 != null) {
+                    out = new DigestOutputStream(out, sha1);
+                }
 
                 LOGGER.info("Downloading "+job.getName());
                 Thread t = Thread.currentThread();
@@ -773,6 +793,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } catch (IOException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
                 } finally {
+                    IOUtils.closeQuietly(out);
                     t.setName(oldName);
                 }
 
@@ -783,6 +804,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     throw new IOException("Inconsistent file length: expected "+total+" but only got "+tmp.length());
                 }
 
+                if (sha1 != null) {
+                    byte[] digest = sha1.digest();
+                    job.computedSHA1 = Base64.encodeBase64String(digest);
+                }
                 return tmp;
             } catch (IOException e) {
                 // assist troubleshooting in case of e.g. "too many redirects" by printing actual URL
@@ -842,6 +867,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *      is now a part of the <tt>update-center.json</tt> file. See
          *      <tt>http://jenkins-ci.org/update-center.json</tt> as an example.
          */
+        @Deprecated
         public String getConnectionCheckUrl() {
             return "http://www.google.com";
         }
@@ -856,6 +882,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @return
          *      Absolute URL that ends with '/'.
          */
+        @Deprecated
         public String getUpdateCenterUrl() {
             return UPDATE_CENTER_URL;
         }
@@ -867,6 +894,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *      <tt>update-center.json</tt> is now signed, so we don't have to further make sure that
          *      we aren't downloading from anywhere unsecure.
          */
+        @Deprecated
         public String getPluginRepositoryBaseUrl() {
             return "http://jenkins-ci.org/";
         }
@@ -920,6 +948,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @deprecated as of 1.326
          *      Use {@link #submit()} instead.
          */
+        @Deprecated
         public void schedule() {
             submit();
         }
@@ -1099,6 +1128,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         protected abstract void onSuccess();
 
+        /**
+         * During download, an attempt is made to compute the SHA-1 checksum of the file.
+         *
+         * @since TODO
+         */
+        @CheckForNull
+        protected String getComputedSHA1() {
+            return computedSHA1;
+        }
+
+        private String computedSHA1;
 
         private Authentication authentication;
 
@@ -1251,6 +1291,26 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /**
+     * If expectedSHA1 is non-null, ensure that actualSha1 is the same value, otherwise throw.
+     *
+     * Utility method for InstallationJob and HudsonUpgradeJob.
+     *
+     * @throws IOException when checksums don't match, or actual checksum was null.
+     */
+    private void verifyChecksums(String expectedSHA1, String actualSha1, File downloadedFile) throws IOException {
+        if (expectedSHA1 != null) {
+            if (actualSha1 == null) {
+                // refuse to install if SHA-1 could not be computed
+                throw new IOException("Failed to compute SHA-1 of downloaded file, refusing installation");
+            }
+            if (!expectedSHA1.equals(actualSha1)) {
+                throw new IOException("Downloaded file " + downloadedFile.getAbsolutePath() + " does not match expected SHA-1, expected '" + expectedSHA1 + "', actual '" + actualSha1 + "'");
+                // keep 'downloadedFile' around for investigating what's going on
+            }
+        }
+    }
+
+    /**
      * Represents the state of the installation activity of one plugin.
      */
     public final class InstallationJob extends DownloadJob {
@@ -1270,6 +1330,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * @deprecated as of 1.442
          */
+        @Deprecated
         public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth) {
             this(plugin,site,auth,false);
         }
@@ -1341,18 +1402,24 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         @Override
         protected void replace(File dst, File src) throws IOException {
-        	File bak = Util.changeExtension(dst,".bak");
-        	
+
+            verifyChecksums(plugin.getSha1(), getComputedSHA1(), src);
+
+            File bak = Util.changeExtension(dst, ".bak");
             bak.delete();
+
             final File legacy = getLegacyDestination();
-			if(legacy.exists()){
-            	legacy.renameTo(bak);
-            }else{
-            	dst.renameTo(bak);
+            if (legacy.exists()) {
+                if (!legacy.renameTo(bak)) {
+                    legacy.delete();
+                }
             }
-            legacy.delete();
-            dst.delete(); // any failure up to here is no big deal
-            
+            if (dst.exists()) {
+                if (!dst.renameTo(bak)) {
+                    dst.delete();
+                }
+            }
+
             if(!src.renameTo(dst)) {
                 throw new IOException("Failed to rename "+src+" to "+dst);
             }
@@ -1470,6 +1537,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected void replace(File dst, File src) throws IOException {
+            String expectedSHA1 = site.getData().core.getSha1();
+            verifyChecksums(expectedSHA1, getComputedSHA1(), src);
             Lifecycle.get().rewriteHudsonWar(src);
         }
     }
@@ -1565,6 +1634,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @deprecated as of 1.333
      *      Use {@link UpdateSite#neverUpdate}
      */
+    @Deprecated
     public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
 
     public static final XStream2 XSTREAM = new XStream2();

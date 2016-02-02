@@ -31,10 +31,7 @@ import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import org.jenkinsci.remoting.CallableDecorator;
 import hudson.remoting.Channel;
-import hudson.remoting.ChannelBuilder;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 
@@ -132,6 +129,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      * @deprecated as of 1.292
      *      Use {@link #onOnline(Computer, TaskListener)}
      */
+    @Deprecated
     public void onOnline(Computer c) {}
 
     /**
@@ -214,6 +212,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      * @deprecated as of 1.286
      *      put {@link Extension} on your class to have it auto-registered.
      */
+    @Deprecated
     public final void register() {
         all().add(this);
     }

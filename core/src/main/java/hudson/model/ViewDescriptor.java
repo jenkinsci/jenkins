@@ -45,7 +45,10 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * in the view creation screen. The string should look like
      * "Abc Def Ghi".
      */
-    public abstract String getDisplayName();
+    @Override
+    public String getDisplayName() {
+        return super.getDisplayName();
+    }
 
     /**
      * Some special views are not instantiable, and for those

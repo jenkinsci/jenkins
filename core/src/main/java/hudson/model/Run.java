@@ -39,16 +39,12 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
-import hudson.console.AnnotatedLargeText;
-import hudson.console.ConsoleLogFilter;
-import hudson.console.ConsoleNote;
-import hudson.console.ModelHyperlinkNote;
+import hudson.console.*;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.Executables;
-import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -56,7 +52,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.tasks.BuildWrapper;
-import hudson.util.FlushProofOutputStream;
 import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
@@ -108,7 +103,6 @@ import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
-import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -984,6 +978,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *      This method is only intended for the remote API clients who cannot resolve relative references.
      */
     @Exported(visibility=2,name="url")
+    @Deprecated
     public final @Nonnull String getAbsoluteUrl() {
         return project.getAbsoluteUrl()+getNumber()+'/';
     }
@@ -1554,6 +1549,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @deprecated as of 1.467
      *      Please use {@link RunExecution}
      */
+    @Deprecated
     protected abstract class Runner extends RunExecution {}
 
     /**
@@ -1675,6 +1671,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @deprecated as of 1.467
      *      Use {@link #execute(RunExecution)}
      */
+    @Deprecated
     protected final void run(@Nonnull Runner job) {
         execute(job);
     }
@@ -1710,7 +1707,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     // Global log filters
                     for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
-                        logger = filter.decorateLogger((AbstractBuild) build, logger);
+                        logger = filter.decorateLogger(build, logger);
                     }
 
                     // Project specific log filters
@@ -1803,11 +1800,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             try {
                 getParent().logRotate();
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-            }
+            } catch (Exception e) {
+		LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
+	    }
         } finally {
             onEndBuilding();
         }
@@ -1930,6 +1925,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
         int lineCount = 0;
         List<String> logLines = new LinkedList<String>();
+        if (maxLines == 0) {
+            return logLines;
+        }
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()),getCharset()));
         try {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -2083,19 +2081,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        // Prevent jelly from flushing stream so Content-Length header can be added afterwards
-        FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-        try{
-        	getLogText().writeLogTo(0,out);
-        } catch (IOException e) {
-			// see comment in writeLogTo() method
-			InputStream input = getLogInputStream();
-			try {
-				IOUtils.copy(input, out);
-			} finally {
-				IOUtils.closeQuietly(input);
-			}
-		} finally {
+        PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(rsp.getCompressedOutputStream(req));
+        InputStream input = getLogInputStream();
+        try {
+            IOUtils.copy(input, out);
+            out.flush();
+        } finally {
+            IOUtils.closeQuietly(input);
             IOUtils.closeQuietly(out);
         }
     }
@@ -2105,6 +2097,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @deprecated as of 1.352
      *      Use {@code getLogText().doProgressiveText(req,rsp)}
      */
+    @Deprecated
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
         getLogText().doProgressText(req,rsp);
     }
@@ -2192,6 +2185,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @deprecated as of 1.292
      *      Use {@link #getEnvironment(TaskListener)} instead.
      */
+    @Deprecated
     public Map<String,String> getEnvVars() {
         LOGGER.log(WARNING, "deprecated call to Run.getEnvVars\n\tat {0}", new Throwable().getStackTrace()[1]);
         try {
@@ -2206,6 +2200,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * @deprecated as of 1.305 use {@link #getEnvironment(TaskListener)}
      */
+    @Deprecated
     public EnvVars getEnvironment() throws IOException, InterruptedException {
         LOGGER.log(WARNING, "deprecated call to Run.getEnvironment\n\tat {0}", new Throwable().getStackTrace()[1]);
         return getEnvironment(new LogTaskListener(LOGGER, Level.INFO));

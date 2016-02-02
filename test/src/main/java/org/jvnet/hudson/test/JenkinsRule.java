@@ -30,17 +30,21 @@ import com.gargoylesoftware.htmlunit.DefaultCssErrorHandler;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebClientUtil;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebResponseListener;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.gargoylesoftware.htmlunit.javascript.host.xml.XMLHttpRequest;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ClassicPluginStrategy;
 import hudson.CloseProofOutputStream;
@@ -99,6 +103,7 @@ import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerConnector;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildWrapper;
@@ -122,7 +127,6 @@ import java.lang.management.ThreadInfo;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
@@ -173,7 +177,6 @@ import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
@@ -190,6 +193,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
+import java.nio.channels.ClosedByInterruptException;
 import org.jvnet.hudson.test.recipes.Recipe;
 import org.jvnet.hudson.test.rhino.JavaScriptDebugger;
 import org.kohsuke.stapler.ClassDescriptor;
@@ -426,11 +432,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                     tl.onTearDown();
             }
 
-            if (timeoutTimer!=null) {
-                timeoutTimer.cancel();
-                timeoutTimer = null;
-            }
-
             // cancel pending asynchronous operations, although this doesn't really seem to be working
             for (WebClient client : clients) {
                 // unload the page to cancel asynchronous operations
@@ -465,6 +466,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 env.dispose();
             } catch (Exception x) {
                 x.printStackTrace();
+            }
+
+            if (timeoutTimer != null) {
+                timeoutTimer.cancel();
+                timeoutTimer = null;
             }
 
             // Hudson creates ClassLoaders for plugins that hold on to file descriptors of its jar files,
@@ -691,7 +697,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         mvn.copyFrom(JenkinsRule.class.getClassLoader().getResource(mavenVersion + "-bin.zip"));
         mvn.unzip(new FilePath(buildDirectory));
         // TODO: switch to tar that preserves file permissions more easily
-        if(!Functions.isWindows())
+        if(Functions.isGlibcSupported())
             GNUCLibrary.LIBC.chmod(new File(mvnHome, "bin/mvn").getPath(),0755);
 
         Maven.MavenInstallation mavenInstallation = new Maven.MavenInstallation("default",
@@ -715,7 +721,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             File antHome = createTmpDir();
             ant.unzip(new FilePath(antHome));
             // TODO: switch to tar that preserves file permissions more easily
-            if(!Functions.isWindows())
+            if(Functions.isGlibcSupported())
                 GNUCLibrary.LIBC.chmod(new File(antHome,"apache-ant-1.8.1/bin/ant").getPath(),0755);
 
             antInstallation = new Ant.AntInstallation("default", new File(antHome,"apache-ant-1.8.1").getAbsolutePath(),NO_PROPERTIES);
@@ -790,6 +796,31 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
     @Deprecated
     public File createTmpDir() throws IOException {
         return env.temporaryDirectoryAllocator.allocate();
+    }
+
+    public DumbSlave createSlave(boolean waitForChannelConnect) throws Exception {
+        DumbSlave slave = createSlave();
+        if (waitForChannelConnect) {
+            long start = System.currentTimeMillis();
+            while (slave.getChannel() == null) {
+                if (System.currentTimeMillis() > (start + 10000)) {
+                    throw new IllegalStateException("Timed out waiting on DumbSlave channel to connect.");
+                }
+                Thread.sleep(200);
+            }
+        }
+        return slave;
+    }
+
+    public void disconnectSlave(DumbSlave slave) throws Exception {
+        slave.getComputer().disconnect(new OfflineCause.ChannelTermination(new Exception("terminate")));
+        long start = System.currentTimeMillis();
+        while (slave.getChannel() != null) {
+            if (System.currentTimeMillis() > (start + 10000)) {
+                throw new IllegalStateException("Timed out waiting on DumbSlave channel to disconnect.");
+            }
+            Thread.sleep(200);
+        }
     }
 
     public DumbSlave createSlave() throws Exception {
@@ -967,7 +998,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * This is useful during debugging a test so that one can inspect the state of Hudson through the web browser.
      */
     public void interactiveBreak() throws Exception {
-        System.out.println("Jenkins is running at http://localhost:"+localPort+"/");
+        System.out.println("Jenkins is running at " + getURL());
         new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
 
@@ -1179,8 +1210,9 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Asserts that the XPath matches.
      */
     public void assertXPath(HtmlPage page, String xpath) {
+        HtmlElement documentElement = page.getDocumentElement();
         assertNotNull("There should be an object that matches XPath:" + xpath,
-                page.getDocumentElement().selectSingleNode(xpath));
+                DomNodeUtil.selectSingleNode(documentElement, xpath));
     }
 
     /** Asserts that the XPath matches the contents of a DomNode page. This
@@ -1236,7 +1268,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * (By default, HtmlUnit doesn't load images.)
      */
     public void assertAllImageLoadSuccessfully(HtmlPage p) {
-        for (HtmlImage img : p.<HtmlImage>selectNodes("//IMG")) {
+        for (HtmlImage img : DomNodeUtil.<HtmlImage>selectNodes(p, "//IMG")) {
             try {
                 img.getHeight();
             } catch (IOException e) {
@@ -1299,7 +1331,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * Plain {@link com.gargoylesoftware.htmlunit.html.HtmlForm#submit()} doesn't work correctly due to the use of YUI in Hudson.
      */
     public HtmlPage submit(HtmlForm form) throws Exception {
-        return (HtmlPage) form.submit((HtmlButton) last(form.getHtmlElementsByTagName("button")));
+        return (HtmlPage) HtmlFormUtil.submit(form);
     }
 
     /**
@@ -1310,25 +1342,19 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      */
     public HtmlPage submit(HtmlForm form, String name) throws Exception {
         for( HtmlElement e : form.getHtmlElementsByTagName("button")) {
-            HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();
-            if(p.getAttribute("name").equals(name)) {
-                // To make YUI event handling work, this combo seems to be necessary
-                // the click will trigger _onClick in buton-*.js, but it doesn't submit the form
-                // (a comment alluding to this behavior can be seen in submitForm method)
-                // so to complete it, submit the form later.
-                //
-                // Just doing form.submit() doesn't work either, because it doesn't do
-                // the preparation work needed to pass along the name of the button that
-                // triggered a submission (more concretely, m_oSubmitTrigger is not set.)
-                ((HtmlButton)e).click();
-                return (HtmlPage)form.submit((HtmlButton)e);
+            HtmlElement p = (HtmlElement)e.getParentNode().getParentNode();                        
+            if (p.getAttribute("name").equals(name) && HtmlElementUtil.hasClassName(p, "yui-submit-button")) {
+                // For YUI handled submit buttons, just do a click.
+                return (HtmlPage) HtmlElementUtil.click(e);
+            } else if (e.getAttribute("name").equals(name)) {
+                return (HtmlPage) HtmlFormUtil.submit(form, e);
             }
         }
         throw new AssertionError("No such submit button with the name "+name);
     }
 
     public HtmlInput findPreviousInputElement(HtmlElement current, String name) {
-        return (HtmlInput)current.selectSingleNode("(preceding::input[@name='_."+name+"'])[last()]");
+        return DomNodeUtil.selectSingleNode(current, "(preceding::input[@name='_."+name+"'])[last()]");
     }
 
     public HtmlButton getButtonByCaption(HtmlForm f, String s) {
@@ -1430,7 +1456,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             Object lv = ReflectionUtils.getPublicProperty(lhs, names[i]);
             Object rv = ReflectionUtils.getPublicProperty(rhs, names[i]);
 
-            if (Iterable.class.isAssignableFrom(types[i])) {
+            if (lv != null && rv != null && Iterable.class.isAssignableFrom(types[i])) {
                 Iterable lcol = (Iterable) lv;
                 Iterable rcol = (Iterable) rv;
                 Iterator ltr,rtr;
@@ -1668,7 +1694,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
                             File dst = new File(home, "plugins/" + artifactId + ".jpi");
                             if(!dst.exists() || dst.lastModified()!=dependencyJar.lastModified()) {
-                                FileUtils.copyFile(dependencyJar, dst);
+                                try {
+                                    FileUtils.copyFile(dependencyJar, dst);
+                                } catch (ClosedByInterruptException x) {
+                                    throw new AssumptionViolatedException("copying dependencies was interrupted", x);
+                                }
                             }
                         }
                     }
@@ -1834,20 +1864,22 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
      * for accessing Hudson.
      */
     public class WebClient extends com.gargoylesoftware.htmlunit.WebClient {
-        private static final long serialVersionUID = 5808915989048338267L;
+        private static final long serialVersionUID = -7944895389154288881L;
+
+        private List<WebResponseListener> webResponseListeners = new ArrayList<>();
 
         public WebClient() {
             // default is IE6, but this causes 'n.doScroll('left')' to fail in event-debug.js:1907 as HtmlUnit doesn't implement such a method,
             // so trying something else, until we discover another problem.
-            super(BrowserVersion.FIREFOX_2);
+            super(BrowserVersion.FIREFOX_38);
 
 //            setJavaScriptEnabled(false);
             setPageCreator(HudsonPageCreator.INSTANCE);
             clients.add(this);
             // make ajax calls run as post-action for predictable behaviors that simplify debugging
             setAjaxController(new AjaxController() {
-                private static final long serialVersionUID = -5844060943564822678L;
-                public boolean processSynchron(HtmlPage page, WebRequestSettings settings, boolean async) {
+                private static final long serialVersionUID = -76034615893907856L;
+                public boolean processSynchron(HtmlPage page, WebRequest settings, boolean async) {
                     return false;
                 }
             });
@@ -1892,7 +1924,23 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
             // avoid a hang by setting a time out. It should be long enough to prevent
             // false-positive timeout on slow systems
-            setTimeout(60*1000);
+            //setTimeout(60*1000);
+        }
+
+
+        public void addWebResponseListener(WebResponseListener listener) {
+            webResponseListeners.add(listener);
+        }
+
+        @Override
+        public WebResponse loadWebResponse(final WebRequest webRequest) throws IOException {
+            WebResponse webResponse = super.loadWebResponse(webRequest);
+            if (!webResponseListeners.isEmpty()) {
+                for (WebResponseListener listener : webResponseListeners) {
+                    listener.onLoadWebResponse(webRequest, webResponse);
+                }
+            }
+            return webResponse;
         }
 
         /**
@@ -1900,6 +1948,14 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          */
         public WebClient login(String username, String password) throws Exception {
             return login(username,password,false);
+        }
+
+        public boolean isJavaScriptEnabled() {
+            return getOptions().isJavaScriptEnabled();
+        }
+
+        public void setJavaScriptEnabled(boolean enabled) {
+            getOptions().setJavaScriptEnabled(enabled);
         }
 
         /**
@@ -1918,7 +1974,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
                 // remember me not available is OK so long as the caller didn't ask for it
                 assert !rememberMe;
             }
-            form.submit(null);
+            HtmlFormUtil.submit(form, null);
             return this;
         }
 
@@ -1930,7 +1986,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
          * and passwords. All the test accounts have the same user name and password.
          */
         public WebClient login(String username) throws Exception {
-            login(username,username);
+            login(username, username);
             return this;
         }
 
@@ -1984,7 +2040,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             HtmlPage top = goTo("");
             HtmlForm search = top.getFormByName("search");
             search.getInputByName("q").setValueAttribute(q);
-            return (HtmlPage)search.submit(null);
+            return (HtmlPage)HtmlFormUtil.submit(search, null);
         }
 
         /**
@@ -2013,7 +2069,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         }
 
         public HtmlPage getPage(Node item) throws IOException, SAXException {
-            return getPage(item,"");
+            return getPage(item, "");
         }
 
         public HtmlPage getPage(Node item, String relative) throws IOException, SAXException {
@@ -2038,7 +2094,11 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         @SuppressWarnings("unchecked")
         @Override
         public Page getPage(String url) throws IOException, FailingHttpStatusCodeException {
-            return super.getPage(url);
+            try {
+                return super.getPage(url);
+            } finally {
+                WebClientUtil.waitForJSExec(this);
+            }
         }
 
         /**
@@ -2070,6 +2130,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             Page p;
             try {
                 p = super.getPage(getContextPath() + relative);
+                WebClientUtil.waitForJSExec(this);
             } catch (IOException x) {
                 Throwable cause = x.getCause();
                 if (cause instanceof SocketTimeoutException) {
@@ -2126,15 +2187,13 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
 
         /**
          * Adds a security crumb to the request.
-         * Use {@link #createCrumbedUrl} instead if you intend to call {@link WebRequestSettings#setRequestBody}, typical of a POST request.
+         * Use {@link #createCrumbedUrl} instead if you intend to call {@link WebRequest#setRequestBody}, typical of a POST request.
          */
-        public WebRequestSettings addCrumb(WebRequestSettings req) {
-            NameValuePair crumb[] = { new NameValuePair() };
-
-            crumb[0].setName(jenkins.getCrumbIssuer().getDescriptor().getCrumbRequestField());
-            crumb[0].setValue(jenkins.getCrumbIssuer().getCrumb( null ));
-
-            req.setRequestParameters(Arrays.asList( crumb ));
+        public WebRequest addCrumb(WebRequest req) {
+            NameValuePair crumb = new NameValuePair(
+                    jenkins.getCrumbIssuer().getDescriptor().getCrumbRequestField(),
+                    jenkins.getCrumbIssuer().getCrumb( null ));
+            req.setRequestParameters(Arrays.asList(crumb));
             return req;
         }
 
@@ -2267,7 +2326,7 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         // this also prevents tests from falsely advertising Hudson
         DNSMultiCast.disabled = true;
 
-        if (!Functions.isWindows()) {
+        if (Functions.isGlibcSupported()) {
             try {
                 GNUCLibrary.LIBC.unsetenv("MAVEN_OPTS");
                 GNUCLibrary.LIBC.unsetenv("MAVEN_DEBUG_OPTS");
@@ -2301,11 +2360,6 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
             @Override
             public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) {
                 throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public String getDisplayName() {
-                return this.getClass().getName();
             }
         }
     }

@@ -57,7 +57,7 @@ THE SOFTWARE.
         lazy="descriptor">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
-          <st:include from="${descriptor}" page="${descriptor.configPage}" />
+          <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </l:ajax>
       </f:dropdownListBlock>
     </j:forEach>

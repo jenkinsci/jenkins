@@ -53,11 +53,6 @@ public abstract class TestBuilder extends Builder {
             public boolean isApplicable(Class<? extends AbstractProject> jobType) {
                 return true;
             }
-
-            @Override
-            public String getDisplayName() {
-                return "Bogus";
-            }
         };
     }
 

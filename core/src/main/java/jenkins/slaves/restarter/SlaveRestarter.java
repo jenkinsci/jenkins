@@ -2,7 +2,6 @@ package jenkins.slaves.restarter;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -11,7 +10,7 @@ import java.util.logging.Logger;
  * Extension point to control how to restart JNLP slave when it loses the connection with the master.
  *
  * <p>
- * Objects are instantiated on the master, then transfered to a slave via serialization.
+ * Objects are instantiated on the master, then transferred to a slave via serialization.
  *
  * @author Kohsuke Kawaguchi
  */

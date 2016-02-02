@@ -37,6 +37,7 @@ public class CliProtocol2 extends CliProtocol {
          * @deprecated as of 1.559
          *      Use {@link #Handler2(NioChannelHub, Socket)}
          */
+        @Deprecated
         public Handler2(Socket socket) {
             super(socket);
         }

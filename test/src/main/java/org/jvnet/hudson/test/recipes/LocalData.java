@@ -29,7 +29,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.HudsonHomeLoader.Local;
 import org.jvnet.hudson.test.JenkinsRecipe;
 
-import hudson.util.JenkinsReloadFailed;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Target;

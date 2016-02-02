@@ -17,6 +17,7 @@ import hudson.model.ModelObject;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import jenkins.security.HexStringConfidentialKey;
 
 import net.sf.json.JSONObject;
 
@@ -117,9 +118,10 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     @Extension
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
 
+        private final static HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);
+        
         public DescriptorImpl() {
-            // salt just needs to be unique, and it doesn't have to be a secret
-            super(Jenkins.getInstance().getLegacyInstanceId(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
+            super(CRUMB_SALT.get(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
             load();
         }
 

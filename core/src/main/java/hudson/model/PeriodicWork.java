@@ -25,11 +25,9 @@ package hudson.model;
 
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
-import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 
 import java.util.concurrent.TimeUnit;
@@ -60,6 +58,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
 
     /** @deprecated Use your own logger, or send messages to the logger in {@link AsyncPeriodicWork#execute}. */
     @SuppressWarnings("NonConstantLogger")
+    @Deprecated
     protected final Logger logger = Logger.getLogger(getClass().getName());
 
     /**

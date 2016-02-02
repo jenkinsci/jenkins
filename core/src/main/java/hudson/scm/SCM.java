@@ -268,6 +268,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      *      Call {@link #poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} for use instead.
      */
+    @Deprecated
     public boolean pollChanges(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         // up until 1.336, this method was abstract, so everyone should have overridden this method
         // without calling super.pollChanges. So the compatibility implementation is purely for
@@ -578,6 +579,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated since 1.382
      *      Use/override {@link #getModuleRoot(FilePath, AbstractBuild)} instead.
      */
+    @Deprecated
     public FilePath getModuleRoot(FilePath workspace) {
         if (Util.isOverridden(SCM.class,getClass(),"getModuleRoot", FilePath.class,AbstractBuild.class))
             // if the subtype already implements newer getModuleRoot(FilePath,AbstractBuild), call that.
@@ -632,6 +634,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated as of 1.382.
      *      Use/derive from {@link #getModuleRoots(FilePath, AbstractBuild)} instead.
      */
+    @Deprecated
     public FilePath[] getModuleRoots(FilePath workspace) {
         if (Util.isOverridden(SCM.class,getClass(),"getModuleRoots", FilePath.class, AbstractBuild.class))
             // if the subtype already derives newer getModuleRoots(FilePath,AbstractBuild), delegate to it

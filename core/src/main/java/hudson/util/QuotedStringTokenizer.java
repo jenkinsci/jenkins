@@ -44,7 +44,7 @@ import java.util.ArrayList;
 /** StringTokenizer with Quoting support.
  *
  * This class is a copy of the java.util.StringTokenizer API and
- * the behaviour is the same, except that single and doulbe quoted
+ * the behaviour is the same, except that single and double quoted
  * string values are recognized.
  * Delimiters within quotes are not considered delimiters.
  * Quotes can be escaped with '\'.
@@ -328,7 +328,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     /** Quote a string.
      * The string is quoted only if quoting is required due to
-     * embeded delimiters, quote characters or the
+     * embedded delimiters, quote characters or the
      * empty string.
      * @param s The string to quote.
      * @return quoted string
@@ -358,7 +358,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     /** Quote a string.
      * The string is quoted only if quoting is required due to
-     * embeded delimiters, quote characters or the
+     * embedded delimiters, quote characters or the
      * empty string.
      * @param s The string to quote.
      * @return quoted string

@@ -4,7 +4,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import java.util.ArrayList;
 import java.util.List;
-import jenkins.model.Jenkins;
 
 /**
  * Adds box rendered in the computer side panel.

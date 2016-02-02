@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableSet;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
@@ -51,8 +52,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
@@ -127,7 +130,8 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
 
-    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance());
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = 
+                                    new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
 
     /**
      * Lazily computed set of labels from {@link #label}.
@@ -338,7 +342,16 @@ public abstract class Slave extends Node implements Serializable {
 
         public URL getURL() throws MalformedURLException {
             String name = fileName;
-            if (name.equals("hudson-cli.jar"))  name="jenkins-cli.jar";
+            
+            // Prevent the access to war contents & prevent the folder escaping (SECURITY-195)
+            if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
+                throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
+            }
+            
+            if (name.equals("hudson-cli.jar"))  {
+                name="jenkins-cli.jar";
+            }
+            
             URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 // during the development this path doesn't have the files.
@@ -408,7 +421,7 @@ public abstract class Slave extends Node implements Serializable {
                     : new CommandLauncher(agentCommand);
         }
         if(nodeProperties==null)
-            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance());
+            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
         return this;
     }
 
@@ -451,6 +464,7 @@ public abstract class Slave extends Node implements Serializable {
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
      * @deprecated in 1.216
      */
+    @Deprecated
     private transient String agentCommand;
 
     /**
@@ -511,4 +525,9 @@ public abstract class Slave extends Node implements Serializable {
      * Determines the workspace root file name for those who really really need the shortest possible path name.
      */
     private static final String WORKSPACE_ROOT = System.getProperty(Slave.class.getName()+".workspaceRoot","workspace");
+
+    /**
+     * Provides a collection of file names, which are accessible via /jnlpJars link.
+     */
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
 }

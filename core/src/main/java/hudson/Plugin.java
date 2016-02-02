@@ -40,15 +40,18 @@ import java.io.File;
 
 import net.sf.json.JSONObject;
 import com.thoughtworks.xstream.XStream;
+import hudson.init.Initializer;
+import hudson.init.Terminator;
 import java.net.URI;
 import java.net.URISyntaxException;
+import jenkins.model.GlobalConfiguration;
 import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Base class of Hudson plugin.
  *
  * <p>
- * A plugin may derive from this class, or it may directly define extension
+ * A plugin may {@linkplain #Plugin derive from this class}, or it may directly define extension
  * points annotated with {@link hudson.Extension}. For a list of extension
  * points, see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Extension+points">
  * https://wiki.jenkins-ci.org/display/JENKINS/Extension+points</a>.
@@ -77,6 +80,22 @@ import org.kohsuke.stapler.HttpResponses;
  * @since 1.42
  */
 public abstract class Plugin implements Saveable {
+
+    /**
+     * You do not need to create custom subtypes:
+     * <ul>
+     * <li>{@code config.jelly}, {@link #configure(StaplerRequest, JSONObject)}, {@link #load}, and {@link #save}
+     *      can be replaced by {@link GlobalConfiguration}
+     * <li>{@link #start} and {@link #postInitialize} can be replaced by {@link Initializer} (or {@link ItemListener#onLoaded})
+     * <li>{@link #stop} can be replaced by {@link Terminator}
+     * <li>{@link #setServletContext} can be replaced by {@link Jenkins#servletContext}
+     * </ul>
+     * Note that every plugin gets a {@link DummyImpl} by default,
+     * which will still route the URL space, serve {@link #getWrapper}, and so on.
+     * @deprecated Use more modern APIs rather than subclassing.
+     */
+    @Deprecated
+    protected Plugin() {}
 
     /**
      * Set by the {@link PluginManager}, before the {@link #start()} method is called.
@@ -164,6 +183,7 @@ public abstract class Plugin implements Saveable {
      * @since 1.233
      * @deprecated as of 1.305 override {@link #configure(StaplerRequest,JSONObject)} instead
      */
+    @Deprecated
     public void configure(JSONObject formData) throws IOException, ServletException, FormException {
     }
 

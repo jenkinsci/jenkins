@@ -106,6 +106,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ParameterizedJobMixIn;
@@ -266,7 +267,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         buildMixIn = createBuildMixIn();
         builds = buildMixIn.getRunMap();
 
-        if(Jenkins.getInstance()!=null && !Jenkins.getInstance().getNodes().isEmpty()) {
+        final Jenkins j = Jenkins.getInstance();
+        final List<Node> nodes = j != null ? j.getNodes() : null;
+        if(nodes!=null && !nodes.isEmpty()) {
             // if a new job is configured with Hudson that already has slave nodes
             // make it roamable by default
             canRoam = true;
@@ -323,7 +326,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         builds = buildMixIn.getRunMap();
         triggers().setOwner(this);
         for (Trigger t : triggers()) {
-            t.start(this, Items.currentlyUpdatingByXml());
+            try {
+                t.start(this, Items.currentlyUpdatingByXml());
+            } catch (Throwable e) {
+                LOGGER.log(Level.WARNING, "could not start trigger while loading project '" + getFullName() + "'", e);
+            }
         }
         if(scm==null)
             scm = new NullSCM(); // perhaps it was pointing to a plugin that no longer exists.
@@ -351,7 +358,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 jdkTool = jdkTool.forNode(node, listener);
             }
             jdkTool.buildEnvVars(env);
-        } else if (jdk != null && !jdk.equals(JDK.DEFAULT_NAME)) {
+        } else if (!JDK.isDefaultName(jdk)) {
             listener.getLogger().println("No JDK named ‘" + jdk + "’ found");
         }
 
@@ -465,6 +472,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.401
      */
     public String getBuildNowText() {
+        // For compatibility, still use the deprecated replacer if specified.
         return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, getParameterizedJobMixIn().getBuildNowText());
     }
 
@@ -505,6 +513,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      If you are calling this method to serve a file from the workspace, doing a form validation, etc., then
      *      use {@link #getSomeWorkspace()}
      */
+    @Deprecated
     public final FilePath getWorkspace() {
         AbstractBuild b = getBuildForDeprecatedMethods();
         return b != null ? b.getWorkspace() : null;
@@ -586,6 +595,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated as of 1.319
      *      See {@link #getWorkspace()} for a migration strategy.
      */
+    @Deprecated
     public FilePath getModuleRoot() {
         AbstractBuild b = getBuildForDeprecatedMethods();
         return b != null ? b.getModuleRoot() : null;
@@ -601,6 +611,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated as of 1.319
      *      See {@link #getWorkspace()} for a migration strategy.
      */
+    @Deprecated
     public FilePath[] getModuleRoots() {
         AbstractBuild b = getBuildForDeprecatedMethods();
         return b != null ? b.getModuleRoots() : null;
@@ -797,6 +808,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
 	 */
+    @Deprecated
     public boolean scheduleBuild() {
     	return getParameterizedJobMixIn().scheduleBuild();
     }
@@ -805,6 +817,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 	 * @deprecated
 	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
 	 */
+    @Deprecated
     public boolean scheduleBuild(int quietPeriod) {
     	return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
     }
@@ -1077,6 +1090,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * or if the blockBuildWhenUpstreamBuilding option is true and an upstream
      * project is building, but derived classes can also check other conditions.
      */
+    @Override
     public boolean isBuildBlocked() {
         return getCauseOfBlockage()!=null;
     }
@@ -1087,23 +1101,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Blocked because the previous build is already in progress.
+     * @deprecated use {@link BlockedBecauseOfBuildInProgress} instead.
      */
-    public static class BecauseOfBuildInProgress extends CauseOfBlockage {
-        private final AbstractBuild<?,?> build;
-
+    @Deprecated
+    public static class BecauseOfBuildInProgress extends BlockedBecauseOfBuildInProgress {
         public BecauseOfBuildInProgress(AbstractBuild<?, ?> build) {
-            this.build = build;
-        }
-
-        @Override
-        public String getShortDescription() {
-            Executor e = build.getExecutor();
-            String eta = "";
-            if (e != null)
-                eta = Messages.AbstractProject_ETA(e.getEstimatedRemainingTime());
-            int lbn = build.getNumber();
-            return Messages.AbstractProject_BuildInProgress(lbn, eta);
+            super(build);
         }
     }
 
@@ -1139,10 +1142,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    @Override
     public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
-        if (isLogUpdated() && !isConcurrentBuild())
-            return new BecauseOfBuildInProgress(getLastBuild());
+        if (isLogUpdated() && !isConcurrentBuild()) {
+            return new BlockedBecauseOfBuildInProgress(getLastBuild());
+        }
         if (blockBuildWhenDownstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingDownstream();
             if (bup!=null)
@@ -1226,6 +1231,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      If you need to lock a workspace while you do some computation, see the source code of
      *      {@link #pollSCMChanges(TaskListener)} for how to obtain a lock of a workspace through {@link WorkspaceList}.
      */
+    @Deprecated
     public Resource getWorkspaceResource() {
         return new Resource(getFullDisplayName()+" workspace");
     }
@@ -1299,6 +1305,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated as of 1.346
      *      Use {@link #poll(TaskListener)} instead.
      */
+    @Deprecated
     public boolean pollSCMChanges( TaskListener listener ) {
         return poll(listener).hasChanges();
     }
@@ -1460,7 +1467,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         Launcher launcher = ws.createLauncher(listener).decorateByEnv(getEnvironment(node,listener));
         WorkspaceList.Lease lease = l.acquire(ws, !concurrentBuild);
         try {
-            listener.getLogger().println("Polling SCM changes on " + node.getSelfLabel().getName());
+            String nodeName = node != null ? node.getSelfLabel().getName() : "[node_unavailable]";
+            listener.getLogger().println("Polling SCM changes on " + nodeName);
             LOGGER.fine("Polling SCM changes of " + getName());
             if (pollingBaseline==null) // see NOTE-NO-BASELINE above
                 calcPollingBaseline(lb,launcher,listener);
@@ -1756,6 +1764,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated as of 1.489
      *      Inject {@link TimeDuration}.
      */
+    @Deprecated
     public int getDelay(StaplerRequest req) throws ServletException {
         String delay = req.getParameter("delay");
         if (delay==null)    return getQuietPeriod();
@@ -1872,6 +1881,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated
      *      As of 1.261. Use {@link #buildDescribable(StaplerRequest, List)} instead.
      */
+    @Deprecated
     protected final <T extends Describable<T>> List<T> buildDescribable(StaplerRequest req, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, ServletException {
         return buildDescribable(req,descriptors);
     }
@@ -1920,6 +1930,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Wipes out the workspace.
      */
+    @RequirePOST
     public HttpResponse doDoWipeOutWorkspace() throws IOException, ServletException, InterruptedException {
         checkPermission(Functions.isWipeOutPermissionEnabled() ? WIPEOUT : BUILD);
         R b = getSomeBuildWithWorkspace();
@@ -2097,8 +2108,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             }
             return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
-                    j.getRootUrl(), l.getUrl(), l.getNodes().size() + l.getClouds().size()
-            ));
+                    j.getRootUrl(), l.getUrl(), l.getNodes().size(), l.getClouds().size())
+            );
         }
 
         public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
@@ -2219,11 +2230,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * @deprecated Just use {@link #CANCEL}.
      */
+    @Deprecated
     public static final Permission ABORT = CANCEL;
 
     /**
-     * Replaceable "Build Now" text.
+     * @deprecated Use {@link ParameterizedJobMixIn#BUILD_NOW_TEXT}.
      */
+    @Deprecated
     public static final Message<AbstractProject> BUILD_NOW_TEXT = new Message<AbstractProject>();
 
     /**
@@ -2233,8 +2246,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public static AbstractProject resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
         AbstractProject item = Jenkins.getInstance().getItemByFullName(name, AbstractProject.class);
-        if (item==null)
-            throw new CmdLineException(null,Messages.AbstractItem_NoSuchJobExists(name,AbstractProject.findNearest(name).getFullName()));
+        if (item==null) {
+            AbstractProject project = AbstractProject.findNearest(name);
+            throw new CmdLineException(null, project == null ? Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name)
+                    : Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));
+        }
         return item;
     }
 

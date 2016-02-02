@@ -24,7 +24,6 @@
  */
 package hudson.util;
 
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 

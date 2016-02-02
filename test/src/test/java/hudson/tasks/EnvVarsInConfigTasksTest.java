@@ -14,6 +14,7 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.Maven.MavenInstallation;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.junit.Assume;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
 import static hudson.tasks._ant.Messages.Ant_ExecutableNotFound;
@@ -92,10 +93,11 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	}
 
 	public void testFreeStyleAntOnSlave() throws Exception {
-        if (jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations().length == 0) {
-            System.out.println("Cannot do testFreeStyleAntOnSlave without ANT_HOME");
-            return;
-        }
+		Assume.assumeFalse(
+				"Cannot do testFreeStyleAntOnSlave without ANT_HOME",
+				jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations().length == 0
+		);
+
 		FreeStyleProject project = createFreeStyleProject();
 		project.setJDK(jenkins.getJDK("varJDK"));
 		project.setScm(new ExtractResourceSCM(getClass().getResource(

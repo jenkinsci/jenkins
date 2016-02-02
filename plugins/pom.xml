@@ -5,14 +5,14 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.34</version>
+    <version>1.35</version>
     <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.609-SNAPSHOT</version>
+  <version>1.643-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
@@ -34,26 +34,46 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <!-- same version as in org.jenkins-ci.main:pom -->
+    <slf4jVersion>1.7.7</slf4jVersion>
+    <node.version>4.0.0</node.version>
+    <npm.version>2.13.1</npm.version>
   </properties>
-
+  <dependencyManagement>
+    <!-- mark logging dependencies as provided by war -->
+    <dependencies>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1.3</version>
+        <scope>provided</scope><!-- by jcl-over-slf4j -->
+      </dependency>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.17</version>
+        <scope>provided</scope><!-- by log4j-over-slf4j -->
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
-      <version>1.609-SNAPSHOT</version>
+      <version>1.643-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
-      <version>1.609-SNAPSHOT</version>
+      <version>1.643-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1.609-SNAPSHOT</version>
+      <version>1.643-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <!--
@@ -80,6 +100,33 @@
       <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>compile</scope>
+      <!-- mark the API as optional so it is not packaged in the HPI but available during compile -->
+      <optional>true</optional>
+    </dependency>
+    <!-- make slf4j bindings to java.util.logging available during tests -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -89,6 +136,31 @@
     -->
     <finalName>${project.artifactId}</finalName>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.sonatype.sisu:sisu-guice</exclude>
+                    <exclude>log4j:log4j:*:jar:compile</exclude>
+                    <exclude>log4j:log4j:*:jar:runtime</exclude>
+                    <exclude>commons-logging:commons-logging:*:jar:compile</exclude>
+                    <exclude>commons-logging:commons-logging:*:jar:runtime</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
@@ -354,6 +426,234 @@
       <properties>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
       </properties>
+    </profile>
+    
+    <profile>
+      <id>node-classifier-linux</id>
+      <activation>
+        <os>
+          <family>Linux</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <node.download.file>node-v${node.version}-linux-x64.tar.gz</node.download.file>
+        <node.download.classifier />
+      </properties>
+    </profile>
+    <profile>
+      <id>node-classifier-mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <node.download.file>node-v${node.version}-darwin-x64.tar.gz</node.download.file>
+        <node.download.classifier />
+      </properties>
+    </profile>
+    <profile>
+      <id>node-classifier-windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+          <arch>x64</arch>
+        </os>
+      </activation>
+      <properties>
+        <node.download.file>win-x64/node.exe</node.download.file>
+        <node.download.classifier>/x64</node.download.classifier>
+      </properties>
+    </profile>
+    <profile>
+      <id>node-classifier-windows-amd64</id>
+      <activation>
+        <os>
+          <family>windows</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <node.download.file>win-x64/node.exe</node.download.file>
+        <node.download.classifier>/x64</node.download.classifier>
+      </properties>
+    </profile>
+    <profile>
+      <id>node-classifier-windows-x86</id>
+      <activation>
+        <os>
+          <family>windows</family>
+          <arch>x86</arch>
+        </os>
+      </activation>
+      <properties>
+        <node.download.file>win-x86/node.exe</node.download.file>
+        <node.download.classifier />
+      </properties>
+    </profile>
+    <profile>
+      <id>node-download</id>
+      <activation>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.googlecode.maven-download-plugin</groupId>
+            <artifactId>download-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <executions>
+              <execution>
+                <id>get-node</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>wget</goal>
+                </goals>
+                <configuration>
+                  <url>https://nodejs.org/dist/v${node.version}/${node.download.file}</url>
+                  <unpack>false</unpack>
+                  <outputDirectory>
+                    ${project.build.directory}/frontend/v${node.version}${node.download.classifier}
+                  </outputDirectory>
+                </configuration>
+              </execution>
+              <execution>
+                <id>get-npm</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>wget</goal>
+                </goals>
+                <configuration>
+                  <url>http://registry.npmjs.org/npm/-/npm-${npm.version}.tgz</url>
+                  <unpack>false</unpack>
+                  <outputDirectory>${project.build.directory}/frontend/</outputDirectory>
+                  <outputFileName>npm-${npm.version}.tgz</outputFileName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>gulp-execution</id>
+      <activation>
+        <file>
+          <exists>gulpfile.js</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <version>1.3.1</version>
+            <executions>
+              <execution>
+                <id>enforce-versions</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireMavenVersion>
+                      <version>3.1.0</version>
+                    </requireMavenVersion>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>0.0.23</version>
+
+            <executions>
+
+              <execution>
+                <phase>initialize</phase>
+                <id>install node and npm</id>
+                <goals>
+                  <goal>install-node-and-npm</goal>
+                </goals>
+                <configuration>
+                  <nodeVersion>v${node.version}</nodeVersion>
+                  <npmVersion>${npm.version}</npmVersion>
+                  <!-- Use the pre-download node and npm packages. See download-maven-plugin config above. -->
+                  <downloadRoot>${project.baseUri}target/frontend/</downloadRoot>
+                </configuration>
+              </execution>
+
+              <execution>
+                <phase>initialize</phase>
+                <id>npm install</id>
+                <goals>
+                  <goal>npm</goal>
+                </goals>
+                <configuration>
+                  <!-- Note that this may not be omitted lest maven-release-plugin be confused (frontend-maven-plugin #109): -->
+                  <arguments>install</arguments>
+                </configuration>
+              </execution>
+
+              <execution>
+                <phase>generate-sources</phase>
+                <id>gulp bundle</id>
+                <goals>
+                  <goal>gulp</goal>
+                </goals>
+                <configuration>
+                  <arguments>bundle</arguments>
+                </configuration>
+              </execution>
+
+              <execution>
+                <phase>test</phase>
+                <id>gulp test</id>
+                <goals>
+                  <goal>gulp</goal>
+                </goals>
+              </execution>
+
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>clean-node</id>
+      <activation>
+        <file>
+          <exists>package.json</exists>
+        </file>
+        <property>
+          <name>cleanNode</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>node</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

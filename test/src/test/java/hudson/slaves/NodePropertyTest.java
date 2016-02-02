@@ -6,11 +6,18 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
+import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Slave;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONObject;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -22,6 +29,15 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public class NodePropertyTest {
+
+    private static final Logger logger = Logger.getLogger(Descriptor.class.getName());
+    @BeforeClass
+    public static void logging() {
+        logger.setLevel(Level.ALL);
+        Handler handler = new ConsoleHandler();
+        handler.setLevel(Level.ALL);
+        logger.addHandler(handler);
+    }
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -51,19 +67,14 @@ public class NodePropertyTest {
         }
 
         @TestExtension("invisibleProperty")
-        public static class DescriptorImpl extends NodePropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return null;
-            }
-        }
+        public static class DescriptorImpl extends NodePropertyDescriptor {}
     }
 
     @Test
     public void basicConfigRoundtrip() throws Exception {
         DumbSlave s = j.createSlave();
         HtmlForm f = j.createWebClient().goTo("computer/" + s.getNodeName() + "/configure").getFormByName("config");
-        ((HtmlLabel)f.selectSingleNode(".//LABEL[text()='Some Property']")).click();
+        ((HtmlLabel)DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='PropertyImpl']")).click();
         j.submit(f);
         PropertyImpl p = j.jenkins.getNode(s.getNodeName()).getNodeProperties().get(PropertyImpl.class);
         assertEquals("Duke",p.name);
@@ -85,11 +96,6 @@ public class NodePropertyTest {
         }
 
         @TestExtension("basicConfigRoundtrip")
-        public static class DescriptorImpl extends NodePropertyDescriptor {
-            @Override
-            public String getDisplayName() {
-                return "Some Property";
-            }
-        }
+        public static class DescriptorImpl extends NodePropertyDescriptor {}
     }
 }

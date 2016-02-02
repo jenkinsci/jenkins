@@ -50,10 +50,10 @@ THE SOFTWARE.
         <j:set var="port" value="${request.getParameter('debugPort')}"/>
         <j:choose>
           <j:when test="${port!=null}">
-            <j2se version="1.5+" java-vm-args="${it.launcher.vmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=${port}" />
+            <j2se version="1.7+" java-vm-args="${it.launcher.vmargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=${port}" />
           </j:when>
           <j:otherwise>
-            <j2se version="1.5+" java-vm-args="${it.launcher.vmargs}"/>
+            <j2se version="1.7+" java-vm-args="${it.launcher.vmargs}"/>
           </j:otherwise>
         </j:choose>
         <jar href="${rootURL}jnlpJars/remoting.jar"/>

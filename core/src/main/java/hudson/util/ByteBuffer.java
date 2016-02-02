@@ -37,6 +37,7 @@ import java.io.InputStream;
  * @author Kohsuke Kawaguchi
  * @deprecated since 2008-05-28. Moved to stapler
  */
+@Deprecated
 public class ByteBuffer extends OutputStream {
     private byte[] buf = new byte[8192];
     /**

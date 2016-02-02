@@ -23,11 +23,15 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
 import org.acegisecurity.context.SecurityContextHolder;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+
+import java.net.URL;
 import java.util.Collections;
 
 import org.jvnet.hudson.reactor.ReactorException;
@@ -48,7 +52,6 @@ import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
 import jenkins.model.WorkspaceWriter;
 import jenkins.model.Jenkins;
-import hudson.model.AbstractProject.BecauseOfBuildInProgress;
 import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
 import hudson.model.Cause.LegacyCodeCause;
@@ -87,9 +90,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
 
 import org.junit.Ignore;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestBuilder;
 
@@ -359,7 +362,7 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.getBuildersList().add(new Shell("sleep 10"));
         QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
-        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BecauseOfBuildInProgress.class);
+        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BlockedBecauseOfBuildInProgress.class);
         p.getLastBuild().getExecutor().interrupt();
         b1.get();   // wait for it to finish
 
@@ -605,7 +608,9 @@ public class ProjectTest {
         project.setAssignedLabel(slave.getSelfLabel());
         project.getBuildersList().add(new Shell("echo hello > change.log"));
         j.buildAndAssertSuccess(project);
-        HtmlPage page = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl() + "doWipeOutWorkspace");
+        JenkinsRule.WebClient wc = j.createWebClient().login(user.getId(), "password");
+        WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
+        HtmlPage p = wc.getPage(request);
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
     }
@@ -837,11 +842,7 @@ public class ProjectTest {
             return true;
         }
         @Override public SCMDescriptor<?> getDescriptor() {
-            return new SCMDescriptor<SCM>(null) {
-                @Override public String getDisplayName() {
-                    return "";
-                }
-            };
+            return new SCMDescriptor<SCM>(null) {};
         }
         
         @Override

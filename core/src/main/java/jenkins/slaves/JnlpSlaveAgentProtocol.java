@@ -10,6 +10,7 @@ import hudson.remoting.Engine;
 import hudson.slaves.SlaveComputer;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
 import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 import org.jenkinsci.remoting.nio.NioChannelHub;
@@ -74,6 +75,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
          * @deprecated as of 1.559
          *      Use {@link #Handler(NioChannelHub, Socket)}
          */
+        @Deprecated
         public Handler(Socket socket) throws IOException {
             this(null,socket);
         }
@@ -117,12 +119,16 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
             try {
                 ChannelBuilder cb = createChannelBuilder(nodeName);
 
+                for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+                    cc.onChannelBuilding(cb, computer);
+                }
+
                 computer.setChannel(cb.withHeaderStream(log).build(socket), log,
                     new Listener() {
                         @Override
                         public void onClosed(Channel channel, IOException cause) {
                             if(cause!=null)
-                                LOGGER.log(Level.WARNING, Thread.currentThread().getName()+" for + " + nodeName + " terminated",cause);
+                                LOGGER.log(Level.WARNING, Thread.currentThread().getName() + " for " + nodeName + " terminated", cause);
                             try {
                                 socket.close();
                             } catch (IOException e) {

@@ -41,6 +41,8 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.tasks.SimpleBuildStep;
 
+import javax.annotation.Nonnull;
+
 /**
  * Provides compatibility with {@link BuildStep} before 1.150
  * so that old plugin binaries can continue to function with new Hudson.
@@ -49,6 +51,7 @@ import jenkins.tasks.SimpleBuildStep;
  * @since 1.150
  * @deprecated since 1.150
  */
+@Deprecated
 public abstract class BuildStepCompatibilityLayer implements BuildStep {
 //
 // new definitions >= 1.150
@@ -61,9 +64,10 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
      */
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (this instanceof SimpleBuildStep) {
             // delegate to the overloaded version defined in SimpleBuildStep
@@ -88,6 +92,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return null;
     }
 
+    @Nonnull
     public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction(project);
@@ -103,6 +108,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      * @deprecated
      *      Use {@link #prebuild(AbstractBuild, BuildListener)} instead.
      */
+    @Deprecated
     public boolean prebuild(Build<?,?> build, BuildListener listener) {
         return true;
     }
@@ -111,6 +117,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      * @deprecated
      *      Use {@link #perform(AbstractBuild, Launcher, BuildListener)} instead.
      */
+    @Deprecated
     public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         throw new UnsupportedOperationException();
     }
@@ -119,6 +126,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
      * @deprecated
      *      Use {@link #getProjectAction(AbstractProject)} instead.
      */
+    @Deprecated
     public Action getProjectAction(Project<?,?> project) {
         return null;
     }

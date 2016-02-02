@@ -30,9 +30,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import hudson.model.Computer;
 import jenkins.model.Jenkins;
 

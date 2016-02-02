@@ -24,17 +24,24 @@
  */
 package hudson;
 
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assume;
@@ -42,11 +49,12 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 import hudson.util.StreamTaskListener;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+
 import org.junit.Rule;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.rules.TemporaryFolder;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -248,7 +256,17 @@ public class UtilTest {
         }
     }
 
-    @Test public void deleteFile() throws Exception {
+    @Test
+    public void testDeleteFile() throws Exception {
+        File f = tmp.newFile();
+        // Test: File is deleted
+        mkfiles(f);
+        Util.deleteFile(f);
+        assertFalse("f exists after calling Util.deleteFile", f.exists());
+    }
+
+    @Test
+    public void testDeleteFile_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
         Class<?> c;
         try {
@@ -256,21 +274,116 @@ public class UtilTest {
         } catch (ClassNotFoundException x) {
             throw new AssumptionViolatedException("prior to JDK 7", x);
         }
-        File d = tmp.getRoot();
         try {
-            File f = new File(d, "f");
-            OutputStream os = new FileOutputStream(f);
+            File f = tmp.newFile();
+            // Test: If we cannot delete a file, we throw explaining why
+            mkfiles(f);
+            lockFileForDeletion(f);
             try {
                 Util.deleteFile(f);
                 fail("should not have been deletable");
             } catch (IOException x) {
-                assertEquals(c, x.getClass());
-            } finally {
-                os.close();
+                assertThat(calcExceptionHierarchy(x), hasItem(c));
+                assertThat(x.getMessage(), containsString(f.getPath()));
             }
         } finally {
-            Util.deleteRecursive(d);
+            unlockFilesForDeletion();
         }
+    }
+
+    @Test
+    public void testDeleteRecursive() throws Exception {
+        final File dir = tmp.newFolder();
+        final File d1 = new File(dir, "d1");
+        final File d2 = new File(dir, "d2");
+        final File f1 = new File(dir, "f1");
+        final File d1f1 = new File(d1, "d1f1");
+        final File d2f2 = new File(d2, "d1f2");
+        // Test: Files and directories are deleted
+        mkdirs(dir, d1, d2);
+        mkfiles(f1, d1f1, d2f2);
+        Util.deleteRecursive(dir);
+        assertFalse("dir exists", dir.exists());
+    }
+
+    @Test
+    public void testDeleteRecursive_onWindows() throws Exception {
+        Assume.assumeTrue(Functions.isWindows());
+        final File dir = tmp.newFolder();
+        final File d1 = new File(dir, "d1");
+        final File d2 = new File(dir, "d2");
+        final File f1 = new File(dir, "f1");
+        final File d1f1 = new File(d1, "d1f1");
+        final File d2f2 = new File(d2, "d1f2");
+        try {
+            // Test: If we cannot delete a file, we throw
+            mkdirs(dir, d1, d2);
+            mkfiles(f1, d1f1, d2f2);
+            lockFileForDeletion(d1f1);
+            try {
+                Util.deleteRecursive(dir);
+                fail("Expected IOException");
+            } catch (IOException x) {
+                assertTrue("dir exists", dir.exists());
+                assertTrue("d1 exists", d1.exists());
+                assertTrue("d1f1 exists", d1f1.exists());
+                assertThat(x.getMessage(), containsString(dir.getPath()));
+            }
+        } finally {
+            unlockFilesForDeletion();
+        }
+    }
+
+    /** Creates multiple directories. */
+    private static void mkdirs(File... dirs) {
+        for( File d : dirs ) {
+            d.mkdir();
+            assertTrue(d.getPath(), d.isDirectory());
+        }
+    }
+
+    /** Creates multiple files, each containing their filename as text content. */
+    private static void mkfiles(File... files) throws IOException {
+        for( File f : files )
+            FileUtils.write(f, f.getName());
+    }
+
+    /** Means of unlocking all the files we have locked, indexed by {@link File}. */
+    private final Map<File, Callable<Void>> unlockFileCallables = new HashMap<File, Callable<Void>>();
+
+    /** Prevents a file from being deleted, so we can stress the deletion code's retries. */
+    private void lockFileForDeletion(File f) throws IOException, InterruptedException {
+        assert !unlockFileCallables.containsKey(f) : f + " is already locked." ;
+        // Limitation: Only works on Windows. On unix we can delete anything we can create.
+        // On unix, can't use "chmod a-w" on the dir as the code-under-test undoes that.
+        // On unix, can't use "chattr +i" because that needs root.
+        // On unix, can't use "chattr +u" because ext fs ignores it.
+        // On Windows, we can't delete files that are open for reading, so we use that.
+        assert Functions.isWindows();
+        final InputStream s = new FileInputStream(f);
+        unlockFileCallables.put(f, new Callable<Void>() {
+            public Void call() throws IOException { s.close(); return null; };
+        });
+    }
+
+    /** Undoes a call to {@link #lockFileForDeletion(File)}. */
+    private void unlockFileForDeletion(File f) throws Exception {
+        unlockFileCallables.remove(f).call();
+    }
+
+    /** Undoes all calls to {@link #lockFileForDeletion(File)}. */
+    private void unlockFilesForDeletion() throws Exception {
+        while( !unlockFileCallables.isEmpty() ) {
+            unlockFileForDeletion(unlockFileCallables.keySet().iterator().next());
+        }
+    }
+
+    /** Returns all classes in the exception hierarchy. */
+    private static Iterable<Class<?>> calcExceptionHierarchy(Throwable t) {
+        final List<Class<?>> result = Lists.newArrayList();
+        for( ; t!=null ; t = t.getCause())
+            result.add(t.getClass());
+        return result;
     }
 
     @Test

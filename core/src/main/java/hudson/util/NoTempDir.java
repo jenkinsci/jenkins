@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import hudson.Functions;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

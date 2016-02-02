@@ -26,7 +26,6 @@ package hudson.node_monitors;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Run;
 import jenkins.model.Jenkins;
 import hudson.model.ComputerSet;
 import hudson.model.AdministrativeMonitor;
@@ -58,6 +57,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
+    @Deprecated
     protected AbstractNodeMonitorDescriptor() {
         this(HOUR);
     }
@@ -66,6 +66,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
+    @Deprecated
     protected AbstractNodeMonitorDescriptor(long interval) {
         schedule(interval);
     }
@@ -74,6 +75,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
+    @Deprecated
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz) {
         this(clazz,HOUR);
     }
@@ -82,6 +84,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
+    @Deprecated
     protected AbstractNodeMonitorDescriptor(Class<? extends NodeMonitor> clazz, long interval) {
         super(clazz);
 
@@ -166,12 +169,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     public T get(Computer c) {
         if(record==null || !record.data.containsKey(c)) {
             // if we don't have the data, schedule the check now
-            if(!isInProgress()) {
-                synchronized(this) {
-                    if(!isInProgress())
-                        new Record().start();
-                }
-            }
+            triggerUpdate();
             return null;
         }
         return record.data.get(c);
@@ -243,6 +241,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @deprecated as of 1.320
      *      Use {@link #markOffline(Computer, OfflineCause)} to specify the cause.
      */
+    @Deprecated
     protected boolean markOffline(Computer c) {
         return markOffline(c,null);
     }
@@ -252,7 +251,11 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     /*package*/ synchronized Thread triggerUpdate() {
         if (inProgress != null) {
-            if (System.currentTimeMillis() > inProgressStarted + getMonitoringTimeOut() + 1000) {
+            if (!inProgress.isAlive()) {
+                LOGGER.log(Level.WARNING, "Previous {0} monitoring activity died without cleaning up after itself",
+                    getDisplayName());
+                inProgress = null;
+            } else if (System.currentTimeMillis() > inProgressStarted + getMonitoringTimeOut() + 1000) {
                 // maybe it got stuck?
                 LOGGER.log(Level.WARNING, "Previous {0} monitoring activity still in progress. Interrupting",
                         getDisplayName());

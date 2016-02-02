@@ -75,6 +75,7 @@ import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.Iterators;
+import hudson.util.jna.GNUCLibrary;
 import hudson.util.Secret;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
@@ -152,6 +153,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.util.RunList;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.CheckForNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -438,6 +440,7 @@ public class Functions {
      *      JEXL now supports the real ternary operator "x?y:z", so this work around
      *      is no longer necessary.
      */
+    @Deprecated
     public static Object ifThenElse(boolean cond, Object thenValue, Object elseValue) {
         return cond ? thenValue : elseValue;
     }
@@ -456,6 +459,15 @@ public class Functions {
 
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
+    }
+    
+    public static boolean isGlibcSupported() {
+        try {
+            GNUCLibrary.LIBC.getpid();
+            return true;
+        } catch(Throwable t) {
+            return false;
+        }
     }
 
     public static List<LogRecord> getLogRecords() {
@@ -837,6 +849,10 @@ public class Functions {
 
     public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Class<? extends Job> clazz) {
         return JobPropertyDescriptor.getPropertyDescriptors(clazz);
+    }
+
+    public static List<JobPropertyDescriptor> getJobPropertyDescriptors(Job job) {
+        return DescriptorVisibilityFilter.apply(job, JobPropertyDescriptor.getPropertyDescriptors(job.getClass()));
     }
 
     public static List<Descriptor<BuildWrapper>> getBuildWrapperDescriptors(AbstractProject<?,?> project) {
@@ -1383,7 +1399,7 @@ public class Functions {
     /**
      * If the value exists, return that value. Otherwise return the default value.
      * <p>
-     * Starting 1.294, JEXL supports the elvis operator "x?:y" that supercedes this.
+     * Starting 1.294, JEXL supports the elvis operator "x?:y" that supersedes this.
      *
      * @since 1.150
      */
@@ -1391,7 +1407,17 @@ public class Functions {
         return value!=null ? value : defaultValue;
     }
 
-    public static String printThrowable(Throwable t) {
+    /**
+     * Gets info about the specified {@link Throwable}.
+     * @param t Input {@link Throwable}
+     * @return If {@link Throwable} is not null, a summary info with the 
+     *      stacktrace will be returned. Otherwise, the method returns a default
+     *      &quot;No exception details&quot; string.
+     */
+    public static String printThrowable(@CheckForNull Throwable t) {
+        if (t == null) {
+            return Messages.Functions_NoExceptionDetails();
+        }
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
         return sw.toString();
@@ -1573,6 +1599,7 @@ public class Functions {
      * @deprecated
      *      Use {@link #calcCheckUrl}
      */
+    @Deprecated
     public String getCheckUrl(String userDefined, Object descriptor, String field) {
         if(userDefined!=null || field==null)   return userDefined;
         if (descriptor instanceof Descriptor) {
@@ -1823,6 +1850,7 @@ public class Functions {
      * @deprecated as of 1.451
      *      Use {@link #getAvatar}
      */
+    @Deprecated
     public String getUserAvatar(User user, String avatarSize) {
         return getAvatar(user,avatarSize);
     }
@@ -1887,9 +1915,10 @@ public class Functions {
 
             TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
             if (tal !=null) {
-                rsp.setIntHeader("X-Hudson-CLI-Port", tal.getPort());
-                rsp.setIntHeader("X-Jenkins-CLI-Port", tal.getPort());
-                rsp.setIntHeader("X-Jenkins-CLI2-Port", tal.getPort());
+                int p = TcpSlaveAgentListener.CLI_PORT !=null ? TcpSlaveAgentListener.CLI_PORT : tal.getPort();
+                rsp.setIntHeader("X-Hudson-CLI-Port", p);
+                rsp.setIntHeader("X-Jenkins-CLI-Port", p);
+                rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
                 rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
             }
         }

@@ -40,6 +40,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -106,6 +107,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     /**
      * Creates a new log recorder.
      */
+    @RequirePOST
     public HttpResponse doNewLogRecorder(@QueryParameter String name) {
         Jenkins.checkGoodName(name);
         

@@ -95,6 +95,7 @@ ${h.initPageVariables(context)}
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
     </j:if>
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
+    <link rel="mask-icon" href="${rootURL}/images/mask-icon.svg" color="black" />
 
     <!-- are we running as an unit test? -->
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
@@ -159,7 +160,7 @@ ${h.initPageVariables(context)}
     </j:if>
 
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
@@ -226,53 +227,48 @@ ${h.initPageVariables(context)}
       </div>
     </div>
 
-    <div id="page-body">
-      <div class="row">
-        <div id="side-panel">
-          <div id="side-panel-content">
-            <j:set var="mode" value="side-panel" />
-            <d:invokeBody />
+    <div id="page-body" class="clear">
+      <div id="side-panel">
+        <j:set var="mode" value="side-panel" />
+        <d:invokeBody />
+  
+        <!-- add YUI logger if debugging YUI -->
+        <j:if test="${h.yuiSuffix=='debug'}">
+        <div id="yui-logreader" style="margin-top:1em"/>
+          <script>
+            Behaviour.addLoadEvent(function(){
+              var logReader = new YAHOO.widget.LogReader("yui-logreader");
+              logReader.collapse();
+            });
+          </script>
+        </j:if>
+      </div>
+      <div id="main-panel">
+         <j:set var="mode" value="main-panel" />
+         <d:invokeBody/>
+      </div>
+    </div>
 
-            <!-- add YUI logger if debugging YUI -->
-            <j:if test="${h.yuiSuffix=='debug'}">
-              <div id="yui-logreader" style="margin-top:1em"/>
-              <script>
-                Behaviour.addLoadEvent(function(){
-                  var logReader = new YAHOO.widget.LogReader("yui-logreader");
-                  logReader.collapse();
-                });
-              </script>
+    <footer>
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-6" id="footer"></div>
+          <div class="col-md-18">
+            <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/></span>
+            <j:if test="${!empty(it.api)}">
+               <span class="rest_api"><a href="api/">REST API</a></span>
+            </j:if>
+            <span class="jenkins_ver"><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></span>
+            <j:if test="${extensionsAvailable}">
+            <j:forEach var="pd" items="${h.pageDecorators}">
+              <st:include it="${pd}" page="footer.jelly" optional="true" />
+            </j:forEach>
             </j:if>
           </div>
         </div>
+      </div>
+    </footer>
 
-        <div id="main-panel">
-          <div id="main-panel-content">
-            <j:set var="mode" value="main-panel" />
-            <d:invokeBody/>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="footer-container" class="hidden-xs">
-      <div id="footer">
-        <span class="page_generated">
-          ${%Page generated}:
-          <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/>
-        </span>
-        <span class="rest_api">
-          <a href="api/">REST API</a>
-        </span>
-        <span class="jenkins_ver">
-          <a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a>
-        </span>
-        <j:if test="${extensionsAvailable}">
-        <j:forEach var="pd" items="${h.pageDecorators}">
-          <st:include it="${pd}" page="footer.jelly" optional="true" />
-        </j:forEach>
-        </j:if>
-      </div>
-    </div>
   </body>
 </html>
 </j:jelly>

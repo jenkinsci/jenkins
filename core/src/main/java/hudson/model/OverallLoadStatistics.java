@@ -48,6 +48,7 @@ public class OverallLoadStatistics extends LoadStatistics {
      */
     @Exported
     @Restricted(NoExternalUse.class)
+    @Deprecated
     public final MultiStageTimeSeries totalQueueLength = queueLength;
 
     public OverallLoadStatistics() {

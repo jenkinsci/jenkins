@@ -342,7 +342,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
             "script-security/matrix-auth",
             "script-security/windows-slaves",
             "script-security/antisamy-markup-formatter",
-            "script-security/matrix-project"
+            "script-security/matrix-project",
+            "credentials/matrix-auth",
+            "credentials/windows-slaves"
     ));
 
     /**
@@ -795,7 +797,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         @Override
         protected Class defineClassFromData(File container, byte[] classData, String classname) throws IOException {
             if (!DISABLE_TRANSFORMER)
-                classData = pluginManager.getCompatibilityTransformer().transform(classname, classData);
+                classData = pluginManager.getCompatibilityTransformer().transform(classname, classData, this);
             return super.defineClassFromData(container, classData, classname);
         }
     }

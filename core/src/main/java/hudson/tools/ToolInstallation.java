@@ -90,6 +90,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * @deprecated
      *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
      */
+    @Deprecated
     public ToolInstallation(String name, String home) {
         this.name = name;
         this.home = home;

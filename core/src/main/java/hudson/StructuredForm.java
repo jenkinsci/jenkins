@@ -43,6 +43,7 @@ public class StructuredForm {
      * @deprecated
      *      Use {@link StaplerRequest#getSubmittedForm()}. Since 1.238.
      */
+    @Deprecated
     public static JSONObject get(StaplerRequest req) throws ServletException {
         return req.getSubmittedForm();
     }

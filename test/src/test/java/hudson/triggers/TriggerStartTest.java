@@ -127,10 +127,6 @@ public class TriggerStartTest {
                 return true;
             }
 
-            @Override public String getDisplayName() {
-                return "mock trigger";
-            }
-
         }
 
     }

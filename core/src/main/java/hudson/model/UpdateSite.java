@@ -27,6 +27,7 @@ package hudson.model;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.Util;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
@@ -125,6 +126,8 @@ public class UpdateSite {
      * Path to <tt>update-center.json</tt>, like <tt>http://jenkins-ci.org/update-center.json</tt>.
      */
     private final String url;
+
+
 
     public UpdateSite(String id, String url) {
         this.id = id;
@@ -406,6 +409,7 @@ public class UpdateSite {
      * @deprecated
      *      Exposed only for UI.
      */
+    @Deprecated
     public String getDownloadUrl() {
         /*
             HACKISH:
@@ -507,6 +511,11 @@ public class UpdateSite {
         @Exported
         public final String url;
 
+
+        // non-private, non-final for test
+        @Restricted(NoExternalUse.class)
+        /* final */ String sha1;
+
         public Entry(String sourceId, JSONObject o) {
             this(sourceId, o, null);
         }
@@ -515,6 +524,11 @@ public class UpdateSite {
             this.sourceId = sourceId;
             this.name = o.getString("name");
             this.version = o.getString("version");
+
+            // Trim this to prevent issues when the other end used Base64.encodeBase64String that added newlines
+            // to the end in old commons-codec. Not the case on updates.jenkins-ci.org, but let's be safe.
+            this.sha1 = Util.fixEmptyAndTrim(o.optString("sha1"));
+
             String url = o.getString("url");
             if (!URI.create(url).isAbsolute()) {
                 if (baseURL == null) {
@@ -523,6 +537,16 @@ public class UpdateSite {
                 url = URI.create(baseURL).resolve(url).toString();
             }
             this.url = url;
+        }
+
+        /**
+         * The base64 encoded binary SHA-1 checksum of the file.
+         * Can be null if not provided by the update site.
+         * @since TODO
+         */
+        // TODO @Exported assuming we want this in the API
+        public String getSha1() {
+            return sha1;
         }
 
         /**
@@ -768,6 +792,7 @@ public class UpdateSite {
          * @deprecated as of 1.326
          *      Use {@link #deploy()}.
          */
+        @Deprecated
         public void install() {
             deploy();
         }
