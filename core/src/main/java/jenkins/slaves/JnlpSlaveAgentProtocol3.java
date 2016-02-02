@@ -71,10 +71,10 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
                         });
             } catch (AbortException e) {
                 logw.println(e.getMessage());
-                logw.println("Failed to establish the connection with the slave");
+                logw.println("Failed to establish the connection with the agent");
                 throw e;
             } catch (IOException e) {
-                logw.println("Failed to establish the connection with the slave " + getNodeName());
+                logw.println("Failed to establish the connection with the agent " + getNodeName());
                 e.printStackTrace(logw);
                 throw e;
             }
@@ -93,7 +93,7 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
         protected String getNodeSecret(String nodeName) throws Failure {
             computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if (computer == null) {
-                throw new Failure("Slave trying to register for invalid node: " + nodeName);
+                throw new Failure("Agent trying to register for invalid node: " + nodeName);
             }
             return computer.getJnlpMac();
         }
