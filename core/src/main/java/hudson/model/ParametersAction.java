@@ -32,9 +32,13 @@ import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
+import jenkins.model.RunAction2;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +46,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
@@ -57,14 +63,19 @@ import javax.annotation.Nonnull;
  * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
+public class ParametersAction implements RunAction2, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
 
+    @Restricted(NoExternalUse.class)
+    public static final String KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
+            ".keepUndefinedParameters";
     private final List<ParameterValue> parameters;
 
     /**
      * @deprecated since 1.283; kept to avoid warnings loading old build data, but now transient.
      */
     private transient AbstractBuild<?, ?> build;
+
+    private transient Run<?, ?> run;
 
     public ParametersAction(List<ParameterValue> parameters) {
         this.parameters = parameters;
@@ -75,7 +86,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
-        for (ParameterValue p : parameters) {
+        for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             BuildWrapper w = p.createBuildWrapper(build);
             if(w!=null) result.add(w);
@@ -83,7 +94,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        for (ParameterValue p : parameters) {
+        for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             p.buildEnvironment(build, env); 
         }
@@ -105,9 +116,9 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
      * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}. 
      */
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
-        VariableResolver[] resolvers = new VariableResolver[parameters.size()+1];
+        VariableResolver[] resolvers = new VariableResolver[getParameters().size()+1];
         int i=0;
-        for (ParameterValue p : parameters) {
+        for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             resolvers[i++] = p.createVariableResolver(build);
         }
@@ -118,12 +129,12 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
     
     public Iterator<ParameterValue> iterator() {
-        return parameters.iterator();
+        return getParameters().iterator();
     }
 
     @Exported(visibility=2)
     public List<ParameterValue> getParameters() {
-        return Collections.unmodifiableList(parameters);
+        return Collections.unmodifiableList(filter(parameters));
     }
 
     public ParameterValue getParameter(String name) {
@@ -136,7 +147,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     public Label getAssignedLabel(SubTask task) {
-        for (ParameterValue p : parameters) {
+        for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             Label l = p.getAssignedLabel(task);
             if (l!=null)    return l;
@@ -211,7 +222,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
         if (overrides == null) {
             return new ParametersAction(parameters);
         }
-        return createUpdated(overrides.getParameters());
+        return createUpdated(overrides.parameters);
     }
 
     private Object readResolve() {
@@ -219,4 +230,63 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
             OldDataMonitor.report(build, "1.283");
         return this;
     }
+
+    @Override
+    public void onAttached(Run<?, ?> r) {
+        this.run = r;
+    }
+
+    @Override
+    public void onLoad(Run<?, ?> r) {
+        this.run = r;
+    }
+
+    private List<? extends ParameterValue> filter(List<ParameterValue> parameters) {
+        if (this.run == null) {
+            return parameters;
+        }
+        List<String> names = Collections.emptyList();
+        Job<?, ?> parent = run.getParent();
+        if (parent == null) {
+            return parameters;
+        }
+
+        ParametersDefinitionProperty p = parent.getProperty(ParametersDefinitionProperty.class);
+        if (p == null) {
+            return parameters;
+        }
+
+        if (Boolean.getBoolean(KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME)) {
+            return parameters;
+        }
+
+        names = p.getParameterDefinitionNames();
+
+        List<ParameterValue> filteredParameters = new ArrayList<ParameterValue>();
+
+        for (ParameterValue v : this.parameters) {
+            if (names.contains(v.getName())) {
+                filteredParameters.add(v);
+            } else {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Skipped parameter '" + v.getName() + "' as it is undefined on '" +
+                            run.getParent().getFullName() + "'");
+                }
+            }
+        }
+
+        return filteredParameters;
+    }
+
+    /**
+     * Returns all parameters. Be careful in how you process them.
+     *
+     * @return all parameters defined here.
+     */
+    public List<ParameterValue> getAllParameters() {
+        return Collections.unmodifiableList(parameters);
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(ParametersAction.class.getName());
+
 }
