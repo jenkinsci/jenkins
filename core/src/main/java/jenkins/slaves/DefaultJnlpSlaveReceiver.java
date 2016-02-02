@@ -7,6 +7,7 @@ import hudson.model.Slave;
 import hudson.remoting.Channel;
 import hudson.slaves.SlaveComputer;
 import jenkins.model.Jenkins;
+import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
 @Extension
 public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @Override
-    public boolean handle(String nodeName, JnlpSlaveHandshake handshake) throws IOException, InterruptedException {
+    public boolean handle(String nodeName, JnlpServerHandshake handshake) throws IOException, InterruptedException {
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
 
         if(computer==null) {

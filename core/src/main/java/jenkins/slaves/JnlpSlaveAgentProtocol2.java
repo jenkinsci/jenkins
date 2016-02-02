@@ -1,6 +1,7 @@
 package jenkins.slaves;
 
 import hudson.Extension;
+import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import java.io.ByteArrayInputStream;
@@ -54,8 +55,13 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
             final String nodeName = request.getProperty("Node-Name");
 
             for (JnlpAgentReceiver recv : JnlpAgentReceiver.all()) {
-                if (recv.handle(nodeName,this))
-                    return;
+                try {
+                    if (recv.handle(nodeName,this))
+                        return;
+                } catch (AbstractMethodError e) {
+                    if (recv.handle(nodeName,new JnlpSlaveHandshake(this)))
+                        return;
+                }
             }
 
             error("Unrecognized name: "+nodeName);

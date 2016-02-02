@@ -4,6 +4,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Slave;
 import jenkins.model.Jenkins;
+import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -56,7 +57,16 @@ public abstract class JnlpAgentReceiver implements ExtensionPoint {
      * @throws Exception
      *      Any exception thrown from this method will fatally terminate the connection.
      */
-    public abstract boolean handle(String name, JnlpSlaveHandshake handshake) throws IOException, InterruptedException;
+    public abstract boolean handle(String name, JnlpServerHandshake handshake) throws IOException, InterruptedException;
+
+    /**
+     * @deprecated
+     *      Use {@link #handle(String, JnlpServerHandshake)}
+     */
+    public boolean handle(String name, JnlpSlaveHandshake handshake) throws IOException, InterruptedException {
+        return handle(name,(JnlpServerHandshake)handshake);
+    }
+
 
     public static ExtensionList<JnlpAgentReceiver> all() {
         return ExtensionList.lookup(JnlpAgentReceiver.class);
