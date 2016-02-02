@@ -1401,7 +1401,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         Node result = node.reconfigure(req, req.getSubmittedForm());
         replaceBy(result);
 
-        // take the user back to the slave top page.
+        // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
     }
 

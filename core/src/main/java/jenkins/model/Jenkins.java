@@ -4263,7 +4263,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
 
     /**
-     * Automatically try to launch an agent when Jenkins is initialized or a new slave is created.
+     * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.
      */
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
 

@@ -1,23 +1,23 @@
 <div>
-  Comando para ser usado para lan&#231;ar o program agente na m&#225;quina slave, o qual controla o
-  computador slave e se comunica com o master.
+  Comando para ser usado para lan&#231;ar o program agente na m&#225;quina agent, o qual controla o
+  computador agent e se comunica com o master.
 
-  <h3>Agentes slave JNLP</h3>
+  <h3>Agentes JNLP</h3>
   <p>
-  Deixe este campo vazio se voc&#234; quiser lan&#231;ar os agentes slave via JNLP.
-  Com esta configura&#231;&#227;o, a p&#225;gina de informa&#231;&#245;es do slave (jenkins/computer/***/) 
-  ter&#225; um &#237;cone de lan&#231;amento JNLP, e voc&#234; poder&#225; clicar no link da m&#225;quina slave
-  correta para lan&#231;ar o agente slave via JNLP.
+  Deixe este campo vazio se voc&#234; quiser lan&#231;ar os agentes via JNLP.
+  Com esta configura&#231;&#227;o, a p&#225;gina de informa&#231;&#245;es do agent (jenkins/computer/***/) 
+  ter&#225; um &#237;cone de lan&#231;amento JNLP, e voc&#234; poder&#225; clicar no link da m&#225;quina agent
+  correta para lan&#231;ar o agente agent via JNLP.
   <p>
-  Este modo &#233; conveniente para slaves Windows que frequentemente n&#227;o tem um mecanismo
+  Este modo &#233; conveniente para agents Windows que frequentemente n&#227;o tem um mecanismo
   de execu&#231;&#227;o remota.
 
-  <h3>Agentes slave ssh/rsh</h3>
+  <h3>Agentes ssh/rsh</h3>
   <p>
   Quando um comando real &#233; especificado neste campo,
   este comando &#233; executado na m&#225;quina
   master, e o Jenkins assume que o programa executado lan&#231;a o programa <tt>slave.jar</tt>
-  na m&#225;quina slave correta.
+  na m&#225;quina agent correta.
 
 
   <p>
@@ -28,9 +28,9 @@
   Em um simples caso, isto poderia ser
   algo como "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
 
-  Entretanto, &#233; uma boa id&#233;ia escrever um pequeno shell script, como o seguinte, em um slave
+  Entretanto, &#233; uma boa id&#233;ia escrever um pequeno shell script, como o seguinte, em um agent
   tal que voc&#234; possa controlar a localiza&#231;&#227;o do Java e/ou slave.jar, bem como configurar
-  qualquer vari&#225;vel de ambiente espec&#237;fica para este n&#243; slave, tal como PATH.
+  qualquer vari&#225;vel de ambiente espec&#237;fica para este n&#243; agent, tal como PATH.
   
 <pre>
 #!/bin/sh
@@ -38,7 +38,7 @@ exec java -jar ~/bin/slave.jar
 </pre>
 
   <p>
-  Voc&#234; pode usar qualquer comando para executar um processo na m&#225;quina slave, tal como RSH,
+  Voc&#234; pode usar qualquer comando para executar um processo na m&#225;quina agent, tal como RSH,
   desde que as entrada/sa&#237;da padr&#227;o (stdin/stdout) deste processo estejam eventualmente
   conectadas a "java -jar ~/bin/slave.jar".
 

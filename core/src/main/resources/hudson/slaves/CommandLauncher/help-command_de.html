@@ -1,11 +1,11 @@
 <div>
-  Befehl, um einen Slave-Agenten zu starten, der den Slave-Knoten kontrolliert
+  Befehl, um einen Agent-Agenten zu starten, der den Agent-Knoten kontrolliert
   und mit dem Master-Knoten kommuniziert.
 
   <p>
   Wenn in diesem Feld ein Befehl angegeben ist, so wird dieser auf dem Master-Knoten
   ausgeführt. Jenkins nimmt in diesem Fall an, daß der ausgeführte Befehl
-  das Programm <tt>slave.jar</tt> auf dem jeweiligen Slave-Knoten startet.
+  das Programm <tt>slave.jar</tt> auf dem jeweiligen Agent-Knoten startet.
 
   <p>
   <tt>slave.jar</tt> befindet sich als <a href="${rootURL}/jnlpJars/slave.jar"><tt>WEB-INF/slave.jar</tt></a>.
@@ -15,10 +15,10 @@
   "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
 
   Trotzdem ist es meistens eine gute Idee, ein kleines Shell-Skript wie das 
-  folgende auf dem Slave-Knoten einzusetzen. Dies ermöglicht zum einen, den Pfad der
+  folgende auf dem Agent-Knoten einzusetzen. Dies ermöglicht zum einen, den Pfad der
   verwendeten Java-Installation und/oder des Archives <tt>slave.jar</tt>
   zu kontrollieren, als auch Umgebungsvariablen zu setzen, die spezifisch für
-  den jeweiligen Slave-Knoten sind (etwa PATH).
+  den jeweiligen Agent-Knoten sind (etwa PATH).
 
 <pre>
 #!/bin/sh
@@ -27,7 +27,7 @@ exec java -jar ~/bin/slave.jar
 
   <p>
   Sie können jeden beliebigen Befehl verwenden, um einen Prozess auf dem
-  Slave-Knoten zu starten, z.B. rsh, solange die Standardein- und ausgabe
+  Agent-Knoten zu starten, z.B. rsh, solange die Standardein- und ausgabe
   (STDIN, STDOUT) dieses Prozesses mit "java -jar ~/bin/slave.jar" verbunden sind.
   <p>
   
