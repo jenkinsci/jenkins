@@ -112,6 +112,7 @@ public class ApiTokenProperty extends UserProperty {
 
     public boolean matchesPassword(String password) {
         String token = getApiTokenInsecure();
+        // String.equals isn't constant time, but this is
         return MessageDigest.isEqual(password.getBytes(Charset.forName("US-ASCII")),
                 token.getBytes(Charset.forName("US-ASCII")));
     }
