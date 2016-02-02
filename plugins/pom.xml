@@ -12,7 +12,7 @@
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>plugin</artifactId>
   <name>Jenkins plugin POM</name>
-  <version>1.642.1</version>
+  <version>1.642.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <!--
@@ -23,7 +23,7 @@
     <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</connection>
     <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/</developerConnection>
     <url>https://svn.jenkins-ci.org/trunk/hudson/plugins/</url>
-    <tag>jenkins-1.642.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
