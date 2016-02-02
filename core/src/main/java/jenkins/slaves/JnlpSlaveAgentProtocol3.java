@@ -42,23 +42,17 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     }
 
     static class Handler extends JnlpServer3Handshake {
-
         private SlaveComputer computer;
+        private PrintWriter logw;
+        private OutputStream log;
 
         public Handler(NioChannelHub hub, Socket socket) throws IOException {
             super(hub, Computer.threadPoolForRemoting, socket);
         }
 
         protected void run() throws IOException, InterruptedException {
-            final String nodeName = computer.getName();
-            final OutputStream log = computer.openLogFile();
-            PrintWriter logw = new PrintWriter(log,true);
-            logw.println("JNLP agent connected from " + socket.getInetAddress());
-
-            ChannelBuilder cb = createChannelBuilder(nodeName).withHeaderStream(log);
-
             try {
-                Channel channel = connect(cb);
+                Channel channel = connect();
 
                 computer.setChannel(channel, log,
                         new Channel.Listener() {
@@ -67,7 +61,7 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
                                 if (cause != null)
                                     LOGGER.log(Level.WARNING,
                                             Thread.currentThread().getName() + " for + " +
-                                                    nodeName + " terminated", cause);
+                                                    getNodeName() + " terminated", cause);
                                 try {
                                     socket.close();
                                 } catch (IOException e) {
@@ -80,10 +74,19 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
                 logw.println("Failed to establish the connection with the slave");
                 throw e;
             } catch (IOException e) {
-                logw.println("Failed to establish the connection with the slave " + nodeName);
+                logw.println("Failed to establish the connection with the slave " + getNodeName());
                 e.printStackTrace(logw);
                 throw e;
             }
+        }
+
+        @Override
+        public ChannelBuilder createChannelBuilder(String nodeName) {
+            log = computer.openLogFile();
+            logw = new PrintWriter(log,true);
+            logw.println("JNLP agent connected from " + socket.getInetAddress());
+
+            return super.createChannelBuilder(nodeName).withHeaderStream(log);
         }
 
         @Override
