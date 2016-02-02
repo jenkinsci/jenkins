@@ -44,9 +44,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                 LOGGER.info("Disconnecting "+nodeName+" as we are reconnected from the current peer");
                 try {
                     computer.disconnect(new ConnectionFromCurrentPeer()).get(15, TimeUnit.SECONDS);
-                } catch (ExecutionException e) {
-                    throw new IOException("Failed to disconnect the current client",e);
-                } catch (TimeoutException e) {
+                } catch (ExecutionException | TimeoutException e) {
                     throw new IOException("Failed to disconnect the current client",e);
                 }
             } else {
