@@ -9,7 +9,7 @@
                         <owner class="java.lang.ProcessBuilder">
                             <command>
                                 <string>touch</string>
-                                <string>/tmp/jenkins-security247test</string>
+                                <string>@TOKEN@</string>
                             </command>
                             <redirectErrorStream>false</redirectErrorStream>
                         </owner>
