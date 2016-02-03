@@ -159,6 +159,8 @@ public class XStream2 extends XStream {
         // but before reflection-based one kicks in.
         registerConverter(new AssociatedConverterImpl(this), -10);
 
+        registerConverter(new BlacklistedTypesConverter(), PRIORITY_VERY_HIGH); // SECURITY-247 defense
+
         registerConverter(new DynamicProxyConverter(getMapper()) { // SECURITY-105 defense
             @Override public boolean canConvert(Class type) {
                 return /* this precedes NullConverter */ type != null && super.canConvert(type);
@@ -434,4 +436,20 @@ public class XStream2 extends XStream {
 
     }
 
+    private static class BlacklistedTypesConverter implements Converter {
+        @Override
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            throw new UnsupportedOperationException("Cannot marshal MethodClosure");
+        }
+
+        @Override
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            throw new ConversionException("Cannot load MethodClosure for security reasons");
+        }
+
+        @Override
+        public boolean canConvert(Class type) {
+            return type != null && "org.codehaus.groovy.runtime.MethodClosure".equals(type.getName());
+        }
+    }
 }
