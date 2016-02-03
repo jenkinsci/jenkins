@@ -77,7 +77,7 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
       <!-- specified in the parent -->
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
@@ -97,7 +97,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -437,7 +437,7 @@ THE SOFTWARE.
           <additionalClassesDirectories>
             <!-- load resoures straight from source -->
             <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
-            
+
             <!--
               read directly from core module's output directory,
               so that changes are picked up right away without running mvn.
