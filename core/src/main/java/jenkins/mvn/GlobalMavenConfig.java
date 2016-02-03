@@ -2,6 +2,7 @@ package jenkins.mvn;
 
 import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -14,6 +15,11 @@ public class GlobalMavenConfig extends GlobalConfiguration {
 
     public GlobalMavenConfig() {
         load();
+    }
+
+    @Override
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Tools.class);
     }
 
     @Override

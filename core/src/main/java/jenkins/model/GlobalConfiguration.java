@@ -42,15 +42,6 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
         return this;
     }
 
-    /**
-     * Every {@link GlobalConfiguration} belongs to a specific category.
-     *
-     * @return never null, always the same value for a given instance of {@link GlobalConfiguration}.
-     */
-    public GlobalConfigurationCategory getCategory() {
-        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
-    }
-
     @Override
     public String getGlobalConfigPage() {
         return getConfigPage();
