@@ -690,10 +690,11 @@ public class NodeProvisioner {
 
                             int workloadToProvision = (int) Math.round(Math.floor(excessWorkload + m));
 
-                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                            for (CloudProvisioningListener cl : CloudProvisioningListener.all())
+                            // consider displaying reasons in a future cloud ux
+                            {
                                 if (cl.canProvision(c, state.getLabel(), workloadToProvision) != null) {
-                                    // consider displaying reasons in a future cloud ux
-                                    continue CLOUD;
+                                    break CLOUD;
                                 }
                             }
 

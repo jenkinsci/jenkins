@@ -38,6 +38,6 @@ import static hudson.init.InitMilestone.*;
 public class GroovyInitScript {
     @Initializer(after=JOB_LOADED)
     public static void init(Jenkins j) {
-        new GroovyHookScript("init", j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader).run();
+        new GroovyHookScript("init").run();
     }
 }

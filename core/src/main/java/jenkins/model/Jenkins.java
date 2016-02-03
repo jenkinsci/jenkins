@@ -566,7 +566,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * TCP slave agent port.
      * 0 for random, -1 to disable.
      */
-    private int slaveAgentPort = Integer.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
+    private int slaveAgentPort =0;
 
     /**
      * Whitespace-separated labels assigned to the master as a {@link Node}.

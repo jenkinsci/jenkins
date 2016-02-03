@@ -23,16 +23,16 @@
  */
 package hudson.security;
 
-import hudson.Extension;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
+import hudson.Extension;
 
-import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link AuthorizationStrategy} that grants full-control to authenticated user
@@ -41,10 +41,6 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationStrategy {
-    @DataBoundConstructor
-    public FullControlOnceLoggedInAuthorizationStrategy() {
-    }
-
     @Override
     public ACL getRootACL() {
         return THE_ACL;
@@ -62,21 +58,15 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
         THE_ACL.add(ACL.ANONYMOUS,Permission.READ,true);
     }
 
-    /**
-     * @deprecated as of 1.643
-     *      Inject descriptor via {@link Inject}.
-     */
-    @Restricted(NoExternalUse.class)
-    public static Descriptor<AuthorizationStrategy> DESCRIPTOR;
-
     @Extension
-    public static class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
-        public DescriptorImpl() {
-            DESCRIPTOR = this;
-        }
-
+    public static final Descriptor<AuthorizationStrategy> DESCRIPTOR = new Descriptor<AuthorizationStrategy>() {
         public String getDisplayName() {
             return Messages.FullControlOnceLoggedInAuthorizationStrategy_DisplayName();
         }
-    }
+
+        @Override
+        public AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            return new FullControlOnceLoggedInAuthorizationStrategy();
+        }
+    };
 }
