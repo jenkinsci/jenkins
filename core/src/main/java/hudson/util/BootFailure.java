@@ -40,7 +40,10 @@ public abstract class BootFailure extends ErrorObject {
         LOGGER.log(Level.SEVERE, "Failed to initialize Jenkins",this);
 
         WebApp.get(context).setApp(this);
-        new GroovyHookScript("boot-failure")
+        if (home == null) {
+            return;
+        }
+        new GroovyHookScript("boot-failure", context, home, BootFailure.class.getClassLoader())
                 .bind("exception",this)
                 .bind("home",home)
                 .bind("servletContext", context)
