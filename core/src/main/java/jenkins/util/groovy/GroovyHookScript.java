@@ -3,8 +3,6 @@ package jenkins.util.groovy;
 import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -12,9 +10,10 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Logger;
-
 import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletContext;
 
 /**
  * A collection of Groovy scripts that are executed as various hooks.
@@ -40,9 +39,15 @@ import static java.util.logging.Level.WARNING;
 public class GroovyHookScript {
     private final String hook;
     private final Binding bindings = new Binding();
+    private final ServletContext servletContext;
+    private final File home;
+    private final ClassLoader loader;
 
-    public GroovyHookScript(String hook) {
+    public GroovyHookScript(String hook, @Nonnull ServletContext servletContext, @Nonnull File home, @Nonnull ClassLoader loader) {
         this.hook = hook;
+        this.servletContext = servletContext;
+        this.home = home;
+        this.loader = loader;
     }
 
     public GroovyHookScript bind(String name, Object o) {
@@ -55,23 +60,22 @@ public class GroovyHookScript {
     }
 
     public void run() {
-        Jenkins j = Jenkins.getInstance();
         final String hookGroovy = hook+".groovy";
         final String hookGroovyD = hook+".groovy.d";
 
         try {
-            URL bundled = j.servletContext.getResource("/WEB-INF/"+ hookGroovy);
+            URL bundled = servletContext.getResource("/WEB-INF/"+ hookGroovy);
             execute(bundled);
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to execute /WEB-INF/"+hookGroovy,e);
         }
 
-        Set<String> resources = j.servletContext.getResourcePaths("/WEB-INF/"+ hookGroovyD +"/");
+        Set<String> resources = servletContext.getResourcePaths("/WEB-INF/"+ hookGroovyD +"/");
         if (resources!=null) {
             // sort to execute them in a deterministic order
             for (String res : new TreeSet<String>(resources)) {
                 try {
-                    URL bundled = j.servletContext.getResource(res);
+                    URL bundled = servletContext.getResource(res);
                     execute(bundled);
                 } catch (IOException e) {
                     LOGGER.log(WARNING, "Failed to execute " + res, e);
@@ -79,10 +83,10 @@ public class GroovyHookScript {
             }
         }
 
-        File script = new File(j.getRootDir(), hookGroovy);
+        File script = new File(home, hookGroovy);
         execute(script);
 
-        File scriptD = new File(j.getRootDir(), hookGroovyD);
+        File scriptD = new File(home, hookGroovyD);
         if (scriptD.isDirectory()) {
             File[] scripts = scriptD.listFiles(new FileFilter() {
                 public boolean accept(File f) {
@@ -129,7 +133,7 @@ public class GroovyHookScript {
      * Can be used to customize the environment in which the script runs.
      */
     protected GroovyShell createShell() {
-        return new GroovyShell(Jenkins.getInstance().getPluginManager().uberClassLoader, bindings);
+        return new GroovyShell(loader, bindings);
     }
 
     private static final Logger LOGGER = Logger.getLogger(GroovyHookScript.class.getName());
