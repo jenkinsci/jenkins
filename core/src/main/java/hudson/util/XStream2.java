@@ -454,6 +454,7 @@ public class XStream2 extends XStream {
                 return false;
             }
             try {
+                ClassFilter.DEFAULT.check(type);
                 ClassFilter.DEFAULT.check(type.getName());
             } catch (SecurityException se) {
                 // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
