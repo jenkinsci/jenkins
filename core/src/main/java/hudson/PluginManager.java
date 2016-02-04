@@ -153,6 +153,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * If non-null, the base directory for all exploded .hpi/.jpi plugins. Controlled by the system property / servlet
      * context parameter {@literal hudson.PluginManager.workDir}.
      */
+    @CheckForNull
     private final File workDir;
 
     /**
@@ -233,6 +234,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * If non-null, the base directory for all exploded .hpi/.jpi plugins.
      * @return the base directory for all exploded .hpi/.jpi plugins or {@code null} to leave this up to the strategy.
      */
+    @CheckForNull
     public File getWorkDir() {
         return workDir;
     }
