@@ -47,6 +47,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
 import hudson.util.xstream.ImmutableSortedSetConverter;
 import jenkins.model.Jenkins;
@@ -439,17 +440,26 @@ public class XStream2 extends XStream {
     private static class BlacklistedTypesConverter implements Converter {
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            throw new UnsupportedOperationException("Cannot marshal MethodClosure");
+            throw new UnsupportedOperationException("Refusing to marshal for security reasons");
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            throw new ConversionException("Cannot load MethodClosure for security reasons");
+            throw new ConversionException("Refusing to unmarshal for security reasons");
         }
 
         @Override
         public boolean canConvert(Class type) {
-            return type != null && "org.codehaus.groovy.runtime.MethodClosure".equals(type.getName());
+            if (type == null) {
+                return false;
+            }
+            try {
+                ClassFilter.DEFAULT.check(type.getName());
+            } catch (SecurityException se) {
+                // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
+                return true;
+            }
+            return false;
         }
     }
 }
