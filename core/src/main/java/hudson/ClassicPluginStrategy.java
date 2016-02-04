@@ -88,6 +88,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     };
 
+    /**
+     * If set this should be the absolute file path to the the base directory for all exploded .hpi/.jpi plugins.
+     * If {@literal null} then plugins will be exploded into {@literal JENKINS_HOME/plugins}.
+     */
+    private static final String WORK_DIR = System.getProperty(ClassicPluginStrategy.class.getName() + ".WORK_DIR");
+
     private PluginManager pluginManager;
 
     /**
@@ -162,7 +168,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (archive.isDirectory()) {// already expanded
                 expandDir = archive;
             } else {
-                expandDir = new File(archive.getParentFile(), getBaseName(archive.getName()));
+                expandDir = WORK_DIR == null
+                        ? new File(archive.getParentFile(), getBaseName(archive.getName()))
+                        : new File(WORK_DIR, getBaseName(archive.getName()));
+                ;
                 explode(archive, expandDir);
             }
 
