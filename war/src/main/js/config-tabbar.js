@@ -1,4 +1,5 @@
 var $ = require('jquery-detached').getJQuery();
+var localStorage = require('./util/jenkinsLocalStorage.js');
 
 $(function() {
     // Horrible ugly hack...
@@ -14,7 +15,6 @@ $(function() {
         // Only do job configs for now.
         var configTables = $('.job-config.tabbed');
         if (configTables.size() > 0) {
-            var localStorage = require('./util/jenkinsLocalStorage.js');
             var tabBarShowPreferenceKey = 'config:usetabs';
             var tabBarShowPreference = localStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
 
@@ -63,16 +63,24 @@ $(function() {
 
 function addFinderToggle(configTableMetadata) {
     var findToggle = $('<div class="find-toggle" title="Find"></div>');
+    var finderShowPreferenceKey = 'config:showfinder';
+    
     $('.tabBar', configTableMetadata.configWidgets).append(findToggle);
     findToggle.click(function() {
         var findContainer = $('.find-container', configTableMetadata.configWidgets);
         if (findContainer.hasClass('visible')) {
             findContainer.removeClass('visible');
+            localStorage.setGlobalItem(finderShowPreferenceKey, "no")
         } else {
             findContainer.addClass('visible');
             $('input', findContainer).focus();
+            localStorage.setGlobalItem(finderShowPreferenceKey, "yes")
         }
     });
+    
+    if (localStorage.getGlobalItem(finderShowPreferenceKey, "yes") === 'yes') {
+        findToggle.click();
+    }
 }
 
 function fireBottomStickerAdjustEvent() {
