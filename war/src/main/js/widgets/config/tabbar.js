@@ -1,5 +1,5 @@
 var jQD = require('jquery-detached');
-var tableMetadata = require('./table-metadata');
+var tableMetadata = require('./model/ConfigTableMetaData.js');
 
 exports.addTabsOnFirst = function() {
     return exports.addTabs(tableMetadata.findConfigTables().first());
@@ -18,11 +18,11 @@ exports.addTabs = function(configTable) {
         if (configTableEl.size() === 0) {
             throw "No config table found using selector '" + configTable + "'";
         } else {
-            configTableMetadata = tableMetadata.decorateConfigTable(configTableEl);
+            configTableMetadata = tableMetadata.fromConfigTable(configTableEl);
         }
     } else {
         // It's a config <table> element
-        configTableMetadata = tableMetadata.decorateConfigTable(configTable);
+        configTableMetadata = tableMetadata.fromConfigTable(configTable);
     }
 
     var tabBar = $('<div class="tabBar config-section-activators"></div>');

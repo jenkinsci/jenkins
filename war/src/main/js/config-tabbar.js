@@ -1,5 +1,6 @@
 var $ = require('jquery-detached').getJQuery();
-var localStorage = require('./util/jenkinsLocalStorage.js');
+var jenkinsLocalStorage = require('./util/jenkinsLocalStorage.js');
+var configMetadata = require('./widgets/config/model/ConfigTableMetaData.js');
 
 $(function() {
     // Horrible ugly hack...
@@ -16,7 +17,7 @@ $(function() {
         var configTables = $('.job-config.tabbed');
         if (configTables.size() > 0) {
             var tabBarShowPreferenceKey = 'config:usetabs';
-            var tabBarShowPreference = localStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
+            var tabBarShowPreference = jenkinsLocalStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
 
             var tabBarWidget = require('./widgets/config/tabbar.js');
             if (tabBarShowPreference === "yes") {
@@ -30,7 +31,7 @@ $(function() {
                         fireBottomStickerAdjustEvent();
                     });
                     tabBar.deactivator.click(function() {
-                        localStorage.setGlobalItem(tabBarShowPreferenceKey, "no");
+                        jenkinsLocalStorage.setGlobalItem(tabBarShowPreferenceKey, "no");
                         require('window-handle').getWindow().location.reload();
                     });
                     $('.jenkins-config-widgets .find-container input').focus(function() {
@@ -39,9 +40,9 @@ $(function() {
 
                     if (tabBar.hasSections()) {
                         var tabBarLastSectionKey = 'config:' + tabBar.configForm.attr('name') + ':last-tab';
-                        var tabBarLastSection = localStorage.getPageItem(tabBarLastSectionKey, tabBar.sections[0].id);
+                        var tabBarLastSection = jenkinsLocalStorage.getPageItem(tabBarLastSectionKey, tabBar.sections[0].id);
                         tabBar.onShowSection(function() {
-                            localStorage.setPageItem(tabBarLastSectionKey, this.id);
+                            jenkinsLocalStorage.setPageItem(tabBarLastSectionKey, this.id);
                         });
                         tabBar.showSection(tabBarLastSection);
                     }
@@ -50,9 +51,9 @@ $(function() {
                 configTables.each(function() {
                     var configTable = $(this);
                     var activator = tabBarWidget.addTabsActivator(configTable);
-                    require('./widgets/config/table-metadata.js').markConfigForm(configTable);
+                    configMetadata.markConfigTableParentForm(configTable);
                     activator.click(function() {
-                        localStorage.setGlobalItem(tabBarShowPreferenceKey, "yes");
+                        jenkinsLocalStorage.setGlobalItem(tabBarShowPreferenceKey, "yes");
                         require('window-handle').getWindow().location.reload();
                     });
                 });
@@ -70,15 +71,15 @@ function addFinderToggle(configTableMetadata) {
         var findContainer = $('.find-container', configTableMetadata.configWidgets);
         if (findContainer.hasClass('visible')) {
             findContainer.removeClass('visible');
-            localStorage.setGlobalItem(finderShowPreferenceKey, "no")
+            jenkinsLocalStorage.setGlobalItem(finderShowPreferenceKey, "no");
         } else {
             findContainer.addClass('visible');
             $('input', findContainer).focus();
-            localStorage.setGlobalItem(finderShowPreferenceKey, "yes")
+            jenkinsLocalStorage.setGlobalItem(finderShowPreferenceKey, "yes");
         }
     });
     
-    if (localStorage.getGlobalItem(finderShowPreferenceKey, "yes") === 'yes') {
+    if (jenkinsLocalStorage.getGlobalItem(finderShowPreferenceKey, "yes") === 'yes') {
         findToggle.click();
     }
 }
