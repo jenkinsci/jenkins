@@ -37,7 +37,7 @@ describe("tabbar-spec tests", function () {
                 var activeSection = firstTableMetadata.activeSection();
                 expect(activeSection.id).toBe('config__workflow');
                 expect(activeSection.activeRowCount()).toBe(3);
-                expect(firstTableMetadata.topRows.filter('.active').size()).toBe(3); // should be the same as activeSection.activeRowCount()
+                expect(firstTableMetadata.getTopRows().filter('.active').size()).toBe(3); // should be the same as activeSection.activeRowCount()
 
                 done();
             });

@@ -42,14 +42,13 @@ exports.fromConfigTable = function(configTable) {
     // Go through the top level <tr> elements (immediately inside the <tbody>)
     // and group the related <tr>s based on the "section-header-row", using a "normalized"
     // version of the section title as the section id.
-    var tbody = $('> tbody', configTable);
-    var topRows = $('> tr', tbody);
-    var configTableMetadata = new ConfigTableMetaData(configForm, configTable, topRows);
+    var configTableMetadata = new ConfigTableMetaData(configForm, configTable);
     var curSection = new ConfigSection(configTableMetadata, 'General');
 
     configTableMetadata.sections.push(curSection);
     curSection.id = util.toId(curSection.title);
 
+    var topRows = configTableMetadata.getTopRows();
     topRows.each(function () {
         var tr = $(this);
         if (tr.hasClass('section-header-row')) {
@@ -75,10 +74,11 @@ exports.fromConfigTable = function(configTable) {
  * ConfigTable MetaData class.
  * =======================================================================================
  */
-function ConfigTableMetaData(configForm, configTable, topRows) {
+function ConfigTableMetaData(configForm, configTable) {
+    this.$ = jQD.getJQuery();
     this.configForm = configForm;
     this.configTable = configTable;
-    this.topRows = topRows;
+    this.configTableBody = this.$('> tbody', configTable);
     this.sections = [];
     this.findInput = undefined;
     this.showListeners = [];
@@ -86,6 +86,10 @@ function ConfigTableMetaData(configForm, configTable, topRows) {
     this.addWidgetsContainer();
     this.addFindWidget();
 }
+
+ConfigTableMetaData.prototype.getTopRows = function() {
+    return this.configTableBody.children('tr');
+};
 
 ConfigTableMetaData.prototype.addWidgetsContainer = function() {
     var $ = jQD.getJQuery();
@@ -201,6 +205,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     }
 
     if (section) {
+        var topRows = this.getTopRows();
         var $ = jQD.getJQuery();
 
         // Deactivate currently active section ...
@@ -208,14 +213,14 @@ ConfigTableMetaData.prototype.showSection = function(section) {
 
         // Active the specified section
         section.activator.addClass('active');
-        this.topRows.filter('.' + section.id).addClass('active').show();
+        topRows.filter('.' + section.id).addClass('active').show();
 
         // Hide the section header row. No need for it now because the
         // tab text acts as the section label.
         $('.section-header-row').hide();
 
         // and always show the buttons
-        this.topRows.filter('.config_buttons').show();
+        topRows.filter('.config_buttons').show();
 
         // Update the row-set visibility
         section.updateRowSetVisibility();
@@ -226,11 +231,12 @@ ConfigTableMetaData.prototype.showSection = function(section) {
 };
 
 ConfigTableMetaData.prototype.deactivateActiveSection = function() {
+    var topRows = this.getTopRows();
     var $ = jQD.getJQuery();
 
     $('.config-section-activator.active', this.activatorContainer).removeClass('active');
-    this.topRows.filter('.active').removeClass('active');
-    this.topRows.hide();
+    topRows.filter('.active').removeClass('active');
+    topRows.hide();
 };
 
 ConfigTableMetaData.prototype.onShowSection = function(listener) {
