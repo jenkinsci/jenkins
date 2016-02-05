@@ -14,9 +14,9 @@ $(function() {
         // Only do job configs for now.
         var configTables = $('.job-config.tabbed');
         if (configTables.size() > 0) {
-            var localStorage = require('./util/localStorage.js');
-            var tabBarShowPreferenceKey = 'jenkins:config:usetabs';
-            var tabBarShowPreference = localStorage.getItem(tabBarShowPreferenceKey, "yes");
+            var localStorage = require('./util/jenkinsLocalStorage.js');
+            var tabBarShowPreferenceKey = 'config:usetabs';
+            var tabBarShowPreference = localStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
 
             var tabBarWidget = require('./widgets/config/tabbar.js');
             if (tabBarShowPreference === "yes") {
@@ -30,7 +30,7 @@ $(function() {
                         fireBottomStickerAdjustEvent();
                     });
                     tabBar.deactivator.click(function() {
-                        localStorage.setItem(tabBarShowPreferenceKey, "no");
+                        localStorage.setGlobalItem(tabBarShowPreferenceKey, "no");
                         require('window-handle').getWindow().location.reload();
                     });
                     $('.jenkins-config-widgets .find-container input').focus(function() {
@@ -38,10 +38,10 @@ $(function() {
                     });
 
                     if (tabBar.hasSections()) {
-                        var tabBarLastSectionKey = 'jenkins:config:' + tabBar.configForm.attr('name') + ':last-tab:' + window.location.href;
-                        var tabBarLastSection = localStorage.getItem(tabBarLastSectionKey, tabBar.sections[0].id);
+                        var tabBarLastSectionKey = 'config:' + tabBar.configForm.attr('name') + ':last-tab';
+                        var tabBarLastSection = localStorage.getPageItem(tabBarLastSectionKey, tabBar.sections[0].id);
                         tabBar.onShowSection(function() {
-                            localStorage.setItem(tabBarLastSectionKey, this.id);
+                            localStorage.setPageItem(tabBarLastSectionKey, this.id);
                         });
                         tabBar.showSection(tabBarLastSection);
                     }
@@ -52,7 +52,7 @@ $(function() {
                     var activator = tabBarWidget.addTabsActivator(configTable);
                     require('./widgets/config/table-metadata.js').markConfigForm(configTable);
                     activator.click(function() {
-                        localStorage.setItem(tabBarShowPreferenceKey, "yes");
+                        localStorage.setGlobalItem(tabBarShowPreferenceKey, "yes");
                         require('window-handle').getWindow().location.reload();
                     });
                 });
