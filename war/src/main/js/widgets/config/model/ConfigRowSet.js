@@ -4,7 +4,7 @@ module.exports = ConfigRowSet;
 
 /*
  * =======================================================================================
- * Configuration table section.
+ * Configuration table row-set.
  * =======================================================================================
  */
 function ConfigRowSet(startRow) {
