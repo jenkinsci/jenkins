@@ -1,6 +1,7 @@
 package lib.form;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
@@ -17,7 +18,7 @@ public class AdvancedButtonTest extends HudsonTestCase {
     public void testNestedOptionalBlock() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testNestedOptionalBlock");
         HtmlForm f = p.getFormByName("config");
-        f.getButtonByCaption("Advanced...").click();
+        HtmlFormUtil.getButtonByCaption(f, "Advanced...").click();
         f.getInputByName("c").click();
         submit(f);
     }

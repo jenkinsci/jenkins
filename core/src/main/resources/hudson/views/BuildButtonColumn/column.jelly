@@ -30,11 +30,11 @@ THE SOFTWARE.
               <a href="${jobBaseUrl}${job.shortUrl}build?delay=0sec">
                   <j:choose>
                       <j:when test="${job.parameterized}">
-                          <j:set var="title" value="${%Schedule a build with parameters}"/>
+                          <j:set var="title" value="${%Schedule_a_build_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup))}"/>
                           <j:set var="onclick" value="${null}"/>
                       </j:when>
                       <j:otherwise>
-                          <j:set var="title" value="${%Schedule a build}"/>
+                          <j:set var="title" value="${%Schedule_a_build(h.getRelativeDisplayNameFrom(job, itemGroup))}"/>
                           <j:set var="onclick" value="return build_${id}(this)"/>
                       </j:otherwise>
                   </j:choose>
@@ -46,7 +46,7 @@ THE SOFTWARE.
               <script>
                 function build_${id}(img) {
                   new Ajax.Request(img.parentNode.href);
-                  hoverNotification('${%Build scheduled}', img, -100);
+                  hoverNotification('${%Build_scheduled}', img, -100);
                   return false;
                 }
               </script>

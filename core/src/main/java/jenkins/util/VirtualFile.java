@@ -33,12 +33,17 @@ import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.InvalidPathException;
+import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 
 import jenkins.MasterToSlaveFileCallable;
@@ -158,7 +163,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Does case-insensitive comparison.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int compareTo(VirtualFile o) {
         return getName().compareToIgnoreCase(o.getName());
@@ -166,7 +171,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Compares according to {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final boolean equals(Object obj) {
         return obj instanceof VirtualFile && toURI().equals(((VirtualFile) obj).toURI());
@@ -174,7 +179,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Hashes according to {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int hashCode() {
         return toURI().hashCode();
@@ -182,7 +187,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Displays {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final String toString() {
         return toURI().toString();
@@ -209,12 +214,14 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @return a wrapper
      */
     public static VirtualFile forFile(final File f) {
-        return new FileVF(f);
+        return new FileVF(f, f);
     }
     private static final class FileVF extends VirtualFile {
         private final File f;
-        FileVF(File f) {
+        private final File root;
+        FileVF(File f, File root) {
             this.f = f;
+            this.root = root;
         }
             @Override public String getName() {
                 return f.getName();
@@ -223,46 +230,88 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return f.toURI();
             }
             @Override public VirtualFile getParent() {
-                return forFile(f.getParentFile());
+                return new FileVF(f.getParentFile(), root);
             }
             @Override public boolean isDirectory() throws IOException {
+                if (isIllegalSymlink()) {
+                    return false;
+                }
                 return f.isDirectory();
             }
             @Override public boolean isFile() throws IOException {
+                if (isIllegalSymlink()) {
+                    return false;
+                }
                 return f.isFile();
             }
             @Override public boolean exists() throws IOException {
+                if (isIllegalSymlink()) {
+                    return false;
+                }
                 return f.exists();
             }
             @Override public VirtualFile[] list() throws IOException {
+                if (isIllegalSymlink()) {
+                    return new VirtualFile[0];
+                }
                 File[] kids = f.listFiles();
                 if (kids == null) {
                     return new VirtualFile[0];
                 }
                 VirtualFile[] vfs = new VirtualFile[kids.length];
                 for (int i = 0; i < kids.length; i++) {
-                    vfs[i] = forFile(kids[i]);
+                    vfs[i] = new FileVF(kids[i], root);
                 }
                 return vfs;
             }
             @Override public String[] list(String glob) throws IOException {
+                if (isIllegalSymlink()) {
+                    return new String[0];
+                }
                 return new Scanner(glob).invoke(f, null);
             }
             @Override public VirtualFile child(String name) {
-                return forFile(new File(f, name));
+                return new FileVF(new File(f, name), root);
             }
             @Override public long length() throws IOException {
+                if (isIllegalSymlink()) {
+                    return 0;
+                }
                 return f.length();
             }
             @Override public long lastModified() throws IOException {
+                if (isIllegalSymlink()) {
+                    return 0;
+                }
                 return f.lastModified();
             }
             @Override public boolean canRead() throws IOException {
+                if (isIllegalSymlink()) {
+                    return false;
+                }
                 return f.canRead();
             }
             @Override public InputStream open() throws IOException {
+                if (isIllegalSymlink()) {
+                    throw new FileNotFoundException(f.getPath());
+                }
                 return new FileInputStream(f);
             }
+        private boolean isIllegalSymlink() { // TODO JENKINS-26838
+            try {
+                String myPath = f.toPath().toRealPath(new LinkOption[0]).toString();
+                String rootPath = root.toPath().toRealPath(new LinkOption[0]).toString();
+                if (!myPath.equals(rootPath) && !myPath.startsWith(rootPath + File.separatorChar)) {
+                    return true;
+                }
+            } catch (IOException x) {
+                Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "could not determine symlink status of " + f, x);
+            } catch (InvalidPathException x2) {
+                // if this cannot be converted to a path, it cannot be an illegal symlink, as it cannot exist
+                Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "Could not convert " + f + " to path", x2);
+            }
+            return false;
+        }
     }
 
     /**

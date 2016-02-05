@@ -165,6 +165,7 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<Cloud> ALL = new DescriptorList<Cloud>(Cloud.class);
 
     /**

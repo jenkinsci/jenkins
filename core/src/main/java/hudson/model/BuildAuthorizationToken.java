@@ -45,6 +45,7 @@ import org.kohsuke.stapler.HttpResponses;
  *      Use {@link ACL} and {@link Item#BUILD}. This code is only here
  *      for the backward compatibility.
  */
+@Deprecated
 public final class BuildAuthorizationToken {
     private final String token;
 

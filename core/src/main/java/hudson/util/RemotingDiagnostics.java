@@ -34,15 +34,18 @@ import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
 import jenkins.security.MasterToSlaveCallable;
+
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 
+import javax.annotation.Nonnull;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -104,7 +107,7 @@ public final class RemotingDiagnostics {
     /**
      * Executes Groovy script remotely.
      */
-    public static String executeGroovy(String script, VirtualChannel channel) throws IOException, InterruptedException {
+    public static String executeGroovy(String script, @Nonnull VirtualChannel channel) throws IOException, InterruptedException {
         return channel.call(new Script(script));
     }
 

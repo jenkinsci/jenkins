@@ -27,6 +27,7 @@ package jenkins.model;
 import hudson.Util;
 import hudson.util.StreamTaskListener;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.TimeZone;
@@ -41,7 +42,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
 
 public class RunIdMigratorTest {
 
@@ -128,16 +128,24 @@ public class RunIdMigratorTest {
         assertEquals("{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>1</number>\n  <otherstuff>ok</otherstuff>\n</run>'}}", summarize());
     }
 
-    @Issue("JENKINS-26519")
-    @Test public void windowsQuasiLinks() throws Exception {
-        write("2014-01-02_03-04-05/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>99</number>\n  <otherstuff>ok</otherstuff>\n</run>");
-        write("99", "2014-01-02_03-04-05");
-        write("lastFailedBuild", "-1");
-        write("lastSuccessfulBuild", "99");
-        assertEquals("{2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>99</number>\n  <otherstuff>ok</otherstuff>\n</run>'}, 99='2014-01-02_03-04-05', lastFailedBuild='-1', lastSuccessfulBuild='99'}", summarize());
-        assertTrue(migrator.migrate(dir, null));
-        assertEquals("{99={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <id>2014-01-02_03-04-05</id>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, lastFailedBuild='-1', lastSuccessfulBuild='99', legacyIds='2014-01-02_03-04-05 99\n'}", summarize());
-        assertEquals(99, migrator.findNumber("2014-01-02_03-04-05"));
+    @Test public void reverseMatrixAfterNewBuilds() throws Exception {
+        File root = dir;
+        dir = new File(dir, "jobs/someproject/Environment=prod/builds");
+        write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
+        write("legacyIds", "");
+        assertEquals("{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, legacyIds=''}", summarize());
+        RunIdMigrator.main(root.getAbsolutePath());
+        assertEquals("{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>1</number>\n  <otherstuff>ok</otherstuff>\n</run>'}}", summarize());
+    }
+
+    @Test public void reverseMavenAfterNewBuilds() throws Exception {
+        File root = dir;
+        dir = new File(dir, "jobs/someproject/test$test/builds");
+        write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
+        write("legacyIds", "");
+        assertEquals("{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, legacyIds=''}", summarize());
+        RunIdMigrator.main(root.getAbsolutePath());
+        assertEquals("{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>1</number>\n  <otherstuff>ok</otherstuff>\n</run>'}}", summarize());
     }
 
     // TODO test sane recovery from various error conditions
@@ -171,6 +179,19 @@ public class RunIdMigratorTest {
             m.put(kid.getName(), notation);
         }
         return m.toString();
+    }
+
+    @Test public void move() throws Exception {
+        File src = tmp.newFile();
+        File dest = new File(tmp.getRoot(), "dest");
+        RunIdMigrator.move(src, dest);
+        File dest2 = tmp.newFile();
+        try {
+            RunIdMigrator.move(dest, dest2);
+            fail();
+        } catch (IOException x) {
+            System.err.println("Got expected move exception: " + x);
+        }
     }
 
 }

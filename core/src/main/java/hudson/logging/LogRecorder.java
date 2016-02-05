@@ -33,7 +33,6 @@ import hudson.model.*;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.SaveableListener;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;

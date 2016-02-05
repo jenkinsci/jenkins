@@ -199,7 +199,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
             " <a href='#' class='showDetails'>"
             + Messages.FormValidation_Error_Details()
             + "</a><pre style='display:none'>"
-            + Functions.printThrowable(e) +
+            + Util.escape(Functions.printThrowable(e)) +
             "</pre>",kind
         );
     }
@@ -216,7 +216,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * Aggregate multiple validations into one.
      *
      * @return Validation of the least successful kind aggregating all child messages.
-     * @since TODO
+     * @since 1.590
      */
     public static @Nonnull FormValidation aggregate(@Nonnull Collection<FormValidation> validations) {
         if (validations == null || validations.isEmpty()) return FormValidation.ok();

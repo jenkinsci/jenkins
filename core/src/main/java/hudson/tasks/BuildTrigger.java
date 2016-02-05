@@ -144,6 +144,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
      * @deprecated as of 1.406
      *      Use {@link #getChildProjects(ItemGroup)}
      */
+    @Deprecated
     public List<AbstractProject> getChildProjects() {
         return getChildProjects(Jenkins.getInstance());
     }
@@ -172,6 +173,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
      * @deprecated as of 1.406
      *      Use {@link #hasSame(AbstractProject, Collection)}
      */
+    @Deprecated
     public boolean hasSame(Collection<? extends AbstractProject> projects) {
         return hasSame(null,projects);
     }

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
@@ -40,7 +41,7 @@ public class LoginTest {
 
     private void verifyNotError(WebClient wc) throws IOException, SAXException {
         HtmlPage p = wc.goTo("loginError");
-        URL url = p.getWebResponse().getUrl();
+        URL url = p.getUrl();
         System.out.println(url);
         assertFalse(url.toExternalForm().contains("login"));
     }
@@ -84,7 +85,7 @@ public class LoginTest {
     public void loginRememberMe() throws Exception {
         WebClient wc = j.createWebClient();
 
-        prepareLoginFormWithRememberMeChecked(wc).submit(null);
+        HtmlFormUtil.submit(prepareLoginFormWithRememberMeChecked(wc), null);
 
         assertNotNull(getRememberMeCookie(wc));
     }
@@ -100,7 +101,7 @@ public class LoginTest {
 
         HtmlForm form = prepareLoginFormWithRememberMeChecked(wc);
         j.jenkins.setDisableRememberMe(true);
-        form.submit(null);
+        HtmlFormUtil.submit(form, null);
 
         assertNull(getRememberMeCookie(wc));
     }

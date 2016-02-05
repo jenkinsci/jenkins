@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -303,13 +304,19 @@ public class ClassicPluginStrategy implements PluginStrategy {
             // don't fix the dependency for yourself, or else we'll have a cycle
             String yourName = atts.getValue("Short-Name");
             if (shortName.equals(yourName))   return;
+            if (BREAK_CYCLES.contains(yourName + '/' + shortName)) {
+                LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[] {yourName, shortName});
+                return;
+            }
 
             // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
             String jenkinsVersion = atts.getValue("Jenkins-Version");
             if (jenkinsVersion==null)
                 jenkinsVersion = atts.getValue("Hudson-Version");
-            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(splitWhen) <= 0)
-                optionalDependencies.add(new PluginWrapper.Dependency(shortName+':'+requireVersion));
+            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(splitWhen) <= 0) {
+                optionalDependencies.add(new PluginWrapper.Dependency(shortName + ':' + requireVersion));
+                LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}", new Object[] {yourName, shortName, jenkinsVersion});
+            }
         }
     }
 
@@ -329,6 +336,16 @@ public class ClassicPluginStrategy implements PluginStrategy {
         new DetachedPlugin("matrix-project","1.561.*","1.0"),
         new DetachedPlugin("junit","1.577.*","1.0")
     );
+
+    /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
+    private static final Set<String> BREAK_CYCLES = new HashSet<String>(Arrays.asList(
+            "script-security/matrix-auth",
+            "script-security/windows-slaves",
+            "script-security/antisamy-markup-formatter",
+            "script-security/matrix-project",
+            "credentials/matrix-auth",
+            "credentials/windows-slaves"
+    ));
 
     /**
      * Computes the classloader that takes the class masking into account.
@@ -780,7 +797,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         @Override
         protected Class defineClassFromData(File container, byte[] classData, String classname) throws IOException {
             if (!DISABLE_TRANSFORMER)
-                classData = pluginManager.getCompatibilityTransformer().transform(classname, classData);
+                classData = pluginManager.getCompatibilityTransformer().transform(classname, classData, this);
             return super.defineClassFromData(container, classData, classname);
         }
     }

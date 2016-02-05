@@ -23,9 +23,11 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.Page;
+
+import java.io.File;
 import java.net.HttpURLConnection;
 
 import org.junit.Rule;
@@ -47,11 +49,40 @@ public class ApiTest {
         j.createWebClient().goTo("api/xml?xpath=/*[1]", "application/xml");
     }
 
+    @Issue("JENKINS-27607")
+    @Test public void json() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        assertEquals("{\"name\":\"p\"}", wc.goTo(p.getUrl() + "api/json?tree=name", "application/json").getWebResponse().getContentAsString());
+        assertEquals("wrap({\"name\":\"p\"})", wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "application/javascript").getWebResponse().getContentAsString());
+    }
+
     @Test
     @Issue("JENKINS-3267")
     public void wrappedZeroItems() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?wrapper=root&xpath=/hudson/nonexistent", "application/xml");
         assertEquals("<root/>", page.getWebResponse().getContentAsString());
+    }
+
+    /**
+     * Test that calling the XML API with the XPath <code>document</code> function fails.
+     *
+     * @throws Exception if so
+     */
+    @Issue("SECURITY-165")
+    @Test public void xPathDocumentFunction() throws Exception {
+        File f = new File(j.jenkins.getRootDir(), "queue.xml");
+        JenkinsRule.WebClient client = j.createWebClient();
+
+        try {
+            client.goTo("api/xml?xpath=document(\"" + f.getAbsolutePath() + "\")", "application/xml");
+            fail("Should become 500 error");
+        } catch (com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException e) {
+            String contentAsString = e.getResponse().getContentAsString();
+            j.assertStringContains(
+                    contentAsString,
+                    "Illegal function: document");
+        }
     }
 
     @Test

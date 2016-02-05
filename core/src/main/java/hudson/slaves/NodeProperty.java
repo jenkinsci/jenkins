@@ -39,7 +39,6 @@ import hudson.model.BuildListener;
 import hudson.model.Environment;
 import jenkins.model.Jenkins;
 import hudson.model.Node;
-import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -97,6 +96,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * @deprecated as of 1.413
      *      Use {@link #canTake(Queue.BuildableItem)}
      */
+    @Deprecated
     public CauseOfBlockage canTake(Task task) {
         return null;
     }

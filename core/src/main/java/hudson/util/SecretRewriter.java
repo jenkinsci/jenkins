@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.file.LinkOption;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.HashSet;
@@ -145,7 +146,7 @@ public class SecretRewriter {
     private int rewriteRecursive(File dir, String relative, TaskListener listener) throws InvalidKeyException {
         String canonical;
         try {
-            canonical = dir.getCanonicalPath();
+            canonical = dir.toPath().toRealPath(new LinkOption[0]).toString();
         } catch (IOException e) {
             canonical = dir.getAbsolutePath(); //
         }

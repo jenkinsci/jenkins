@@ -23,6 +23,7 @@
  */
 package jenkins.model.lazy;
 
+import java.io.File;
 import static org.junit.Assert.*;
 
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
@@ -31,15 +32,20 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import jenkins.util.Timer;
 import org.junit.BeforeClass;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 
 /**
@@ -73,6 +79,29 @@ public class AbstractLazyLoadRunMapTest {
         }
     };
  
+    private final Map<Integer,Semaphore> slowBuilderStartSemaphores = new HashMap<>();
+    private final Map<Integer,Semaphore> slowBuilderEndSemaphores = new HashMap<>();
+    private final Map<Integer,AtomicInteger> slowBuilderLoadCount = new HashMap<>();
+    @Rule
+    public FakeMapBuilder slowBuilder = new FakeMapBuilder() {
+        @Override
+        public FakeMap make() {
+            return new FakeMap(getDir()) {
+                @Override
+                protected Build retrieve(File dir) throws IOException {
+                    Build b = super.retrieve(dir);
+                    slowBuilderStartSemaphores.get(b.n).release();
+                    try {
+                        slowBuilderEndSemaphores.get(b.n).acquire();
+                    } catch (InterruptedException x) {
+                        throw new IOException(x);
+                    }
+                    slowBuilderLoadCount.get(b.n).incrementAndGet();
+                    return b;
+                }
+            };
+        }
+    };
     
     @BeforeClass
     public static void setUpClass() {
@@ -131,6 +160,21 @@ public class AbstractLazyLoadRunMapTest {
         } catch (NoSuchElementException e) {
             // as expected
         }
+    }
+
+    @Issue("JENKINS-26690")
+    @Test public void headMap() {
+        assertEquals("[]", a.headMap(Integer.MAX_VALUE).keySet().toString());
+        assertEquals("[]", a.headMap(6).keySet().toString());
+        assertEquals("[]", a.headMap(5).keySet().toString());
+        assertEquals("[5]", a.headMap(4).keySet().toString());
+        assertEquals("[5]", a.headMap(3).keySet().toString());
+        assertEquals("[5, 3]", a.headMap(2).keySet().toString());
+        assertEquals("[5, 3]", a.headMap(1).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(0).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(-1).keySet().toString());
+        assertEquals("[5, 3, 1]", a.headMap(-2).keySet().toString()); // this failed
+        assertEquals("[5, 3, 1]", a.headMap(Integer.MIN_VALUE).keySet().toString());
     }
 
     @Test
@@ -344,4 +388,36 @@ public class AbstractLazyLoadRunMapTest {
             assertTrue(a.entrySet().contains(e));
         }
     }
+
+    @Issue("JENKINS-22767")
+    @Test
+    public void slowRetrieve() throws Exception {
+        for (int i = 1; i <= 3; i++) {
+            slowBuilder.add(i);
+            slowBuilderStartSemaphores.put(i, new Semaphore(0));
+            slowBuilderEndSemaphores.put(i, new Semaphore(0));
+            slowBuilderLoadCount.put(i, new AtomicInteger());
+        }
+        final FakeMap m = slowBuilder.make();
+        Future<Build> firstLoad = Timer.get().submit(new Callable<Build>() {
+            @Override
+            public Build call() throws Exception {
+                return m.getByNumber(2);
+            }
+        });
+        Future<Build> secondLoad = Timer.get().submit(new Callable<Build>() {
+            @Override
+            public Build call() throws Exception {
+                return m.getByNumber(2);
+            }
+        });
+        slowBuilderStartSemaphores.get(2).acquire(1);
+        // now one of them is inside retrieve(…); the other is waiting for the lock
+        slowBuilderEndSemaphores.get(2).release(2); // allow both to proceed
+        Build first = firstLoad.get();
+        Build second = secondLoad.get();
+        assertEquals(1, slowBuilderLoadCount.get(2).get());
+        assertSame(second, first);
+    }
+
 }

@@ -39,7 +39,6 @@ import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import jenkins.model.lazy.BuildReference;
-import jenkins.model.lazy.LazyBuildMixIn;
 import org.apache.commons.collections.comparators.ReverseComparator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -74,6 +73,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}.
      */
+    @Deprecated
     public RunMap() {
         super(null); // will be set later
     }
@@ -152,6 +152,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated  as of 1.485
      *      Use {@link ReverseComparator}
      */
+    @Deprecated
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
         public int compare(Comparable o1, Comparable o2) {
             return -o1.compareTo(o2);
@@ -184,9 +185,11 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         // Defense against JENKINS-23152 and its ilk.
         File rootDir = r.getRootDir();
         if (rootDir.isDirectory()) {
-            throw new IllegalStateException(rootDir + " already existed; will not overwite with " + r);
+            throw new IllegalStateException(rootDir + " already existed; will not overwrite with " + r);
         }
-        proposeNewNumber(r.getNumber());
+        if (!r.getClass().getName().equals("hudson.matrix.MatrixRun")) { // JENKINS-26739: grandfathered in
+            proposeNewNumber(r.getNumber());
+        }
         rootDir.mkdirs();
         return super._put(r);
     }
@@ -227,6 +230,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             } catch (InstantiationError e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "could not load " + d, e);
             }
         }
         return null;
@@ -245,6 +250,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      * @deprecated as of 1.485
      *      Use {@link #RunMap(File, Constructor)}
      */
+    @Deprecated
     public void load(Job job, Constructor<R> cons) {
         this.cons = cons;
         initBaseDir(job.getBuildDir());

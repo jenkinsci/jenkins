@@ -6,6 +6,7 @@ import hudson.ExtensionPoint;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
+import jenkins.model.queue.AsynchronousExecution;
 
 /**
  * Extension point that allows plugins to veto the restart.
@@ -46,12 +47,39 @@ public abstract class RestartListener implements ExtensionPoint {
 
     /**
      * Default logic. Wait for all the executors to become idle.
+     * @see AsynchronousExecution#blocksRestart
      */
     @Extension
     public static class Default extends RestartListener {
         @Override
         public boolean isReadyToRestart() throws IOException, InterruptedException {
-            return new ComputerSet().getBusyExecutors() == 0;
+            for (Computer c : Jenkins.getInstance().getComputers()) {
+                if (c.isOnline()) {
+                    for (Executor e : c.getExecutors()) {
+                        if (blocksRestart(e)) {
+                            return false;
+                        }
+                    }
+                    for (Executor e : c.getOneOffExecutors()) {
+                        if (blocksRestart(e)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        private static boolean blocksRestart(Executor e) {
+            if (e.isBusy()) {
+                AsynchronousExecution execution = e.getAsynchronousExecution();
+                if (execution != null) {
+                    return execution.blocksRestart();
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
         }
     }
 }

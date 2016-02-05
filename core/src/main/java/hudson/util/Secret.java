@@ -73,6 +73,7 @@ public final class Secret implements Serializable {
      *      Or if you really know what you are doing, use the {@link #getPlainText()} method.
      */
     @Override
+    @Deprecated
     public String toString() {
         return value;
     }
@@ -103,6 +104,7 @@ public final class Secret implements Serializable {
      * This is no longer the key we use to encrypt new information, but we still need this
      * to be able to decrypt what's already persisted.
      */
+    @Deprecated
     /*package*/ static SecretKey getLegacyKey() throws GeneralSecurityException {
         String secret = SECRET;
         if(secret==null)    return Jenkins.getInstance().getSecretKeyAsAES128();

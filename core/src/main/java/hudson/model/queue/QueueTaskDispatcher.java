@@ -27,9 +27,7 @@ package hudson.model.queue;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Queue.Item;
 import hudson.slaves.Cloud;
-import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
@@ -68,6 +66,7 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * @deprecated since 1.413
      *      Use {@link #canTake(Node, Queue.BuildableItem)}
      */
+    @Deprecated
     public @CheckForNull CauseOfBlockage canTake(Node node, Task task) {
         return null;
     }

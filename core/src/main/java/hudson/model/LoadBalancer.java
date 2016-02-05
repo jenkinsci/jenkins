@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.Maps;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Queue.Task;
@@ -34,6 +35,7 @@ import hudson.util.ConsistentHash.Hash;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Strategy that decides which {@link Task} gets run on which {@link Executor}.
@@ -84,8 +86,14 @@ public abstract class LoadBalancer implements ExtensionPoint {
                         return node.getName();
                     }
                 });
-                for (ExecutorChunk ec : ws.works(i).applicableExecutorChunks())
-                    hash.add(ec,ec.size()*100);
+
+                // Build a Map to pass in rather than repeatedly calling hash.add() because each call does lots of expensive work
+                List<ExecutorChunk> chunks = ws.works(i).applicableExecutorChunks();
+                Map<ExecutorChunk, Integer> toAdd = Maps.newHashMapWithExpectedSize(chunks.size());
+                for (ExecutorChunk ec : chunks) {
+                    toAdd.put(ec, ec.size()*100);
+                }
+                hash.addAll(toAdd);
 
                 hashes.add(hash);
             }
@@ -128,6 +136,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
      * @deprecated as of 1.377
      *      The only implementation in the core now is the one based on consistent hash.
      */
+    @Deprecated
     public static final LoadBalancer DEFAULT = CONSISTENT_HASH;
 
 

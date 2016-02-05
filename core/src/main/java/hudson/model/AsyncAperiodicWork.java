@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 
 import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * {@link AperiodicWork} that takes a long time to run. Similar to {@link AsyncPeriodicWork}, see {@link AsyncPeriodicWork} for

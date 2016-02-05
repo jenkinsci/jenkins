@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,18 +25,13 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequestSettings
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.security.*
+import com.gargoylesoftware.htmlunit.HttpMethod
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.BuildTrigger
-import hudson.tasks.Publisher
 import hudson.tasks.Recorder;
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import hudson.maven.MavenModuleSet;
 import hudson.security.*;
-import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM
@@ -48,22 +43,21 @@ import hudson.Util;
 import hudson.tasks.ArtifactArchiver
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger
+import hudson.triggers.Trigger
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent
-import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder
+import jenkins.model.Jenkins
+import org.junit.Assert;
 import org.jvnet.hudson.test.HudsonTestCase
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.MemoryAssert
-import org.jvnet.hudson.test.SequenceLock;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet
 import org.apache.commons.io.FileUtils;
-import java.lang.ref.WeakReference
-
+import org.junit.Assume;
 import org.jvnet.hudson.test.MockFolder
+import org.kohsuke.args4j.CmdLineException
 
 /**
  * @author Kohsuke Kawaguchi
@@ -107,7 +101,13 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert b.getWorkspace().exists(): "Workspace should exist by now";
 
         // make sure that the action link is protected
-        createWebClient().assertFails(project.getUrl() + "doWipeOutWorkspace", HttpURLConnection.HTTP_FORBIDDEN);
+        com.gargoylesoftware.htmlunit.WebClient wc = createWebClient();
+        try {
+            wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
+            fail("Expected HTTP status code 403")
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
+        }
     }
 
     /**
@@ -125,10 +125,10 @@ public class AbstractProjectTest extends HudsonTestCase {
         def webClient = createWebClient();
         HtmlPage page = webClient.getPage(jenkins.getItem("test0"));
 
-        page = (HtmlPage)page.getFirstAnchorByText("Workspace").click();
+        page = (HtmlPage)page.getAnchorByText("Workspace").click();
         try {
         	String wipeOutLabel = ResourceBundle.getBundle("hudson/model/AbstractProject/sidepanel").getString("Wipe Out Workspace");
-           	page.getFirstAnchorByText(wipeOutLabel);
+		page.getAnchorByText(wipeOutLabel);
             fail("shouldn't find a link");
         } catch (ElementNotFoundException e) {
             // OK
@@ -199,11 +199,7 @@ public class AbstractProjectTest extends HudsonTestCase {
                 return true;
             }
             @Override public SCMDescriptor<?> getDescriptor() {
-                return new SCMDescriptor<SCM>(null) {
-                    @Override public String getDisplayName() {
-                        return "";
-                    }
-                };
+                return new SCMDescriptor<SCM>(null) {};
             }
         };
         Thread t = new Thread() {
@@ -232,9 +228,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Issue("JENKINS-1986")
     public void testBuildSymlinks() {
-        // If we're on Windows, don't bother doing this.
-        if (Functions.isWindows())
-            return;
+        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         def job = createFreeStyleProject();
         job.buildersList.add(new Shell("echo \"Build #\$BUILD_NUMBER\"\n"));
@@ -268,9 +262,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     @Issue("JENKINS-2543")
     public void testSymlinkForPostBuildFailure() {
-        // If we're on Windows, don't bother doing this.
-        if (Functions.isWindows())
-            return;
+        Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         // Links should be updated after post-build actions when final build result is known
         def job = createFreeStyleProject();
@@ -391,7 +383,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     private String deleteRedirectTarget(String job) {
         def wc = createWebClient();
         String base = wc.getContextPath();
-        String loc = wc.getPage(wc.addCrumb(new WebRequestSettings(new URL(base + job + "/doDelete"), HttpMethod.POST))).getWebResponse().getUrl().toString();
+        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URL(base + job + "/doDelete"), HttpMethod.POST))).getUrl().toString();
         assert loc.startsWith(base): loc;
         return loc.substring(base.length());
     }
@@ -400,7 +392,6 @@ public class AbstractProjectTest extends HudsonTestCase {
     public void testQueueSuccessBehavior() {
         // prevent any builds to test the behaviour
         jenkins.numExecutors = 0;
-        jenkins.updateComputerList(false);
 
         def p = createFreeStyleProject()
         def f = p.scheduleBuild2(0)
@@ -419,7 +410,6 @@ public class AbstractProjectTest extends HudsonTestCase {
     public void testQueueSuccessBehaviorOverHTTP() {
         // prevent any builds to test the behaviour
         jenkins.numExecutors = 0;
-        jenkins.updateComputerList(false);
 
         def p = createFreeStyleProject()
         def wc = createWebClient();
@@ -593,5 +583,51 @@ public class AbstractProjectTest extends HudsonTestCase {
             s.write(xml.bytes)
         }
         return con
+    }
+
+    @Issue("JENKINS-27549")
+    public void testLoadingWithNPEOnTriggerStart() {
+        AbstractProject project = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"))
+
+        assert project.triggers().size() == 1
+    }
+
+    @Issue("JENKINS-30742")
+    public void testResolveForCLI() {
+        try {
+            AbstractProject not_found = AbstractProject.resolveForCLI("never_created");
+            fail("Exception should occur before!");
+        } catch (CmdLineException e) {
+            assert e.getMessage().contentEquals("No such job \u2018never_created\u2019 exists.");
+        }
+
+        AbstractProject project = jenkins.createProject(FreeStyleProject.class, "never_created");
+        try {
+            AbstractProject not_found = AbstractProject.resolveForCLI("never_created1");
+            fail("Exception should occur before!");
+        } catch (CmdLineException e) {
+            assert e.getMessage().contentEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?")
+        }
+
+    }
+
+    static class MockBuildTriggerThrowsNPEOnStart<Item> extends Trigger {
+        @Override
+        public void start(hudson.model.Item project, boolean newInstance) { throw new NullPointerException(); }
+
+        @Override
+        public TriggerDescriptor getDescriptor() {
+            return DESCRIPTOR;
+        }
+
+        public static final TriggerDescriptor DESCRIPTOR = new DescriptorImpl()
+
+        @TestExtension("testLoadingWithNPEOnTriggerStart")
+        static class DescriptorImpl extends TriggerDescriptor {
+
+            public boolean isApplicable(hudson.model.Item item) {
+                return false;
+            }
+        }
     }
 }

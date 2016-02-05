@@ -61,6 +61,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.ToolInstallations;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -95,7 +96,7 @@ public class MavenTest {
     }
 
     @Test public void withNodeProperty() throws Exception {
-        MavenInstallation maven = j.configureDefaultMaven();
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
@@ -124,7 +125,7 @@ public class MavenTest {
     }
 
     @Test public void withParameter() throws Exception {
-        MavenInstallation maven = j.configureDefaultMaven();
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
@@ -262,10 +263,47 @@ public class MavenTest {
     }
 
     @Issue("JENKINS-18898")
-    public void testNullHome() throws Exception {
+    @Test public void testNullHome() {
         EnvVars env = new EnvVars();
         new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);
         assertEquals("{}", env.toString());
     }
 
+    @Issue("JENKINS-26684")
+    @Test public void specialCharsInBuildVariablesPassedAsProperties() throws Exception {
+        MavenInstallation maven = ToolInstallations.configureMaven3();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new Maven("--help", maven.getName()));
+        p.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("tilde", "~"),
+                new StringParameterDefinition("exclamation_mark", "!"),
+                new StringParameterDefinition("at_sign", "@"),
+                new StringParameterDefinition("sharp", "#"),
+                new StringParameterDefinition("dolar", "$"),
+                new StringParameterDefinition("percent", "%"),
+                new StringParameterDefinition("circumflex", "^"),
+                new StringParameterDefinition("ampersand", "&"),
+                new StringParameterDefinition("asterix", "*"),
+                new StringParameterDefinition("parentheses", "()"),
+                new StringParameterDefinition("underscore", "_"),
+                new StringParameterDefinition("plus", "+"),
+                new StringParameterDefinition("braces", "{}"),
+                new StringParameterDefinition("brackets", "[]"),
+                new StringParameterDefinition("colon", ":"),
+                new StringParameterDefinition("semicolon", ";"),
+                new StringParameterDefinition("quote", "\""),
+                new StringParameterDefinition("apostrophe", "'"),
+                new StringParameterDefinition("backslash", "\\"),
+                new StringParameterDefinition("pipe", "|"),
+                new StringParameterDefinition("angle_brackets", "<>"),
+                new StringParameterDefinition("comma", ","),
+                new StringParameterDefinition("period", "."),
+                new StringParameterDefinition("slash", "/"),
+                new StringParameterDefinition("question_mark", "?"),
+                new StringParameterDefinition("space", " ")
+        ));
+
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+    }
 }

@@ -45,6 +45,7 @@ public class SCMS {
      * @deprecated as of 1.286
      *      Use {@link SCM#all()} for read access and {@link Extension} for registration.
      */
+    @Deprecated
     public static final List<SCMDescriptor<?>> SCMS = (List)new DescriptorList<SCM>(SCM.class);
 
     /**
@@ -67,6 +68,7 @@ public class SCMS {
      * @deprecated as of 1.294
      *      Use {@link #parseSCM(StaplerRequest, AbstractProject)} and pass in the caller's project type.
      */
+    @Deprecated
     public static SCM parseSCM(StaplerRequest req) throws FormException, ServletException {
         return parseSCM(req,null);
     }

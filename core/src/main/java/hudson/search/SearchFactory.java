@@ -3,7 +3,6 @@ package hudson.search;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 
 /**
  * Creates a {@link Search} instance for a {@link SearchableModelObject}.

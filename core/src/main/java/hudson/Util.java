@@ -26,6 +26,7 @@ package hudson;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
+
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
@@ -33,6 +34,7 @@ import hudson.os.PosixAPI;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import hudson.util.jna.WinIOException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -40,14 +42,18 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
+
 import jnr.posix.FileStat;
 import jnr.posix.POSIX;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -70,12 +76,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import hudson.util.jna.Kernel32Utils;
-
 import static hudson.util.jna.GNUCLibrary.LIBC;
+
 import java.security.DigestInputStream;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -131,7 +139,7 @@ public class Util {
     public static String replaceMacro( @CheckForNull String s, @Nonnull Map<String,String> properties) {
         return replaceMacro(s,new VariableResolver.ByMap<String>(properties));
     }
-    
+
     /**
      * Replaces the occurrence of '$key' by <tt>resolver.get('key')</tt>.
      *
@@ -143,7 +151,7 @@ public class Util {
     	if (s == null) {
     		return null;
     	}
-    	
+
         int idx=0;
         while(true) {
             Matcher m = VARIABLE.matcher(s);
@@ -368,6 +376,30 @@ public class Util {
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
+    }
+
+    /**
+     * A mostly accurate check of whether a path is a relative path or not. This is designed to take a path against
+     * an unknown operating system so may give invalid results.
+     *
+     * @param path the path.
+     * @return {@code true} if the path looks relative.
+     * @since 1.606
+     */
+    public static boolean isRelativePath(String path) {
+        if (path.startsWith("/"))
+            return false;
+        if (path.startsWith("\\\\") && path.length() > 3 && path.indexOf('\\', 3) != -1)
+            return false; // a UNC path which is the most absolute you can get on windows
+        if (path.length() >= 3 && ':' == path.charAt(1)) {
+            // never mind that the drive mappings can be changed between sessions, we just want to
+            // know if the 3rd character is a `\` (or a '/' is acceptable too)
+            char p = path.charAt(0);
+            if (('A' <= p && p <= 'Z') || ('a' <= p && p <= 'z')) {
+                return path.charAt(2) != '\\' && path.charAt(2) != '/';
+            }
+        }
+        return true;
     }
 
     /**
@@ -624,7 +656,7 @@ public class Util {
      * Converts a string into 128-bit AES key.
      * @since 1.308
      */
-    @Nonnull 
+    @Nonnull
     public static SecretKey toAes128Key(@Nonnull String s) {
         try {
             // turn secretKey into 256 bit hash
@@ -743,13 +775,14 @@ public class Util {
 
     /**
      * Combines number and unit, with a plural suffix if needed.
-     * 
-     * @deprecated 
-     *   Use individual localization methods instead. 
+     *
+     * @deprecated
+     *   Use individual localization methods instead.
      *   See {@link Messages#Util_year(Object)} for an example.
      *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
     @Nonnull
+    @Deprecated
     public static String combine(long n, @Nonnull String suffix) {
         String s = Long.toString(n)+' '+suffix;
         if(n!=1)
@@ -780,7 +813,7 @@ public class Util {
      * {@link #rawEncode(String)} should generally be used instead, though be careful to pass only
      * a single path component to that method (it will encode /, but this method does not).
      */
-    @Nonnull 
+    @Nonnull
     public static String encode(@Nonnull String s) {
         try {
             boolean escaped = false;
@@ -888,7 +921,7 @@ public class Util {
     /**
      * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
-    @Nonnull 
+    @Nonnull
     public static String escape(@Nonnull String text) {
         if (text==null)     return null;
         StringBuilder buf = new StringBuilder(text.length()+64);
@@ -1112,7 +1145,7 @@ public class Util {
      * @param symlinkPath
      *      Where to create a symlink in (relative to {@code baseDir})
      */
-    public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath, 
+    public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
             if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
@@ -1245,6 +1278,7 @@ public class Util {
      * @deprecated as of 1.456
      *      Use {@link #resolveSymlink(File)}
      */
+    @Deprecated
     public static String resolveSymlink(File link, TaskListener listener) throws InterruptedException, IOException {
         return resolveSymlink(link);
     }
@@ -1346,7 +1380,7 @@ public class Util {
      * @deprecated since 2008-05-13. This method is broken (see ISSUE#1666). It should probably
      * be removed but I'm not sure if it is considered part of the public API
      * that needs to be maintained for backwards compatibility.
-     * Use {@link #encode(String)} instead. 
+     * Use {@link #encode(String)} instead.
      */
     @Deprecated
     public static String encodeRFC2396(String url) {
@@ -1367,7 +1401,7 @@ public class Util {
         s = "<span class=error style='display:inline-block'>"+s+"</span>";
         return s;
     }
-    
+
     /**
      * Returns the parsed string if parsed successful; otherwise returns the default number.
      * If the string is null, empty or a ParseException is thrown then the defaultNumber
@@ -1389,16 +1423,36 @@ public class Util {
     }
 
     /**
-     * Checks if the public method defined on the base type with the given arguments
-     * are overridden in the given derived type.
+     * Checks if the method defined on the base type with the given arguments
+     * is overridden in the given derived type.
      */
     public static boolean isOverridden(@Nonnull Class base, @Nonnull Class derived, @Nonnull String methodName, @Nonnull Class... types) {
+        return !getMethod(base, methodName, types).equals(getMethod(derived, methodName, types));
+    }
+
+    private static Method getMethod(@Nonnull Class clazz, @Nonnull String methodName, @Nonnull Class... types) {
+        Method res = null;
         try {
-            return !base.getMethod(methodName, types).equals(
-                    derived.getMethod(methodName,types));
+            res = clazz.getDeclaredMethod(methodName, types);
+            // private, static or final methods can not be overridden
+            if (res != null && (Modifier.isPrivate(res.getModifiers()) || Modifier.isFinal(res.getModifiers()) 
+                    || Modifier.isStatic(res.getModifiers()))) {
+                res = null;
+            }
         } catch (NoSuchMethodException e) {
+            // Method not found in clazz, let's search in superclasses
+            Class superclass = clazz.getSuperclass();
+            if (superclass != null) {
+                res = getMethod(superclass, methodName, types);
+            }
+        } catch (SecurityException e) {
             throw new AssertionError(e);
         }
+        if (res == null) {
+            throw new IllegalArgumentException(
+                    String.format("Method %s not found in %s (or it is private, final or static)", methodName, clazz.getName()));
+        }
+        return res;
     }
 
     /**

@@ -2,7 +2,8 @@
  * The MIT License
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
- * Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts, CloudBees, Inc.
+ * Red Hat, Inc., Seiji Sogabe, Stephen Connolly, Thomas J. Black, Tom Huybrechts,
+ * CloudBees, Inc., Christopher Simons
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +28,7 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
+import hudson.Extension;
 import hudson.Launcher.ProcStarter;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -45,6 +47,7 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
+import hudson.slaves.AbstractCloudSlave;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
@@ -63,8 +66,14 @@ import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.NotReallyRoleSensitiveCallable;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -77,7 +86,9 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -99,6 +110,7 @@ import java.net.NetworkInterface;
 import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -164,11 +176,69 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private volatile String cachedHostName;
     private volatile boolean hostNameCached;
 
+    /**
+     * @see #getEnvironment()
+     */
+    private volatile EnvVars cachedEnvironment;
+
+
     private final WorkspaceList workspaceList = new WorkspaceList();
 
     protected transient List<Action> transientActions;
 
     protected final Object statusChangeLock = new Object();
+
+    /**
+     * Keeps track of stack traces to track the tremination requests for this computer.
+     *
+     * @since 1.607
+     * @see Executor#resetWorkUnit(String)
+     */
+    private transient final List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList
+            <TerminationRequest>());
+
+    /**
+     * This method captures the information of a request to terminate a computer instance. Method is public as
+     * it needs to be called from {@link AbstractCloudSlave} and {@link jenkins.model.Nodes}. In general you should
+     * not need to call this method directly, however if implementing a custom node type or a different path
+     * for removing nodes, it may make sense to call this method in order to capture the originating request.
+     *
+     * @since 1.607
+     */
+    public void recordTermination() {
+        StaplerRequest request = Stapler.getCurrentRequest();
+        if (request != null) {
+            terminatedBy.add(new TerminationRequest(
+                    String.format("Termination requested at %s by %s [id=%d] from HTTP request for %s",
+                            new Date(),
+                            Thread.currentThread(),
+                            Thread.currentThread().getId(),
+                            request.getRequestURL()
+                    )
+            ));
+        } else {
+            terminatedBy.add(new TerminationRequest(
+                    String.format("Termination requested at %s by %s [id=%d]",
+                            new Date(),
+                            Thread.currentThread(),
+                            Thread.currentThread().getId()
+                    )
+            ));
+        }
+    }
+
+    /**
+     * Returns the list of captured termination requests for this Computer. This method is used by {@link Executor}
+     * to provide details on why a Computer was removed in-between work being scheduled against the {@link Executor}
+     * and the {@link Executor} starting to execute the task.
+     *
+     * @return the (possibly empty) list of termination requests.
+     * @see Executor#resetWorkUnit(String)
+     * @since 1.607
+     */
+    public List<TerminationRequest> getTerminatedBy() {
+        return new ArrayList<TerminationRequest>(terminatedBy);
+    }
 
     public Computer(Node node) {
         setNode(node);
@@ -207,14 +277,25 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * This is where the log from the remote agent goes.
      * The method also creates a log directory if required.
-     * @see #relocateOldLogs()
+     * @see #getLogDir(), #relocateOldLogs()
      */
-    public File getLogFile() {
+    public @Nonnull File getLogFile() {
+        return new File(getLogDir(),"slave.log");
+    }
+
+    /**
+     * Directory where rotated slave logs are stored.
+     *
+     * The method also creates a log directory if required.
+     *
+     * @since 1.613
+     */
+    protected @Nonnull File getLogDir() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
         if (!dir.exists() && !dir.mkdirs()) {
             LOGGER.severe("Failed to create slave log directory " + dir.getAbsolutePath());
         }
-        return new File(dir,"slave.log");
+        return dir;
     }
 
     /**
@@ -314,6 +395,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * @deprecated since 2009-01-06.  Use {@link #connect(boolean)}
      */
+    @Deprecated
     public final void launch() {
         connect(true);
     }
@@ -397,6 +479,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.320
      */
     public Future<?> disconnect(OfflineCause cause) {
+        recordTermination();
         offlineCause = cause;
         if (Util.isOverridden(Computer.class,getClass(),"disconnect"))
             return disconnect();    // legacy subtypes that extend disconnect().
@@ -411,7 +494,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @deprecated as of 1.320.
      *      Use {@link #disconnect(OfflineCause)} and specify the cause.
      */
+    @Deprecated
     public Future<?> disconnect() {
+        recordTermination();
         if (Util.isOverridden(Computer.class,getClass(),"disconnect",OfflineCause.class))
             // if the subtype already derives disconnect(OfflineCause), delegate to it
             return disconnect(null);
@@ -435,13 +520,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIMethod(name="offline-node")
     public void cliOffline(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
         checkPermission(DISCONNECT);
-        setTemporarilyOffline(true,new ByCLI(cause));
+        setTemporarilyOffline(true, new ByCLI(cause));
     }
 
-    @CLIMethod(name="online-node")
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
-        setTemporarilyOffline(false,null);
+        setTemporarilyOffline(false, null);
     }
 
     /**
@@ -463,6 +547,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public @Nonnull String getName() {
         return nodeName != null ? nodeName : "";
     }
+
+    /**
+     * True if this computer is a Unix machine (as opposed to Windows machine).
+     *
+     * @since 1.624
+     * @return
+     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
+     */
+    public abstract @CheckForNull Boolean isUnix();
 
     /**
      * Returns the {@link Node} that this computer represents.
@@ -494,6 +587,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * {@inheritDoc}
      */
+    @Override
     public void taskAccepted(Executor executor, Queue.Task task) {
         // dummy implementation
     }
@@ -501,6 +595,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * {@inheritDoc}
      */
+    @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
         // dummy implementation
     }
@@ -508,6 +603,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * {@inheritDoc}
      */
+    @Override
     public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
         // dummy implementation
     }
@@ -573,6 +669,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      accidentally call this method.
      */
     @Exported
+    @Deprecated
     public boolean isTemporarilyOffline() {
         return temporarilyOffline;
     }
@@ -581,6 +678,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @deprecated as of 1.320.
      *      Use {@link #setTemporarilyOffline(boolean, OfflineCause)}
      */
+    @Deprecated
     public void setTemporarilyOffline(boolean temporarilyOffline) {
         setTemporarilyOffline(temporarilyOffline,null);
     }
@@ -600,7 +698,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (node != null) {
             node.setTemporaryOfflineCause(offlineCause);
         }
-        Jenkins.getInstance().getQueue().scheduleMaintenance();
         synchronized (statusChangeLock) {
             statusChangeLock.notifyAll();
         }
@@ -691,6 +788,26 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #onRemoved()
      */
     protected void kill() {
+        // On most code paths, this should already be zero, and thus this next call becomes a no-op... and more
+        // importantly it will not acquire a lock on the Queue... not that the lock is bad, more that the lock
+        // may delay unnecessarily
+        setNumExecutors(0);
+    }
+
+    /**
+     * Called by {@link Jenkins#updateComputerList()} to notify {@link Computer} that it will be discarded.
+     *
+     * <p>
+     * Note that at this point {@link #getNode()} returns null.
+     *
+     * <p>
+     * Note that the Queue lock is already held when this method is called.
+     *
+     * @see #onRemoved()
+     */
+    @Restricted(NoExternalUse.class)
+    @GuardedBy("hudson.model.Queue.lock")
+    /*package*/ void inflictMortalWound() {
         setNumExecutors(0);
     }
 
@@ -802,6 +919,32 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Used to render the list of executors.
+     * @return a snapshot of the executor display information
+     * @since 1.607
+     */
+    @Restricted(NoExternalUse.class)
+    public List<DisplayExecutor> getDisplayExecutors() {
+        // The size may change while we are populating, but let's start with a reasonable guess to minimize resizing
+        List<DisplayExecutor> result = new ArrayList<DisplayExecutor>(executors.size()+oneOffExecutors.size());
+        int index = 0;
+        for (Executor e: executors) {
+            if (e.isDisplayCell()) {
+                result.add(new DisplayExecutor(Integer.toString(index + 1), String.format("executors/%d", index), e));
+            }
+            index++;
+        }
+        index = 0;
+        for (OneOffExecutor e: oneOffExecutors) {
+            if (e.isDisplayCell()) {
+                result.add(new DisplayExecutor("", String.format("oneOffExecutors/%d", index), e));
+            }
+            index++;
+        }
+        return result;
+    }
+
+    /**
      * Returns true if all the executors of this computer are idle.
      */
     @Exported
@@ -860,18 +1003,30 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
-    /*package*/ synchronized void removeExecutor(Executor e) {
-        executors.remove(e);
-        addNewExecutorIfNecessary();
-        if(!isAlive())
-        {
-            AbstractCIBase ciBase = Jenkins.getInstance();
-            ciBase.removeComputer(this);
+    /*package*/ void removeExecutor(final Executor e) {
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                synchronized (Computer.this) {
+                    executors.remove(e);
+                    addNewExecutorIfNecessary();
+                    if (!isAlive()) {
+                        AbstractCIBase ciBase = Jenkins.getInstance();
+                        if (ciBase != null) {
+                            ciBase.removeComputer(Computer.this);
+                        }
+                    }
+                }
+            }
+        };
+        if (!Queue.tryWithLock(task)) {
+            // JENKINS-28840 if we couldn't get the lock push the operation to a separate thread to avoid deadlocks
+            threadPoolForRemoting.submit(Queue.wrapWithLock(task));
         }
     }
 
     /**
-     * Returns true if any of the executors are functioning.
+     * Returns true if any of the executors are {@linkplain Executor#isActive active}.
      *
      * Note that if an executor dies, we'll leave it in {@link #executors} until
      * the administrator yanks it out, so that we can see why it died.
@@ -887,11 +1042,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Interrupt all {@link Executor}s.
+     * Called from {@link Jenkins#cleanUp}.
      */
     public void interrupt() {
-        for (Executor e : executors) {
-            e.interrupt();
-        }
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                for (Executor e : executors) {
+                    e.interruptForShutdown();
+                }
+            }
+        });
     }
 
     public String getSearchUrl() {
@@ -930,16 +1091,24 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @deprecated as of 1.292
      *      Use {@link #getEnvironment()} instead.
      */
+    @Deprecated
     public Map<String,String> getEnvVars() throws IOException, InterruptedException {
         return getEnvironment();
     }
 
     /**
-     * Gets the environment variables of the JVM on this computer.
+     * Returns cached environment variables (copy to prevent modification) for the JVM on this computer.
      * If this is the master, it returns the system property of the master computer.
      */
     public EnvVars getEnvironment() throws IOException, InterruptedException {
-        return EnvVars.getRemote(getChannel());
+        EnvVars cachedEnvironment = this.cachedEnvironment;
+        if (cachedEnvironment != null) {
+            return new EnvVars(cachedEnvironment);
+        }
+
+        cachedEnvironment = EnvVars.getRemote(getChannel());
+        this.cachedEnvironment = cachedEnvironment;
+        return new EnvVars(cachedEnvironment);
     }
 
     /**
@@ -1022,11 +1191,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             try {
                 InetAddress ia = InetAddress.getByName(address);
                 if(!(ia instanceof Inet4Address)) {
-                    LOGGER.fine(address+" is not an IPv4 address");
+                    LOGGER.log(Level.FINE, "{0} is not an IPv4 address", address);
                     continue;
                 }
                 if(!ComputerPinger.checkIsReachable(ia, 3)) {
-                    LOGGER.fine(address+" didn't respond to ping");
+                    LOGGER.log(Level.FINE, "{0} didn't respond to ping", address);
                     continue;
                 }
                 cachedHostName = ia.getCanonicalHostName();
@@ -1034,7 +1203,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 return cachedHostName;
             } catch (IOException e) {
                 // if a given name fails to parse on this host, we get this error
-                LOGGER.log(Level.FINE, "Failed to parse "+address,e);
+                LogRecord lr = new LogRecord(Level.FINE, "Failed to parse {0}");
+                lr.setThrown(e);
+                lr.setParameters(new Object[]{address});
+                LOGGER.log(lr);
             }
         }
 
@@ -1058,27 +1230,38 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private static class ListPossibleNames extends MasterToSlaveCallable<List<String>,IOException> {
+        /**
+         * In the normal case we would use {@link Computer} as the logger's name, however to
+         * do that we would have to send the {@link Computer} class over to the remote classloader
+         * and then it would need to be loaded, which pulls in {@link Jenkins} and loads that
+         * and then that fails to load as you are not supposed to do that. Another option
+         * would be to export the logger over remoting, with increased complexity as a result.
+         * Instead we just use a loger based on this class name and prevent any references to
+         * other classes from being transferred over remoting.
+         */
+        private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());
+        
         public List<String> call() throws IOException {
             List<String> names = new ArrayList<String>();
 
             Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
             while (nis.hasMoreElements()) {
                 NetworkInterface ni =  nis.nextElement();
-                LOGGER.fine("Listing up IP addresses for "+ni.getDisplayName());
+                LOGGER.log(Level.FINE, "Listing up IP addresses for {0}", ni.getDisplayName());
                 Enumeration<InetAddress> e = ni.getInetAddresses();
                 while (e.hasMoreElements()) {
                     InetAddress ia =  e.nextElement();
                     if(ia.isLoopbackAddress()) {
-                        LOGGER.fine(ia+" is a loopback address");
+                        LOGGER.log(Level.FINE, "{0} is a loopback address", ia);
                         continue;
                     }
 
                     if(!(ia instanceof Inet4Address)) {
-                        LOGGER.fine(ia+" is not an IPv4 address");
+                        LOGGER.log(Level.FINE, "{0} is not an IPv4 address", ia);
                         continue;
                     }
 
-                    LOGGER.fine(ia+" is a viable candidate");
+                    LOGGER.log(Level.FINE, "{0} is a viable candidate", ia);
                     names.add(ia.getHostAddress());
                 }
             }
@@ -1107,12 +1290,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rss(req, rsp, " all builds", getBuilds());
     }
-    public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+
+    public void doRssFailed(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rss(req, rsp, " failed builds", getBuilds().failureOnly());
     }
     private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
-            runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
+        RSS.forwardToRss(getDisplayName() + suffix, getUrl(),
+                runs.newBuilds(), Run.FEED_ADAPTER, req, rsp);
     }
 
     @RequirePOST
@@ -1190,7 +1374,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         _doScript(req, rsp, "_scriptText.jelly");
     }
 
-    protected void _doScript( StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
+    protected void _doScript(StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
         Jenkins._doScript(req, rsp, req.getView(this, view), getChannel(), getACL());
     }
 
@@ -1201,13 +1385,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
-        String name = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
-        Jenkins.checkGoodName(name);
+        String proposedName = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
+        Jenkins.checkGoodName(proposedName);
 
         Node node = getNode();
         if (node == null) {
             throw new ServletException("No such node " + nodeName);
         }
+
+        if ((!proposedName.equals(nodeName))
+                && Jenkins.getActiveInstance().getNode(proposedName) != null) {
+            throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
+        }
+
         Node result = node.reconfigure(req, req.getSubmittedForm());
         replaceBy(result);
 
@@ -1246,21 +1436,23 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Replaces the current {@link Node} by another one.
      */
-    private void replaceBy(Node newNode) throws ServletException, IOException {
+    private void replaceBy(final Node newNode) throws ServletException, IOException {
         final Jenkins app = Jenkins.getInstance();
 
-        // replace the old Node object by the new one
-        synchronized (app) {
-            List<Node> nodes = new ArrayList<Node>(app.getNodes());
-            Node node = getNode();
-            int i  = (node != null) ? nodes.indexOf(node) : -1;
-            if(i<0) {
-                throw new IOException("This slave appears to be removed while you were editing the configuration");
+        // use the queue lock until Nodes has a way of directly modifying a single node.
+        Queue.withLock(new NotReallyRoleSensitiveCallable<Void, IOException>() {
+            public Void call() throws IOException {
+                List<Node> nodes = new ArrayList<Node>(app.getNodes());
+                Node node = getNode();
+                int i  = (node != null) ? nodes.indexOf(node) : -1;
+                if(i<0) {
+                    throw new IOException("This slave appears to be removed while you were editing the configuration");
+                }
+                nodes.set(i, newNode);
+                app.setNodes(nodes);
+                return null;
             }
-
-            nodes.set(i, newNode);
-            app.setNodes(nodes);
-        }
+        });
     }
 
     /**
@@ -1277,7 +1469,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Really deletes the slave.
      */
-    @CLIMethod(name="delete-node")
     @RequirePOST
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
@@ -1314,7 +1505,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Handles incremental log.
      */
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
-        getLogText().doProgressText(req,rsp);
+        getLogText().doProgressText(req, rsp);
     }
 
     /**
@@ -1387,8 +1578,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
                 newLocation.getParentFile().mkdirs();
-                boolean relocationSuccessfull=f.renameTo(newLocation);
-                if (relocationSuccessfull) { // The operation will fail if mkdir fails
+                boolean relocationSuccessful=f.renameTo(newLocation);
+                if (relocationSuccessful) { // The operation will fail if mkdir fails
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
                 } else {
                     LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
@@ -1396,6 +1587,110 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             } else {
                 assert false;
             }
+        }
+    }
+
+    /**
+     * A value class to provide a consistent snapshot view of the state of an executor to avoid race conditions
+     * during rendering of the executors list.
+     *
+     * @since 1.607
+     */
+    @Restricted(NoExternalUse.class)
+    public static class DisplayExecutor implements ModelObject {
+
+        @Nonnull
+        private final String displayName;
+        @Nonnull
+        private final String url;
+        @Nonnull
+        private final Executor executor;
+
+        public DisplayExecutor(@Nonnull String displayName, @Nonnull String url, @Nonnull Executor executor) {
+            this.displayName = displayName;
+            this.url = url;
+            this.executor = executor;
+        }
+
+        @Override
+        @Nonnull
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Nonnull
+        public String getUrl() {
+            return url;
+        }
+
+        @Nonnull
+        public Executor getExecutor() {
+            return executor;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("DisplayExecutor{");
+            sb.append("displayName='").append(displayName).append('\'');
+            sb.append(", url='").append(url).append('\'');
+            sb.append(", executor=").append(executor);
+            sb.append('}');
+            return sb.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            DisplayExecutor that = (DisplayExecutor) o;
+
+            if (!executor.equals(that.executor)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Extension(ordinal = Double.MAX_VALUE)
+        @Restricted(DoNotUse.class)
+        public static class InternalComputerListener extends ComputerListener {
+            @Override
+            public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+                c.cachedEnvironment = null;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return executor.hashCode();
+        }
+    }
+
+    /**
+     * Used to trace requests to terminate a computer.
+     *
+     * @since 1.607
+     */
+    public static class TerminationRequest extends RuntimeException {
+        private final long when;
+        public TerminationRequest(String message) {
+            super(message);
+            this.when = System.currentTimeMillis();
+        }
+
+        /**
+         * Returns the when the termination request was created.
+         *
+         * @return the difference, measured in milliseconds, between
+         * the time of the termination request and midnight, January 1, 1970 UTC.
+         */
+        public long getWhen() {
+            return when;
         }
     }
 

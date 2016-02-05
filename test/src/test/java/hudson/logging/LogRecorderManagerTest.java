@@ -28,7 +28,6 @@ import org.jvnet.hudson.test.Url;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.model.Computer;
-import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import java.util.List;
 

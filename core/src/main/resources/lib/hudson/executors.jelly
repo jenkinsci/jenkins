@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Copyright (c) 2004-2015, Sun Microsystems, Inc., Kohsuke Kawaguchi,
 Stephen Connolly, id:cactusman, Yahoo! Inc., Alan Harder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,8 +39,7 @@ THE SOFTWARE.
       <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
     </d:tag>
     <d:tag name="executor">
-      <j:choose>
-        <j:when test="${!c.offline or (c.offline and !e.idle)}">
+      <j:if test="${!c.offline or (c.offline and !e.idle)}">
           <tr>
             <td class="pane" align="right" style="vertical-align: top">
               ${name}
@@ -76,6 +75,25 @@ THE SOFTWARE.
                   <td class="pane">
                     <div style="white-space: normal">
                       <j:set var="exe" value="${e.currentExecutable}" />
+                      <j:set var="wu" value="${e.currentWorkUnit}" />
+                      <j:choose>
+                        <j:when test="${exe == null and wu != null}">
+                          <j:set var="exeparent" value="${wu.work}"/>
+                          <j:choose>
+                            <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                              <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
+                              <t:progressBar tooltip="${%Pending}" pos="-1" href="${rootURL}/${exeparent.url}"/>
+                            </j:when>
+                            <j:otherwise>
+                              <span>${%Unknown Task}</span>
+                            </j:otherwise>
+                          </j:choose>
+                        </j:when>
+                        <j:when test="${exe == null and wu == null}">
+                          <!-- went idle concurrent with testing for idle -->
+                          ${%Idle}
+                        </j:when>
+                        <j:otherwise>
                       <j:invokeStatic var="exeparent"
                          className="hudson.model.queue.Executables" method="getParentOf">
                         <j:arg type="hudson.model.Queue$Executable" value="${exe}" />
@@ -87,6 +105,8 @@ THE SOFTWARE.
                         </j:when>
                         <j:otherwise>
                           <span>${%Unknown Task}</span>
+                        </j:otherwise>
+                      </j:choose>
                         </j:otherwise>
                       </j:choose>
                     </div>
@@ -105,29 +125,28 @@ THE SOFTWARE.
               </j:otherwise>
             </j:choose>
           </tr>
-        </j:when>
-      </j:choose>
+      </j:if>
     </d:tag>
   </d:taglib>
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
+  <j:set var="computersSize" value="${computers.size()}"/>
     <l:pane width="3" id="executors"
         title="&lt;a href='${rootURL}/computer/'>${%Build Executor Status}&lt;/a>"
-        collapsedText="${%Computers(computers.size() - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
+        collapsedText="${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}">
       <colgroup><col width="30"/><col width="200*"/><col width="24"/></colgroup>
 
       <j:forEach var="c" items="${computers}">
+        <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
         <tr>
-          <j:if test="${computers.size() gt 1 and (c.executors.size()!=0 or c.oneOffExecutors.size()!=0)}">
+          <j:if test="${computersSize gt 1 and !cDisplayExecutors.isEmpty()}">
             <th class="pane" colspan="3">
               <local:computerCaption title="${c.displayName}" />
             </th>
           </j:if>
         </tr>
-        <j:forEach var="e" items="${c.executors}" varStatus="eloop">
-          <local:executor name="${eloop.index+1}" url="executors/${eloop.index}" />
-        </j:forEach>
-        <j:forEach var="e" items="${c.oneOffExecutors}" varStatus="eloop">
-          <local:executor name="" url="oneOffExecutors/${eloop.index}" />
+        <j:forEach var="de" items="${cDisplayExecutors}" varStatus="eloop">
+          <j:set var="e" value="${de.executor}"/>
+          <local:executor name="${de.displayName}" url="${de.url}" />
         </j:forEach>
       </j:forEach>
     </l:pane>

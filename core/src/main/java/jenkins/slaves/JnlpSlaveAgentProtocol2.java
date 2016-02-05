@@ -6,7 +6,6 @@ import org.jenkinsci.remoting.nio.NioChannelHub;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Properties;
 
 /**
  * {@link JnlpSlaveAgentProtocol} Version 2.
@@ -36,6 +35,7 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
          * @deprecated as of 1.559
          *      Use {@link #Handler2(NioChannelHub, Socket)}
          */
+        @Deprecated
         public Handler2(Socket socket) throws IOException {
             super(socket);
         }
@@ -58,7 +58,7 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
                     return;
             }
 
-            error("Unrecognized name: "+nodeName);
+            error("JNLP2-connect: rejected connection for node: " + nodeName);
         }
     }
 }

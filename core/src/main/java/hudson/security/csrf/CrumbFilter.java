@@ -5,6 +5,7 @@
  */
 package hudson.security.csrf;
 
+import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
@@ -80,8 +81,8 @@ public class CrumbFilter implements Filter {
                     LOGGER.log(Level.WARNING, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
                 }
             }
-            // Multipart requests need to be handled by each handler.
-            if (valid || isMultipart(httpRequest)) {
+
+            if (valid) {
                 chain.doFilter(request, response);
             } else {
                 LOGGER.log(Level.WARNING, "No valid crumb was included in request for {0}. Returning {1}.", new Object[] {httpRequest.getRequestURI(), HttpServletResponse.SC_FORBIDDEN});
@@ -97,28 +98,13 @@ public class CrumbFilter implements Filter {
             return false;
         }
 
-        String contentType = request.getContentType();
-        if (contentType == null) {
-            return false;
-        }
-
-        String[] parts = contentType.split(";");
-        if (parts.length == 0) {
-            return false;
-        }
-
-        for (int i = 0; i < parts.length; i++) {
-            if ("multipart/form-data".equals(parts[i])) {
-                return true;
-            }
-        }
-
-        return false;
+        return MultipartFormDataParser.isMultiPartForm(request.getContentType());
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void destroy() {
     }
 

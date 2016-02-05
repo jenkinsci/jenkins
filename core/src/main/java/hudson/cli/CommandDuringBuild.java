@@ -27,7 +27,6 @@ package hudson.cli;
 import jenkins.model.Jenkins;
 import hudson.model.Job;
 import hudson.model.Run;
-import hudson.remoting.Callable;
 import jenkins.security.MasterToSlaveCallable;
 import org.kohsuke.args4j.CmdLineException;
 

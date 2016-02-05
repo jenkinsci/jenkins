@@ -34,7 +34,6 @@ import hudson.model.Run;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.CopyOnWriteList;
 import java.util.logging.Logger;
-import jenkins.model.Jenkins;
 
 /**
  * Performs mark up on changelog messages to be displayed.
@@ -98,6 +97,7 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      * @deprecated as of 1.286
      *      Prefer automatic registration via {@link Extension}
      */
+    @Deprecated
     public final void register() {
         all().add(this);
     }
@@ -115,6 +115,7 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final CopyOnWriteList<ChangeLogAnnotator> annotators = ExtensionListView.createCopyOnWriteList(ChangeLogAnnotator.class);
 
     /**

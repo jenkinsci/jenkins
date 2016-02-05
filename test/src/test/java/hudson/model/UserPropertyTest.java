@@ -29,10 +29,6 @@ public class UserPropertyTest {
     public static class UserProperty1 extends UserProperty {
         @TestExtension
         public static class DescriptorImpl extends UserPropertyDescriptor {
-            public String getDisplayName() {
-                return "UserProperty1";
-            }
-
             @Override
             public UserProperty newInstance(User user) {
                 return new UserProperty1();
@@ -43,10 +39,6 @@ public class UserPropertyTest {
     public static class UserProperty2 extends UserProperty {
         @TestExtension
         public static class DescriptorImpl extends UserPropertyDescriptor {
-            public String getDisplayName() {
-                return "UserProperty2";
-            }
-
             @Override
             public boolean isEnabled() {
                 return false;

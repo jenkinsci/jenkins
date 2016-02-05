@@ -26,10 +26,12 @@ THE SOFTWARE.
   Render a single build history entry indicated by ${build}
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set var="link" value="${it.baseUrl}/${build.number}/" />
-  <j:set var="transitive" value="${(it.firstTransientBuildKey!=null and (it.adapter.compare(build,it.firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
-  <tr class="build-row ${transitive} single-line">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">
+  <j:set var="build" value="${pageEntry.entry}" />
+  <j:set var="firstTransientBuildKey" value="${it.widget.firstTransientBuildKey}" />
+  <j:set var="transitive" value="${(firstTransientBuildKey!=null and (it.widget.adapter.compare(build,firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
+  <j:set var="link" value="${it.widget.baseUrl}/${build.number}/" />
+  <tr class="build-row ${transitive} single-line" page-entry-id="${pageEntry.entryId}">
     <td class="build-row-cell">
       <div class="pane build-name">
         <div class="build-icon">
@@ -42,7 +44,7 @@ THE SOFTWARE.
           <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" />
         </a>
         <j:if test="${build.building}">
-          <j:set target="${it}" property="nextBuildNumberToFetch" value="${build.number}"/>
+	  <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}"/>
           <t:buildProgressBar build="${build}"/>
         </j:if>
       </div>
@@ -59,7 +61,7 @@ THE SOFTWARE.
         <j:if test="${build.building}">
           <div class="build-stop">
             <!-- Check ABORT permission for Project, Admin permission otherwise -->
-            <j:if test="${empty(it.owner.ABORT) ? h.hasPermission(app.ADMINISTER) : it.owner.hasPermission(it.owner.ABORT)}">
+	    <j:if test="${empty(it.widget.owner.ABORT) ? h.hasPermission(app.ADMINISTER) : it.widget.owner.hasPermission(it.widget.owner.ABORT)}">
               <l:stopButton href="${link}stop" alt="[cancel]"/>
             </j:if>
           </div>

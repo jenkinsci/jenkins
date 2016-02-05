@@ -25,7 +25,6 @@ package hudson.node_monitors;
 
 import hudson.Util;
 import hudson.Extension;
-import hudson.slaves.OfflineCause;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import jenkins.security.MasterToSlaveCallable;
@@ -188,7 +187,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
 
         /**
-         * HTML rendering of the data
+         * String rendering of the data
          */
         @Override
         public String toString() {
@@ -200,7 +199,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
 //            return buf.toString();
             int fc = failureCount();
             if(fc>0)
-                return Util.wrapToErrorSpan(Messages.ResponseTimeMonitor_TimeOut(fc));
+                return Messages.ResponseTimeMonitor_TimeOut(fc);
             return getAverage()+"ms";
         }
 

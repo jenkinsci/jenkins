@@ -31,6 +31,7 @@ import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
+import static hudson.init.InitMilestone.COMPLETED;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -95,9 +96,12 @@ public class UsageStatistics extends PageDecorator {
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
-        // user opted out. no data collection.
-        if(!Jenkins.getInstance().isUsageStatisticsCollected() || DISABLED)     return false;
-        
+        final Jenkins j = Jenkins.getInstance();
+        // user opted out or Jenkins not fully initialized. no data collection.
+        if (j == null || j.isUsageStatisticsCollected() || DISABLED || COMPLETED.compareTo(j.getInitLevel()) > 0) {
+            return false;
+        }
+
         long now = System.currentTimeMillis();
         if(now - lastAttempt > DAY) {
             lastAttempt = now;
@@ -197,10 +201,10 @@ public class UsageStatistics extends PageDecorator {
     }
 
     /**
-     * Assymetric cipher is slow and in case of Sun RSA implementation it can only encyrypt the first block.
+     * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encyrypt the first block.
      *
      * So first create a symmetric key, then place this key in the beginning of the stream by encrypting it
-     * with the assymetric cipher. The rest of the stream will be encrypted by a symmetric cipher.
+     * with the asymmetric cipher. The rest of the stream will be encrypted by a symmetric cipher.
      */
     public static final class CombinedCipherOutputStream extends FilterOutputStream {
         public CombinedCipherOutputStream(OutputStream out, Cipher asym, String algorithm) throws IOException, GeneralSecurityException {

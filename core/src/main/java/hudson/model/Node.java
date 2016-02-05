@@ -25,12 +25,16 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.*;
+import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.FilePath;
+import hudson.FileSystemProvisioner;
+import hudson.Launcher;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
-import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -46,17 +50,16 @@ import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
 import hudson.util.TagCloud;
 import hudson.util.TagCloud.WeightFunction;
-
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -65,8 +68,8 @@ import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type).
@@ -83,12 +86,11 @@ import org.kohsuke.stapler.export.Exported;
  * be used to associate new {@link Action}s to slaves.
  *
  * @author Kohsuke Kawaguchi
- * @see NodeMonitor
  * @see NodeDescriptor
  * @see Computer
  */
 @ExportedBean
-public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster {
+public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster, Saveable {
 
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
@@ -115,6 +117,24 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * {@inheritDoc}
+     * @since 1.635.
+     */
+    @Override
+    public void save() throws IOException {
+        // this should be a no-op unless this node instance is the node instance in Jenkins' list of nodes
+        // thus where Jenkins.getInstance() == null there is no list of nodes, so we do a no-op
+        // Nodes.updateNode(n) will only persist the node record if the node instance is in the list of nodes
+        // so either path results in the same behaviour: the node instance is only saved if it is in the list of nodes
+        // for all other cases we do not know where to persist the node record and hence we follow the default
+        // no-op of a Saveable.NOOP
+        final Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins != null) {
+            jenkins.updateNode(this);
+        }
+    }
+
+    /**
      * Name of this node.
      *
      * @return
@@ -133,6 +153,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *
      * @deprecated to indicate that this method isn't really meant to be called by random code.
      */
+    @Deprecated
     public abstract void setNodeName(String name);
 
     /**
@@ -236,7 +257,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         try {
             if (temporaryOfflineCause != cause) {
                 temporaryOfflineCause = cause;
-                Jenkins.getInstance().save(); // Gotta be a better way to do this
+                save();
             }
         } catch (java.io.IOException e) {
             LOGGER.warning("Unable to complete save, temporary offline status will not be persisted: " + e.getMessage());
@@ -330,6 +351,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @deprecated as of 1.413
      *      Use {@link #canTake(Queue.BuildableItem)}
      */
+    @Deprecated
     public CauseOfBlockage canTake(Task task) {
         return null;
     }
@@ -371,6 +393,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         for (NodeProperty prop: getNodeProperties()) {
             CauseOfBlockage c = prop.canTake(item);
             if (c!=null)    return c;
+        }
+
+        if (!isAcceptingTasks()) {
+            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsNotAcceptingTasks(getNodeName()));
         }
 
         // Looks like we can take the task
@@ -443,10 +469,13 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         if (form==null)     return null;
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
-        BindInterceptor old = req.setBindListener(new BindInterceptor() {
+        final AtomicReference<BindInterceptor> old = new AtomicReference<>();
+        old.set(req.setBindListener(new BindInterceptor() {
             @Override
             public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
-                if (jsonForProperties!=jsonSource)  return DEFAULT;
+                if (jsonForProperties != jsonSource) {
+                    return old.get().onConvert(targetType, targetTypeErasure, jsonSource);
+                }
 
                 try {
                     DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<NodeProperty<?>, NodePropertyDescriptor>(Saveable.NOOP,getNodeProperties().toList());
@@ -458,12 +487,12 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                     throw new IllegalArgumentException(e);
                 }
             }
-        });
+        }));
 
         try {
             return getDescriptor().newInstance(req, form);
         } finally {
-            req.setBindListener(old);
+            req.setBindListener(old.get());
         }
     }
 

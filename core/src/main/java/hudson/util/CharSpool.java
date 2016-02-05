@@ -34,6 +34,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @deprecated since 2008-05-28. moved to stapler
  */
+@Deprecated
 public final class CharSpool extends Writer {
     private List<char[]> buf;
 

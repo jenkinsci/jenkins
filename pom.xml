@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.34</version>
+    <version>1.35</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.599-SNAPSHOT</version>
+  <version>1.648-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -52,7 +52,6 @@ THE SOFTWARE.
     <module>war</module>
     <module>test</module>
     <module>cli</module>
-    <module>plugins</module>
   </modules>
 
   <scm>
@@ -98,9 +97,14 @@ THE SOFTWARE.
 
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <maven-plugin.version>2.7.1</maven-plugin.version>
+    <matrix-project.version>1.4.1</matrix-project.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
+    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <test-annotations.version>1.2</test-annotations.version>
 
-    <java.level>6</java.level>
+    <java.level>7</java.level>
+
+    <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
   </properties>
 
   <repositories>
@@ -146,24 +150,24 @@ THE SOFTWARE.
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.11</version>
+        <version>4.12</version>
       </dependency>
 
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>1.8.5</version>
+        <version>1.10.19</version>
       </dependency>
       
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.4.10</version>
+        <version>1.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
-        <version>1.4.10</version>
+        <version>1.6.2</version>
       </dependency>
 
       <dependency>
@@ -175,7 +179,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.49</version>
+        <version>2.53.2</version>
       </dependency>
 
       <dependency>
@@ -187,7 +191,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <version>4.0-beta5</version>
+        <version>4.0-beta</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -215,6 +219,18 @@ THE SOFTWARE.
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>1.1.3</version>
+        <scope>provided</scope><!-- by jcl-over-slf4j -->
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>log4j-over-slf4j</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.17</version>
+        <scope>provided</scope><!-- by log4j-over-slf4j -->
       </dependency>
       <dependency>
         <groupId>org.samba.jcifs</groupId>
@@ -236,7 +252,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>1.1</version>
+      <version>${test-annotations.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -341,23 +357,24 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.8</version>
+          <version>2.10.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>2.4</version>
+          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
-          <version>2.3</version>
+          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.16</version> <!-- ignoring ${maven-surefire-plugin.version} -->
           <configuration>
+            <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
@@ -440,7 +457,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.15</version>
+          <version>1.23</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
@@ -473,7 +490,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <version>2.5.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -494,12 +510,12 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.110</version>
+          <version>1.114</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.1</version>
+          <version>3.3</version>
           <dependencies>
             <dependency>
               <groupId>org.kohsuke</groupId>
@@ -632,7 +648,7 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>1.6.0-18</version>
+                  <version>1.7.0</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.0</version>
@@ -656,6 +672,10 @@ THE SOFTWARE.
                 <bannedDependencies>
                   <excludes>
                     <exclude>org.sonatype.sisu:sisu-guice</exclude>
+                    <exclude>log4j:log4j:*:jar:compile</exclude>
+                    <exclude>log4j:log4j:*:jar:runtime</exclude>
+                    <exclude>commons-logging:commons-logging:*:jar:compile</exclude>
+                    <exclude>commons-logging:commons-logging:*:jar:runtime</exclude>
                   </excludes>
                 </bannedDependencies>
               </rules>
@@ -760,7 +780,6 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.5.2</version>
             <configuration>
               <threshold>High</threshold>
             </configuration>
@@ -835,6 +854,12 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>lts-release</id>
+      <properties>
+        <changelog.url>https://jenkins-ci.org/changelog-stable</changelog.url>
+      </properties>
     </profile>
     <profile>
       <id>m2e</id>

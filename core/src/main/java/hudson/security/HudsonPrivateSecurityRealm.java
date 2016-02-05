@@ -337,6 +337,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if(si.email==null || !si.email.contains("@"))
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
 
+        if (! User.isIdOrFullnameAllowed(si.username)) {
+            si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
+        }
+
+        if (! User.isIdOrFullnameAllowed(si.fullname)) {
+            si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
+        }
+
         if(si.errorMessage!=null) {
             // failed. ask the user to try again.
             req.setAttribute("data",si);
@@ -459,6 +467,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * Field kept here to load old (pre 1.283) user records,
          * but now marked transient so field is no longer saved.
          */
+        @Deprecated
         private transient String password;
 
         private Details(String passwordHash) {
@@ -532,12 +541,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Extension
         public static final class DescriptorImpl extends UserPropertyDescriptor {
+            @Override
             public String getDisplayName() {
-                // this feature is only when HudsonPrivateSecurityRealm is enabled
-                if(isEnabled())
-                    return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
-                else
-                    return null;
+                return Messages.HudsonPrivateSecurityRealm_Details_DisplayName();
             }
 
             @Override
@@ -559,6 +565,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             @Override
             public boolean isEnabled() {
+                // this feature is only when HudsonPrivateSecurityRealm is enabled
                 return Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 
