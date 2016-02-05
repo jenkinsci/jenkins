@@ -39,27 +39,33 @@ exports.fromConfigTable = function(configTable) {
         sectionRow.attr('title', sectionTitle);
     });
 
+    var configTableMetadata = new ConfigTableMetaData(configForm, configTable);
+    var topRows = configTableMetadata.getTopRows();
+    var firstRow = configTableMetadata.getFirstRow();
+    var curSection = undefined;
+
+    // The first set of rows don't have a 'section-header-row', so we manufacture one,
+    // calling it a "General" section. We do this by marking the first row in the table.
+    // See the next block of code.
+    firstRow.addClass('section-header-row');
+    firstRow.attr('title', "General");
+
     // Go through the top level <tr> elements (immediately inside the <tbody>)
     // and group the related <tr>s based on the "section-header-row", using a "normalized"
     // version of the section title as the section id.
-    var configTableMetadata = new ConfigTableMetaData(configForm, configTable);
-    var curSection = new ConfigSection(configTableMetadata, 'General');
-
-    configTableMetadata.sections.push(curSection);
-    curSection.id = util.toId(curSection.title);
-
-    var topRows = configTableMetadata.getTopRows();
     topRows.each(function () {
         var tr = $(this);
         if (tr.hasClass('section-header-row')) {
             // a new section
-            var title = tr.attr('title');
-            curSection = new ConfigSection(configTableMetadata, title);
+            curSection = new ConfigSection(configTableMetadata, tr);
             configTableMetadata.sections.push(curSection);
         }
-
-        curSection.rows.push(tr);
-        tr.addClass(curSection.id);
+        if (curSection) {
+            curSection.rows.push(tr);
+            tr.addClass(curSection.id);
+        } else {
+            throw 'Unexpected error. The first row in the config table is expected to be a "section-header-row".';
+        }
     });
 
     var buttonsRow = $('#bottom-sticker', configTable).closest('tr');
@@ -89,6 +95,10 @@ function ConfigTableMetaData(configForm, configTable) {
 
 ConfigTableMetaData.prototype.getTopRows = function() {
     return this.configTableBody.children('tr');
+};
+
+ConfigTableMetaData.prototype.getFirstRow = function() {
+    return this.getTopRows().first();
 };
 
 ConfigTableMetaData.prototype.addWidgetsContainer = function() {

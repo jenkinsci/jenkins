@@ -9,10 +9,11 @@ module.exports = ConfigSection;
  * Configuration table section.
  * =======================================================================================
  */
-function ConfigSection(parentCMD, title) {
+function ConfigSection(parentCMD, headerRow) {
     this.parentCMD = parentCMD;
-    this.title = title;
-    this.id = util.toId(title);
+    this.headerRow = headerRow;
+    this.title = headerRow.attr('title');
+    this.id = util.toId(this.title);
     this.rows = [];
     this.rowSets = undefined;
     this.activator = undefined;
