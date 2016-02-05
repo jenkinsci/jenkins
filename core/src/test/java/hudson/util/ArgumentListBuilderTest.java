@@ -31,7 +31,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Ignore;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 
 public class ArgumentListBuilderTest {
 
@@ -101,28 +104,51 @@ public class ArgumentListBuilderTest {
 
     @Test
     public void testToWindowsCommand() {
-        ArgumentListBuilder builder = new ArgumentListBuilder(
-                "ant.bat", "-Dfoo1=abc",  // nothing special, no quotes
-                "-Dfoo2=foo bar", "-Dfoo3=/u*r", "-Dfoo4=/us?",  // add quotes
-                                                 "-Dfoo10=bar,baz",
-                "-Dfoo5=foo;bar^baz", "-Dfoo6=<xml>&here;</xml>", // add quotes
-                "-Dfoo7=foo|bar\"baz", // add quotes and "" for "
-                "-Dfoo8=% %QED% %comspec% %-%(%.%", // add quotes, and extra quotes for %Q and %c
-                "-Dfoo9=%'''%%@%"); // no quotes as none of the % are followed by a letter
+    	ArgumentListBuilder builder = new ArgumentListBuilder().
+        		add("ant.bat").add("-Dfoo1=abc").  // nothing special, no quotes
+                add("-Dfoo2=foo bar").add("-Dfoo3=/u*r").add("-Dfoo4=/us?").  // add quotes
+                add("-Dfoo10=bar,baz").
+                add("-Dfoo5=foo;bar^baz").add("-Dfoo6=<xml>&here;</xml>"). // add quotes
+                add("-Dfoo7=foo|bar\"baz"). // add quotes and "" for "
+                add("-Dfoo8=% %QED% %comspec% %-%(%.%"). // add quotes, and extra quotes for %Q and %c
+                add("-Dfoo9=%'''%%@%"); // no quotes as none of the % are followed by a letter
         // By default, does not escape %VAR%
         assertThat(builder.toWindowsCommand().toCommandArray(), is(new String[] { "cmd.exe", "/C",
-                "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
-                + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\""
-                + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
-                + " \"-Dfoo8=% %QED% %comspec% %-%(%.%\""
-                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" }));
+                "\"ant.bat", "-Dfoo1=abc", "\"-Dfoo2=foo bar\"", "\"-Dfoo3=/u*r\"", "\"-Dfoo4=/us?\"", 
+                "\"-Dfoo10=bar,baz\"", "\"-Dfoo5=foo;bar^baz\"", "\"-Dfoo6=<xml>&here;</xml>\"", 
+                "\"-Dfoo7=foo|bar\"\"baz\"", "\"-Dfoo8=% %QED% %comspec% %-%(%.%\"", 
+                "-Dfoo9=%'''%%@%", "&&", "exit", "%%ERRORLEVEL%%\"" }));
         // Pass flag to escape %VAR%
         assertThat(builder.toWindowsCommand(true).toCommandArray(), is(new String[] { "cmd.exe", "/C",
-                "\"ant.bat -Dfoo1=abc \"-Dfoo2=foo bar\""
-                + " \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\""
-                + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
-                + " \"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\""
-                + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" }));
+                "\"ant.bat", "-Dfoo1=abc", "\"-Dfoo2=foo bar\"", "\"-Dfoo3=/u*r\"", "\"-Dfoo4=/us?\"", 
+                "\"-Dfoo10=bar,baz\"", "\"-Dfoo5=foo;bar^baz\"", "\"-Dfoo6=<xml>&here;</xml>\"", 
+                "\"-Dfoo7=foo|bar\"\"baz\"", "\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"", 
+                "-Dfoo9=%'''%%@%", "&&", "exit", "%%ERRORLEVEL%%\"" }));
+        // Try to hide password
+        builder.add("-Dpassword=hidden", true);
+        // By default, does not escape %VAR%
+        assertThat(builder.toWindowsCommand().toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %QED% %comspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\"" ));
+        // Pass flag to escape %VAR%
+        assertThat(builder.toWindowsCommand(true).toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\""));
+    }
+    
+    @Test
+    @Ignore
+    @Issue("JENKINS-28790")
+    public void testToWindowsCommandMasked() {
+        ArgumentListBuilder builder = new ArgumentListBuilder().
+        		add("ant.bat").add("-Dfoo1=abc").  // nothing special, no quotes
+                add("-Dfoo2=foo bar").add("-Dfoo3=/u*r").add("-Dfoo4=/us?").  // add quotes
+                add("-Dfoo10=bar,baz").
+                add("-Dfoo5=foo;bar^baz").add("-Dfoo6=<xml>&here;</xml>"). // add quotes
+                add("-Dfoo7=foo|bar\"baz"). // add quotes and "" for "
+                add("-Dfoo8=% %QED% %comspec% %-%(%.%"). // add quotes, and extra quotes for %Q and %c
+                add("-Dfoo9=%'''%%@%"). // no quotes as none of the % are followed by a letter
+                add("-Dpassword=hidden", true);
+        // By default, does not escape %VAR%
+        assertThat(builder.toWindowsCommand().toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %QED% %comspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\"" ));
+        // Pass flag to escape %VAR%
+        assertThat(builder.toWindowsCommand(true).toString(), is("cmd.exe /C \"ant.bat -Dfoo1=abc \"\"-Dfoo2=foo bar\"\" \"-Dfoo3=/u*r\" \"-Dfoo4=/us?\" \"-Dfoo10=bar,baz\" \"-Dfoo5=foo;bar^baz\" \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\" \"\"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\"\" -Dfoo9=%'''%%@% ****** && exit %%ERRORLEVEL%%\""));
     }
 
     @Test
