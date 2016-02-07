@@ -42,7 +42,7 @@ exports.fromConfigTable = function(configTable) {
     var configTableMetadata = new ConfigTableMetaData(configForm, configTable);
     var topRows = configTableMetadata.getTopRows();
     var firstRow = configTableMetadata.getFirstRow();
-    var curSection = undefined;
+    var curSection;
 
     // The first set of rows don't have a 'section-header-row', so we manufacture one,
     // calling it a "General" section. We do this by marking the first row in the table.
@@ -59,12 +59,6 @@ exports.fromConfigTable = function(configTable) {
             // a new section
             curSection = new ConfigSection(configTableMetadata, tr);
             configTableMetadata.sections.push(curSection);
-        }
-        if (curSection) {
-            curSection.rows.push(tr);
-            tr.addClass(curSection.id);
-        } else {
-            throw 'Unexpected error. The first row in the config table is expected to be a "section-header-row".';
         }
     });
 
@@ -223,7 +217,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
 
         // Active the specified section
         section.activator.addClass('active');
-        topRows.filter('.' + section.id).addClass('active').show();
+        section.markRowsAsActive();
 
         // Hide the section header row. No need for it now because the
         // tab text acts as the section label.
@@ -275,9 +269,10 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
             for (var i2 = 0; i2 < this.sections.length; i2++) {
                 var section = this.sections[i2];
                 var containsText = false;
+                var sectionRows = section.getRows();
 
-                for (var i3 = 0; i3 < section.rows.length; i3++) {
-                    var row = section.rows[i3];
+                for (var i3 = 0; i3 < sectionRows.length; i3++) {
+                    var row = sectionRows[i3];
                     var elementsWithText = $(selector, row);
 
                     if (elementsWithText.size() > 0) {

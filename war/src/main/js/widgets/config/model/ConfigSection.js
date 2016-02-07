@@ -14,10 +14,35 @@ function ConfigSection(parentCMD, headerRow) {
     this.headerRow = headerRow;
     this.title = headerRow.attr('title');
     this.id = util.toId(this.title);
-    this.rows = [];
     this.rowSets = undefined;
     this.activator = undefined;
 }
+
+/*
+ * Get the section rows.
+ */
+ConfigSection.prototype.getRows = function() {
+    var curTr = this.headerRow.next();
+    var rows = [];
+    var numNewRows = 0;
+
+    rows.push(curTr);
+    while(curTr.size() === 1 && !curTr.hasClass('section-header-row')) {
+        rows.push(curTr);
+        if (!curTr.hasClass(this.id)) {
+            numNewRows++;
+            curTr.addClass(this.id);
+        }
+        curTr = curTr.next();
+    }
+    
+    if (numNewRows > 0) {
+        // We have new rows in the section ... reset cached info.
+        this.rowSets = undefined;
+    }
+    
+    return rows;
+};
 
 /*
  * Set the element (jquery) that activates the section (on click).
@@ -39,10 +64,18 @@ ConfigSection.prototype.activate = function() {
     }
 };
 
+ConfigSection.prototype.markRowsAsActive = function() {
+    var rows = this.getRows();
+    for (var i = 0; i < rows.length; i++) {
+        rows[i].addClass('active').show();
+    }
+};
+
 ConfigSection.prototype.activeRowCount = function() {
     var activeRowCount = 0;
-    for (var i = 0; i < this.rows.length; i++) {
-        if (this.rows[i].hasClass('active')) {
+    var rows = this.getRows();
+    for (var i = 0; i < rows.length; i++) {
+        if (rows[i].hasClass('active')) {
             activeRowCount++;
         }
     }
@@ -80,8 +113,9 @@ ConfigSection.prototype.gatherRowSets = function() {
     // in 'row-set-start' etc. Grrrrrr :(
 
     var curRowSet = undefined; // jshint ignore:line
-    for (var i = 0; i < this.rows.length; i++) {
-        var row = this.rows[i];
+    var rows = this.getRows();
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
 
         if (row.hasClass('row-set-start')) {
             curRowSet = new ConfigRowSet(row);
@@ -120,9 +154,10 @@ ConfigSection.prototype.getRowSetLabels = function() {
 ConfigSection.prototype.highlightText = function(text) {
     var $ = jQD.getJQuery();
     var selector = ":containsci('" + text + "')";
-
-    for (var i = 0; i < this.rows.length; i++) {
-        var row = this.rows[i];
+    var rows = this.getRows();
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
 
         /*jshint loopfunc: true */
         $('span.highlight-split', row).each(function() { // jshint ignore:line

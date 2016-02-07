@@ -10,7 +10,7 @@ describe("tabbar-spec tests", function () {
             var jQD = require('jquery-detached');
             var $ = jQD.getJQuery();
 
-            expect($('.section-header-row', firstTableMetadata.configTable).size()).toBe(5);
+            expect($('.section-header-row', firstTableMetadata.configTable).size()).toBe(6);
             expect(firstTableMetadata.sectionCount()).toBe(4);
             expect($('.tabBar .tab').size()).toBe(8);
 
@@ -36,7 +36,7 @@ describe("tabbar-spec tests", function () {
                 expect(firstTableMetadata.activeSectionCount()).toBe(1);
                 var activeSection = firstTableMetadata.activeSection();
                 expect(activeSection.id).toBe('config__workflow');
-                expect(activeSection.activeRowCount()).toBe(3);
+                expect(activeSection.activeRowCount()).toBe(4);
                 expect(firstTableMetadata.getTopRows().filter('.active').size()).toBe(3); // should be the same as activeSection.activeRowCount()
 
                 done();
