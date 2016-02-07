@@ -120,6 +120,11 @@ public class WindowsServiceLifecycle extends Lifecycle {
 
     @Override
     public void restart() throws IOException, InterruptedException {
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins != null) {
+            jenkins.cleanUp();
+        }
+
         File me = getHudsonWar();
         File home = me.getParentFile();
 
