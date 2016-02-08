@@ -188,7 +188,7 @@ ${h.initPageVariables(context)}
                   </j:otherwise>
                 </j:choose>
                 <span style="white-space:nowrap">
-                  <a href="${rootURL}/user/${user.id}" class="model-link inside inverse"><b>${userName}</b></a>
+                  <a href="${rootURL}/me" class="model-link inside inverse"><b>${userName}</b></a>
                   <j:if test="${app.securityRealm.canLogOut()}">
                     |
                     <a href="${rootURL}/logout"><b>${%logout}</b></a>

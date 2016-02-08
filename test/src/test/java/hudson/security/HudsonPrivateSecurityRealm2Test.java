@@ -58,7 +58,7 @@ public class HudsonPrivateSecurityRealm2Test {
         signup.enterEmail("alice@nowhere.com");
         HtmlPage success = signup.submit(rule);
         assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
-        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
+        assertThat(success.getAnchorByHref("/jenkins/me").getTextContent(), containsString("Alice User"));
 
 
         assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
