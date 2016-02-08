@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.Reader;
+
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -75,12 +77,9 @@ public class ConsoleCommand extends CLICommand {
                     pos = logText.writeLogTo(pos, w);
                 } while (!logText.isComplete());
             } else {
-                InputStream logInputStream = run.getLogInputStream();
-                try {
-                    IOUtils.skip(logInputStream,pos);
-                    org.apache.commons.io.IOUtils.copy(new InputStreamReader(logInputStream,run.getCharset()),w);
-                } finally {
-                    logInputStream.close();
+                try (Reader r = run.getLogReader()) {
+                    IOUtils.skip(r,pos);
+                    org.apache.commons.io.IOUtils.copy(r,w);
                 }
             }
         } finally {
@@ -117,16 +116,16 @@ public class ConsoleCommand extends CLICommand {
         }
         RingBuffer rb = new RingBuffer();
 
-        InputStream in = run.getLogInputStream();
+        Reader in = run.getLogReader();
         try {
-            byte[] buf = new byte[4096];
+            char[] buf = new char[4096];
             int len;
-            byte prev=0;
+            char prev=0;
             long pos=0;
             boolean prevIsNL = false;
             while ((len=in.read(buf))>=0) {
                 for (int i=0; i<len; i++) {
-                    byte ch = buf[i];
+                    char ch = buf[i];
                     boolean isNL = ch=='\r' || ch=='\n';
                     if (!isNL && prevIsNL)  rb.add(pos);
                     if (isNL && prevIsNL && !(prev=='\r' && ch=='\n'))  rb.add(pos);
