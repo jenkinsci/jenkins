@@ -104,8 +104,8 @@ public class ArgumentListBuilderTest {
 
     @Test
     public void testToWindowsCommand() {
-    	ArgumentListBuilder builder = new ArgumentListBuilder().
-        		add("ant.bat").add("-Dfoo1=abc").  // nothing special, no quotes
+        ArgumentListBuilder builder = new ArgumentListBuilder().
+                add("ant.bat").add("-Dfoo1=abc").  // nothing special, no quotes
                 add("-Dfoo2=foo bar").add("-Dfoo3=/u*r").add("-Dfoo4=/us?").  // add quotes
                 add("-Dfoo10=bar,baz").
                 add("-Dfoo5=foo;bar^baz").add("-Dfoo6=<xml>&here;</xml>"). // add quotes
@@ -133,11 +133,11 @@ public class ArgumentListBuilderTest {
     }
     
     @Test
-    @Ignore
+    @Ignore("It's only for reproduce JENKINS-28790 issue. It's added to testToWindowsCommand")
     @Issue("JENKINS-28790")
     public void testToWindowsCommandMasked() {
         ArgumentListBuilder builder = new ArgumentListBuilder().
-        		add("ant.bat").add("-Dfoo1=abc").  // nothing special, no quotes
+                add("ant.bat").add("-Dfoo1=abc").  // nothing special, no quotes
                 add("-Dfoo2=foo bar").add("-Dfoo3=/u*r").add("-Dfoo4=/us?").  // add quotes
                 add("-Dfoo10=bar,baz").
                 add("-Dfoo5=foo;bar^baz").add("-Dfoo6=<xml>&here;</xml>"). // add quotes
