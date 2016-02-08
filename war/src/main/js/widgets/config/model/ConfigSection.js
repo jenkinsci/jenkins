@@ -38,7 +38,9 @@ ConfigSection.prototype.getRows = function() {
     
     if (numNewRows > 0) {
         // We have new rows in the section ... reset cached info.
-        this.rowSets = undefined;
+        if (this.rowSets !== undefined) {
+            this.gatherRowSets(rows);
+        }
     }
     
     return rows;
@@ -93,7 +95,7 @@ ConfigSection.prototype.updateRowSetVisibility = function() {
     }
 };
 
-ConfigSection.prototype.gatherRowSets = function() {
+ConfigSection.prototype.gatherRowSets = function(rows) {
     this.rowSets = [];
 
     // Only tracking row-sets that are bounded by 'row-set-start' and 'row-set-end' (for now).
@@ -103,7 +105,9 @@ ConfigSection.prototype.gatherRowSets = function() {
     // Also seems like you can have these "optional-block" thingies which are not wrapped
     // in 'row-set-start' etc. Grrrrrr :(
 
-    var rows = this.getRows();
+    if (rows === undefined) {
+        rows = this.getRows();
+    }
     if (rows.length > 0) {
         // Create a top level "fake" ConfigRowSet just to capture
         // the top level groupings. We copy the rowSets info out
@@ -142,9 +146,7 @@ ConfigSection.prototype.getRowSetLabels = function() {
     var labels = [];
     for (var i = 0; i < this.rowSets.length; i++) {
         var rowSet = this.rowSets[i];
-        if (rowSet.label) {
-            labels.push(rowSet.label);
-        }
+        labels.push(rowSet.getLabels());
     }
     return labels;
 };

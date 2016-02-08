@@ -17,6 +17,27 @@ function ConfigRowSet(startRow, parentRowSetContainer) {
     this.label = undefined;
 }
 
+ConfigRowSet.prototype.getRowCount = function() {
+    var count = this.rows.length;
+    for (var i = 0; i < this.rowSets.length; i++) {
+        count += this.rowSets[i].getRowCount();
+    }
+    return count;
+};
+
+ConfigRowSet.prototype.getLabels = function() {
+    var labels = [];
+    
+    if (this.label) {
+        labels.push(this.label);
+    }
+    for (var i = 0; i < this.rowSets.length; i++) {
+        var rowSet = this.rowSets[i];
+        labels.push(rowSet.getLabels());
+    }
+    return labels;
+};
+
 ConfigRowSet.prototype.updateVisibility = function() {
     if (this.toggleWidget !== undefined) {
         var isChecked = this.toggleWidget.is(':checked');
