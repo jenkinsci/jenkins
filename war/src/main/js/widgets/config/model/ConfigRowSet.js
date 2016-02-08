@@ -4,16 +4,35 @@ module.exports = ConfigRowSet;
 
 /*
  * =======================================================================================
- * Configuration table row-set.
+ * Configuration table row grouping i.e. row-set-*, optional-block-*,
  * =======================================================================================
  */
-function ConfigRowSet(startRow) {
+function ConfigRowSet(startRow, parentRowSetContainer) {
     this.startRow = startRow;
-    this.rows = [];
+    this.parentRowSetContainer = parentRowSetContainer;
     this.endRow = undefined;
+    this.rows = [];
+    this.rowSets = [];
     this.toggleWidget = undefined;
     this.label = undefined;
 }
+
+ConfigRowSet.prototype.updateVisibility = function() {
+    if (this.toggleWidget !== undefined) {
+        var isChecked = this.toggleWidget.is(':checked');
+        for (var i = 0; i < this.rows.length; i++) {
+            if (isChecked) {
+                this.rows[i].show();
+            } else {
+                this.rows[i].hide();
+            }
+        }
+    }
+    for (var ii = 0; ii < this.rowSets.length; ii++) {
+        var rowSet = this.rowSets[ii];
+        rowSet.updateVisibility();        
+    }
+};
 
 /*
  * Find the row-set toggle widget i.e. the input element that indicates that

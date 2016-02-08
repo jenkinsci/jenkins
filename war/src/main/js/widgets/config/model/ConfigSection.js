@@ -89,16 +89,7 @@ ConfigSection.prototype.updateRowSetVisibility = function() {
     }
     for (var i = 0; i < this.rowSets.length; i++) {
         var rowSet = this.rowSets[i];
-        if (rowSet.toggleWidget !== undefined) {
-            var isChecked = rowSet.toggleWidget.is(':checked');
-            for (var ii = 0; ii < rowSet.rows.length; ii++) {
-                if (isChecked) {
-                    rowSet.rows[ii].show();
-                } else {
-                    rowSet.rows[ii].hide();
-                }
-            }
-        }
+        rowSet.updateVisibility();
     }
 };
 
@@ -112,29 +103,36 @@ ConfigSection.prototype.gatherRowSets = function() {
     // Also seems like you can have these "optional-block" thingies which are not wrapped
     // in 'row-set-start' etc. Grrrrrr :(
 
-    var curRowSet = undefined; // jshint ignore:line
     var rows = this.getRows();
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
+    if (rows.length > 0) {
+        // Create a top level "fake" ConfigRowSet just to capture
+        // the top level groupings. We copy the rowSets info out
+        // of this and use it in the top "this" ConfigSection instance. 
+        var rowSetContainer = new ConfigRowSet(rows[0], undefined);
 
-        if (row.hasClass('row-set-start')) {
-            curRowSet = new ConfigRowSet(row);
-            curRowSet.findToggleWidget(row);
-        } else if (curRowSet !== undefined) {
-            if (row.hasClass('row-set-end')) {
-                curRowSet.endRow = row;
-                // Only capture the row-set if we find a 'row-set-end'.
-                // Yeah, this does not handle hierarchical stuff (see above TO-DO).
-                this.rowSets.push(curRowSet);
-                curRowSet = undefined;
-            } else if (curRowSet.toggleWidget === undefined) {
-                curRowSet.findToggleWidget(row);
+        this.rowSets = rowSetContainer.rowSets;
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+
+            if (row.hasClass('row-group-start')) {
+                var newRowSet = new ConfigRowSet(row, rowSetContainer);
+                rowSetContainer.rowSets.push(newRowSet);
+                rowSetContainer = newRowSet;
+                newRowSet.findToggleWidget(row);
             } else {
-                // we have the toggleWidget, which means that this row is
-                // one of the rows after that row and is one of the rows that's
-                // subject to being made visible/hidden when the input is
-                // checked or unchecked.
-                curRowSet.rows.push(row);
+                if (row.hasClass('row-group-end')) {
+                    rowSetContainer.endRow = row;
+                    rowSetContainer = rowSetContainer.parentRowSetContainer; // pop back off the "stack"
+                } else if (rowSetContainer.toggleWidget === undefined) {
+                    rowSetContainer.findToggleWidget(row);
+                } else {
+                    // we have the toggleWidget, which means that this row is
+                    // one of the rows after that row and is one of the rows that's
+                    // subject to being made visible/hidden when the input is
+                    // checked or unchecked.
+                    rowSetContainer.rows.push(row);
+                }
             }
         }
     }
