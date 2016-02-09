@@ -227,7 +227,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
         topRows.filter('.config_buttons').show();
 
         // Update the row-set visibility
-        section.updateRowSetVisibility();
+        section.updateRowGroupVisibility();
         section.highlightText(this.findInput.val());
 
         fireListeners(this.showListeners, section);

@@ -1,44 +1,44 @@
 var jQD = require('../../../util/jquery-ext.js');
 
-module.exports = ConfigRowSet;
+module.exports = ConfigRowGrouping;
 
 /*
  * =======================================================================================
  * Configuration table row grouping i.e. row-set-*, optional-block-*,
  * =======================================================================================
  */
-function ConfigRowSet(startRow, parentRowSetContainer) {
+function ConfigRowGrouping(startRow, parentRowGroupContainer) {
     this.startRow = startRow;
-    this.parentRowSetContainer = parentRowSetContainer;
+    this.parentRowGroupContainer = parentRowGroupContainer;
     this.endRow = undefined;
     this.rows = [];
-    this.rowSets = [];
+    this.rowGroups = []; // Support groupings nested inside groupings
     this.toggleWidget = undefined;
     this.label = undefined;
 }
 
-ConfigRowSet.prototype.getRowCount = function() {
+ConfigRowGrouping.prototype.getRowCount = function() {
     var count = this.rows.length;
-    for (var i = 0; i < this.rowSets.length; i++) {
-        count += this.rowSets[i].getRowCount();
+    for (var i = 0; i < this.rowGroups.length; i++) {
+        count += this.rowGroups[i].getRowCount();
     }
     return count;
 };
 
-ConfigRowSet.prototype.getLabels = function() {
+ConfigRowGrouping.prototype.getLabels = function() {
     var labels = [];
     
     if (this.label) {
         labels.push(this.label);
     }
-    for (var i = 0; i < this.rowSets.length; i++) {
-        var rowSet = this.rowSets[i];
+    for (var i = 0; i < this.rowGroups.length; i++) {
+        var rowSet = this.rowGroups[i];
         labels.push(rowSet.getLabels());
     }
     return labels;
 };
 
-ConfigRowSet.prototype.updateVisibility = function() {
+ConfigRowGrouping.prototype.updateVisibility = function() {
     if (this.toggleWidget !== undefined) {
         var isChecked = this.toggleWidget.is(':checked');
         for (var i = 0; i < this.rows.length; i++) {
@@ -49,8 +49,8 @@ ConfigRowSet.prototype.updateVisibility = function() {
             }
         }
     }
-    for (var ii = 0; ii < this.rowSets.length; ii++) {
-        var rowSet = this.rowSets[ii];
+    for (var ii = 0; ii < this.rowGroups.length; ii++) {
+        var rowSet = this.rowGroups[ii];
         rowSet.updateVisibility();        
     }
 };
@@ -59,7 +59,7 @@ ConfigRowSet.prototype.updateVisibility = function() {
  * Find the row-set toggle widget i.e. the input element that indicates that
  * the row-set rows should be made visible or not.
  */
-ConfigRowSet.prototype.findToggleWidget = function(row) {
+ConfigRowGrouping.prototype.findToggleWidget = function(row) {
     var $ = jQD.getJQuery();
     var input = $(':input.block-control', row);
     if (input.size() === 1) {

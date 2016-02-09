@@ -57,10 +57,10 @@ describe("tabbar-spec tests", function () {
 
             var generalSection = firstTableMetadata.activeSection();
             expect(generalSection.id).toBe('config_general');
-            expect(generalSection.rowSets.length).toBe(3);
-            expect(generalSection.getRowSetLabels().toString()).toBe('Discard Old Builds,This build is parameterized,Execute concurrent builds if necessary,Quiet period');
-            expect(generalSection.rowSets[0].getRowCount()).toBe(6);
-            expect(generalSection.rowSets[1].getRowCount()).toBe(1);
+            expect(generalSection.rowGroups.length).toBe(3);
+            expect(generalSection.getRowGroupLabels().toString()).toBe('Discard Old Builds,This build is parameterized,Execute concurrent builds if necessary,Quiet period');
+            expect(generalSection.rowGroups[0].getRowCount()).toBe(6);
+            expect(generalSection.rowGroups[1].getRowCount()).toBe(1);
 
             done();
         }, 'widgets/config/workflow-config.html');

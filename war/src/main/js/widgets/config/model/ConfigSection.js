@@ -1,6 +1,6 @@
 var jQD = require('../../../util/jquery-ext.js');
 var util = require('./util.js');
-var ConfigRowSet = require('./ConfigRowSet.js');
+var ConfigRowGrouping = require('./ConfigRowGrouping.js');
 
 module.exports = ConfigSection;
 
@@ -14,7 +14,7 @@ function ConfigSection(parentCMD, headerRow) {
     this.headerRow = headerRow;
     this.title = headerRow.attr('title');
     this.id = util.toId(this.title);
-    this.rowSets = undefined;
+    this.rowGroups = undefined;
     this.activator = undefined;
 }
 
@@ -38,8 +38,8 @@ ConfigSection.prototype.getRows = function() {
     
     if (numNewRows > 0) {
         // We have new rows in the section ... reset cached info.
-        if (this.rowSets !== undefined) {
-            this.gatherRowSets(rows);
+        if (this.rowGroups !== undefined) {
+            this.gatherRowGroups(rows);
         }
     }
     
@@ -84,19 +84,19 @@ ConfigSection.prototype.activeRowCount = function() {
     return activeRowCount;
 };
 
-ConfigSection.prototype.updateRowSetVisibility = function() {
-    if (this.rowSets === undefined) {
-        // Lazily gather rowset information.
-        this.gatherRowSets();
+ConfigSection.prototype.updateRowGroupVisibility = function() {
+    if (this.rowGroups === undefined) {
+        // Lazily gather row grouping information.
+        this.gatherRowGroups();
     }
-    for (var i = 0; i < this.rowSets.length; i++) {
-        var rowSet = this.rowSets[i];
-        rowSet.updateVisibility();
+    for (var i = 0; i < this.rowGroups.length; i++) {
+        var rowGroup = this.rowGroups[i];
+        rowGroup.updateVisibility();
     }
 };
 
-ConfigSection.prototype.gatherRowSets = function(rows) {
-    this.rowSets = [];
+ConfigSection.prototype.gatherRowGroups = function(rows) {
+    this.rowGroups = [];
 
     // Only tracking row-sets that are bounded by 'row-set-start' and 'row-set-end' (for now).
     // Also, only capturing the rows after the 'block-control' input (checkbox, radio etc)
@@ -109,44 +109,44 @@ ConfigSection.prototype.gatherRowSets = function(rows) {
         rows = this.getRows();
     }
     if (rows.length > 0) {
-        // Create a top level "fake" ConfigRowSet just to capture
-        // the top level groupings. We copy the rowSets info out
+        // Create a top level "fake" ConfigRowGrouping just to capture
+        // the top level groupings. We copy the rowGroups info out
         // of this and use it in the top "this" ConfigSection instance. 
-        var rowSetContainer = new ConfigRowSet(rows[0], undefined);
+        var rowGroupContainer = new ConfigRowGrouping(rows[0], undefined);
 
-        this.rowSets = rowSetContainer.rowSets;
+        this.rowGroups = rowGroupContainer.rowGroups;
 
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
 
             if (row.hasClass('row-group-start')) {
-                var newRowSet = new ConfigRowSet(row, rowSetContainer);
-                rowSetContainer.rowSets.push(newRowSet);
-                rowSetContainer = newRowSet;
-                newRowSet.findToggleWidget(row);
+                var newRowGroup = new ConfigRowGrouping(row, rowGroupContainer);
+                rowGroupContainer.rowGroups.push(newRowGroup);
+                rowGroupContainer = newRowGroup;
+                newRowGroup.findToggleWidget(row);
             } else {
                 if (row.hasClass('row-group-end')) {
-                    rowSetContainer.endRow = row;
-                    rowSetContainer = rowSetContainer.parentRowSetContainer; // pop back off the "stack"
-                } else if (rowSetContainer.toggleWidget === undefined) {
-                    rowSetContainer.findToggleWidget(row);
+                    rowGroupContainer.endRow = row;
+                    rowGroupContainer = rowGroupContainer.parentRowGroupContainer; // pop back off the "stack"
+                } else if (rowGroupContainer.toggleWidget === undefined) {
+                    rowGroupContainer.findToggleWidget(row);
                 } else {
                     // we have the toggleWidget, which means that this row is
                     // one of the rows after that row and is one of the rows that's
                     // subject to being made visible/hidden when the input is
                     // checked or unchecked.
-                    rowSetContainer.rows.push(row);
+                    rowGroupContainer.rows.push(row);
                 }
             }
         }
     }
 };
 
-ConfigSection.prototype.getRowSetLabels = function() {
+ConfigSection.prototype.getRowGroupLabels = function() {
     var labels = [];
-    for (var i = 0; i < this.rowSets.length; i++) {
-        var rowSet = this.rowSets[i];
-        labels.push(rowSet.getLabels());
+    for (var i = 0; i < this.rowGroups.length; i++) {
+        var rowGroup = this.rowGroups[i];
+        labels.push(rowGroup.getLabels());
     }
     return labels;
 };
