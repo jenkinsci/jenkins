@@ -4,7 +4,10 @@ module.exports = ConfigRowGrouping;
 
 /*
  * =======================================================================================
- * Configuration table row grouping i.e. row-set-*, optional-block-*,
+ * Configuration table row grouping i.e. row-set-*, optional-block-*, radio-block-* etc
+ * 
+ * A ConfigSection maintains a list of ConfigRowGrouping and then ConfigRowGrouping
+ * itself maintains a list i.e. it's hierarchical. See ConfigSection.gatherRowGroups().
  * =======================================================================================
  */
 function ConfigRowGrouping(startRow, parentRowGroupContainer) {
