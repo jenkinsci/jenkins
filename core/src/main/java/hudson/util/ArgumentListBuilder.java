@@ -317,8 +317,8 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     	ArgumentListBuilder windowsCommand = new ArgumentListBuilder().add("cmd.exe", "/C");
         boolean quoted, percent;
         for (int i = 0; i < args.size(); i++) {
-        	StringBuilder quotedArgs = new StringBuilder();
-        	String arg = args.get(i);
+            StringBuilder quotedArgs = new StringBuilder();
+            String arg = args.get(i);
             quoted = percent = false;
             for (int j = 0; j < arg.length(); j++) {
                 char c = arg.charAt(j);
