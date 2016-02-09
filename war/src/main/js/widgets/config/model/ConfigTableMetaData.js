@@ -219,10 +219,6 @@ ConfigTableMetaData.prototype.showSection = function(section) {
         section.activator.addClass('active');
         section.markRowsAsActive();
 
-        // Hide the section header row. No need for it now because the
-        // tab text acts as the section label.
-        $('.section-header-row').hide();
-
         // and always show the buttons
         topRows.filter('.config_buttons').show();
 
