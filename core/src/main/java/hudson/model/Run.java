@@ -1911,7 +1911,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Deprecated
     public @Nonnull String getLog() throws IOException {
-        return IOUtils.toString(getLogReader());
+        try (Reader log = getLogReader()) {
+            return IOUtils.toString(log);
+        }
     }
 
     /**
