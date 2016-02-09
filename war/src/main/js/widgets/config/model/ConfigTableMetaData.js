@@ -271,6 +271,10 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
                 var containsText = false;
                 var sectionRows = section.getRows();
 
+                // Show the section now. We will unshow it later if 
+                // it doesn't have the text.
+                this.sections[i2].activator.show();
+                
                 for (var i3 = 0; i3 < sectionRows.length; i3++) {
                     var row = sectionRows[i3];
                     var elementsWithText = $(selector, row);
