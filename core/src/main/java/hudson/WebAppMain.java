@@ -391,7 +391,6 @@ public class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        terminated = true;
         Jenkins instance = Jenkins.getInstance();
         try {
             if (instance != null) {
@@ -400,6 +399,8 @@ public class WebAppMain implements ServletContextListener {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
         }
+
+        terminated = true;
         Thread t = initThread;
         if (t != null && t.isAlive()) {
             LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
