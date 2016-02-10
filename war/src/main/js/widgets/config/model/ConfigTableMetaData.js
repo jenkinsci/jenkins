@@ -57,7 +57,7 @@ exports.fromConfigTable = function(configTable) {
         var tr = $(this);
         if (tr.hasClass('section-header-row')) {
             // a new section
-            curSection = new ConfigSection(configTableMetadata, tr);
+            curSection = new ConfigSection(tr, configTableMetadata);
             configTableMetadata.sections.push(curSection);
         }
     });
@@ -79,6 +79,7 @@ function ConfigTableMetaData(configForm, configTable) {
     this.configForm = configForm;
     this.configTable = configTable;
     this.configTableBody = this.$('> tbody', configTable);
+    this.activatorContainer = undefined;
     this.sections = [];
     this.findInput = undefined;
     this.showListeners = [];
@@ -184,6 +185,22 @@ ConfigTableMetaData.prototype.getSection = function(sectionId) {
     return undefined;
 };
 
+ConfigTableMetaData.prototype.removeSection = function(sectionId) {
+    if (this.hasSections()) {
+        for (var i = 0; i < this.sections.length; i++) {
+            var section = this.sections[i];
+            if (section.id === sectionId) {
+                this.sections.splice(i, 1);
+                if (section.activator) {
+                    section.activator.remove();
+                }
+                return true;
+            }
+        }
+    }
+    return false;
+};
+
 ConfigTableMetaData.prototype.activateFirstSection = function() {
     if (this.hasSections()) {
         this.activateSection(this.sections[0].id);
@@ -210,7 +227,6 @@ ConfigTableMetaData.prototype.showSection = function(section) {
 
     if (section) {
         var topRows = this.getTopRows();
-        var $ = jQD.getJQuery();
 
         // Deactivate currently active section ...
         this.deactivateActiveSection();
@@ -222,8 +238,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
         // and always show the buttons
         topRows.filter('.config_buttons').show();
 
-        // Update the row-set visibility
-        section.updateRowGroupVisibility();
+        // Update text highlighting
         section.highlightText(this.findInput.val());
 
         fireListeners(this.showListeners, section);

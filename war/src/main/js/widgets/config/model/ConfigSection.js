@@ -9,14 +9,39 @@ module.exports = ConfigSection;
  * Configuration table section.
  * =======================================================================================
  */
-function ConfigSection(parentCMD, headerRow) {
-    this.parentCMD = parentCMD;
+function ConfigSection(headerRow, parentCMD) {
     this.headerRow = headerRow;
+    this.parentCMD = parentCMD;
     this.title = headerRow.attr('title');
     this.id = util.toId(this.title);
     this.rowGroups = undefined;
     this.activator = undefined;
+    this.subSections = [];
 }
+
+ConfigSection.prototype.isTopLevelSection = function() {
+    return (this.parentCMD.getSection(this.id) !== undefined);
+};
+
+/**
+ * Move another top-level section into this section i.e. adopt it.
+ * <p>
+ * This allows us to take a top level section (by id) and push it down
+ * into another section e.g. pushing the "Advanced" section into the
+ * "General" section.
+ * @param sectionId The id of the top-level section to be adopted.
+ */
+ConfigSection.prototype.adoptSection = function(sectionId) {
+    if (!this.isTopLevelSection()) {
+        // Only top-level sections can adopt.
+        return;
+    }
+    
+    var child = this.parentCMD.getSection(sectionId);
+    if (child && this.parentCMD.removeSection(child.id)) {
+        this.subSections.push(child);
+    }
+};
 
 /*
  * Get the section rows.
@@ -71,6 +96,10 @@ ConfigSection.prototype.markRowsAsActive = function() {
     for (var i = 0; i < rows.length; i++) {
         rows[i].addClass('active').show();
     }
+    for (var ii = 0; ii < this.subSections.length; ii++) {
+        this.subSections[ii].markRowsAsActive();
+    }
+    this.updateRowGroupVisibility();
 };
 
 ConfigSection.prototype.activeRowCount = function() {
@@ -92,6 +121,9 @@ ConfigSection.prototype.updateRowGroupVisibility = function() {
     for (var i = 0; i < this.rowGroups.length; i++) {
         var rowGroup = this.rowGroups[i];
         rowGroup.updateVisibility();
+    }
+    for (var ii = 0; ii < this.subSections.length; ii++) {
+        this.subSections[ii].updateRowGroupVisibility();
     }
 };
 
