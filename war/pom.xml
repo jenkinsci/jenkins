@@ -79,7 +79,7 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
       <!-- specified in the parent -->
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
@@ -475,7 +475,7 @@ THE SOFTWARE.
           <additionalClassesDirectories>
             <!-- load resoures straight from source -->
             <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
-            
+
             <!--
               read directly from core module's output directory,
               so that changes are picked up right away without running mvn.
@@ -742,7 +742,10 @@ THE SOFTWARE.
                             <goals>
                                 <goal>gulp</goal>
                             </goals>
-                            <configuration><arguments>bundle test</arguments></configuration>
+                            <configuration>
+                              <arguments>bundle test</arguments>
+                              <skip>${skipTests}</skip>
+                            </configuration>
                         </execution>
 
                     </executions>
