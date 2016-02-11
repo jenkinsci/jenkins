@@ -25,6 +25,13 @@ $(function() {
                     var configTable = $(this);
                     var tabBar = tabBarWidget.addTabs(configTable);
 
+                    // We want to merge some sections together.
+                    // Merge the "Advanced" section into the "General" section.
+                    var generalSection = tabBar.getSection('config_general');
+                    if (generalSection) {
+                        generalSection.adoptSection('config_advanced_project_options');
+                    }
+                    
                     addFinderToggle(tabBar);
                     tabBar.onShowSection(function() {
                         // Hook back into hudson-behavior.js
