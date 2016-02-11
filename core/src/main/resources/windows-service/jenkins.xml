@@ -38,7 +38,7 @@ THE SOFTWARE.
     The following value assumes that you have java in your PATH.
   -->
   <executable>java</executable>
-  <arguments>-Xrs -Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\jenkins.war" --httpPort=8080 --webroot="%BASE%\war"</arguments>
+  <arguments>-Xrs -Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\jenkins.war" --httpPort=8080</arguments>
   <!--
     interactive flag causes the empty black Java window to be displayed.
     I'm still debugging this.

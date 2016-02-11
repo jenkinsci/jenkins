@@ -155,14 +155,4 @@ public abstract class OfflineCause {
             this.message = message;
         }
     }
-
-    /**
-     * Caused by idle period.
-     * @since TODO
-     */
-    public static class IdleOfflineCause extends SimpleOfflineCause {
-        public IdleOfflineCause () {
-            super(hudson.slaves.Messages._RetentionStrategy_Demand_OfflineIdle());
-        }
-    }
 }
