@@ -1,10 +1,8 @@
 [![][ButlerImage]][website] 
 
-#Introduction
-Jenkins is all about testing
 
 # About
-In a nutshell, Jenkins CI is the leading open-source continuous integration server. Built with Java, it provides over 1000 plugins to support building and testing virtually any project.
+In a nutshell, Jenkins CI is the leading open-source continuous integration server. What this means is Jenkins is like the butler you never had-spill something or get a bug in your code- well Jenkins will let you know right away. Now you'll know were a bug was most likely introduced so you can find it, fix it and get back to your project.Built with Java, it provides over 1000 plugins to support building and testing virtually any project.
 
 # Downloads
 Non-source downloads such as WAR files and several Linux packages can be found on our [Mirrors].
