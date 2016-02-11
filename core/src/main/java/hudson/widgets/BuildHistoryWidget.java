@@ -63,7 +63,7 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
      */
     public List<Item> getQueuedItems() {
         LinkedList<Item> list = new LinkedList<Item>();
-        for (Item item : Jenkins.getInstance().getQueue().getApproximateItemsQuickly()) {
+        for (Item item : Jenkins.getInstance().getQueue().getItems()) {
             if (item.task == owner) {
                 list.addFirst(item);
             }

@@ -172,13 +172,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class Queue extends ResourceController implements Saveable {
 
     /**
-     * Defines the refresh period for of the internal cache ({@link #itemsView}).
-     * Data should be defined in milliseconds, default value - 1000;
-     * @since 1.577
-     */
-    private static int CACHE_REFRESH_PERIOD = Integer.getInteger(Queue.class.getName() + ".cacheRefreshPeriod", 1000);
-
-    /**
      * Items that are waiting for its quiet period to pass.
      *
      * <p>
@@ -217,41 +210,6 @@ public class Queue extends ResourceController implements Saveable {
      * This map is forgetful, since we can't remember everything that executed in the past.
      */
     private final Cache<Long,LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5*60, TimeUnit.SECONDS).build();
-
-    private final CachedItemList itemsView = new CachedItemList();
-
-    /**
-     * Maintains a copy of {@link Queue#getItems()}
-     *
-     * @see Queue#getApproximateItemsQuickly()
-     */
-    private class CachedItemList {
-        /**
-         * The current cached value.
-         */
-        @CopyOnWrite
-        private volatile List<Item> itemsView = Collections.emptyList();
-        /**
-         * When does the cache info expire?
-         */
-        private final AtomicLong expires = new AtomicLong();
-
-        List<Item> get() {
-            long t = System.currentTimeMillis();
-            long d = expires.get();
-            if (t>d) {// need to refresh the cache
-                long next = t+CACHE_REFRESH_PERIOD;
-                if (expires.compareAndSet(d,next)) {
-                    // avoid concurrent cache update via CAS.
-                    // if the getItems() lock is contended,
-                    // some threads will end up serving stale data,
-                    // but that's OK.
-                    itemsView = ImmutableList.copyOf(getItems());
-                }
-            }
-            return itemsView;
-        }
-    }
 
     /**
      * Data structure created for each idle {@link Executor}.
@@ -864,9 +822,11 @@ public class Queue extends ResourceController implements Saveable {
      * This method is primarily added to make UI threads run faster.
      *
      * @since 1.483
+     * @deprecated Use {@link #getItems()} directly. As of 1.607 the approximation is no longer needed.
      */
+    @Deprecated
     public List<Item> getApproximateItemsQuickly() {
-        return itemsView.get();
+        return Arrays.asList(getItems());
     }
 
     public Item getItem(long id) {

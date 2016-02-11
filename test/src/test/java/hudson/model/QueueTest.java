@@ -404,7 +404,7 @@ public class QueueTest {
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
+            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getItems().toString()).initCause(x);
         }
         r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
