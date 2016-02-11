@@ -440,12 +440,12 @@ public class XStream2 extends XStream {
     private static class BlacklistedTypesConverter implements Converter {
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            throw new UnsupportedOperationException("Refusing to marshal for security reasons");
+            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons");
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            throw new ConversionException("Refusing to unmarshal for security reasons");
+            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons");
         }
 
         @Override
