@@ -47,6 +47,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
 import hudson.util.xstream.ImmutableSortedSetConverter;
 import jenkins.model.Jenkins;
@@ -158,6 +159,8 @@ public class XStream2 extends XStream {
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
         registerConverter(new AssociatedConverterImpl(this), -10);
+
+        registerConverter(new BlacklistedTypesConverter(), PRIORITY_VERY_HIGH); // SECURITY-247 defense
 
         registerConverter(new DynamicProxyConverter(getMapper()) { // SECURITY-105 defense
             @Override public boolean canConvert(Class type) {
@@ -434,4 +437,30 @@ public class XStream2 extends XStream {
 
     }
 
+    private static class BlacklistedTypesConverter implements Converter {
+        @Override
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            throw new UnsupportedOperationException("Refusing to marshal for security reasons");
+        }
+
+        @Override
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            throw new ConversionException("Refusing to unmarshal for security reasons");
+        }
+
+        @Override
+        public boolean canConvert(Class type) {
+            if (type == null) {
+                return false;
+            }
+            try {
+                ClassFilter.DEFAULT.check(type);
+                ClassFilter.DEFAULT.check(type.getName());
+            } catch (SecurityException se) {
+                // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
+                return true;
+            }
+            return false;
+        }
+    }
 }
