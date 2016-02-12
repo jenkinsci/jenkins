@@ -36,6 +36,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
@@ -274,11 +275,13 @@ public class UtilTest {
         } catch (ClassNotFoundException x) {
             throw new AssumptionViolatedException("prior to JDK 7", x);
         }
+        final int defaultDeletionMax = Util.DELETION_MAX;
         try {
             File f = tmp.newFile();
             // Test: If we cannot delete a file, we throw explaining why
             mkfiles(f);
             lockFileForDeletion(f);
+            Util.DELETION_MAX = 1;
             try {
                 Util.deleteFile(f);
                 fail("should not have been deletable");
@@ -287,6 +290,65 @@ public class UtilTest {
                 assertThat(x.getMessage(), containsString(f.getPath()));
             }
         } finally {
+            Util.DELETION_MAX = defaultDeletionMax;
+            unlockFilesForDeletion();
+        }
+    }
+
+    @Test
+    public void testDeleteContentsRecursive() throws Exception {
+        final File dir = tmp.newFolder();
+        final File d1 = new File(dir, "d1");
+        final File d2 = new File(dir, "d2");
+        final File f1 = new File(dir, "f1");
+        final File d1f1 = new File(d1, "d1f1");
+        final File d2f2 = new File(d2, "d1f2");
+        // Test: Files and directories are deleted
+        mkdirs(dir, d1, d2);
+        mkfiles(f1, d1f1, d2f2);
+        Util.deleteContentsRecursive(dir);
+        assertTrue("dir exists", dir.exists());
+        assertFalse("d1 exists", d1.exists());
+        assertFalse("d2 exists", d2.exists());
+        assertFalse("f1 exists", f1.exists());
+    }
+
+    @Test
+    public void testDeleteContentsRecursive_onWindows() throws Exception {
+        Assume.assumeTrue(Functions.isWindows());
+        final File dir = tmp.newFolder();
+        final File d1 = new File(dir, "d1");
+        final File d2 = new File(dir, "d2");
+        final File f1 = new File(dir, "f1");
+        final File d1f1 = new File(d1, "d1f1");
+        final File d2f2 = new File(d2, "d1f2");
+        final int defaultDeletionMax = Util.DELETION_MAX;
+        final int defaultDeletionWait = Util.WAIT_BETWEEN_DELETION_RETRIES;
+        final boolean defaultDeletionGC = Util.GC_AFTER_FAILED_DELETE;
+        try {
+            // Test: If we cannot delete a file, we throw
+            // but still deletes everything it can
+            // even if we are not retrying deletes.
+            mkdirs(dir, d1, d2);
+            mkfiles(f1, d1f1, d2f2);
+            lockFileForDeletion(d1f1);
+            Util.GC_AFTER_FAILED_DELETE = false;
+            Util.DELETION_MAX = 2;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = 0;
+            try {
+                Util.deleteContentsRecursive(dir);
+                fail("Expected IOException");
+            } catch (IOException x) {
+                assertFalse("d2 should not exist", d2.exists());
+                assertFalse("f1 should not exist", f1.exists());
+                assertFalse("d1f2 should not exist", d2f2.exists());
+                assertThat(x.getMessage(), containsString(dir.getPath()));
+                assertThat(x.getMessage(), allOf(not(containsString("interrupted")), containsString("Tried 2 times (of a maximum of 2)."), not(containsString("garbage-collecting")), not(containsString("wait"))));
+            }
+        } finally {
+            Util.DELETION_MAX = defaultDeletionMax;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = defaultDeletionWait;
+            Util.GC_AFTER_FAILED_DELETE = defaultDeletionGC;
             unlockFilesForDeletion();
         }
     }
@@ -315,21 +377,87 @@ public class UtilTest {
         final File f1 = new File(dir, "f1");
         final File d1f1 = new File(d1, "d1f1");
         final File d2f2 = new File(d2, "d1f2");
+        final int defaultDeletionMax = Util.DELETION_MAX;
+        final int defaultDeletionWait = Util.WAIT_BETWEEN_DELETION_RETRIES;
+        final boolean defaultDeletionGC = Util.GC_AFTER_FAILED_DELETE;
         try {
             // Test: If we cannot delete a file, we throw
+            // but still deletes everything it can
+            // even if we are not retrying deletes.
+        	// (And when we are not retrying deletes,
+        	// we do not do the "between retries" delay)
             mkdirs(dir, d1, d2);
             mkfiles(f1, d1f1, d2f2);
             lockFileForDeletion(d1f1);
+            Util.GC_AFTER_FAILED_DELETE = false;
+            Util.DELETION_MAX = 1;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = 10000; // long enough to notice
+            long timeWhenDeletionStarted = System.currentTimeMillis();
             try {
                 Util.deleteRecursive(dir);
                 fail("Expected IOException");
             } catch (IOException x) {
+                long timeWhenDeletionEnded = System.currentTimeMillis();
                 assertTrue("dir exists", dir.exists());
                 assertTrue("d1 exists", d1.exists());
                 assertTrue("d1f1 exists", d1f1.exists());
+                assertFalse("d2 should not exist", d2.exists());
+                assertFalse("f1 should not exist", f1.exists());
+                assertFalse("d1f2 should not exist", d2f2.exists());
                 assertThat(x.getMessage(), containsString(dir.getPath()));
+                assertThat(x.getMessage(), allOf(not(containsString("interrupted")), not(containsString("maximum of")), not(containsString("garbage-collecting"))));
+                long actualTimeSpentDeleting = timeWhenDeletionEnded - timeWhenDeletionStarted;
+                assertTrue("did not wait - took " + actualTimeSpentDeleting + "ms", actualTimeSpentDeleting<1000L);
             }
+            unlockFileForDeletion(d1f1);
+            // Deletes get retried if they fail 1st time around,
+            // allowing the operation to succeed on subsequent attempts.
+            // Note: This is what bug JENKINS-15331 is all about.
+            mkdirs(dir, d1, d2);
+            mkfiles(f1, d1f1, d2f2);
+            lockFileForDeletion(d2f2);
+            Util.DELETION_MAX=4;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = 100;
+            Thread unlockAfterDelay = new Thread("unlockFileAfterDelay") {
+                public void run() {
+                    try {
+                        Thread.sleep(Util.WAIT_BETWEEN_DELETION_RETRIES);
+                        unlockFileForDeletion(d2f2);
+                    } catch( Exception x ) { /* ignored */ }
+                }
+            };
+            unlockAfterDelay.start();
+            Util.deleteRecursive(dir);
+            assertFalse("dir should have been deleted", dir.exists());
+            unlockAfterDelay.join();
+            // An interrupt aborts the delete and makes it fail, even
+            // if we had been told to retry a lot.
+            mkdirs(dir, d1, d2);
+            mkfiles(f1, d1f1, d2f2);
+            lockFileForDeletion(d1f1);
+            Util.DELETION_MAX=10;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = -1000;
+            Util.GC_AFTER_FAILED_DELETE = true;
+            final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
+            Thread deleteToBeInterupted = new Thread("deleteToBeInterupted") {
+                public void run() {
+                    try { Util.deleteRecursive(dir); }
+                    catch( Throwable x ) { thrown.set(x); }
+                }
+            };
+            deleteToBeInterupted.start();
+            deleteToBeInterupted.interrupt();
+            deleteToBeInterupted.join(500);
+            assertFalse("deletion stopped", deleteToBeInterupted.isAlive());
+            assertTrue("d1f1 still exists", d1f1.exists());
+            unlockFileForDeletion(d1f1);
+            Throwable deletionInterruptedEx = thrown.get();
+            assertThat(deletionInterruptedEx, instanceOf(IOException.class));
+            assertThat(deletionInterruptedEx.getMessage(), allOf(containsString("interrupted"), containsString("maximum of " + Util.DELETION_MAX), containsString("garbage-collecting")));
         } finally {
+            Util.DELETION_MAX = defaultDeletionMax;
+            Util.WAIT_BETWEEN_DELETION_RETRIES = defaultDeletionWait;
+            Util.GC_AFTER_FAILED_DELETE = defaultDeletionGC;
             unlockFilesForDeletion();
         }
     }
