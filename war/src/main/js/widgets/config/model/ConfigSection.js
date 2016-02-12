@@ -153,7 +153,9 @@ ConfigSection.prototype.gatherRowGroups = function(rows) {
 
             if (row.hasClass('row-group-start')) {
                 var newRowGroup = new ConfigRowGrouping(row, rowGroupContainer);
-                rowGroupContainer.rowGroups.push(newRowGroup);
+                if (rowGroupContainer) {
+                    rowGroupContainer.rowGroups.push(newRowGroup);
+                }
                 rowGroupContainer = newRowGroup;
                 newRowGroup.findToggleWidget(row);
             } else {
