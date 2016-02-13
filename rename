@@ -1,0 +1,1 @@
+mv $1 $1.lang.slave_rename

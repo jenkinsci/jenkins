@@ -38,7 +38,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 
 /**
- * Clean up old left-over workspaces from slaves.
+ * Clean up old left-over workspaces from agents.
  *
  * @author Kohsuke Kawaguchi
  */

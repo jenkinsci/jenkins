@@ -59,7 +59,7 @@ public class GetNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/ExtendedRead permission"));
+        assertThat(result.stderr(), containsString("user is missing the Agent/ExtendedRead permission"));
         assertThat(result, failedWith(-1));
         assertThat(result, hasNoStandardOutput());
     }

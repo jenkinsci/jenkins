@@ -237,8 +237,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * <p>
      * The answer is yes if there is a reasonable basis to believe that Hudson can have
      * an executor under this label, given the current configuration. This includes
-     * situations such as (1) there are offline slaves that have this label (2) clouds exist
-     * that can provision slaves that have this label.
+     * situations such as (1) there are offline agents that have this label (2) clouds exist
+     * that can provision agents that have this label.
      */
     public boolean isAssignable() {
         for (Node n : getNodes())

@@ -41,8 +41,8 @@ public final class ClockDifference {
     /**
      * The difference in milliseconds.
      *
-     * Positive value means the slave is behind the master,
-     * negative value means the slave is ahead of the master.
+     * Positive value means the agent is behind the master,
+     * negative value means the agent is ahead of the master.
      */
     @Exported
     public final long diff;
