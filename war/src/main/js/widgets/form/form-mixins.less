@@ -1,0 +1,45 @@
+/*
+ * Mixins for form elements
+ */
+
+/*
+ * Search input field
+ */
+.search(@height) {
+  height: @height;
+  .border-radius(@height/2);
+  padding: 0px 15px;
+  outline: none;
+  border: 1px solid #DDD;
+  box-shadow: 0 0 5px #DDD inset;
+  background-color: #ffffff;
+}
+
+.find-container(@height: 40px, @width: 200px) {
+  height: @height;
+  padding: 5px;
+
+  .find {
+    position: absolute;
+    top: 5px;
+    width: @width;
+    vertical-align: middle;
+
+    input {
+      width: 100%;
+      .search(@height - 10);
+    }
+    .clear {
+      position: absolute;
+      padding: 0px 4px;
+      cursor: pointer;
+      top: (@height/2 - 13);
+      right: 5px;
+      opacity: 0.5;
+      font-weight: bold;
+    }
+    .clear:hover {
+      opacity: 1.0;
+    }
+  }
+}

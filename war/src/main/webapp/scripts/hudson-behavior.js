@@ -1195,6 +1195,7 @@ var jenkinsRules = {
         Element.observe(window,"resize",adjustSticker);
         // initial positioning
         Element.observe(window,"load",adjustSticker);
+        Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
         adjustSticker();
         layoutUpdateCallback.add(adjustSticker);
     },

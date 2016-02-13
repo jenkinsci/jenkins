@@ -166,6 +166,8 @@ ${h.initPageVariables(context)}
       <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
     </j:if>
 
+    <script src="${resURL}/jsbundles/page-init.js" type="text/javascript"/>
+
   </head>
   <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
