@@ -39,12 +39,12 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
       specify path that starts from "/" for loading additional CSS stylesheet.
-      path is interprted as relative to the context root. e.g.,
+      path is interpreted as relative to the context root. e.g.,
 
       {noformat}&lt;l:layout css="/plugin/mysuperplugin/css/myneatstyle.css">{noformat}
 
       This was originally added to allow plugins to load their stylesheets, but
-      *the use of thie attribute is discouraged now.*
+      *the use of the attribute is discouraged now.*
       plugins should now do so by inserting &lt;style> elements and/or &lt;script> elements
       in &lt;l:header/> tag.
     </st:attribute>
@@ -52,6 +52,11 @@ THE SOFTWARE.
       If given, this page is only made available to users that has the specified permission.
       (The permission will be checked against the "it" object.)
     </st:attribute>
+    <st:attribute name="sidepanel" use="optional">
+      By default, if given, this page will render side-panel + main-panel. Typically, left-side (navigation or menu) +
+      main-content. If set to false, this page will render only main-panel. Typically, full-width size.
+    </st:attribute>
+
   </st:documentation>
 <st:setHeader name="Expires" value="0" />
 <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
@@ -69,15 +74,15 @@ ${h.initPageVariables(context)}
 <j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
 <j:set var="_" value="${request.getSession()}"/>
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null and !attrs.norefresh.equals(false))}"/>
-  <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
-  <j:if test="${request.servletPath=='/' || request.servletPath==''}">
-    ${h.advertiseHeaders(response)}
-    <j:if test="${extensionsAvailable}">
-      <j:forEach var="pd" items="${h.pageDecorators}">
-        <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
-      </j:forEach>
-    </j:if>
+<j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
+<j:if test="${request.servletPath=='/' || request.servletPath==''}">
+  ${h.advertiseHeaders(response)}
+  <j:if test="${extensionsAvailable}">
+    <j:forEach var="pd" items="${h.pageDecorators}">
+      <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+    </j:forEach>
   </j:if>
+</j:if>
 <x:doctype name="html" />
 <html>
   <head resURL="${resURL}">
@@ -88,11 +93,15 @@ ${h.initPageVariables(context)}
     </j:if>
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
+    <link rel="stylesheet" href="${resURL}/css/layout-common.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
+    </j:if>
+    <j:if test="${empty(attrs.sidepanel) or attrs.sidepanel}">
+      <link type="text/css" rel="stylesheet" href="${resURL}/css/layout-left-side.css" />
     </j:if>
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
     <link rel="mask-icon" href="${rootURL}/images/mask-icon.svg" color="black" />
@@ -104,8 +113,7 @@ ${h.initPageVariables(context)}
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
     <!-- we include our own prototype.js, so don't let stapler pull in another. -->
-    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"
-                includes="org.kohsuke.stapler.bind"/>
+    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype" includes="org.kohsuke.stapler.bind"/>
 
     <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
@@ -228,21 +236,23 @@ ${h.initPageVariables(context)}
     </div>
 
     <div id="page-body" class="clear">
-      <div id="side-panel">
-        <j:set var="mode" value="side-panel" />
-        <d:invokeBody />
-  
-        <!-- add YUI logger if debugging YUI -->
-        <j:if test="${h.yuiSuffix=='debug'}">
-        <div id="yui-logreader" style="margin-top:1em"/>
-          <script>
-            Behaviour.addLoadEvent(function(){
-              var logReader = new YAHOO.widget.LogReader("yui-logreader");
-              logReader.collapse();
-            });
-          </script>
-        </j:if>
-      </div>
+      <j:if test="${empty(attrs.sidepanel) or attrs.sidepanel}">
+        <div id="side-panel">
+          <j:set var="mode" value="side-panel" />
+          <d:invokeBody />
+
+          <!-- add YUI logger if debugging YUI -->
+          <j:if test="${h.yuiSuffix=='debug'}">
+          <div id="yui-logreader" style="margin-top:1em"/>
+            <script>
+              Behaviour.addLoadEvent(function(){
+                var logReader = new YAHOO.widget.LogReader("yui-logreader");
+                logReader.collapse();
+              });
+            </script>
+          </j:if>
+        </div>
+      </j:if>
       <div id="main-panel">
          <j:set var="mode" value="main-panel" />
          <d:invokeBody/>
