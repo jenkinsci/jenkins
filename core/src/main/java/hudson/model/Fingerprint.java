@@ -694,16 +694,24 @@ public class Fingerprint implements ModelObject, Saveable {
                 try {
                     if(s.contains("-")) {
                         String[] tokens = Util.tokenize(s,"-");
-                        rs.ranges.add(new Range(Integer.parseInt(tokens[0]),Integer.parseInt(tokens[1])+1));
+                        if (tokens.length == 2) {
+                            rs.ranges.add(new Range(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]) + 1));
+                        } else {
+                            if (!skipError) {
+                                throw new IllegalArgumentException(
+                                        String.format("Unable to parse %s, expected string with a range M-N", list));
+                            }
+                            // ignore malformed text like "1-10-50"
+                        }
                     } else {
                         int n = Integer.parseInt(s);
                         rs.ranges.add(new Range(n,n+1));
                     }
                 } catch (NumberFormatException e) {
                     if (!skipError)
-                        throw new IllegalArgumentException("Unable to parse "+list);
+                        throw new IllegalArgumentException(
+                                String.format("Unable to parse %s, expected number", list));
                     // ignore malformed text
-
                 }
             }
             return rs;
