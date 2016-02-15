@@ -1702,7 +1702,7 @@ public class Util {
      * give up, thus improving build reliability.
      */
     @Restricted(value = NoExternalUse.class)
-    static int DELETION_MAX = Math.max(1, Integer.getInteger(Util.class.getName() + ".deletionMax", 3).intValue());
+    static int DELETION_MAX = Math.max(1, Integer.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3).intValue());
 
     /**
      * The time (in milliseconds) that we will wait between attempts to
