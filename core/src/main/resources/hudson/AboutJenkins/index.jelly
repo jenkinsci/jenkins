@@ -25,11 +25,7 @@ THE SOFTWARE.
 <!-- 3rd party license acknowledgements and  -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout title="${%about(app.VERSION)}" norefresh="true">
-
-    <l:header>
-      <link type="text/css" rel="stylesheet" href="${resURL}/css/one-column.css" />
-    </l:header>
+  <l:layout title="${%about(app.VERSION)}" norefresh="true" sidepanel="false">
 
     <l:main-panel>
       <div class="container-fluid">
