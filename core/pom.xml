@@ -41,7 +41,7 @@ THE SOFTWARE.
     <staplerFork>true</staplerFork>
     <stapler.version>1.237</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>1.8.9</groovy.version>
+    <groovy.version>2.4.5</groovy.version>
   </properties>
 
   <dependencies>
@@ -411,13 +411,13 @@ THE SOFTWARE.
     <dependency><!-- groovy shell uses this but uses an optional dependency -->
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
-      <version>1.0</version>
+      <version>2.12</version>
       <scope>compile</scope>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-      <version>1.9</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <!--
