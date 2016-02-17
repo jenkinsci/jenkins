@@ -14,6 +14,7 @@ import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletContext;
+import jenkins.model.Jenkins;
 
 /**
  * A collection of Groovy scripts that are executed as various hooks.
@@ -42,6 +43,15 @@ public class GroovyHookScript {
     private final ServletContext servletContext;
     private final File home;
     private final ClassLoader loader;
+
+    @Deprecated
+    public GroovyHookScript(String hook) {
+        this(hook, Jenkins.getActiveInstance());
+    }
+
+    private GroovyHookScript(String hook, Jenkins j) {
+        this(hook, j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader);
+    }
 
     public GroovyHookScript(String hook, @Nonnull ServletContext servletContext, @Nonnull File home, @Nonnull ClassLoader loader) {
         this.hook = hook;
