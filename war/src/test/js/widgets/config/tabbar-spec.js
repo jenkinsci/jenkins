@@ -150,6 +150,39 @@ describe("tabbar-spec tests", function () {
         }, 'widgets/config/freestyle-config.html');
     });
 
+    it("- test adopt sections ", function (done) {
+        jsTest.onPage(function() {
+            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            var configTabBar = configTabBarWidget.addTabsOnFirst();
+            var jQD = require('jquery-detached');
+
+            var $ = jQD.getJQuery();
+
+            var tabBar = $('.tabBar');
+
+            // Move the advanced stuff into the general section
+            var general = configTabBar.getSection('config_general');
+            general.adoptSection('config__advanced_project_options');
+
+            // Only 3 tabs should be visible
+            // (used to be 4 before the merge/adopt)...
+            expect($('.tab', tabBar).size()).toBe(3);
+            expect(textCleanup($('.tab', tabBar).text())).toBe('General|#Build Triggers|#Build');
+
+            // And if we try to use the finder now to find something
+            // that was in the advanced section, it should now appear in the
+            // General section ...
+            configTabBar.showSections('quiet period');
+            expect($('.tab.hidden', tabBar).size()).toBe(2);
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('#Build Triggers|#Build');
+
+            var activeSection = configTabBar.activeSection();
+            expect(textCleanup(activeSection.title)).toBe('General');
+
+            done();
+        }, 'widgets/config/freestyle-config.html');
+    });
+
     function keydowns(text, onInput) {
         var jQD = require('jquery-detached');
         var $ = jQD.getJQuery();
