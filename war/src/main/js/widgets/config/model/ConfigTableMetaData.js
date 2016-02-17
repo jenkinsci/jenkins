@@ -262,7 +262,7 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
     if (withText === '') {
         if (this.hasSections()) {
             for (var i1 = 0; i1 < this.sections.length; i1++) {
-                this.sections[i1].activator.show();
+                this.sections[i1].activator.removeClass('hidden');
             }
             var activeSection = this.activeSection();
             if (!activeSection) {
@@ -273,30 +273,16 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
         }
     } else {
         if (this.hasSections()) {
-            var $ = jQD.getJQuery();
-            var selector = ":containsci('" + withText + "')";
             var sectionsWithText = [];
 
             for (var i2 = 0; i2 < this.sections.length; i2++) {
                 var section = this.sections[i2];
-                var containsText = false;
-                var sectionRows = section.getRows();
-                
-                for (var i3 = 0; i3 < sectionRows.length; i3++) {
-                    var row = sectionRows[i3];
-                    var elementsWithText = $(selector, row);
 
-                    if (elementsWithText.size() > 0) {
-                        containsText = true;
-                        break;
-                    }
-                }
-
-                if (containsText) {
-                    section.activator.show();
+                if (section.hasText(withText)) {
+                    section.activator.removeClass('hidden');
                     sectionsWithText.push(section);
                 } else {
-                    section.activator.hide();
+                    section.activator.addClass('hidden');
                 }
             }
 

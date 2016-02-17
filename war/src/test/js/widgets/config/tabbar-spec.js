@@ -71,6 +71,102 @@ describe("tabbar-spec tests", function () {
             done();
         }, 'widgets/config/freestyle-config.html');
     });
+
+    it("- test finder - via handler triggering", function (done) {
+        jsTest.onPage(function() {
+            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            var configTabBar = configTabBarWidget.addTabsOnFirst();
+            var jQD = require('jquery-detached');
+
+            var $ = jQD.getJQuery();
+
+            var tabBar = $('.tabBar');
+
+            // All tabs should be visible...
+            expect($('.tab', tabBar).size()).toBe(4);
+            expect($('.tab.hidden', tabBar).size()).toBe(0);
+
+            var finder = configTabBar.findInput;
+            expect(finder.size()).toBe(1);
+
+            // Find sections that have the text "trigger" in them...
+            keydowns('trigger', finder);
+
+            // Need to wait for the change to happen ... there's a 300ms delay.
+            // We could just call configTabBar.showSections(), but ...
+            setTimeout(function() {
+                expect($('.tab.hidden', tabBar).size()).toBe(3);
+                expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Advanced Project Options|#Build');
+
+                var activeSection = configTabBar.activeSection();
+                expect(textCleanup(activeSection.title)).toBe('#Build Triggers');
+
+                expect($('.highlight-split .highlight').text()).toBe('Trigger');
+
+                done();
+            }, 600);
+        }, 'widgets/config/freestyle-config.html');
+    });
+
+    it("- test finder - via showSections()", function (done) {
+        jsTest.onPage(function() {
+            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            var configTabBar = configTabBarWidget.addTabsOnFirst();
+            var jQD = require('jquery-detached');
+
+            var $ = jQD.getJQuery();
+
+            var tabBar = $('.tabBar');
+
+            configTabBar.showSections('quiet period');
+            expect($('.tab.hidden', tabBar).size()).toBe(3);
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Build Triggers|#Build');
+
+            var activeSection = configTabBar.activeSection();
+            expect(textCleanup(activeSection.title)).toBe('#Advanced Project Options');
+
+            done();
+        }, 'widgets/config/freestyle-config.html');
+    });
+
+    it("- test finder - via showSections() - in inner row-group", function (done) {
+        jsTest.onPage(function() {
+            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            var configTabBar = configTabBarWidget.addTabsOnFirst();
+            var jQD = require('jquery-detached');
+
+            var $ = jQD.getJQuery();
+
+            var tabBar = $('.tabBar');
+
+            configTabBar.showSections('Strategy');
+            expect($('.tab.hidden', tabBar).size()).toBe(3);
+            expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('#Advanced Project Options|#Build Triggers|#Build');
+
+            var activeSection = configTabBar.activeSection();
+            expect(textCleanup(activeSection.title)).toBe('General');
+
+            done();
+        }, 'widgets/config/freestyle-config.html');
+    });
+
+    function keydowns(text, onInput) {
+        var jQD = require('jquery-detached');
+        var $ = jQD.getJQuery();
+
+        // hmmm, for some reason, the key events do not result in the text being
+        // set in the input, so setting it manually.
+        onInput.val(text);
+
+        // Now fire a keydown event to trigger the handler
+        var e = $.Event("keydown");
+        e.which = 116;
+        onInput.trigger(e);
+    }
+
+    function textCleanup(text) {
+        return text.trim().replace(/(\r\n|\n|\r)/gm, "").replace(/  +/g, "|");
+    }
 });
 
 // TODO: lots more tests !!!
