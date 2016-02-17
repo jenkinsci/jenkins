@@ -20,10 +20,12 @@ function ConfigRowGrouping(startRow, parentRowGroupContainer) {
     this.label = undefined;
 }
 
-ConfigRowGrouping.prototype.getRowCount = function() {
+ConfigRowGrouping.prototype.getRowCount = function(includeChildren) {
     var count = this.rows.length;
-    for (var i = 0; i < this.rowGroups.length; i++) {
-        count += this.rowGroups[i].getRowCount();
+    if (includeChildren === undefined || includeChildren === true) {
+        for (var i = 0; i < this.rowGroups.length; i++) {
+            count += this.rowGroups[i].getRowCount();
+        }
     }
     return count;
 };
