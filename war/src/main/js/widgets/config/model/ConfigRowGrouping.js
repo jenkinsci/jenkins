@@ -48,7 +48,7 @@ ConfigRowGrouping.prototype.updateVisibility = function() {
             if (isChecked) {
                 this.rows[i].show();
             } else {
-                this.rows[i].hide();
+                this.rows[i].not('.help-area').hide();
             }
         }
     }
