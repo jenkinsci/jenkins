@@ -5,38 +5,33 @@
 /*
  * Search input field
  */
-.search(@height) {
-  height: @height;
-  .border-radius(@height/2);
-  padding: 0px 15px;
-  outline: none;
-  border: 1px solid #DDD;
-  box-shadow: 0 0 5px #DDD inset;
-  background-color: #ffffff;
-}
 
-.find-container(@height: 40px, @width: 200px) {
-  height: @height;
+.find-container(@width: 200px) {
   padding: 5px;
 
   .find {
-    position: absolute;
-    top: 5px;
+    position: relative;
     width: @width;
     vertical-align: middle;
 
     input {
       width: 100%;
-      .search(@height - 10);
+      height:@input-line-height;
+      line-height:@input-line-height;
+      padding:0 5px;
+      border: 1px solid #DDD;
+      background-color: #fff;
     }
     .clear {
       position: absolute;
-      padding: 0px 4px;
+      height:@input-line-height;
+      line-height:@input-line-height;
       cursor: pointer;
-      top: (@height/2 - 13);
-      right: 5px;
+      right: 0;
       opacity: 0.5;
       font-weight: bold;
+      display:block;
+      padding:0 7px;
     }
     .clear:hover {
       opacity: 1.0;
