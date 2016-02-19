@@ -71,7 +71,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     }
 
     public void doCommand(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getActiveInstance();
         jenkins.checkPermission(Jenkins.READ);
 
         // Strip trailing slash
@@ -112,7 +112,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
                 FullDuplexHttpChannel server;
                 if(req.getHeader("Side").equals("download")) {
-                    duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+                    duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
                         @Override
                         protected void main(Channel channel) throws IOException, InterruptedException {
                             // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()

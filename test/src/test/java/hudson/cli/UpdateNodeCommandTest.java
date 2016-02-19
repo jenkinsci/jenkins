@@ -60,8 +60,8 @@ public class UpdateNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/Configure permission"));
-        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Slave/Configure permission"));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
     }
 
@@ -92,8 +92,8 @@ public class UpdateNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("No such node 'MySlave'"));
-        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("ERROR: No such node 'MySlave'"));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
     }
 }
