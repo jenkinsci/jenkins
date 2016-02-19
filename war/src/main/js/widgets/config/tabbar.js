@@ -1,12 +1,11 @@
 var jQD = require('jquery-detached');
 var tableMetadata = require('./model/ConfigTableMetaData.js');
-debugger;
+
 exports.addTabsOnFirst = function() {
     return exports.addTabs(tableMetadata.findConfigTables().first());
 };
 
 exports.addTabs = function(configTable) {
-    debugger;
     var $ = jQD.getJQuery();
     var configTableMetadata;
 
