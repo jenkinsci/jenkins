@@ -67,7 +67,6 @@ exports.addTabs = function(configTable) {
 };
 
 exports.addTabsActivator = function(configTable) {
-
     var $ = jQD.getJQuery();
     var configWidgets = $('<div class="jenkins-config-widgets"><div class="showTabs" title="Add configuration section tabs">Add tabs</div></div>');
     configWidgets.insertBefore(configTable.parent());
