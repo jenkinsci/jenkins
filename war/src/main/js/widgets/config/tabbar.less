@@ -234,7 +234,11 @@
         border-color:@line-blue; 
         box-shadow:0 2px 10px @shade, inset 0 200px 200px -200px @birghtest; 
         position:relative; 
-        z-index:2}
+        z-index:2
+      }
+      .repeated-chunk.dragging{
+        position:static;
+      }
       .repeated-chunk{
         border:1px solid @shade;
         margin:2px;
@@ -284,5 +288,10 @@
       background-color: #ffff00;
     }
   }
+}
+#ygddfdiv {
+  background:@light-backgrond;
+  border:1px solid @line-blue !important;
+  opacity:.5;
 }
 .yui-skin-sam .yuimenu {z-index:9999 !important}
