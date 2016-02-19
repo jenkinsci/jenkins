@@ -180,7 +180,9 @@
           border-radius:0;
           background:@birghtest;
         }
-        
+        .help{
+          background:@medium-translucent;
+        }
         p,
         .help,
         .setting-description {
@@ -261,11 +263,10 @@
           background-color: @danger;
           color: @light-backgrond;
           border: 1px solid @danger-line;
-         
-          :hover{
-            background-color: @danger-dark;
-            border-color:@danger-dark-line;
-          } 
+        }
+        button:hover{
+          background-color: @danger-dark;
+          border-color:@danger-dark-line;
         }
         button:before{
           content: 'X';
