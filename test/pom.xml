@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.649</version>
+    <version>1.650-SNAPSHOT</version>
   </parent>
 
   <artifactId>test</artifactId>
