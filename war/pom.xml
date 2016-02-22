@@ -540,6 +540,7 @@ THE SOFTWARE.
           <webApp>
             <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
+            <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern><!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
           </webApp>
         </configuration>
       </plugin>
