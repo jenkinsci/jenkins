@@ -161,8 +161,8 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
                                         o);
                             }
                         }
-                        p = o;
                     }
+                    p = o;
                 }
             }
         }

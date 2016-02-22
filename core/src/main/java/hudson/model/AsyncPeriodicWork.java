@@ -144,8 +144,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                                         o);
                             }
                         }
-                        p = o;
                     }
+                    p = o;
                 }
             }
         }
