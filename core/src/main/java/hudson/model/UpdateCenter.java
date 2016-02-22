@@ -52,6 +52,7 @@ import hudson.util.IOException2;
 import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
+import jenkins.MissingDependencyException;
 import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
@@ -1518,6 +1519,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 status = e;
                 if (status.isSuccess()) onSuccess();
                 requiresRestart |= status.requiresRestart();
+            } catch (MissingDependencyException e) {
+                LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { getName(), e.getMessage() });
+                status = new Failure(e);
+                error = e;
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Failed to install "+getName(),e);
                 status = new Failure(e);
