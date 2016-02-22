@@ -98,6 +98,13 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         this(new FileOutputStream(out),charset);
     }
 
+    public StreamTaskListener(File out, boolean append, Charset charset) throws IOException {
+        // don't do buffering so that what's written to the listener
+        // gets reflected to the file immediately, which can then be
+        // served to the browser immediately
+        this(new FileOutputStream(out, append),charset);
+    }
+
     public StreamTaskListener(Writer w) throws IOException {
         this(new WriterOutputStream(w));
     }
