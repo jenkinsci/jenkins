@@ -26,6 +26,7 @@ import java.util.logging.Logger;
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol3} for more details.
  *
  * @author Akshay Dayal
+ * @since 1.XXX
  */
 @Extension
 public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
