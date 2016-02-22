@@ -29,7 +29,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      *
      * @since 1.650
      */
-    private static Long LOG_ROTATE_MINUTES = Long.getLong(AsyncPeriodicWork.class.getName() + ".logRotateMinutes",
+    private static final long LOG_ROTATE_MINUTES = Long.getLong(AsyncPeriodicWork.class.getName() + ".logRotateMinutes",
             TimeUnit.DAYS.toMinutes(1));
     /**
      * The default file size after which to try and rotate the log file used by {@link #createListener()}.
@@ -40,7 +40,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      *
      * @since 1.650
      */
-    private static Long LOG_ROTATE_SIZE = Long.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", -1L);
+    private static final long LOG_ROTATE_SIZE = Long.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", -1L);
     /**
      * The number of milliseconds (since startup or previous rotation) after which to try and rotate the log file.
      *
@@ -88,28 +88,29 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 public void run() {
                     logger.log(getNormalLoggingLevel(), "Started {0}", name);
                     long startTime = System.currentTimeMillis();
+                    long stopTime;
 
                     StreamTaskListener l = createListener();
                     try {
                         l.getLogger().printf("Started at %tc%n", new Date(startTime));
                         ACL.impersonate(ACL.SYSTEM);
 
-                        try {
-                            execute(l);
-                        } finally {
-                            long stopTime = System.currentTimeMillis();
-                            l.getLogger().printf("Finished at %tc. %dms%n", new Date(stopTime), stopTime - startTime);
-                        }
+                        execute(l);
                     } catch (IOException e) {
                         e.printStackTrace(l.fatalError(e.getMessage()));
                     } catch (InterruptedException e) {
                         e.printStackTrace(l.fatalError("aborted"));
                     } finally {
-                        l.closeQuietly();
+                        stopTime = System.currentTimeMillis();
+                        try {
+                            l.getLogger().printf("Finished at %tc. %dms%n", new Date(stopTime), stopTime - startTime);
+                        } finally {
+                            l.closeQuietly();
+                        }
                     }
 
                     logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",
-                            new Object[]{name, System.currentTimeMillis() - startTime});
+                            new Object[]{name, stopTime - startTime});
                 }
             },name+" thread");
             thread.start();
@@ -139,7 +140,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                             }
                         } else {
                             if (!o.delete()) {
-                                logger.log(getErrorLoggingLevel(), "Could not delete log files {0} to enable rotation",
+                                logger.log(getErrorLoggingLevel(), "Could not delete log file {0} to enable rotation",
                                         o);
                             }
                         }
