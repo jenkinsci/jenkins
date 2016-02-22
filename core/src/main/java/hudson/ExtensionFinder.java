@@ -175,7 +175,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * from here.
      *
      * <p>
-     * See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208 for how to force a class initialization.
+     * See https://bugs.openjdk.java.net/browse/JDK-4993813 for how to force a class initialization.
      * Also see http://kohsuke.org/2010/09/01/deadlock-that-you-cant-avoid/ for how class initialization
      * can results in a dead lock.
      */
@@ -668,8 +668,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         extType = ((Method)e).getReturnType();
                     } else
                         throw new AssertionError();
-                    // according to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6459208
-                    // this appears to be the only way to force a class initialization
+                    // according to JDK-4993813 this is the only way to force class initialization
                     Class.forName(extType.getName(),true,extType.getClassLoader());
                 } catch (Exception | LinkageError e) {
                     LOGGER.log(logLevel(item), "Failed to scout "+item.className(), e);

@@ -58,6 +58,39 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v1.649>What's new in 1.649</a> (2016/02/21)</h3>
+<ul class=image>
+  <li class="rfe">
+    Allow changing the directory used for the extraction of plugin archives via the <code>--pluginroot</code> CLI option (also controllable via the <code>hudson.PluginManager.workDir</code> system property / context parameter. Also document the <code>--webroot</code> CLI parameter in <code>java -jar jenkins.war --help</code>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32765">issue 32765</a>)
+  <li class="rfe">
+    Unify CLI exit code semantics.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32273">issue 32273</a>)
+  <li class="bug">
+    ArrayIndexOutOfBoundsException when parsing range set.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32852">issue 32852</a>)
+  <li class="rfe">
+    Improved Polish translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2041">pull 2041</a>,
+    <a href="https://github.com/jenkinsci/jenkins/pull/2044">pull 2044</a>)
+</ul>
+<h3><a name=v1.648>What's new in 1.648</a> (2016/02/17)</h3>
+<ul class=image>
+  <li class="rfe">
+    Improved Czech and Polish translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2008">pull 2008</a>,
+    <a href="https://github.com/jenkinsci/jenkins/pull/2018">pull 2017</a>,
+    <a href="https://github.com/jenkinsci/jenkins/pull/2017">pull 2018</a>)
+  <li class="bug">
+    Generate new instance identity file when the existing one is found to be corrupt.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-29240">issue 29240</a>)
+</ul>
+<h3><a name=v1.647>What's new in 1.647</a> (2016/02/04)</h3>
+<ul class=image>
+  <li class="bug">
+    Retrieve tool installer metadata from all update sites.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32328">issue 32328</a>)
+</ul>
 <h3><a name=v1.646>What's new in 1.646</a> (2016/01/25)</h3>
 <ul class=image>
   <li class="major rfe">
@@ -1479,7 +1512,7 @@ Upcoming changes</a>
 <h3><a name=v1.563>What's new in 1.563</a> (2014/05/11)</h3>
 <ul class=image>
   <li class="major bug">
-    Memory exhausion in remoting channel since 1.560.
+    Memory exhaustion in remoting channel since 1.560.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22734">issue 22734</a>)
   <li class="rfe">
     Configurable size for log buffer.
@@ -1623,7 +1656,7 @@ Upcoming changes</a>
     Fixed NoSuchMethodException when destroying processes using JDK1.8.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21341">issue 21341</a>)
   <li class=rfe>
-    Avoid irrelevant job queing while node is offline.
+    Avoid irrelevant job queuing while node is offline.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21394">issue 21394</a>)
   <li class=rfe>
     Debian package now creates 'jenkins' group

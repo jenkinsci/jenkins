@@ -60,9 +60,9 @@ public class DeleteNodeCommandTest {
                 .invokeWithArgs("aNode")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Agent/Delete permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Delete permission"));
     }
 
     @Test public void deleteNodeShouldSucceed() throws Exception {
@@ -85,9 +85,9 @@ public class DeleteNodeCommandTest {
                 .invokeWithArgs("never_created")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such node 'never_created'"));
+        assertThat(result.stderr(), containsString("ERROR: No such node 'never_created'"));
     }
 
     @Test public void deleteNodeManyShouldSucceed() throws Exception {
@@ -106,7 +106,45 @@ public class DeleteNodeCommandTest {
         assertThat(j.jenkins.getView("aNode3"), nullValue());
     }
 
-    @Test public void deleteNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
+    @Test public void deleteNodeManyShouldFailIfFirstNodeDoesNotExist() throws Exception {
+
+        j.createSlave("aNode1", "", null);
+        j.createSlave("aNode2", "", null);
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.DELETE, Jenkins.READ)
+                .invokeWithArgs("never_created", "aNode1", "aNode2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(j.jenkins.getView("aNode1"), nullValue());
+        assertThat(j.jenkins.getView("aNode2"), nullValue());
+        assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteNodeManyShouldFailIfMiddleNodeDoesNotExist() throws Exception {
+
+        j.createSlave("aNode1", "", null);
+        j.createSlave("aNode2", "", null);
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.DELETE, Jenkins.READ)
+                .invokeWithArgs("aNode1", "never_created", "aNode2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(j.jenkins.getView("aNode1"), nullValue());
+        assertThat(j.jenkins.getView("aNode2"), nullValue());
+        assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteNodeManyShouldFailIfLastNodeDoesNotExist() throws Exception {
 
         j.createSlave("aNode1", "", null);
         j.createSlave("aNode2", "", null);
@@ -115,13 +153,35 @@ public class DeleteNodeCommandTest {
                 .authorizedTo(Computer.DELETE, Jenkins.READ)
                 .invokeWithArgs("aNode1", "aNode2", "never_created");
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such node 'never_created'"));
+        assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
 
         assertThat(j.jenkins.getView("aNode1"), nullValue());
         assertThat(j.jenkins.getView("aNode2"), nullValue());
         assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteNodeManyShouldFailIfMoreNodesDoNotExist() throws Exception {
+
+        j.createSlave("aNode1", "", null);
+        j.createSlave("aNode2", "", null);
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.DELETE, Jenkins.READ)
+                .invokeWithArgs("aNode1", "never_created1", "never_created2", "aNode2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created1: No such node 'never_created1'"));
+        assertThat(result.stderr(), containsString("never_created2: No such node 'never_created2'"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(j.jenkins.getView("aNode1"), nullValue());
+        assertThat(j.jenkins.getView("aNode2"), nullValue());
+        assertThat(j.jenkins.getView("never_created1"), nullValue());
+        assertThat(j.jenkins.getView("never_created2"), nullValue());
     }
 
     @Test public void deleteNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {

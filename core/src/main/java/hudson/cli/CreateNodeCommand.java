@@ -53,7 +53,7 @@ public class CreateNodeCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getActiveInstance();
         jenkins.checkPermission(Computer.CREATE);
 
         final Node newNode = (Node) Jenkins.XSTREAM2.fromXML(stdin);
@@ -70,10 +70,7 @@ public class CreateNodeCommand extends CLICommand {
         }
 
         if (jenkins.getNode(newNode.getNodeName()) != null) {
-
-            throw new CmdLineException(
-                    null, "Node '" + newNode.getNodeName() + "' already exists"
-            );
+            throw new IllegalStateException("Node '" + newNode.getNodeName() + "' already exists");
         }
 
         jenkins.addNode(newNode);

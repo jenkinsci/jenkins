@@ -63,18 +63,18 @@ public class OnlineNodeCommandTest {
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs("aNode");
 
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Agent/Connect permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Connect permission"));
     }
 
     @Test public void onlineNodeShouldFailIfNodeDoesNotExist() throws Exception {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such agent \"never_created\" exists."));
+        assertThat(result.stderr(), containsString("ERROR: No such agent \"never_created\" exists."));
 
     }
 
