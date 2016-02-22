@@ -134,23 +134,23 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
             if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
                     || (logRotateSize > 0 && f.length() > logRotateSize)) {
                 lastRotateMillis = System.currentTimeMillis();
-                File p = null;
+                File prev = null;
                 for (int i = 5; i >= 0; i--) {
-                    File o = i == 0 ? f : new File(f.getParentFile(), f.getName() + "." + i);
-                    if (o.isFile()) {
-                        if (p != null && !p.exists()) {
-                            if (!o.renameTo(p)) {
+                    File curr = i == 0 ? f : new File(f.getParentFile(), f.getName() + "." + i);
+                    if (curr.isFile()) {
+                        if (prev != null && !prev.exists()) {
+                            if (!curr.renameTo(prev)) {
                                 logger.log(getErrorLoggingLevel(), "Could not rotate log files {0} to {1}",
-                                        new Object[]{o, p});
+                                        new Object[]{curr, prev});
                             }
                         } else {
-                            if (!o.delete()) {
+                            if (!curr.delete()) {
                                 logger.log(getErrorLoggingLevel(), "Could not delete log file {0} to enable rotation",
-                                        o);
+                                        curr);
                             }
                         }
                     }
-                    p = o;
+                    prev = curr;
                 }
             }
         } else {
@@ -162,10 +162,10 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 if (!newFile.isFile()) {
                     // if there has never been rotation then this is the first time
                     if (oldFile.renameTo(newFile)) {
-                        logger.log(getNormalLoggingLevel(), "Moved {0} to {1}.1", new Object[]{oldFile, f});
+                        logger.log(getNormalLoggingLevel(), "Moved {0} to {1}", new Object[]{oldFile, newFile});
                     } else {
-                        logger.log(getErrorLoggingLevel(), "Could not move {0} to {1}.1",
-                                new Object[]{oldFile, f});
+                        logger.log(getErrorLoggingLevel(), "Could not move {0} to {1}",
+                                new Object[]{oldFile, newFile});
                     }
                 }
             }
