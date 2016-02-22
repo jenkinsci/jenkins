@@ -8,6 +8,7 @@ import hudson.remoting.ChannelBuilder;
 import hudson.slaves.SlaveComputer;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
 import org.jenkinsci.remoting.engine.JnlpServer3Handshake;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
@@ -86,7 +87,13 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
             logw = new PrintWriter(log,true);
             logw.println("JNLP agent connected from " + socket.getInetAddress());
 
-            return super.createChannelBuilder(nodeName).withHeaderStream(log);
+            ChannelBuilder cb = super.createChannelBuilder(nodeName).withHeaderStream(log);
+
+            for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+                cc.onChannelBuilding(cb, computer);
+            }
+
+            return cb;
         }
 
         @Override
