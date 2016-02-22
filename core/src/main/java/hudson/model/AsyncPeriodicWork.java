@@ -148,6 +148,11 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 }
             }
         }
+        if (!f.getParentFile().isDirectory()) {
+            if (!f.getParentFile().mkdirs()) {
+                logger.log(getErrorLoggingLevel(), "Could not create directory {0}", f.getParentFile());
+            }
+        }
         try {
             return new StreamTaskListener(f, true, null);
         } catch (IOException e) {
@@ -159,7 +164,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      * Determines the log file that records the result of this task.
      */
     protected File getLogFile() {
-        return new File(Jenkins.getInstance().getRootDir(),name+".log");
+        return new File(Jenkins.getInstance().getRootDir(),"logs/tasks/"+name+".log");
     }
     
     /**
