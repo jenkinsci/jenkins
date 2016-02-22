@@ -142,6 +142,11 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
 
     protected StreamTaskListener createListener() {
         File f = getLogFile();
+        if (!f.getParentFile().isDirectory()) {
+            if (!f.getParentFile().mkdirs()) {
+                logger.log(getErrorLoggingLevel(), "Could not create directory {0}", f.getParentFile());
+            }
+        }
         if (f.isFile()) {
             if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
                     || (logRotateSize > 0 && f.length() > logRotateSize)) {
@@ -165,10 +170,21 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
                     p = o;
                 }
             }
-        }
-        if (!f.getParentFile().isDirectory()) {
-            if (!f.getParentFile().mkdirs()) {
-                logger.log(getErrorLoggingLevel(), "Could not create directory {0}", f.getParentFile());
+        } else {
+            lastRotateMillis = System.currentTimeMillis();
+            // migrate old log files the first time we start-up
+            File oldFile = new File(Jenkins.getActiveInstance().getRootDir(), f.getName());
+            if (oldFile.isFile()) {
+                File newFile = new File(f.getParentFile(), f.getName() + ".1");
+                if (!newFile.isFile()) {
+                    // if there has never been rotation then this is the first time
+                    if (oldFile.renameTo(newFile)) {
+                        logger.log(getNormalLoggingLevel(), "Moved {0} to {1}.1", new Object[]{oldFile, f});
+                    } else {
+                        logger.log(getErrorLoggingLevel(), "Could not move {0} to {1}.1",
+                                new Object[]{oldFile, f});
+                    }
+                }
             }
         }
         try {

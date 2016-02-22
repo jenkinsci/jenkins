@@ -125,6 +125,11 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
     protected StreamTaskListener createListener() {
         File f = getLogFile();
+        if (!f.getParentFile().isDirectory()) {
+            if (!f.getParentFile().mkdirs()) {
+                logger.log(getErrorLoggingLevel(), "Could not create directory {0}", f.getParentFile());
+            }
+        }
         if (f.isFile()) {
             if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
                     || (logRotateSize > 0 && f.length() > logRotateSize)) {
@@ -148,10 +153,21 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                     p = o;
                 }
             }
-        }
-        if (!f.getParentFile().isDirectory()) {
-            if (!f.getParentFile().mkdirs()) {
-                logger.log(getErrorLoggingLevel(), "Could not create directory {0}", f.getParentFile());
+        } else {
+            lastRotateMillis = System.currentTimeMillis();
+            // migrate old log files the first time we start-up
+            File oldFile = new File(Jenkins.getActiveInstance().getRootDir(), f.getName());
+            if (oldFile.isFile()) {
+                File newFile = new File(f.getParentFile(), f.getName() + ".1");
+                if (!newFile.isFile()) {
+                    // if there has never been rotation then this is the first time
+                    if (oldFile.renameTo(newFile)) {
+                        logger.log(getNormalLoggingLevel(), "Moved {0} to {1}.1", new Object[]{oldFile, f});
+                    } else {
+                        logger.log(getErrorLoggingLevel(), "Could not move {0} to {1}.1",
+                                new Object[]{oldFile, f});
+                    }
+                }
             }
         }
         try {
@@ -165,7 +181,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      * Determines the log file that records the result of this task.
      */
     protected File getLogFile() {
-        return new File(Jenkins.getInstance().getRootDir(),"logs/tasks/"+name+".log");
+        return new File(Jenkins.getActiveInstance().getRootDir(),"logs/tasks/"+name+".log");
     }
     
     /**
