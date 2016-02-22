@@ -75,11 +75,12 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
      */
     private final long logRotateSize;
     /**
-     * The last time the log files were rotated.
+     * The last time the log files were rotated. On start-up this will be {@link Long#MIN_VALUE} to ensure that the
+     * logs are always rotated every time Jenkins starts up to make it easier to correlate events with the main log.
      *
      * @since 1.650
      */
-    private Long lastRotateMillis;
+    private long lastRotateMillis = Long.MIN_VALUE;
     /**
      * Name of the work.
      */
@@ -142,8 +143,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
     protected StreamTaskListener createListener() {
         File f = getLogFile();
         if (f.isFile()) {
-            if ((lastRotateMillis == null)
-                    || (lastRotateMillis + logRotateMillis < System.currentTimeMillis())
+            if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
                     || (logRotateSize > 0 && f.length() > logRotateSize)) {
                 lastRotateMillis = System.currentTimeMillis();
                 File p = null;
