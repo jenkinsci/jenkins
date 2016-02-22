@@ -8,7 +8,7 @@ $(function() {
     // have been applied, otherwise row-set rows become visible across sections.
     var done = false;
     
-    Behaviour.specify(".dd-handle", 'config-drag-start',1000,fixDragEvent);
+    Behaviour.specify(".dd-handle", 'config-drag-start',1000,fixDragEvent); // jshint ignore:line
     
     Behaviour.specify(".block-control", 'row-set-block-control', 1000, function() { // jshint ignore:line
         if (done) {

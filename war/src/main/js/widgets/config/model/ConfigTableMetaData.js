@@ -52,7 +52,7 @@ exports.fromConfigTable = function(configTable) {
     if(!firstRow.hasClass('section-header-row')){
        firstRow.before(generalRow);
        firstRow = configTableMetadata.getFirstRow();
-       var newArray = $.makeArray(topRows)
+       var newArray = $.makeArray(topRows);
        newArray.unshift(generalRow[0]);
        topRows = $(newArray);
     }
