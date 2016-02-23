@@ -73,8 +73,8 @@
 H/15 * * * *
 # every ten minutes in the first half of every hour (three times, perhaps at :04, :14, :24)
 H(0-29)/10 * * * *
-# once every two hours every weekday (perhaps at 9:38 AM, 11:38 AM, 1:38 PM, 3:38 PM)
-H 9-16/2 * * 1-5
+# once every two hours every weekday (perhaps at 10:38 AM, 12:38 PM, 2:38 PM, 4:38 PM)
+H H(9-16)/2 * * 1-5
 # once a day on the 1st and 15th of every month except December
 H H 1,15 1-11 *
 </pre>
