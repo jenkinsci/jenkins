@@ -125,29 +125,33 @@ timestampedNode('docker') {
 stage "Package testing"
 
 if (runTests) {
-    // NOTE: As of now, a lot of package tests will fail. See https://issues.jenkins-ci.org/issues/?filter=15257 for
-    // possible open JIRAs.
+    if (!env.BRANCH_NAME.startsWith("PR")) {
+        // NOTE: As of now, a lot of package tests will fail. See https://issues.jenkins-ci.org/issues/?filter=15257 for
+        // possible open JIRAs.
 
-    // Basic parameters
-    String artifactName = (binding.hasVariable('artifactName')) ? artifactName : 'jenkins'
-    String jenkinsPort = (binding.hasVariable('jenkinsPort')) ? jenkinsPort : '8080'
+        // Basic parameters
+        String artifactName = (binding.hasVariable('artifactName')) ? artifactName : 'jenkins'
+        String jenkinsPort = (binding.hasVariable('jenkinsPort')) ? jenkinsPort : '8080'
 
-    // Set up
-    String debfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/debian/${debFileName}"
-    String rpmfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/rpm/${rpmFileName}"
-    String susefile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/suse/${suseFileName}"
+        // Set up
+        String debfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/debian/${debFileName}"
+        String rpmfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/rpm/${rpmFileName}"
+        String susefile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/suse/${suseFileName}"
 
-    timestampedNode("docker") {
-        stage "Load Lib"
-        dir('workflowlib') {
-            deleteDir()
-            git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
-            flow = load 'workflow/installertest.groovy'
+        timestampedNode("docker") {
+            stage "Load Lib"
+            dir('workflowlib') {
+                deleteDir()
+                git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
+                flow = load 'workflow/installertest.groovy'
+            }
         }
+        // Run the real tests within docker node label
+        flow.fetchAndRunJenkinsInstallerTest("docker", rpmfile, susefile, debfile,
+            packagingBranch, artifactName, jenkinsPort)
+    } else {
+        echo "Not running package testing against pull requests"
     }
-    // Run the real tests within docker node label
-    flow.fetchAndRunJenkinsInstallerTest("docker", rpmfile, susefile, debfile,
-        packagingBranch, artifactName, jenkinsPort)
 } else {
     echo "Skipping package tests"
 }
