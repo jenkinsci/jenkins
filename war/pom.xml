@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.0-alpha-1-SNAPSHOT</version>
+    <version>2.0-alpha-1</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -589,7 +589,7 @@ THE SOFTWARE.
         <activation><os><family>Linux</family><arch>amd64</arch></os></activation>
 		<properties>
 			<node.download.file>node-v${node.version}-linux-x64.tar.gz</node.download.file>
-			<node.download.classifier></node.download.classifier>
+			<node.download.classifier />
 		</properties>
     </profile>
     <profile>
@@ -597,7 +597,7 @@ THE SOFTWARE.
         <activation><os><family>mac</family></os></activation>
         <properties>
 			<node.download.file>node-v${node.version}-darwin-x64.tar.gz</node.download.file>
-			<node.download.classifier></node.download.classifier>
+			<node.download.classifier />
 		</properties>
     </profile>
     <profile>
@@ -621,7 +621,7 @@ THE SOFTWARE.
         <activation><os><family>windows</family><arch>x86</arch></os></activation>
 		<properties>
 			<node.download.file>win-x86/node.exe</node.download.file>
-			<node.download.classifier></node.download.classifier>
+			<node.download.classifier />
 		</properties>
     </profile>
     <profile>
