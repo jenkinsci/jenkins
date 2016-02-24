@@ -27,6 +27,7 @@ package hudson.cli;
 import static hudson.cli.CLICommandInvoker.Matcher.*;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 
 import java.io.PrintStream;

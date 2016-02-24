@@ -27,7 +27,7 @@ package hudson.cli;
 import static hudson.cli.CLICommandInvoker.Matcher.*;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
