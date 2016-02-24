@@ -96,6 +96,11 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>domain-discovery</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
       <version>1.5.1</version>
     </dependency>
