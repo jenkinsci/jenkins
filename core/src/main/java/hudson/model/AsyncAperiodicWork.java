@@ -46,7 +46,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
      * Each individual AsyncAperiodicWork can also have a per-extension override using the system property
      * based on their fully qualified class name with {@code .logRotateMinutes} appended.
      *
-     * @since 1.650
+     * @since 1.651
      */
     private static final long LOG_ROTATE_MINUTES = Long.getLong(AsyncAperiodicWork.class.getName() +
             ".logRotateMinutes", TimeUnit.DAYS.toMinutes(1));
@@ -57,28 +57,28 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
      * Each individual AsyncAperiodicWork can also have a per-extension override using the system property
      * based on their fully qualified class name with {@code .logRotateSize} appended.
      *
-     * @since 1.650
+     * @since 1.651
      */
     private static final long LOG_ROTATE_SIZE = Long.getLong(AsyncAperiodicWork.class.getName() + ".logRotateSize",
             -1L);
     /**
      * The number of milliseconds (since startup or previous rotation) after which to try and rotate the log file.
      *
-     * @since 1.650
+     * @since 1.651
      */
     private final long logRotateMillis;
     /**
      * {@code -1L} disabled file size based log rotation, otherwise when starting an {@link #execute(TaskListener)},
      * if the log file size is above this number of bytes then the log file will be rotated beforehand.
      *
-     * @since 1.650
+     * @since 1.651
      */
     private final long logRotateSize;
     /**
      * The last time the log files were rotated. On start-up this will be {@link Long#MIN_VALUE} to ensure that the
      * logs are always rotated every time Jenkins starts up to make it easier to correlate events with the main log.
      *
-     * @since 1.650
+     * @since 1.651
      */
     private long lastRotateMillis = Long.MIN_VALUE;
     /**
@@ -205,7 +205,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
      * Returns the logging level at which normal messages are displayed.
      *
      * @return The logging level.
-     * @since 1.650
+     * @since 1.651
      */
     protected Level getNormalLoggingLevel() {
         return Level.INFO;
@@ -215,7 +215,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
      * Returns the logging level at which previous task still executing messages is displayed.
      *
      * @return The logging level.
-     * @since 1.650
+     * @since 1.651
      */
     protected Level getSlowLoggingLevel() {
         return getNormalLoggingLevel();
@@ -225,7 +225,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
      * Returns the logging level at which error messages are displayed.
      *
      * @return The logging level.
-     * @since 1.650
+     * @since 1.651
      */
     protected Level getErrorLoggingLevel() {
         return Level.SEVERE;

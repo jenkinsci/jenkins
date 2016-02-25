@@ -104,7 +104,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
      * @param append  if {@code true}, then output will be written to the end of the file rather than the beginning.
      * @param charset if non-{@code null} then the charset to use when writing.
      * @throws IOException if the file could not be opened.
-     * @since 1.650
+     * @since 1.651
      */
     public StreamTaskListener(File out, boolean append, Charset charset) throws IOException {
         // don't do buffering so that what's written to the listener
