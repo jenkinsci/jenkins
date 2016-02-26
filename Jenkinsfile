@@ -122,11 +122,10 @@ timestampedNode('docker') {
 
 }
 
-// Installer testing currently disabled - it hangs periodically and doesn't actually *pass* anyway, so holding off on running it for now.
-if (false) {
-    stage "Package testing"
+stage "Package testing"
 
-    if (runTests) {
+if (runTests) {
+    if (!env.BRANCH_NAME.startsWith("PR")) {
         // NOTE: As of now, a lot of package tests will fail. See https://issues.jenkins-ci.org/issues/?filter=15257 for
         // possible open JIRAs.
 
@@ -149,11 +148,14 @@ if (false) {
         }
         // Run the real tests within docker node label
         flow.fetchAndRunJenkinsInstallerTest("docker", rpmfile, susefile, debfile,
-                packagingBranch, artifactName, jenkinsPort)
+            packagingBranch, artifactName, jenkinsPort)
     } else {
-        echo "Skipping package tests"
+        echo "Not running package testing against pull requests"
     }
+} else {
+    echo "Skipping package tests"
 }
+
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
