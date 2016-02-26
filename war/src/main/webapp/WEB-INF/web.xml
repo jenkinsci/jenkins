@@ -175,7 +175,7 @@ THE SOFTWARE.
       <!--http-method>GET</http-method-->
     </web-resource-collection>
     <auth-constraint>
-      <role-name>*</role-name>
+      <role-name>**</role-name>
     </auth-constraint>
   </security-constraint>
   
