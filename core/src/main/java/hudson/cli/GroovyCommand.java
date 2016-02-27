@@ -26,6 +26,7 @@ package hudson.cli;
 import groovy.lang.GroovyShell;
 import groovy.lang.Binding;
 import hudson.cli.util.ScriptLoader;
+import hudson.cli.Messages;
 import hudson.model.AbstractProject;
 import jenkins.model.Jenkins;
 import hudson.model.Item;
@@ -83,7 +84,10 @@ public class GroovyCommand extends CLICommand {
         }
 
         GroovyShell groovy = new GroovyShell(Jenkins.getActiveInstance().getPluginManager().uberClassLoader, binding);
-        groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
+        Object returnValue = groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[remaining.size()]));
+        if (Integer.class.isInstance(returnValue)) {
+            return (Integer)returnValue;
+        }
         return 0;
     }
 
