@@ -43,6 +43,10 @@ function updateListBox(listBox,url,config) {
 Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
 
         function hasChanged(selectEl, originalValue) {
+            if (selectEl.options.length == 0) {
+                // There are no options to select, so there is no possible change
+                return false;
+            }
             var firstValue = selectEl.options[0].value;
             var selectedValue = selectEl.value;
             if (originalValue == "" && selectedValue == firstValue) {
