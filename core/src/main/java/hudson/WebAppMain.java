@@ -117,10 +117,6 @@ public class WebAppMain implements ServletContextListener {
 
             installLogger();
 
-            // Set the session cookie as HTTP only.
-            // See https://www.owasp.org/index.php/HttpOnly for the discussion of this topic in OWASP
-            context.getSessionCookieConfig().setHttpOnly(true);
-
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();

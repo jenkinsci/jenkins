@@ -237,4 +237,11 @@ THE SOFTWARE.
     <exception-type>java.lang.Throwable</exception-type>
     <location>/oops</location>
   </error-page>
+
+  <session-config>
+    <cookie-config>
+      <!-- See https://www.owasp.org/index.php/HttpOnly for the discussion of this topic in OWASP -->
+      <http-only>true</http-only>
+    </cookie-config>
+  </session-config>
 </web-app>
