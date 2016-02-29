@@ -296,11 +296,6 @@ public class XStream2Test {
         } finally {
             v.delete();
         }
-
-        // should be able to read in old data just fine
-        Foo2 map = (Foo2) new XStream2().fromXML(getClass().getResourceAsStream("old-concurrentHashMap.xml"));
-        assertEquals(1,map.m.size());
-        assertEquals("def",map.m.get("abc"));
     }
 
     @Issue("SECURITY-105")
