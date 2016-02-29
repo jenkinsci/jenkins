@@ -78,7 +78,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         final String commandName = req.getRestOfPath().substring(1);
         CLICommand command = CLICommand.clone(commandName);
         if (command == null) {
-            rsp.sendError(HttpServletResponse.SC_NOT_FOUND, "No such command " + commandName);
+            rsp.sendError(HttpServletResponse.SC_NOT_FOUND, "No such command");
             return;
         }
 

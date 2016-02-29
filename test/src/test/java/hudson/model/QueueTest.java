@@ -103,6 +103,10 @@ import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -114,10 +118,6 @@ import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.ServletHolder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -283,12 +283,12 @@ public class QueueTest {
 
 
         Server server = new Server();
-        SocketConnector connector = new SocketConnector();
+        ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
 
         ServletHandler handler = new ServletHandler();
         handler.addServletWithMapping(new ServletHolder(new FileItemPersistenceTestServlet()),"/");
-        server.addHandler(handler);
+        server.setHandler(handler);
 
         server.start();
 
@@ -581,7 +581,6 @@ public class QueueTest {
      * Make sure that the running build actually carries an credential.
      */
     @Test public void accessControl() throws Exception {
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -608,7 +607,6 @@ public class QueueTest {
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
