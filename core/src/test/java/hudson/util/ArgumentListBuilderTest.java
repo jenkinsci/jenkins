@@ -123,6 +123,16 @@ public class ArgumentListBuilderTest {
                 + " \"-Dfoo6=<xml>&here;</xml>\" \"-Dfoo7=foo|bar\"\"baz\""
                 + " \"-Dfoo8=% %\"Q\"ED% %\"c\"omspec% %-%(%.%\""
                 + " -Dfoo9=%'''%%@% && exit %%ERRORLEVEL%%\"" }));
+
+        // toWindowsCommand should be idempotent
+        assertThat(
+                builder.toWindowsCommand().toCommandArray(),
+                is(builder.toWindowsCommand().toWindowsCommand().toCommandArray())
+        );
+        assertThat(
+                builder.toWindowsCommand(true).toList(),
+                is(builder.toWindowsCommand(true).toWindowsCommand(true).toList())
+        );
     }
 
     @Test

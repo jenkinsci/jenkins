@@ -38,6 +38,7 @@ import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
 import jenkins.security.MasterToSlaveCallable;
+
 import org.apache.commons.io.input.NullInputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -385,6 +386,7 @@ public abstract class Launcher {
          * Starts the process and waits for its completion.
          */
         public int join() throws IOException, InterruptedException {
+            LOGGER.info("Launching process with: " + commands);
             return start().join();
         }
 
@@ -812,11 +814,53 @@ public abstract class Launcher {
             for ( int idx = 0 ; idx < jobCmd.length; idx++ )
             	jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
 
+            if (!isUnix()) {
+                jobCmd = escapeForWindows(jobCmd);
+            }
+
             return new LocalProc(jobCmd, Util.mapToEnv(jobEnv),
                     ps.reverseStdin ?LocalProc.SELFPUMP_INPUT:ps.stdin,
                     ps.reverseStdout?LocalProc.SELFPUMP_OUTPUT:ps.stdout,
                     ps.reverseStderr?LocalProc.SELFPUMP_OUTPUT:ps.stderr,
                     toFile(ps.pwd));
+        }
+
+        private static String[] escapeForWindows(String... args) {
+          StringBuilder quotedArgs = new StringBuilder("'");
+          boolean quoted;
+          for (String arg : args) {
+              quoted = false;
+              for (int i = 0; i < arg.length(); i++) {
+                  char c = arg.charAt(i);
+                  if (!quoted && (c == ' ' || c == '*' || c == '?' || c == ',' || c == ';')) {
+                      quoted = startQuoting(quotedArgs, arg, i);
+                  }
+                  else if (c == '^' || c == '&' || c == '<' || c == '>' || c == '|') {
+                      if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                      // quotedArgs.append('^'); See note in javadoc above
+                  }
+                  else if (c == '"') {
+                      if (!quoted) quoted = startQuoting(quotedArgs, arg, i);
+                      quotedArgs.append('"');
+                  }
+                  if (quoted) quotedArgs.append(c);
+              }
+              if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
+              quotedArgs.append(' ');
+          }
+          // (comment copied from old code in hudson.tasks.Ant)
+          // on Windows, executing batch file can't return the correct error code,
+          // so we need to wrap it into cmd.exe.
+          // double %% is needed because we want ERRORLEVEL to be expanded after
+          // batch file executed, not before. This alone shows how broken Windows is...
+          quotedArgs.append("&& exit %%ERRORLEVEL%%");
+          quotedArgs.append('"');
+          return new String[] {"cmd.exe", "/C", quotedArgs.toString()};
+        }
+
+        private static boolean startQuoting(StringBuilder buf, String arg, int atIndex) {
+            buf.append('"').append(arg.substring(0, atIndex));
+            return true;
         }
 
         private File toFile(FilePath f) {
