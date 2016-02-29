@@ -75,9 +75,15 @@ public abstract class QueueListener implements ExtensionPoint {
     public void onLeft(LeftItem li) {}
 
     /**
+     * A task is going to run on assigned Executor.
+     */
+    public void onTaskExecuted(Runnable task) {}
+
+    /**
      * Returns all the registered {@link QueueListener}s.
      */
     public static ExtensionList<QueueListener> all() {
         return ExtensionList.lookup(QueueListener.class);
     }
+
 }

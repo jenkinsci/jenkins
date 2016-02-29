@@ -156,6 +156,10 @@ public class SlaveComputer extends Computer {
         return os;
     }
 
+    public TaskListener getListener() {
+        return taskListener;
+    }
+
     /**
      * {@inheritDoc}
      */
