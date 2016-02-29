@@ -131,20 +131,42 @@ var createPluginSetupWizard = function() {
 	$wizard.appendTo('body');
 	var $container = $wizard.find('.modal-content');
 	var currentPanel;
+    var wizardContainer = $bs('.plugin-setup-wizard');
 
 	// show tooltips; this is done here to work around a bootstrap/prototype incompatibility
-	$(document).on('mouseenter', '*[data-tooltip]', function() {
-		var $tip = $bs(this);
-		var text = $tip.attr('data-tooltip');
-		if(!text) {
-			return;
-		}
+	wizardContainer.on('mouseenter', '.plugins-for-category .plugin-label', function() {
 		// prototype/bootstrap tooltip incompatibility - triggering main element to be hidden
-		this.hide = undefined;
-		$tip.tooltip({
-			html: true,
-			title: text
-		}).tooltip('show');
+        this.hide = undefined;
+        var pluginLabel = $bs(this);
+        $bs('.dependencies', pluginLabel).show();
+	});
+	wizardContainer.on('mouseleave', '.plugins-for-category .plugin-label', function() {
+        var pluginLabel = $bs(this);
+        $bs('.dependencies', pluginLabel).hide();
+	});
+	wizardContainer.on('mouseenter', '.plugin-label .dependencies', function() {
+		var $this = $bs(this);
+		var text = $this.attr('data-tooltip');
+        var pluginLabel = $this.closest('.plugin-label');
+        var pluginLabelEl = pluginLabel.get();
+        
+        // Make sure we only add the tooltip once.
+        if (!pluginLabelEl.hasTooltip) {
+    		// prototype/bootstrap tooltip incompatibility - triggering main element to be hidden
+            pluginLabelEl.hide = undefined;
+            
+            pluginLabel.tooltip({
+                html: true,
+                title: text,
+                trigger: 'manual'
+            });
+            pluginLabelEl.hasTooltip = true;
+        }
+		pluginLabel.tooltip('show');
+	});
+	wizardContainer.on('mouseleave', '.plugin-label .dependencies', function() {
+        var pluginLabel = $bs(this).closest('.plugin-label');
+		pluginLabel.tooltip('hide');
 	});
 
 	// localized messages
