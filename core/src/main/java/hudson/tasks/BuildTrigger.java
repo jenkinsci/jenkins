@@ -421,7 +421,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 for( Project<?,?> p : Jenkins.getInstance().getAllItems(Project.class) ) {
                     BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                     if(t!=null) {
-                        String cp2 = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.childProjects, p.getParent());
+                        String cp2 = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.childProjects, p);
                         if (!cp2.equals(t.childProjects)) {
                             t.childProjects = cp2;
                             try {

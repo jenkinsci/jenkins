@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.XStream;
+
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.XmlFile;
@@ -36,6 +37,7 @@ import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
+
 import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
 
@@ -48,10 +50,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -201,7 +205,11 @@ public class Items {
      * root.
      */
     public static String getCanonicalName(ItemGroup context, String path) {
-        String[] c = context.getFullName().split("/");
+        return getCanonicalName(context.getFullName(), path);
+    }
+
+    public static String getCanonicalName(String groupFullName, String path) {
+        String[] c = groupFullName.split("/");
         String[] p = path.split("/");
 
         Stack<String> name = new Stack<String>();
@@ -218,7 +226,7 @@ public class Items {
             if (p[i].equals("..")) {
                 if (name.size() == 0) {
                     throw new IllegalArgumentException(String.format(
-                            "Illegal relative path '%s' within context '%s'", path, context.getFullName()
+                            "Illegal relative path '%s' within context '%s'", path, groupFullName
                     ));
                 }
                 name.pop();
@@ -242,25 +250,66 @@ public class Items {
      * @param oldFullName the old full name of the item
      * @param newFullName the new full name of the item
      * @param relativeNames coma separated list of Item relative names
-     * @param context the {link ItemGroup} relative names refer to
-     * @return relative name for the renamed item, based on the same ItemGroup context
+     * @param context the {link AbstractItem} relative names refer to
+     * @return relative name for the renamed item, based on the same AbstractItem context
+     * @since TODO
+     */
+    public static String computeRelativeNamesAfterRenaming(String oldFullName, String newFullName, String relativeNames, AbstractItem context) {
+        String contextFullName = context.getFullName();
+        String newGroupName = context.getParent().getFullName();
+        String oldGroupName = newGroupName;
+        if (contextFullName.equals(newFullName)) { // We are renaming the declared job, not the referred one
+            int i = oldFullName.lastIndexOf("/");
+            oldGroupName = i == -1 ? "" : oldFullName.substring(0, i);
+        } else if (contextFullName.startsWith(newFullName + '/')) {
+            // Renaming ItemGroup that contains subject
+            // Will be handled in subsequest call to #onLocationChanged for the project itself
+            return relativeNames;
+        }
+
+        return computeRelativeNamesAfterRenaming(oldFullName, newFullName, relativeNames, newGroupName, oldGroupName);
+    }
+
+    /**
+     * Computes the relative name of list of items after a rename or move occurred.
+     *
+     * If the configuration is scoped to another movable {@link Item}, use
+     * {@link Items#computeRelativeNamesAfterRenaming(String, String, String, AbstractItem)} instead.
      */
     public static String computeRelativeNamesAfterRenaming(String oldFullName, String newFullName, String relativeNames, ItemGroup context) {
+        String contextName = context.getFullName();
+        return computeRelativeNamesAfterRenaming(oldFullName, newFullName, relativeNames, contextName, contextName);
+    }
 
+    /**
+     * Computes the relative names allowing context to move as well.
+     */
+    private static String computeRelativeNamesAfterRenaming(String oldFullName, String newFullName, String relativeNames, String newGroupName, String oldGroupName) {
         StringTokenizer tokens = new StringTokenizer(relativeNames,",");
         List<String> newValue = new ArrayList<String>();
         while(tokens.hasMoreTokens()) {
             String relativeName = tokens.nextToken().trim();
-            String canonicalName = getCanonicalName(context, relativeName);
+            String canonicalName = getCanonicalName(oldGroupName, relativeName);
+
             if (canonicalName.equals(oldFullName) || canonicalName.startsWith(oldFullName+'/')) {
-                String newCanonicalName = newFullName + canonicalName.substring(oldFullName.length());
+                // Current chunk represent renamed job
                 if (relativeName.startsWith("/")) {
-                    newValue.add("/" + newCanonicalName);
+                    // Absolute path renamed
+                    assert relativeName.startsWith("/" + oldFullName);
+                    newValue.add("/" + newFullName + relativeName.substring(oldFullName.length() + 1));
                 } else {
-                    newValue.add(getRelativeNameFrom(newCanonicalName, context.getFullName()));
+                    // Absolute path renamed
+                    String newRelativeName = getRelativeNameFrom(newFullName, newGroupName) + canonicalName.substring(oldFullName.length());
+                    newValue.add(newRelativeName);
                 }
             } else {
-                newValue.add(relativeName);
+                if (oldGroupName.equals(newGroupName) || relativeName.startsWith("/")) {
+                    // Do not touch unrelated chunks
+                    newValue.add(relativeName);
+                } else {
+                    // Rebase the relative reference as the context was moved
+                    newValue.add(getRelativeNameFrom(canonicalName, newGroupName));
+                }
             }
         }
         return StringUtils.join(newValue, ",");

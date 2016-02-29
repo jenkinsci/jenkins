@@ -257,10 +257,11 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             if (jenkins == null) {
                 return;
             }
+
             for (Job<?,?> p : jenkins.getAllItems(Job.class)) {
                 ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                 if (t != null) {
-                    String revised = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects, p.getParent());
+                    String revised = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects, p);
                     if (!revised.equals(t.upstreamProjects)) {
                         t.upstreamProjects = revised;
                         try {
