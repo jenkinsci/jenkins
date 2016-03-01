@@ -8,6 +8,8 @@
   border-bottom:none;
   background:@light-backgrond;
   min-height:2.5em;
+  border-top-left-radius: @radius;
+  border-top-right-radius: @radius;
   
   :hover .noTabs{
     color:#bbb;
@@ -29,7 +31,7 @@
   .showTabs,
   .noTabs {
     position: absolute;
-    border-radius: 1px;
+    border-radius: @radius;
     right: 5px;
     top: 5px;
     cursor: pointer;
@@ -84,6 +86,8 @@
 #jenkins{
   .jenkins-config {
     border:1px solid @solid-border;
+    border-bottom-left-radius:@radius;
+    border-bottom-right-radius:@radius;
     padding:10px;
     border-top:none;
     
@@ -167,6 +171,7 @@
           height:@input-line-height;
           line-height:@input-line-height;
           padding:0 5px;
+          border-radius:@radius;
         }
         .yui-button button{
           padding:0 10px;
