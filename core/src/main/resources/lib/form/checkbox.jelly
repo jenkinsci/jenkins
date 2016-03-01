@@ -44,6 +44,9 @@ THE SOFTWARE.
     <st:attribute name="onclick" />
     <st:attribute name="class" />
     <st:attribute name="negative" />
+    <st:attribute name="readonly">
+      If set to true, this will take precedence over the onclick attribute and prevent the state of the checkbox from being changed.
+    </st:attribute>
     <st:attribute name="field">
       Used for databinding. TBD.
     </st:attribute>
@@ -63,7 +66,7 @@ THE SOFTWARE.
          name="${name}"
          value="${attrs.value}"
          title="${attrs.tooltip}"
-         onclick="${attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
+         onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
          checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
          checked="${value ? 'true' : null}"/>
   <j:if test="${attrs.title!=null}">
