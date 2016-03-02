@@ -14,7 +14,6 @@ $(function() {
             return;
         }
         done = true;
-
         // Only do job configs for now.
         var configTables = $('.job-config.tabbed');
         if (configTables.size() > 0) {
