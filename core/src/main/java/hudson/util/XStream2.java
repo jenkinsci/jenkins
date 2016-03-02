@@ -151,7 +151,6 @@ public class XStream2 extends XStream {
         registerConverter(new ImmutableSortedSetConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableSetConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableListConverter(getMapper(),getReflectionProvider()),10);
-        registerConverter(new ConcurrentHashMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
         registerConverter(new Label.ConverterImpl(),10);
