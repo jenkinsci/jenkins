@@ -1,6 +1,29 @@
 // Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
 var $jq = require('jquery-detached').getJQuery();
 var jenkinsLocalStorage = require('./util/jenkinsLocalStorage.js');
+var itemIcons = {
+    'hudson.model.FreeStyleProject':'freestyle-48.png',
+    'hudson.maven.MavenModuleSet':'maven-48.png',
+    'org.jenkinsci.plugins.workflow.job.WorkflowJob':'pipeline-48.png',
+    'com.infradna.hudson.plugins.backup.BackupProject':'backup-48.png',
+    'hudson.model.ExternalJob':'remote-job-48.png',
+    'com.cloudbees.jenkins.plugins.longrunning.LongRunningProject':'long-running-48.png',
+    'hudson.matrix.MatrixProject':'multi-config-48.png',
+    'com.cloudbees.hudson.plugins.folder.Folder':'folder-48.png',
+    'org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject':'branch-project-48.png',
+    'jenkins.branch.OrganizationFolder.org.jenkinsci.plugins.github_branch_source.GitHubSCMNavigator':'gitHub-project-48.png',
+    'jenkins.branch.OrganizationFolder.com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator':'bitBucket-project-48.png',
+    'copy':'copy-48.png',
+    'com.cloudbees.hudson.plugins.modeling.impl.jobTemplate.JobTemplate':'job-template-48.png',
+    'com.cloudbees.hudson.plugins.modeling.impl.folder.FolderTemplate':'folder-template-48.png',
+    'com.cloudbees.hudson.plugins.modeling.impl.auxiliary.AuxModel':'aux-template-48.png', 
+    'com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderTemplate':'builder-template-48.png',
+    'com.cloudbees.hudson.plugins.modeling.impl.publisher.PublisherTemplate':'publish-template-48.png'
+} 
+    
+    
+    
+   
 var itemTypes = [
     {
       order : 0,
@@ -22,8 +45,8 @@ var itemTypes = [
       instances : [
           'com.cloudbees.hudson.plugins.folder.Folder', 
           'org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject',
-          'jenkins.branch.OrganizationFolder.com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator',
-          'jenkins.branch.OrganizationFolder.org.jenkinsci.plugins.github_branch_source.GitHubSCMNavigator'
+          'jenkins.branch.OrganizationFolder.org.jenkinsci.plugins.github_branch_source.GitHubSCMNavigator',
+          'jenkins.branch.OrganizationFolder.com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator'
       ]
     },/*
        * { id:'pipelines', display:'Pipelines and processes',
@@ -85,7 +108,9 @@ var itemTypes = [
 ];
 
 $jq(function() {
+  
   var $ = $jq;
+  var jRoot = $('head').attr('data-rooturl');
   var defaultMinToShow = 2;
   var $root = $jq('#main-panel');
   var $form = $root.find('form[name="createItem"]').addClass('jenkins-config');
@@ -141,7 +166,7 @@ $jq(function() {
       description : $desc.find('.setting-main').html(),
       $r : $r,
       $error : $error,
-      icon : elem + '.png'
+      icon : jRoot + '/images/' + itemIcons[elem] //elem + '.png'
     }
     if ($tr.length === 1)
       return inputObj;
