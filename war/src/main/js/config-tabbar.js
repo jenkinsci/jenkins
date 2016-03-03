@@ -2,6 +2,7 @@ var $ = require('jquery-detached').getJQuery();
 var jenkinsLocalStorage = require('./util/jenkinsLocalStorage.js');
 var configMetadata = require('./widgets/config/model/ConfigTableMetaData.js');
 
+$('body').addClass('config');
 $(function() {
     // Horrible ugly hack...
     // We need to use Behaviour.js to wait until after radioBlock.js Behaviour.js rules
