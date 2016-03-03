@@ -7,6 +7,9 @@ $(function() {
     // We need to use Behaviour.js to wait until after radioBlock.js Behaviour.js rules
     // have been applied, otherwise row-set rows become visible across sections.
     var done = false;
+    
+    Behaviour.specify(".dd-handle", 'config-drag-start',1000,fixDragEvent); // jshint ignore:line
+    
     Behaviour.specify(".block-control", 'row-set-block-control', 1000, function() { // jshint ignore:line
         if (done) {
             return;
@@ -17,7 +20,9 @@ $(function() {
         if (configTables.size() > 0) {
             var tabBarShowPreferenceKey = 'config:usetabs';
             var tabBarShowPreference = jenkinsLocalStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
-
+            
+            fixDragEvent(configTables);
+            
             var tabBarWidget = require('./widgets/config/tabbar.js');
             if (tabBarShowPreference === "yes") {
                 configTables.each(function() {
@@ -72,7 +77,7 @@ function addFinderToggle(configTableMetadata) {
     var findToggle = $('<div class="find-toggle" title="Find"></div>');
     var finderShowPreferenceKey = 'config:showfinder';
     
-    $('.tabBar', configTableMetadata.configWidgets).append(findToggle);
+    //$('.tabBar', configTableMetadata.configWidgets).append(findToggle);
     findToggle.click(function() {
         var findContainer = $('.find-container', configTableMetadata.configWidgets);
         if (findContainer.hasClass('visible')) {
@@ -92,4 +97,23 @@ function addFinderToggle(configTableMetadata) {
 
 function fireBottomStickerAdjustEvent() {
     Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
+}
+// YUI Drag widget does not like to work on elements with a relative position.
+// This tells the element to switch to static position at the start of the drag, so it can work.
+function fixDragEvent(handle){
+    var isReady = false;
+    var $handle = $(handle);
+    var $chunk = $handle.closest('.repeated-chunk');
+    $handle.add('#ygddfdiv')
+    	.mousedown(function(){
+    	    isReady = true; 
+    	})
+    	.mousemove(function(){
+    	    if(isReady && !$chunk.hasClass('dragging')){
+    		$chunk.addClass('dragging');
+    	    }
+    	}).mouseup(function(){
+    	    isReady = false;
+    	    $chunk.removeClass('dragging');
+    	});
 }
