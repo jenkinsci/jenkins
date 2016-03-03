@@ -66,8 +66,16 @@ var createPluginSetupWizard = function() {
 		}
 	});
 
+	// get total number of dependencies
+	Handlebars.registerHelper('dependencyCount', function(plugName) {
+		var plug = availablePlugins[plugName];
+		if(plug && plug.allDependencies && plug.allDependencies.length > 1) { // includes self
+			return plug.allDependencies.length - 1;
+		}
+	});
+
 	// gets user friendly dependency text
-	Handlebars.registerHelper('dependencyText', function(plugName) {
+	Handlebars.registerHelper('eachDependency', function(plugName, options) {
 		var plug = availablePlugins[plugName];
 		if(!plug) {
 			return '';
@@ -75,18 +83,23 @@ var createPluginSetupWizard = function() {
 		var deps = $.grep(plug.allDependencies, function(value) { // remove self
 			return value !== plugName;
 		});
-		var out = '';
+		
+		var out  = '';
 		for(var i = 0; i < deps.length; i++) {
-			if(i > 0) {
-				out += ', ';
-			}
 			var depName = deps[i];
 			var dep = availablePlugins[depName];
 			if(dep) {
-				out += dep.title;
+				out += options.fn(dep);
 			}
 		}
 		return out;
+	});
+
+	// executes a block if there are dependencies
+	Handlebars.registerHelper('ifVisibleDependency', function(plugName, options) {
+		if(visibleDependencies[plugName]) {
+			return options.fn();
+		}
 	});
 
 	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
@@ -122,6 +135,7 @@ var createPluginSetupWizard = function() {
 	var pluginList = pluginManager.plugins();
     var allPluginNames = pluginManager.pluginNames();
     var selectedPluginNames = pluginManager.recommendedPluginNames();
+	var visibleDependencies = {};
     var categories = [];
     var availablePlugins = {};
     var categorizedPlugins = {};
@@ -263,6 +277,24 @@ var createPluginSetupWizard = function() {
 		}));
 
 		setPanel(progressPanel, { installingPlugins : installingPlugins });
+	};
+	
+	// toggles visibility of dependency listing for a plugin
+	var toggleDependencyList = function() {
+		var $btn = $(this);
+		var plugName = $btn.attr('data-plugin-name');
+		if(!visibleDependencies[plugName]) {
+			visibleDependencies[plugName] = true;
+		}
+		else {
+			visibleDependencies[plugName] = false;
+		}
+		if(!visibleDependencies[plugName]) {
+			$btn.removeClass('active');
+		}
+		else {
+			$btn.addClass('active');
+		}
 	};
 
 	// install the default plugins
@@ -669,6 +701,7 @@ var createPluginSetupWizard = function() {
 
 	// click action mappings
 	var actions = {
+		'.toggle-dependency-list': toggleDependencyList,
 		'.install-recommended': installDefaultPlugins,
 		'.install-custom': loadCustomPluginPanel,
 		'.install-home': function() { setPanel(welcomePanel); },

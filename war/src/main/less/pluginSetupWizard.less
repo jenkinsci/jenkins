@@ -342,7 +342,7 @@
 
 		            &:hover{
 		              background: rgba(100, 200, 255, 0.1);
-		              box-shadow:inset 0 200px 200px -200px rgba(100, 200, 255, 0.33),inset 0 0 0 1px rgba(100, 200, 255, 0.33);
+                      box-shadow:inset 0 400px 400px -100px rgba(100, 200, 255, 0.33), inset 0 0 0 1px rgba(100, 200, 255, 0.33);
 		            }
 
 					&.selected {
@@ -374,6 +374,62 @@
 						float: left;
 						margin: 2px -18px;
 						vertical-align: middle;
+					}
+
+					.deps {
+						.toggle-dependency-list {
+							position: absolute;
+							top: 2px;
+							right: 5px;
+							color: #777;
+							border: 0;
+							text-decoration: none;
+							padding: 4px 8px;
+							
+							.badge {
+								margin-left: 7px;
+							}
+							
+							&:hover, &.active {
+								text-decoration: underline;
+							}
+							
+							&.active {
+								&:after {
+									content: '';
+									display: inline-block;
+									position: absolute;
+									top: 50%;
+									right: 100%;
+									width: 0; 
+									height: 0; 
+									border-left: 7px solid transparent;
+									border-right: 7px solid transparent;
+									border-top: 7px solid #999;
+									margin: -3px -3px 0 0;
+								}
+								+ .dep-list {
+									display: block;
+								}
+							}
+						}
+						
+						.dep-list {
+							padding: 10px 0 6px 0;
+							display: none;
+							
+							.badge {
+								padding: 4px 8px;
+								margin: 5px 3px 0 0;
+							}
+						}
+					}
+					
+					&.selected .deps {
+						.toggle-dependency-list {
+							top: 1px;
+							right: 4px;
+						}
 					}
 
 					+ .tooltip {
