@@ -151,7 +151,7 @@ body#jenkins.add-item .jenkins-config {
     border-bottom: solid 1px @solid-border;
 
     .config-section-activators {
-      margin:0;
+      margin:0  ;
       padding:0;
     }
 
@@ -204,9 +204,16 @@ body#jenkins.add-item .jenkins-config {
       text-align:right;
       
     }
-    
+    table.job-config.tabbed{
+      .section-header-row {background:none; border-color:transparent}
+      .section-header {margin-top:10; }
+    }
     table{
       border-collapse:collapse;
+      
+      .section-header-row.general .section-header{
+        display:none;
+      }
       
       .bottom-sticker-edge {
         display:none;
@@ -423,3 +430,4 @@ body#jenkins.add-item .jenkins-config {
 .yui-skin-sam .yuimenu {z-index:9999 !important}
 
 .yui-skin-sam .yui-button-disabled {opacity:.75}
+

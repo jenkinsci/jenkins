@@ -43,7 +43,7 @@ function updateListBox(listBox,url,config) {
 Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
 
         function hasChanged(selectEl, originalValue) {
-            var firstValue = selectEl.options[0].value;
+            var firstValue = (selectEl.options && selectEl.options[0])? selectEl.options[0].value : originalValue;
             var selectedValue = selectEl.value;
             if (originalValue == "" && selectedValue == firstValue) {
                 // There was no value pre-selected but after the call to updateListBox the first value is selected by

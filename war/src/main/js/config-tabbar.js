@@ -2,7 +2,6 @@ var $ = require('jquery-detached').getJQuery();
 var jenkinsLocalStorage = require('./util/jenkinsLocalStorage.js');
 var configMetadata = require('./widgets/config/model/ConfigTableMetaData.js');
 
-$('body').addClass('config');
 $(function() {
     // Horrible ugly hack...
     // We need to use Behaviour.js to wait until after radioBlock.js Behaviour.js rules
@@ -10,7 +9,6 @@ $(function() {
     var done = false;
     
     Behaviour.specify(".dd-handle", 'config-drag-start',1000,fixDragEvent); // jshint ignore:line
-    
     Behaviour.specify(".block-control", 'row-set-block-control', 1000, function() { // jshint ignore:line
         if (done) {
             return;
@@ -36,7 +34,7 @@ $(function() {
                     if (generalSection) {
                         generalSection.adoptSection('config_advanced_project_options');
                     }
-                    
+                    console.log('??????');
                     addFinderToggle(tabBar);
                     tabBar.onShowSection(function() {
                         // Hook back into hudson-behavior.js
@@ -58,7 +56,10 @@ $(function() {
                         });
                         tabBar.showSection(tabBarLastSection);
                     }
+                    watchScroll(tabBar);
+                    $(window).on('scroll',function(){watchScroll(tabBar)});
                 });
+                
             } else {
                 configTables.each(function() {
                     var configTable = $(this);
@@ -72,13 +73,14 @@ $(function() {
             }
         }
     });
+    
+    
 });
 
 function addFinderToggle(configTableMetadata) {
     var findToggle = $('<div class="find-toggle" title="Find"></div>');
     var finderShowPreferenceKey = 'config:showfinder';
     
-    //$('.tabBar', configTableMetadata.configWidgets).append(findToggle);
     findToggle.click(function() {
         var findContainer = $('.find-container', configTableMetadata.configWidgets);
         if (findContainer.hasClass('visible')) {
@@ -94,6 +96,44 @@ function addFinderToggle(configTableMetadata) {
     if (jenkinsLocalStorage.getGlobalItem(finderShowPreferenceKey, "yes") === 'yes') {
         findToggle.click();
     }
+}
+
+function watchScroll(tabControl){
+  var $window = $(window);
+  var $tabBox= tabControl.configWidgets;
+  var $tabs = $tabBox.find('.tab');
+  var $table= tabControl.configTable;
+  var toolbarFromTop = $tabs.offset().top;
+  var $jenkTools = $('#breadcrumbBar')
+  var winScoll = $window.scrollTop();
+  var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 15;
+  
+  $tabs.find('.active').removeClass('active');
+  
+  $.each(tabControl.sections,function(i,cat){
+    var $cat = $(cat.headerRow);
+    var catHeight = ($cat.length > 0)?
+        $cat.offset().top - (jenkToolOffset):
+          0;
+    if(winScoll < catHeight){
+      var $thisTab = $($tabs.get(i));
+      var $nav = $thisTab.closest('.tabBar');
+      $nav.find('.active').removeClass('active');
+      $thisTab.addClass('active');
+      return false;
+    }
+  });
+
+  if(winScoll > $('#page-head').height() - 5 ){  
+    $tabBox.width($tabBox.width()).css({
+      'position':'fixed',
+      'top':($jenkTools.height() - 5 )+'px'});
+    $table.css({'margin-top':$tabBox.outerHeight()+'px'});
+    
+  }
+  else{
+    $tabBox.add($table).removeAttr('style');
+  }
 }
 
 function fireBottomStickerAdjustEvent() {
