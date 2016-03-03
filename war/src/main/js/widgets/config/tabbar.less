@@ -33,10 +33,25 @@ body#jenkins.add-item .jenkins-config {
   padding:10px 10px 10px 68px;
   min-height:68px;
   
-  .icn {
-    position:absolute; left:10px; top:10px; height:48px; width:48px; background:#ddd; border-radius:50%; text-align:center; line-height:48px;
+  .icn:before {
+    content:' ';
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:24px;
+    border-top-left-radius:24px;
+    border-top-right-radius:24px;
+    background:#C0D8E2;
+  }
   
-    img {width:100%}
+  .icn {
+    position:absolute; left:10px; top:10px; height:48px; 
+    width:48px; background:@brightest; border:1px solid @line-blue;  
+    border-radius:50%; text-align:center; line-height:48px;
+  
+    img {width:100%; position:relative; z-index:2}
   }
   
   label{
@@ -70,6 +85,8 @@ body#jenkins.add-item .jenkins-config {
 .add-item .jenkins-config-widgets {
   border-top-left-radius:5px;
   border-top-right-radius:5px;
+  position:relative;
+  z-index:5;
 }
 
 .jenkins-config-widgets {
@@ -197,25 +214,32 @@ body#jenkins.add-item .jenkins-config {
       .bottom-sticker-inner{
         padding: 20px 10px 25px 20px;
         border-top-right-radius: 10px;
-        border-top: 1px solid @birghtest;
-        border-right: 1px solid @birghtest;
-        background: @medium-translucent;    
+        border: 1px solid @line-green;
+        background: @pale-green-trans;    
       }
          
       .bottom-sticker, 
       #bottom-sticker{ 
         width: auto;
-        margin-left: -10px;
         overflow: hidden;
         padding-bottom: 10px;
-        margin: 30px 30px -25px -15px;
+        margin: 30px 30px -26px -16px;
         z-index:9;
 
         .yui-button{
           margin-right:10px;
           
           button{
-            padding:5px 20px
+            padding:5px 20px;
+            background:@j-pale-blue;
+            border-color:@line-blue;
+          }
+          
+        }
+        .yui-button-disabled{
+          button{
+            background:@light-backgrond;
+            border-color:@solid-border;
           }
         }
       }
@@ -397,3 +421,5 @@ body#jenkins.add-item .jenkins-config {
   opacity:.5;
 }
 .yui-skin-sam .yuimenu {z-index:9999 !important}
+
+.yui-skin-sam .yui-button-disabled {opacity:.75}
