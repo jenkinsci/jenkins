@@ -103,6 +103,10 @@ import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -114,10 +118,6 @@ import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.ServletHolder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -283,12 +283,12 @@ public class QueueTest {
 
 
         Server server = new Server();
-        SocketConnector connector = new SocketConnector();
+        ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
 
         ServletHandler handler = new ServletHandler();
         handler.addServletWithMapping(new ServletHolder(new FileItemPersistenceTestServlet()),"/");
-        server.addHandler(handler);
+        server.setHandler(handler);
 
         server.start();
 
@@ -373,7 +373,7 @@ public class QueueTest {
 
     @Issue("JENKINS-8790")
     @Test public void flyweightTasks() throws Exception {
-        MatrixProject m = r.createMatrixProject();
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
@@ -398,13 +398,13 @@ public class QueueTest {
         r.jenkins.clouds.add(cloud);
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.<Node>emptyList());
-        MatrixProject m = r.createMatrixProject();
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.setAxes(new AxisList(new LabelAxis("label", Arrays.asList("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
+            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getItems().toString()).initCause(x);
         }
         r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
@@ -581,7 +581,6 @@ public class QueueTest {
      * Make sure that the running build actually carries an credential.
      */
     @Test public void accessControl() throws Exception {
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -608,7 +607,6 @@ public class QueueTest {
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -797,7 +795,7 @@ public class QueueTest {
      * and the flyweight task will be executed.
      */
     public void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Exception {
-        MatrixProject matrixProject = r.createMatrixProject();
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "p");
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
@@ -812,7 +810,7 @@ public class QueueTest {
 
     @Test
     public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
-        MatrixProject matrixProject = r.createMatrixProject("downstream");
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "downstream");
         matrixProject.setDisplayName("downstream");
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")

@@ -28,6 +28,7 @@ import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.NullSCM;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.WorkspaceList;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
@@ -178,6 +179,19 @@ public class WorkspaceCleanupThreadTest {
         performCleanup();
 
         assertFalse(ws.exists());
+    }
+
+    @Issue("JENKINS-27152")
+    @Test
+    public void deleteTemporaryDirectory() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        FilePath ws = createOldWorkspaceOn(r.jenkins, p);
+        FilePath tmp = WorkspaceList.tempDir(ws);
+        tmp.child("stuff").write("content", null);
+        createOldWorkspaceOn(r.createOnlineSlave(), p);
+        performCleanup();
+        assertFalse(ws.exists());
+        assertFalse("temporary directory should be cleaned up as well", tmp.exists());
     }
 
     private FilePath createOldWorkspaceOn(Node slave, FreeStyleProject p) throws Exception {

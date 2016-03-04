@@ -212,7 +212,7 @@ public class FingerprinterTest {
     }
     
     @Test public void matrixDependency() throws Exception {
-        MatrixProject matrixProject = j.createMatrixProject();
+        MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "p");
         matrixProject.setAxes(new AxisList(new Axis("foo", "a", "b")));
         FreeStyleProject freestyleProject = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         addFingerprinterToProject(matrixProject, singleContents, singleFiles);

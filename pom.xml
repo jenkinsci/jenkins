@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.643-SNAPSHOT</version>
+  <version>1.652-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -52,7 +52,6 @@ THE SOFTWARE.
     <module>war</module>
     <module>test</module>
     <module>cli</module>
-    <module>plugins</module>
   </modules>
 
   <scm>
@@ -180,7 +179,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.54</version>
+        <version>2.55</version>
       </dependency>
 
       <dependency>

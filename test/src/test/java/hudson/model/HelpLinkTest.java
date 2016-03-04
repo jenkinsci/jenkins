@@ -11,6 +11,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import hudson.matrix.MatrixProject;
+import hudson.maven.MavenModuleSet;
 
 import java.util.List;
 
@@ -41,12 +43,12 @@ public class HelpLinkTest {
 
     @Test
     public void mavenConfig() throws Exception {
-        clickAllHelpLinks(j.createMavenProject());
+        clickAllHelpLinks(j.jenkins.createProject(MavenModuleSet.class, "mms"));
     }
 
     @Test
     public void matrixConfig() throws Exception {
-        clickAllHelpLinks(j.createMatrixProject());
+        clickAllHelpLinks(j.jenkins.createProject(MatrixProject.class, "mp"));
     }
 
     private void clickAllHelpLinks(AbstractProject p) throws Exception {

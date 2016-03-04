@@ -58,6 +58,123 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v1.651>What's new in 1.651</a> (2016/02/28)</h3>
+<ul class=image>
+  <li class="rfe">
+    Move periodic task log files from <code>JENKINS_HOME/*.log</code> to <code>JENKINS_HOME/logs/tasks/*.log</code> and rotate them periodically rather than overwrite every execution.
+    (<a href-"https://issues.jenkins-ci.org/browse/JENKINS-33068">issue 33068</a>)
+  <li class="bug">
+    Fix documentation of proxy configuration.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2060">pull 2060</a>)
+</ul>
+<h3><a name=v1.650>What's new in 1.650</a> (2016/02/24)</h3>
+<ul class=image>
+   <li class="major bug">
+     <strong>Important security fixes</strong>
+     (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-02-24">security advisory</a>)
+</ul>
+<h3><a name=v1.649>What's new in 1.649</a> (2016/02/21)</h3>
+<ul class=image>
+  <li class="rfe">
+    Allow changing the directory used for the extraction of plugin archives via the <code>--pluginroot</code> CLI option (also controllable via the <code>hudson.PluginManager.workDir</code> system property / context parameter. Also document the <code>--webroot</code> CLI parameter in <code>java -jar jenkins.war --help</code>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32765">issue 32765</a>)
+  <li class="rfe">
+    Unify CLI exit code semantics.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32273">issue 32273</a>)
+  <li class="bug">
+    ArrayIndexOutOfBoundsException when parsing range set.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32852">issue 32852</a>)
+  <li class="rfe">
+    Improved Polish translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2041">pull 2041</a>,
+    <a href="https://github.com/jenkinsci/jenkins/pull/2044">pull 2044</a>)
+</ul>
+<h3><a name=v1.648>What's new in 1.648</a> (2016/02/17)</h3>
+<ul class=image>
+  <li class="rfe">
+    Improved Czech and Polish translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2008">pull 2008</a>,
+    <a href="https://github.com/jenkinsci/jenkins/pull/2018">pull 2017</a>,
+    <a href="https://github.com/jenkinsci/jenkins/pull/2017">pull 2018</a>)
+  <li class="bug">
+    Generate new instance identity file when the existing one is found to be corrupt.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-29240">issue 29240</a>)
+</ul>
+<h3><a name=v1.647>What's new in 1.647</a> (2016/02/04)</h3>
+<ul class=image>
+  <li class="bug">
+    Retrieve tool installer metadata from all update sites.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32328">issue 32328</a>)
+</ul>
+<h3><a name=v1.646>What's new in 1.646</a> (2016/01/25)</h3>
+<ul class=image>
+  <li class="major rfe">
+    The official parent POM for plugins is now hosted in the <code>plugin-pom</code> repository, starting with version 2.0.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32493">issue 32493</a>)
+  <li class="bug">
+    Under some conditions a build record could be loaded twice, leading to erratic behavior.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22767">issue 22767</a>)
+  <li class="bug">
+    Fields on the parameters page are no longer aligned at the bottom.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31753">issue 31753</a>)
+  <li class="rfe">
+    Added missing translations for Polish language.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1986">pull 1986</a>)
+</ul>
+<h3><a name=v1.645>What's new in 1.645</a> (2016/01/18)</h3>
+<ul class=image>
+  <li class="bug">
+    Cleanup of CLI error handling and return codes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32273">issue 32273</a>)
+  <li class="bug">
+    Boot failure hook script did not work, WebAppMain.contextDestroyed produces weird errors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-24696">issue 24696</a>)
+  <li class="bug">
+    Don't request usage statistics update if Jenkins hasn't finished loading.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32190">issue 32190</a>)
+  <li class="rfe">
+    Split test harness into separate artifact.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32478">issue 32478</a>)
+  <li class="bug">
+    Fix encoding of some help files.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1975">pull 1975</a>)
+  <li class="bug">
+    Remove JUnit dependency pulled in from JLine.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1981">pull 1981</a>)
+  <li class="bug">
+    Pass <tt>$it</tt> to contents of <tt>dropdownDescriptorSelector</tt>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19565">issue 19565</a>)
+</ul>
+<h3><a name=v1.644>What's new in 1.644</a> (2016/01/10)</h3>
+<ul class=image>
+  <li class="rfe">
+    API changes: Add a reusable implementation of <code>IdleOfflineCause</code> class.
+    (<a href="https://github.com/jenkinsci/jenkins/commit/7e05b5032e138b5780eabc790d7cddecdc9b0b7c">commit 7e05b50</a>)
+  <li class="rfe">
+    Add time zone to generation date in footer in most locales.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32194">issue 32194</a>)
+  <li class="bug">
+    Prevent renaming nodes from overwriting existing nodes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31321">issue 31321</a>)
+  <li class="bug">
+    Avoid synchronization when setting/getting the list of JDKs to improve performance.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31932">issue 31932</a>)
+  <li class="rfe">
+    The Windows service wrapper now specifies the <code>--webroot</code> argument to extract the war file into <code>%BASE%</code>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1951">pull 1951</a>)
+</ul>
+<h3><a name=v1.643>What's new in 1.643</a> (2015/12/20)</h3>
+<ul class=image>
+  <li class="bug">
+    Fix when multiple clouds are set up and provisioning of a node is denied.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31219">issue 31219</a>)
+  <li class="rfe">
+    Allow retrying core update when the first attempt failed.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-11016">issue 11016</a>)
+  <li class="rfe">
+    Allow specifying the default TCP slave agent listener port via system property.
+    (<a href="https://github.com/jenkinsci/jenkins/commit/653fbdb65024b1b528e21f682172885f7111bba9">commit 653fbdb</a>)
+</ul>
 <h3><a name=v1.642>What's new in 1.642</a> (2015/12/13)</h3>
 <ul class=image>
   <li class="major bug">
@@ -1410,7 +1527,7 @@ Upcoming changes</a>
 <h3><a name=v1.563>What's new in 1.563</a> (2014/05/11)</h3>
 <ul class=image>
   <li class="major bug">
-    Memory exhausion in remoting channel since 1.560.
+    Memory exhaustion in remoting channel since 1.560.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-22734">issue 22734</a>)
   <li class="rfe">
     Configurable size for log buffer.
@@ -1554,7 +1671,7 @@ Upcoming changes</a>
     Fixed NoSuchMethodException when destroying processes using JDK1.8.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21341">issue 21341</a>)
   <li class=rfe>
-    Avoid irrelevant job queing while node is offline.
+    Avoid irrelevant job queuing while node is offline.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21394">issue 21394</a>)
   <li class=rfe>
     Debian package now creates 'jenkins' group

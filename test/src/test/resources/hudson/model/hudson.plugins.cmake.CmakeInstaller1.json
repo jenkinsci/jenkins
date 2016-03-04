@@ -1,0 +1,54 @@
+downloadService.post('hudson.plugins.cmake.CmakeInstaller',{"list": [
+  {
+    "id": "3.4.2",
+    "name": "3.4.2",
+    "variants":     [
+      {
+        "arch": "x86",
+        "os": "win32",
+        "url": "https://cmake.org/files/v3.4/cmake-3.4.2-win32-x86.zip"
+      },
+      {
+        "arch": "x86_64",
+        "os": "Linux",
+        "url": "https://cmake.org/files/v3.4/cmake-3.4.2-Linux-x86_64.tar.gz"
+      },
+      {
+        "arch": "i386",
+        "os": "Linux",
+        "url": "https://cmake.org/files/v3.4/cmake-3.4.2-Linux-i386.tar.gz"
+      },
+      {
+        "arch": "x86_64",
+        "os": "Darwin",
+        "url": "https://cmake.org/files/v3.4/cmake-3.4.2-Darwin-x86_64.tar.gz"
+      }
+    ]
+  },
+  {
+    "id": "3.4.1",
+    "name": "3.4.1",
+    "variants":     [
+      {
+        "arch": "x86",
+        "os": "win32",
+        "url": "https://cmake.org/files/v3.4/cmake-3.4.1-win32-x86.zip"
+      },
+      {
+        "arch": "x86_64",
+        "os": "Linux",
+        "url": "https://cmake.org/files/v3.4/cmake-3.4.1-Linux-x86_64.tar.gz"
+      },
+      {
+        "arch": "i386",
+        "os": "Linux",
+        "url": "https://cmake.org/files/v3.4/cmake-3.4.1-Linux-i386.tar.gz"
+      },
+      {
+        "arch": "x86_64",
+        "os": "Darwin",
+        "url": "https://cmake.org/files/v3.4/cmake-3.4.1-Darwin-x86_64.tar.gz"
+      }
+    ]
+  }
+]})

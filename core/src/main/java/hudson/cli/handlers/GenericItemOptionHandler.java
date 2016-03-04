@@ -73,9 +73,9 @@ public abstract class GenericItemOptionHandler<T extends Item> extends OptionHan
             });
             T nearest = Items.findNearest(type(), src, j);
             if (nearest != null) {
-                throw new CmdLineException(owner, "No such job '" + src + "'; perhaps you meant '" + nearest.getFullName() + "'?");
+                throw new IllegalArgumentException("No such job '" + src + "'; perhaps you meant '" + nearest.getFullName() + "'?");
             } else {
-                throw new CmdLineException(owner, "No such job '" + src + "'");
+                throw new IllegalArgumentException("No such job '" + src + "'");
             }
         }
         setter.addValue(s);

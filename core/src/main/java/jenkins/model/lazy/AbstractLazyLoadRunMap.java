@@ -353,7 +353,19 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             if (v!=null)        return v;       // already in memory
             // otherwise fall through to load
         }
-        return load(n, null);
+        synchronized (this) {
+            if (index.byNumber.containsKey(n)) { // JENKINS-22767: recheck inside lock
+                BuildReference<R> ref = index.byNumber.get(n);
+                if (ref == null) {
+                    return null;
+                }
+                R v = unwrap(ref);
+                if (v != null) {
+                    return v;
+                }
+            }
+            return load(n, null);
+        }
     }
 
     protected final synchronized void proposeNewNumber(int number) throws IllegalStateException {
@@ -443,7 +455,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * 
      * @return null if the data failed to load.
      */
-    protected R load(int n, Index editInPlace) {
+    private R load(int n, Index editInPlace) {
+        assert Thread.holdsLock(this);
         assert dir != null;
         R v = load(new File(dir, String.valueOf(n)), editInPlace);
         if (v==null && editInPlace!=null) {
@@ -460,7 +473,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If non-null, update this data structure.
      *      Otherwise do a copy-on-write of {@link #index}
      */
-    protected synchronized R load(File dataDir, Index editInPlace) {
+    private R load(File dataDir, Index editInPlace) {
+        assert Thread.holdsLock(this);
         try {
             R r = retrieve(dataDir);
             if (r==null)    return null;

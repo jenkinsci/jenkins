@@ -162,7 +162,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (archive.isDirectory()) {// already expanded
                 expandDir = archive;
             } else {
-                expandDir = new File(archive.getParentFile(), getBaseName(archive.getName()));
+                File f = pluginManager.getWorkDir();
+                expandDir =  new File(f == null ? archive.getParentFile() : f, getBaseName(archive.getName()));
                 explode(archive, expandDir);
             }
 

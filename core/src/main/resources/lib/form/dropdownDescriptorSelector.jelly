@@ -42,6 +42,11 @@ THE SOFTWARE.
       If specified, this will be chosen as the default value in case the current selection is null. The default can be an specific instance or a descriptor e.g. 
       ${descriptor.defaultSettingsProvider} or ${descriptor.defaultSettingsProvider.descriptor}. In the later case, the from input fields will be empty.
     </st:attribute>
+    <st:attribute name="capture">
+      Config fragments from descriptors are rendered lazily by default, which means
+      variables seen in the caller aren't visible to them. This attribute allows you
+      to nominate additional variables and their values to be captured for descriptors.
+    </st:attribute>
   </st:documentation>
   <f:prepareDatabinding /> 
   <j:set target="${attrs}" property="descriptors" value="${attrs.descriptors ?: descriptor.getPropertyType(instance,attrs.field).getApplicableDescriptors()}" />
@@ -51,10 +56,11 @@ THE SOFTWARE.
 
     <j:set var="current" value="${instance[attrs.field]}"/>
     <j:set var="current" value="${current!=null ? current : (default.descriptor!=null ? default : null)}"/>
+    <j:set var="capture" value="${attrs.capture?:''}" />
     <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
       <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
         selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}"
-        lazy="descriptor">
+        lazy="descriptor,it,${capture}">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />

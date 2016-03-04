@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.643-SNAPSHOT</version>
+    <version>1.652-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -47,7 +47,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.30</version>
+      <version>1.32</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -73,13 +73,6 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- declare this in reactors, so i can use now directly : mvn install -pl war -am to get the war  -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>${maven-plugin.version}</version>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
@@ -104,7 +97,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>1.4</version>
+      <version>1.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -263,6 +256,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>maven-plugin</artifactId>
+                  <version>${maven-plugin.version}</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

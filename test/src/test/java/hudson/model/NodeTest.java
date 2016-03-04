@@ -251,7 +251,7 @@ public class NodeTest {
     public void testGetAssignedLabelWithJobs() throws Exception {
         final Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
-        MavenModuleSet mavenProject = j.createMavenProject();
+        MavenModuleSet mavenProject = j.jenkins.createProject(MavenModuleSet.class, "p");
         mavenProject.setAssignedLabel(j.jenkins.getLabel("label1"));
         RunLoadCounter.prepare(mavenProject);
         j.assertBuildStatus(Result.FAILURE, mavenProject.scheduleBuild2(0).get());
@@ -294,12 +294,12 @@ public class NodeTest {
         final Node node2 = j.createOnlineSlave();
         node1.setLabelString("label1");
 
-        MavenModuleSet project = j.createMavenProject();
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p1");
         final Label label = j.jenkins.getLabel("label1");
         project.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
 
-        MavenModuleSet project2 = j.createMavenProject();
+        MavenModuleSet project2 = j.jenkins.createProject(MavenModuleSet.class, "p2");
         project2.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project2.scheduleBuild2(0).get());
 
@@ -316,7 +316,7 @@ public class NodeTest {
         final Node node = j.createOnlineSlave();
         node.setLabelString("label1");
 
-        MavenModuleSet project = j.createMavenProject();
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p");
         final Label label = j.jenkins.getLabel("label1");
         project.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());

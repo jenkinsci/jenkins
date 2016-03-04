@@ -254,7 +254,7 @@ ${h.initPageVariables(context)}
         <div class="row">
           <div class="col-md-6" id="footer"></div>
           <div class="col-md-18">
-            <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="medium"/></span>
+            <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="long"/></span>
             <j:if test="${!empty(it.api)}">
                <span class="rest_api"><a href="api/">REST API</a></span>
             </j:if>

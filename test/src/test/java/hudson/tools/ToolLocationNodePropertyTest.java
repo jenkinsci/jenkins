@@ -52,6 +52,8 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.ToolInstallations;
 
 /**
  * This class tests that environment variables from node properties are applied,
@@ -62,6 +64,8 @@ public class ToolLocationNodePropertyTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     private DumbSlave slave;
     private FreeStyleProject project;
@@ -109,7 +113,7 @@ public class ToolLocationNodePropertyTest {
 
     @Test
     public void maven() throws Exception {
-        MavenInstallation maven = j.configureDefaultMaven();
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenPath = maven.getHome();
         Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", j.NO_PROPERTIES));
 
@@ -136,7 +140,7 @@ public class ToolLocationNodePropertyTest {
 
     @Test
     public void ant() throws Exception {
-        Ant.AntInstallation ant = j.configureDefaultAnt();
+        Ant.AntInstallation ant = ToolInstallations.configureDefaultAnt(tmp);
         String antPath = ant.getHome();
         Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(new AntInstallation("ant", "THIS IS WRONG"));
 
@@ -158,11 +162,11 @@ public class ToolLocationNodePropertyTest {
 
     @Test
     public void nativeMaven() throws Exception {
-        MavenInstallation maven = j.configureDefaultMaven();
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenPath = maven.getHome();
         Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", j.NO_PROPERTIES));
 
-        MavenModuleSet project = j.createMavenProject();
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p");
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 "/simple-projects.zip")));
         project.setAssignedLabel(slave.getSelfLabel());
