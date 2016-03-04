@@ -2,6 +2,7 @@ package jenkins.slaves;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
@@ -11,6 +12,8 @@ import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import org.jenkinsci.remoting.engine.JnlpServer3Handshake;
 import org.jenkinsci.remoting.nio.NioChannelHub;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -35,7 +38,8 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
 
     @Override
     public String getName() {
-        return "JNLP3-connect";
+        if (ENABLED)    return "JNLP3-connect";
+        else            return "JNLP3-disabled";
     }
 
     @Override
@@ -109,4 +113,25 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     }
 
     private static final Logger LOGGER = Logger.getLogger(JnlpSlaveAgentProtocol3.class.getName());
+
+    /**
+     * Flag to control the activation of JNLP3 protocol.
+     * This feature is being A/B tested right now.
+     *
+     * <p>
+     * Once this will be on by default, the flag and this field will disappear. The system property is
+     * an escape hatch for those who hit any issues and those who are trying this out.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean ENABLED;
+
+    static {
+        String propName = JnlpSlaveAgentProtocol3.class.getName() + ".enabled";
+        if (System.getProperties().containsKey(propName))
+            ENABLED = Boolean.getBoolean(propName);
+        else {
+            byte hash = Util.fromHexString(Jenkins.getActiveInstance().getLegacyInstanceId())[0];
+            ENABLED = (hash%10)==0;
+        }
+    }
 }
