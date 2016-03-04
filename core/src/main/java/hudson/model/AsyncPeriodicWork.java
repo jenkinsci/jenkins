@@ -2,12 +2,13 @@ package hudson.model;
 
 import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import jenkins.model.Jenkins;
 
 /**
  * {@link PeriodicWork} that takes a long time to run.
@@ -21,6 +22,46 @@ import java.util.logging.LogRecord;
  */
 public abstract class AsyncPeriodicWork extends PeriodicWork {
     /**
+     * The default number of minutes after which to try and rotate the log file used by {@link #createListener()}.
+     * This value is controlled by the system property {@code hudson.model.AsyncPeriodicWork.logRotateMinutes}.
+     * Each individual AsyncPeriodicWork can also have a per-extension override using the system property
+     * based on their fully qualified class name with {@code .logRotateMinutes} appended.
+     *
+     * @since 1.651
+     */
+    private static final long LOG_ROTATE_MINUTES = Long.getLong(AsyncPeriodicWork.class.getName() + ".logRotateMinutes",
+            TimeUnit.DAYS.toMinutes(1));
+    /**
+     * The default file size after which to try and rotate the log file used by {@link #createListener()}.
+     * A value of {@code -1L} disables rotation based on file size.
+     * This value is controlled by the system property {@code hudson.model.AsyncPeriodicWork.logRotateSize}.
+     * Each individual AsyncPeriodicWork can also have a per-extension override using the system property
+     * based on their fully qualified class name with {@code .logRotateSize} appended.
+     *
+     * @since 1.651
+     */
+    private static final long LOG_ROTATE_SIZE = Long.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", -1L);
+    /**
+     * The number of milliseconds (since startup or previous rotation) after which to try and rotate the log file.
+     *
+     * @since 1.651
+     */
+    private final long logRotateMillis;
+    /**
+     * {@code -1L} disabled file size based log rotation, otherwise when starting an {@link #execute(TaskListener)},
+     * if the log file size is above this number of bytes then the log file will be rotated beforehand.
+     *
+     * @since 1.651
+     */
+    private final long logRotateSize;
+    /**
+     * The last time the log files were rotated. On start-up this will be {@link Long#MIN_VALUE} to ensure that the
+     * logs are always rotated every time Jenkins starts up to make it easier to correlate events with the main log.
+     *
+     * @since 1.651
+     */
+    private long lastRotateMillis = Long.MIN_VALUE;
+    /**
      * Human readable name of the work.
      */
     public final String name;
@@ -29,6 +70,9 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
     protected AsyncPeriodicWork(String name) {
         this.name = name;
+        this.logRotateMillis = TimeUnit.MINUTES.toMillis(
+                Long.getLong(getClass().getName() + ".logRotateMinutes", LOG_ROTATE_MINUTES));
+        this.logRotateSize = Long.getLong(getClass().getName() + ".logRotateSize", LOG_ROTATE_SIZE);
     }
 
     /**
@@ -45,9 +89,11 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 public void run() {
                     logger.log(getNormalLoggingLevel(), "Started {0}", name);
                     long startTime = System.currentTimeMillis();
+                    long stopTime;
 
                     StreamTaskListener l = createListener();
                     try {
+                        l.getLogger().printf("Started at %tc%n", new Date(startTime));
                         ACL.impersonate(ACL.SYSTEM);
 
                         execute(l);
@@ -56,11 +102,16 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                     } catch (InterruptedException e) {
                         e.printStackTrace(l.fatalError("aborted"));
                     } finally {
-                        l.closeQuietly();
+                        stopTime = System.currentTimeMillis();
+                        try {
+                            l.getLogger().printf("Finished at %tc. %dms%n", new Date(stopTime), stopTime - startTime);
+                        } finally {
+                            l.closeQuietly();
+                        }
                     }
 
                     logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",
-                            new Object[]{name, (System.currentTimeMillis()-startTime)});
+                            new Object[]{name, stopTime - startTime});
                 }
             },name+" thread");
             thread.start();
@@ -73,8 +124,54 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     }
 
     protected StreamTaskListener createListener() {
+        File f = getLogFile();
+        if (!f.getParentFile().isDirectory()) {
+            if (!f.getParentFile().mkdirs()) {
+                logger.log(getErrorLoggingLevel(), "Could not create directory {0}", f.getParentFile());
+            }
+        }
+        if (f.isFile()) {
+            if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
+                    || (logRotateSize > 0 && f.length() > logRotateSize)) {
+                lastRotateMillis = System.currentTimeMillis();
+                File prev = null;
+                for (int i = 5; i >= 0; i--) {
+                    File curr = i == 0 ? f : new File(f.getParentFile(), f.getName() + "." + i);
+                    if (curr.isFile()) {
+                        if (prev != null && !prev.exists()) {
+                            if (!curr.renameTo(prev)) {
+                                logger.log(getErrorLoggingLevel(), "Could not rotate log files {0} to {1}",
+                                        new Object[]{curr, prev});
+                            }
+                        } else {
+                            if (!curr.delete()) {
+                                logger.log(getErrorLoggingLevel(), "Could not delete log file {0} to enable rotation",
+                                        curr);
+                            }
+                        }
+                    }
+                    prev = curr;
+                }
+            }
+        } else {
+            lastRotateMillis = System.currentTimeMillis();
+            // migrate old log files the first time we start-up
+            File oldFile = new File(Jenkins.getActiveInstance().getRootDir(), f.getName());
+            if (oldFile.isFile()) {
+                File newFile = new File(f.getParentFile(), f.getName() + ".1");
+                if (!newFile.isFile()) {
+                    // if there has never been rotation then this is the first time
+                    if (oldFile.renameTo(newFile)) {
+                        logger.log(getNormalLoggingLevel(), "Moved {0} to {1}", new Object[]{oldFile, newFile});
+                    } else {
+                        logger.log(getErrorLoggingLevel(), "Could not move {0} to {1}",
+                                new Object[]{oldFile, newFile});
+                    }
+                }
+            }
+        }
         try {
-            return new StreamTaskListener(getLogFile());
+            return new StreamTaskListener(f, true, null);
         } catch (IOException e) {
             throw new Error(e);
         }
@@ -84,7 +181,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      * Determines the log file that records the result of this task.
      */
     protected File getLogFile() {
-        return new File(Jenkins.getInstance().getRootDir(),name+".log");
+        return new File(Jenkins.getActiveInstance().getRootDir(),"logs/tasks/"+name+".log");
     }
     
     /**
