@@ -282,7 +282,6 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 LOGGER.log(Level.SEVERE, "Failed to create Guice container from all the plugins",e);
                 // failing to load all bindings are disastrous, so recover by creating minimum that works
                 // by just including the core
-                // TODO this recovery is pretty much useless; startup crashes anyway
                 container = Guice.createInjector(new SezpozModule(loadSezpozIndices(Jenkins.class.getClassLoader())));
             }
 
@@ -479,7 +478,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     m.invoke(ecl, c);
                     c.getConstructors();
                     c.getMethods();
-                    c.getFields();
+                    for (Field f : c.getFields()) {
+                        if (f.getAnnotation(javax.inject.Inject.class) != null || f.getAnnotation(com.google.inject.Inject.class) != null) {
+                            resolve(f.getType());
+                        }
+                    }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
                     while (c != Object.class) {
                         c.getGenericSuperclass();
