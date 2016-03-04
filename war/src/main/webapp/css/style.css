@@ -86,6 +86,7 @@ body {
 #main-panel {
   padding: 15px 15px 40px 15px;
   margin-left: 320px;
+  position:relative;
 }
 
 @media (max-width: 750px) {
@@ -708,6 +709,59 @@ div.behavior-loading {
     opacity: 0.5;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     filter: alpha(opacity=50);
+}
+
+.config div.behavior-loading{
+    background: rgba(255,255,255,.85);
+    left: 15px;
+    right: 15px;
+    top: 15px;
+    bottom: 0px;
+    height: 100%;
+    width: auto;
+    min-height: 100%;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    filter: alpha(opacity=100);
+    font-size: 1.5em;
+    z-index: 99;
+    opacity: 1;
+    color: #999; 
+    text-shadow:#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px
+}
+
+.behavior-loading:before {
+  content:' ';
+  display:block;
+  width: 100px;
+  height: 100px;
+  margin: 200px auto 25px;
+  background-color: rgba(0,0,0,.15);
+  border:5px solid rgba(0,0,0,.33);
+  position:relative;
+  z-index:2;
+  border-radius: 100%;  
+  -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+  animation: sk-scaleout 1.0s infinite ease-in-out;
+  box-shaodw:#fff 0 0 0 10px
+}
+
+@-webkit-keyframes sk-scaleout {
+  0% { -webkit-transform: scale(0) }
+  100% {
+    -webkit-transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+@keyframes sk-scaleout {
+  0% { 
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 100% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+    opacity: 0;
+  }
 }
 
 LABEL.attach-previous {
