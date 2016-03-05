@@ -68,8 +68,15 @@ public class InstallUtil {
      * @return The type of "startup" currently under way in Jenkins.
      */
     public static InstallState getInstallState() {
-        if (Functions.getIsUnitTest()) {
-            return InstallState.TEST;
+        // install wizard will always run if environment specified
+        if (!Boolean.getBoolean("jenkins.install.runSetupWizard")) {
+            if (Functions.getIsUnitTest()) {
+                return InstallState.TEST;
+            }
+            
+            if (Boolean.getBoolean("hudson.Main.development")) {
+                return InstallState.DEVELOPMENT;
+            }
         }
 
         VersionNumber lastRunVersion = new VersionNumber(getLastExecVersion());

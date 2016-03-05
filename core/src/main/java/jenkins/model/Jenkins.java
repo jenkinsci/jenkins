@@ -194,6 +194,7 @@ import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
 import jenkins.install.InstallState;
 import jenkins.install.InstallUtil;
+import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
@@ -333,7 +334,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private InstallState installState;
+    private transient InstallState installState = InstallState.NEW;
+    
+    /**
+     * If we're in the process of an initial setup, 
+     * this will be set
+     */
+    private transient SetupWizard setupWizard;
 
     /**
      * Number of executors of the master node.
@@ -759,7 +766,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
         long start = System.currentTimeMillis();
 
-    	// As Jenkins is starting, grant this process full control
+        // As Jenkins is starting, grant this process full control
         ACL.impersonate(ACL.SYSTEM);
         try {
             this.root = root;
@@ -773,7 +780,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (installState == InstallState.RESTART || installState == InstallState.DOWNGRADE) {
                 InstallUtil.saveLastExecVersion();
             }
-
+            
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
@@ -833,6 +840,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if(KILL_AFTER_LOAD)
                 System.exit(0);
+
+            if(!installState.isSetupComplete()) {
+                // Start immediately with the setup wizard for new installs
+                setupWizard = new SetupWizard(this);
+            }
 
             launchTcpSlaveAgentListener();
 
@@ -913,6 +925,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Get the Jenkins {@link jenkins.install.InstallState install state}.
      * @return The Jenkins {@link jenkins.install.InstallState install state}.
      */
+    @Nonnull
     @Restricted(NoExternalUse.class)
     public InstallState getInstallState() {
         return installState;
@@ -923,7 +936,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public void setInstallState(@Nonnull InstallState newState) {
+        InstallState prior = installState;
         installState = newState;
+        if(setupWizard != null && !newState.equals(prior) && newState.isSetupComplete()) {
+            setupWizard.doCompleteSetupWizard();
+            setupWizard = null;
+        }
     }
 
     /**
@@ -1437,10 +1455,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
-		if (authorizationStrategy instanceof AuthorizationStrategy.Unsecured ||
-			authorizationStrategy instanceof FullControlOnceLoggedInAuthorizationStrategy) {
-			return new ArrayList(items.values());
-		}
+        if (authorizationStrategy instanceof AuthorizationStrategy.Unsecured ||
+            authorizationStrategy instanceof FullControlOnceLoggedInAuthorizationStrategy) {
+            return new ArrayList(items.values());
+        }
 
         List<TopLevelItem> viewableItems = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : items.values()) {
@@ -1815,11 +1833,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
-    	return nodeProperties;
+        return nodeProperties;
     }
 
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getGlobalNodeProperties() {
-    	return globalNodeProperties;
+        return globalNodeProperties;
     }
 
     /**
@@ -2428,7 +2446,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Override public TopLevelItem getItem(String name) throws AccessDeniedException {
         if (name==null)    return null;
-    	TopLevelItem item = items.get(name);
+        TopLevelItem item = items.get(name);
         if (item==null)
             return null;
         if (!item.hasPermission(Item.READ)) {
@@ -3079,10 +3097,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public HttpResponse doToggleCollapse() throws ServletException, IOException {
-    	final StaplerRequest request = Stapler.getCurrentRequest();
-    	final String paneId = request.getParameter("paneId");
+        final StaplerRequest request = Stapler.getCurrentRequest();
+        final String paneId = request.getParameter("paneId");
 
-    	PaneStatusProperties.forCurrentUser().toggleCollapsed(paneId);
+        PaneStatusProperties.forCurrentUser().toggleCollapsed(paneId);
 
         return HttpResponses.forwardToPreviousPage();
     }
@@ -3113,9 +3131,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 LOGGER.info("Failed to get thread dump for node " + c.getName() + ": " + e.getMessage());
             }
         }
-		if (toComputer() == null) {
-			future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel));
-		}
+        if (toComputer() == null) {
+            future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel));
+        }
 
         // if the result isn't available in 5 sec, ignore that.
         // this is a precaution against hang nodes
@@ -3890,6 +3908,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     // for Jelly
     public List<ManagementLink> getManagementLinks() {
         return ManagementLink.all();
+    }
+    
+    /**
+     * If set, a currently active setup wizard - e.g. installation
+     */
+    public SetupWizard getSetupWizard() {
+        return setupWizard;
     }
 
     /**

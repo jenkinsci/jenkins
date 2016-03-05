@@ -75,7 +75,8 @@ public class UpdateCenterPluginInstallTest {
         String correlationId = data.getString("correlationId");
         JSONObject installStatus = jenkinsRule.getJSON("updateCenter/installStatus?correlationId=" + correlationId).getJSONObject();
         Assert.assertEquals("ok", json.get("status"));
-        JSONArray states = installStatus.getJSONArray("data");
+        JSONObject status = installStatus.getJSONObject("data");
+        JSONArray states = status.getJSONArray("jobs");
         Assert.assertEquals(2, states.size());
 
         JSONObject pluginInstallState = states.getJSONObject(0);

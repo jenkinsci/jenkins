@@ -15,20 +15,20 @@ pluginList.recommendedPlugins = ['subversion'];
 
 // Iterates through all responses until the end and returns the last response repeatedly
 var LastResponse = function(responses) {
-	var counter = 0;
-	this.next = function() {
-		if(counter < responses.length) {
-			try {
-				return responses[counter];
-			} finally {
-				counter++;
-			}
-		}
-		if(responses.length > 0) {
-			return responses[counter-1];
-		}
-		return { status: 'fail' };
-	};
+    var counter = 0;
+    this.next = function() {
+        if(counter < responses.length) {
+            try {
+                return responses[counter];
+            } finally {
+                counter++;
+            }
+        }
+        if(responses.length > 0) {
+            return responses[counter-1];
+        }
+        return { status: 'fail' };
+    };
 };
 
 // common mocks for jQuery $.ajax
@@ -48,17 +48,23 @@ var ajaxMocks = function(responseMappings) {
         },
         '/jenkins/updateCenter/installStatus': new LastResponse([{
             status: 'ok',
-            data: [] // first, return nothing by default, no ongoing install
+            data: { // first, return nothing by default, no ongoing install
+            	state: 'NEW',
+            	jobs: []
+        	}
         },
         {
             status: 'ok',
-            data: [
-              {
-                  name: 'subversion',
-                  type: 'InstallJob',
-                  installStatus: 'Success'
-              }
-            ]
+            data: {
+            	state: 'INSTALLING_PLUGINS',
+            	jobs: [
+	              {
+	                  name: 'subversion',
+	                  type: 'InstallJob',
+	                  installStatus: 'Success'
+	              }
+	            ]
+            }
         }]),
         '/jenkins/pluginManager/plugins': {
             status: 'ok',
@@ -92,8 +98,8 @@ var ajaxMocks = function(responseMappings) {
             }
         },
         '/jenkins/pluginManager/installPlugins': {
-		status: 'ok',
-		data: 'RANDOM_UUID_1234'
+        status: 'ok',
+        data: 'RANDOM_UUID_1234'
         }
     };
 
@@ -114,7 +120,7 @@ var ajaxMocks = function(responseMappings) {
             throw 'No data mapping provided for AJAX call: ' + call.url;
         }
         if(response instanceof LastResponse) {
-		response = response.next();
+        response = response.next();
         }
         call.success(response);
     };
@@ -122,7 +128,7 @@ var ajaxMocks = function(responseMappings) {
 
 // call this for each test, it will provide a new wizard, jquery to the caller
 var test = function(test, ajaxMappings) {
-	jsTest.onPage(function() {
+    jsTest.onPage(function() {
         // deps
         var $ = getJQuery();
 
@@ -133,41 +139,41 @@ var test = function(test, ajaxMappings) {
         var pluginSetupWizard = jsTest.requireSrcModule('pluginSetupWizardGui');
 
         // exported init
-        pluginSetupWizard.init();
+        pluginSetupWizard.init('body');
 
         test($, pluginSetupWizard);
-	});
+    });
 };
 
 // helper to validate the appropriate plugins were installed
 var validatePlugins = function(plugins, complete) {
     var jenkins = jsTest.requireSrcModule('util/jenkins');
     if(!jenkins.originalPost) {
-	jenkins.originalPost = jenkins.post;
+    jenkins.originalPost = jenkins.post;
     }
     jenkins.post = function(url, data, cb) {
         expect(url).toBe('/pluginManager/installPlugins');
         var allMatch = true;
         for(var i = 0; i < plugins.length; i++) {
-		if(data.plugins.indexOf(plugins[i]) < 0) {
-			allMatch = false;
-			break;
-		}
+        if(data.plugins.indexOf(plugins[i]) < 0) {
+            allMatch = false;
+            break;
+        }
         }
         if(!allMatch) {
             expect(JSON.stringify(plugins)).toBe('In: ' + JSON.stringify(data.plugins));
         }
         // return status
         cb({status:'ok',data:{correlationId:1}});
-	    if(complete) {
-		complete();
-	    }
+        if(complete) {
+        complete();
+        }
     };
 };
 
 describe("pluginSetupWizard.js", function () {
-	it("wizard shows", function (done) {
-		test(function($) {
+    it("wizard shows", function (done) {
+        test(function($) {
             // Make sure the dialog was shown
             var $wizard = $('.plugin-setup-wizard');
             expect($wizard.size()).toBe(1);
@@ -176,49 +182,49 @@ describe("pluginSetupWizard.js", function () {
         });
     });
 
-	it("offline shows", function (done) {
-		jsTest.onPage(function() {
-			// deps
-		    var jenkins = jsTest.requireSrcModule('./util/jenkins');
+    it("offline shows", function (done) {
+        jsTest.onPage(function() {
+            // deps
+            var jenkins = jsTest.requireSrcModule('./util/jenkins');
 
-		    var $ = getJQuery();
-		    $.ajax = ajaxMocks();
+            var $ = getJQuery();
+            $.ajax = ajaxMocks();
 
-		    var get = jenkins.get;
-		    try {
-			    // Respond with failure
-			jenkins.get = function(url, cb) {
-				if (debug) {
+            var get = jenkins.get;
+            try {
+                // Respond with failure
+            jenkins.get = function(url, cb) {
+                if (debug) {
                         console.log('Jenkins.GET: ' + url);
                     }
 
-				if(url === '/updateCenter/connectionStatus?siteId=default') {
-					cb({
-						status: 'ok',
-						data: {
-							updatesite: 'ERROR',
-							internet: 'ERROR'
-						}
-					});
-				}
-				else {
-					get(url, cb);
-				}
-			    };
+                if(url === '/updateCenter/connectionStatus?siteId=default') {
+                    cb({
+                        status: 'ok',
+                        data: {
+                            updatesite: 'ERROR',
+                            internet: 'ERROR'
+                        }
+                    });
+                }
+                else {
+                    get(url, cb);
+                }
+                };
 
-			    // load the module
-			    var pluginSetupWizard = jsTest.requireSrcModule('pluginSetupWizardGui');
+                // load the module
+                var pluginSetupWizard = jsTest.requireSrcModule('pluginSetupWizardGui');
 
-		        // exported init
-		        pluginSetupWizard.init();
+                // exported init
+                pluginSetupWizard.init('body');
 
-			    expect($('.welcome-panel h1').text()).toBe('Offline');
+                expect($('.welcome-panel h1').text()).toBe('Offline');
 
-			done();
-		    } finally {
-			jenkins.get = get;
-		    }
-		});
+            done();
+            } finally {
+            jenkins.get = get;
+            }
+        });
     });
 
     it("install defaults", function (done) {
@@ -240,16 +246,16 @@ describe("pluginSetupWizard.js", function () {
     });
 
     var doit = function($, sel, trigger) {
-	var $el = $(sel);
-	if($el.length !== 1) {
-		console.log('Not found! ' + sel);
+    var $el = $(sel);
+    if($el.length !== 1) {
+        console.log('Not found! ' + sel);
             console.log(new Error().stack);
-	}
-	if(trigger === 'check') {
-		$el.prop('checked', true);
-		trigger = 'change';
-	}
-	$el.trigger(trigger);
+    }
+    if(trigger === 'check') {
+        $el.prop('checked', true);
+        trigger = 'change';
+    }
+    $el.trigger(trigger);
     };
 
     it("install custom", function (done) {
@@ -258,8 +264,8 @@ describe("pluginSetupWizard.js", function () {
 
             // validate a call to installPlugins with our defaults
             validatePlugins(['junit','mailer'], function() {
-	            // install a specific, other 'set' of plugins
-	            $('input[name=searchbox]').val('junit');
+                // install a specific, other 'set' of plugins
+                $('input[name=searchbox]').val('junit');
 
                 done();
             });
@@ -277,7 +283,7 @@ describe("pluginSetupWizard.js", function () {
 
     it("resume install", function (done) {
         var ajaxMappings = {
-		'/jenkins/updateCenter/incompleteInstallStatus': {
+        '/jenkins/updateCenter/incompleteInstallStatus': {
                 status: 'ok',
                 data: {
                     'junit': 'Success',
@@ -288,27 +294,27 @@ describe("pluginSetupWizard.js", function () {
             }
         };
         test(function($) {
-		expect($('.modal-title').text()).toBe('Resume Installation');
-		expect($('*[data-name="junit"]').is('.success')).toBe(true);
-		done();
+        expect($('.modal-title').text()).toBe('Resume Installation');
+        expect($('*[data-name="junit"]').is('.success')).toBe(true);
+        done();
         }, ajaxMappings);
     });
 
     it("error conditions", function (done) {
         var ajaxMappings = {
-		'/jenkins/updateCenter/incompleteInstallStatus': {
+        '/jenkins/updateCenter/incompleteInstallStatus': {
                 status: 'error',
                 data: {
-			'junit': 'Success',
-			'subversion': 'Pending',
-			'other': 'Failed',
-			'mailer': 'Success'
+            'junit': 'Success',
+            'subversion': 'Pending',
+            'other': 'Failed',
+            'mailer': 'Success'
                 }
             }
         };
         test(function($) {
-		expect($('.error-container h1').html()).toBe('Error');
-		done();
+        expect($('.error-container h1').html()).toBe('Error');
+        done();
         }, ajaxMappings);
     });
 
@@ -321,18 +327,24 @@ describe("pluginSetupWizard.js", function () {
         var ajaxMappings = {
             '/jenkins/updateCenter/installStatus': new LastResponse([{
                 status: 'ok',
-                data: [] // first, return nothing by default, no ongoing install
+                data: { // first, return nothing by default, no ongoing install
+                    state: 'NEW',
+                    jobs: []
+                }
             },
             {
                 status: 'ok',
-                data: [
-                  {
-                      name: 'subversion',
-                      type: 'InstallJob',
-                      installStatus: 'Success',
-                      requiresRestart: 'true' // a string...
-                  }
-                ]
+                data: {
+                    state: 'INSTALLING_PLUGINS',
+                    jobs: [
+                      {
+                          name: 'subversion',
+                          type: 'InstallJob',
+                          installStatus: 'Success',
+                          requiresRestart: 'true' // a string...
+                      }
+                  ]
+                }
             }])
         };
         test(function($) {
@@ -340,12 +352,13 @@ describe("pluginSetupWizard.js", function () {
             expect(goButton.size()).toBe(1);
 
             // validate a call to installPlugins with our defaults
-		setTimeout(function() {
+        setTimeout(function() {
                 expect($('.install-done').is(':visible')).toBe(false);
-                expect($('.install-done-restart').is(':visible')).toBe(true);
+
+                expect($('.save-security').is(':visible')).toBe(true);
 
                 done();
-		}, 500);
+        }, 500);
 
             goButton.click();
         }, ajaxMappings);
