@@ -135,6 +135,17 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
     }
 
     /**
+     * Called whenever {@link Queue} has determined via {@link #canRun(hudson.model.Queue.Item)} that an item is
+     * not yet runnable. This allows the plugin a chance to free any resources that were set aside as part of
+     * clearing the queue item to run when its own implementation of {@link #canRun(hudson.model.Queue.Item)} was called.
+     *
+     * @since 1.652
+     */
+    public void itemBlocked(Queue.Item item, CauseOfBlockage cause) {
+        // do nothing
+    }
+
+    /**
      * All registered {@link QueueTaskDispatcher}s.
      */
     public static ExtensionList<QueueTaskDispatcher> all() {

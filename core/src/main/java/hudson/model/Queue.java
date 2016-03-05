@@ -1152,12 +1152,21 @@ public class Queue extends ResourceController implements Saveable {
         if (i.task.isBuildBlocked() || !canRun(i.task.getResourceList()))
             return true;
 
-        for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-            if (d.canRun(i)!=null)
-                return true;
+        CauseOfBlockage cause = null;
+        ExtensionList<QueueTaskDispatcher> extList = QueueTaskDispatcher.all();
+
+        for (QueueTaskDispatcher d : extList) {
+            cause = d.canRun(i);
+            if (cause != null)
+                break;
+        }
+        if (cause != null) {
+            for (QueueTaskDispatcher d : extList) {
+                d.itemBlocked(i, cause);
+            }
         }
 
-        return false;
+        return cause != null;
     }
 
     /**
