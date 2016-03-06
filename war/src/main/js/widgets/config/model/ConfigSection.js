@@ -102,6 +102,29 @@ ConfigSection.prototype.markRowsAsActive = function() {
     this.updateRowGroupVisibility();
 };
 
+ConfigSection.prototype.hasText = function(text) {
+    var $ = jQD.getJQuery();
+    var selector = ":containsci('" + text + "')";
+    var sectionRows = this.getRows();
+
+    for (var i1 = 0; i1 < sectionRows.length; i1++) {
+        var row = sectionRows[i1];
+        var elementsWithText = $(selector, row);
+
+        if (elementsWithText.size() > 0) {
+            return true;
+        }
+    }
+
+    for (var i2 = 0; i2 < this.subSections.length; i2++) {
+        if (this.subSections[i2].hasText(text)) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
 ConfigSection.prototype.activeRowCount = function() {
     var activeRowCount = 0;
     var rows = this.getRows();
@@ -190,8 +213,8 @@ ConfigSection.prototype.highlightText = function(text) {
     var selector = ":containsci('" + text + "')";
     var rows = this.getRows();
     
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
+    for (var i1 = 0; i1 < rows.length; i1++) {
+        var row = rows[i1];
 
         /*jshint loopfunc: true */
         $('span.highlight-split', row).each(function() { // jshint ignore:line
@@ -209,11 +232,16 @@ ConfigSection.prototype.highlightText = function(text) {
                 $this.contents().each(function () {
                     // We specifically only mess with text nodes
                     if (this.nodeType === 3) {
-                        var highlightedMarkup = this.wholeText.replace(regex, '<span class="highlight">$1</span>');
-                        $(this).replaceWith('<span class="highlight-split">' + highlightedMarkup + '</span>');
+                        var $textNode = $(this);
+                        var highlightedMarkup = $textNode.text().replace(regex, '<span class="highlight">$1</span>');
+                        $textNode.replaceWith('<span class="highlight-split">' + highlightedMarkup + '</span>');
                     }
                 });
             });
         }
+    }
+
+    for (var i2 = 0; i2 < this.subSections.length; i2++) {
+        this.subSections[i2].highlightText(text);
     }
 };
