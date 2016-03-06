@@ -113,7 +113,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         }
 
         @Override
-        protected void failedToLogIn(@Nonnull String username) {
+        protected void failedToLogIn(@Nonnull String username, @Nonnull String ip) {
             // while this initially seemed like a good idea to avoid allowing wrong impersonation for too long,
             // doing this means a malicious user can break the impersonation capability
             // just by failing to login. See ApiTokenFilter that does the following, which seems better:
