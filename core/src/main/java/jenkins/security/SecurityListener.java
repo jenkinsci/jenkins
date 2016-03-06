@@ -71,7 +71,7 @@ public abstract class SecurityListener implements ExtensionPoint {
      * Would be called after {@link #failedToAuthenticate}.
      * @param username the user
      */
-    protected abstract void failedToLogIn(@Nonnull String username);
+    protected abstract void failedToLogIn(@Nonnull String username, @Nonnull String ip);
 
     /**
      * Fired when a user logs out.
@@ -112,10 +112,10 @@ public abstract class SecurityListener implements ExtensionPoint {
     }
 
     /** @since 1.569 */
-    public static void fireFailedToLogIn(@Nonnull String username) {
-        LOGGER.log(Level.FINE, "failed to log in: {0}", username);
+    public static void fireFailedToLogIn(@Nonnull String username, @Nonnull String ip) {
+        LOGGER.log(Level.FINE, "failed to log in: {0}, ip: {1}", username, ip);
         for (SecurityListener l : all()) {
-            l.failedToLogIn(username);
+            l.failedToLogIn(username, ip);
         }
     }
 
