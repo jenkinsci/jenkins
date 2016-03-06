@@ -355,7 +355,7 @@ describe("pluginSetupWizard.js", function () {
         setTimeout(function() {
                 expect($('.install-done').is(':visible')).toBe(false);
 
-                expect($('.save-security').is(':visible')).toBe(true);
+                expect($('.save-first-user').is(':visible')).toBe(true);
 
                 done();
         }, 500);
