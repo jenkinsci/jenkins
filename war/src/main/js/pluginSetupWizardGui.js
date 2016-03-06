@@ -282,6 +282,7 @@ var createPluginSetupWizard = function() {
 	// toggles visibility of dependency listing for a plugin
 	var toggleDependencyList = function() {
 		var $btn = $(this);
+		var $toggle = $btn.parents('.deps:first');
 		var plugName = $btn.attr('data-plugin-name');
 		if(!visibleDependencies[plugName]) {
 			visibleDependencies[plugName] = true;
@@ -290,10 +291,10 @@ var createPluginSetupWizard = function() {
 			visibleDependencies[plugName] = false;
 		}
 		if(!visibleDependencies[plugName]) {
-			$btn.removeClass('active');
+			$toggle.removeClass('show');
 		}
 		else {
-			$btn.addClass('active');
+			$toggle.addClass('show');
 		}
 	};
 

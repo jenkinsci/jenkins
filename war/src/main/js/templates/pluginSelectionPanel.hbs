@@ -31,30 +31,32 @@
 			<h2 id="{{id @key}}" class="expanded">{{@key}} {{pluginCountForCategory @key}}</h2>
 			<div class="plugins-for-category">
 				{{#each this}}
-				<label class="{{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}}" id="row-{{plugin.name}}">
-					<span class="title">
-						<input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
-						{{plugin.title}}
-					</span>
-					<span class="description">
-						{{{plugin.excerpt}}}
-					</span>
+				<span class="deps {{#ifVisibleDependency ../plugin.name}}show{{/ifVisibleDependency}}">
 					{{#hasDependencies plugin.name}}
-					<span class="deps">
-						<div class="btn btn-link toggle-dependency-list {{#ifVisibleDependency ../plugin.name}}active{{/ifVisibleDependency}}" type="button" data-plugin-name="{{../plugin.name}}">
+						<div class="btn btn-link toggle-dependency-list" type="button" data-plugin-name="{{../plugin.name}}">
 							{{../../../translations.installWizard_installIncomplete_dependenciesLabel}}<span class="badge">{{dependencyCount ../plugin.name}}</span>
 						</div>
-						<div class="dep-list">
-							{{#eachDependency ../plugin.name}}
-							<span class="dep badge">
-							{{title}}
-							</span>
-							{{/eachDependency}}
-						</div>
-					</deps>
 					{{/hasDependencies}}
-				</label>
+					<label class="{{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}}" id="row-{{plugin.name}}">
+						<span class="title">
+							<input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
+							{{plugin.title}}
+						</span>
+						<span class="description">
+							{{{plugin.excerpt}}}
+						</span>
+						{{#hasDependencies plugin.name}}
+							<div class="dep-list">
+								{{#eachDependency ../plugin.name}}
+								<span class="dep badge">
+								{{title}}
+								</span>
+								{{/eachDependency}}
+							</div>
+						{{/hasDependencies}}
+					</label>
 				{{/each}}
+				</span>
 			</div>
 			{{/each}}
 		</div>

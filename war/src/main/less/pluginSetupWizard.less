@@ -376,62 +376,6 @@
 						vertical-align: middle;
 					}
 
-					.deps {
-						.toggle-dependency-list {
-							position: absolute;
-							top: 2px;
-							right: 5px;
-							color: #777;
-							border: 0;
-							text-decoration: none;
-							padding: 4px 8px;
-							
-							.badge {
-								margin-left: 7px;
-							}
-							
-							&:hover, &.active {
-								text-decoration: underline;
-							}
-							
-							&.active {
-								&:after {
-									content: '';
-									display: inline-block;
-									position: absolute;
-									top: 50%;
-									right: 100%;
-									width: 0; 
-									height: 0; 
-									border-left: 7px solid transparent;
-									border-right: 7px solid transparent;
-									border-top: 7px solid #999;
-									margin: -3px -3px 0 0;
-								}
-								+ .dep-list {
-									display: block;
-								}
-							}
-						}
-						
-						.dep-list {
-							padding: 10px 0 6px 0;
-							display: none;
-							
-							.badge {
-								padding: 4px 8px;
-								margin: 5px 3px 0 0;
-							}
-						}
-					}
-					
-					&.selected .deps {
-						.toggle-dependency-list {
-							top: 1px;
-							right: 4px;
-						}
-					}
-
 					+ .tooltip {
 				        left: 2px !important;
 						margin-right: 16px;
@@ -446,6 +390,60 @@
 						text-align: left;
 					    }
 				    }
+				}
+			}
+		}
+		
+		.deps {
+			display: block;
+			position: relative;
+			
+			.toggle-dependency-list {
+				position: absolute;
+				top: 0;
+				right: 0;
+				color: #777;
+				border: 0;
+				text-decoration: none;
+				padding: 5px 13px;
+				z-index: 100;
+				
+				.badge {
+					margin-left: 7px;
+				}
+				
+				&:hover, &.active {
+					text-decoration: underline;
+				}
+			}
+			
+			.dep-list {
+				padding: 10px 0 6px 0;
+				display: none;
+				
+				.badge {
+					padding: 4px 8px;
+					margin: 5px 3px 0 0;
+				}
+			}
+				
+			&.show {
+				.toggle-dependency-list:after {
+					content: '';
+					display: inline-block;
+					position: absolute;
+					top: 50%;
+					right: 100%;
+					width: 0; 
+					height: 0; 
+					border-left: 7px solid transparent;
+					border-right: 7px solid transparent;
+					border-top: 7px solid #999;
+					margin: -3px -3px 0 0;
+				}
+				
+				.dep-list {
+					display: block;
 				}
 			}
 		}
