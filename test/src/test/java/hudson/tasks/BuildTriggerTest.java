@@ -222,6 +222,7 @@ public class BuildTriggerTest {
         assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
         // Downstream projects whose existence we are not aware of will silently not be triggered:
         assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName);
+        assertDoCheck(alice, null, null, downstreamName);
         FreeStyleBuild b = j.buildAndAssertSuccess(upstream);
         j.assertLogNotContains(downstreamName, b);
         j.waitUntilNoActivity();
@@ -232,6 +233,7 @@ public class BuildTriggerTest {
         AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
         assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName);
+        assertDoCheck(alice, null, null, downstreamName);
         b = j.buildAndAssertSuccess(upstream);
         j.assertLogContains(downstreamName, b);
         j.waitUntilNoActivity();
@@ -242,6 +244,7 @@ public class BuildTriggerTest {
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
         assertDoCheck(alice, null, upstream, downstreamName);
+        assertDoCheck(alice, null, null, downstreamName);
         b = j.buildAndAssertSuccess(upstream);
         j.assertLogContains(downstreamName, b);
         j.waitUntilNoActivity();
@@ -251,8 +254,9 @@ public class BuildTriggerTest {
         assertNotNull(cause);
         assertEquals(b, cause.getUpstreamRun());
         // Now if we have configured some QIA’s but they are not active on this job, we should run as anonymous. Which would normally have no permissions:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(Collections.<String,Authentication>emptyMap()));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(Collections.<String, Authentication>emptyMap()));
         assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName);
+        assertDoCheck(alice, null, null, downstreamName);
         b = j.buildAndAssertSuccess(upstream);
         j.assertLogNotContains(downstreamName, b);
         j.assertLogContains(Messages.BuildTrigger_warning_this_build_has_no_associated_aut(), b);
@@ -265,6 +269,7 @@ public class BuildTriggerTest {
         amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);
         assertDoCheck(alice, null, upstream, downstreamName);
+        assertDoCheck(alice, null, null, downstreamName);
         b = j.buildAndAssertSuccess(upstream);
         j.assertLogContains(downstreamName, b);
         j.waitUntilNoActivity();
@@ -280,6 +285,7 @@ public class BuildTriggerTest {
         downstream.addProperty(amp);
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().clear();
         assertDoCheck(alice, Messages.BuildTrigger_NoSuchProject(downstreamName, "upstream"), upstream, downstreamName);
+        assertDoCheck(alice, null, null, downstreamName);
         b = j.buildAndAssertSuccess(upstream);
         j.assertLogContains(downstreamName, b);
         j.assertLogContains(Messages.BuildTrigger_warning_access_control_for_builds_in_glo(), b);
