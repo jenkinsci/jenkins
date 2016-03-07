@@ -688,12 +688,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Gets the {@link Jenkins} singleton.
-     * {@link #getInstance()} provides the unchecked versions of the method.
+     * {@link #getInstanceOrNull()} provides the unchecked versions of the method.
      * @return {@link Jenkins} instance
      * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      * @since 1.590
+     * @deprecated use {@link #getInstance()}
      */
-    public static @Nonnull Jenkins getActiveInstance() throws IllegalStateException {
+    @Deprecated
+    @Nonnull
+    public static Jenkins getActiveInstance() throws IllegalStateException {
         Jenkins instance = HOLDER.getInstance();
         if (instance == null) {
             throw new IllegalStateException("Jenkins has not been started, or was already shut down");
@@ -706,11 +709,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #getActiveInstance()} provides the checked versions of the method.
      * @return The instance. Null if the {@link Jenkins} instance has not been started,
      * or was already shut down
+     * @since 1.653
+     */
+    @CheckForNull
+    public static Jenkins getInstanceOrNull() {
+        return HOLDER.getInstance();
+    }
+
+    /**
+     * Gets the {@link Jenkins} singleton. In certain rare cases you may have code that is intended to run before
+     * Jenkins starts or while Jenkins is being shut-down. For those rare cases use {@link #getInstanceOrNull()}.
+     * @return The instance.
+     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      */
     @CLIResolver
-    @CheckForNull
+    @Nonnull
     public static Jenkins getInstance() {
-        return HOLDER.getInstance();
+        Jenkins instance = HOLDER.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+        }
+        return instance;
     }
 
     /**
@@ -4115,7 +4134,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Shortcut for {@code Jenkins.getInstance().lookup.get(type)}
      */
     public static @CheckForNull <T> T lookup(Class<T> type) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         return j != null ? j.lookup.get(type) : null;
     }
 

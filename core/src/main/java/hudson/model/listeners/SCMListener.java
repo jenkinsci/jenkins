@@ -126,7 +126,7 @@ public abstract class SCMListener implements ExtensionPoint {
      */
     @SuppressWarnings("deprecation")
     public static Collection<? extends SCMListener> all() {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
             return Collections.emptySet();
         }
@@ -140,7 +140,7 @@ public abstract class SCMListener implements ExtensionPoint {
     /** @deprecated Use {@link Extension} instead. */
     @Deprecated
     public final void register() {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
             j.getSCMListeners().add(this);
         }
@@ -149,7 +149,7 @@ public abstract class SCMListener implements ExtensionPoint {
     /** @deprecated Use {@link Extension} instead. */
     @Deprecated
     public final boolean unregister() {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
             return j.getSCMListeners().remove(this);
         } else {

@@ -78,7 +78,7 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
 
     @Override
     public int computeQueueLength() {
-        final Jenkins j = Jenkins.getInstance();
+        final Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) { // Consider queue as empty when Jenkins is inactive
             return 0;
         }

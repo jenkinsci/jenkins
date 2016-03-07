@@ -835,7 +835,7 @@ public class SlaveComputer extends Computer {
      * @since 1.362
      */
     public static VirtualChannel getChannelToMaster() {
-        if (Jenkins.getInstance()!=null)
+        if (Jenkins.getInstanceOrNull()!=null)
             return FilePath.localChannel;
 
         // if this method is called from within the slave computation thread, this should work
