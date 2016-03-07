@@ -24,6 +24,12 @@
 package hudson;
 
 import hudson.slaves.OfflineCause;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.SocketAddress;
+import java.util.Arrays;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
@@ -37,6 +43,7 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Listens to incoming TCP connections from JNLP slave agents and CLI.
@@ -91,7 +98,7 @@ public final class TcpSlaveAgentListener extends Thread {
     public void run() {
         try {
             // the loop eventually terminates when the socket is closed.
-            while (true) {
+            while (!shuttingDown) {
                 Socket s = serverSocket.accept().socket();
 
                 // this prevents a connection from silently terminated by the router in between or the other peer
@@ -115,6 +122,16 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public void shutdown() {
         shuttingDown = true;
+        try {
+            SocketAddress localAddress = serverSocket.getLocalAddress();
+            if (localAddress instanceof InetSocketAddress) {
+                InetSocketAddress address = (InetSocketAddress) localAddress;
+                Socket client = new Socket(address.getHostName(), address.getPort());
+                new PingAgentProtocol().connect(client);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, "Failed to send Ping to wake acceptor loop", e);
+        }
         try {
             serverSocket.close();
         } catch (IOException e) {
@@ -140,7 +157,7 @@ public final class TcpSlaveAgentListener extends Thread {
         @Override
         public void run() {
             try {
-                LOGGER.info("Accepted connection #"+id+" from "+s.getRemoteSocketAddress());
+                LOGGER.log(Level.INFO, "Accepted connection #{0} from {1}", new Object[]{id,s.getRemoteSocketAddress()});
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(
@@ -180,6 +197,79 @@ public final class TcpSlaveAgentListener extends Thread {
             out.println(msg);
             LOGGER.log(Level.WARNING,"Connection #"+id+" is aborted: "+msg);
             s.close();
+        }
+    }
+
+    /**
+     * This extension provides a Ping protocol that allows people to verify that the TcpSlaveAgentListener is alive.
+     * We also use this to wake the acceptor thread on termination.
+     *
+     * @since TODO
+     */
+    @Extension
+    public static class PingAgentProtocol extends AgentProtocol {
+
+        private final byte[] ping;
+
+        public PingAgentProtocol() {
+            try {
+                ping = "Ping\n".getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("JLS mandates support for UTF-8 charset", e);
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "Ping";
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            try {
+                OutputStream stream = socket.getOutputStream();
+                try {
+                    LOGGER.log(Level.FINE, "Received ping request from {0}", socket.getRemoteSocketAddress());
+                    stream.write(ping);
+                    stream.flush();
+                    LOGGER.log(Level.FINE, "Sent ping response to {0}", socket.getRemoteSocketAddress());
+                } finally {
+                    stream.close();
+                }
+            } finally {
+                socket.close();
+            }
+        }
+
+        public boolean connect(Socket socket) throws IOException {
+            try {
+                DataOutputStream out = null;
+                InputStream in = null;
+                try {
+                    LOGGER.log(Level.FINE, "Requesting ping from {0}", socket.getRemoteSocketAddress());
+                    out = new DataOutputStream(socket.getOutputStream());
+                    out.writeUTF("Protocol:Ping");
+                    in = socket.getInputStream();
+                    byte[] response = new byte[ping.length];
+                    int responseLength = in.read(response);
+                    if (responseLength == ping.length && Arrays.equals(response, ping)) {
+                        LOGGER.log(Level.FINE, "Received ping response from {0}", socket.getRemoteSocketAddress());
+                        return true;
+                    } else {
+                        LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
+                                socket.getRemoteSocketAddress(),
+                                new String(ping, "UTF-8"),
+                                new String(response, 0, responseLength, "UTF-8")
+                        });
+                        return false;
+                    }
+                } finally {
+                    IOUtils.closeQuietly(out);
+                    IOUtils.closeQuietly(in);
+                }
+            } finally {
+                socket.close();
+            }
         }
     }
 
