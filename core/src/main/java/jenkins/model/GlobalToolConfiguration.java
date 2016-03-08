@@ -44,7 +44,7 @@ public class GlobalToolConfiguration extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "setting.png"; // TODO more appropriate icon
+        return "setting.png";
     }
 
     @Override

@@ -32,9 +32,9 @@ THE SOFTWARE.
     <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
     <l:tasks>
       <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
-      <l:task href="${rootURL}/manage" icon="icon-setting icon-md" permission="${app.ADMINISTER}" title="${%Manage Jenkins}"/>
+      <l:task href="${rootURL}/manage" icon="icon-gear2 icon-md" permission="${app.ADMINISTER}" title="${%Manage Jenkins}"/>
       <l:task href="new" icon="icon-new-computer icon-md" permission="${createPermission}" title="${%New Node}"/>
-      <l:task href="configure" icon="icon-setting icon-md" permission="${app.ADMINISTER}" title="${%Configure}"/>
+      <l:task href="configure" icon="icon-gear2 icon-md" permission="${app.ADMINISTER}" title="${%Configure}"/>
     </l:tasks>
     <t:queue items="${app.queue.approximateItemsQuickly}" />
     <t:executors />
