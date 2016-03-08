@@ -39,7 +39,7 @@ public class JenkinsJVM {
      * Verify that the classloader that loaded this class is the classloader from which {@link Jenkins} has been
      * started.
      *
-     * @throws IllegalArgumentException if this is not the classloader on the JVM that started {@link Jenkins}.
+     * @throws IllegalStateException if this is not the classloader on the JVM that started {@link Jenkins}.
      */
     public static void checkJenkinsJVM() {
         if (!isJenkinsJVM()) {
@@ -51,7 +51,7 @@ public class JenkinsJVM {
      * Verify that the classloader that loaded this class is not the classloader from which {@link Jenkins} has been
      * started.
      *
-     * @throws IllegalArgumentException if this is the classloader on the JVM that started {@link Jenkins}.
+     * @throws IllegalStateException if this is the classloader on the JVM that started {@link Jenkins}.
      */
     public static void checkNotJenkinsJVM() {
         if (isJenkinsJVM()) {
