@@ -87,6 +87,33 @@ body {
   padding: 15px 15px 40px 15px;
 }
 
+body.left-side #main-panel {
+  margin-left: 320px;
+}
+
+@media (max-width: 750px) {
+  body.left-side #side-panel {
+    width: 100%;
+    float: none;
+    padding-bottom: 20px;
+  }
+
+  body.left-side #main-panel {
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 1170px) {
+  body.left-side #side-panel {
+    width: 360px;
+  }
+
+  body.left-side #main-panel {
+    margin-left: 360px;
+  }
+}
+
+
 /* ---------- footer ---------- */
 
 footer {
