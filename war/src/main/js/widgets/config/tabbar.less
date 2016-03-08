@@ -8,6 +8,8 @@
   border-bottom:none;
   background:@light-backgrond;
   min-height:2.5em;
+  border-top-left-radius:@radius;
+  border-top-right-radius:@radius;
   
   :hover .noTabs{
     color:#bbb;
@@ -29,12 +31,12 @@
   .showTabs,
   .noTabs {
     position: absolute;
-    border-radius: 1px;
+    border-radius: @radius;
     right: 5px;
     top: 5px;
     cursor: pointer;
     color: @solid-border;
-    text-shadow: @birghtest 0 1px 2px;
+    text-shadow: @brightest 0 1px 2px;
     font-size: 0.85em;
     padding: 3px 7px;
   }
@@ -57,10 +59,10 @@
         margin-top:1px;
       }
       .tab:hover {
-        background:#bbb; color:@birghtest;
+        background:#bbb; color:@brightest;
       }
       .tab.active {
-        background: @birghtest;
+        background: @brightest;
         color: #000;
         font-weight: bold;
         z-index: 2;
@@ -86,6 +88,8 @@
     border:1px solid @solid-border;
     padding:10px;
     border-top:none;
+    border-bottom-left-radius:@radius;
+    border-bottom-right-radius:@radius;
     
     .showTabs{
       display:block;
@@ -102,8 +106,8 @@
       .bottom-sticker-inner{
         padding: 20px 10px 25px 20px;
         border-top-right-radius: 10px;
-        border-top: 1px solid @birghtest;
-        border-right: 1px solid @birghtest;
+        border-top: 1px solid @brightest;
+        border-right: 1px solid @brightest;
         background: @medium-translucent;    
       }
          
@@ -120,7 +124,8 @@
           margin-right:10px;
           
           button{
-            padding:5px 20px
+            padding:5px 20px;
+            border-radius:@radius;
           }
         }
       }
@@ -183,7 +188,7 @@
         }
         select{
           border-radius:0;
-          background:@birghtest;
+          background:@brightest;
         }
         .help{
           background:@medium-translucent;
@@ -230,7 +235,7 @@
         }
       }
       .CodeMirror {
-        background:@birghtest;
+        background:@brightest;
   
       }
       .CodeMirror-scroll {
@@ -239,7 +244,7 @@
       .repeated-container > .repeated-chunk {padding-top:15px;}
       .repeated-chunk.hover{ 
         border-color:@line-blue; 
-        box-shadow:0 2px 10px @shade, inset 0 200px 200px -200px @birghtest; 
+        box-shadow:0 2px 10px @shade, inset 0 200px 200px -200px @brightest; 
         position:relative; 
         z-index:2
       }
@@ -257,8 +262,8 @@
         right:35px;
         height:18px;
         width:32px;
-        border-bottom-left-radius:3px;
-        border-bottom-right-radius:3px;
+        border-bottom-left-radius:@radius;
+        border-bottom-right-radius:@radius;
         overflow:hidden;
         
         button{
