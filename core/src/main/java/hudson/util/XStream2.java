@@ -106,7 +106,7 @@ public class XStream2 extends XStream {
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder) {
         // init() is too early to do this
         // defensive because some use of XStream happens before plugins are initialized.
-        Jenkins h = Jenkins.getInstanceOrNull();
+        Jenkins h = Jenkins.getInstance();
         if(h!=null && h.pluginManager!=null && h.pluginManager.uberClassLoader!=null) {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
@@ -421,7 +421,7 @@ public class XStream2 extends XStream {
                 return classOwnership.ownerOf(clazz);
             }
             if (pm == null) {
-                Jenkins j = Jenkins.getInstanceOrNull();
+                Jenkins j = Jenkins.getInstance();
                 if (j != null) {
                     pm = j.getPluginManager();
                 }

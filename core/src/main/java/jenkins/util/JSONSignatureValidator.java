@@ -134,7 +134,7 @@ public class JSONSignatureValidator {
         // if we trust default root CAs, we end up trusting anyone who has a valid certificate,
         // which isn't useful at all
         Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
-        Jenkins j = Jenkins.getInstanceOrNull();
+        Jenkins j = Jenkins.getInstance();
         if (j == null) {
             return anchors;
         }

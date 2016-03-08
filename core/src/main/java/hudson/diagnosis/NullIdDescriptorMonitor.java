@@ -61,7 +61,7 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
     }
 
     private void verify() {
-        Jenkins h = Jenkins.getInstanceOrNull();
+        Jenkins h = Jenkins.getInstance();
         if (h == null) {
             return;
         }
