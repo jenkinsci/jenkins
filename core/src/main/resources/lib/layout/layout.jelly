@@ -53,8 +53,7 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
     <st:attribute name="layout" use="optional">
-      By default, if given, this page will render side-panel + main-panel. Typically, left-side (navigation or menu) +
-      main-content. If set to false, this page will render only main-panel. Typically, full-width size.
+      Available values: two-column (by default) or one-column (full-width size).
     </st:attribute>
 
   </st:documentation>
