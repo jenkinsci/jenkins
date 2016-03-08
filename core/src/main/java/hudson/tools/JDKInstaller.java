@@ -448,8 +448,7 @@ public class JDKInstaller extends ToolInstaller {
 
         HttpClient hc = new HttpClient();
         hc.getParams().setParameter("http.useragent","Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)");
-        Jenkins j = Jenkins.getInstanceOrNull();
-        ProxyConfiguration jpc = j!=null ? j.proxy : null;
+        ProxyConfiguration jpc = Jenkins.getInstance().proxy;
         if(jpc != null) {
             hc.getHostConfiguration().setProxy(jpc.name, jpc.port);
             if(jpc.getUserName() != null)
