@@ -32,7 +32,11 @@ THE SOFTWARE.
   <f:breadcrumb-config-outline />
   <l:main-panel>
     <div class="behavior-loading">${%LOADING}</div>
-    <f:form method="post" name="config" action="configSubmit">
+
+    <l:js src="jsbundles/config-tabbar.js" />
+    <l:css src="jsbundles/jenkins-widgets.css" />
+
+    <f:form method="post" name="config" action="configSubmit" tableClass="job-config tabbed">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 
@@ -61,8 +65,8 @@ THE SOFTWARE.
       </j:forEach>
 
       <f:bottomButtonBar>
-        <f:submit value="${%Save}" />
-        <f:apply />
+        <f:submit value="${%Save All}"/>
+        <f:apply value="${%Apply All}"/>
       </f:bottomButtonBar>
     </f:form>
     <st:adjunct includes="lib.form.confirm" />
