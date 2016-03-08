@@ -32,7 +32,7 @@ public abstract class QueueItemAuthenticatorProvider implements ExtensionPoint {
         private Iterator<QueueItemAuthenticator> delegate = null;
 
         private IteratorImpl() {
-            final Jenkins jenkins = Jenkins.getInstanceOrNull();
+            final Jenkins jenkins = Jenkins.getInstance();
             providers = new ArrayList<QueueItemAuthenticatorProvider>(jenkins == null
                     ? Collections.<QueueItemAuthenticatorProvider>emptyList()
                     : jenkins.getExtensionList(QueueItemAuthenticatorProvider.class)).iterator();

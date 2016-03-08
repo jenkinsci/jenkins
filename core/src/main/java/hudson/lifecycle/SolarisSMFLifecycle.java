@@ -38,7 +38,7 @@ public class SolarisSMFLifecycle extends Lifecycle {
      */
     @Override
     public void restart() throws IOException, InterruptedException {
-        Jenkins h = Jenkins.getInstanceOrNull();
+        Jenkins h = Jenkins.getInstance();
         if (h != null)
             h.cleanUp();
         System.exit(0);

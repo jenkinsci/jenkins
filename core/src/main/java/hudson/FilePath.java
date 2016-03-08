@@ -1133,7 +1133,7 @@ public final class FilePath implements Serializable {
      * @since 1.571
      */
     public @CheckForNull Computer toComputer() {
-        Jenkins j = Jenkins.getInstanceOrNull();
+        Jenkins j = Jenkins.getInstance();
         if (j != null) {
             for (Computer c : j.getComputers()) {
                 if (getChannel()==c.getChannel()) {

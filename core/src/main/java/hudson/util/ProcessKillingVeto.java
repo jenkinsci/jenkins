@@ -74,7 +74,7 @@ public abstract class ProcessKillingVeto implements ExtensionPoint {
      *         list if Jenkins is not available, never null.
      */
     public static List<ProcessKillingVeto> all() {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        Jenkins jenkins = Jenkins.getInstance();
         if (jenkins == null)
             return Collections.emptyList();
         return jenkins.getExtensionList(ProcessKillingVeto.class);

@@ -93,7 +93,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     }
 
     public static void addFilter(Filter filter) throws ServletException {
-        Jenkins j = Jenkins.getInstanceOrNull();
+        Jenkins j = Jenkins.getInstance();
         
         PluginServletFilter container = null;
         if(j != null) {
@@ -111,7 +111,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     }
 
     public static void removeFilter(Filter filter) throws ServletException {
-        Jenkins j = Jenkins.getInstanceOrNull();
+        Jenkins j = Jenkins.getInstance();
         if (j==null || getInstance(j.servletContext) == null) {
             LEGACY.remove(filter);
         } else {
