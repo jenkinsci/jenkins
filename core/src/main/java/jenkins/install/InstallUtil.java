@@ -61,7 +61,10 @@ public class InstallUtil {
 
     private static final Logger LOGGER = Logger.getLogger(InstallUtil.class.getName());
 
-    private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
+    // must use something less than 1.0, as Jenkins may
+    // report back 1.0 if the system config page has never been saved,
+    // which erroneously leads to installer running
+    private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("0.0.0");
 
     /**
      * Get the current installation state.
