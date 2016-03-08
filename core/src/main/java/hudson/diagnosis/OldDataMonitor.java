@@ -105,20 +105,18 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
-        Jenkins j = Jenkins.getInstanceOrNull();
-        if (j != null) {
-            OldDataMonitor odm = get(j);
-            SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-            try {
-                odm.data.remove(referTo(obj));
-                if (isDelete && obj instanceof Job<?, ?>) {
-                    for (Run r : ((Job<?, ?>) obj).getBuilds()) {
-                        odm.data.remove(referTo(r));
-                    }
+        Jenkins j = Jenkins.getInstance();
+        OldDataMonitor odm = get(j);
+        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
+        try {
+            odm.data.remove(referTo(obj));
+            if (isDelete && obj instanceof Job<?, ?>) {
+                for (Run r : ((Job<?, ?>) obj).getBuilds()) {
+                    odm.data.remove(referTo(r));
                 }
-            } finally {
-                SecurityContextHolder.setContext(oldContext);
             }
+        } finally {
+            SecurityContextHolder.setContext(oldContext);
         }
     }
 
@@ -207,7 +205,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         }
         if (buf.length() == 0) return;
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j == null) {
+        if (j == null) { // TODO confirm this can never be true
             // Startup failed, something is very broken, so report what we can.
             for (Throwable t : errors) {
                 LOGGER.log(Level.WARNING, "could not read " + obj + " (and Jenkins did not start up)", t);
