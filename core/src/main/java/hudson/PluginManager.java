@@ -365,6 +365,38 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 }
                             });
 
+                            g.followedBy().attains(PLUGINS_LISTED).add("Checking plugin dependencies", new Executable() {
+                                @Override
+                                public void run(Reactor reactor) throws Exception {
+                                    for (PluginWrapper plugin: getPlugins()) {
+                                        String core = plugin.getManifest().getMainAttributes().getValue("Jenkins-Version");
+                                        if (core != null && Jenkins.getVersion().compareTo(new VersionNumber(core)) < 0) {
+                                            String pluginError = "Plugin " + plugin.getLongName() + " requires Jenkins " + core + " or later.";
+                                            LOGGER.severe(pluginError);
+                                            NOTICE.addErrorMessage(pluginError);
+                                        }
+
+                                        for (Dependency dep : plugin.getDependencies()) {
+                                            if (dep.optional) continue;
+                                            PluginWrapper pluginDependency = getPlugin(dep.shortName);
+                                            if (pluginDependency == null) {
+                                                String pluginError = "Plugin " + plugin.getLongName() + " doesn't have installed the required dependency " + pluginDependency.getLongName();
+                                                LOGGER.log(Level.SEVERE, "Plugin {0} doesn't have installed the required dependency {1}", new Object[] {plugin.getLongName(), pluginDependency.getLongName()});
+                                                NOTICE.addErrorMessage(pluginError);
+                                            } else if (!pluginDependency.isActive()) {
+                                                String pluginError = "Plugin " + plugin.getLongName() + " has disabled the required dependency " + pluginDependency.getLongName();
+                                                LOGGER.log(Level.SEVERE, "Plugin {0} has disabled the required dependency {1}", new Object[] {plugin.getLongName(), pluginDependency.getLongName()});
+                                                NOTICE.addErrorMessage(pluginError);
+                                            } else if (pluginDependency.getVersionNumber().compareTo(new VersionNumber(dep.version)) < 0) {
+                                                String pluginError = "Plugin " + plugin.getLongName() + " requires " + pluginDependency.getLongName() + " " + dep.version + " or later";
+                                                LOGGER.log(Level.SEVERE, "Plugin {0} requires {1} {2} or later", new Object[] {plugin.getLongName(), pluginDependency.getLongName(), dep.version});
+                                                NOTICE.addErrorMessage(pluginError);
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+
                             // Let's see for a while until we open this functionality up to plugins
 //                            g.followedBy().attains(PLUGINS_LISTED).add("Load compatibility rules", new Executable() {
 //                                public void run(Reactor reactor) throws Exception {
@@ -444,6 +476,40 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             });
         }});
+    }
+
+    @Extension
+    public final static PluginManagerAdministrativeMonitor NOTICE = new PluginManagerAdministrativeMonitor();
+
+    /**
+     * Administrative Monitor for failed plugins
+     */
+    public static final class PluginManagerAdministrativeMonitor extends AdministrativeMonitor {
+        public final List<String> pluginError = new ArrayList<>();
+
+        void addErrorMessage(String error) {
+            pluginError.add(error);
+        }
+
+        public boolean isActivated() {
+            return !pluginError.isEmpty();
+        }
+
+        /**
+         * Depending on whether the user said "dismiss" or "correct", send him to the right place.
+         */
+        public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+            if(req.hasParameter("dismiss")) {
+                disable(true);
+                rsp.sendRedirect(req.getContextPath()+"/manage");
+            } else {
+                rsp.sendRedirect(req.getContextPath()+"/pluginManager");
+            }
+        }
+
+        public static PluginManagerAdministrativeMonitor get() {
+            return AdministrativeMonitor.all().get(PluginManagerAdministrativeMonitor.class);
+        }
     }
 
     /*
