@@ -47,6 +47,16 @@ exports.fromConfigTable = function(configTable) {
     // The first set of rows don't have a 'section-header-row', so we manufacture one,
     // calling it a "General" section. We do this by marking the first row in the table.
     // See the next block of code.
+    
+    var generalRow = $('<tr class="section-header-row insert first" title="General"><td colspan="4"><div class="section-header"><a class="section-anchor">#</a>General</div></td></tr>');
+    if(!firstRow.hasClass('section-header-row')){
+       firstRow.before(generalRow);
+       firstRow = configTableMetadata.getFirstRow();
+       var newArray = $.makeArray(topRows);
+       newArray.unshift(generalRow[0]);
+       topRows = $(newArray);
+    }
+
     firstRow.addClass('section-header-row');
     firstRow.attr('title', "General");
 
