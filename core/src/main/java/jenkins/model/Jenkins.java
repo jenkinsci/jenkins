@@ -178,6 +178,7 @@ import hudson.util.JenkinsReloadFailed;
 import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
+import hudson.util.PluginServletFilter;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
@@ -2900,6 +2901,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             } catch (TimeoutException e) {
                 LOGGER.log(Level.WARNING, "Failed to shut down properly",e);
             }
+
+        PluginServletFilter.cleanUp();
 
         LogFactory.releaseAll();
 
