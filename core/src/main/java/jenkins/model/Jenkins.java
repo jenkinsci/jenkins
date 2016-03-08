@@ -4131,7 +4131,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Shortcut for {@code Jenkins.getInstance().lookup.get(type)}
+     * Shortcut for {@code Jenkins.getInstanceOrNull()?.lookup.get(type)}
      */
     public static @CheckForNull <T> T lookup(Class<T> type) {
         Jenkins j = Jenkins.getInstanceOrNull();
