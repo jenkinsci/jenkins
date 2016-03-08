@@ -61,10 +61,7 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
     }
 
     private void verify() {
-        Jenkins h = Jenkins.getInstanceOrNull();
-        if (h == null) {
-            return;
-        }
+        Jenkins h = Jenkins.getInstance();
         for (Descriptor d : h.getExtensionList(Descriptor.class)) {
             PluginWrapper p = h.getPluginManager().whichPlugin(d.getClass());
             String id;
