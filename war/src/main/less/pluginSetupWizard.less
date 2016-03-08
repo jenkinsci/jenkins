@@ -282,7 +282,7 @@
 				}
 
 				&.searching-with-transition {
-					label {
+					.plugin {
 						display: none;
 						transition: all .25s;
 
@@ -312,7 +312,7 @@
 				}
 
 				&.searching {
-					label {
+					.plugin {
 						display: none;
 						transition: all .25s;
 
@@ -331,65 +331,118 @@
 						}
 					}
 				}
-
-				label {
-					font-weight: normal;
-					padding: 7px 2px 7px 27px;
+				
+				.plugin {
 					position: relative;
-					display: block;
-					cursor: pointer;
-					margin: 4px -7px;
-
-		            &:hover{
-		              background: rgba(100, 200, 255, 0.1);
-		              box-shadow:inset 0 200px 200px -200px rgba(100, 200, 255, 0.33),inset 0 0 0 1px rgba(100, 200, 255, 0.33);
-		            }
-
-					&.selected {
+				
+					&.selected label {
 						background: #dff0d8;
 						margin: 4px -7px;
 						padding: 6px 0 6px 26px;
 						border-radius: 2px;
 						border: 1px solid #C2E0A9;
 						color: #3c763d;
-					}
 
-					.title {
-						display: block;
-						font-weight: bold;
-						white-space: nowrap;
+						.dependencies {
+							color: #777;
+						}
+					}
+	
+					label {
+						font-weight: normal;
+						padding: 7px 2px 7px 27px;
 						position: relative;
-					}
-
-					.description {
 						display: block;
-						margin-top: .5em;
+						cursor: pointer;
+						margin: 4px -7px;
+	
+						&:hover{
+						  background: rgba(100, 200, 255, 0.1);
+						  box-shadow:inset 0 400px 400px -100px rgba(100, 200, 255, 0.33), inset 0 0 0 1px rgba(100, 200, 255, 0.33);
+						}
+	
+						.title {
+							display: block;
+							font-weight: bold;
+							white-space: nowrap;
+							position: relative;
+						}
+	
+						.description {
+							display: block;
+							margin-top: .5em;
+						}
+	
+						input[type=checkbox] {
+							float: left;
+							margin: 2px -18px;
+							vertical-align: middle;
+						}
+	
+						+ .tooltip {
+							left: 2px !important;
+							margin-right: 16px;
+	
+							.tooltip-arrow {
+							left: 4em !important;
+							}
+	
+							.tooltip-inner {
+							max-width: none;
+							padding: .5em 1em;
+							text-align: left;
+							}
+						}
 					}
-
-					&.selected .dependencies {
+	
+					.toggle-dependency-list {
+						position: absolute;
+						top: 0;
+						right: 0;
 						color: #777;
+						border: 0;
+						text-decoration: none;
+						padding: 5px 13px;
+						z-index: 100;
+						
+						.badge {
+							margin-left: 7px;
+						}
+						
+						&:hover, &.active {
+							text-decoration: underline;
+						}
 					}
-
-					input[type=checkbox] {
-						float: left;
-						margin: 2px -18px;
-						vertical-align: middle;
+					
+					.dep-list {
+						padding: 10px 0 6px 0;
+						display: none;
+						
+						.badge {
+							padding: 4px 8px;
+							margin: 5px 3px 0 0;
+						}
 					}
-
-					+ .tooltip {
-				        left: 2px !important;
-						margin-right: 16px;
-
-					    .tooltip-arrow {
-						left: 4em !important;
-					    }
-
-					    .tooltip-inner {
-						max-width: none;
-						padding: .5em 1em;
-						text-align: left;
-					    }
-				    }
+						
+					&.show-dependencies {
+						.toggle-dependency-list:after {
+							content: '';
+							display: inline-block;
+							position: absolute;
+							top: 50%;
+							right: 100%;
+							width: 0; 
+							height: 0; 
+							border-left: 7px solid transparent;
+							border-right: 7px solid transparent;
+							border-top: 7px solid #999;
+							margin: -3px -3px 0 0;
+						}
+						
+						.dep-list {
+							display: block;
+						}
+					}
 				}
 			}
 		}
