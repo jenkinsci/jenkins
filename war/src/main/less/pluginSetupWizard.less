@@ -286,7 +286,7 @@
                 }
 
                 &.searching-with-transition {
-                    label {
+					.plugin {
                         display: none;
                         transition: all .25s;
 
@@ -316,7 +316,7 @@
                 }
 
                 &.searching {
-                    label {
+					.plugin {
                         display: none;
                         transition: all .25s;
 
@@ -336,6 +336,22 @@
                     }
                 }
 
+				.plugin {
+					position: relative;
+				
+					&.selected label {
+						background: #dff0d8;
+						margin: 4px -7px;
+						padding: 6px 0 6px 26px;
+						border-radius: 2px;
+						border: 1px solid #C2E0A9;
+						color: #3c763d;
+
+						.dependencies {
+							color: #777;
+						}
+					}
+	
                 label {
                     font-weight: normal;
                     padding: 7px 2px 7px 27px;
@@ -346,16 +362,7 @@
 
                     &:hover{
                       background: rgba(100, 200, 255, 0.1);
-                      box-shadow:inset 0 200px 200px -200px rgba(100, 200, 255, 0.33),inset 0 0 0 1px rgba(100, 200, 255, 0.33);
-                    }
-
-                    &.selected {
-                        background: #dff0d8;
-                        margin: 4px -7px;
-                        padding: 6px 0 6px 26px;
-                        border-radius: 2px;
-                        border: 1px solid #C2E0A9;
-                        color: #3c763d;
+						  box-shadow:inset 0 400px 400px -100px rgba(100, 200, 255, 0.33), inset 0 0 0 1px rgba(100, 200, 255, 0.33);
                     }
 
                     .title {
@@ -368,10 +375,6 @@
                     .description {
                         display: block;
                         margin-top: .5em;
-                    }
-
-                    &.selected .dependencies {
-                        color: #777;
                     }
 
                     input[type=checkbox] {
@@ -395,6 +398,56 @@
                         }
                     }
                 }
+	
+					.toggle-dependency-list {
+						position: absolute;
+						top: 0;
+						right: 0;
+						color: #777;
+						border: 0;
+						text-decoration: none;
+						padding: 5px 13px;
+						z-index: 100;
+						
+						.badge {
+							margin-left: 7px;
+						}
+						
+						&:hover, &.active {
+							text-decoration: underline;
+						}
+					}
+					
+					.dep-list {
+						padding: 10px 0 6px 0;
+						display: none;
+						
+						.badge {
+							padding: 4px 8px;
+							margin: 5px 3px 0 0;
+						}
+					}
+						
+					&.show-dependencies {
+						.toggle-dependency-list:after {
+							content: '';
+							display: inline-block;
+							position: absolute;
+							top: 50%;
+							right: 100%;
+							width: 0; 
+							height: 0; 
+							border-left: 7px solid transparent;
+							border-right: 7px solid transparent;
+							border-top: 7px solid #999;
+							margin: -3px -3px 0 0;
+						}
+						
+						.dep-list {
+							display: block;
+						}
+					}
+				}
             }
         }
 

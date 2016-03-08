@@ -70,8 +70,16 @@ var createPluginSetupWizard = function(appendTarget) {
 		}
 	});
 
+	// get total number of dependencies
+	Handlebars.registerHelper('dependencyCount', function(plugName) {
+		var plug = availablePlugins[plugName];
+		if(plug && plug.allDependencies && plug.allDependencies.length > 1) { // includes self
+			return plug.allDependencies.length - 1;
+		}
+	});
+
 	// gets user friendly dependency text
-	Handlebars.registerHelper('dependencyText', function(plugName) {
+	Handlebars.registerHelper('eachDependency', function(plugName, options) {
 		var plug = availablePlugins[plugName];
 		if(!plug) {
 			return '';
@@ -79,18 +87,23 @@ var createPluginSetupWizard = function(appendTarget) {
 		var deps = $.grep(plug.allDependencies, function(value) { // remove self
 			return value !== plugName;
 		});
-		var out = '';
+		
+		var out  = '';
 		for(var i = 0; i < deps.length; i++) {
-			if(i > 0) {
-				out += ', ';
-			}
 			var depName = deps[i];
 			var dep = availablePlugins[depName];
 			if(dep) {
-				out += dep.title;
+				out += options.fn(dep);
 			}
 		}
 		return out;
+	});
+
+	// executes a block if there are dependencies
+	Handlebars.registerHelper('ifVisibleDependency', function(plugName, options) {
+		if(visibleDependencies[plugName]) {
+			return options.fn();
+		}
 	});
 
 	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
@@ -129,6 +142,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	var pluginList = pluginManager.plugins();
 	var allPluginNames = pluginManager.pluginNames();
 	var selectedPluginNames = pluginManager.recommendedPluginNames();
+	var visibleDependencies = {};
 	var categories = [];
 	var availablePlugins = {};
 	var categorizedPlugins = {};
@@ -276,6 +290,25 @@ var createPluginSetupWizard = function(appendTarget) {
 		}));
 
 		setPanel(progressPanel, { installingPlugins : installingPlugins });
+	};
+	
+	// toggles visibility of dependency listing for a plugin
+	var toggleDependencyList = function() {
+		var $btn = $(this);
+		var $toggle = $btn.parents('.plugin:first');
+		var plugName = $btn.attr('data-plugin-name');
+		if(!visibleDependencies[plugName]) {
+			visibleDependencies[plugName] = true;
+		}
+		else {
+			visibleDependencies[plugName] = false;
+		}
+		if(!visibleDependencies[plugName]) {
+			$toggle.removeClass('show-dependencies');
+		}
+		else {
+			$toggle.addClass('show-dependencies');
+		}
 	};
 
 	// install the default plugins
@@ -538,7 +571,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				findIndex = (findIndex+1) % matches.length;
 			}
 			var $el = $(matches[findIndex]);
-			$el = $el.parents('label:first'); // scroll to the block
+			$el = $el.parents('.plugin:first'); // scroll to the block
 			if($el && $el.length > 0) {
 				var pos = $pl.scrollTop() + $el.position().top;
 				$pl.stop(true).animate({
@@ -557,7 +590,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	// search for given text, optionally scroll to the next match, set classes on appropriate elements from the search match
 	var searchForPlugins = function(text, scroll) {
 		var $pl = $('.plugin-list');
-		var $containers = $pl.find('label');
+		var $containers = $pl.find('.plugin');
 
 		// must always do this, as it's called after refreshing the panel (e.g. check/uncheck plugs)
 		$containers.removeClass('match');
@@ -569,7 +602,7 @@ var createPluginSetupWizard = function(appendTarget) {
 			}
 			else {
 				var matches = findElementsWithText($pl[0], text.toLowerCase(), function(d) { return d.toLowerCase(); });
-				$(matches).parents('label').addClass('match');
+				$(matches).parents('.plugin').addClass('match');
 				if(lastSearch !== text && scroll) {
 					scrollPlugin($pl, matches, text);
 				}
@@ -745,6 +778,7 @@ var createPluginSetupWizard = function(appendTarget) {
 
 	// click action mappings
 	var actions = {
+		'.toggle-dependency-list': toggleDependencyList,
 		'.install-recommended': installDefaultPlugins,
 		'.install-custom': loadCustomPluginPanel,
 		'.install-home': function() { setPanel(welcomePanel); },
